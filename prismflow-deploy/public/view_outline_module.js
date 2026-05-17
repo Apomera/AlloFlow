@@ -218,7 +218,7 @@
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 24,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram'))) : renderInteractiveMap() : renderOutlineContent());
 }
 

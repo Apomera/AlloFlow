@@ -483,7 +483,7 @@
           disabled: phase !== 'confirm',
           'aria-label': action.label,
         }),
-        isManual && e('div', { className: 'mt-1 w-4 h-4 flex items-center justify-center text-slate-400', 'aria-hidden': 'true' }, '⚠'),
+        isManual && e('div', { className: 'mt-1 w-4 h-4 flex items-center justify-center text-slate-600', 'aria-hidden': 'true' }, '⚠'),
         e('div', { className: 'flex-1 min-w-0' },
           e('div', { className: 'flex items-center gap-2 mb-1' },
             e('span', { className: 'text-base', 'aria-hidden': 'true' }, action.icon),
@@ -574,7 +574,7 @@
             ),
             initialReadiness && newReadiness && e('div', { className: 'flex items-center gap-3 mb-4' },
               ReadinessBlock('Before', initialReadiness),
-              e('div', { className: 'text-2xl text-slate-400', 'aria-hidden': 'true' }, '→'),
+              e('div', { className: 'text-2xl text-slate-600', 'aria-hidden': 'true' }, '→'),
               ReadinessBlock('After', newReadiness)
             ),
             verdicts && verdicts.length > 0 && e('div', { className: 'mt-4' },

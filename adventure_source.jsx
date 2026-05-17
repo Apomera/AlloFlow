@@ -48,7 +48,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="relative z-20">
                 <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className="text-cyan-400 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
+                    <span className="text-cyan-700 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
                     <span className="text-white">{proficiency}/100 ({ratingLabel})</span>
                 </div>
                 <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
@@ -60,13 +60,13 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="grid grid-cols-2 gap-4 relative z-20">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-yellow-400">
+                    <div className="flex items-center gap-2 mb-2 text-yellow-700">
                         <Zap size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
                     <div className="text-3xl font-black">{efficiency}%</div>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-green-400">
+                    <div className="flex items-center gap-2 mb-2 text-green-700">
                         <Key size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
                     </div>
                     <div className="text-3xl font-black">{safeStats.conceptsFound.length}</div>
@@ -420,8 +420,8 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
         <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
       </div>
       <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mt-1.5 px-1">
-        <span className="text-red-400">{leftLabel} (0%)</span>
-        <span className="text-green-400">{rightLabel} (100%)</span>
+        <span className="text-red-600">{leftLabel} (0%)</span>
+        <span className="text-green-700">{rightLabel} (100%)</span>
       </div>
     </div>
   );
@@ -566,7 +566,7 @@ const InventoryGrid = React.memo(({ inventory, onSelect }) => {
   if (!inventory || inventory.length === 0) return null;
   return (
     <div className="flex items-center gap-2 bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-600/50">
-      <Backpack size={16} className="text-yellow-400" />
+      <Backpack size={16} className="text-yellow-700" />
       <div className="flex -space-x-2">
         {inventory.map((item, idx) => (
           <div
@@ -709,14 +709,14 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                     <span className="text-2xl">💰</span>
                     <div>
                         <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
-                        <div className="text-xl font-black text-yellow-400 leading-none">{gold}</div>
+                        <div className="text-xl font-black text-yellow-700 leading-none">{gold}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
                     <span className="text-2xl">🏆</span>
                     <div>
                         <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
-                        <div className="text-xl font-black text-green-400 leading-none">{globalXP}</div>
+                        <div className="text-xl font-black text-green-700 leading-none">{globalXP}</div>
                     </div>
                 </div>
             </div>
@@ -732,7 +732,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                             {item.icon}
                         </div>
                         <div className="text-right">
-                            <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
+                            <div className="text-yellow-700 font-black text-lg">{item.cost} G</div>
                             <span className="text-[11px] font-bold uppercase text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
                                 {t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>
@@ -820,7 +820,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 text-red-400 hover:bg-red-200 hover:text-red-600 text-xs font-bold opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center" title={t('adventure.remove_character')}>✕</button>
+                            <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-600 text-xs font-bold opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center" title={t('adventure.remove_character')}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner">
                                 {char.isGenerating ? (
                                     <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full"></div>
@@ -894,7 +894,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 </div>
                             )}
                             {char.isGenerating && (
-                                <p className="mt-2 text-[11px] text-violet-400 animate-pulse font-medium">Generating...</p>
+                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium">Generating...</p>
                             )}
                         </div>
                     ))}
@@ -913,7 +913,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                         <button onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-200 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-400 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group">
                             <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">➕</span>
                             <span className="font-bold text-sm text-violet-600">{t('adventure.add_character')}</span>
-                            <span className="text-[11px] text-slate-400 mt-0.5">{t('adventure.create_cast_member')}</span>
+                            <span className="text-[11px] text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
                         </button>
                     )}
                 </div>

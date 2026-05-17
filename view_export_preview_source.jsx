@@ -76,7 +76,7 @@ function ExportPreviewView(props) {
                           title={`Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
                         <button onClick={() => deleteExportPreset(key)}
-                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-600 hover:text-red-600 hover:bg-red-50 transition-all"
                           title={`Delete "${preset.name}" preset`}
                         ><X size={10} /></button>
                       </div>
@@ -653,7 +653,7 @@ function ExportPreviewView(props) {
                           <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Issues ({exportAuditResult.issues.length})</div>
                           {exportAuditResult.issues.slice(0, 5).map((issue, i) => (
                             <div key={i} className="text-[11px] text-slate-600 mb-1 flex items-start gap-1">
-                              <span className="text-red-400 shrink-0">●</span>
+                              <span className="text-red-600 shrink-0">●</span>
                               <span>{typeof issue === 'string' ? issue : issue.issue}{issue.wcag ? ` (${issue.wcag})` : ''}</span>
                             </div>
                           ))}
@@ -871,9 +871,9 @@ function ExportPreviewView(props) {
                 {/* ── Expert Workbench: Command Bar + Agent Activity (collapsible) ── */}
                 <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group">
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
-                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-400 text-[10px]">▸</span>
-                    <span className="text-[11px] text-purple-400 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
-                    {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse">Running...</span>}
+                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-600 text-[10px]">▸</span>
+                    <span className="text-[11px] text-purple-700 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
+                    {isAgentRunning && <span className="text-[11px] text-amber-700 animate-pulse">Running...</span>}
                     <span className="ml-auto text-[10px] text-slate-500">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                   </summary>
                   <div className="px-2 pb-1.5">
@@ -943,10 +943,10 @@ function ExportPreviewView(props) {
                           <span>{entry.text}</span>
                         </div>
                       ))}
-                      {isAgentRunning && <div className="text-purple-400 animate-pulse">⏳ Processing...</div>}
+                      {isAgentRunning && <div className="text-purple-700 animate-pulse">⏳ Processing...</div>}
                     </div>
                     <div className="flex items-center gap-3 px-2 py-1 border-t border-slate-800">
-                      <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
+                      <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-700 hover:text-purple-200 underline">
                         {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                       </button>
                       <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>

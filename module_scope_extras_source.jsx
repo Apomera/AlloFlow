@@ -138,7 +138,7 @@ class ErrorBoundary extends React.Component {
               </button>
           </div>
           {Boolean(this.state.error) && (
-              <details className="mt-8 text-[11px] text-red-400 text-left max-w-sm opacity-60 cursor-pointer">
+              <details className="mt-8 text-[11px] text-red-600 text-left max-w-sm opacity-60 cursor-pointer">
                   <summary>{t('common.error_details')}</summary>
                   <pre className="mt-2 whitespace-pre-wrap">{this.state.error.toString()}</pre>
               </details>

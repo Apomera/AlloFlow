@@ -41,10 +41,10 @@ function AdventurePanel(props) {
                     )}
                     {globalPoints < studentProjectSettings.adventureUnlockXP ? (
                         <div className="bg-slate-800 text-white p-4 rounded-xl text-center shadow-md border border-slate-600 animate-in zoom-in">
-                            <Lock size={32} className="mx-auto mb-2 text-yellow-400"/>
+                            <Lock size={32} className="mx-auto mb-2 text-yellow-700"/>
                             <h4 className="font-bold text-lg mb-1">{t('adventure.locked_title')}</h4>
                             <p className="text-sm text-slate-600 mb-3">
-                                {t('adventure.locked_desc_prefix')} <span className="font-bold text-yellow-400">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.locked_desc_suffix')}
+                                {t('adventure.locked_desc_prefix')} <span className="font-bold text-yellow-700">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.locked_desc_suffix')}
                             </p>
                             <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600">
                                 <div
@@ -1276,7 +1276,7 @@ function DbqPanel(props) {
                     </div>
                     {!hasSourceOrAnalysis && window._dbqMode !== 'custom' && (
                         <div className="px-3 pb-2">
-                            <p className="text-[11px] text-rose-400 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
+                            <p className="text-[11px] text-rose-700 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
                         </div>
                     )}
                     <button
@@ -1638,7 +1638,7 @@ function GlossaryPanel(props) {
                                 className="rounded border-slate-300 text-indigo-600 focus:ring-sky-500 h-4 w-4"
                             />
                             <span className="flex items-center gap-1">
-                                <Ban size={12} className="text-red-400"/> {t('glossary.auto_remove')} <span className="text-[11px] text-slate-600 font-normal">{t('glossary.slower')}</span>
+                                <Ban size={12} className="text-red-600"/> {t('glossary.auto_remove')} <span className="text-[11px] text-slate-600 font-normal">{t('glossary.slower')}</span>
                             </span>
                         </label>
                     </div>
@@ -1801,7 +1801,7 @@ function QuizPanel(props) {
                                    <span className="text-sm flex-shrink-0 w-5 text-center" aria-hidden="true">{et.emoji}</span>
                                    <div className="flex-1 min-w-0">
                                      <span className="text-xs font-semibold text-slate-700">{et.label}</span>
-                                     <span className="text-[10px] text-slate-400 ml-1">{et.desc}</span>
+                                     <span className="text-[10px] text-slate-600 ml-1">{et.desc}</span>
                                    </div>
                                    <input
                                      type="number"
@@ -2728,7 +2728,7 @@ function UiToolWordsoundsPanel(props) {
                             onClick={handleOpenWordSounds}
                             className="w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            <Sparkles size={14} className="text-yellow-300"/> Open Generator
+                            <Sparkles size={14} className="text-yellow-700"/> Open Generator
                         </button>
                     </div>
   );

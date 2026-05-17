@@ -40,7 +40,7 @@ function XPModal({
         <div className="text-center mb-6 relative">
           <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative">
             <Trophy size={40} className="text-indigo-900 fill-current" />
-            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-400 text-xs font-black px-2 py-1 rounded-full border border-white">
+            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-700 text-xs font-black px-2 py-1 rounded-full border border-white">
               {t('student_dashboard.level_abbr')} {globalLevel}
             </div>
           </div>

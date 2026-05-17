@@ -974,7 +974,7 @@ Return ONLY valid JSON:
                             {(imageOverrides[panelIdx] || panel.imageUrl) ? (
                                 <img src={imageOverrides[panelIdx] || panel.imageUrl} alt={panel.caption || `Panel ${panelIdx + 1}`} loading="lazy" style={{ width: '100%', display: 'block', maxHeight: '320px', objectFit: 'contain', background: '#f8fafc' }} />
                             ) : (
-                                <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#94a3b8' }}>
+                                <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#475569' }}>
                                     <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid #cbd5e1', borderTopColor: '#6366f1', borderRadius: '50%' }} />
                                 </div>
                             )}
@@ -1094,7 +1094,7 @@ Return ONLY valid JSON:
                                         padding: "4px 10px", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#1e1b4b" }}
                                 >
                                     {!challengeSubmitted && (
-                                        <button onClick={() => handleDeleteStudentLabel(panelIdx, sLabel.id)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#94a3b8" }}>✕</button>
+                                        <button onClick={() => handleDeleteStudentLabel(panelIdx, sLabel.id)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" }}>✕</button>
                                     )}
                                     {!challengeSubmitted ? (
                                         <input type="text" value={sLabel.text}

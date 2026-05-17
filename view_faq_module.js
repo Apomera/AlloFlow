@@ -285,7 +285,7 @@
     })(), faq.answer_en && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
     }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("div", {
-      className: "shrink-0 mt-2 text-slate-400 transition-transform duration-200",
+      className: "shrink-0 mt-2 text-slate-600 transition-transform duration-200",
       style: { transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' },
       "aria-hidden": "true"
     }, /*#__PURE__*/React.createElement(ChevronDown, { size: 20 }))));

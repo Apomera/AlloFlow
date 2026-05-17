@@ -1258,13 +1258,13 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
        <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
            <div>
                <h3 className="font-bold text-lg flex items-center gap-2">
-                   <ListOrdered size={20} className="text-yellow-400"/> {t('timeline.game.header')}
+                   <ListOrdered size={20} className="text-yellow-700"/> {t('timeline.game.header')}
                </h3>
                <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
            </div>
            <div className="flex items-center gap-4">
                <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
-                   <Trophy size={14} className="text-yellow-400"/>
+                   <Trophy size={14} className="text-yellow-700"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
                <label className="hidden sm:flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
@@ -1890,13 +1890,13 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
         <div>
             <h3 className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
-                <Filter size={20} className="text-yellow-400"/> {t('concept_sort.title')}
+                <Filter size={20} className="text-yellow-700"/> {t('concept_sort.title')}
             </h3>
             <p className="text-xs text-indigo-200">{t('concept_sort.subtitle')}</p>
         </div>
         <div className="flex items-center gap-4">
             <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
-                <Trophy size={14} className="text-yellow-400"/>
+                <Trophy size={14} className="text-yellow-700"/>
                 <span className="font-bold text-sm">{score} pts</span>
             </div>
             <GameThemeToggle />
@@ -2736,7 +2736,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                           </div>
                       ))}
                       {causesItems.length === 0 && (
-                          <div className="text-orange-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
+                          <div className="text-orange-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
                       )}
                   </div>
               </div>
@@ -2744,7 +2744,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
               <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
                   <div className="w-0.5 h-full bg-slate-200"></div>
                   <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-                      <ArrowRight size={20} className="text-slate-400" />
+                      <ArrowRight size={20} className="text-slate-600" />
                   </div>
               </div>
               {/* Effects drop zone */}
@@ -2782,7 +2782,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                           </div>
                       ))}
                       {effectsItems.length === 0 && (
-                          <div className="text-teal-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
+                          <div className="text-teal-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
                       )}
                   </div>
               </div>
@@ -3037,7 +3037,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-slate-400 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
+          <div className="text-slate-600 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
         )}
       </div>
     </div>
@@ -3121,7 +3121,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
           <div className="w-0.5 h-full bg-slate-200"></div>
           <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-            <ArrowRight size={20} className="text-slate-400" />
+            <ArrowRight size={20} className="text-slate-600" />
           </div>
         </div>
         {renderColumn('right', rightTitle, rightItems, rightColors)}
@@ -3417,7 +3417,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
                       <SpeakButton text={item.text} size={11} />
                     </div>
                   ))}
-                  {placed.length === 0 && <div className="text-slate-400 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
+                  {placed.length === 0 && <div className="text-slate-600 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
                 </div>
               </div>
             );
@@ -4027,7 +4027,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   <div
                     onMouseDown={(e) => handleGripDown(e, step.id)}
                     onTouchStart={(e) => handleGripDown(e, step.id)}
-                    className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-300 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
+                    className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
                     aria-label={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
                     title={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
                   >
@@ -4067,7 +4067,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         </li>
                       ))}
                       {step.items.length > 3 && (
-                        <li className="text-slate-400 italic ml-3">+{step.items.length - 3} more</li>
+                        <li className="text-slate-600 italic ml-3">+{step.items.length - 3} more</li>
                       )}
                     </ul>
                   )}
@@ -4420,7 +4420,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          <h2 className="text-xl font-bold flex items-center gap-2"><Gamepad2 /> {t('games.crossword_title')}</h2>
          <div className="flex items-center gap-4">
              {isWon && (
-                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-400 text-sm font-bold border border-indigo-500 animate-in zoom-in">
+                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-700 text-sm font-bold border border-indigo-500 animate-in zoom-in">
                      {t('common.score')}: {score}
                  </div>
              )}
@@ -4653,7 +4653,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
         <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
            <h3 className="font-bold text-xl flex items-center gap-2"><Layout size={24}/> {t('games.syntax.title')}</h3>
            <div className="flex items-center gap-4">
-               <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-indigo-500">{t('memory.score')}: {score}</div>
+               <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-700 border border-indigo-500">{t('memory.score')}: {score}</div>
                <GameThemeToggle />
                <button data-help-key="syntax_close" onClick={onClose} className="hover:bg-indigo-500 p-1 rounded-full" aria-label={t('common.close')}><X size={24}/></button>
            </div>
@@ -4875,7 +4875,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 data-help-key="bingo_images_chk" aria-label={t('bingo.include_pictures')}
                             />
                             <div className="flex items-center gap-1">
-                                <ImageIcon size={14} className="text-rose-400"/> {t('bingo.include_pictures')}
+                                <ImageIcon size={14} className="text-rose-700"/> {t('bingo.include_pictures')}
                             </div>
                         </label>
                         <button
@@ -5082,7 +5082,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 ) : (
                     <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64">
                          <div className="flex flex-col items-center gap-3 text-slate-600">
-                             <RefreshCw size={32} className="animate-spin text-rose-400"/>
+                             <RefreshCw size={32} className="animate-spin text-rose-700"/>
                              <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
                          </div>
                     </div>
@@ -5935,7 +5935,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           </div>
           <div className="flex flex-wrap gap-2 justify-center min-h-[50px]">
             {bankItems.length === 0 ? (
-              <span className="text-xs italic text-slate-400">{t('games.bucket_sort.bank_empty') || 'All items placed.'}</span>
+              <span className="text-xs italic text-slate-600">{t('games.bucket_sort.bank_empty') || 'All items placed.'}</span>
             ) : (
               bankItems.map(item => (
                 <div

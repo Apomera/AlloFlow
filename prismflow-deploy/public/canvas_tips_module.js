@@ -37,7 +37,7 @@ function CanvasLoadingTips() {
   }, []);
   return React.createElement('p', {
     style: {
-      color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic',
+      color: '#475569', fontSize: '13px', fontStyle: 'italic',
       minHeight: '40px', transition: 'opacity 0.5s', lineHeight: 1.5
     }
   }, CANVAS_LOADING_TIPS[tipIdx]);

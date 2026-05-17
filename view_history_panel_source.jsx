@@ -68,7 +68,7 @@ function HistoryPanel(props) {
                             </h3>
                         <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80">
                             {isStorageDisabled ? (
-                                <span className="text-red-400 flex items-center gap-1">
+                                <span className="text-red-600 flex items-center gap-1">
                                     <AlertCircle size={10} /> {t('status.storage_disabled')}
                                 </span>
                             ) : isCloudSyncEnabled ? (
@@ -79,23 +79,23 @@ function HistoryPanel(props) {
                                             </span>
                                         )}
                                         {cloudSyncStatus === 'error' && (
-                                            <span className="text-red-400 flex items-center gap-1">
+                                            <span className="text-red-600 flex items-center gap-1">
                                                 <AlertCircle size={10} /> {t('status.sync_error')}
                                             </span>
                                         )}
                                         {(cloudSyncStatus === 'saved' || cloudSyncStatus === 'idle') && (
-                                            <span className="text-green-300 flex items-center gap-1">
+                                            <span className="text-green-700 flex items-center gap-1">
                                                 <Cloud size={10} /> {t('status.cloud_saved')}
                                             </span>
                                         )}
                                     </>
                                 ) : (
                                     pendingSync ? (
-                                        <span className="text-orange-300 flex items-center gap-1">
+                                        <span className="text-orange-700 flex items-center gap-1">
                                             <CloudOff size={10} /> {t('status.unsaved')}
                                         </span>
                                     ) : lastSaved ? (
-                                        <span className="text-green-300 flex items-center gap-1">
+                                        <span className="text-green-700 flex items-center gap-1">
                                             <Cloud size={10} /> {t('status.autosaved', { time: lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) })}
                                         </span>
                                     ) : (
@@ -207,7 +207,7 @@ function HistoryPanel(props) {
                                 <button
                                     data-help-key="history_delete_unit_btn"
                                     onClick={handleDeleteUnit}
-                                    className="p-1 rounded hover:bg-red-900/50 text-red-400 hover:text-red-300 transition-colors"
+                                    className="p-1 rounded hover:bg-red-900/50 text-red-600 hover:text-red-300 transition-colors"
                                     title={t('history.delete_unit_tooltip')}
                                     aria-label={t('history.delete_unit_tooltip')}
                                 >
@@ -245,7 +245,7 @@ function HistoryPanel(props) {
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
                                     📌 STEM Stations
-                                    <span className="bg-emerald-500/30 text-emerald-200 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
+                                    <span className="bg-emerald-500/30 text-emerald-700 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
                                 </h4>
                             </div>
                             <div className="space-y-1.5">
@@ -259,12 +259,12 @@ function HistoryPanel(props) {
                                         }}
                                         className="group flex items-center gap-2 p-2 rounded-lg bg-emerald-900/40 border border-emerald-700/50 hover:bg-emerald-800/60 cursor-pointer transition-all"
                                     >
-                                        <div className="p-1.5 rounded-md bg-emerald-800 text-emerald-300 shrink-0">
+                                        <div className="p-1.5 rounded-md bg-emerald-800 text-emerald-700 shrink-0">
                                             🔬
                                         </div>
                                         <div className="min-w-0 flex-grow">
                                             <div className="text-xs font-bold text-emerald-100 truncate">{st.name}</div>
-                                            <div className="text-[11px] text-emerald-400">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</div>
+                                            <div className="text-[11px] text-emerald-700">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</div>
                                         </div>
                                         <button
                                             onClick={(e) => {
@@ -274,7 +274,7 @@ function HistoryPanel(props) {
                                                 if (activeStation && activeStation.id === st.id) setActiveStation(null);
                                                 addToast && addToast('Station removed');
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
+                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-600 hover:text-red-300 p-1 transition-opacity"
                                             aria-label={t('history.delete_station_aria') || 'Delete station'}
                                         >
                                             <X size={12} />
@@ -308,12 +308,12 @@ function HistoryPanel(props) {
                                         }}
                                         className="group flex items-center gap-2 p-2 rounded-lg bg-pink-900/40 border border-pink-700/50 hover:bg-pink-800/60 cursor-pointer transition-all"
                                     >
-                                        <div className="p-1.5 rounded-md bg-pink-800 text-pink-300 shrink-0">
+                                        <div className="p-1.5 rounded-md bg-pink-800 text-pink-700 shrink-0">
                                             💖
                                         </div>
                                         <div className="min-w-0 flex-grow">
                                             <div className="text-xs font-bold text-pink-100 truncate">{st.name}</div>
-                                            <div className="text-[11px] text-pink-400">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
+                                            <div className="text-[11px] text-pink-700">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
                                         </div>
                                         <button
                                             onClick={(e) => {
@@ -323,7 +323,7 @@ function HistoryPanel(props) {
                                                 if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
                                                 addToast && addToast('SEL Station removed');
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
+                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-600 hover:text-red-300 p-1 transition-opacity"
                                             aria-label={`Delete SEL Station ${st.name}`}
                                         >
                                             <X size={12} />
@@ -514,7 +514,7 @@ function HistoryPanel(props) {
                                             URL.revokeObjectURL(url);
                                             addToast && addToast('CSV downloaded for RTI progress monitoring', 'success');
                                         }}
-                                        className="p-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors flex items-center gap-1 text-[11px]"
+                                        className="p-1 text-emerald-700 hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors flex items-center gap-1 text-[11px]"
                                         title={t('common.export_csv_for_rti')}
                                     >
                                         <Download size={12} /> CSV

@@ -439,7 +439,7 @@
     className: "w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 mt-auto active:scale-95 shadow-sm"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), t('progression.build_btn'))))))));
 }
 

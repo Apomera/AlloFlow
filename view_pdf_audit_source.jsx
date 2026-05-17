@@ -268,7 +268,7 @@ function PdfAuditView(props) {
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-xs font-bold text-slate-600">{pdfBatchQueue.length} file{pdfBatchQueue.length !== 1 ? 's' : ''} queued</span>
-                          {!pdfBatchProcessing && <button onClick={() => setPdfBatchQueue([])} className="text-xs text-red-400 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
+                          {!pdfBatchProcessing && <button onClick={() => setPdfBatchQueue([])} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
                         </div>
                         <div className="max-h-40 overflow-y-auto space-y-1">
                           {pdfBatchQueue.map((item, idx) => (
@@ -278,7 +278,7 @@ function PdfAuditView(props) {
                               <span className="text-slate-600">{(item.fileSize / (1024*1024)).toFixed(1)}MB</span>
                               {item.result && <span className={`font-bold ${(item.result.afterScore || 0) >= 90 ? 'text-green-600' : (item.result.afterScore || 0) >= 70 ? 'text-amber-600' : 'text-red-600'}`}>{item.result.beforeScore}{'\u2192'}{item.result.afterScore}</span>}
                               {item.error && <span className="text-red-500 truncate max-w-[100px]" title={item.error}>{'\u274c'}</span>}
-                              {!pdfBatchProcessing && item.status === 'pending' && <button onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-300 hover:text-red-400">{'\u2715'}</button>}
+                              {!pdfBatchProcessing && item.status === 'pending' && <button onClick={() => setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id))} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
                             </div>
                           ))}
                         </div>
@@ -638,7 +638,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           var updated = {...saved}; delete updated[k];
                                           try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
                                           addToast && addToast('Deleted "' + s.name + '"', 'info');
-                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50">✕</button>
+                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-600 hover:text-red-600 hover:bg-red-50">✕</button>
                                       </div>
                                     );
                                   })}
@@ -1779,11 +1779,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <span>{isWorking ? '⏳' : chunk.score >= 80 ? '✅' : chunk.score >= 60 ? '🟡' : '🔴'}</span>
                                     <span className="font-bold text-slate-800">§{(chunk.index || ci) + 1}</span>
                                     {!isWorking && <>
-                                      <span className="text-slate-400" aria-hidden="true">·</span>
+                                      <span className="text-slate-600" aria-hidden="true">·</span>
                                       <span className="text-slate-700">WCAG</span>
                                       <span className={`font-black ${scoreColor}`}>{chunk.score}/100</span>
                                       {totalFixes > 0 && <>
-                                        <span className="text-slate-400" aria-hidden="true">·</span>
+                                        <span className="text-slate-600" aria-hidden="true">·</span>
                                         <span
                                           className="text-slate-700"
                                           title={`🔧 ${chunk.deterministicFixCount || 0} rule-based (deterministic) · 🎯 ${chunk.surgicalFixCount || 0} AI-targeted`}
@@ -1792,7 +1792,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         </span>
                                       </>}
                                       {totalFixes === 0 && !chunk.usedOriginal && <>
-                                        <span className="text-slate-400" aria-hidden="true">·</span>
+                                        <span className="text-slate-600" aria-hidden="true">·</span>
                                         {chunk.score >= 80
                                           ? <span className="text-emerald-700 italic" title={t('pdf_audit.live_chunk.no_fixes_title') || 'This section already meets WCAG accessibility standards — the pipeline made no changes because none were needed.'}>✓ no fixes needed</span>
                                           : chunk.score >= 60
@@ -2484,7 +2484,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <span className="text-slate-600">
                                         {fidelityResult.totalMissing === 0 ? 'No words missing ✓' : `${fidelityResult.totalMissing} word${fidelityResult.totalMissing === 1 ? '' : 's'} potentially missing`}
                                       </span>
-                                      <span className="text-[10px] text-slate-400 ml-auto">
+                                      <span className="text-[10px] text-slate-600 ml-auto">
                                         source: {fidelityResult.totalSrc.toLocaleString()} tokens · remediated: {fidelityResult.totalRem.toLocaleString()} tokens
                                       </span>
                                     </div>
@@ -2944,7 +2944,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">Before</div>
                         </div>
-                        <div className="text-2xl text-slate-300">{'\u2192'}</div>
+                        <div className="text-2xl text-slate-600">{'\u2192'}</div>
                         <div className="text-center">
                           <div className={`text-3xl font-black ${(blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
                             {afterDisplay}<span className="text-sm opacity-60">/100</span>
@@ -3020,7 +3020,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-red-50 rounded-lg p-2 border border-red-200">
                               <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Critical ({pdfFixResult.axeAudit.critical.length})</div>
                               {pdfFixResult.axeAudit.critical.map((v, i) => (
-                                <div key={i} className="text-[11px] text-red-800 mb-0.5">🔴 {v.description} <span className="text-red-400">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
+                                <div key={i} className="text-[11px] text-red-800 mb-0.5">🔴 {v.description} <span className="text-red-600">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
                               ))}
                             </div>
                           )}
@@ -3028,7 +3028,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
                               <div className="text-[11px] font-bold text-orange-600 uppercase mb-1">Serious ({pdfFixResult.axeAudit.serious.length})</div>
                               {pdfFixResult.axeAudit.serious.map((v, i) => (
-                                <div key={i} className="text-[11px] text-orange-800 mb-0.5">🟠 {v.description} <span className="text-orange-400">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
+                                <div key={i} className="text-[11px] text-orange-800 mb-0.5">🟠 {v.description} <span className="text-orange-700">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
                               ))}
                             </div>
                           )}
@@ -3036,7 +3036,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Moderate ({pdfFixResult.axeAudit.moderate.length})</div>
                               {pdfFixResult.axeAudit.moderate.map((v, i) => (
-                                <div key={i} className="text-[11px] text-amber-800 mb-0.5">🟡 {v.description} <span className="text-amber-400">({v.id})</span></div>
+                                <div key={i} className="text-[11px] text-amber-800 mb-0.5">🟡 {v.description} <span className="text-amber-700">({v.id})</span></div>
                               ))}
                             </div>
                           )}
@@ -3060,8 +3060,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div key={pi} className="text-[11px] text-green-800 flex items-start gap-1">
                                     <span className="text-green-500 shrink-0">✓</span>
                                     <span className="font-medium">{typeof p === 'string' ? p : p.description}</span>
-                                    {p.id && <span className="text-green-400 shrink-0 font-mono">({p.id})</span>}
-                                    {p.wcag && <span className="text-green-400 shrink-0">[{p.wcag}]</span>}
+                                    {p.id && <span className="text-green-700 shrink-0 font-mono">({p.id})</span>}
+                                    {p.wcag && <span className="text-green-700 shrink-0">[{p.wcag}]</span>}
                                   </div>
                                 ))}
                               </div>
@@ -4116,10 +4116,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {/* Expert Workbench — Advanced Remediation Command Bar (collapsible) */}
                       <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group">
-                        <summary className="cursor-pointer p-3 text-[11px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl">
-                          <span className="inline-block transition-transform group-open:rotate-90 text-slate-400">▸</span>
+                        <summary className="cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl">
+                          <span className="inline-block transition-transform group-open:rotate-90 text-slate-600">▸</span>
                           🤖 Expert Workbench
-                          {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse ml-1">Running...</span>}
+                          {isAgentRunning && <span className="text-[11px] text-amber-700 animate-pulse ml-1">Running...</span>}
                           <span className="ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                         </summary>
                         <div className="px-3 pb-3 space-y-2">
@@ -4183,7 +4183,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               ))}
                             </div>
                             <div className="flex items-center gap-3 mt-1">
-                              <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
+                              <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-700 hover:text-purple-200 underline">
                                 {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                               </button>
                               <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>
@@ -6461,7 +6461,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               <button type="button" onClick={() => setInsertBlockOpenCats(p => ({ ...p, [cat]: !p[cat] }))}
                                 aria-expanded={isOpen} aria-controls={`allo-cat-${cat}`}
                                 className="w-full flex items-center justify-between text-[10px] font-bold text-slate-600 px-1 py-0.5 hover:text-indigo-700 transition-colors uppercase tracking-wider">
-                                <span>{_ct(cat)} <span className="text-slate-400 font-normal">({catBlocks.length})</span></span>
+                                <span>{_ct(cat)} <span className="text-slate-600 font-normal">({catBlocks.length})</span></span>
                                 <span aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
                               </button>
                               {isOpen && (
@@ -6481,7 +6481,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             </div>
                           );
                         })}
-                        <div className="text-[9px] text-slate-400 italic px-1 pt-0.5" aria-hidden="true">↑↓←→ Home End to navigate · Enter to insert</div>
+                        <div className="text-[9px] text-slate-600 italic px-1 pt-0.5" aria-hidden="true">↑↓←→ Home End to navigate · Enter to insert</div>
                       </div>
                     );
                   })()}
@@ -6613,7 +6613,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               addToast('📐 Template "' + tmpl.name + '" applied — click any text to edit', 'success');
                             }} className="w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
                               <span>📐 {tmpl.name}</span>
-                              <span className="text-[11px] text-amber-400">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
+                              <span className="text-[11px] text-amber-700">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
                             </button>
                           ))}
                         </div>

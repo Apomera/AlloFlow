@@ -254,7 +254,7 @@
               })
             ),
             entry.credit && e('div', { className: 'text-xs text-slate-500' }, 'Credit: ' + entry.credit),
-            e('div', { className: 'text-[10px] text-slate-400 font-mono' }, 'License: ' + (entry.license || '(unspecified)')),
+            e('div', { className: 'text-[10px] text-slate-600 font-mono' }, 'License: ' + (entry.license || '(unspecified)')),
             e('div', { className: 'flex gap-2 mt-auto pt-2' },
               e('button', {
                 onClick: function () { handleDownload(entry); },

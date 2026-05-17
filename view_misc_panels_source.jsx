@@ -359,7 +359,7 @@ function PdfDiffViewer(props) {
               </div>
               <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
                 <span>📚 jsdiff@5.2.0</span>
-                <span className="text-slate-400">·</span>
+                <span className="text-slate-600">·</span>
                 <span>{t('diff_view.footer_help') || 'Click spans or drag-select to edit. Pairs toggle together.'}</span>
                 {/* Revert button — only rendered when there's a snapshot
                     to restore (i.e., the user has previously clicked Apply
@@ -532,7 +532,7 @@ function GroupSessionModal(props) {
                             <FileText size={16} className="text-indigo-600" />
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
                             <span className="text-xs text-slate-600 ml-2">({sessionData.resources?.length || 0} items)</span>
-                            <span className="text-[11px] text-purple-400 ml-auto italic flex items-center gap-1">
+                            <span className="text-[11px] text-purple-700 ml-auto italic flex items-center gap-1">
                                 <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag to reorder'}
                             </span>
                         </div>
@@ -632,7 +632,7 @@ function GroupSessionModal(props) {
                                     <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
+                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-600 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
                                         </div>
                                         <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
                                             {t('groups.assign_resource_label')}
@@ -1025,7 +1025,7 @@ function FluencyModePanel(props) {
                         <div className="max-w-2xl">
                              {fluencyTranscript && (
                                 <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-600 italic">
-                                    <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
+                                    <span className="font-bold uppercase text-xs text-rose-700 block mb-1">{t('fluency.hearing_label')}</span>
                                     "{fluencyTranscript}"
                                 </div>
                              )}

@@ -219,7 +219,7 @@ const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
           </div>
           <button
             onClick={onDismiss}
-            className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+            className="text-slate-600 hover:text-slate-600 text-lg leading-none"
             aria-label={t('notes_feedback.dismiss_aria') || 'Dismiss feedback'}
           >✕</button>
         </div>
@@ -447,7 +447,7 @@ const CornellNotesView = React.memo((props) => {
                 />
                 <button
                   onClick={() => handleRemoveRow(idx)}
-                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1"
+                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
                   aria-label={`Remove row ${idx + 1}`}
                   title="Remove row"
                 >✕</button>
@@ -555,10 +555,10 @@ const LabReportView = React.memo((props) => {
       <_CardSection title="Materials" hint="List everything you need to run the experiment." color="amber">
         <ul className="space-y-1">
           {materials.length === 0 ? (
-            <li className="text-xs text-slate-400 italic">No materials added yet.</li>
+            <li className="text-xs text-slate-600 italic">No materials added yet.</li>
           ) : materials.map((m, idx) => (
             <li key={m.id || idx} className="flex items-center gap-2 group">
-              <span className="text-slate-400 text-xs">•</span>
+              <span className="text-slate-600 text-xs">•</span>
               <input
                 type="text"
                 value={m.text || ''}
@@ -566,7 +566,7 @@ const LabReportView = React.memo((props) => {
                 className="flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-300"
                 aria-label={`Material ${idx + 1}`}
               />
-              <button onClick={() => removeMaterialAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs" aria-label="Remove material">✕</button>
+              <button onClick={() => removeMaterialAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs" aria-label="Remove material">✕</button>
             </li>
           ))}
         </ul>
@@ -575,7 +575,7 @@ const LabReportView = React.memo((props) => {
       <_CardSection title="Procedure" hint="Number each step. Another student should be able to follow your procedure and reproduce your experiment." color="emerald">
         <ol className="space-y-1">
           {procedure.length === 0 ? (
-            <li className="text-xs text-slate-400 italic">No steps added yet.</li>
+            <li className="text-xs text-slate-600 italic">No steps added yet.</li>
           ) : procedure.map((s, idx) => (
             <li key={s.id || idx} className="flex items-start gap-2 group">
               <span className="text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0">{idx + 1}.</span>
@@ -586,7 +586,7 @@ const LabReportView = React.memo((props) => {
                 rows={1}
                 aria-label={`Procedure step ${idx + 1}`}
               />
-              <button onClick={() => removeProcedureStepAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs mt-2" aria-label="Remove step">✕</button>
+              <button onClick={() => removeProcedureStepAt(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2" aria-label="Remove step">✕</button>
             </li>
           ))}
         </ol>
@@ -893,7 +893,7 @@ const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
             <h2 className="text-2xl font-black text-slate-800 mt-0.5">📊 {t('note_insights.title') || 'Your note-taking patterns'}</h2>
             <p className="text-xs text-slate-600 mt-1 leading-snug">{t('note_insights.subtitle') || 'Growth-focused observations across your saved entries. Not a grade — a mirror.'}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>
+          <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>
         </div>
         <div className="flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3">
           {isLoading ? (
@@ -1035,7 +1035,7 @@ const NotebookOverlay = React.memo((props) => {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100"
+            className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100"
             aria-label="Close notebook"
             title="Close (Esc)"
           >✕</button>
@@ -1114,13 +1114,13 @@ const NotebookOverlay = React.memo((props) => {
                             <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${_accentClasses(meta.accent, 'badge')}`}>
                               {meta.icon} {meta.short}
                             </span>
-                            {when ? <span className="text-[11px] text-slate-400">{when}</span> : null}
+                            {when ? <span className="text-[11px] text-slate-600">{when}</span> : null}
                           </div>
                           <div className="font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700">{title}</div>
                           {previewTruncated ? (
                             <div className="text-xs text-slate-500 mt-1 leading-snug line-clamp-2">{previewTruncated}</div>
                           ) : (
-                            <div className="text-xs text-slate-400 italic mt-1">No notes yet — open to start writing.</div>
+                            <div className="text-xs text-slate-600 italic mt-1">No notes yet — open to start writing.</div>
                           )}
                         </div>
                       </div>

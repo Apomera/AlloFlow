@@ -155,7 +155,7 @@ function InfoModal({
                     className="text-slate-600 hover:text-pink-500 font-bold transition-colors flex items-center justify-center gap-2 mx-auto group"
                   >
                     {t('about.support_kofi')}
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-400 group-hover:text-pink-500 transition-colors" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-700 group-hover:text-pink-500 transition-colors" aria-hidden="true">
                       <style>
                         {`
                         @keyframes rise {

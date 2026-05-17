@@ -406,6 +406,7 @@
             { name: 'Reason for Referral', notes: '', enabled: true },
             { name: 'Background Information', notes: '', enabled: true },
             { name: 'Assessment Results & Interpretation', notes: '', enabled: true },
+            { name: 'Dynamic Assessment Results', notes: '', enabled: false },
             { name: 'Behavioral Observations', notes: '', enabled: true },
             { name: 'Differential Analysis', notes: '', enabled: true },
             { name: 'Summary & Diagnostic Impressions', notes: '', enabled: true },
@@ -513,6 +514,14 @@
         const [regenSection, setRegenSection] = useState(null);
         const [regenInstructions, setRegenInstructions] = useState('');
         const [showRegenInput, setShowRegenInput] = useState(null);
+        // ─── Phase D — Dynamic Assessment ingestion ───
+        // When DA Studio writes window.__alloDAExport, surface a banner
+        // offering to ingest its fact chunks + pre-drafted section into
+        // this report. Detect on mount + on the 'alloDAExportReady' event
+        // dispatched from DA, so the banner appears whether RW was already
+        // open or just got opened.
+        const [daExportPayload, setDaExportPayload] = useState(null);
+        const [daIngestDismissed, setDaIngestDismissed] = useState(false);
         // Phase 3a: Missing state declarations
         const [manualStudentName, setManualStudentName] = useState('');
         const [isDemoLoaded, setIsDemoLoaded] = useState(false);
@@ -811,6 +820,68 @@ Return ONLY the adapted text, no commentary.`;
         // ── Reference Library + Style persistence ──
         useEffect(() => { try { safeSetItem(REFS_STORAGE_KEY, JSON.stringify(referenceLibrary)); } catch (e) { } }, [referenceLibrary]);
         useEffect(() => { try { safeSetItem(STYLE_STORAGE_KEY, styleProfile); } catch (e) { } }, [styleProfile]);
+
+        // ── Phase D — DA export detection ──
+        // Check for window.__alloDAExport on mount + listen for the custom
+        // event DA dispatches when it stashes a payload. If found, surface
+        // the ingest banner. Dismissal is local to this RW session.
+        useEffect(() => {
+            const check = () => {
+                if (typeof window !== 'undefined' && window.__alloDAExport) {
+                    setDaExportPayload(window.__alloDAExport);
+                    setDaIngestDismissed(false);
+                }
+            };
+            check();
+            const handler = () => check();
+            if (typeof window !== 'undefined') {
+                window.addEventListener('alloDAExportReady', handler);
+                return () => {
+                    try { window.removeEventListener('alloDAExportReady', handler); } catch (e) { /* ignore */ }
+                };
+            }
+        }, []);
+
+        // ── Phase D — Ingest action ──
+        // Pulls DA fact chunks into factChunks (auto-verified since they're
+        // structured + clinician-controlled), pre-populates the
+        // 'Dynamic Assessment Results' section text, and enables the
+        // section in the blueprint if it's currently disabled. Clears the
+        // global afterward so the same payload isn't ingested twice.
+        const ingestDaExport = () => {
+            if (!daExportPayload) return;
+            const incomingChunks = (daExportPayload.factChunks || []).map(c => ({
+                ...c,
+                verified: true,   // DA chunks are structured-data; auto-verify
+                immutable: false  // Clinician can still edit/reject
+            }));
+            setFactChunks(prev => [...prev, ...incomingChunks]);
+            const sectionName = daExportPayload.targetSectionName || 'Dynamic Assessment Results';
+            const sectionText = daExportPayload.prePopulatedSection || '';
+            if (sectionText) {
+                setReportSections(prev => ({ ...prev, [sectionName]: sectionText }));
+            }
+            // Enable the section in the blueprint if it's there but disabled
+            setBlueprint(prev => {
+                const idx = prev.findIndex(s => s.name === sectionName);
+                if (idx === -1) {
+                    return [...prev, { id: uid(), name: sectionName, notes: 'Auto-added from Dynamic Assessment export', enabled: true }];
+                }
+                if (prev[idx].enabled) return prev;
+                const next = prev.slice();
+                next[idx] = { ...next[idx], enabled: true };
+                return next;
+            });
+            // Clear the global so duplicate ingest isn't possible
+            try { delete window.__alloDAExport; } catch (e) { window.__alloDAExport = null; }
+            setDaExportPayload(null);
+            setDaIngestDismissed(false);
+            if (addToast) addToast(`✅ Ingested ${incomingChunks.length} DA fact chunks + section draft`, 'success');
+        };
+        const dismissDaExport = () => {
+            setDaIngestDismissed(true);
+            // Don't clear the global — user might want it later
+        };
 
         // ── Saved Reports helpers ──
         const saveReportToGallery = () => {
@@ -1535,6 +1606,44 @@ Return ONLY valid JSON:
 
         // ── Render ──
         return h('div', { className: 'space-y-4' },
+            // ── Phase D — DA ingestion banner ──
+            // Shown only when DA Studio has stashed a payload that hasn't
+            // been ingested or dismissed yet. The actual ingest is one
+            // click; the dismiss is local-only (doesn't clear the global).
+            daExportPayload && !daIngestDismissed ? h('div', {
+                className: 'rounded-2xl p-4 border border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50',
+                role: 'region',
+                'aria-label': 'Dynamic Assessment findings available'
+            },
+                h('div', { className: 'flex items-start gap-3' },
+                    h('div', { className: 'text-2xl flex-shrink-0' }, '🔬'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                        h('div', { className: 'text-sm font-bold text-blue-900 mb-1' },
+                            'Dynamic Assessment findings ready to ingest'),
+                        h('div', { className: 'text-xs text-blue-800 leading-relaxed' },
+                            daExportPayload.factChunks ? daExportPayload.factChunks.length + ' fact chunks' : '0 fact chunks',
+                            ' · ',
+                            daExportPayload.modifiabilityTier ? daExportPayload.modifiabilityTier.label : 'modifiability profile',
+                            daExportPayload.studentNickname ? ' · ' + daExportPayload.studentNickname : '',
+                            daExportPayload.isCustomBank ? ' · custom probe' : ' · ' + daExportPayload.domain + ' / ' + daExportPayload.difficulty),
+                        h('div', { className: 'text-[11px] text-blue-700 italic mt-1' },
+                            'Ingest will: add ' + (daExportPayload.factChunks ? daExportPayload.factChunks.length : 0) +
+                            ' fact chunks (auto-verified) + pre-draft a "Dynamic Assessment Results" section in this report. Original chunks are editable; section is editable.')
+                    ),
+                    h('div', { className: 'flex flex-col gap-2 flex-shrink-0' },
+                        h('button', {
+                            onClick: ingestDaExport,
+                            className: 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors',
+                            'aria-label': 'Ingest DA findings into this report'
+                        }, 'Ingest →'),
+                        h('button', {
+                            onClick: dismissDaExport,
+                            className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold transition-colors',
+                            'aria-label': 'Dismiss for now'
+                        }, 'Dismiss')
+                    )
+                )
+            ) : null,
             // Header
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-5 border border-violet-200' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
@@ -1763,7 +1872,7 @@ Return ONLY valid JSON:
                                 h('span', { className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
                                 h('span', { className: `px-2 py-0.5 rounded-full text-[11px] ${cBadge(s.classColor)}` }, s.classification),
                                 s.percentile !== null && h('span', { className: 'text-slate-600' }, `${s.percentile}%ile`),
-                                h('button', { 'aria-label': 'Remove score entry', className: 'ml-2 text-red-400 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
+                                h('button', { 'aria-label': 'Remove score entry', className: 'ml-2 text-red-600 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
                             )
                         )
                     )
@@ -1819,7 +1928,7 @@ Return ONLY valid JSON:
                                     h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
                                     h('span', { className: 'text-slate-600 text-[11px]' }, ref.text.substring(0, 80) + '...')
                                 ),
-                                h('button', { 'aria-label': 'Remove reference', className: 'ml-2 text-red-400 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
+                                h('button', { 'aria-label': 'Remove reference', className: 'ml-2 text-red-600 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
                             )
                         ),
                         h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
@@ -1920,7 +2029,7 @@ Return ONLY valid JSON:
                                 differentialResults[hyp] && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[11px] font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
                                 }, differentialResults[hyp].strengthScore + '/10')
                             ),
-                            hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': 'Remove hypothesis', className: 'text-red-400 hover:text-red-600 ml-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
+                            hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': 'Remove hypothesis', className: 'text-red-600 hover:text-red-600 ml-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
                         )
                     ),
                     h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\u2611\uFE0F Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')
@@ -2002,7 +2111,7 @@ Return ONLY valid JSON:
                                 ),
                                 h('input', { type: 'checkbox', 'aria-label': 'Enable section: ' + section.name, checked: section.enabled, onChange: e => { const nw = [...blueprint]; nw[idx] = { ...nw[idx], enabled: e.target.checked }; setBlueprint(nw); } }),
                                 h('span', { className: 'text-[11px] font-medium text-slate-800 flex-1' }, (idx + 1) + '. ' + section.name),
-                                h('button', { 'aria-label': 'Remove report section', className: 'text-red-400 hover:text-red-600 text-xs', onClick: () => setBlueprint(prev => prev.filter(s => s.id !== section.id)) }, '\u2715')
+                                h('button', { 'aria-label': 'Remove report section', className: 'text-red-600 hover:text-red-600 text-xs', onClick: () => setBlueprint(prev => prev.filter(s => s.id !== section.id)) }, '\u2715')
                             ),
                             h('input', {
                                 type: 'text',
@@ -2309,7 +2418,7 @@ Return ONLY valid JSON:
                             )
                         )
                     ),
-                    savedReports.length === 0 && h('p', { className: 'text-[11px] text-violet-400 text-center py-2' }, 'No saved reports yet. Use "Save Report" to keep a copy.')
+                    savedReports.length === 0 && h('p', { className: 'text-[11px] text-violet-700 text-center py-2' }, 'No saved reports yet. Use "Save Report" to keep a copy.')
                 ),
                 // Quick report preview
                 Object.keys(reportSections).length > 0 && h('details', { className: 'mt-2 bg-slate-50 rounded-lg border border-slate-400' },

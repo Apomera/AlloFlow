@@ -4380,7 +4380,7 @@
               });
               if (profileWishes.length === 0) return null;
               return e('div', { style: { background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)', borderRadius: '16px', padding: '14px 16px', marginBottom: '10px', textAlign: 'center' } },
-                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
+                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#7e22ce', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' } },
                   profileWishes.map(function (w, i) {
                     return e('span', { key: i, className: 'ss-garden-seed', style: { padding: '4px 12px', background: 'rgba(196,181,253,0.2)', border: '1px solid #7c3aed', borderRadius: '20px', fontSize: '13px', fontWeight: 600, color: '#e0e7ff' } }, '💫 ' + w.label);
@@ -7360,7 +7360,7 @@
             return e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: '#1a1a2e', borderRadius: '7px', border: '1px solid #312e81' } },
               e('span', { style: { color: '#a78bfa', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap' } }, '🌱 Model:'),
               focusOnBoard.map(function (w) {
-                return e('span', { key: w.key, style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
+                return e('span', { key: w.key, style: { color: '#7e22ce', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
               }));
           })(),
           // 💫 Wish Seed — capture the moment a student reaches for a word that doesn't exist
@@ -7386,7 +7386,7 @@
                 onClick: function () { setBoardWishOpen(true); },
                 'aria-label': 'Plant a wish seed — record a word the student wanted',
                 title: 'The student is reaching for a word that isn\'t here. Capture it.',
-                style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+                style: { background: '#1e1b4b', color: '#7e22ce', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
               }, '💫'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
@@ -7430,7 +7430,7 @@
             }, '\u2190 Del'),
             strip.length > 0 && e('button', {
               onClick: function () { setStrip([]); },
-              'aria-label': 'Clear sentence strip', style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
+              'aria-label': 'Clear sentence strip', style: { background: '#374151', color: '#475569', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
             }, '\uD83D\uDDD1')
           )
         ),
@@ -7443,7 +7443,7 @@
               key: pi,
               onClick: function () { if (matchCell) tapCell(matchCell); else tapCell({ label: pred, image: null }); },
               'aria-label': 'Predicted word: ' + pred,
-              style: { display: 'flex', alignItems: 'center', gap: '5px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', padding: '4px 10px', cursor: 'pointer', color: '#e2e8f0', fontSize: '12px', fontWeight: 600, transition: 'background 0.1s' },
+              style: { display: 'flex', alignItems: 'center', gap: '5px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', padding: '4px 10px', cursor: 'pointer', color: '#475569', fontSize: '12px', fontWeight: 600, transition: 'background 0.1s' },
               onMouseOver: function (ev) { ev.currentTarget.style.background = '#312e81'; ev.currentTarget.style.borderColor = '#4f46e5'; },
               onMouseOut: function (ev) { ev.currentTarget.style.background = '#1e293b'; ev.currentTarget.style.borderColor = '#334155'; }
             },
@@ -7503,9 +7503,9 @@
                     onTouchEnd: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; tapCell(cell); ev.preventDefault(); },
                   },
                     e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px', pointerEvents: 'none' } }),
-                    e('span', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '14px', textAlign: 'center', lineHeight: 1.3, pointerEvents: 'none' } },
+                    e('span', { style: { color: '#475569', fontWeight: 700, fontSize: '14px', textAlign: 'center', lineHeight: 1.3, pointerEvents: 'none' } },
                       cell.translatedLabel || cell.label,
-                      cell.translatedLabel && cell.originalLabel && e('span', { style: { display: 'block', fontSize: '11px', fontWeight: 400, color: '#94a3b8' } }, cell.originalLabel)
+                      cell.translatedLabel && cell.originalLabel && e('span', { style: { display: 'block', fontSize: '11px', fontWeight: 400, color: '#475569' } }, cell.originalLabel)
                     )
                   );
                 })
@@ -7515,7 +7515,7 @@
             e('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
               e('span', { style: { color: '#a78bfa', fontWeight: 800, fontSize: '13px' } }, '\uD83D\uDCCB Session Log'),
               e('div', { style: { display: 'flex', gap: '6px' } },
-                commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': 'Export communication log', style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
+                commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': 'Export communication log', style: { background: '#1e293b', color: '#475569', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
                 commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
               )
             ),
@@ -7527,7 +7527,7 @@
                     return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '8px', marginBottom: '4px', background: i === 0 ? '#1e293b' : 'transparent' } },
                       en.image && e('img', { src: en.image, style: { width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 } }),
                       e('div', null,
-                        e('div', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '13px' } }, en.label),
+                        e('div', { style: { color: '#475569', fontWeight: 700, fontSize: '13px' } }, en.label),
                         e('div', { style: { color: '#475569', fontSize: '10px' } }, t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' \u00b7 ' + (en.boardTitle || ''))
                       )
                     );
@@ -7582,9 +7582,9 @@
             onClick: function () { setScanManual(function (m) { return !m; }); }, 'aria-label': scanManual ? 'Switch to automatic scanning' : 'Switch to manual scanning',
             style: { background: scanManual ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 12px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }
           }, scanManual ? '2-Switch' : '1-Switch'),
-          e('span', { style: { color: '#94a3b8', fontSize: '12px', marginRight: 'auto' } }, scanManual ? 'Tab to advance, Space to select' : 'Space or tap to speak highlighted cell'),
+          e('span', { style: { color: '#475569', fontSize: '12px', marginRight: 'auto' } }, scanManual ? 'Tab to advance, Space to select' : 'Space or tap to speak highlighted cell'),
           scanManual && e('button', { onClick: advanceScan, 'aria-label': 'Advance to next cell', style: { background: '#1e40af', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '→ Next'),
-          e('label', { style: { color: '#94a3b8', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' } },
+          e('label', { style: { color: '#475569', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' } },
             'Speed:',
             e('select', {
               value: scanSpeed,

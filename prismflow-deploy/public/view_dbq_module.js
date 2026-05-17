@@ -574,7 +574,7 @@
         [activeDoc.id]: u
       });
     },
-    className: "text-red-400 hover:text-red-600 text-xs shrink-0",
+    className: "text-red-600 hover:text-red-600 text-xs shrink-0",
     "aria-label": "Remove annotation"
   }, "\u2715")))), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4"
@@ -632,7 +632,7 @@
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-purple-700 font-medium mb-1"
   }, qi + 1, ". ", q), activeDoc.sentenceStarters && /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-purple-400 italic mb-1"
+    className: "text-[11px] text-purple-700 italic mb-1"
   }, "Try starting with: \"", activeDoc.sentenceStarters[qi % activeDoc.sentenceStarters.length], "\""), /*#__PURE__*/React.createElement("textarea", {
     value: r[`doc-${activeDoc.id}-sourcing-${qi}`] || '',
     onChange: e => setDbq(`doc-${activeDoc.id}-sourcing-${qi}`, e.target.value),

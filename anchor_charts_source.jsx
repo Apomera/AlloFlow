@@ -216,9 +216,9 @@ const AnchorChartSection = React.memo((props) => {
           {iconUrl ? (
             <img src={iconUrl} alt={iconPrompt || label} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : isRegeneratingIcon ? (
-            <span className="text-[10px] text-slate-400 animate-pulse">Drawing…</span>
+            <span className="text-[10px] text-slate-600 animate-pulse">Drawing…</span>
           ) : (
-            <span className="text-[10px] text-slate-400 italic text-center leading-tight">{iconPrompt || 'icon'}</span>
+            <span className="text-[10px] text-slate-600 italic text-center leading-tight">{iconPrompt || 'icon'}</span>
           )}
           {isEditing && onRegenIcon ? (
             <button
@@ -260,7 +260,7 @@ const AnchorChartSection = React.memo((props) => {
           )}
           <ul className="ac-bullets mt-2 space-y-1">
             {bullets.length === 0 && !isEditing ? (
-              <li className="text-xs text-slate-400 italic">(no items yet)</li>
+              <li className="text-xs text-slate-600 italic">(no items yet)</li>
             ) : null}
             {bullets.map((b, idx) => (
               <li key={idx} className="flex items-start gap-2 group">
@@ -277,7 +277,7 @@ const AnchorChartSection = React.memo((props) => {
                     />
                     <button
                       onClick={() => removeBullet(idx)}
-                      className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1"
+                      className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
                       aria-label="Remove bullet"
                     >✕</button>
                   </>
@@ -577,7 +577,7 @@ const AnchorChartView = React.memo((props) => {
                 {isEditing ? (
                   <button
                     onClick={() => handleRemoveSection(idx)}
-                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200"
+                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200"
                     aria-label={`Remove section ${idx + 1}`}
                   >✕ remove</button>
                 ) : null}

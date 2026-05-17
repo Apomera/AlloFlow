@@ -751,10 +751,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     }
   };
   if (!userTeam) {
-    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("escape_room.waiting_host"))));
+    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("escape_room.waiting_host"))));
   }
   if (escapeState.isGameOver) {
-    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-pulse" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-5xl font-black mb-4 text-red-400" }, t("escape_room.game_over")), /* @__PURE__ */ React.createElement("p", { className: "text-2xl text-slate-600 mb-6" }, t("escape_room.life_lost")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-lg" }, /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.puzzles_remaining"), ": ", puzzles.length - solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.wrong_attempts"), ": ", escapeState.wrongAttempts || 0))));
+    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-pulse" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-5xl font-black mb-4 text-red-600" }, t("escape_room.game_over")), /* @__PURE__ */ React.createElement("p", { className: "text-2xl text-slate-600 mb-6" }, t("escape_room.life_lost")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-lg" }, /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.puzzles_remaining"), ": ", puzzles.length - solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.wrong_attempts"), ": ", escapeState.wrongAttempts || 0))));
   }
   if (teamEscaped) {
     const isFirstToEscape = allTeams.filter(
@@ -763,14 +763,14 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: showConfetti }), /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-bounce" }, isFirstToEscape ? "\u{1F3C6}" : "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-5xl font-black mb-4" }, isCoopMode ? t("escape_room.class_escaped") : isFirstToEscape ? t("escape_room.first_escape") : t("escape_room.escaped")), /* @__PURE__ */ React.createElement("p", { className: "text-2xl text-green-200" }, isCoopMode ? t("escape_room.everyone_escaped") : t("escape_room.team_escaped", { team: userTeam })), !isCoopMode && /* @__PURE__ */ React.createElement("div", { className: `mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full ${myTeamColors.bg} text-white font-bold text-xl` }, t("escape_room.your_team"), ": ", userTeam)));
   }
   const currentPuzzle = selectedPuzzle ? puzzles.find((p) => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-400", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-white font-bold text-lg" }, escapeState.room?.theme || t("escape_room.title"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`, "data-help-key": "escape_room_team" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })), /* @__PURE__ */ React.createElement("div", { className: "text-white font-mono", "data-help-key": "escape_room_progress" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-400" }, solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "/", puzzles.length)), escapeState.maxLives < 99 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.lives"), "data-help-key": "escape_room_lives" }, Array.from({ length: escapeState.maxLives }).map((_, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `text-sm ${i < (escapeState.lives || 0) ? "text-red-500" : "text-slate-600"}` }, "\u2764\uFE0F"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.hints_used") }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "text-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "text-white text-xs font-bold" }, escapeState.hintsRemaining || 0)), (escapeState.streak || 0) >= 3 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse", "data-help-key": "escape_room_streak" }, "\u{1F525} x", escapeState.streak), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? "bg-red-500 text-white animate-pulse" : "bg-slate-700 text-white"}`, "data-help-key": "escape_room_timer" }, /* @__PURE__ */ React.createElement(Clock, { size: 14, className: "inline mr-1" }), formatTime(timeRemaining))))), /* @__PURE__ */ React.createElement("div", { className: "fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40", "data-help-key": "escape_room_leaderboard" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-3" }, t("escape_room.live_progress")), allTeams.map((team) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-700", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-white font-bold text-lg" }, escapeState.room?.theme || t("escape_room.title"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`, "data-help-key": "escape_room_team" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })), /* @__PURE__ */ React.createElement("div", { className: "text-white font-mono", "data-help-key": "escape_room_progress" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-700" }, solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "/", puzzles.length)), escapeState.maxLives < 99 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.lives"), "data-help-key": "escape_room_lives" }, Array.from({ length: escapeState.maxLives }).map((_, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `text-sm ${i < (escapeState.lives || 0) ? "text-red-500" : "text-slate-600"}` }, "\u2764\uFE0F"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.hints_used") }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "text-yellow-700" }), /* @__PURE__ */ React.createElement("span", { className: "text-white text-xs font-bold" }, escapeState.hintsRemaining || 0)), (escapeState.streak || 0) >= 3 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-700 font-bold text-xs animate-pulse", "data-help-key": "escape_room_streak" }, "\u{1F525} x", escapeState.streak), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? "bg-red-500 text-white animate-pulse" : "bg-slate-700 text-white"}`, "data-help-key": "escape_room_timer" }, /* @__PURE__ */ React.createElement(Clock, { size: 14, className: "inline mr-1" }), formatTime(timeRemaining))))), /* @__PURE__ */ React.createElement("div", { className: "fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40", "data-help-key": "escape_room_leaderboard" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-3" }, t("escape_room.live_progress")), allTeams.map((team) => {
     const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
     const solved = (progress.solvedPuzzles || []).length;
     const percent = puzzles.length > 0 ? Math.round(solved / puzzles.length * 100) : 0;
     const colors = teamColors[team] || teamColors.Blue;
     const escaped = progress.isEscaped;
-    return /* @__PURE__ */ React.createElement("div", { key: team, className: `mb-2 ${team === userTeam ? "ring-2 ring-white/50 rounded-lg p-1" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, solved, "/", puzzles.length)), /* @__PURE__ */ React.createElement("div", { className: "w-32 h-2 bg-slate-700 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all duration-300`, style: { width: `${percent}%` } })), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-400" }, "\u{1F3C6} ", t("escape_room.escaped")));
-  })), /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6 mt-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-center text-purple-300 mb-6 italic" }, escapeState.room?.description), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" }, objects.map((obj, idx) => {
+    return /* @__PURE__ */ React.createElement("div", { key: team, className: `mb-2 ${team === userTeam ? "ring-2 ring-white/50 rounded-lg p-1" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, solved, "/", puzzles.length)), /* @__PURE__ */ React.createElement("div", { className: "w-32 h-2 bg-slate-700 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all duration-300`, style: { width: `${percent}%` } })), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-700" }, "\u{1F3C6} ", t("escape_room.escaped")));
+  })), /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6 mt-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-center text-purple-700 mb-6 italic" }, escapeState.room?.description), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" }, objects.map((obj, idx) => {
     const puzzle = puzzles.find((p) => p.linkedObjectId === obj.id) || puzzles[idx];
     const isSolved = puzzle && solvedPuzzlesSet.has(puzzle.id);
     return /* @__PURE__ */ React.createElement(
@@ -787,9 +787,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, obj.emoji),
       /* @__PURE__ */ React.createElement("span", { className: "text-white text-sm font-bold text-center" }, obj.name),
-      isSolved && /* @__PURE__ */ React.createElement(CheckCircle, { className: "text-green-400", size: 20 })
+      isSolved && /* @__PURE__ */ React.createElement(CheckCircle, { className: "text-green-700", size: 20 })
     );
-  }))), currentPuzzle && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold" }, currentPuzzle.type || "mcq")), /* @__PURE__ */ React.createElement("button", { onClick: () => setSelectedPuzzle(null), "data-help-key": "escape_room_close_btn", className: "text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-white font-bold mb-4" }, currentPuzzle.question), currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, escapeState.revealedHints?.[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
+  }))), currentPuzzle && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold" }, currentPuzzle.type || "mcq")), /* @__PURE__ */ React.createElement("button", { onClick: () => setSelectedPuzzle(null), "data-help-key": "escape_room_close_btn", className: "text-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-white font-bold mb-4" }, currentPuzzle.question), currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, escapeState.revealedHints?.[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-700" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: async () => {
@@ -826,9 +826,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       "data-help-key": "escape_room_mcq_option",
       className: "w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "inline-block w-8 font-bold text-purple-400" }, String.fromCharCode(65 + idx), "."),
+    /* @__PURE__ */ React.createElement("span", { className: "inline-block w-8 font-bold text-purple-700" }, String.fromCharCode(65 + idx), "."),
     opt
-  ))), currentPuzzle.type === "cipher" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.encodedText && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center" }, currentPuzzle.encodedText), /* @__PURE__ */ React.createElement(
+  ))), currentPuzzle.type === "cipher" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.encodedText && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg font-mono text-purple-700 text-center" }, currentPuzzle.encodedText), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.escape_room_enter_answer"),
@@ -847,7 +847,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
     },
     t("escape_room.submit_answer")
-  )), currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace("___", userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
+  )), currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace("___", userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: idx,
@@ -894,7 +894,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
     },
     t("escape_room.check_word")
-  )), currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${item}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
+  )), currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-700 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${item}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -944,7 +944,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
     },
     t("escape_room.check_sequence")
-  )), currentPuzzle.type === "matching" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_matching_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.matching_instructions")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4", role: "group", "aria-label": t("escape_room.matching_columns") || "Matching columns" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.left_column") || "Left column options" }, (currentPuzzle.leftColumn || currentPuzzle.pairs?.map((p) => p.left) || []).map((item, idx) => {
+  )), currentPuzzle.type === "matching" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_matching_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-700 italic mb-2" }, t("escape_room.matching_instructions")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4", role: "group", "aria-label": t("escape_room.matching_columns") || "Matching columns" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.left_column") || "Left column options" }, (currentPuzzle.leftColumn || currentPuzzle.pairs?.map((p) => p.left) || []).map((item, idx) => {
     const isMatched = matchingPairs.some((p) => p.left === item);
     const isSelected = matchingSelected?.side === "left" && matchingSelected?.item === item;
     return /* @__PURE__ */ React.createElement(
@@ -988,14 +988,14 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       },
       item
     );
-  }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-green-400" }, "\u2713 ", pair.left, " \u2194 ", pair.right)))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
+  }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-green-700" }, "\u2713 ", pair.left, " \u2194 ", pair.right)))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => handleSubmitAnswer(currentPuzzle.id, matchingPairs, "matching"),
       className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
     },
     t("escape_room.submit_answer")
-  )), currentPuzzle.hint && /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-purple-400 text-sm italic" }, "\u{1F4A1} ", currentPuzzle.hint))), isPaused && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "text-8xl mb-6" }, "\u23F8\uFE0F"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black mb-3" }, t("escape_room.game_paused")), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-slate-400" }, t("escape_room.waiting_resume")))), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
+  )), currentPuzzle.hint && /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-purple-700 text-sm italic" }, "\u{1F4A1} ", currentPuzzle.hint))), isPaused && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "text-8xl mb-6" }, "\u23F8\uFE0F"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black mb-3" }, t("escape_room.game_paused")), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-slate-600" }, t("escape_room.waiting_resume")))), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
 });
 const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId: appId2, t, addToast: addToast2 }) => {
   const escapeState = sessionData?.escapeRoomState;
@@ -1413,7 +1413,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const handleDeleteGroup = onDeleteGroup;
   const availableResources = generatedContent?.data.resources || [];
   const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g2]) => g2 !== null), [groups]);
-  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in slide-in-from-top-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "text-teal-400" }), " ", t("quiz.live_control_center")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in slide-in-from-top-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "text-teal-700" }), " ", t("quiz.live_control_center")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1474,7 +1474,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     },
     "+ ",
     t("groups.add_button")
-  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 max-h-40 overflow-y-auto custom-scrollbar" }, activeGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-2 rounded border border-indigo-100 shadow-sm flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-[11px] text-red-400 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded" }, t("groups.remove_button")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] uppercase font-bold text-slate-600" }, t("groups.resource_label")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 max-h-40 overflow-y-auto custom-scrollbar" }, activeGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-2 rounded border border-indigo-100 shadow-sm flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded" }, t("groups.remove_button")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] uppercase font-bold text-slate-600" }, t("groups.resource_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1825,8 +1825,871 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
   ), logs.map((l, i) => {
     const x = padding + (new Date(l.timestamp).getTime() - minTime) / timeSpan * (width - padding * 2);
     const y = height - padding - l.xp / maxXP * (height - padding * 2);
-    return /* @__PURE__ */ React.createElement("g", { key: i, className: "group cursor-pointer" }, /* @__PURE__ */ React.createElement("circle", { cx: x, cy: y, r: "5", className: "fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" }), /* @__PURE__ */ React.createElement("foreignObject", { x: Math.min(width - 120, Math.max(0, x - 60)), y: y - 50, width: "120", height: "50", className: "opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, new Date(l.timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("div", { className: "text-yellow-300 font-mono" }, l.xp, " XP"))));
+    return /* @__PURE__ */ React.createElement("g", { key: i, className: "group cursor-pointer" }, /* @__PURE__ */ React.createElement("circle", { cx: x, cy: y, r: "5", className: "fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" }), /* @__PURE__ */ React.createElement("foreignObject", { x: Math.min(width - 120, Math.max(0, x - 60)), y: y - 50, width: "120", height: "50", className: "opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, new Date(l.timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("div", { className: "text-yellow-700 font-mono" }, l.xp, " XP"))));
   }))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 font-medium mt-2 px-2" }, /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_start"), ": ", new Date(logs[0].timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_current"), ": ", new Date(logs[logs.length - 1].timestamp).toLocaleDateString())));
+});
+const _BUILTIN_METRIC_REGISTRY = [
+  { id: "quiz", label: "Quizzes", icon: "\u{1F4DD}", color: "indigo", count: (s2) => (s2.history || []).filter((h) => h && h.type === "quiz").length },
+  { id: "adventure", label: "Adventures", icon: "\u{1F5FA}\uFE0F", color: "purple", count: (s2) => (s2.history || []).filter((h) => h && h.type === "adventure").length },
+  { id: "glossary", label: "Glossaries", icon: "\u{1F4D6}", color: "sky", count: (s2) => (s2.history || []).filter((h) => h && h.type === "glossary").length },
+  { id: "simplified", label: "Leveled Texts", icon: "\u{1F4C4}", color: "blue", count: (s2) => (s2.history || []).filter((h) => h && h.type === "simplified").length },
+  { id: "outline", label: "Visual Organizers", icon: "\u{1F4CA}", color: "cyan", count: (s2) => (s2.history || []).filter((h) => h && h.type === "outline").length },
+  {
+    id: "concept-sort",
+    label: "Concept Sorts",
+    icon: "\u{1F0CF}",
+    color: "rose",
+    count: (s2) => (s2.history || []).filter((h) => h && h.type === "concept-sort").length,
+    // Class-wide concept-sort misconception detection: aggregate per-item
+    // misplacement patterns across all student attempts (data captured by
+    // ConceptSortGame's conceptSortAttempt event into gameCompletions).
+    misconceptions: (dashboardData) => {
+      const csKey = (p) => `${(p.itemText || "").toLowerCase().trim()}|${(p.placedCategoryLabel || "").toLowerCase().trim()}|${(p.correctCategoryLabel || "").toLowerCase().trim()}`;
+      const csAgg = /* @__PURE__ */ new Map();
+      let csTotalAttempts = 0;
+      (dashboardData || []).forEach((s2) => {
+        const gc = s2.gameCompletions || {};
+        const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+        attempts.forEach((att) => {
+          csTotalAttempts++;
+          const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+          incPlacements.forEach((p) => {
+            if (!p.itemText) return;
+            const key = csKey(p);
+            if (!csAgg.has(key)) {
+              csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+            }
+            csAgg.get(key).count++;
+          });
+        });
+      });
+      return Array.from(csAgg.values()).filter((p) => p.count >= 3 && csTotalAttempts > 0 && p.count / csTotalAttempts >= 0.2).sort((a, b) => b.count - a.count).map((p) => ({ category: "conceptSort", ...p, totalAttempts: csTotalAttempts, missPct: Math.round(p.count / csTotalAttempts * 100) }));
+    }
+  },
+  { id: "timeline", label: "Timelines", icon: "\u{1F552}", color: "amber", count: (s2) => (s2.history || []).filter((h) => h && h.type === "timeline").length },
+  {
+    id: "sentence-frames",
+    label: "Sentence Frames",
+    icon: "\u270D\uFE0F",
+    color: "teal",
+    count: (s2) => (s2.history || []).filter((h) => h && h.type === "sentence-frames").length,
+    // Class-wide sentence-frame response-rate detection: flag scaffolds where
+    // students collectively left ≥30% of frames blank (signal of difficulty
+    // with the scaffold OR underlying concept).
+    misconceptions: (dashboardData) => {
+      const sfMap = /* @__PURE__ */ new Map();
+      const sfTitles = /* @__PURE__ */ new Map();
+      const sfFrameCounts = /* @__PURE__ */ new Map();
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const sfItems = hist.filter((h) => h && h.type === "sentence-frames");
+        sfItems.forEach((item) => {
+          sfTitles.set(item.id, item.title || "Sentence Frames");
+          const studentResps = s2.responses && s2.responses[item.id] || {};
+          const items = item.data && Array.isArray(item.data.items) ? item.data.items : [];
+          items.forEach((_, idx) => {
+            const responseVal = studentResps[idx];
+            const filled = responseVal !== void 0 && responseVal !== null && String(responseVal).trim().length > 0;
+            sfMap.set(`${s2.id}:${item.id}:${idx}`, filled);
+            sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+          });
+        });
+      });
+      const results = [];
+      for (const [genId, frameCount] of sfFrameCounts.entries()) {
+        if (frameCount === 0) continue;
+        let totalStudentFrames = 0, filledFrames = 0;
+        const studentsAttempted = /* @__PURE__ */ new Set();
+        for (const [key, filled] of sfMap.entries()) {
+          const [studentId, gid] = key.split(":");
+          if (gid !== genId) continue;
+          totalStudentFrames++;
+          if (filled) {
+            filledFrames++;
+            studentsAttempted.add(studentId);
+          }
+        }
+        if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+        const missingPct = Math.round((totalStudentFrames - filledFrames) / totalStudentFrames * 100);
+        if (missingPct >= 30) {
+          results.push({ category: "sentenceFrames", generationTitle: sfTitles.get(genId) || "Sentence Frames", frameCount, studentsAttempted: studentsAttempted.size, missingPct });
+        }
+      }
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    }
+  },
+  {
+    id: "note-taking",
+    label: "Notebooks",
+    icon: "\u{1F4D3}",
+    color: "violet",
+    count: (s2) => (s2.history || []).filter((h) => h && h.type === "note-taking").length,
+    // Per-template field-completion misconceptions: ≥40% of entries missing
+    // a key field (with ≥2 affected) surfaces as an instructional opportunity.
+    misconceptions: (dashboardData) => {
+      const ntStats = {
+        "cornell-notes": { fields: ["summary", "cuesFilled", "notesFilled"], counts: {}, total: 0 },
+        "lab-report": { fields: ["hypothesis", "analysis", "conclusion", "procedureFilled"], counts: {}, total: 0 },
+        "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 }
+      };
+      Object.keys(ntStats).forEach((tt) => ntStats[tt].fields.forEach((f) => ntStats[tt].counts[f] = 0));
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const notes = hist.filter((h) => h && h.type === "note-taking");
+        notes.forEach((e) => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          if (!ntStats[tt]) return;
+          ntStats[tt].total++;
+          if (tt === "cornell-notes") {
+            if (!(d.summary || "").trim()) ntStats[tt].counts.summary++;
+            const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+            if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+            const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter((n) => n && (n.text || "").trim()).length;
+            if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+          } else if (tt === "lab-report") {
+            if (!(d.hypothesis || "").trim()) ntStats[tt].counts.hypothesis++;
+            if (!(d.analysis || "").trim()) ntStats[tt].counts.analysis++;
+            if (!(d.conclusion || "").trim()) ntStats[tt].counts.conclusion++;
+            const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter((p) => p && (p.text || "").trim()).length;
+            if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+          } else if (tt === "reading-response") {
+            if (!(d.favoriteLine || "").trim()) ntStats[tt].counts.favoriteLine++;
+            if (!(d.thinkings || "").trim()) ntStats[tt].counts.thinkings++;
+            if (!(d.connection && d.connection.text || "").trim()) ntStats[tt].counts.connection++;
+            if (!(d.question || "").trim()) ntStats[tt].counts.question++;
+          }
+        });
+      });
+      const fieldLabels = {
+        "cornell-notes": {
+          summary: "Summary box (Pauk: where retention consolidation happens)",
+          cuesFilled: "Cue column (the metacognitive lever \u2014 drives retrieval practice)",
+          notesFilled: "Notes column (the lesson content itself)"
+        },
+        "lab-report": {
+          hypothesis: "Hypothesis (testable prediction with reasoning)",
+          analysis: "Analysis / CER (claim-evidence-reasoning \u2014 the science thinking)",
+          conclusion: "Conclusion (what was learned + sources of error)",
+          procedureFilled: "Procedure (reproducibility \u2014 could another student follow it?)"
+        },
+        "reading-response": {
+          favoriteLine: "Favorite line (close-reading anchor \u2014 direct quote from text)",
+          thinkings: "What this made me think about (substantive reflection)",
+          connection: "Connection (text-to-self / text / world \u2014 Keene & Zimmermann)",
+          question: "Open question (genuine inquiry \u2014 metacognitive engagement)"
+        }
+      };
+      const templateNames = { "cornell-notes": "Cornell Notes", "lab-report": "Lab Report", "reading-response": "Reading Response" };
+      const results = [];
+      Object.keys(ntStats).forEach((tt) => {
+        const stats = ntStats[tt];
+        if (stats.total === 0) return;
+        stats.fields.forEach((field) => {
+          const missing = stats.counts[field];
+          const pct = Math.round(missing / stats.total * 100);
+          if (pct >= 40 && missing >= 2) {
+            results.push({ category: "noteTaking", template: templateNames[tt], field, fieldLabel: fieldLabels[tt][field], missingCount: missing, totalCount: stats.total, missingPct: pct });
+          }
+        });
+      });
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    },
+    // Note-taking quality signals: 6 deterministic class-wide signals against
+    // research thresholds (Pauk, Kiewra, McNeill & Krajcik, Keene & Zimmermann,
+    // Hattie). Each returns a tone (green/amber/red) for at-a-glance scanning.
+    qualitySignals: (dashboardData) => {
+      const wc = (s2) => {
+        const t = String(s2 || "").trim();
+        return t ? t.split(/\s+/).length : 0;
+      };
+      let cornellCount = 0, cornellWithSummary = 0;
+      let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+      let cerWordsTotal = 0, cerEntriesCounted = 0;
+      let rrCount = 0, rrWithEvidence = 0;
+      let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+      let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const notes = hist.filter((h) => h && h.type === "note-taking");
+        if (notes.length === 0) return;
+        studentsWithNotebook++;
+        let studentFeedbackCount = 0;
+        const connTypesSeen = /* @__PURE__ */ new Set();
+        let studentHasRR = false;
+        notes.forEach((e) => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          studentFeedbackCount += d.feedbackCount || 0;
+          if (tt === "cornell-notes") {
+            cornellCount++;
+            if (wc(d.summary) >= 20) cornellWithSummary++;
+            const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+            if (cueCount > 0) {
+              cornellCuesTotal += cueCount;
+              cornellEntriesForCues++;
+            }
+          } else if (tt === "lab-report") {
+            const cerWords = wc(d.analysis);
+            if (cerWords > 0) {
+              cerWordsTotal += cerWords;
+              cerEntriesCounted++;
+            }
+          } else if (tt === "reading-response") {
+            rrCount++;
+            studentHasRR = true;
+            if ((d.favoriteLine || "").trim()) rrWithEvidence++;
+            if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          }
+        });
+        if (studentHasRR) {
+          studentsWithRR++;
+          if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++;
+        }
+        if (studentFeedbackCount > 0) studentsWithFeedback++;
+      });
+      const signals = [];
+      const _tone = (v, h, p) => v >= h ? "green" : v >= p ? "amber" : "red";
+      if (cornellCount > 0) {
+        const v = Math.round(cornellWithSummary / cornellCount * 100);
+        signals.push({ key: "summaryFillRate", label: "Cornell summary rate", value: v, suffix: "%", denom: `${cornellWithSummary}/${cornellCount}`, hint: "% of Cornell entries with \u226520-word summary (research threshold; Pauk/Kiewra)", tone: _tone(v, 70, 40) });
+      }
+      if (cornellEntriesForCues > 0) {
+        const v = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+        signals.push({ key: "avgCues", label: "Cornell cue density", value: v, denom: `avg / ${cornellEntriesForCues} entries`, hint: "Avg cues per Cornell entry. \u22655 is healthy retrieval-practice density", tone: _tone(parseFloat(v), 5, 3) });
+      }
+      if (cerEntriesCounted > 0) {
+        const v = Math.round(cerWordsTotal / cerEntriesCounted);
+        signals.push({ key: "avgCerWords", label: "Lab CER length", value: v, suffix: " wd", denom: `avg / ${cerEntriesCounted} reports`, hint: "Avg word count of CER analysis. \u226530 words is where reasoning lives (McNeill & Krajcik)", tone: _tone(v, 30, 15) });
+      }
+      if (rrCount > 0) {
+        const v = Math.round(rrWithEvidence / rrCount * 100);
+        signals.push({ key: "rrEvidenceRate", label: "Reading evidence rate", value: v, suffix: "%", denom: `${rrWithEvidence}/${rrCount}`, hint: "% of Reading Responses with a favorite line filled (close-reading anchor)", tone: _tone(v, 70, 40) });
+      }
+      if (studentsWithRR > 0) {
+        const v = Math.round(studentsWith2PlusConnTypes / studentsWithRR * 100);
+        signals.push({ key: "connectionVariety", label: "Connection variety", value: v, suffix: "%", denom: `${studentsWith2PlusConnTypes}/${studentsWithRR} students`, hint: "% of students using \u22652 of 3 connection types (text-to-self/text/world)", tone: _tone(v, 50, 25) });
+      }
+      if (studentsWithNotebook > 0) {
+        const v = Math.round(studentsWithFeedback / studentsWithNotebook * 100);
+        signals.push({ key: "selfAssessment", label: "Self-assessment use", value: v, suffix: "%", denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: "% of students who have requested AI feedback \u22651\xD7 (metacognitive engagement proxy)", tone: _tone(v, 50, 25) });
+      }
+      return signals;
+    }
+  },
+  { id: "anchor-chart", label: "Anchor Charts", icon: "\u{1F4CB}", color: "orange", count: (s2) => (s2.history || []).filter((h) => h && h.type === "anchor-chart").length },
+  { id: "dbq", label: "DBQs", icon: "\u2696\uFE0F", color: "rose", count: (s2) => (s2.history || []).filter((h) => h && h.type === "dbq").length },
+  { id: "persona", label: "Personas", icon: "\u{1F3AD}", color: "fuchsia", count: (s2) => (s2.history || []).filter((h) => h && h.type === "persona").length },
+  { id: "math", label: "STEM Lab", icon: "\u{1F9EA}", color: "emerald", count: (s2) => (s2.history || []).filter((h) => h && h.type === "math").length },
+  { id: "faq", label: "FAQs", icon: "\u2753", color: "slate", count: (s2) => (s2.history || []).filter((h) => h && h.type === "faq").length },
+  { id: "image", label: "Generated Images", icon: "\u{1F5BC}\uFE0F", color: "pink", count: (s2) => (s2.history || []).filter((h) => h && h.type === "image").length },
+  { id: "brainstorm", label: "Brainstorms", icon: "\u{1F4A1}", color: "amber", count: (s2) => (s2.history || []).filter((h) => h && h.type === "brainstorm").length },
+  { id: "fluency-record", label: "Fluency Records", icon: "\u{1F399}\uFE0F", color: "green", count: (s2) => (s2.history || []).filter((h) => h && h.type === "fluency-record").length }
+];
+if (typeof window !== "undefined") {
+  window.AlloModules = window.AlloModules || {};
+  const preExisting = Array.isArray(window.AlloModules.TeacherMetricRegistry) ? window.AlloModules.TeacherMetricRegistry : [];
+  const builtinIds = new Set(_BUILTIN_METRIC_REGISTRY.map((e) => e.id));
+  const externalEntries = preExisting.filter((e) => e && e.id && !builtinIds.has(e.id));
+  window.AlloModules.TeacherMetricRegistry = [..._BUILTIN_METRIC_REGISTRY, ...externalEntries];
+}
+function getTeacherMetricRegistry() {
+  if (typeof window !== "undefined" && Array.isArray(window.AlloModules && window.AlloModules.TeacherMetricRegistry)) {
+    return window.AlloModules.TeacherMetricRegistry;
+  }
+  return _BUILTIN_METRIC_REGISTRY;
+}
+const TEACHER_METRIC_REGISTRY = _BUILTIN_METRIC_REGISTRY;
+const _metricTileColor = (color) => ({
+  indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
+  purple: "bg-purple-50 border-purple-200 text-purple-700",
+  sky: "bg-sky-50 border-sky-200 text-sky-700",
+  blue: "bg-blue-50 border-blue-200 text-blue-700",
+  cyan: "bg-cyan-50 border-cyan-200 text-cyan-700",
+  rose: "bg-rose-50 border-rose-200 text-rose-700",
+  amber: "bg-amber-50 border-amber-200 text-amber-700",
+  teal: "bg-teal-50 border-teal-200 text-teal-700",
+  violet: "bg-violet-50 border-violet-200 text-violet-700",
+  orange: "bg-orange-50 border-orange-200 text-orange-700",
+  fuchsia: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700",
+  emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
+  slate: "bg-slate-50 border-slate-200 text-slate-700",
+  pink: "bg-pink-50 border-pink-200 text-pink-700",
+  green: "bg-green-50 border-green-200 text-green-700"
+})[color] || "bg-slate-50 border-slate-200 text-slate-700";
+const AllToolActivityPanel = React.memo(({ student, t }) => {
+  if (!student) return null;
+  const active = getTeacherMetricRegistry().map((entry) => ({ ...entry, n: entry.count(student) })).filter((e) => e.n > 0).sort((a, b) => b.n - a.n);
+  if (active.length === 0) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6", "data-help-key": "dashboard_all_tool_activity" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2" }, "\u{1F9F0} ", t("dashboard.all_tool_activity") || "All Tool Activity", /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-normal italic text-slate-500 normal-case" }, "(", active.length, " tool", active.length === 1 ? "" : "s", " used)")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" }, active.map((e) => /* @__PURE__ */ React.createElement("div", { key: e.id, className: `${_metricTileColor(e.color)} border rounded-lg p-3 text-center` }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black" }, e.n), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase mt-1 leading-tight" }, e.icon, " ", e.label)))));
+});
+function _computeAllQualitySignals(dashboardData) {
+  const out = [];
+  getTeacherMetricRegistry().forEach((entry) => {
+    if (typeof entry.qualitySignals !== "function") return;
+    try {
+      const signals = entry.qualitySignals(dashboardData) || [];
+      signals.forEach((s2) => out.push({ ...s2, _toolId: entry.id, _toolLabel: entry.label }));
+    } catch (e) {
+      console.warn("[qualitySignals] tool", entry.id, "failed", e);
+    }
+  });
+  return out;
+}
+function _computeNotebookQualitySignals(dashboardData) {
+  const flat = _computeAllQualitySignals(dashboardData);
+  const out = {
+    summaryFillRate: { value: null, count: 0, total: 0 },
+    avgCues: { value: null, total: 0, n: 0 },
+    avgCerWords: { value: null, total: 0, n: 0 },
+    rrEvidenceRate: { value: null, count: 0, total: 0 },
+    connectionVariety: { value: null, count: 0, total: 0 },
+    selfAssessment: { value: null, count: 0, total: 0 }
+  };
+  flat.forEach((s2) => {
+    if (out[s2.key]) out[s2.key].value = s2.value;
+  });
+  return out;
+}
+function _wordCount(str) {
+  if (!str) return 0;
+  const trimmed = String(str).trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+function _DEAD_LEGACY_DO_NOT_CALL(dashboardData) {
+  const out = {};
+  let cornellCount = 0, cornellWithSummary = 0;
+  let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+  let cerWordsTotal = 0, cerEntriesCounted = 0;
+  let rrCount = 0, rrWithEvidence = 0;
+  let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+  let studentsWithNotebook = 0, studentsWithFeedback = 0;
+  (dashboardData || []).forEach((s2) => {
+    const hist = s2.history || [];
+    const notes = hist.filter((h) => h && h.type === "note-taking");
+    if (notes.length === 0) return;
+    studentsWithNotebook++;
+    let studentFeedbackCount = 0;
+    const connTypesSeen = /* @__PURE__ */ new Set();
+    let studentHasRR = false;
+    notes.forEach((e) => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      studentFeedbackCount += d.feedbackCount || 0;
+      if (tt === "cornell-notes") {
+        cornellCount++;
+        if (_wordCount(d.summary) >= 20) cornellWithSummary++;
+        const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+        if (cueCount > 0) {
+          cornellCuesTotal += cueCount;
+          cornellEntriesForCues++;
+        }
+      } else if (tt === "lab-report") {
+        const cerWords = _wordCount(d.analysis);
+        if (cerWords > 0) {
+          cerWordsTotal += cerWords;
+          cerEntriesCounted++;
+        }
+      } else if (tt === "reading-response") {
+        rrCount++;
+        studentHasRR = true;
+        if ((d.favoriteLine || "").trim()) rrWithEvidence++;
+        const connType = d.connection && d.connection.type;
+        if (connType) connTypesSeen.add(connType);
+      }
+    });
+    if (studentHasRR) {
+      studentsWithRR++;
+      if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++;
+    }
+    if (studentFeedbackCount > 0) studentsWithFeedback++;
+  });
+  if (cornellCount > 0) {
+    out.summaryFillRate.count = cornellWithSummary;
+    out.summaryFillRate.total = cornellCount;
+    out.summaryFillRate.value = Math.round(cornellWithSummary / cornellCount * 100);
+  }
+  if (cornellEntriesForCues > 0) {
+    out.avgCues.total = cornellCuesTotal;
+    out.avgCues.n = cornellEntriesForCues;
+    out.avgCues.value = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+  }
+  if (cerEntriesCounted > 0) {
+    out.avgCerWords.total = cerWordsTotal;
+    out.avgCerWords.n = cerEntriesCounted;
+    out.avgCerWords.value = Math.round(cerWordsTotal / cerEntriesCounted);
+  }
+  if (rrCount > 0) {
+    out.rrEvidenceRate.count = rrWithEvidence;
+    out.rrEvidenceRate.total = rrCount;
+    out.rrEvidenceRate.value = Math.round(rrWithEvidence / rrCount * 100);
+  }
+  if (studentsWithRR > 0) {
+    out.connectionVariety.count = studentsWith2PlusConnTypes;
+    out.connectionVariety.total = studentsWithRR;
+    out.connectionVariety.value = Math.round(studentsWith2PlusConnTypes / studentsWithRR * 100);
+  }
+  if (studentsWithNotebook > 0) {
+    out.selfAssessment.count = studentsWithFeedback;
+    out.selfAssessment.total = studentsWithNotebook;
+    out.selfAssessment.value = Math.round(studentsWithFeedback / studentsWithNotebook * 100);
+  }
+  return out;
+}
+function _computeCrossToolMisconceptions(dashboardData) {
+  const out = { noteTaking: [], sentenceFrames: [], conceptSort: [] };
+  getTeacherMetricRegistry().forEach((entry) => {
+    if (typeof entry.misconceptions !== "function") return;
+    try {
+      const patterns = entry.misconceptions(dashboardData) || [];
+      patterns.forEach((p) => {
+        const cat = p && p.category;
+        if (cat && Array.isArray(out[cat])) out[cat].push(p);
+        else if (!out._other) (out._other = []).push(p);
+        else out._other.push(p);
+      });
+    } catch (e) {
+      console.warn("[misconceptions] tool", entry.id, "failed", e);
+    }
+  });
+  return out;
+}
+function _DEAD_LEGACY_CROSS_TOOL_DO_NOT_CALL(dashboardData) {
+  const out = {
+    noteTaking: [],
+    sentenceFrames: [],
+    conceptSort: []
+  };
+  const csKey = (p) => `${(p.itemText || "").toLowerCase().trim()}|${(p.placedCategoryLabel || "").toLowerCase().trim()}|${(p.correctCategoryLabel || "").toLowerCase().trim()}`;
+  const csAgg = /* @__PURE__ */ new Map();
+  let csTotalAttempts = 0;
+  (dashboardData || []).forEach((s2) => {
+    const gc = s2.gameCompletions || {};
+    const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+    attempts.forEach((att) => {
+      csTotalAttempts++;
+      const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+      incPlacements.forEach((p) => {
+        if (!p.itemText) return;
+        const key = csKey(p);
+        if (!csAgg.has(key)) {
+          csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+        }
+        csAgg.get(key).count++;
+      });
+    });
+  });
+  out.conceptSort = Array.from(csAgg.values()).filter((p) => p.count >= 3 && csTotalAttempts > 0 && p.count / csTotalAttempts >= 0.2).sort((a, b) => b.count - a.count).map((p) => ({ ...p, totalAttempts: csTotalAttempts, missPct: Math.round(p.count / csTotalAttempts * 100) }));
+  const ntStats = {
+    "cornell-notes": { fields: ["summary", "cuesFilled", "notesFilled"], counts: {}, total: 0 },
+    "lab-report": { fields: ["hypothesis", "analysis", "conclusion", "procedureFilled"], counts: {}, total: 0 },
+    "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 }
+  };
+  Object.keys(ntStats).forEach((tt) => ntStats[tt].fields.forEach((f) => ntStats[tt].counts[f] = 0));
+  (dashboardData || []).forEach((s2) => {
+    const hist = s2.history || [];
+    const notes = hist.filter((h) => h && h.type === "note-taking");
+    notes.forEach((e) => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      if (!ntStats[tt]) return;
+      ntStats[tt].total++;
+      if (tt === "cornell-notes") {
+        if (!(d.summary || "").trim()) ntStats[tt].counts.summary++;
+        const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+        if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+        const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter((n) => n && (n.text || "").trim()).length;
+        if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+      } else if (tt === "lab-report") {
+        if (!(d.hypothesis || "").trim()) ntStats[tt].counts.hypothesis++;
+        if (!(d.analysis || "").trim()) ntStats[tt].counts.analysis++;
+        if (!(d.conclusion || "").trim()) ntStats[tt].counts.conclusion++;
+        const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter((p) => p && (p.text || "").trim()).length;
+        if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+      } else if (tt === "reading-response") {
+        if (!(d.favoriteLine || "").trim()) ntStats[tt].counts.favoriteLine++;
+        if (!(d.thinkings || "").trim()) ntStats[tt].counts.thinkings++;
+        if (!(d.connection && d.connection.text || "").trim()) ntStats[tt].counts.connection++;
+        if (!(d.question || "").trim()) ntStats[tt].counts.question++;
+      }
+    });
+  });
+  const fieldLabels = {
+    "cornell-notes": {
+      summary: "Summary box (Pauk: where retention consolidation happens)",
+      cuesFilled: "Cue column (the metacognitive lever \u2014 drives retrieval practice)",
+      notesFilled: "Notes column (the lesson content itself)"
+    },
+    "lab-report": {
+      hypothesis: "Hypothesis (testable prediction with reasoning)",
+      analysis: "Analysis / CER (claim-evidence-reasoning \u2014 the science thinking)",
+      conclusion: "Conclusion (what was learned + sources of error)",
+      procedureFilled: "Procedure (reproducibility \u2014 could another student follow it?)"
+    },
+    "reading-response": {
+      favoriteLine: "Favorite line (close-reading anchor \u2014 direct quote from text)",
+      thinkings: "What this made me think about (substantive reflection)",
+      connection: "Connection (text-to-self / text / world \u2014 Keene & Zimmermann)",
+      question: "Open question (genuine inquiry \u2014 metacognitive engagement)"
+    }
+  };
+  const templateNames = {
+    "cornell-notes": "Cornell Notes",
+    "lab-report": "Lab Report",
+    "reading-response": "Reading Response"
+  };
+  Object.keys(ntStats).forEach((tt) => {
+    const stats = ntStats[tt];
+    if (stats.total === 0) return;
+    stats.fields.forEach((field) => {
+      const missing = stats.counts[field];
+      const pct = Math.round(missing / stats.total * 100);
+      if (pct >= 40 && missing >= 2) {
+        out.noteTaking.push({
+          template: templateNames[tt],
+          field,
+          fieldLabel: fieldLabels[tt][field],
+          missingCount: missing,
+          totalCount: stats.total,
+          missingPct: pct
+        });
+      }
+    });
+  });
+  out.noteTaking.sort((a, b) => b.missingPct - a.missingPct);
+  const sfMap = /* @__PURE__ */ new Map();
+  const sfTitles = /* @__PURE__ */ new Map();
+  const sfFrameCounts = /* @__PURE__ */ new Map();
+  (dashboardData || []).forEach((s2) => {
+    const hist = s2.history || [];
+    const sfItems = hist.filter((h) => h && h.type === "sentence-frames");
+    sfItems.forEach((item) => {
+      sfTitles.set(item.id, item.title || "Sentence Frames");
+      const studentResps = s2.responses && s2.responses[item.id] || {};
+      const items = item.data && Array.isArray(item.data.items) ? item.data.items : [];
+      items.forEach((_, idx) => {
+        const responseVal = studentResps[idx];
+        const filled = responseVal !== void 0 && responseVal !== null && String(responseVal).trim().length > 0;
+        sfMap.set(`${s2.id}:${item.id}:${idx}`, filled);
+        sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+      });
+    });
+  });
+  for (const [genId, frameCount] of sfFrameCounts.entries()) {
+    if (frameCount === 0) continue;
+    let totalStudentFrames = 0;
+    let filledFrames = 0;
+    let studentsAttempted = /* @__PURE__ */ new Set();
+    for (const [key, filled] of sfMap.entries()) {
+      const [studentId, gid] = key.split(":");
+      if (gid !== genId) continue;
+      totalStudentFrames++;
+      if (filled) {
+        filledFrames++;
+        studentsAttempted.add(studentId);
+      }
+    }
+    if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+    const missingPct = Math.round((totalStudentFrames - filledFrames) / totalStudentFrames * 100);
+    if (missingPct >= 30) {
+      out.sentenceFrames.push({
+        generationTitle: sfTitles.get(genId) || "Sentence Frames",
+        frameCount,
+        studentsAttempted: studentsAttempted.size,
+        missingPct
+      });
+    }
+  }
+  out.sentenceFrames.sort((a, b) => b.missingPct - a.missingPct);
+  return out;
+}
+function _signalTone(signalKey, value) {
+  if (value === null || value === void 0) return "gray";
+  const thresholds = {
+    summaryFillRate: { healthy: 70, partial: 40 },
+    // %
+    avgCues: { healthy: 5, partial: 3 },
+    // count
+    avgCerWords: { healthy: 30, partial: 15 },
+    // words
+    rrEvidenceRate: { healthy: 70, partial: 40 },
+    // %
+    connectionVariety: { healthy: 50, partial: 25 },
+    // %
+    selfAssessment: { healthy: 50, partial: 25 }
+    // %
+  };
+  const t = thresholds[signalKey];
+  if (!t) return "gray";
+  const v = parseFloat(value);
+  if (v >= t.healthy) return "green";
+  if (v >= t.partial) return "amber";
+  return "red";
+}
+const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
+  const palette = {
+    green: { bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-800", num: "text-emerald-700" },
+    amber: { bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-800", num: "text-amber-700" },
+    red: { bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-800", num: "text-rose-700" },
+    gray: { bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-600", num: "text-slate-500" }
+  }[tone];
+  return /* @__PURE__ */ React.createElement("div", { className: `${palette.bg} ${palette.border} border rounded-lg p-3`, title: hint }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider ${palette.text}` }, label), denom ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 font-mono" }, denom) : null), /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${palette.num}` }, value === null || value === void 0 ? "\u2014" : value, suffix || ""), hint ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600 mt-1 leading-snug" }, hint) : null);
+};
+const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
+  const signals = React.useMemo(() => _computeCrossToolMisconceptions(dashboardData), [dashboardData]);
+  if (signals.noteTaking.length === 0 && signals.sentenceFrames.length === 0 && signals.conceptSort.length === 0) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400", "data-help-key": "dashboard_cross_tool_misconceptions" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-orange-500" }), t("dashboard.cross_misconceptions.title") || "Cross-Tool Pattern Detection"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-4 italic" }, t("dashboard.cross_misconceptions.subtitle") || "Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity."), signals.noteTaking.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\u{1F4D3} ", t("dashboard.cross_misconceptions.notebook_label") || "Note-taking field gaps"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, signals.noteTaking.slice(0, 6).map((s2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-orange-50 border-l-4 border-orange-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-baseline gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-orange-900" }, s2.template, ": ", s2.fieldLabel), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-orange-700 bg-white border border-orange-300 px-2 py-0.5 rounded whitespace-nowrap" }, s2.missingPct, "% missing")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, s2.missingCount, " of ", s2.totalCount, " entries across the class have this field empty."))))), signals.sentenceFrames.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2" }, "\u270D\uFE0F ", t("dashboard.cross_misconceptions.frames_label") || "Sentence-frame response gaps"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, signals.sentenceFrames.slice(0, 5).map((s2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-indigo-50 border-l-4 border-indigo-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-baseline gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900 truncate" }, s2.generationTitle), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-white border border-indigo-300 px-2 py-0.5 rounded whitespace-nowrap" }, s2.missingPct, "% blank")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, s2.frameCount, " frame", s2.frameCount === 1 ? "" : "s", " \xB7 ", s2.studentsAttempted, " student", s2.studentsAttempted === 1 ? "" : "s", " attempted"))))), signals.conceptSort.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-2" }, "\u{1F0CF} ", t("dashboard.cross_misconceptions.concept_sort_label") || "Concept Sort misplacement patterns"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, signals.conceptSort.slice(0, 6).map((s2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-rose-50 border-l-4 border-rose-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-baseline gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-rose-900 truncate" }, '"', s2.itemText, '" \u2192 placed in "', s2.placedLabel, '"'), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-rose-700 bg-white border border-rose-300 px-2 py-0.5 rounded whitespace-nowrap" }, s2.count, "\xD7 (", s2.missPct, "%)")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, "Correct category: ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, '"', s2.correctLabel, '"'), ". Likely conflation between these two concepts."))))));
+});
+const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAdd, onDelete, t }) => {
+  const [draft, setDraft] = React.useState("");
+  const [expanded, setExpanded] = React.useState(false);
+  const list = comments || [];
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!draft.trim()) return;
+    onAdd(studentId, resourceId, draft);
+    setDraft("");
+  };
+  if (list.length === 0 && !expanded) {
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setExpanded(true),
+        className: "mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors",
+        "data-help-key": "dashboard_teacher_comment_add",
+        "aria-label": t("dashboard.comments.add_aria") || "Add a private teacher comment to this resource"
+      },
+      "\u{1F4AC} ",
+      t("dashboard.comments.add_btn") || "Add private note"
+    );
+  }
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3", "data-help-key": "dashboard_teacher_comment_thread" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4AC} ", t("dashboard.comments.label") || "Teacher notes", list.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 normal-case font-normal" }, "(", list.length, ")"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-slate-500 normal-case font-normal italic" }, t("dashboard.comments.privacy_note") || "Private to you \u2014 never shared with student")), list.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 mb-3" }, list.map((c) => /* @__PURE__ */ React.createElement("li", { key: c.id, className: "bg-amber-50/50 border-l-4 border-amber-400 rounded-r-md p-2 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed whitespace-pre-wrap flex-1" }, c.text), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onDelete(studentId, resourceId, c.id),
+      className: "text-slate-600 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs",
+      "aria-label": t("dashboard.comments.delete_aria") || "Delete this comment",
+      title: t("dashboard.comments.delete_tooltip") || "Delete this comment"
+    },
+    "\u2715"
+  )), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-1 font-mono" }, new Date(c.timestamp).toLocaleString())))), /* @__PURE__ */ React.createElement("form", { onSubmit: handleSubmit, className: "flex gap-2 items-start" }, /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: draft,
+      onChange: (e) => setDraft(e.target.value),
+      onKeyDown: (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") handleSubmit();
+      },
+      placeholder: t("dashboard.comments.placeholder") || "Note to yourself about this resource (Cmd/Ctrl+Enter to save)",
+      className: "flex-1 text-sm bg-white border border-slate-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]",
+      rows: 2,
+      "aria-label": t("dashboard.comments.textarea_aria") || "New teacher comment"
+    }
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1.5" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "submit",
+      disabled: !draft.trim(),
+      className: "px-3 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+    },
+    t("dashboard.comments.save_btn") || "Save"
+  ), list.length === 0 && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setExpanded(false),
+      className: "px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700"
+    },
+    t("common.cancel") || "Cancel"
+  ))));
+});
+const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: addToast2, t }) => {
+  const [insights, setInsights] = React.useState(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const qualitySignals = React.useMemo(() => _computeNotebookQualitySignals(dashboardData), [dashboardData]);
+  const agg = React.useMemo(() => {
+    const out = {
+      studentsWithNotebook: 0,
+      totalEntries: 0,
+      cornell: 0,
+      labReport: 0,
+      readingResponse: 0,
+      anchorChart: 0,
+      feedbackRequests: 0,
+      byStudent: []
+      // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+    };
+    (dashboardData || []).forEach((s2) => {
+      const hist = s2.history || [];
+      const notes = hist.filter((h) => h && h.type === "note-taking");
+      const anchors = hist.filter((h) => h && h.type === "anchor-chart");
+      if (notes.length === 0 && anchors.length === 0) return;
+      out.studentsWithNotebook++;
+      const sCornell = notes.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length;
+      const sLab = notes.filter((e) => (e.data && e.data.templateType) === "lab-report").length;
+      const sReading = notes.filter((e) => (e.data && e.data.templateType) === "reading-response").length;
+      const sFeedback = notes.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
+      out.cornell += sCornell;
+      out.labReport += sLab;
+      out.readingResponse += sReading;
+      out.anchorChart += anchors.length;
+      out.feedbackRequests += sFeedback;
+      out.totalEntries += notes.length + anchors.length;
+      out.byStudent.push({
+        name: s2.studentNickname || "Anonymous",
+        total: notes.length + anchors.length,
+        cornell: sCornell,
+        labReport: sLab,
+        readingResponse: sReading,
+        anchorChart: anchors.length,
+        feedbackRequests: sFeedback
+      });
+    });
+    return out;
+  }, [dashboardData]);
+  const handleGenerateClassInsights = React.useCallback(async () => {
+    if (typeof callGemini !== "function") {
+      addToast2(t("dashboard.class_notebook.no_ai") || "AI is not available right now.", "warning");
+      return;
+    }
+    if (agg.studentsWithNotebook < 2) {
+      addToast2(t("dashboard.class_notebook.need_more_students") || "Need at least 2 students with notebook entries to surface class patterns.", "info");
+      return;
+    }
+    setInsightsLoading(true);
+    setInsights(null);
+    try {
+      const sampleEntries = [];
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const notes = hist.filter((h) => h && h.type === "note-taking").slice(0, 3);
+        notes.forEach((n) => {
+          const d = n.data || {};
+          const tt = d.templateType || "cornell-notes";
+          const headline = {
+            "cornell-notes": () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || "").length}`,
+            "lab-report": () => `hyp_len=${(d.hypothesis || "").length}, analysis_len=${(d.analysis || "").length}, conclusion_len=${(d.conclusion || "").length}`,
+            "reading-response": () => `evidence_len=${(d.favoriteLine || "").length}, thinking_len=${(d.thinkings || "").length}, connection_type=${d.connection && d.connection.type || "none"}`
+          }[tt];
+          sampleEntries.push(`${s2.studentNickname || "Anon"} (${tt}): ${headline ? headline() : "no data"}`);
+        });
+      });
+      const prompt = `
+You are a teaching coach analyzing patterns ACROSS a class's note-taking work. Your goal is to surface 2-4 class-wide patterns that would inform the teacher's next mini-lesson, not individual student feedback.
+
+CLASS COMPOSITION:
+- Total students: ${dashboardData.length}
+- Students using notebook tools: ${agg.studentsWithNotebook}
+- Total Cornell Notes entries: ${agg.cornell}
+- Total Lab Reports: ${agg.labReport}
+- Total Reading Responses: ${agg.readingResponse}
+- Total Anchor Charts: ${agg.anchorChart}
+- Total AI feedback requests across class: ${agg.feedbackRequests}
+
+PER-STUDENT ENTRY HEADLINES (sample of up to 3 entries per student):
+${sampleEntries.slice(0, 80).join("\n")}
+
+Surface 2-4 patterns the teacher can act on. Examples of useful patterns:
+- "Cornell summary boxes are consistently 1-2 sentences across the class (avg estimated <20 words). Consider a mini-lesson on summary writing."
+- "12 of 22 students have not yet tried Lab Report mode. If you have a lab coming up, model the template explicitly."
+- "AI feedback requests are concentrated in 4 students. Consider explicitly inviting reluctant students to use the Get AI Feedback button."
+
+DO NOT name individual students unless flagging an equity / engagement disparity that needs attention.
+
+Return ONLY JSON:
+{
+  "classSummary": "1-2 sentence overview of the class's notebook engagement.",
+  "patterns": [
+    { "title": "Short label (4-8 words)", "observation": "1-2 sentences describing the pattern.", "miniLesson": "1 sentence suggesting a concrete next step or mini-lesson." }
+  ],
+  "celebration": "1 sentence naming a class-wide strength worth acknowledging."
+}
+`.trim();
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse(window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw);
+      setInsights(parsed);
+    } catch (e) {
+      console.warn("[ClassNotebookInsights] failed", e);
+      addToast2(t("dashboard.class_notebook.error") || "Could not generate class insights right now. Try again in a moment.", "error");
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [callGemini, dashboardData, agg, addToast2, t]);
+  if (agg.totalEntries === 0) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400", "data-help-key": "dashboard_class_notebook_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2" }, "\u{1F4D3} ", t("dashboard.class_notebook.title") || "Class Notebook Activity"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleGenerateClassInsights,
+      disabled: insightsLoading || agg.studentsWithNotebook < 2,
+      className: "px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
+      "aria-label": t("dashboard.class_notebook.ai_button_aria") || "Generate AI insights on class-wide note-taking patterns",
+      title: agg.studentsWithNotebook < 2 ? t("dashboard.class_notebook.need_more_short") || "Need 2+ students with notebook" : t("dashboard.class_notebook.ai_button_tooltip") || "AI looks for class-wide patterns and suggests mini-lessons",
+      "data-help-key": "dashboard_class_notebook_ai_btn"
+    },
+    insightsLoading ? "\u23F3" : "\u2728",
+    " ",
+    t("dashboard.class_notebook.ai_button") || "AI Class Insights"
+  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-5 gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-3 text-center border border-violet-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, agg.studentsWithNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.class_notebook.students_with") || "Students using")), agg.cornell > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, agg.cornell), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-indigo-600 uppercase mt-1" }, "\u{1F4D3} Cornell")), agg.labReport > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-sky-50 rounded-xl p-3 text-center border border-sky-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-sky-700" }, agg.labReport), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-sky-600 uppercase mt-1" }, "\u{1F9EA} Lab Report")), agg.readingResponse > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-fuchsia-700" }, agg.readingResponse), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-fuchsia-600 uppercase mt-1" }, "\u{1F4D6} Reading")), agg.anchorChart > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 text-center border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-amber-700" }, agg.anchorChart), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-amber-600 uppercase mt-1" }, "\u{1F4CB} Anchor Chart"))), agg.feedbackRequests > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, "\u{1F4AC} ", agg.feedbackRequests, " AI-feedback request", agg.feedbackRequests === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700" }, " across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).")), (qualitySignals.summaryFillRate.value !== null || qualitySignals.avgCerWords.value !== null || qualitySignals.rrEvidenceRate.value !== null || qualitySignals.selfAssessment.value !== null) && /* @__PURE__ */ React.createElement("div", { className: "mb-4", "data-help-key": "dashboard_class_notebook_quality_signals" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("dashboard.class_notebook.quality_signals_label") || "Quality Signals (research thresholds)"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 italic" }, t("dashboard.class_notebook.quality_signals_legend") || "green = healthy \xB7 amber = partial \xB7 red = needs attention")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, qualitySignals.summaryFillRate.value !== null && /* @__PURE__ */ React.createElement(
+    _NotebookQualityCard,
+    {
+      tone: _signalTone("summaryFillRate", qualitySignals.summaryFillRate.value),
+      label: t("dashboard.class_notebook.signal_summary_fill") || "Cornell summary rate",
+      value: qualitySignals.summaryFillRate.value,
+      suffix: "%",
+      denom: `${qualitySignals.summaryFillRate.count}/${qualitySignals.summaryFillRate.total}`,
+      hint: t("dashboard.class_notebook.signal_summary_fill_hint") || "% of Cornell entries with \u226520-word summary (research threshold; Pauk/Kiewra)"
+    }
+  ), qualitySignals.avgCues.value !== null && /* @__PURE__ */ React.createElement(
+    _NotebookQualityCard,
+    {
+      tone: _signalTone("avgCues", qualitySignals.avgCues.value),
+      label: t("dashboard.class_notebook.signal_avg_cues") || "Cornell cue density",
+      value: qualitySignals.avgCues.value,
+      denom: `avg / ${qualitySignals.avgCues.n} entries`,
+      hint: t("dashboard.class_notebook.signal_avg_cues_hint") || "Avg cues per Cornell entry. \u22655 is healthy retrieval-practice density"
+    }
+  ), qualitySignals.avgCerWords.value !== null && /* @__PURE__ */ React.createElement(
+    _NotebookQualityCard,
+    {
+      tone: _signalTone("avgCerWords", qualitySignals.avgCerWords.value),
+      label: t("dashboard.class_notebook.signal_cer_length") || "Lab CER length",
+      value: qualitySignals.avgCerWords.value,
+      suffix: " wd",
+      denom: `avg / ${qualitySignals.avgCerWords.n} reports`,
+      hint: t("dashboard.class_notebook.signal_cer_length_hint") || "Avg word count of CER analysis. \u226530 words is where reasoning lives (McNeill & Krajcik)"
+    }
+  ), qualitySignals.rrEvidenceRate.value !== null && /* @__PURE__ */ React.createElement(
+    _NotebookQualityCard,
+    {
+      tone: _signalTone("rrEvidenceRate", qualitySignals.rrEvidenceRate.value),
+      label: t("dashboard.class_notebook.signal_rr_evidence") || "Reading evidence rate",
+      value: qualitySignals.rrEvidenceRate.value,
+      suffix: "%",
+      denom: `${qualitySignals.rrEvidenceRate.count}/${qualitySignals.rrEvidenceRate.total}`,
+      hint: t("dashboard.class_notebook.signal_rr_evidence_hint") || "% of Reading Responses with a favorite line filled (close-reading anchor)"
+    }
+  ), qualitySignals.connectionVariety.value !== null && /* @__PURE__ */ React.createElement(
+    _NotebookQualityCard,
+    {
+      tone: _signalTone("connectionVariety", qualitySignals.connectionVariety.value),
+      label: t("dashboard.class_notebook.signal_conn_variety") || "Connection variety",
+      value: qualitySignals.connectionVariety.value,
+      suffix: "%",
+      denom: `${qualitySignals.connectionVariety.count}/${qualitySignals.connectionVariety.total} students`,
+      hint: t("dashboard.class_notebook.signal_conn_variety_hint") || "% of students using \u22652 of 3 connection types (text-to-self/text/world)"
+    }
+  ), qualitySignals.selfAssessment.value !== null && /* @__PURE__ */ React.createElement(
+    _NotebookQualityCard,
+    {
+      tone: _signalTone("selfAssessment", qualitySignals.selfAssessment.value),
+      label: t("dashboard.class_notebook.signal_self_assess") || "Self-assessment use",
+      value: qualitySignals.selfAssessment.value,
+      suffix: "%",
+      denom: `${qualitySignals.selfAssessment.count}/${qualitySignals.selfAssessment.total} students`,
+      hint: t("dashboard.class_notebook.signal_self_assess_hint") || "% of students who have requested AI feedback \u22651\xD7 (metacognitive engagement proxy)"
+    }
+  ))), insightsLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2 animate-pulse" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("dashboard.class_notebook.loading") || "AI is reading across the class...")) : insights ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200" }, insights.classSummary && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("dashboard.class_notebook.overview_label") || "Class overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.classSummary)), Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("dashboard.class_notebook.mini_lesson_label") || "Try a mini-lesson:"), " ", p.miniLesson))), insights.celebration && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("dashboard.class_notebook.celebration_label") || "Class strength"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration))) : null);
 });
 const LearnerProgressView = React.memo(({
   globalPoints = 0,
@@ -1890,16 +2753,17 @@ const LearnerProgressView = React.memo(({
     };
   }, [history, wordSoundsHistory, phonemeMastery, gameCompletions, fluencyAssessments, labelChallengeResults, studentProgressLog]);
   const heading = isParentMode ? selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey" : "My Learning Progress";
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 22, className: "text-white" })), heading), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1 font-medium" }, isParentMode ? "Track your family's learning growth" : "Track your learning growth over time")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500", "data-help-key": "learner_progress_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 22, className: "text-white" })), heading), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1 font-medium" }, isParentMode ? "Track your family's learning growth" : "Track your learning growth over time")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowDiagnostics((prev) => !prev),
       className: `px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${showDiagnostics ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
-      title: showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics"
+      title: showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics",
+      "data-help-key": "learner_progress_details_toggle"
     },
     /* @__PURE__ */ React.createElement(BarChart3, { size: 14 }),
     showDiagnostics ? "Details On" : "Details"
-  ), onClose && /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), isParentMode && childProfiles.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " Family Members"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+  ), onClose && /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), isParentMode && childProfiles.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100", "data-help-key": "learner_progress_family_filter" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " Family Members"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setSelectedChild(null),
@@ -1915,7 +2779,7 @@ const LearnerProgressView = React.memo(({
     },
     child.name,
     child.sessionCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono" }, child.sessionCount, " sessions")
-  )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 28, className: "text-indigo-900 fill-current" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 bg-indigo-900 text-yellow-400 text-[11px] font-black px-2 py-0.5 rounded-full border border-white" }, "Lvl ", globalLevel)), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("learner.total_xp")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-900" }, globalPoints.toLocaleString())), stats.trend > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 12 }), " +", stats.trend, " XP")), !isTeacherMode && (wordSoundsScore?.streak > 0 || (() => {
+  )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 28, className: "text-indigo-900 fill-current" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 bg-indigo-900 text-yellow-700 text-[11px] font-black px-2 py-0.5 rounded-full border border-white" }, "Lvl ", globalLevel)), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("learner.total_xp")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-900" }, globalPoints.toLocaleString())), stats.trend > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 12 }), " +", stats.trend, " XP")), !isTeacherMode && (wordSoundsScore?.streak > 0 || (() => {
     const days = /* @__PURE__ */ new Set();
     pointHistory.forEach((e) => {
       if (e.timestamp) days.add(new Date(e.timestamp).toDateString());
@@ -1930,7 +2794,7 @@ const LearnerProgressView = React.memo(({
       else break;
     }
     return dayStreak >= 2;
-  })()) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2 px-3 py-2 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100" }, wordSoundsScore?.streak > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F525}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-orange-600" }, wordSoundsScore.streak, " Streak"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-orange-400 font-bold uppercase" }, t("learner.current_run")))), (() => {
+  })()) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2 px-3 py-2 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100" }, wordSoundsScore?.streak > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F525}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-orange-600" }, wordSoundsScore.streak, " Streak"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-orange-700 font-bold uppercase" }, t("learner.current_run")))), (() => {
     const days = /* @__PURE__ */ new Set();
     pointHistory.forEach((e) => {
       if (e.timestamp) days.add(new Date(e.timestamp).toDateString());
@@ -1944,13 +2808,13 @@ const LearnerProgressView = React.memo(({
       if (dayList[i] === expected.toDateString()) dayStreak++;
       else break;
     }
-    return dayStreak >= 2 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 ml-auto" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-red-600" }, dayStreak, " Days"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-red-400 font-bold uppercase" }, t("learner.daily_streak")))) : null;
-  })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase" }, /* @__PURE__ */ React.createElement("span", null, "Level ", globalLevel), /* @__PURE__ */ React.createElement("span", null, Math.round(globalProgress), "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-3 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full", style: { width: `${Math.max(5, globalProgress)}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, currentLevelXP, " XP"), /* @__PURE__ */ React.createElement("span", null, globalXPNext, " XP to next")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Activity, { size: 14 }), " Activities Completed"), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black text-slate-800 mb-4" }, stats.totalActivities), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, [
+    return dayStreak >= 2 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 ml-auto" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-red-600" }, dayStreak, " Days"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-red-600 font-bold uppercase" }, t("learner.daily_streak")))) : null;
+  })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase" }, /* @__PURE__ */ React.createElement("span", null, "Level ", globalLevel), /* @__PURE__ */ React.createElement("span", null, Math.round(globalProgress), "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-3 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full", style: { width: `${Math.max(5, globalProgress)}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, currentLevelXP, " XP"), /* @__PURE__ */ React.createElement("span", null, globalXPNext, " XP to next")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow", "data-help-key": "learner_progress_activities_card" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Activity, { size: 14 }), " Activities Completed"), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black text-slate-800 mb-4" }, stats.totalActivities), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, [
     { label: "Quizzes", value: stats.quizCount, icon: "\u{1F4DD}", color: "bg-blue-50 text-blue-700" },
     { label: "Words Practiced", value: stats.wsTotal, icon: "\u{1F524}", color: "bg-purple-50 text-purple-700" },
     { label: "Games", value: stats.gamesPlayed, icon: "\u{1F3AE}", color: "bg-green-50 text-green-700" },
     { label: "Fluency Tests", value: stats.fluencyTests, icon: "\u23F1\uFE0F", color: "bg-orange-50 text-orange-700" }
-  ].map((item) => /* @__PURE__ */ React.createElement("div", { key: item.label, className: `${item.color} rounded-lg px-3 py-2 text-center` }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black" }, item.icon, " ", item.value), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold uppercase tracking-wider opacity-80" }, item.label))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Target, { size: 14 }), " Skills Progress"), stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-6 text-slate-600 italic text-sm" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 32, className: "mx-auto mb-2 opacity-40" }), "Start practicing to see your skills grow!") : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, stats.wsTotal > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, t("learner.ws_accuracy")), /* @__PURE__ */ React.createElement("span", { className: `text-sm font-black ${stats.wsAccuracy >= 80 ? "text-green-600" : stats.wsAccuracy >= 60 ? "text-yellow-600" : "text-orange-500"}` }, stats.wsAccuracy, "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2.5" }, /* @__PURE__ */ React.createElement(
+  ].map((item) => /* @__PURE__ */ React.createElement("div", { key: item.label, className: `${item.color} rounded-lg px-3 py-2 text-center` }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black" }, item.icon, " ", item.value), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold uppercase tracking-wider opacity-80" }, item.label))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow", "data-help-key": "learner_progress_skills_chart" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Target, { size: 14 }), " Skills Progress"), stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-6 text-slate-600 italic text-sm" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 32, className: "mx-auto mb-2 opacity-40" }), "Start practicing to see your skills grow!") : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, stats.wsTotal > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, t("learner.ws_accuracy")), /* @__PURE__ */ React.createElement("span", { className: `text-sm font-black ${stats.wsAccuracy >= 80 ? "text-green-600" : stats.wsAccuracy >= 60 ? "text-yellow-600" : "text-orange-500"}` }, stats.wsAccuracy, "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2.5" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: `h-full rounded-full transition-all duration-500 ${stats.wsAccuracy >= 80 ? "bg-green-500" : stats.wsAccuracy >= 60 ? "bg-yellow-500" : "bg-orange-400"}`,
@@ -1975,7 +2839,7 @@ const LearnerProgressView = React.memo(({
     const todayXP = pointHistory.filter((e) => e.timestamp && new Date(e.timestamp).toDateString() === today);
     const todayWords = wordSoundsHistory.filter((h) => h.timestamp && new Date(h.timestamp).toDateString() === today);
     if (todayXP.length === 0 && todayWords.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-5" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Clock, { size: 14 }), " Today's Activity"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-blue-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-blue-700" }, todayXP.reduce((s2, e) => s2 + (e.points || 0), 0)), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-400 uppercase" }, t("learner.xp_earned"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-blue-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-blue-700" }, todayXP.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-400 uppercase" }, "Activities")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-blue-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-blue-700" }, todayWords.filter((w) => w.correct).length, "/", todayWords.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-400 uppercase" }, t("learner.words_today")))), todayXP.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-1 max-h-24 overflow-y-auto" }, todayXP.slice(0, 8).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: entry.id || i, className: "flex justify-between items-center text-xs px-2 py-1 rounded bg-white/60" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-medium truncate max-w-[220px]" }, entry.activity), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-green-600 whitespace-nowrap" }, "+", entry.points, " XP")))));
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-5" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Clock, { size: 14 }), " Today's Activity"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-blue-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-blue-700" }, todayXP.reduce((s2, e) => s2 + (e.points || 0), 0)), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-700 uppercase" }, t("learner.xp_earned"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-blue-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-blue-700" }, todayXP.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-700 uppercase" }, "Activities")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-blue-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-blue-700" }, todayWords.filter((w) => w.correct).length, "/", todayWords.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-700 uppercase" }, t("learner.words_today")))), todayXP.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-1 max-h-24 overflow-y-auto" }, todayXP.slice(0, 8).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: entry.id || i, className: "flex justify-between items-center text-xs px-2 py-1 rounded bg-white/60" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-medium truncate max-w-[220px]" }, entry.activity), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-green-600 whitespace-nowrap" }, "+", entry.points, " XP")))));
   })(), (() => {
     const now = /* @__PURE__ */ new Date();
     const weekAgo = new Date(now);
@@ -1991,8 +2855,8 @@ const LearnerProgressView = React.memo(({
     const xpDelta = weekTotalXP - prevTotalXP;
     const weekAccuracy = weekWords.length > 0 ? Math.round(weekWords.filter((w) => w.correct).length / weekWords.length * 100) : null;
     if (weekXP.length === 0 && weekWords.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-5" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Calendar, { size: 14 }), " This Week's Progress"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekTotalXP), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase" }, t("learner.xp_this_week")), xpDelta !== 0 && /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold mt-0.5 ${xpDelta > 0 ? "text-green-500" : "text-red-400"}` }, xpDelta > 0 ? "\u2191" : "\u2193", " ", Math.abs(xpDelta), " vs last week")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekXP.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase" }, "Activities")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekWords.filter((w) => w.correct).length, "/", weekWords.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase" }, t("learner.words_this_week"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekAccuracy !== null ? weekAccuracy + "%" : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase" }, "Accuracy"))), weekGames.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-600 font-medium bg-white/60 rounded-lg px-3 py-2" }, "\u{1F3AE} ", weekGames.length, " game", weekGames.length !== 1 ? "s" : "", " played this week"));
-  })(), studentProgressLog.length >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 14 }), " Growth Over Time"), /* @__PURE__ */ React.createElement(LongitudinalProgressChart, { logs: studentProgressLog })), showDiagnostics && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(BarChart3, { size: 14 }), " Detailed Metrics"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.wsCorrect, "/", stats.wsTotal), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.words_correct"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, Object.keys(phonemeMastery).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.phonemes_touched"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.sessionCount), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Sessions")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.labelChallenges), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.label_challenges")))), pointHistory.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("learner.recent_activity")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" }, pointHistory.slice(0, 10).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: entry.id || i, className: "flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-medium truncate max-w-[200px]" }, entry.activity), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-green-600" }, "+", entry.points, " XP")))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3 pt-2" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-5" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Calendar, { size: 14 }), " This Week's Progress"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekTotalXP), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, t("learner.xp_this_week")), xpDelta !== 0 && /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold mt-0.5 ${xpDelta > 0 ? "text-green-500" : "text-red-400"}` }, xpDelta > 0 ? "\u2191" : "\u2193", " ", Math.abs(xpDelta), " vs last week")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekXP.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, "Activities")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekWords.filter((w) => w.correct).length, "/", weekWords.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, t("learner.words_this_week"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekAccuracy !== null ? weekAccuracy + "%" : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, "Accuracy"))), weekGames.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-600 font-medium bg-white/60 rounded-lg px-3 py-2" }, "\u{1F3AE} ", weekGames.length, " game", weekGames.length !== 1 ? "s" : "", " played this week"));
+  })(), studentProgressLog.length >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow", "data-help-key": "learner_progress_growth_chart" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 14 }), " Growth Over Time"), /* @__PURE__ */ React.createElement(LongitudinalProgressChart, { logs: studentProgressLog })), showDiagnostics && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300", "data-help-key": "learner_progress_diagnostics_panel" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(BarChart3, { size: 14 }), " Detailed Metrics"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.wsCorrect, "/", stats.wsTotal), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.words_correct"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, Object.keys(phonemeMastery).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.phonemes_touched"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.sessionCount), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Sessions")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.labelChallenges), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.label_challenges")))), pointHistory.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("learner.recent_activity")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" }, pointHistory.slice(0, 10).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: entry.id || i, className: "flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-medium truncate max-w-[200px]" }, entry.activity), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-green-600" }, "+", entry.points, " XP")))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3 pt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2011,7 +2875,8 @@ const LearnerProgressView = React.memo(({
           w.document.close();
         }
       },
-      className: "px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+      className: "px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm",
+      "data-help-key": "learner_progress_print_report_btn"
     },
     /* @__PURE__ */ React.createElement(Printer, { size: 16 }),
     " Print Progress Report"
@@ -2019,17 +2884,59 @@ const LearnerProgressView = React.memo(({
     "button",
     {
       onClick: onShareWithTeacher,
-      className: "px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+      className: "px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm",
+      "data-help-key": "learner_progress_share_teacher_btn"
     },
     /* @__PURE__ */ React.createElement(Share2, { size: 16 }),
     " Share Progress with Teacher"
   )));
 });
-const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast: addToast2, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens }) => {
+const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast: addToast2, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true);
   const [gradedIds, setGradedIds] = useState(/* @__PURE__ */ new Set());
+  const [teacherComments, setTeacherComments] = useState(() => {
+    try {
+      const stored = localStorage.getItem("allo_teacher_comments");
+      if (stored) return new Map(JSON.parse(stored));
+    } catch (_) {
+    }
+    return /* @__PURE__ */ new Map();
+  });
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("allo_teacher_comments", JSON.stringify(Array.from(teacherComments.entries())));
+    } catch (_) {
+    }
+  }, [teacherComments]);
+  const _commentKey = (studentId, resourceId) => `${studentId || "unknown"}:${resourceId || "unknown"}`;
+  const getCommentsFor = React.useCallback((studentId, resourceId) => {
+    return teacherComments.get(_commentKey(studentId, resourceId)) || [];
+  }, [teacherComments]);
+  const addComment = (studentId, resourceId, text) => {
+    const trimmed = (text || "").trim();
+    if (!trimmed) return;
+    setTeacherComments((prev) => {
+      const next = new Map(prev);
+      const key = _commentKey(studentId, resourceId);
+      const list = next.get(key) || [];
+      next.set(key, [...list, { id: "c-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), text: trimmed, timestamp: (/* @__PURE__ */ new Date()).toISOString() }]);
+      return next;
+    });
+    if (addToast2) addToast2(t("dashboard.comments.saved") || "Comment saved.", "success");
+  };
+  const deleteComment = (studentId, resourceId, commentId) => {
+    setTeacherComments((prev) => {
+      const next = new Map(prev);
+      const key = _commentKey(studentId, resourceId);
+      const list = next.get(key) || [];
+      const updated = list.filter((c) => c.id !== commentId);
+      if (updated.length === 0) next.delete(key);
+      else next.set(key, updated);
+      return next;
+    });
+  };
   const [studentFilter, setStudentFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("students");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -2056,6 +2963,211 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       }
       return next;
     });
+  };
+  const getCurrentFilteredStudents = React.useCallback(() => {
+    return (dashboardData || []).filter((s2) => {
+      if (studentFilter === "probes") return s2.probeHistory && Object.keys(s2.probeHistory).length > 0;
+      if (studentFilter === "surveys") return s2.surveyResponses && s2.surveyResponses.length > 0;
+      if (studentFilter === "notebook") return (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"));
+      if (studentFilter === "graded") return gradedIds.has(s2.id);
+      if (studentFilter === "ungraded") return !gradedIds.has(s2.id);
+      return true;
+    });
+  }, [dashboardData, studentFilter, gradedIds]);
+  const handleBulkMarkGraded = () => {
+    const students = getCurrentFilteredStudents();
+    if (students.length === 0) {
+      if (addToast2) addToast2(t("dashboard.bulk.no_students_in_filter") || "No students in the current filter.", "info");
+      return;
+    }
+    const ids = students.map((s2) => s2.id);
+    setGradedIds((prev) => {
+      const next = new Set(prev);
+      let added = 0;
+      ids.forEach((id) => {
+        if (!next.has(id)) {
+          next.add(id);
+          added++;
+        }
+      });
+      if (addToast2) addToast2(t("dashboard.bulk.marked_graded", { count: added }) || `Marked ${added} student${added === 1 ? "" : "s"} graded.`, "success");
+      return next;
+    });
+  };
+  const handleBulkUnmarkGraded = () => {
+    const students = getCurrentFilteredStudents();
+    if (students.length === 0) {
+      if (addToast2) addToast2(t("dashboard.bulk.no_students_in_filter") || "No students in the current filter.", "info");
+      return;
+    }
+    const ids = new Set(students.map((s2) => s2.id));
+    setGradedIds((prev) => {
+      const next = new Set(prev);
+      let removed = 0;
+      ids.forEach((id) => {
+        if (next.has(id)) {
+          next.delete(id);
+          removed++;
+        }
+      });
+      if (addToast2) addToast2(t("dashboard.bulk.unmarked_graded", { count: removed }) || `Cleared graded flag on ${removed} student${removed === 1 ? "" : "s"}.`, "info");
+      return next;
+    });
+  };
+  const handleBulkExportNotebooksPDF = async () => {
+    const students = getCurrentFilteredStudents().filter((s2) => (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart")));
+    if (students.length === 0) {
+      if (addToast2) addToast2(t("dashboard.bulk.no_notebook_students") || "No students in the current filter have notebook entries.", "info");
+      return;
+    }
+    if (!window.jspdf) {
+      if (addToast2) addToast2(t("dashboard.bulk.pdf_unavailable") || "PDF library not loaded.", "error");
+      return;
+    }
+    if (addToast2) addToast2(t("dashboard.bulk.generating_notebooks_pdf", { count: students.length }) || `Generating notebook PDF for ${students.length} student${students.length === 1 ? "" : "s"}...`, "info");
+    const { jsPDF } = window.jspdf;
+    const doc2 = new jsPDF();
+    const escapeHtml = (s2) => String(s2 || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const renderCommentsBlock = (studentId, resourceId) => {
+      const list = getCommentsFor(studentId, resourceId);
+      if (!list || list.length === 0) return "";
+      const items = list.map((c) => `
+              <li style="margin-bottom:8px; padding:8px 10px; background:#fffbeb; border-left:3px solid #f59e0b; border-radius:4px;">
+                  <div style="font-size:0.85em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(c.text)}</div>
+                  <div style="font-size:0.7em; color:#92400e; font-style:italic; margin-top:4px;">\u{1F4DD} ${new Date(c.timestamp).toLocaleString()}</div>
+              </li>
+          `).join("");
+      return `
+              <div style="margin-top:12px;">
+                  <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">\u{1F4AC} Teacher notes (${list.length})</div>
+                  <ul style="list-style:none; padding:0; margin:0;">${items}</ul>
+              </div>
+          `;
+    };
+    const studentSections = students.map((student, sidx) => {
+      const notebookEntries = (student.history || []).filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"));
+      const entriesHtml = notebookEntries.map((item) => {
+        try {
+          const body = generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : "";
+          const comments = renderCommentsBlock(student.id, item.id);
+          return body + comments;
+        } catch (_) {
+          return "";
+        }
+      }).filter(Boolean).join('<hr style="margin:30px 0; border:0; border-top:1px dashed #cbd5e1;" />');
+      const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(student.id, item.id).length, 0);
+      return `
+              <div style="margin-bottom:40px; ${sidx > 0 ? "page-break-before:always;" : ""}">
+                  <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
+                      ${student.studentNickname || "Anonymous"} \u2014 Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? "entry" : "entries"})${commentCount > 0 ? ` <span style="font-size:11px; font-weight:normal; color:#92400e;">\xB7 ${commentCount} teacher note${commentCount === 1 ? "" : "s"}</span>` : ""}
+                  </h2>
+                  ${entriesHtml || '<p style="color:#64748b; font-style:italic;">No notebook entries.</p>'}
+              </div>
+          `;
+    }).join("");
+    const reportHtml = `
+          <div style="font-family:Helvetica,sans-serif; padding:30px; color:#1e293b; font-size:11px; line-height:1.5;">
+              <h1 style="font-size:20px; color:#4f46e5; border-bottom:2px solid #4f46e5; padding-bottom:8px; margin-bottom:4px;">Class Notebook Export</h1>
+              <p style="font-size:11px; color:#64748b; margin-top:0;">${students.length} students \xB7 ${(/* @__PURE__ */ new Date()).toLocaleDateString()} \xB7 Generated by AlloFlow</p>
+              ${studentSections}
+          </div>
+      `;
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "0";
+    container.innerHTML = reportHtml;
+    document.body.appendChild(container);
+    try {
+      await doc2.html(container, {
+        callback: (d) => {
+          d.save(`class_notebooks_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`);
+          if (addToast2) addToast2(t("dashboard.bulk.notebooks_pdf_saved") || "Class notebooks PDF saved.", "success");
+        },
+        x: 8,
+        y: 8,
+        width: 195,
+        windowWidth: 800
+      });
+    } catch (err) {
+      if (addToast2) addToast2("PDF error: " + err.message, "error");
+    }
+    document.body.removeChild(container);
+  };
+  const handleBulkGenerateFeedback = async () => {
+    const students = getCurrentFilteredStudents().filter((s2) => (s2.history || []).some((h) => h && h.type === "note-taking"));
+    if (students.length === 0) {
+      if (addToast2) addToast2(t("dashboard.bulk.no_notebook_students") || "No students with note-taking entries in the current filter.", "info");
+      return;
+    }
+    if (typeof callGemini !== "function") {
+      if (addToast2) addToast2(t("dashboard.bulk.no_ai") || "AI is not available.", "warning");
+      return;
+    }
+    if (addToast2) addToast2(t("dashboard.bulk.generating_feedback", { count: students.length }) || `Generating feedback messages for ${students.length} student${students.length === 1 ? "" : "s"}...`, "info");
+    const results = [];
+    for (const student of students) {
+      const notes = (student.history || []).filter((h) => h && h.type === "note-taking").slice(0, 3);
+      const sample = notes.map((n) => {
+        const d = n.data || {};
+        const tt = d.templateType || "cornell-notes";
+        return `${tt}: ${JSON.stringify(d).slice(0, 600)}`;
+      }).join("\n---\n");
+      const prompt = `
+You are a teacher writing a short hand-back feedback note to ONE student about their note-taking work this week. Lead with one specific strength (quote their work). Then ONE concrete growth nudge. Keep it under 80 words total. Warm, direct, growth-focused. No grades or numbers.
+
+STUDENT WORK SAMPLE:
+${sample}
+
+Return ONLY the feedback text (no JSON, no headers, just the paragraph).
+`.trim();
+      try {
+        const txt = await callGemini(prompt, false);
+        results.push({ name: student.studentNickname || "Anonymous", feedback: (txt || "").trim() });
+      } catch (e) {
+        results.push({ name: student.studentNickname || "Anonymous", feedback: "(could not generate)" });
+      }
+    }
+    if (!window.jspdf) {
+      if (addToast2) addToast2("PDF library not loaded.", "error");
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc2 = new jsPDF();
+    const sections = results.map((r, i) => `
+          <div style="margin-bottom:30px; padding:15px; background:#fffbeb; border-left:4px solid #f59e0b; ${i > 0 && i % 3 === 0 ? "page-break-before:always;" : ""}">
+              <div style="font-size:13px; font-weight:bold; color:#92400e; margin-bottom:6px;">\u{1F4E8} ${r.name}</div>
+              <div style="font-size:11px; color:#1e293b; line-height:1.5;">${(r.feedback || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>")}</div>
+          </div>
+      `).join("");
+    const reportHtml = `
+          <div style="font-family:Helvetica,sans-serif; padding:30px; color:#1e293b; font-size:11px;">
+              <h1 style="font-size:18px; color:#4f46e5; margin-bottom:4px;">Class Feedback Sheets</h1>
+              <p style="font-size:10px; color:#64748b;">Cut along the dashed lines and hand back to each student. ${(/* @__PURE__ */ new Date()).toLocaleDateString()}</p>
+              ${sections}
+          </div>
+      `;
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "0";
+    container.innerHTML = reportHtml;
+    document.body.appendChild(container);
+    try {
+      await doc2.html(container, {
+        callback: (d) => {
+          d.save(`class_feedback_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`);
+          if (addToast2) addToast2(t("dashboard.bulk.feedback_pdf_saved") || "Feedback PDF saved.", "success");
+        },
+        x: 8,
+        y: 8,
+        width: 195,
+        windowWidth: 800
+      });
+    } catch (err) {
+      if (addToast2) addToast2("PDF error: " + err.message, "error");
+    }
+    document.body.removeChild(container);
   };
   const calculateScore = (history) => {
     if (!history || !Array.isArray(history)) return t("dashboard.status.zero_activities");
@@ -2252,6 +3364,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             ${dashboardData.filter((s2) => {
       if (studentFilter === "probes") return s2.probeHistory && Object.keys(s2.probeHistory).length > 0;
       if (studentFilter === "surveys") return s2.surveyResponses && s2.surveyResponses.length > 0;
+      if (studentFilter === "notebook") return (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"));
       if (studentFilter === "graded") return gradedIds.has(s2.id);
       if (studentFilter === "ungraded") return !gradedIds.has(s2.id);
       return true;
@@ -2263,6 +3376,9 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       const sSessions = student.sessionCounter || 0;
       const sProbeWcpm = sProbes.filter((p) => p.wcpm !== void 0);
       const avgWcpm = sProbeWcpm.length > 0 ? (sProbeWcpm.reduce((s2, p) => s2 + p.wcpm, 0) / sProbeWcpm.length).toFixed(1) : "N/A";
+      const sNotes = (student.history || []).filter((h) => h.type === "note-taking");
+      const sAnchorCharts = (student.history || []).filter((h) => h.type === "anchor-chart");
+      const sNotebookFeedback = sNotes.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
       return `
                 <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; ${idx > 0 ? "page-break-before: auto;" : ""}">
                     <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333;">Student ${idx + 1}: ${student.studentNickname}</h3>
@@ -2287,6 +3403,18 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             <td style="padding: 4px 6px; color: #666;">${t("research.explore_challenges")}</td>
                             <td style="padding: 4px 6px; font-weight: bold;">${sExplore.length}</td>
                         </tr>
+                        ${sNotes.length + sAnchorCharts.length > 0 ? `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">Notebook Activity (notes + charts)</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sNotes.length + sAnchorCharts.length}</td>
+                        </tr>
+                        ${sNotebookFeedback > 0 ? `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">AI feedback requests on notes</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sNotebookFeedback}</td>
+                        </tr>
+                        ` : ""}
+                        ` : ""}
                     </table>
                     ${sProbeWcpm.length > 0 ? `
                     <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t("teacher.research.probe_history_wcpm_label") || "Probe History (WCPM):"}</p>
@@ -2461,6 +3589,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   };
   const handleExportCSV = () => {
     if (!dashboardData || dashboardData.length === 0) return;
+    const registryHeaders = getTeacherMetricRegistry().map((e) => e.label);
     const headers = [
       t("dashboard.csv.header_name"),
       t("dashboard.csv.header_date"),
@@ -2470,7 +3599,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       "Probes",
       "Avg WCPM",
       "Surveys",
-      "Sessions"
+      "Sessions",
+      "Cornell Notes",
+      "Lab Reports",
+      "Reading Responses",
+      "Anchor Charts",
+      "Notebook Feedback Requests",
+      ...registryHeaders
     ];
     const rows = dashboardData.map((student) => {
       const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
@@ -2504,7 +3639,15 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       const avgWcpm = wcpmProbes.length > 0 ? (wcpmProbes.reduce((sum, x) => sum + x.wcpm, 0) / wcpmProbes.length).toFixed(0) : "N/A";
       const surveyCount = s.surveyResponses ? s.surveyResponses.length : 0;
       const sessionCount = s.sessionCounter || 0;
-      return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}"`;
+      const hist = student.history || [];
+      const noteEntries = hist.filter((h) => h && h.type === "note-taking");
+      const cornellCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length;
+      const labCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "lab-report").length;
+      const readingCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length;
+      const anchorCount = hist.filter((h) => h && h.type === "anchor-chart").length;
+      const feedbackCount = noteEntries.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
+      const registryCounts = getTeacherMetricRegistry().map((entry) => entry.count(student));
+      return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map((n) => `"${n}"`).join(",")}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -2525,53 +3668,57 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       "aria-modal": "true",
       className: "fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-lg text-indigo-600" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 })), /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black text-slate-800" }, t("dashboard.grading_dashboard"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, dashboardData.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 })), /* @__PURE__ */ React.createElement("h2", { className: "text-base sm:text-xl font-black text-slate-800 truncate" }, t("dashboard.grading_dashboard"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-2 flex-wrap" }, dashboardData.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: handleExportCSV,
         "data-help-key": "dashboard_export_csv_btn",
-        className: "text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-green-200 shadow-sm flex items-center gap-1",
+        className: "text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-green-200 shadow-sm flex items-center gap-1",
         title: t("dashboard.export_csv_tooltip"),
         "aria-label": t("dashboard.export_csv_tooltip")
       },
       /* @__PURE__ */ React.createElement(FileDown, { size: 14 }),
       " ",
-      t("dashboard.export_csv")
+      /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("dashboard.export_csv")),
+      /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "CSV")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: handleExportResearchPDF,
         "data-help-key": "dashboard_export_research_btn",
-        className: "text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-purple-200 shadow-sm flex items-center gap-1",
+        className: "text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-purple-200 shadow-sm flex items-center gap-1",
         title: t("research.export_apa_title"),
         "aria-label": t("teacher.research.export_btn_aria") || "Export Research Report"
       },
       /* @__PURE__ */ React.createElement(FileDown, { size: 14 }),
-      " \u{1F4CA} Research PDF"
+      " ",
+      /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u{1F4CA} Research PDF"),
+      /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "\u{1F4CA} PDF")
     )), dashboardData.length > 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: handleClearAll,
         "data-help-key": "dashboard_clear_all_btn",
-        className: "text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-transparent hover:border-red-100",
+        className: "text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-transparent hover:border-red-100",
         title: t("dashboard.reset_tooltip"),
         "aria-label": t("dashboard.reset_tooltip")
       },
-      t("dashboard.clear_all")
+      /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("dashboard.clear_all")),
+      /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "Clear")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onClose,
-        className: "p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
+        className: "p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shrink-0",
         autoFocus: true,
         "aria-label": t("common.close_dashboard")
       },
       /* @__PURE__ */ React.createElement(X, { size: 24 })
-    ))), dashboardData.length > 0 && dashboardView === "list" && /* @__PURE__ */ React.createElement("div", { className: "flex px-6 gap-6" }, /* @__PURE__ */ React.createElement(
+    ))), dashboardData.length > 0 && dashboardView === "list" && /* @__PURE__ */ React.createElement("div", { className: "flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setActiveTab("students"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === "students" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "students" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       t("dashboard.tab_students"),
       " (",
@@ -2581,14 +3728,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       "button",
       {
         onClick: () => setActiveTab("insights"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === "insights" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "insights" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       t("dashboard.tab_insights")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setActiveTab("behavior"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === "behavior" ? "border-orange-600 text-orange-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "behavior" ? "border-orange-600 text-orange-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       "\u{1F50D} ",
       t("behavior_lens.hub.title") || "Behavior"
@@ -2596,21 +3743,21 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       "button",
       {
         onClick: () => setActiveTab("stems"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === "stems" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "stems" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       "\u{1F52C} STEM Stations"
     ))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex-grow p-6 overflow-y-auto bg-slate-100" }, dashboardView === "detail" && selectedStudent ? /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-6 mb-6 border-b border-slate-200 pb-6 sticky top-0 bg-slate-50 z-10 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-6" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex-grow p-6 overflow-y-auto bg-slate-100" }, dashboardView === "detail" && selectedStudent ? /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3 sm:gap-6 mb-6 border-b border-slate-200 pb-4 sm:pb-6 sticky top-0 bg-slate-50 z-10 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 sm:gap-6 min-w-0 flex-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.check"),
         onClick: () => setDashboardView("list"),
-        className: "flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0"
+        className: "flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0 text-xs sm:text-sm"
       },
       /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
       " ",
-      t("dashboard.back_button")
-    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-slate-800 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md border-4 border-indigo-100" }, selectedStudent.studentNickname.charAt(0).toUpperCase()), gradedIds.has(selectedStudent.id) && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }))), selectedStudent.studentNickname), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-400" }, new Date(selectedStudent.timestamp).toLocaleString()), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 hidden sm:block" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 12 }), " ", t("dashboard.detail.adventure_badge", { level: getStudentLevel(selectedStudent.history) })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 12 }), " ", t("dashboard.detail.quiz_badge", { count: quizHistory.length })), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1" }, "\u{1F4CA} ", Object.values(selectedStudent.probeHistory).flat().length, " Probes"), selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, "\u{1F4DD} ", selectedStudent.surveyResponses.length, " Surveys")))), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? "bg-green-50 border-green-500 text-green-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}` }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("dashboard.back_button"))
+    ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h2", { className: "text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base sm:text-xl shadow-md border-2 sm:border-4 border-indigo-100" }, selectedStudent.studentNickname.charAt(0).toUpperCase()), gradedIds.has(selectedStudent.id) && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }))), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, selectedStudent.studentNickname)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-400" }, new Date(selectedStudent.timestamp).toLocaleString()), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 hidden sm:block" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 12 }), " ", t("dashboard.detail.adventure_badge", { level: getStudentLevel(selectedStudent.history) })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 12 }), " ", t("dashboard.detail.quiz_badge", { count: quizHistory.length })), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1" }, "\u{1F4CA} ", Object.values(selectedStudent.probeHistory).flat().length, " Probes"), selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, "\u{1F4DD} ", selectedStudent.surveyResponses.length, " Surveys")))), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? "bg-green-50 border-green-500 text-green-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}` }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.text_field"),
@@ -2628,7 +3775,21 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         ],
         color: studentAvg >= analytics.averageScore ? "green" : "orange"
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "w-1/2 flex flex-col justify-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-slate-50 rounded-lg border border-slate-100 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-900" }, studentAvg, "%"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("dashboard.charts.student_avg"))), /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-slate-50 rounded-lg border border-slate-100 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl font-bold text-slate-600" }, analytics.averageScore, "%"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("dashboard.charts.class_avg")))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.charts.quiz_participation")), /* @__PURE__ */ React.createElement("div", { className: "flex items-end gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl font-black text-slate-800" }, quizHistory.length), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium text-slate-600 mb-1" }, t("dashboard.charts.quizzes_taken"))))), (selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2" }, "\u{1F4CA} Assessment & Research Data"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" }, selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-xl p-4 border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-amber-700" }, Object.values(selectedStudent.probeHistory).flat().length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase mt-1" }, t("probes.probe_results")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2" }, Object.keys(selectedStudent.probeHistory).map((name) => /* @__PURE__ */ React.createElement("div", { key: name, className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, name), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, selectedStudent.probeHistory[name].length, " probes"))))), selectedStudent.interventionLogs && selectedStudent.interventionLogs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 rounded-xl p-4 border border-blue-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-700" }, selectedStudent.interventionLogs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-600 uppercase mt-1" }, t("research.intervention_logs"))), selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 rounded-xl p-4 border border-purple-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-700" }, selectedStudent.surveyResponses.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase mt-1" }, t("research.survey_responses")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2" }, selectedStudent.surveyResponses.slice(-1).map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i }, "Latest: ", r.type || "survey", " (", new Date(r.timestamp || Date.now()).toLocaleDateString(), ")")))), selectedStudent.sessionCounter !== void 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-4 border border-emerald-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-emerald-700" }, selectedStudent.sessionCounter), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 uppercase mt-1" }, t("research.sessions_completed")), selectedStudent.fidelityLog && selectedStudent.fidelityLog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2" }, selectedStudent.fidelityLog.length, " fidelity records"))), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 space-y-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("research.recent_probe_results")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, Object.entries(selectedStudent.probeHistory).flatMap(
+    )), /* @__PURE__ */ React.createElement("div", { className: "w-1/2 flex flex-col justify-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-slate-50 rounded-lg border border-slate-100 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-900" }, studentAvg, "%"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("dashboard.charts.student_avg"))), /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-slate-50 rounded-lg border border-slate-100 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl font-bold text-slate-600" }, analytics.averageScore, "%"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("dashboard.charts.class_avg")))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.charts.quiz_participation")), /* @__PURE__ */ React.createElement("div", { className: "flex items-end gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl font-black text-slate-800" }, quizHistory.length), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium text-slate-600 mb-1" }, t("dashboard.charts.quizzes_taken"))))), /* @__PURE__ */ React.createElement(AllToolActivityPanel, { student: selectedStudent, t }), (selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2" }, "\u{1F4CA} Assessment & Research Data"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4" }, selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-xl p-4 border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-amber-700" }, Object.values(selectedStudent.probeHistory).flat().length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase mt-1" }, t("probes.probe_results")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2" }, Object.keys(selectedStudent.probeHistory).map((name) => /* @__PURE__ */ React.createElement("div", { key: name, className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, name), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, selectedStudent.probeHistory[name].length, " probes"))))), selectedStudent.interventionLogs && selectedStudent.interventionLogs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 rounded-xl p-4 border border-blue-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-700" }, selectedStudent.interventionLogs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-600 uppercase mt-1" }, t("research.intervention_logs"))), selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 rounded-xl p-4 border border-purple-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-700" }, selectedStudent.surveyResponses.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase mt-1" }, t("research.survey_responses")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2" }, selectedStudent.surveyResponses.slice(-1).map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i }, "Latest: ", r.type || "survey", " (", new Date(r.timestamp || Date.now()).toLocaleDateString(), ")")))), selectedStudent.sessionCounter !== void 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-4 border border-emerald-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-emerald-700" }, selectedStudent.sessionCounter), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 uppercase mt-1" }, t("research.sessions_completed")), selectedStudent.fidelityLog && selectedStudent.fidelityLog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2" }, selectedStudent.fidelityLog.length, " fidelity records")), (() => {
+      const hist = selectedStudent.history || [];
+      const noteEntries = hist.filter((h) => h && h.type === "note-taking");
+      const anchorEntries = hist.filter((h) => h && h.type === "anchor-chart");
+      const totalNotebook = noteEntries.length + anchorEntries.length;
+      if (totalNotebook === 0) return null;
+      const byType = {
+        "cornell-notes": noteEntries.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length,
+        "lab-report": noteEntries.filter((e) => (e.data && e.data.templateType) === "lab-report").length,
+        "reading-response": noteEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length,
+        "anchor-chart": anchorEntries.length
+      };
+      const feedbackEvents = noteEntries.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
+      return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-4 border border-violet-200", "data-help-key": "dashboard_notebook_activity_tile" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, totalNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.notebook_activity") || "Notebook Activity"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2 space-y-0.5" }, byType["cornell-notes"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D3} Cornell"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["cornell-notes"])), byType["lab-report"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F9EA} Lab Report"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["lab-report"])), byType["reading-response"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D6} Reading"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["reading-response"])), byType["anchor-chart"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4CB} Anchor Chart"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["anchor-chart"])), feedbackEvents > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4AC} AI feedback"), /* @__PURE__ */ React.createElement("span", null, feedbackEvents, "\xD7"))));
+    })()), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 space-y-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("research.recent_probe_results")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, Object.entries(selectedStudent.probeHistory).flatMap(
       ([name, probes]) => probes.slice(-3).map((p, i) => /* @__PURE__ */ React.createElement("div", { key: name + "-" + i, className: "flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, name), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, p.probeType || p.type || "Probe"), p.wcpm !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-amber-700" }, p.wcpm, " WCPM"), p.dcpm !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-amber-700" }, p.dcpm, " DCPM"), p.accuracy !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-emerald-700" }, Math.round(p.accuracy * 100), "%"), p.score !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-indigo-700" }, p.score), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()))))
     ))), selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase mb-2" }, t("research.external_cbm_scores")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => /* @__PURE__ */ React.createElement("div", { key: source, className: "bg-slate-50 rounded-lg px-3 py-2 border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, source), Array.isArray(scores) ? scores.slice(-1).map((s2, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-sm font-bold text-slate-800" }, s2.score || s2.value || JSON.stringify(s2))) : /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, JSON.stringify(scores))))))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto custom-scrollbar space-y-6 pb-10" }, (selectedStudent.history || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: item.id || idx, className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg text-slate-800" }, item.title || "Untitled Resource"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100" }, item.type)), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 font-mono" }, new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), item.meta && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 italic border-l-2 border-slate-200 pl-3 mb-4" }, item.meta), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-4 border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
       "div",
@@ -2638,7 +3799,17 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           __html: generateResourceHTML ? generateResourceHTML(item, true, selectedStudent.responses || {}) : "<p>Error: Renderer not available.</p>"
         }
       }
-    )))), selectedStudent.history.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 italic" }, t("dashboard.empty.no_history")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, dashboardData.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-slate-600 group-hover:text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-600 group-hover:text-indigo-700" }, t("dashboard.drop_files")), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors" }, t("dashboard.batch_supported")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement(
+      TeacherCommentThread,
+      {
+        studentId: selectedStudent.id,
+        resourceId: item.id,
+        comments: getCommentsFor(selectedStudent.id, item.id),
+        onAdd: addComment,
+        onDelete: deleteComment,
+        t
+      }
+    ))), selectedStudent.history.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 italic" }, t("dashboard.empty.no_history")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, dashboardData.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-slate-600 group-hover:text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-600 group-hover:text-indigo-700" }, t("dashboard.drop_files")), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors" }, t("dashboard.batch_supported")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.upload_json_file"),
@@ -2660,10 +3831,54 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         "data-help-key": "dashboard_add_file_btn_input",
         className: "absolute inset-0 opacity-0 cursor-pointer w-full h-full"
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors", onClick: handleClearAll, role: "button", tabIndex: "0", "aria-label": t("dashboard.stats.clear_dashboard"), onKeyDown: (e) => e.key === "Enter" && handleClearAll() }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full text-red-600" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-red-700" }, t("dashboard.stats.clear_dashboard")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.clear_desc"))))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, [
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors", onClick: handleClearAll, role: "button", tabIndex: "0", "aria-label": t("dashboard.stats.clear_dashboard"), onKeyDown: (e) => e.key === "Enter" && handleClearAll() }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full text-red-600" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-red-700" }, t("dashboard.stats.clear_dashboard")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.clear_desc"))))), (() => {
+      const filteredCount = getCurrentFilteredStudents().length;
+      const filteredNotebookCount = getCurrentFilteredStudents().filter((s2) => (s2.history || []).some((h) => h && h.type === "note-taking")).length;
+      if (filteredCount === 0) return null;
+      return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2", "data-help-key": "dashboard_bulk_actions_toolbar" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto" }, t("dashboard.bulk.label") || "Bulk actions", " (", filteredCount, "):"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: handleBulkMarkGraded,
+          className: "text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors",
+          title: t("dashboard.bulk.mark_graded_tooltip") || "Mark all currently-filtered students as graded"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u2705 Mark all graded"),
+        /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "\u2705 Mark")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: handleBulkUnmarkGraded,
+          className: "text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors",
+          title: t("dashboard.bulk.unmark_graded_tooltip") || "Clear graded flag on all currently-filtered students"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u2B1C Clear graded"),
+        /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "\u2B1C Clear")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: handleBulkExportNotebooksPDF,
+          disabled: filteredNotebookCount === 0,
+          className: "text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+          title: filteredNotebookCount === 0 ? t("dashboard.bulk.no_notebook_in_filter") || "No filtered students have notebook entries" : t("dashboard.bulk.export_notebooks_tooltip") || "Export all filtered students' notebooks as one PDF (cut-apart classroom set)"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u{1F4D3} Export notebooks (", filteredNotebookCount, ")"),
+        /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "\u{1F4D3} PDF (", filteredNotebookCount, ")")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: handleBulkGenerateFeedback,
+          disabled: filteredNotebookCount === 0,
+          className: "text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+          title: filteredNotebookCount === 0 ? t("dashboard.bulk.no_notebook_in_filter") || "No filtered students have notebook entries" : t("dashboard.bulk.feedback_tooltip") || "AI generates one short feedback note per student, ready to print + hand back"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u{1F4AC} AI feedback sheets (", filteredNotebookCount, ")"),
+        /* @__PURE__ */ React.createElement("span", { className: "sm:hidden" }, "\u{1F4AC} AI (", filteredNotebookCount, ")")
+      ));
+    })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, [
       ["all", "\u{1F465} All", dashboardData.length],
       ["probes", "\u{1F4CA} Has Probes", dashboardData.filter((s2) => s2.probeHistory && Object.keys(s2.probeHistory).length > 0).length],
       ["surveys", "\u{1F4DD} Has Surveys", dashboardData.filter((s2) => s2.surveyResponses && s2.surveyResponses.length > 0).length],
+      ["notebook", "\u{1F4D3} Has Notebook", dashboardData.filter((s2) => (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"))).length],
       ["graded", "\u2705 Graded", dashboardData.filter((s2) => gradedIds.has(s2.id)).length],
       ["ungraded", "\u2B1C Ungraded", dashboardData.filter((s2) => !gradedIds.has(s2.id)).length]
     ].map(([key, label, count]) => /* @__PURE__ */ React.createElement(
@@ -2680,7 +3895,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-sm border border-slate-400 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-left text-sm text-slate-600 min-w-[600px]" }, /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-50 text-xs uppercase font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_nickname")), /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_date")), /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_progress")), /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_level")), /* @__PURE__ */ React.createElement("th", { className: "p-4 text-right" }, t("dashboard.header_actions")))), /* @__PURE__ */ React.createElement("tbody", { className: "divide-y divide-slate-100" }, dashboardData.map((student, idx) => {
       const level = getStudentLevel(student.history);
       const isGraded = gradedIds.has(student.id);
-      return /* @__PURE__ */ React.createElement("tr", { key: idx, className: `hover:bg-slate-50 transition-colors ${isGraded ? "bg-green-50/30" : ""}` }, /* @__PURE__ */ React.createElement("td", { className: "p-4 font-bold text-indigo-900 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs" }, student.studentNickname.charAt(0).toUpperCase()), isGraded && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }))), student.studentNickname, isGraded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider" }, t("dashboard.table.graded")), student.probeHistory && Object.keys(student.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: Object.values(student.probeHistory).flat().length + " probes" }, "\u{1F4CA}"), student.surveyResponses && student.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200", title: student.surveyResponses.length + " surveys" }, "\u{1F4DD}"), student.sessionCounter > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200", title: student.sessionCounter + " sessions" }, "\u{1F504}")), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-slate-600 font-mono text-xs" }, new Date(student.timestamp).toLocaleDateString(), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, new Date(student.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold border border-green-200" }, calculateScore(student.history))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, level !== "N/A" ? /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold border border-purple-200 flex items-center gap-1 w-fit" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 10 }), " Lvl ", level) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "-")), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-right" }, /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("tr", { key: idx, className: `hover:bg-slate-50 transition-colors ${isGraded ? "bg-green-50/30" : ""}` }, /* @__PURE__ */ React.createElement("td", { className: "p-4 font-bold text-indigo-900 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs" }, student.studentNickname.charAt(0).toUpperCase()), isGraded && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }))), student.studentNickname, isGraded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider" }, t("dashboard.table.graded")), student.probeHistory && Object.keys(student.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: Object.values(student.probeHistory).flat().length + " probes" }, "\u{1F4CA}"), student.surveyResponses && student.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200", title: student.surveyResponses.length + " surveys" }, "\u{1F4DD}"), student.sessionCounter > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200", title: student.sessionCounter + " sessions" }, "\u{1F504}"), (() => {
+        const noteCount = (student.history || []).filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart")).length;
+        return noteCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200", title: noteCount + " notebook entries (notes + anchor charts)" }, "\u{1F4D3}") : null;
+      })(), (() => {
+        const commentCount = Array.from(teacherComments.keys()).filter((k) => k.startsWith(`${student.id}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
+        return commentCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: commentCount + " private teacher notes on this student's work" }, "\u{1F4AC}") : null;
+      })()), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-slate-600 font-mono text-xs" }, new Date(student.timestamp).toLocaleDateString(), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, new Date(student.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold border border-green-200" }, calculateScore(student.history))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, level !== "N/A" ? /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold border border-purple-200 flex items-center gap-1 w-fit" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 10 }), " Lvl ", level) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "-")), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-right" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
@@ -2717,7 +3938,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         label: `${Math.round(analytics.quizCompletionRate)}%`,
         color: "blue"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), (() => {
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), /* @__PURE__ */ React.createElement(CrossToolMisconceptionsSection, { dashboardData, t }), /* @__PURE__ */ React.createElement(ClassNotebookSection, { dashboardData, callGemini, addToast: addToast2, t }), (() => {
       const allProbes = dashboardData.flatMap(
         (s2) => s2.probeHistory ? Object.values(s2.probeHistory).flat() : []
       );
@@ -2940,7 +4161,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           })()
         )
       );
-    })()), activeTab === "behavior" && /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-8 rounded-2xl shadow-sm border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800 mb-2" }, t("behavior_lens.hub.title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-6 max-w-md mx-auto" }, t("behavior_lens.hub.subtitle") || "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools."), /* @__PURE__ */ React.createElement(
+    })()), activeTab === "behavior" && /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl sm:text-5xl mb-4" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-800 mb-2" }, t("behavior_lens.hub.title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-6 max-w-md mx-auto" }, t("behavior_lens.hub.subtitle") || "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools."), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -2950,16 +4171,16 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       },
       "\u{1F50D} ",
       t("behavior_lens.hub.open_btn") || "Open BehaviorLens"
-    ))), activeTab === "stems" && /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 flex items-center gap-2 mb-4" }, t("teacher.stem_stations.section_title") || "\u{1F52C} STEM Station Activity"), (() => {
+    ))), activeTab === "stems" && /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4" }, t("teacher.stem_stations.section_title") || "\u{1F52C} STEM Station Activity"), (() => {
       const stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
       const xpLog = JSON.parse(localStorage.getItem("alloflow_stem_xp_log") || "[]");
       if (stations.length === 0) {
         return /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-3" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("teacher.stem_stations.empty_title") || "No STEM Stations created yet."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("teacher.stem_stations.empty_hint") || "Generate a lesson plan to get AI-recommended STEM tools."));
       }
-      return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-4 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-emerald-700" }, stations.length), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-600 font-bold mt-1" }, t("teacher.stem_stations.stations_created") || "Stations Created")), /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50 rounded-xl p-4 text-center border border-teal-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-teal-700" }, new Set(stations.flatMap((s2) => s2.tools)).size), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-bold mt-1" }, t("teacher.stem_stations.unique_tools_used") || "Unique Tools Used")), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, xpLog.filter((e) => e.stationId).length), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-indigo-600 font-bold mt-1" }, t("teacher.stem_stations.station_xp_events") || "Station XP Events"))), stations.map((st) => {
+      return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 sm:gap-4 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-3 sm:p-4 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl sm:text-2xl font-black text-emerald-700" }, stations.length), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] sm:text-xs text-emerald-600 font-bold mt-1 leading-tight" }, t("teacher.stem_stations.stations_created") || "Stations Created")), /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 sm:p-4 text-center border border-teal-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl sm:text-2xl font-black text-teal-700" }, new Set(stations.flatMap((s2) => s2.tools)).size), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] sm:text-xs text-teal-600 font-bold mt-1 leading-tight" }, t("teacher.stem_stations.unique_tools_used") || "Unique Tools Used")), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-3 sm:p-4 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl sm:text-2xl font-black text-indigo-700" }, xpLog.filter((e) => e.stationId).length), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] sm:text-xs text-indigo-600 font-bold mt-1 leading-tight" }, t("teacher.stem_stations.station_xp_events") || "Station XP Events"))), stations.map((st) => {
         const stationXP = xpLog.filter((e) => e.stationId === st.id);
         const totalXP = stationXP.reduce((s2, e) => s2 + (e.xp || 0), 0);
-        return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-4 border border-slate-400 hover:border-emerald-300 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {
+        return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 hidden sm:inline" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {
           const registry = window.STEM_TOOL_REGISTRY || [];
           const meta = registry.find((r) => r.id === toolId);
           return /* @__PURE__ */ React.createElement("span", { key: toolId, className: "bg-white text-slate-600 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-400" }, "\u{1F9EA} ", meta ? meta.name : toolId);

@@ -1036,7 +1036,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   </div>
                               </div>
                               <div>
-                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-400 font-normal"> (Optional)</span></label>
+                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-600 font-normal"> (Optional)</span></label>
                                   <div className="flex gap-2 mb-2">
                                       <input aria-label={t('common.enter_wiz_interest_input')}
                                         type="text"

@@ -284,7 +284,7 @@
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn'))) : /*#__PURE__*/React.createElement("div", {
     className: "animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("div", {

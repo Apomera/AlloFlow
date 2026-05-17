@@ -204,7 +204,7 @@ const AnchorChartSection = React.memo((props) => {
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: iconPrompt || label, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400 animate-pulse" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
+    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: iconPrompt || label, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onRegenIcon(sectionIndex),
@@ -243,7 +243,7 @@ const AnchorChartSection = React.memo((props) => {
         }
       },
       label
-    ), /* @__PURE__ */ React.createElement("ul", { className: "ac-bullets mt-2 space-y-1" }, bullets.length === 0 && !isEditing ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-400 italic" }, "(no items yet)") : null, bullets.map((b, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { style: { color: marker.hex, fontWeight: "bold", marginTop: 4 } }, "\u2022"), isEditing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("ul", { className: "ac-bullets mt-2 space-y-1" }, bullets.length === 0 && !isEditing ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "(no items yet)") : null, bullets.map((b, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { style: { color: marker.hex, fontWeight: "bold", marginTop: 4 } }, "\u2022"), isEditing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -257,7 +257,7 @@ const AnchorChartSection = React.memo((props) => {
       "button",
       {
         onClick: () => removeBullet(idx),
-        className: "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1",
+        className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1",
         "aria-label": "Remove bullet"
       },
       "\u2715"
@@ -541,7 +541,7 @@ const AnchorChartView = React.memo((props) => {
         "button",
         {
           onClick: () => handleRemoveSection(idx),
-          className: "absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200",
+          className: "absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200",
           "aria-label": `Remove section ${idx + 1}`
         },
         "\u2715 remove"

@@ -1324,7 +1324,7 @@
       if (!results || results.length === 0) return {
         tier: 0,
         label: 'No Data',
-        color: '#94a3b8',
+        color: '#475569',
         bg: '#f1f5f9',
         border: '#e2e8f0',
         emoji: '⚪',
@@ -2399,7 +2399,7 @@
                     const isActiveInput = cqImageGenInput.qid === q.id && cqImageGenInput.idx === idx && cqImageGenInput.field === fieldName;
                     return React.createElement('div', { key: idx, className: 'flex items-start gap-2 p-2 bg-white border border-slate-200 rounded-lg' },
                       cell.image ? React.createElement('img', { src: cell.image, alt: cell.text || '', style: { width: 48, height: 48, objectFit: 'contain', flexShrink: 0 } })
-                        : React.createElement('div', { style: { width: 48, height: 48, flexShrink: 0 }, className: 'bg-slate-100 rounded text-xs text-slate-400 flex items-center justify-center' }, 'No img'),
+                        : React.createElement('div', { style: { width: 48, height: 48, flexShrink: 0 }, className: 'bg-slate-100 rounded text-xs text-slate-600 flex items-center justify-center' }, 'No img'),
                       React.createElement('div', { className: 'flex-1' },
                         React.createElement('input', {
                           type: 'text', 'aria-label': 'Option ' + (idx + 1) + ' text', value: cell.text || '',
@@ -4207,7 +4207,7 @@
         setShowLiveSyncInput(false);
         setLiveSyncCode('');
       },
-      className: "text-blue-400 hover:text-blue-600 p-0.5",
+      className: "text-blue-700 hover:text-blue-600 p-0.5",
       "aria-label": t('common.cancel')
     }, /*#__PURE__*/React.createElement(X, {
       size: 12
@@ -6462,7 +6462,7 @@
       }, t('rti.progress_monitor')))), /*#__PURE__*/React.createElement("div", {
         style: {
           fontSize: '11px',
-          color: '#94a3b8'
+          color: '#475569'
         }
       }, new Date().toLocaleDateString())), /*#__PURE__*/React.createElement("div", {
         className: "grid grid-cols-3 gap-2 mb-3"
@@ -6592,7 +6592,7 @@
         } : null)) : null), React.createElement("div", {
           style: {
             fontSize: "9px",
-            color: "#94a3b8",
+            color: "#475569",
             marginTop: "6px",
             textAlign: "right"
           }
@@ -6871,7 +6871,7 @@
       }, "6 points"))), /*#__PURE__*/React.createElement("span", {
         style: {
           fontSize: "9px",
-          color: "#94a3b8",
+          color: "#475569",
           fontStyle: "italic"
         }
       }, t('rti.ncii_recommended')))), /*#__PURE__*/React.createElement("div", {
@@ -6921,7 +6921,7 @@
         onClick: () => deleteInterventionLog(selectedStudent.name, log.id),
         style: {
           fontSize: '10px',
-          color: '#94a3b8',
+          color: '#475569',
           cursor: 'pointer',
           background: 'none',
           border: 'none',
@@ -6938,7 +6938,7 @@
       }, "\"", log.notes, "\""), /*#__PURE__*/React.createElement("div", {
         style: {
           fontSize: '9px',
-          color: '#94a3b8',
+          color: '#475569',
           marginTop: '2px'
         }
       }, "Started: ", log.startDate, " \u2022 Logged: ", new Date(log.createdAt).toLocaleDateString())))), /*#__PURE__*/React.createElement("div", {

@@ -271,13 +271,13 @@
     className: "font-bold flex items-center gap-2 shrink-0 whitespace-nowrap"
   }, /*#__PURE__*/React.createElement(MapIcon, {
     size: 18,
-    className: "text-yellow-400"
+    className: "text-yellow-700"
   }), " ", t('adventure.title')), adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse"
   }, /*#__PURE__*/React.createElement("span", null, "\uD83C\uDFDB\uFE0F"), " System Sim"), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-2 relative shrink-0"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-yellow-400"
+    className: "text-yellow-700"
   }, "Lvl ", adventureState.level), /*#__PURE__*/React.createElement("div", {
     className: "w-20 h-2 bg-indigo-950 rounded-full overflow-hidden"
   }, /*#__PURE__*/React.createElement("div", {
@@ -309,7 +309,7 @@
   })), adventureEffects.energy !== null && /*#__PURE__*/React.createElement("div", {
     className: `absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.energy > 0 ? 'text-green-400' : 'text-red-500'}`
   }, adventureEffects.energy > 0 ? '+' : '', adventureEffects.energy)), /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-400 shadow-sm shrink-0",
+    className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-700 shadow-sm shrink-0",
     title: t('adventure.tooltips.gold', {
       value: adventureState.gold
     })
@@ -325,7 +325,7 @@
     className: "bg-amber-900/50 border border-amber-600/40 rounded px-1.5 py-0.5 flex items-center gap-1 text-[11px]",
     title: `${resource.name}: ${resource.quantity}${resource.unit || ''}`
   }, /*#__PURE__*/React.createElement("span", null, resource.icon || '📦'), /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-200 font-bold"
+    className: "text-amber-700 font-bold"
   }, resource.quantity, resource.unit ? /*#__PURE__*/React.createElement("span", {
     className: "text-amber-300/70 font-normal ml-0.5"
   }, resource.unit) : ''))), adventureState.systemResources.length > 5 && /*#__PURE__*/React.createElement("span", {
@@ -726,7 +726,7 @@
     className: "w-full md:w-auto px-16 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-3"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 20,
-    className: "text-yellow-400 fill-current animate-pulse"
+    className: "text-yellow-700 fill-current animate-pulse"
   }), t('adventure.start'))))), adventureState.history.map((entry, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     className: `animate-in fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`
@@ -749,7 +749,7 @@
   }, "\u2694\uFE0F ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-800 text-sm font-medium italic leading-relaxed"
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("p", {
-    className: "text-amber-400 text-xs mt-2 animate-pulse"
+    className: "text-amber-700 text-xs mt-2 animate-pulse"
   }, t('adventure.story_unfolds') || '✨ The story unfolds...'))), adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: "flex justify-start animate-pulse"
   }, /*#__PURE__*/React.createElement("div", {
@@ -975,7 +975,7 @@
   }, /*#__PURE__*/React.createElement(Minimize, {
     size: 16
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-black/50 backdrop-blur-md text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
+    className: "bg-black/50 backdrop-blur-md text-yellow-700 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-sm"
   }, "\uD83D\uDCB0"), " ", adventureState.gold), /*#__PURE__*/React.createElement("div", {
@@ -995,7 +995,7 @@
   }, adventureInputMode === 'system' && enableFactionResources && /*#__PURE__*/React.createElement("div", {
     className: "border-b border-amber-500/30 pb-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold text-amber-400 uppercase tracking-wide mb-1 flex items-center gap-1"
+    className: "text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCCA"), " ", t('adventure.system_state')), (adventureState.systemResources || []).length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-1"
   }, adventureState.systemResources.map((resource, idx) => /*#__PURE__*/React.createElement("div", {
@@ -1009,7 +1009,7 @@
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-amber-200/80 truncate max-w-[60px]"
   }, resource.name), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-amber-300 font-bold"
+    className: "text-xs text-amber-700 font-bold"
   }, resource.quantity, resource.unit && /*#__PURE__*/React.createElement("span", {
     className: "text-amber-400/70 font-normal ml-0.5 text-[11px]"
   }, resource.unit)))))) : /*#__PURE__*/React.createElement("div", {
@@ -1154,7 +1154,7 @@
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-300 font-bold text-xs uppercase tracking-wider"
+    className: "text-amber-700 font-bold text-xs uppercase tracking-wider"
   }, "\u2694\uFE0F ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-100 text-sm font-medium italic leading-relaxed"
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("div", {
@@ -1167,7 +1167,7 @@
     const lastFeedback = adventureState.history.slice().reverse().find(h => h && h.type === 'feedback');
     if (lastFeedback) {
       return /*#__PURE__*/React.createElement("div", {
-        className: "text-yellow-300 text-sm mb-3 italic font-medium border-b border-white/10 pb-2"
+        className: "text-yellow-700 text-sm mb-3 italic font-medium border-b border-white/10 pb-2"
       }, renderFormattedText(lastFeedback.text, false, true));
     }
     return null;
@@ -1254,7 +1254,7 @@
   }), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.close'),
     onClick: () => handleRemoveOptionSlot(idx),
-    className: "p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100",
+    className: "p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100",
     title: t('adventure.tooltips.remove_option')
   }, /*#__PURE__*/React.createElement(X, {
     size: 16
@@ -1354,7 +1354,7 @@
     className: "bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all flex items-center gap-3 border-2 border-white/20"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 20,
-    className: "text-yellow-300 fill-current"
+    className: "text-yellow-700 fill-current"
   }), t('adventure.start_sequel')))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-xs text-slate-600 italic"
   }, adventureState.isGameOver ? t('adventure.status.reset_prompt') : t('adventure.status.waiting')))), selectedInventoryItem && /*#__PURE__*/React.createElement("div", {
@@ -1410,7 +1410,7 @@
     className: "flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), " ", t('adventure.use_item'))))))));
 }
 

@@ -464,7 +464,7 @@
                     <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-                                <Sparkles size={32} className="text-yellow-300 animate-pulse" />
+                                <Sparkles size={32} className="text-yellow-700 animate-pulse" />
                             </div>
                             <div>
                                 <h2 className="text-3xl font-black tracking-tight">{isProbeMode ? `📊 ${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : t('word_sounds.title', 'Word Sounds Studio')}</h2>
@@ -1679,7 +1679,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                         setRegeneratingOptions(prev => { const n = {...prev}; delete n[key]; return n; });
                                                                     }
                                                                 }}
-                                                                className="w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-400 hover:text-orange-600 transition-colors flex items-center justify-center"
+                                                                className="w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 hover:text-orange-600 transition-colors flex items-center justify-center"
                                                                 title={t('common.regenerate_this_option')}
                                                             >
                                                                 {regeneratingOptions[`${idx}-rhyme-${i}`] ? <RefreshCw size={14} className="animate-spin" /> : '🔄'}
@@ -1736,7 +1736,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                         setRegeneratingOptions(prev => { const n = {...prev}; delete n[key]; return n; });
                                                                     }
                                                                 }}
-                                                                className="w-8 h-8 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center"
+                                                                className="w-8 h-8 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-600 transition-colors flex items-center justify-center"
                                                                 title={t('common.regenerate_this_option')}
                                                             >
                                                                 {regeneratingOptions[`${idx}-blend-${i}`] ? <RefreshCw size={14} className="animate-spin" /> : '🔄'}

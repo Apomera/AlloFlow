@@ -390,7 +390,7 @@
     title: t('glossary.image_size_tooltip')
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14,
-    className: "text-blue-400"
+    className: "text-blue-700"
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.range_slider'),
     type: "range",
@@ -420,7 +420,7 @@
     "data-help-key": "glossary_search",
     className: "relative w-full sm:w-auto"
   }, /*#__PURE__*/React.createElement(Search, {
-    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400",
+    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-700",
     size: 14
   }), /*#__PURE__*/React.createElement("input", {
     type: "text",
@@ -431,7 +431,7 @@
     className: "pl-8 pr-3 py-1.5 text-sm border border-blue-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"
   }), glossarySearchTerm && /*#__PURE__*/React.createElement("button", {
     onClick: handleSetGlossarySearchTermConst,
-    className: "absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-400 hover:text-blue-600",
+    className: "absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-700 hover:text-blue-600",
     "aria-label": t('common.clear')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
@@ -555,7 +555,7 @@
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 backface-hidden bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center border-4 border-blue-100 shadow-inner"
   }, flashcardMode === 'standard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-6 text-xs font-bold text-blue-400 uppercase tracking-widest"
+    className: "absolute top-6 left-6 text-xs font-bold text-blue-700 uppercase tracking-widest"
   }, t('flashcards.front_label_term')), showFlashcardImages && generatedContent?.data[flashcardIndex].image && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 max-h-[55%] w-auto flex justify-center"
   }, /*#__PURE__*/React.createElement("img", {
@@ -1105,7 +1105,7 @@
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), isAddingTerm ? t('glossary.defining') : t('glossary.add_term'))), (glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm overflow-hidden",
     "data-help-key": "glossary_health_check"
@@ -1148,7 +1148,7 @@
       setGlossaryHealthCheck(null);
       setShowHealthCheckPanel(false);
     },
-    className: "text-xs text-amber-400 hover:text-amber-700 p-0.5 rounded-full hover:bg-amber-200/50 transition-colors",
+    className: "text-xs text-amber-700 hover:text-amber-700 p-0.5 rounded-full hover:bg-amber-200/50 transition-colors",
     title: t('common.dismiss_analysis')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
@@ -1570,7 +1570,7 @@
           }, t('glossary.related_words_label') || 'Related words:'), ' ', allRelated.slice(0, 6).map((w, wi) => /*#__PURE__*/React.createElement("span", {
             key: wi
           }, wi > 0 && /*#__PURE__*/React.createElement("span", {
-            className: "text-slate-300"
+            className: "text-slate-600"
           }, ", "), /*#__PURE__*/React.createElement("span", {
             className: "font-medium text-indigo-800"
           }, w))));
@@ -2082,7 +2082,7 @@
           }, relatedLabel), ' ', allRelL.slice(0, 6).map((w, wi) => /*#__PURE__*/React.createElement("span", {
             key: wi
           }, wi > 0 && /*#__PURE__*/React.createElement("span", {
-            className: "text-slate-300"
+            className: "text-slate-600"
           }, ", "), /*#__PURE__*/React.createElement("span", {
             className: "font-medium text-indigo-800"
           }, w))));
@@ -2252,7 +2252,7 @@
             )
           )
         : /*#__PURE__*/React.createElement("div", {
-            className: "text-center text-red-400 text-xs font-bold py-4"
+            className: "text-center text-red-600 text-xs font-bold py-4"
           }, t('glossary.popups.failed')),
       /*#__PURE__*/React.createElement("div", {
         className: "allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45"

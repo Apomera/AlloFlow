@@ -1288,7 +1288,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.no_langs_selected')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold text-slate-600 mb-1"
   }, t('wizard.interests_label_optional').replace(' (Optional)', ''), /*#__PURE__*/React.createElement("span", {
-    className: "text-slate-400 font-normal"
+    className: "text-slate-600 font-normal"
   }, " (Optional)")), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("input", {

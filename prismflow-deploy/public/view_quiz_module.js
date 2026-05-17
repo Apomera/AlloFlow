@@ -1084,12 +1084,12 @@
       };
       // Per-student table with expand-to-drill-down per row
       var statusBadge = function (cell) {
-        if (!cell) return React.createElement('span', { className: 'text-slate-300', title: 'No response' }, '—');
+        if (!cell) return React.createElement('span', { className: 'text-slate-600', title: 'No response' }, '—');
         if (cell.status === 'correct') return React.createElement('span', { className: 'text-emerald-600', title: cell.aiGraded ? 'AI-graded correct' : 'Correct' }, '✓');
         if (cell.status === 'incorrect') return React.createElement('span', { className: 'text-rose-600', title: cell.aiGraded ? 'AI-graded incorrect' : 'Incorrect' }, '✗');
         if (cell.status === 'idk') return React.createElement('span', { className: 'text-sky-600', title: 'Marked I don\'t know' }, '🤔');
         if (cell.status === 'partially-correct') return React.createElement('span', { className: 'text-amber-600', title: 'Partially correct' }, '◐');
-        return React.createElement('span', { className: 'text-slate-400', title: 'Submitted (ungraded)' }, '·');
+        return React.createElement('span', { className: 'text-slate-600', title: 'Submitted (ungraded)' }, '·');
       };
       body = React.createElement('div', null,
         // Toolbar above the table — CSV export
@@ -1133,7 +1133,7 @@
                         className: 'text-slate-600 hover:text-indigo-600 transition-colors text-xs font-mono',
                         onClick: function (e) { e.stopPropagation(); toggleRowExpanded(row.uid); },
                       }, isExpanded ? '▼' : '▶')
-                    : React.createElement('span', { className: 'text-slate-300 text-xs' }, '·')
+                    : React.createElement('span', { className: 'text-slate-600 text-xs' }, '·')
                 ),
                 React.createElement('td', { className: 'px-2 py-1.5 text-slate-800' }, row.displayName),
                 React.createElement('td', { className: 'text-center px-2 py-1.5' },
@@ -1144,12 +1144,12 @@
                     ? React.createElement('span', {
                         className: 'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'),
                       }, row.totalCorrect + ' (' + pct + '%)')
-                    : React.createElement('span', { className: 'text-xs text-slate-400' }, '—')
+                    : React.createElement('span', { className: 'text-xs text-slate-600' }, '—')
                 ),
                 React.createElement('td', { className: 'text-center px-2 py-1.5' },
                   row.totalIdk > 0
                     ? React.createElement('span', { className: 'text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800' }, row.totalIdk)
-                    : React.createElement('span', { className: 'text-xs text-slate-400' }, '0')
+                    : React.createElement('span', { className: 'text-xs text-slate-600' }, '0')
                 )
               );
               if (!isExpanded) return summaryRow;
@@ -1180,7 +1180,7 @@
                               ? React.createElement('p', { className: 'text-xs text-slate-800 break-words' },
                                   React.createElement('span', { className: 'text-slate-600' }, 'Answered: '),
                                   cell.answerSummary)
-                              : !cell && React.createElement('p', { className: 'text-xs italic text-slate-400' }, 'No response yet')
+                              : !cell && React.createElement('p', { className: 'text-xs italic text-slate-600' }, 'No response yet')
                           ),
                           cell && cell.aiGraded && React.createElement('span', {
                             className: 'flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
@@ -1415,7 +1415,7 @@
               },
                 React.createElement('span', { className: 'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ' + sc.bg + ' ' + sc.text }, sc.icon),
                 React.createElement('span', { className: 'flex-shrink-0 font-semibold text-slate-700 w-32 truncate' }, s.displayName),
-                React.createElement('span', { className: 'flex-grow min-w-0 break-words text-slate-700' }, s.answerSummary || React.createElement('em', { className: 'text-slate-400' }, '(no text)')),
+                React.createElement('span', { className: 'flex-grow min-w-0 break-words text-slate-700' }, s.answerSummary || React.createElement('em', { className: 'text-slate-600' }, '(no text)')),
                 s.aiGraded && React.createElement('span', {
                   className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800',
                   title: 'AI-graded',
@@ -2524,7 +2524,7 @@
     className: "flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement(Users, {
     size: 12,
-    className: "text-orange-400"
+    className: "text-orange-700"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-black text-orange-700"
   }, Object.keys(sessionData?.roster || {}).length, " ", t('quiz.lobby_waiting') || "Ready")), /*#__PURE__*/React.createElement("button", {
@@ -2664,7 +2664,7 @@
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-left"
   }, /*#__PURE__*/React.createElement("h2", {
-    className: "text-3xl font-black text-yellow-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3"
+    className: "text-3xl font-black text-yellow-700 tracking-widest uppercase drop-shadow-md flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 32
   }), " ", t('review_game.title')), /*#__PURE__*/React.createElement("p", {
@@ -2721,7 +2721,7 @@
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-3xl font-black text-white drop-shadow-md"
   }, team.score), scoreAnimation.teamId === team.id && /*#__PURE__*/React.createElement("div", {
-    className: "absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-300 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap shadow-sm"
+    className: "absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-700 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap shadow-sm"
   }, "+", scoreAnimation.points), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mt-2 opacity-50 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
   }, /*#__PURE__*/React.createElement("button", {
@@ -2732,7 +2732,7 @@
     className: "text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded"
   }, "+")), gameTeams.length > 1 && /*#__PURE__*/React.createElement("button", {
     onClick: () => handleRemoveTeam(team.id),
-    className: "absolute -top-2 -right-2 bg-slate-800 text-red-400 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all shadow-sm",
+    className: "absolute -top-2 -right-2 bg-slate-800 text-red-600 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all shadow-sm",
     "aria-label": t('common.remove')
   }, /*#__PURE__*/React.createElement(X, {
     size: 10
@@ -2784,7 +2784,7 @@
   }, reviewGameState.activeQuestion.points), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.close'),
     onClick: () => closeReviewModal(false),
-    className: "absolute top-4 right-4 text-blue-300 hover:text-white transition-colors"
+    className: "absolute top-4 right-4 text-blue-700 hover:text-white transition-colors"
   }, /*#__PURE__*/React.createElement(X, {
     size: 24
   })), /*#__PURE__*/React.createElement("div", {
@@ -2872,7 +2872,7 @@
     className: "font-bold text-xl flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(MonitorPlay, {
     size: 24,
-    className: "text-teal-400"
+    className: "text-teal-700"
   }), " ", t('quiz.presentation_board')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.reset_presentation'),
     onClick: resetPresentation,

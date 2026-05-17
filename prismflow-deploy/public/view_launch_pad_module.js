@@ -148,7 +148,7 @@
   }, t('launch_pad.mic_desc') || 'Some tools use your microphone for dictation, recording, and voice input.'))), _isCanvasEnv && /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '10px',
-      color: '#fbbf24',
+      color: '#b45309',
       margin: 0,
       textAlign: 'center',
       lineHeight: '1.5',

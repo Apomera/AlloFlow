@@ -626,7 +626,7 @@
               ce('input', { type: 'text', value: newGroupName, onChange: function (e) { setNewGroupName(e.target.value); }, placeholder: 'New group name (e.g., Pirate Crew)', 'aria-label': 'New group name', style: { flex: 1, padding: '0.35rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } }),
               ce('button', { onClick: addGroup, disabled: !newGroupName.trim(), style: { padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px solid #059669', background: !newGroupName.trim() ? '#f1f5f9' : '#059669', color: !newGroupName.trim() ? '#94a3b8' : 'white', cursor: !newGroupName.trim() ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' } }, '+ Add group')
             ),
-            groups.length === 0 ? ce('p', { style: { fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic', margin: '0 0 0.5rem 0' } }, 'Create at least one group above to start adding routing rules.') : null,
+            groups.length === 0 ? ce('p', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic', margin: '0 0 0.5rem 0' } }, 'Create at least one group above to start adding routing rules.') : null,
             // Rules list
             composerRules.length > 0 ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               composerRules.map(function (rule) {

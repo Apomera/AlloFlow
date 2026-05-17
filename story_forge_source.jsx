@@ -2572,7 +2572,7 @@ show();
           <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" title={`${xpData.totalXP} XP · ${currentLevel.name}${xpData.streak > 1 ? ` · ${xpData.streak}-day streak` : ''}`}>
             <span>{currentLevel.emoji} {currentLevel.name}</span>
             <span className="text-rose-200">{xpData.totalXP} XP</span>
-            {xpData.streak > 1 && <span className="text-amber-300">🔥{xpData.streak}</span>}
+            {xpData.streak > 1 && <span className="text-amber-700">🔥{xpData.streak}</span>}
             {nextLevel && (
               <div className="w-12 h-1.5 bg-white/20 rounded-full overflow-hidden">
                 <div className="h-full bg-amber-300 rounded-full transition-all" style={{ width: `${Math.min(100, ((xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100)}%` }} />
@@ -2726,7 +2726,7 @@ show();
                   {vocabTerms.map((v, i) => (
                     <div key={i} className="bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group">
                       <span>{v.term}</span>
-                      <button onClick={() => removeVocabTerm(i)} className="text-rose-400 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
+                      <button onClick={() => removeVocabTerm(i)} className="text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
                         <X size={12} />
                       </button>
                     </div>
@@ -2968,7 +2968,7 @@ show();
                     <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Writing Coach Tip</div>
                     <p className="text-xs text-emerald-800 mt-0.5">{grammarResults._overallTip}</p>
                   </div>
-                  <button onClick={() => setGrammarResults({})} className="text-emerald-400 hover:text-emerald-600 ml-auto shrink-0"><X size={14} /></button>
+                  <button onClick={() => setGrammarResults({})} className="text-emerald-700 hover:text-emerald-600 ml-auto shrink-0"><X size={14} /></button>
                 </div>
               )}
 
@@ -2976,7 +2976,7 @@ show();
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm" style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,241,242,0.92)' }}>
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients — click to copy</div>
-                  <div className="text-[11px] font-bold text-rose-400">
+                  <div className="text-[11px] font-bold text-rose-700">
                     {vocabTerms.filter(v => vocabUsage[v.term]).length}/{vocabTerms.length} used
                   </div>
                 </div>
@@ -3003,9 +3003,9 @@ show();
                         </div>
                         {/* Hover Tooltip Word Bank */}
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
-                          <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
-                          {v.definition && <div className="text-[11px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-300 italic">Click to copy · Paste into your paragraph</div>
+                          <div className="text-xs font-bold text-amber-700 mb-1">{v.term}</div>
+                          {v.definition && <div className="text-[11px] text-slate-600 leading-relaxed mb-1">{v.definition}</div>}
+                          <div className="text-[11px] text-slate-600 italic">Click to copy · Paste into your paragraph</div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -3139,7 +3139,7 @@ show();
                       <div className="space-y-1.5">
                         {helpMeResult.map((s, si) => (
                           <div key={si} className="text-xs text-amber-800 flex items-start gap-2">
-                            <span className="text-amber-400 mt-0.5">💡</span>
+                            <span className="text-amber-700 mt-0.5">💡</span>
                             <span>{s}</span>
                           </div>
                         ))}
@@ -3420,7 +3420,7 @@ show();
                   <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">Book Cover</div>
                   {coverArtLoading ? (
                     <div className="w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300">
-                      <RefreshCw size={32} className="text-purple-400 animate-spin" />
+                      <RefreshCw size={32} className="text-purple-700 animate-spin" />
                     </div>
                   ) : coverArt && (
                     <img src={coverArt} alt="Book cover" className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
@@ -3460,7 +3460,7 @@ show();
                       <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-500">Empty paragraph</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
-                        <div className="mt-2 text-[11px] text-purple-400 italic truncate" title={illustrations[p.id].prompt}>
+                        <div className="mt-2 text-[11px] text-purple-700 italic truncate" title={illustrations[p.id].prompt}>
                           Prompt: {illustrations[p.id].prompt.substring(0, 80)}...
                         </div>
                       )}
@@ -3468,7 +3468,7 @@ show();
                     <div className="w-48 shrink-0">
                       {illustrations[p.id]?.isLoading ? (
                         <div className="w-48 h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200">
-                          <RefreshCw size={24} className="text-purple-400 animate-spin" />
+                          <RefreshCw size={24} className="text-purple-700 animate-spin" />
                         </div>
                       ) : illustrations[p.id]?.imageUrl ? (
                         <div className="relative group">
@@ -3524,7 +3524,7 @@ show();
                         </div>
                       ) : illustrations[p.id]?.error ? (
                         <div className="w-48 h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
-                          <span className="text-red-400 text-lg">{'\u26A0\uFE0F'}</span>
+                          <span className="text-red-600 text-lg">{'\u26A0\uFE0F'}</span>
                           <span className="text-[11px] font-bold text-red-500">Generation failed</span>
                           <button
                             onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, p.text, idx); }}
@@ -3541,7 +3541,7 @@ show();
                             disabled={p.text.trim().length < 20 || isProcessing}
                             className="w-48 h-28 bg-purple-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-colors disabled:opacity-40 cursor-pointer"
                           >
-                            <ImageIcon size={24} className="text-purple-400 mb-1" />
+                            <ImageIcon size={24} className="text-purple-700 mb-1" />
                             <span className="text-xs font-bold text-purple-500">Auto-Generate</span>
                           </button>
                           <button
@@ -4285,7 +4285,7 @@ show();
 
               {!gradingResult && !isProcessing && (
                 <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
-                  <Star size={48} className="text-slate-300 mx-auto mb-4" />
+                  <Star size={48} className="text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-600 font-bold">Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story</p>
                 </div>
               )}
@@ -4493,7 +4493,7 @@ show();
                           <img src={illustrations[p.id].imageUrl} alt={`Scene ${idx + 1}`} className="max-w-md rounded-xl shadow-md" />
                         )}
                         <p className="text-sm text-slate-800 leading-relaxed max-w-lg text-center" style={{ textIndent: '2em', textAlign: 'left' }}>{p.text}</p>
-                        {idx < paragraphs.length - 1 && <div className="text-amber-400 text-lg">—</div>}
+                        {idx < paragraphs.length - 1 && <div className="text-amber-700 text-lg">—</div>}
                       </div>
                     ))}
                   </div>
@@ -4563,7 +4563,7 @@ show();
                   >
                     <Star size={14} /> Publish to Class Gallery
                   </button>
-                  <p className="text-[11px] text-violet-400 mt-2">Your cover art, title, word count, and grade will be visible to the class.</p>
+                  <p className="text-[11px] text-violet-700 mt-2">Your cover art, title, word count, and grade will be visible to the class.</p>
                 </div>
               )}
 

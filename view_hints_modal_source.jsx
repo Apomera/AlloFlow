@@ -93,7 +93,7 @@ function HintsModal({
             className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2"
             data-help-key="hints_generate_extension"
           >
-            {isGeneratingExtension ? <RefreshCw size={16} className="animate-spin"/> : <Sparkles size={16} className="text-yellow-400 fill-current"/>}
+            {isGeneratingExtension ? <RefreshCw size={16} className="animate-spin"/> : <Sparkles size={16} className="text-yellow-700 fill-current"/>}
             {isGeneratingExtension ? t('hints.synthesizing') : t('hints.generate_extensions')}
           </button>
         </div>

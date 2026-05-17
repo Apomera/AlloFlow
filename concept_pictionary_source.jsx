@@ -1010,7 +1010,7 @@ const PictionaryHostView = React.memo((props) => {
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen the dashboard'}
             >{isFullscreen ? '↙' : '⛶'}</button>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+            <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5">
@@ -1054,7 +1054,7 @@ const PictionaryHostView = React.memo((props) => {
             <div className="bg-white border border-slate-200 rounded-xl p-3">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Guesses ({guessFeed.length})</div>
               {guessFeed.length === 0 ? (
-                <div className="text-xs text-slate-400 italic">No guesses yet.</div>
+                <div className="text-xs text-slate-600 italic">No guesses yet.</div>
               ) : (
                 <ul className="space-y-1 max-h-48 overflow-y-auto">
                   {guessFeed.slice().reverse().map((g) => (
@@ -1102,7 +1102,7 @@ const PictionaryHostView = React.memo((props) => {
                 <div className="bg-white border border-slate-200 rounded-xl p-3">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">2. Pick drawers (max 4)</div>
                   {rosterEntries.length === 0 ? (
-                    <div className="text-xs text-slate-400 italic">No students in the session yet. Drawer assignment opens once they join.</div>
+                    <div className="text-xs text-slate-600 italic">No students in the session yet. Drawer assignment opens once they join.</div>
                   ) : (
                     <ul className="space-y-1 max-h-48 overflow-y-auto">
                       {rosterEntries.map((s) => {
@@ -1114,7 +1114,7 @@ const PictionaryHostView = React.memo((props) => {
                               disabled={!isDrawer && drawerUids.length >= 4}
                               className={`w-full text-left flex items-center justify-between p-2 rounded text-sm border ${isDrawer ? 'bg-rose-50 border-rose-300 text-rose-900' : 'bg-white border-slate-200 hover:bg-slate-50 disabled:opacity-40'}`}
                             >
-                              <span>{s.name}{s.connected ? '' : <span className="ml-2 text-[10px] text-slate-400 italic">(offline)</span>}</span>
+                              <span>{s.name}{s.connected ? '' : <span className="ml-2 text-[10px] text-slate-600 italic">(offline)</span>}</span>
                               <span className="text-[10px] font-bold">{isDrawer ? '🎨 drawer' : 'guesser'}</span>
                             </button>
                           </li>
@@ -1377,7 +1377,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
               aria-label={isGuestFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               title={isGuestFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
             >{isGuestFullscreen ? '↙' : '⛶'}</button>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+            <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
           </div>
         </div>
         <div className="p-3 sm:p-4">

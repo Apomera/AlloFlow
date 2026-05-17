@@ -340,7 +340,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             onClick={onConfirm}
             className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
           >
-            <Sparkles size={14} className="text-yellow-400 fill-current"/> {t('blueprint.generate')}
+            <Sparkles size={14} className="text-yellow-700 fill-current"/> {t('blueprint.generate')}
           </button>
       </div>
     </div>

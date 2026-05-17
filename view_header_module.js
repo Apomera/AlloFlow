@@ -506,7 +506,7 @@ function HeaderBar(props) {
     {
       onClick: handleSetShowHintsModalToTrue,
       "data-help-key": "hints_recall",
-      className: "p-2 rounded-xl hover:bg-white/10 text-yellow-300 transition-colors relative",
+      className: "p-2 rounded-xl hover:bg-white/10 text-yellow-700 transition-colors relative",
       title: t("common.recall_hints"),
       "aria-label": t("common.recall_hints")
     },

@@ -2943,7 +2943,7 @@
                     i < syllables.length - 1
                       ? React.createElement(
                           "span",
-                          { className: "text-sky-300 ml-2" },
+                          { className: "text-sky-700 ml-2" },
                           "\u00b7",
                         )
                       : null,
@@ -3012,7 +3012,7 @@
                                       onPlayAudio?.(opt);
                                     },
                                     className:
-                                      "text-sky-400 hover:text-sky-600 text-sm ml-1",
+                                      "text-sky-700 hover:text-sky-600 text-sm ml-1",
                                     "aria-label": `Hear ${opt}`,
                                   },
                                   "\ud83d\udd0a",
@@ -3020,7 +3020,7 @@
                               )
                             : React.createElement(
                                 "span",
-                                { className: "text-sky-400 text-2xl" },
+                                { className: "text-sky-700 text-2xl" },
                                 "\ud83d\udd0a",
                               ),
                         );
@@ -3543,7 +3543,7 @@
                           {
                             onClick: () => onPlayAudio(word),
                             className:
-                              "p-2 text-violet-400 hover:text-violet-600",
+                              "p-2 text-violet-700 hover:text-violet-600",
                           },
                             /*#__PURE__*/ React.createElement(Volume2, {
                             size: 18,
@@ -3557,7 +3557,7 @@
                               onUpdateOption(i, null, "remove_member"),
                             "aria-label": t("common.remove"),
                             className:
-                              "p-2 text-red-300 hover:text-red-500 transition-colors",
+                              "p-2 text-red-600 hover:text-red-500 transition-colors",
                             title: t("common.remove"),
                           },
                             /*#__PURE__*/ React.createElement(X, { size: 16 }),
@@ -3571,7 +3571,7 @@
                             onUpdateOption &&
                             onUpdateOption(-1, "", "add_member"),
                           className:
-                            "w-full py-2 border-2 border-dashed border-violet-200 rounded-lg text-violet-400 hover:text-violet-600 hover:border-violet-400 transition-all text-sm font-bold",
+                            "w-full py-2 border-2 border-dashed border-violet-200 rounded-lg text-violet-700 hover:text-violet-600 hover:border-violet-400 transition-all text-sm font-bold",
                         },
                         "+ Add Word",
                       ),
@@ -3618,7 +3618,7 @@
                           {
                             onClick: () => onPlayAudio(word),
                             className:
-                              "p-2 text-amber-400 hover:text-amber-600",
+                              "p-2 text-amber-700 hover:text-amber-600",
                           },
                             /*#__PURE__*/ React.createElement(Volume2, {
                             size: 18,
@@ -3632,7 +3632,7 @@
                               onUpdateOption(i, null, "remove_distractor"),
                             "aria-label": t("common.remove"),
                             className:
-                              "p-2 text-red-300 hover:text-red-500 transition-colors",
+                              "p-2 text-red-600 hover:text-red-500 transition-colors",
                             title: t("common.remove"),
                           },
                             /*#__PURE__*/ React.createElement(X, { size: 16 }),
@@ -3646,7 +3646,7 @@
                             onUpdateOption &&
                             onUpdateOption(-1, "", "add_distractor"),
                           className:
-                            "w-full py-2 border-2 border-dashed border-amber-200 rounded-lg text-amber-400 hover:text-amber-600 hover:border-amber-400 transition-all text-sm font-bold",
+                            "w-full py-2 border-2 border-dashed border-amber-200 rounded-lg text-amber-700 hover:text-amber-600 hover:border-amber-400 transition-all text-sm font-bold",
                         },
                         "+ Add Distractor",
                       ),
@@ -10945,7 +10945,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             { className: "text-center py-12 text-slate-600" },
             /*#__PURE__*/ React.createElement(Ear, {
               size: 48,
-              className: "mx-auto mb-4 text-violet-300",
+              className: "mx-auto mb-4 text-violet-700",
             }),
             /*#__PURE__*/ React.createElement(
               "p",
@@ -10982,7 +10982,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
               return /*#__PURE__*/ React.createElement(
                 "div",
-                { className: "p-8 text-center animate-pulse text-violet-400" },
+                { className: "p-8 text-center animate-pulse text-violet-700" },
                 ts("word_sounds.loading_phonemes") || "Loading sounds...",
               );
             }
@@ -13698,7 +13698,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   wordSoundsScore.streak > 4
                     ? /*#__PURE__*/ React.createElement(
                       "span",
-                      { className: "animate-pulse text-amber-400" },
+                      { className: "animate-pulse text-amber-700" },
                       "\uD83D\uDD25",
                     )
                     : /*#__PURE__*/ React.createElement(Zap, {
@@ -14045,7 +14045,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }, "📖 Use Garden Words"),
                 React.createElement("button", {
                   onClick: function () { setShowGardenBanner(false); },
-                  className: "text-emerald-400 hover:text-emerald-600 text-lg",
+                  className: "text-emerald-700 hover:text-emerald-600 text-lg",
                   "aria-label": "Dismiss"
                 }, "\u00D7"))),
           !isStudentLocked &&
@@ -14856,7 +14856,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               return {
                 tier: 0,
                 label: "No Data",
-                color: "#94a3b8",
+                color: "#475569",
                 bg: "#f1f5f9",
                 border: "#e2e8f0",
                 emoji: "⚪",
@@ -19287,7 +19287,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             setLiveSyncCode("");
                           },
                           className:
-                            "text-blue-400 hover:text-blue-600 p-0.5",
+                            "text-blue-700 hover:text-blue-600 p-0.5",
                           "aria-label": t("common.cancel"),
                         },
                                 /*#__PURE__*/ React.createElement(X, {
@@ -22290,7 +22290,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       ),
                           /*#__PURE__*/ React.createElement(
                         "div",
-                        { style: { fontSize: "11px", color: "#94a3b8" } },
+                        { style: { fontSize: "11px", color: "#475569" } },
                         new Date().toLocaleDateString(),
                       ),
                     ),
@@ -22569,7 +22569,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           {
                             style: {
                               fontSize: "9px",
-                              color: "#94a3b8",
+                              color: "#475569",
                               marginTop: "6px",
                               textAlign: "right",
                             },
@@ -23057,7 +23057,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           {
                             style: {
                               fontSize: "9px",
-                              color: "#94a3b8",
+                              color: "#475569",
                               fontStyle: "italic",
                             },
                           },
@@ -23155,7 +23155,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                     ),
                                   style: {
                                     fontSize: "10px",
-                                    color: "#94a3b8",
+                                    color: "#475569",
                                     cursor: "pointer",
                                     background: "none",
                                     border: "none",
@@ -23186,7 +23186,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               {
                                 style: {
                                   fontSize: "9px",
-                                  color: "#94a3b8",
+                                  color: "#475569",
                                   marginTop: "2px",
                                 },
                               },

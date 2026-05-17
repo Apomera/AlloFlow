@@ -33,6 +33,9 @@ const GoldenThreadPanel = ({
   isEditing,
   onUpdate
 }) => {
+  const {
+    t
+  } = useContext(LanguageContext);
   const [newConcept, setNewConcept] = useState('');
   const [newTerm, setNewTerm] = useState('');
   const dna = config && config.lessonDNA || null;
@@ -99,29 +102,29 @@ const GoldenThreadPanel = ({
     className: "text-amber-500 fill-current"
   }), /*#__PURE__*/React.createElement("h5", {
     className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
-  }, "Golden Thread"), isEditing && /*#__PURE__*/React.createElement("span", {
+  }, t('persona.golden_thread') || 'Golden Thread'), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] text-amber-700 italic ml-auto"
-  }, "Edits apply before generation")), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.edits_apply_before_generation') || 'Edits apply before generation')), /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5"
-  }, "Essential Question"), isEditing ? /*#__PURE__*/React.createElement("textarea", {
+  }, t('persona.essential_question') || 'Essential Question'), isEditing ? /*#__PURE__*/React.createElement("textarea", {
     value: eq,
     onChange: e => writeDNA({
       essentialQuestion: e.target.value
     }),
-    placeholder: "The ONE main learning question students will answer...",
+    placeholder: t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...',
     rows: 2,
     className: "w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
   }) : eq ? /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700 italic leading-relaxed"
   }, "\"", eq, "\"") : /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-500 italic"
-  }, "(none set)")), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.none_set') || '(none set)')), /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
-  }, "Core Concepts"), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.core_concepts') || 'Core Concepts'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-1 items-center"
   }, concepts.map(function (c, i) {
     return /*#__PURE__*/React.createElement("span", {
@@ -129,7 +132,9 @@ const GoldenThreadPanel = ({
       className: "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full"
     }, c, isEditing && /*#__PURE__*/React.createElement("button", {
       onClick: () => removeConcept(i),
-      "aria-label": 'Remove concept ' + c,
+      "aria-label": t('persona.remove_concept_aria', {
+        concept: c
+      }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
     }, "\xD7"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
@@ -144,13 +149,13 @@ const GoldenThreadPanel = ({
         addConcept();
       }
     },
-    placeholder: "+ add concept",
+    placeholder: t('persona.add_concept_placeholder') || '+ add concept',
     className: "text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
   })), !isEditing && concepts.length === 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500 italic"
-  }, "(none set)"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, t('persona.none_set') || '(none set)'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
-  }, "Key Vocabulary"), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.key_vocabulary') || 'Key Vocabulary'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-1 items-center"
   }, terms.map(function (term, i) {
     return /*#__PURE__*/React.createElement("span", {
@@ -158,7 +163,9 @@ const GoldenThreadPanel = ({
       className: "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium"
     }, term, isEditing && /*#__PURE__*/React.createElement("button", {
       onClick: () => removeTerm(i),
-      "aria-label": 'Remove term ' + term,
+      "aria-label": t('persona.remove_term_aria', {
+        term: term
+      }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
     }, "\xD7"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
@@ -173,11 +180,11 @@ const GoldenThreadPanel = ({
         addTerm();
       }
     },
-    placeholder: "+ add term",
+    placeholder: t('persona.add_term_placeholder') || '+ add term',
     className: "text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
   })), !isEditing && terms.length === 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500 italic"
-  }, "(none set)"))));
+  }, t('persona.none_set') || '(none set)'))));
 };
 const InteractiveBlueprintCard = React.memo(({
   config,
@@ -297,6 +304,7 @@ const InteractiveBlueprintCard = React.memo(({
     return opt ? opt.label : type;
   };
   return /*#__PURE__*/React.createElement("div", {
+    "data-help-key": "blueprint_card_panel",
     className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-4 pb-3 border-b border-indigo-50"
@@ -311,6 +319,7 @@ const InteractiveBlueprintCard = React.memo(({
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
   }, isEditing ? t('blueprint.drag_instruction') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("button", {
+    "data-help-key": "blueprint_edit_toggle_btn",
     "aria-label": t('common.check'),
     onClick: () => setIsEditing(prev => !prev),
     className: `p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`
@@ -323,6 +332,7 @@ const InteractiveBlueprintCard = React.memo(({
     isEditing: isEditing,
     onUpdate: onUpdate
   }), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    "data-help-key": "blueprint_resource_list",
     className: "space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1"
   }, items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: item.id,
@@ -364,12 +374,14 @@ const InteractiveBlueprintCard = React.memo(({
   }, /*#__PURE__*/React.createElement(Trash2, {
     size: 14
   }))))), /*#__PURE__*/React.createElement("button", {
+    "data-help-key": "blueprint_add_step_btn",
     "aria-label": t('common.add'),
     onClick: handleAddStep,
     className: "w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 14
   }), " ", t('blueprint.add_step'))) : /*#__PURE__*/React.createElement("div", {
+    "data-help-key": "blueprint_resource_list_review",
     className: "space-y-3 mb-6"
   }, items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: item.id,
@@ -387,16 +399,18 @@ const InteractiveBlueprintCard = React.memo(({
   }, t('blueprint.empty_plan'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 pt-3 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("button", {
+    "data-help-key": "blueprint_cancel_btn",
     "aria-label": t('common.cancel'),
     onClick: onCancel,
     className: "flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
   }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
+    "data-help-key": "blueprint_generate_pack_btn",
     "aria-label": t('common.generate'),
     onClick: onConfirm,
     className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), " ", t('blueprint.generate'))));
 });
 const HarmonyMeter = ({

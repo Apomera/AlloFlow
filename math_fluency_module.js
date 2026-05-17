@@ -3103,7 +3103,7 @@
         // Chase mode toggle
         h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
           h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); }, style: { accentColor: '#b45309' } }),
-          '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
+          '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#475569' } }, '(monster pursues you!)')
         ),
         // Start button
         h('button', { onClick: startMaze,
@@ -3328,7 +3328,7 @@
       // band so the HUD reads as part of the dungeon, not a separate cool-
       // slate strip floating above it.
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isFullscreen ? '10px 14px' : '7px 10px', background: 'linear-gradient(180deg, #5b4d3f 0%, #3a2e26 100%)', borderRadius: '10px', marginBottom: '6px', fontSize: isFullscreen ? '13px' : '11px', flexWrap: 'wrap', gap: isFullscreen ? '12px' : '8px', border: '1px solid #78350f', boxShadow: 'inset 0 1px 0 rgba(255,235,170,0.15), 0 2px 6px rgba(58,46,38,0.3)' } },
-        h('span', { style: { color: '#86efac', fontWeight: 700 } }, '\u2705 ' + correct),
+        h('span', { style: { color: '#15803d', fontWeight: 700 } }, '\u2705 ' + correct),
         h('span', { style: { color: '#fca5a5', fontWeight: 700 } }, '\u274C ' + wrong),
         h('span', { style: { color: '#fde68a', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
         // Streak pill — grows / glows at milestones so fluency runs feel earned.
@@ -3694,7 +3694,7 @@
             style: {
               display: 'inline-block', fontSize: '9px', fontWeight: 800,
               letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: '#fbbf24', background: 'rgba(251,191,36,0.12)',
+              color: '#b45309', background: 'rgba(251,191,36,0.12)',
               border: '1px solid rgba(251,191,36,0.35)',
               padding: '2px 8px', borderRadius: '999px', marginBottom: '6px'
             }
@@ -3763,7 +3763,7 @@
                 // Dimension caption — small text above so the visual
                 // problem still has a label that matches the aria.
                 h('div', {
-                  style: { position: 'absolute', bottom: '-2px', left: '50%', transform: 'translateX(-50%)', fontSize: '11px', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.08em', fontFamily: 'monospace', whiteSpace: 'nowrap' }
+                  style: { position: 'absolute', bottom: '-2px', left: '50%', transform: 'translateX(-50%)', fontSize: '11px', color: '#b45309', fontWeight: 700, letterSpacing: '0.08em', fontFamily: 'monospace', whiteSpace: 'nowrap' }
                 }, isLBlock ? (d.l + '×' + d.w + '×' + d.h + '  −  ' + notch.l + '×' + notch.w + '×' + notch.h) : (d.l + ' × ' + d.w + ' × ' + d.h))
               );
             })()
@@ -3839,7 +3839,7 @@
             }
           }, '\ud83d\udd11 Unlock')
         ),
-        attemptCount > 0 && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase' }, 'aria-live': 'off' }, 'Attempt ' + (attemptCount + 1)),
+        attemptCount > 0 && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#b45309', letterSpacing: '0.06em', textTransform: 'uppercase' }, 'aria-live': 'off' }, 'Attempt ' + (attemptCount + 1)),
         // Adaptive answer reveal \u2014 after 3 wrong attempts on the same
         // gate, surface the correct answer so a stuck student isn't
         // trapped. They still have to type it to advance so the muscle-
