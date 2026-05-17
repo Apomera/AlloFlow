@@ -4047,6 +4047,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'arcade_mode_realm_builder.js',
         'arcade_mode_concept_atlas.js',
         'arcade_mode_modelun.js',
+        'arcade_mode_concept_pictionary.js',
       ];
 
       // Generic ensure-loader factory: idempotent (closure flag), polls for the
