@@ -7200,6 +7200,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       });
       setIsInteractiveVenn(true);
       if (!isTeacherMode) setIsVennPlaying(true);
+      broadcastInteractiveOrganizer('venn');
   };
   const handleAddVennItem = (category) => {
       const text = vennInputs[category]?.trim();
