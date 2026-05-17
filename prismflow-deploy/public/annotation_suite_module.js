@@ -560,7 +560,7 @@ function HighlightOverlay({ a, onDelete }) {
 function DrawingOverlay({ a, onDelete }) {
   if (!a) return null;
   const shape = a.shape || "free";
-  const stroke = DRAW_COLORS[a.color] || "#dc2626";
+  const stroke = DRAW_COLORS[a.color] || a.color || "#dc2626";
   const w = typeof a.width === "number" ? a.width : 4;
   let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
   if (bbx == null || bby == null || bbw == null || bbh == null) {
@@ -724,7 +724,7 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
   const sh = shape || "free";
   const isErase = sh === "erase";
   if (!active) return null;
-  const c = DRAW_COLORS[color] || "#dc2626";
+  const c = DRAW_COLORS[color] || color || "#dc2626";
   function getXY(e, host) {
     const rect = host.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -1133,7 +1133,48 @@ function Toolbar(props) {
         title: key
       }
     );
-  }), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), DRAW_WIDTHS.map(function(w) {
+  }), (function() {
+    const isCustom = DRAW_COLOR_KEYS.indexOf(drawColor) === -1;
+    const currentHex = DRAW_COLORS[drawColor] || drawColor || "#dc2626";
+    return /* @__PURE__ */ React.createElement(
+      "label",
+      {
+        className: "relative w-5 h-5 rounded-full overflow-hidden transition-transform hover:scale-125 cursor-pointer " + (isCustom ? "ring-2 ring-fuchsia-500 scale-110" : "opacity-70 hover:opacity-100"),
+        style: {
+          // Rainbow gradient hint that this swatch picks any color
+          background: "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)",
+          border: "2px solid " + (isCustom ? currentHex : "#94a3b8")
+        },
+        title: "Pick any color",
+        "aria-label": "Pick a custom draw color"
+      },
+      isCustom ? /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          "aria-hidden": "true",
+          style: {
+            position: "absolute",
+            inset: 0,
+            background: currentHex,
+            borderRadius: "50%"
+          }
+        }
+      ) : null,
+      /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "color",
+          value: currentHex,
+          onChange: function(e) {
+            onPickDrawColor(e.target.value);
+          },
+          className: "absolute inset-0 opacity-0 cursor-pointer",
+          style: { width: "100%", height: "100%" },
+          "aria-label": "Pick any color"
+        }
+      )
+    );
+  })(), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), DRAW_WIDTHS.map(function(w) {
     return /* @__PURE__ */ React.createElement(
       "button",
       {
