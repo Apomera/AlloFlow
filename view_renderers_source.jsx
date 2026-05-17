@@ -190,7 +190,9 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
+  // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
+  const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
@@ -328,7 +330,7 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-4">
                         <GameButtonHint />
                         <button
-                            onClick={() => { setIsInteractivePipeline(true); setIsPipelinePlaying(true); }}
+                            onClick={() => { setIsInteractivePipeline(true); setIsPipelinePlaying(true); _broadcastInteractiveOrganizer('pipeline'); }}
                             className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                             aria-describedby="game-btn-hint"
                             aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
@@ -338,7 +340,7 @@ const renderOutlineContent = (deps) => {
                         {isInteractivePipeline && isTeacherMode && (
                           <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                             <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                            <button onClick={() => setIsInteractivePipeline(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                            <button onClick={() => { setIsInteractivePipeline(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                           </div>
                         )}
                     </div>
@@ -765,7 +767,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveTChart(true); setIsTChartPlaying(true); }}
+                                onClick={() => { setIsInteractiveTChart(true); setIsTChartPlaying(true); _broadcastInteractiveOrganizer('tchart'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.tchart_sort.play_btn') || 'Play T-Chart Sort Game'}
@@ -775,7 +777,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveTChart && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveTChart(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveTChart(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -842,7 +844,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveFishboneSort(true); setIsFishboneSortPlaying(true); }}
+                                onClick={() => { setIsInteractiveFishboneSort(true); setIsFishboneSortPlaying(true); _broadcastInteractiveOrganizer('fishbone'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.fishbone_sort.play_btn') || 'Play Fishbone Sort Game'}
@@ -852,7 +854,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveFishboneSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveFishboneSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveFishboneSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1011,7 +1013,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); }}
+                                onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); _broadcastInteractiveOrganizer('cesort'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
@@ -1021,7 +1023,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveCESort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveCESort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1073,7 +1075,7 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-6">
                         <GameButtonHint />
                         <button
-                            onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); }}
+                            onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); _broadcastInteractiveOrganizer('cesort'); }}
                             className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                             aria-describedby="game-btn-hint"
                             aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
@@ -1083,7 +1085,7 @@ const renderOutlineContent = (deps) => {
                         {isInteractiveCESort && isTeacherMode && (
                           <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                             <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                            <button onClick={() => setIsInteractiveCESort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                            <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                           </div>
                         )}
                     </div>
@@ -1164,7 +1166,7 @@ const renderOutlineContent = (deps) => {
                          <div className="flex justify-center mb-6">
                              <GameButtonHint />
                              <button
-                                 onClick={() => { setIsInteractiveProblemSolutionSort(true); setIsProblemSolutionSortPlaying(true); }}
+                                 onClick={() => { setIsInteractiveProblemSolutionSort(true); setIsProblemSolutionSortPlaying(true); _broadcastInteractiveOrganizer('problemsolution'); }}
                                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                  aria-describedby="game-btn-hint"
                                  aria-label={t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
@@ -1174,7 +1176,7 @@ const renderOutlineContent = (deps) => {
                              {isInteractiveProblemSolutionSort && isTeacherMode && (
                                <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                  <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                 <button onClick={() => setIsInteractiveProblemSolutionSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                 <button onClick={() => { setIsInteractiveProblemSolutionSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                                </div>
                              )}
                          </div>
@@ -1286,7 +1288,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveConceptMapSort(true); setIsConceptMapSortPlaying(true); }}
+                                onClick={() => { setIsInteractiveConceptMapSort(true); setIsConceptMapSortPlaying(true); _broadcastInteractiveOrganizer('conceptmap'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.concept_map_sort.play_btn') || 'Play Concept Map Sort Game'}
@@ -1296,7 +1298,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveConceptMapSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveConceptMapSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveConceptMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1383,7 +1385,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveFrayerSort(true); setIsFrayerSortPlaying(true); }}
+                                onClick={() => { setIsInteractiveFrayerSort(true); setIsFrayerSortPlaying(true); _broadcastInteractiveOrganizer('frayer'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.frayer_sort.play_btn') || 'Play Frayer Sort Game'}
@@ -1393,7 +1395,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveFrayerSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveFrayerSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveFrayerSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1504,7 +1506,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveSeeThinkWonderSort(true); setIsSeeThinkWonderSortPlaying(true); }}
+                                onClick={() => { setIsInteractiveSeeThinkWonderSort(true); setIsSeeThinkWonderSortPlaying(true); _broadcastInteractiveOrganizer('seethinkwonder'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.see_think_wonder_sort.play_btn') || 'Play See-Think-Wonder Sort Game'}
@@ -1514,7 +1516,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveSeeThinkWonderSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveSeeThinkWonderSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveSeeThinkWonderSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1605,7 +1607,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveStoryMapSort(true); setIsStoryMapSortPlaying(true); }}
+                                onClick={() => { setIsInteractiveStoryMapSort(true); setIsStoryMapSortPlaying(true); _broadcastInteractiveOrganizer('storymap'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.story_map_sort.play_btn') || 'Play Story Map Sort Game'}
@@ -1615,7 +1617,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveStoryMapSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveStoryMapSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveStoryMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
@@ -1683,7 +1685,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveOutlineSort(true); setIsOutlineSortPlaying(true); }}
+                                onClick={() => { setIsInteractiveOutlineSort(true); setIsOutlineSortPlaying(true); _broadcastInteractiveOrganizer('outline'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.outline_sort.play_btn') || 'Play Outline Sort Game'}
@@ -1693,7 +1695,7 @@ const renderOutlineContent = (deps) => {
                             {isInteractiveOutlineSort && isTeacherMode && (
                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => setIsInteractiveOutlineSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                                <button onClick={() => { setIsInteractiveOutlineSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
                               </div>
                             )}
                         </div>
