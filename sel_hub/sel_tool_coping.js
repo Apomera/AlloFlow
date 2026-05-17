@@ -23372,6 +23372,2535 @@ window.SelHub = window.SelHub || {
   ];
 
   // ── Merge extended strategies into STRATEGIES so existing UI picks them up ──
+  // \u2500\u2500 Cultural & Identity Adaptations Library \u2500\u2500
+  // Coping practices and adaptations across cultural and identity contexts
+  var CULTURAL_ADAPTATIONS = [
+    {
+      id: 'cult-black-american',
+      context: 'Black American students',
+      icon: '\u270A',
+      traditionOrIdentity: 'African American / Black diaspora',
+      shortDesc: 'Coping in a context shaped by historical and ongoing racial trauma, with deep communal and spiritual strengths.',
+      whyItMatters: 'Black students cope inside a country that has, for centuries, treated their distress as either invisible or pathological. Effective support honors both the realness of racial harm and the genuine strengths of Black emotional traditions \u2014 music, faith, kinship, oratory, humor \u2014 rather than defaulting to white-normed clinical frames.',
+      considerations: [
+        'Healthcare distrust is rational, not paranoia: Tuskegee, Henrietta Lacks, ongoing pain-undertreatment research are real.',
+        'Strong Black Woman / Strong Black Man scripts can block help-seeking; name the cost of armor.',
+        'Church, family, barbershop, salon, and step/dance communities are legitimate coping infrastructure.',
+        'Police contact, code-switching fatigue, and microaggressions are chronic stressors, not isolated events.',
+        'Hair, skin, and body comments at school are racial stressors and should be treated as such.',
+        'Avoid pathologizing culturally normative expressiveness (loud is not aggressive).',
+        'Mental health stigma in some Black communities is real; framing as "stress" or "overwhelm" may open doors that "depression" closes.',
+        'Centering joy and rest as resistance (Tricia Hersey, The Nap Ministry) is clinically valid.'
+      ],
+      adaptations: [
+        { traditional: 'Solo journaling', adaptation: 'Letter to an ancestor or to a younger Black child', why: 'Locates the student inside a lineage and a future, both of which buffer racial stress.' },
+        { traditional: 'Therapist-led talk therapy', adaptation: 'Pair with a Black-led group, BEAM circle, or Therapy for Black Girls / Boys directory', why: 'Cultural mirroring increases trust and reduces the emotional labor of explaining race.' },
+        { traditional: 'Silent meditation', adaptation: 'Gospel, hymn, or hip-hop anchored breath, or call-and-response prayer', why: 'Sound and rhythm are central; silence can feel like erasure.' },
+        { traditional: '"Just breathe" in a crisis', adaptation: 'Acknowledge the specific harm first ("what just happened was racist and it was real"), then regulate', why: 'Regulation without acknowledgment can replicate the gaslighting students already face.' },
+        { traditional: 'Generic gratitude list', adaptation: 'Three things Black joy looked like today', why: 'Centers joy as a discipline, per Imani Perry and Tricia Hersey.' }
+      ],
+      helpfulResources: [
+        'BEAM \u2014 Black Emotional and Mental Health Collective (beam.community)',
+        'Therapy for Black Girls / Therapy for Black Men directories',
+        'The Loveland Foundation therapy fund',
+        'The Nap Ministry (Tricia Hersey) for rest-as-resistance framing'
+      ],
+      research: 'Bryant-Davis & Ocampo (2005) on racist incident-based trauma; Joy DeGruy, Post Traumatic Slave Syndrome (2005); Williams et al. (2018) on racial trauma assessment.'
+    },
+    {
+      id: 'cult-latino-hispanic',
+      context: 'Latino / Hispanic / Latine students',
+      icon: '\uD83C\uDF3F',
+      traditionOrIdentity: 'Latino, Hispanic, Latine, Latinx students across many national origins',
+      shortDesc: 'Coping anchored by family, faith, and language, with attention to immigration and acculturation stressors.',
+      whyItMatters: 'Latino students often live across two cultural worlds and sometimes two languages, and many carry family histories of migration, separation, or undocumented status. Familismo (deep family interdependence) is a protective strength, not enmeshment, and should be built on rather than challenged.',
+      considerations: [
+        'Familismo means family input on coping is expected, not pathological.',
+        'Personalismo: warm, personal relationships matter more than professional distance.',
+        'Respeto for adults can suppress disclosure to teachers; peer or older-cousin framing may work better.',
+        'Language of feelings may be richer or only available in Spanish/Portuguese/Indigenous languages.',
+        'Immigration status (own or family) is a chronic stressor; never ask directly in front of others.',
+        'Marianismo and machismo scripts shape who is "allowed" to feel what.',
+        'Catholic and Pentecostal frames are common; prayer, saints, candles are coping infrastructure.',
+        'Curanderismo and folk healing are real cultural practices, not superstition to dismiss.'
+      ],
+      adaptations: [
+        { traditional: 'English-only worksheet', adaptation: 'Bilingual feelings wheel; let student answer in Spanish, code-switch, or Spanglish', why: 'Emotional vocabulary is often more developed in the home language.' },
+        { traditional: 'Individual goal setting', adaptation: 'Goals that name family ("so I can help mi mam\u00E1") are valid, not codependent', why: 'Familismo reframes interdependence as strength.' },
+        { traditional: 'Silent meditation', adaptation: 'Rosary breath (one bead per breath) or candle gazing with a santo', why: 'Connects to familiar devotional rhythm.' },
+        { traditional: 'Independent journaling', adaptation: 'Carta a la abuela / letter to grandmother (alive or passed)', why: 'Centers the elder relationships that hold many Latino families together.' },
+        { traditional: 'Generic crisis line', adaptation: 'NAMI en Espa\u00F1ol or 988 Spanish line (press 2)', why: 'Crisis support in the heart language matters.' }
+      ],
+      helpfulResources: [
+        'NAMI Compartiendo Esperanza / NAMI en Espa\u00F1ol',
+        '988 Suicide and Crisis Lifeline, Spanish (call or text 988, press 2)',
+        'Latinx Therapy podcast and directory (Adriana Alejandre)',
+        'UndocuHealth and Immigrants Rising for undocumented students'
+      ],
+      research: 'Celia Falicov, Latino Families in Therapy (2014); Ayon et al. on anti-immigrant climate and youth mental health (2020); APA guidelines on Latino/a/x clients.'
+    },
+    {
+      id: 'cult-asian-american',
+      context: 'Asian American students',
+      icon: '\uD83C\uDFEE',
+      traditionOrIdentity: 'East, Southeast, and South Asian American students; very heterogeneous',
+      shortDesc: 'Coping under model-minority pressure, with attention to somatization and face-saving cultural patterns.',
+      whyItMatters: 'Asian American is a coalition, not a culture, and includes refugee Hmong students, fourth-generation Japanese American students, recent Indian arrivals, and Filipino students whose history with the US is colonial. Aggregated data hides enormous variation in mental health need. The model minority myth both raises pressure and suppresses help-seeking.',
+      considerations: [
+        'Somatic complaints (headaches, stomach aches, fatigue) may be the entry point, not the deflection.',
+        'Face / honor / family reputation concerns can make disclosure outside the family feel like betrayal.',
+        'Model minority expectations create perfectionism and conceal struggle.',
+        'Pan-ethnic averaging hides the high need of Hmong, Cambodian, Filipino, and other underserved subgroups.',
+        'Refugee histories (Vietnamese, Hmong, Cambodian, Karen, Rohingya) carry intergenerational trauma.',
+        'Anti-Asian racism, especially since 2020, is a current stressor not a historical one.',
+        'Filial piety can be reframed as a coping resource, not only a burden.',
+        'Eldest daughter / eldest son roles deserve specific naming and care.'
+      ],
+      adaptations: [
+        { traditional: '"How do you feel?"', adaptation: '"Where do you feel it in your body?"', why: 'Body language for distress is often more accessible than emotion words.' },
+        { traditional: 'Group sharing of feelings', adaptation: 'Written or one-on-one with a trusted adult; allow indirect language', why: 'Public disclosure may be culturally costly.' },
+        { traditional: '"Tell your parents how you feel"', adaptation: 'Letter, shared activity, or third-party (aunt, cousin) approach', why: 'Direct emotional confrontation is not the cultural norm in many families.' },
+        { traditional: 'Mindfulness as a Western practice', adaptation: 'Name its origins in Buddhist and Hindu traditions; offer practice in heritage form', why: 'Returns ownership and depth.' },
+        { traditional: 'Generic crisis line', adaptation: 'Asian Mental Health Collective directory; AAPI-specific therapists', why: 'Cultural fluency reduces the cost of explaining context.' }
+      ],
+      helpfulResources: [
+        'Asian Mental Health Collective (asianmhc.org)',
+        'South Asian Mental Health Initiative & Network (SAMHIN)',
+        'National Asian American Pacific Islander Mental Health Association (NAAPIMHA)',
+        'Subtle Asian Mental Health peer communities'
+      ],
+      research: 'Sue & Sue, Counseling the Culturally Diverse; Kim et al. on Asian American help-seeking; Hwang on Cultural Adaptations of EBTs (2006); SAMHSA disaggregated AAPI data briefs.'
+    },
+    {
+      id: 'cult-indigenous',
+      context: 'Indigenous / Native American / First Nations students',
+      icon: '\uD83C\uDF3E',
+      traditionOrIdentity: 'Indigenous students across many sovereign nations',
+      shortDesc: 'Coping inside an active context of historical and ongoing colonization, with strong cultural healing traditions that require relationship and lineage.',
+      whyItMatters: 'Indigenous students cope inside a country built on the dispossession of their nations, and inside school systems whose ancestors ran boarding schools. Healing traditions exist, but they belong to specific nations and lineages and are not a buffet for outsiders to recommend. Cultural connection itself is one of the strongest protective factors documented in the literature.',
+      considerations: [
+        'Tribal affiliation matters: Lakota, Din\u00E9, Wabanaki, Tohono O\'odham, etc., have distinct traditions.',
+        'Boarding school history is intergenerational trauma, not ancient history.',
+        'Smudging, sweat lodges, pipe ceremony, and many other practices require relationship to a lineage; do not recommend casually.',
+        'Talking circles (with respect to specific nation\'s protocols) are a documented healing practice.',
+        'Land, relatives, language, and ceremony are coping infrastructure.',
+        'Urban Native students may be disconnected from home community and need extra bridge support.',
+        'Suicide rates among Native youth are the highest of any US group; treat seriously.',
+        'Cultural humility means deferring to tribal elders and community programs, not centering school clinicians.'
+      ],
+      adaptations: [
+        { traditional: 'Generic gratitude practice', adaptation: 'Thanksgiving Address style (Haudenosaunee, with permission and attribution)', why: 'When student is from that nation, returns practice to its origin.' },
+        { traditional: 'Solo mindfulness', adaptation: 'Time on the land, with relatives, with permission of caretakers of that land', why: 'Land-based practice is foundational in many traditions.' },
+        { traditional: '"Smudge to calm down" framing', adaptation: 'Refer to community cultural program; offer secular grounding to non-lineage students', why: 'Avoids appropriation and respects ceremony.' },
+        { traditional: 'Western therapist-only model', adaptation: 'Two-eyed seeing: cultural healer and clinician collaborate when student and family want', why: 'Honors that both knowledge systems hold truth.' },
+        { traditional: 'Crisis line referral', adaptation: 'StrongHearts Native Helpline 1-844-762-8483 alongside 988', why: 'Cultural fluency on the line.' }
+      ],
+      helpfulResources: [
+        'We R Native (wernative.org) for youth-led wellness',
+        'NICOA \u2014 National Indian Council on Aging',
+        'StrongHearts Native Helpline 1-844-762-8483',
+        'Center for Native American Youth (Aspen Institute)'
+      ],
+      research: 'Brave Heart on historical trauma (1998, 2003); Walters et al. on Indigenist stress-coping model; Gone on Indigenous healing traditions in mental health.'
+    },
+    {
+      id: 'cult-refugee-immigrant',
+      context: 'Recent immigrant and refugee students',
+      icon: '\uD83C\uDF0D',
+      traditionOrIdentity: 'Newcomer students across many origins',
+      shortDesc: 'Coping during acculturation, often after disrupted education, separation, or trauma in the country of origin or in transit.',
+      whyItMatters: 'Newcomer students often face three layers at once: pre-migration trauma, transit trauma, and post-migration stressors like language, school placement, family separation, and immigration paperwork. Coping support must be trauma-informed, language-accessible, and aware of what disclosure could cost a family.',
+      considerations: [
+        'Family immigration status may make any official disclosure feel dangerous; never ask in front of others.',
+        'Refugee students may have endured war, displacement camps, or sponsor separation.',
+        'Educational interruption is common; do not equate language acquisition with cognitive level.',
+        'Parental authority can be undermined when children become language brokers; be careful.',
+        'Holidays, foods, smells, and music can be powerful regulation anchors.',
+        'Cultural concepts of distress (susto, nervios, ataque de nervios, hwa-byung) may better fit student experience.',
+        'Religious community is often the most trusted support, ahead of school or clinic.',
+        'Some practices that are protective in country of origin (corporal discipline, gender norms) may conflict with US law; navigate with care, not shame.'
+      ],
+      adaptations: [
+        { traditional: 'English worksheet', adaptation: 'Bilingual or visual-only; allow drawing instead of writing', why: 'Reduces the language load on already overloaded students.' },
+        { traditional: 'Direct trauma narrative', adaptation: 'Indirect, story-based, or art-based approaches (Tree of Life, narrative practice)', why: 'Indirect approaches respect cultural norms around disclosure.' },
+        { traditional: 'Sitting silently with a counselor', adaptation: 'Shared activity \u2014 walking, tea, cooking memory, hands busy', why: 'Side-by-side activity carries less shame than face-to-face talk.' },
+        { traditional: '"Tell me about your family"', adaptation: '"Who is in your home? Who do you wish was here?" with care for separated families', why: 'Family questions can land on grief without warning.' },
+        { traditional: 'Crisis line in English', adaptation: 'Language Line, 988 Spanish, BRYCS, or community-specific resource', why: 'Crisis without language access is not real access.' }
+      ],
+      helpfulResources: [
+        'BRYCS \u2014 Bridging Refugee Youth and Children\'s Services',
+        'Center for Victims of Torture (cvt.org)',
+        'Refugee Mental Health Resource Network',
+        'Ethnic Community Based Organizations (ECBOs) local to your area'
+      ],
+      research: 'Lustig et al. on refugee child mental health; APA Task Force on Immigration (2012); Fazel et al. on refugee youth mental health interventions.'
+    },
+    {
+      id: 'cult-lgbtq-general',
+      context: 'LGBTQ+ students (general)',
+      icon: '\uD83C\uDF08',
+      traditionOrIdentity: 'Lesbian, gay, bisexual, queer, trans, intersex, asexual, and other sexual and gender minority students',
+      shortDesc: 'Coping under chronic minority stress; outness and safety calibrated to context.',
+      whyItMatters: 'Higher rates of distress in LGBTQ+ youth reflect minority stress (Meyer 2003) and not anything intrinsic to being LGBTQ+. The clinical job is to lower stigma and increase affirming connection, not to treat identity as the problem. Family acceptance and at least one affirming adult are documented protective factors.',
+      considerations: [
+        'Outness is a calculation, not a moral test; some students must stay closeted at home for safety.',
+        'Conversion therapy is harmful and is associated with elevated suicidality; never refer to anything resembling it.',
+        'Schools can be the only affirming environment; honor that role.',
+        'Pronouns, names, and gendered language are regulation, not preference.',
+        'Bathroom and locker room access are daily stressors deserving real solutions.',
+        'Rejecting religious families are not bad people; care for the student\'s reality without flattening the family.',
+        'Bullying, including by adults and policy, is a chronic stressor.',
+        'Many LGBTQ+ students are also disabled, of color, immigrant, and need intersectional support.'
+      ],
+      adaptations: [
+        { traditional: 'Generic family-of-origin work', adaptation: 'Chosen family mapping alongside or instead of', why: 'Reflects how many LGBTQ+ people actually build support.' },
+        { traditional: 'Generic affirmation statements', adaptation: 'Affirmations naming identity and survival ("I am queer and I am here")', why: 'Specific naming counters specific erasure.' },
+        { traditional: 'Mainstream crisis line', adaptation: 'The Trevor Project 1-866-488-7386 or text START to 678-678', why: 'LGBTQ+-fluent crisis support.' },
+        { traditional: 'Coping plan with parents looped in', adaptation: 'Confidentiality first; loop in only with student consent', why: 'Premature disclosure can endanger housing.' },
+        { traditional: 'Generic group therapy', adaptation: 'GSA or LGBTQ+ youth group when available; online if local options are unsafe', why: 'Mirroring and community reduce minority stress directly.' }
+      ],
+      helpfulResources: [
+        'The Trevor Project 1-866-488-7386 (TrevorLifeline) / text START to 678-678',
+        'GLSEN for school climate and GSA support',
+        'PFLAG for parents and family',
+        'It Gets Better Project for narrative hope (paired with present-tense help)'
+      ],
+      research: 'Meyer (2003) minority stress model; Russell & Fish on LGBT youth mental health (2016); Family Acceptance Project (Ryan et al. 2009, 2010).'
+    },
+    {
+      id: 'cult-trans-nonbinary',
+      context: 'Trans and non-binary students',
+      icon: '\u26A7',
+      traditionOrIdentity: 'Trans, non-binary, gender-expansive, two-spirit students',
+      shortDesc: 'Coping where gender affirmation is itself a regulation skill, with attention to dysphoria and current political climate.',
+      whyItMatters: 'For many trans and non-binary students, being correctly named and gendered is not a courtesy but a nervous-system event. Misgendering and deadnaming are not minor; they are repeat threat exposures. Current political climate in many US states is a documented stressor on its own and should be named.',
+      considerations: [
+        'Correct name and pronouns are regulation, not preference; use them consistently.',
+        'Deadnaming, even by accident, deserves a quick apology and correction, no over-apology.',
+        'Bathroom and locker access policies are daily stressors; check what your school actually allows.',
+        'Binding, tucking, packing, and shapewear are coping tools; never shame.',
+        'Gender dysphoria varies widely; some students have intense body-based distress, others do not.',
+        'Family acceptance is the single strongest predictor of trans youth mental health.',
+        'Anti-trans legislation news is ambient trauma; offer media breaks and concrete civic actions.',
+        'Intersex students have specific medical and consent histories deserving separate care.'
+      ],
+      adaptations: [
+        { traditional: 'Body scan', adaptation: 'Offer non-body or chosen-features-only scan; use neutral language', why: 'Standard body scan can deepen dysphoria.' },
+        { traditional: 'Mirror affirmation', adaptation: 'Voice or chosen-image affirmation; mirror only if affirming', why: 'Mirrors can trigger dysphoria; let student lead.' },
+        { traditional: 'Generic crisis line', adaptation: 'Trans Lifeline 1-877-565-8860 (trans-staffed, no nonconsensual active rescue policy)', why: 'Trans-specific safety policies matter.' },
+        { traditional: 'Mainstream mindfulness audio', adaptation: 'Gender-neutral or trans-led recordings (Queer Dharma, etc.)', why: 'Voice and framing reduce code-switching cost.' },
+        { traditional: '"Just be yourself" advice', adaptation: 'Safety mapping: which spaces, which people, what version of self today', why: 'Authenticity must be calibrated to safety, not demanded.' }
+      ],
+      helpfulResources: [
+        'Trans Lifeline 1-877-565-8860',
+        'Gender Spectrum (genderspectrum.org)',
+        'TransLifeline microgrants for ID changes',
+        'PFLAG Trans Network'
+      ],
+      research: 'Russell et al. on chosen name use and suicide risk (2018); Olson et al. on socially transitioned youth mental health (2016); Bauer et al. on resilience and trans youth.'
+    },
+    {
+      id: 'cult-gay-lesbian-bi',
+      context: 'Gay, lesbian, and bisexual students',
+      icon: '\uD83C\uDFF3',
+      traditionOrIdentity: 'Same-gender-attracted and multi-gender-attracted students',
+      shortDesc: 'Coping through coming-out timing, family response, and internalized stigma.',
+      whyItMatters: 'Coming out is not a single event but a lifetime of context-by-context decisions. Bisexual students often face erasure from both straight and gay communities and have distinct mental health profiles. Internalized stigma can persist even in supportive environments and deserves direct, gentle work.',
+      considerations: [
+        'Bisexual erasure ("pick a side") is a specific stressor; name it.',
+        'Pansexual, queer, fluid identities are valid; don\'t force binary framing.',
+        'Family religious context matters enormously; honor student\'s read of safety.',
+        'First crushes and first relationships often happen later or in secret; grief about lost teen years is real.',
+        'Internalized stigma can sound like self-criticism; treat as a learned voice, not the truth.',
+        'Gay/lesbian community has generational trauma (AIDS crisis, criminalization) that informs older mentors.',
+        'Sex education in many schools is straight-default; students may have real knowledge gaps.',
+        'Bi+ students in different-gender relationships are still bi; don\'t collapse identity.'
+      ],
+      adaptations: [
+        { traditional: 'Generic relationship worksheet', adaptation: 'Same-gender and multi-gender relationship examples in all materials', why: 'Representation is a coping resource.' },
+        { traditional: 'Coming-out as one event', adaptation: 'Coming-out as ongoing calibration; map safe people, neutral people, unsafe people', why: 'Matches lived reality.' },
+        { traditional: '"Tell your family" advice', adaptation: 'Family Acceptance Project framework; risk-assess first', why: 'Family rejection carries documented mental health risk.' },
+        { traditional: 'Mainstream therapist', adaptation: 'LGBTQ+-affirming therapist directories (Inclusive Therapists, PsychologyToday filter)', why: 'Affirmation cuts the labor of explaining basics.' },
+        { traditional: 'Generic gratitude', adaptation: 'Gratitude for self, for queer ancestors, for the community that fought to make today possible', why: 'Links personal coping to collective survival.' }
+      ],
+      helpfulResources: [
+        'The Trevor Project 1-866-488-7386',
+        'Inclusive Therapists directory',
+        'Family Acceptance Project resources',
+        'CenterLink local LGBTQ+ centers'
+      ],
+      research: 'Family Acceptance Project (Ryan et al.); Meyer minority stress; Hatzenbuehler on structural stigma and mental health.'
+    },
+    {
+      id: 'cult-ace-aro',
+      context: 'Asexual and aromantic students',
+      icon: '\uD83D\uDDA4',
+      traditionOrIdentity: 'Ace, aro, ace-spec, and aro-spec students',
+      shortDesc: 'Coping with invisibility, pressure to date, and normalization of non-attraction.',
+      whyItMatters: 'Ace and aro students often face the message that there is something wrong with them for not experiencing attraction the way peers describe. This message comes from media, peers, and sometimes from inside LGBTQ+ spaces. Affirming care names ace and aro as full, legitimate orientations and reduces the pathologizing pressure.',
+      considerations: [
+        'Ace and aro are spectrums; demi-, gray-, and other identities are valid.',
+        'Ace does not equal celibate; aro does not equal lonely or cold.',
+        'Sex education that assumes universal attraction can be alienating; offer ace-inclusive materials.',
+        'Romance-normative culture (movies, prom, dating) is everywhere; name the cost.',
+        'Some ace students still date and have partners; honor varied configurations.',
+        'Trauma history can affect attraction but does not invalidate identity.',
+        'Religious framings of celibacy are distinct from ace identity; do not conflate.',
+        'Aro students often face harsher invisibility than ace students; check on aro folks specifically.'
+      ],
+      adaptations: [
+        { traditional: 'Generic relationship goals', adaptation: 'Goals can center friendship, queerplatonic partners, chosen family, or no partner at all', why: 'Reflects ace/aro lived experience.' },
+        { traditional: 'Romance-default media diet', adaptation: 'Curate ace and aro creators (e.g., Yasmin Benoit, Angela Chen)', why: 'Representation reduces invisibility.' },
+        { traditional: '"Have you found someone?"', adaptation: '"Who are your people?" \u2014 broad community framing', why: 'Decouples wellbeing from romance.' },
+        { traditional: 'Generic LGBTQ+ group', adaptation: 'Seek ace/aro-inclusive spaces; AVEN community online', why: 'Some LGBTQ+ spaces still erase ace folks.' },
+        { traditional: '"You\'ll find someone someday" reassurance', adaptation: '"You are already whole; relationships are optional, not required"', why: 'Removes pressure that this orientation is a phase.' }
+      ],
+      helpfulResources: [
+        'AVEN \u2014 Asexual Visibility and Education Network (asexuality.org)',
+        'Aromantic-spectrum Union for Recognition, Education, and Advocacy (AUREA)',
+        'Angela Chen, Ace (2020) book',
+        'The Trevor Project ace/aro resources'
+      ],
+      research: 'Bogaert on asexuality (2004, 2015); MacInnis & Hodson on prejudice against asexuals (2012); growing AVEN-aligned literature.'
+    },
+    {
+      id: 'cult-autistic',
+      context: 'Autistic students',
+      icon: '\uD83E\uDDE9',
+      traditionOrIdentity: 'Autistic students (identity-first per community preference)',
+      shortDesc: 'Coping that respects sensory needs, stimming as regulation, and monotropic interests as strength.',
+      whyItMatters: 'Most coping curricula were designed by and for non-autistic people, and many actively work against autistic regulation (sit still, make eye contact, suppress stims, do not info-dump). Affirming coping treats autistic regulation as legitimate and builds around it. Identity-first language ("autistic student") matches community consensus.',
+      considerations: [
+        'Stimming is regulation, not a behavior to extinguish; provide tools, not suppression.',
+        'Sensory environment is often the actual crisis; fix the environment first.',
+        'Monotropic interest (special interest) is a coping resource, not avoidance.',
+        'Eye contact is not connection; do not require it.',
+        'Scripted social and predictable routine reduce load; honor scripts.',
+        'Masking is exhausting and is linked to autistic burnout and suicidality.',
+        'Interoception is often atypical; "name what you feel" may need scaffolding.',
+        'AAC users and nonspeaking autistic students need access to coping tools that do not require speech.'
+      ],
+      adaptations: [
+        { traditional: 'Sit still and breathe', adaptation: 'Stim and breathe; rock, flap, chew, fidget freely', why: 'Stimming co-regulates with breath better than stillness.' },
+        { traditional: 'Eye contact during co-regulation', adaptation: 'Side-by-side, parallel activity, or screen-mediated', why: 'Removes a sensory tax during regulation.' },
+        { traditional: '"How do you feel?"', adaptation: 'Body-map, intensity meter, color scale, or special-interest analogy', why: 'Reduces alexithymia/interoception load.' },
+        { traditional: '"Stop talking about your interest"', adaptation: 'Use the interest as the coping vehicle \u2014 train schedules as breath pacers, etc.', why: 'Honors monotropism as regulation.' },
+        { traditional: 'Group sharing circle', adaptation: 'Written-first, opt-out option, scripted prompts, low-sensory room', why: 'Removes barriers that make groups inaccessible.' }
+      ],
+      helpfulResources: [
+        'ASAN \u2014 Autistic Self Advocacy Network (autisticadvocacy.org)',
+        'AWN \u2014 Autistic Women & Nonbinary Network',
+        'NeuroClastic, Thinking Person\'s Guide to Autism',
+        'Devon Price, Unmasking Autism (2022)'
+      ],
+      research: 'Kapp et al. on stimming (2019); Pearson & Rose on autistic masking and mental health (2021); Cage & Troxell-Whitman on camouflaging and burnout (2019); identity-first preference (Kenny 2016, Bury 2020, Taboas 2023).'
+    },
+    {
+      id: 'cult-adhd',
+      context: 'ADHD students',
+      icon: '\u26A1',
+      traditionOrIdentity: 'ADHD, ADD, AuDHD students',
+      shortDesc: 'Coping built for dopamine-seeking nervous systems: short, novel, moving, body-doubled.',
+      whyItMatters: 'Standard coping tools assume neurotypical executive function and reward sensitivity. For ADHD students, a 20-minute silent meditation is not just hard, it is the wrong tool. Effective coping for ADHD is short, novel, body-based, social, and produces a felt sense of completion.',
+      considerations: [
+        'Movement is regulation, not a distraction; build it in.',
+        'Body doubling \u2014 coping with someone else present \u2014 is documented and works.',
+        'Short tools (under 3 minutes) get repeated; long tools get abandoned.',
+        'Novelty and gamification leverage dopamine systems, not bypass them.',
+        'Time blindness is real; visual timers and external scaffolds beat internal clocks.',
+        'Rejection sensitivity dysphoria (RSD) is intense; soften feedback without dishonesty.',
+        'Hyperfocus is a feature; let it run for coping that benefits from it.',
+        'Medication is a tool; do not moralize either way about it.'
+      ],
+      adaptations: [
+        { traditional: '20-minute meditation', adaptation: '60-second box breath while walking', why: 'Short and moving fits the nervous system.' },
+        { traditional: 'Long journaling', adaptation: 'Brain dump for 2 minutes, then star one thing', why: 'Bounded and immediate produces dopamine completion.' },
+        { traditional: 'Solo homework focus', adaptation: 'Body doubling \u2014 coworking, study buddy, focus app, parallel parent', why: 'External presence stabilizes attention.' },
+        { traditional: 'Standard to-do list', adaptation: 'Three-item index card or visible whiteboard', why: 'Out-of-sight is out-of-mind for ADHD.' },
+        { traditional: 'Sit and reflect', adaptation: 'Walk and talk, fidget and think, rock and breathe', why: 'Movement primes the prefrontal cortex.' }
+      ],
+      helpfulResources: [
+        'CHADD \u2014 Children and Adults with ADHD (chadd.org)',
+        'ADDitude Magazine',
+        'How to ADHD (Jessica McCabe) YouTube and book',
+        'Russell Barkley lectures (rigorous, evidence-based)'
+      ],
+      research: 'Barkley on executive function; Hallowell & Ratey, Driven to Distraction; Volkow et al. on dopamine and ADHD; body doubling reviewed in ADHD coaching literature.'
+    },
+    {
+      id: 'cult-dyslexia-ld',
+      context: 'Dyslexic and learning-disabled students',
+      icon: '\uD83D\uDCD6',
+      traditionOrIdentity: 'Students with dyslexia, dyscalculia, dysgraphia, and other specific learning disabilities',
+      shortDesc: 'Coping practice itself must be accessible \u2014 audio over text, visual over verbal, hands-on over abstract.',
+      whyItMatters: 'When a coping worksheet requires reading at grade level, the worksheet itself is a stressor. LD students often arrive at coping curricula already worn down by school. Effective support uses universal design and treats the LD as a difference in input/output, not in capacity.',
+      considerations: [
+        'Reading a feelings worksheet may itself be the panic trigger.',
+        'Shame about reading or math is often deeper than the academic problem.',
+        'Audio, video, dictation, and visuals are not accommodations to grudge; they are equal modalities.',
+        'Working memory load is often high; chunk practices into one step at a time.',
+        'LD does not predict intelligence; do not infantilize content.',
+        'Late-diagnosed students may carry years of being called lazy.',
+        'Co-occurring ADHD and anxiety are common.',
+        'Reading for pleasure may be lost; honor that grief.'
+      ],
+      adaptations: [
+        { traditional: 'Read this handout', adaptation: 'Listen to this 90-second audio; or watch this 60-second video', why: 'Removes the reading load from the coping itself.' },
+        { traditional: 'Journal in writing', adaptation: 'Voice memo journal; drawn journal; emoji-only check-in', why: 'Multimodal output.' },
+        { traditional: 'Worksheet with paragraphs', adaptation: 'One-question-per-card; visual scale; sticker chart for younger students', why: 'Lowers cognitive load.' },
+        { traditional: '"Read along" group activity', adaptation: 'Pre-read or pre-listen privately; never cold-call to read aloud', why: 'Removes a known shame trigger.' },
+        { traditional: 'Generic mindfulness app', adaptation: 'App with strong audio, big text, dyslexia-friendly font', why: 'Tool itself must be accessible.' }
+      ],
+      helpfulResources: [
+        'International Dyslexia Association (dyslexiaida.org)',
+        'Learning Disabilities Association of America',
+        'Eye to Eye (eyetoeyenational.org) youth mentoring',
+        'Understood.org family resources'
+      ],
+      research: 'Shaywitz on dyslexia (Overcoming Dyslexia, 2003); Eden et al. on neurobiology of dyslexia; Mugnaini et al. on internalizing problems in LD students.'
+    },
+    {
+      id: 'cult-chronic-illness',
+      context: 'Students with chronic illness',
+      icon: '\uD83E\uDD44',
+      traditionOrIdentity: 'Students living with chronic, often invisible, illness \u2014 POTS, EDS, lupus, IBD, cancer, etc.',
+      shortDesc: 'Coping inside finite energy \u2014 pacing, energy budgeting, spoonie philosophy.',
+      whyItMatters: 'Standard coping advice (exercise more, sleep more, do this practice every day) often assumes a body that can. Chronic illness students cope inside the limit of what their body has today. Pacing and energy budgeting are not avoidance; they are the actual skill.',
+      considerations: [
+        'Spoonie philosophy (Christine Miserandino, 2003) names the finite-energy reality.',
+        'Push-crash cycles are dangerous; honor pacing as a skill, not laziness.',
+        'School absence is medical, not avoidance; help reframe for student and staff.',
+        'Medical trauma is common; trauma-informed care matters.',
+        'Invisible illness invites disbelief; validate without requiring proof.',
+        'Medication side effects can affect mood, sleep, cognition; loop in medical team.',
+        'Grief for the body you thought you had is real and deserves room.',
+        'Disability community offers identity and language; offer it as a doorway.'
+      ],
+      adaptations: [
+        { traditional: 'Exercise daily', adaptation: 'Move within your envelope \u2014 even gentle stretching from bed counts', why: 'Respects energy reality.' },
+        { traditional: 'Long mindfulness practice', adaptation: 'Three-breath check-in, lying down, eyes open or closed', why: 'Accessible from any body state.' },
+        { traditional: 'Goal: get back to where you were', adaptation: 'Goal: live the life you actually have, with this body', why: 'Reframes away from a recovery story that may not be accurate.' },
+        { traditional: 'Daily journaling', adaptation: 'Symptom-and-mood tracker that doubles as a medical record', why: 'Single tool, double benefit, less load.' },
+        { traditional: 'Push through it', adaptation: 'Rest first, then choose', why: 'Push-through is a chronic-illness trap.' }
+      ],
+      helpfulResources: [
+        'Mighty Well, The Mighty (themighty.com) community',
+        'Spoonie communities online (#spoonie)',
+        'Chronic Illness on Campus (CIOC)',
+        'Disability Visibility Project (Alice Wong)'
+      ],
+      research: 'Miserandino, Spoon Theory (2003); Pinquart on chronic illness in adolescence; Compas et al. on coping with chronic pain and illness.'
+    },
+    {
+      id: 'cult-chronic-pain',
+      context: 'Students with chronic pain',
+      icon: '\uD83E\uDE79',
+      traditionOrIdentity: 'Students with chronic pain conditions',
+      shortDesc: 'Acceptance-based and pacing-based coping; pain is not a moral failing.',
+      whyItMatters: 'Chronic pain students often hear that the pain is in their head, that they should push through, or that medication is the only answer. Evidence-based coping for chronic pain centers acceptance, pacing, gentle movement, and addressing the nervous system threat response, not eliminating the pain.',
+      considerations: [
+        'Pain is real even when imaging is normal.',
+        'Pain catastrophizing is treatable and is not the student\'s fault.',
+        'Sleep, pain, and mood form a feedback loop; address together.',
+        'Opioid stigma can affect care; do not moralize about medication.',
+        'Activity pacing prevents flare cycles.',
+        'Acceptance is not giving up; it is the start of effective coping.',
+        'Mind-body language must not slip into "you caused it."',
+        'School accommodations (movement breaks, alternate seating) are care, not pampering.'
+      ],
+      adaptations: [
+        { traditional: 'Push through pain', adaptation: 'Pace activity in time, not in symptom', why: 'Prevents flare-recover cycles.' },
+        { traditional: 'Distract from pain', adaptation: 'Acknowledge, place attention beside it, return to life', why: 'Suppression backfires; ACT-style defusion works.' },
+        { traditional: '"Calm down and it will hurt less"', adaptation: 'Calm the threat response, not the pain itself', why: 'Honest framing; nervous-system focused.' },
+        { traditional: 'Standard yoga', adaptation: 'Restorative yoga, yoga nidra, or chair yoga adapted by a pain-aware teacher', why: 'Honors the body without injury.' },
+        { traditional: 'Generic CBT', adaptation: 'ACT or pain-specific CBT (CBT-CP)', why: 'Evidence base is stronger for chronic pain.' }
+      ],
+      helpfulResources: [
+        'US Pain Foundation',
+        'American Chronic Pain Association',
+        'Curable app (pain-specific, neuroplastic approach)',
+        'Pediatric Pain Management at Boston Children\'s and other major centers'
+      ],
+      research: 'Eccleston et al. Cochrane reviews on pediatric chronic pain; Vowles & McCracken on ACT for pain; Moseley & Butler, Explain Pain.'
+    },
+    {
+      id: 'cult-aac-nonspeaking',
+      context: 'AAC users and nonspeaking students',
+      icon: '\uD83D\uDDE3',
+      traditionOrIdentity: 'Students who use augmentative and alternative communication; nonspeaking and unreliably speaking students',
+      shortDesc: 'Coping that does not require verbal language \u2014 visual, gestural, AAC-based, body-anchored.',
+      whyItMatters: 'Speech is not thought, and nonspeaking does not mean noncommunicating. Coping tools that require speech leave many students with no access. Real access means visual scales, AAC vocabulary for feelings, body-based regulation, and patience.',
+      considerations: [
+        'Presume competence; nonspeaking students often understand far more than they can express.',
+        'AAC takes longer to compose; allow time without rushing or finishing thoughts.',
+        'Modeling AAC (aided language stimulation) by adults expands student vocabulary.',
+        'Feelings vocabulary on AAC should be expanded; do not limit to "happy/sad/mad."',
+        'Body-based regulation (stim, weighted item, rocking) is communication too.',
+        'Behavior is communication; treat as data.',
+        'Letterboarding and spelling-to-communicate are growing; respect student\'s chosen modality.',
+        'Crisis communication should be pre-built into the AAC device.'
+      ],
+      adaptations: [
+        { traditional: '"Use your words"', adaptation: '"Use your communication" \u2014 point, sign, gesture, device, eye gaze', why: 'Honors all communication modalities.' },
+        { traditional: 'Verbal check-in', adaptation: 'Visual scale, AAC button, color card, switch', why: 'Multiple input options.' },
+        { traditional: '"How are you feeling?"', adaptation: 'Visual feelings board with 20+ options at student\'s receptive level', why: 'Vocabulary access is precondition for self-report.' },
+        { traditional: 'Talking through it', adaptation: 'Drawing through it, AAC sentence builder, music-anchored regulation', why: 'Output mode follows student capacity.' },
+        { traditional: 'Generic crisis plan', adaptation: 'AAC-coded crisis page with one-tap "I need help / I need a break / I need quiet"', why: 'Pre-loads the language they will need when overwhelmed.' }
+      ],
+      helpfulResources: [
+        'CommunicationFIRST (communicationfirst.org)',
+        'PrAACtical AAC (praacticalaac.org)',
+        'United for Communication Choice',
+        'Project Core for emergent AAC users'
+      ],
+      research: 'Beukelman & Light, AAC textbook; CommunicationFIRST position papers; Light & McNaughton on AAC and quality of life.'
+    },
+    {
+      id: 'cult-intellectual-disability',
+      context: 'Students with intellectual disability',
+      icon: '\uD83C\uDFA8',
+      traditionOrIdentity: 'Students with intellectual or developmental disability (IDD)',
+      shortDesc: 'Concrete, visual, scripted, and embodied coping tools.',
+      whyItMatters: 'Students with intellectual disability are routinely under-supported emotionally because clinicians assume they cannot use coping skills. They can; the tools just need to be concrete, visual, repeated, and embodied. Self-determination and choice are coping resources, not luxuries.',
+      considerations: [
+        'Concrete examples beat abstract concepts every time.',
+        'Visuals, social stories, and video models are core tools.',
+        'Choice within structure builds agency without overwhelm.',
+        'Behavior is communication; FBA mindset, not punishment.',
+        'Trauma is under-recognized in IDD; treat seriously.',
+        'Sexuality, relationships, and consent education are often missing and are protective.',
+        'Self-advocacy movements (People First, Self Advocates Becoming Empowered) belong in coping work.',
+        'Caregivers are partners; loop in with student consent where possible.'
+      ],
+      adaptations: [
+        { traditional: '"Take a deep breath"', adaptation: 'Smell the flower, blow out the candle (with prop)', why: 'Concrete imagery teaches the body.' },
+        { traditional: 'Worksheet with text', adaptation: 'Picture cards, choice board, video model', why: 'Visual access.' },
+        { traditional: '"How do you feel?"', adaptation: 'Five-face scale; body-map sticker; thumbs system', why: 'Reduces verbal demand.' },
+        { traditional: 'Open-ended journaling', adaptation: 'Scripted social story or fill-in-the-blank', why: 'Predictable scaffolds support output.' },
+        { traditional: 'Adult-directed plan', adaptation: 'Person-centered planning with the student in the lead', why: 'Self-determination as coping resource.' }
+      ],
+      helpfulResources: [
+        'Self Advocates Becoming Empowered (sabeusa.org)',
+        'People First chapters',
+        'Arc of the United States',
+        'Special Olympics Unified for community belonging'
+      ],
+      research: 'Wehmeyer on self-determination; Esbensen et al. on mental health in IDD; trauma in IDD (NCTSN IDD subnetwork).'
+    },
+    {
+      id: 'cult-christian',
+      context: 'Christian students',
+      icon: '\u271D',
+      traditionOrIdentity: 'Catholic, Orthodox, Protestant, Evangelical, Pentecostal students',
+      shortDesc: 'Coping that integrates prayer, scripture, sacrament, and faith community as legitimate regulation.',
+      whyItMatters: 'For many Christian students, faith is not a hobby but the structure of meaning, and excluding it from coping work makes the work feel foreign. Christian practice has a long, rich contemplative tradition that complements clinical tools. Care should honor the student\'s tradition (Catholic, Orthodox, Protestant, Pentecostal, etc.) rather than flattening to a generic "Christian."',
+      considerations: [
+        'Prayer is regulation, not a substitute for clinical care; it can be both/and.',
+        'Scripture meditation has documented contemplative depth (Lectio Divina, etc.).',
+        'Sacraments (Eucharist, confession) are coping anchors for sacramental traditions.',
+        'Church community is often the deepest support net the student has.',
+        'Spiritual abuse exists; some students are healing from religious harm even while still in faith.',
+        'Sin and shame language can deepen depression; partner with affirming clergy when possible.',
+        'LGBTQ+ Christian students may live in tension; honor both pieces.',
+        'Prosperity-gospel framings can pathologize illness; gently rebalance with covenant/lament traditions.'
+      ],
+      adaptations: [
+        { traditional: 'Mindfulness breath', adaptation: 'Breath prayer \u2014 "Lord Jesus Christ" on inhale, "have mercy on me" on exhale', why: 'Connects breath regulation to existing faith vocabulary.' },
+        { traditional: 'Gratitude list', adaptation: 'Psalm-style thanksgiving, or Ignatian Examen at day\'s end', why: 'Roots gratitude in a tradition with depth.' },
+        { traditional: 'Generic body scan', adaptation: 'Body scan as receiving the breath of life (ruach, pneuma)', why: 'Embodies a theology of body as good.' },
+        { traditional: 'Affirmations', adaptation: 'Scripture you have lived with \u2014 Psalm 23, Isaiah 41:10, Romans 8:38-39', why: 'Memorized words become regulation in crisis.' },
+        { traditional: '"Talk to a therapist"', adaptation: 'Therapist + faith community + clergy in coordination', why: 'Care is layered, not either/or.' }
+      ],
+      helpfulResources: [
+        'Faith and Mental Health Ministries (American Bible Society, Mental Health Grace Alliance)',
+        'Hope for Mental Health (Saddleback Church) for evangelical context',
+        'Catholic Mental Health Ministry (Association of Catholic Mental Health Ministers)',
+        'Q Christian Fellowship for LGBTQ+ Christian support'
+      ],
+      research: 'Koenig on religion and mental health (broad body of work); Pargament on religious coping; Worthington on forgiveness research.'
+    },
+    {
+      id: 'cult-muslim',
+      context: 'Muslim students',
+      icon: '\u262A',
+      traditionOrIdentity: 'Sunni, Shia, Ibadi, Sufi, and culturally Muslim students',
+      shortDesc: 'Coping that honors salah, dhikr, Quran, and ummah as built-in regulation infrastructure.',
+      whyItMatters: 'Salah (five daily prayers) is already a built-in regulation rhythm involving breath, posture, and intention; treating it as religious instead of recognizing it as coping infrastructure misses what is already there. Anti-Muslim climate is a chronic stressor and should be named. Ramadan affects sleep and food and deserves accommodation in coping plans.',
+      considerations: [
+        'Salah times structure the day; coping plans can fold around them rather than against them.',
+        'Wudu (ritual washing) is itself a regulation practice \u2014 cool water, sensory anchor, intentional pause.',
+        'Dhikr (repetition of names of God) is contemplative repetition with documented effects.',
+        'Hijab and dress are personal, varied, and political; do not assume one stance.',
+        'Anti-Muslim bullying and surveillance stress are real; treat as ambient trauma.',
+        'Ramadan changes everything for a month; renegotiate plans seasonally.',
+        'Reading Quran in Arabic is regulation for many students, even without translation.',
+        'Family honor frames can complicate disclosure of personal struggle.'
+      ],
+      adaptations: [
+        { traditional: 'Generic breath pause', adaptation: 'Wudu as regulation \u2014 wash hands, face, arms, feet with intention', why: 'Already part of student\'s life; build on it.' },
+        { traditional: 'Mantra meditation', adaptation: 'Subhan\'Allah, Alhamdulillah, Allahu Akbar repetition (tasbih)', why: 'Existing faith vocabulary for contemplative repetition.' },
+        { traditional: 'Mindfulness retreat', adaptation: 'Itikaf (last 10 nights of Ramadan retreat) as analogue', why: 'Tradition already names sustained inward time.' },
+        { traditional: 'Gratitude journaling', adaptation: 'Listing blessings (ni\'ma) before sleep, in Arabic or English', why: 'Connects to faith vocabulary.' },
+        { traditional: 'Crisis line', adaptation: 'Khalil Center, Muslim Wellness Foundation, plus 988', why: 'Muslim-affirming clinical care.' }
+      ],
+      helpfulResources: [
+        'Khalil Center (khalilcenter.com) \u2014 Islamic psychology',
+        'Muslim Wellness Foundation',
+        'Naseeha Mental Health helpline (US/Canada) 1-866-627-3342',
+        'Hidaya Foundation crisis supports'
+      ],
+      research: 'Rothman & Coyle on Islamic psychology framework; Abu-Raiya & Pargament on Islamic religious coping; Awaad et al. on Muslim mental health interventions.'
+    },
+    {
+      id: 'cult-jewish',
+      context: 'Jewish students',
+      icon: '\u2721',
+      traditionOrIdentity: 'Orthodox, Conservative, Reform, Reconstructionist, secular, and culturally Jewish students',
+      shortDesc: 'Coping anchored by Shabbat rest, prayer with intention (kavanah), and community.',
+      whyItMatters: 'Judaism has structured rest, communal grief practices (shiva, sheloshim, yahrzeit), and contemplative practices that line up well with mental health needs. Antisemitism is a current and ambient stressor and must be named. Holocaust intergenerational trauma is part of many Jewish students\' family stories.',
+      considerations: [
+        'Shabbat is a weekly built-in rest; honor as coping infrastructure.',
+        'Mourning practices are structured and gradual (shiva, sheloshim, yahrzeit); grief is held collectively.',
+        'Hitbodedut (solitary speaking to God) is a Hasidic practice with strong contemplative value.',
+        'Antisemitism \u2014 left, right, religious \u2014 is current; name it.',
+        'Holocaust intergenerational trauma is documented; family histories may shape vigilance.',
+        'Israel/Palestine political climate creates campus stress for Jewish students of all positions.',
+        'Reform/Conservative/Orthodox practice varies enormously; do not assume.',
+        'Jews of color often face erasure; check that "Jewish" includes them.'
+      ],
+      adaptations: [
+        { traditional: 'Generic gratitude', adaptation: 'Modeh Ani \u2014 first words on waking, "thank you for returning my soul"', why: 'Existing daily practice; build the habit.' },
+        { traditional: 'Mindfulness breath', adaptation: 'Niggun \u2014 wordless melody, breath-paced; or Sh\'ma as breath anchor', why: 'Sound and tradition together.' },
+        { traditional: 'Journaling', adaptation: 'Hitbodedut \u2014 speaking aloud to God in a private space', why: 'Rabbi Nachman\'s practice; deeply Jewish solo prayer.' },
+        { traditional: 'Weekly rest day', adaptation: 'Shabbat as full unplug \u2014 already structured into the tradition', why: 'A built-in 25-hour reset.' },
+        { traditional: 'Crisis line', adaptation: 'Sova / Nefesh / Refuat HaNefesh; Trevor Project for LGBTQ+ Jewish youth', why: 'Jewish-fluent crisis support.' }
+      ],
+      helpfulResources: [
+        'BlueDove Foundation (bluedovefoundation.org)',
+        'OK Clarity for Orthodox Jewish mental health',
+        'Sova for eating disorders in Orthodox community',
+        'Jewish Family Services (local chapters nationwide)'
+      ],
+      research: 'Pirutinsky et al. on Orthodox Jewish mental health; Yehuda et al. on Holocaust intergenerational trauma; Rosmarin on Jewish spirituality and mental health.'
+    },
+    {
+      id: 'cult-hindu',
+      context: 'Hindu students',
+      icon: '\uD83D\uDD49',
+      traditionOrIdentity: 'Hindu students across diverse traditions (Shaiva, Vaishnava, Shakta, Smarta, regional)',
+      shortDesc: 'Coping that honors meditation, mantra, puja, and a long contemplative inheritance.',
+      whyItMatters: 'Many mindfulness practices in Western mental health were lifted from Hindu and Buddhist roots, often without attribution. For Hindu students, returning these practices to their tradition deepens both meaning and access. Cultural humility includes naming origins.',
+      considerations: [
+        'Hinduism is plural; no single creed or practice fits all.',
+        'Caste is a sensitive topic; Dalit and caste-oppressed students face their own stressors.',
+        'Diaspora Hindu students may navigate parents\' traditional practice and their own evolving faith.',
+        'Yoga in the West is often stripped of devotional context; offer return-to-source if desired.',
+        'Anti-Hindu and anti-South Asian racism (model minority + brown body) is a stressor.',
+        'Vegetarian, fasting, and ritual purity practices may affect physical health choices.',
+        'Pranayama (breath practice) is foundational; honor it as a coping tool, not exotic.',
+        'Family expectations around marriage and career are real stressors.'
+      ],
+      adaptations: [
+        { traditional: 'Mindfulness breath', adaptation: 'Pranayama \u2014 nadi shodhana (alternate nostril) or sama vritti (equal breath)', why: 'Practice already exists in tradition.' },
+        { traditional: 'Mantra meditation', adaptation: 'Om, Gayatri, ishta-devata mantra of student\'s choosing', why: 'Personal devotional anchor.' },
+        { traditional: 'Visualization', adaptation: 'Murti or yantra meditation (with respectful framing)', why: 'Existing visual contemplative tradition.' },
+        { traditional: 'Generic yoga class', adaptation: 'Yoga with the devotional dimension intact if student wants it', why: 'Returns practice to source.' },
+        { traditional: 'Therapist-only model', adaptation: 'Therapist + temple/community + family elders when student consents', why: 'Hindu support is often communal.' }
+      ],
+      helpfulResources: [
+        'Hindu American Foundation mental health resources',
+        'South Asian Mental Health Initiative & Network (SAMHIN)',
+        'MannMukti (mannmukti.org) \u2014 South Asian youth mental health',
+        'Local Hindu temple counselors and community programs'
+      ],
+      research: 'Tummala-Narra on South Asian American mental health; Sharma on Hindu contemplative traditions; APA on culturally responsive care for South Asian populations.'
+    },
+    {
+      id: 'cult-buddhist',
+      context: 'Buddhist students',
+      icon: '\u2638',
+      traditionOrIdentity: 'Theravada, Mahayana, Vajrayana, Zen, Pure Land, secular Buddhist students',
+      shortDesc: 'Coping that draws from formal meditation lineages, with sangha (community) as support.',
+      whyItMatters: 'Mindfulness as a clinical tool is a thin slice of Buddhism; offering formal lineage practice deepens what is available. Buddhist students from heritage traditions (Vietnamese, Thai, Tibetan, etc.) may have a different relationship to practice than convert Buddhists. Sangha \u2014 community of practitioners \u2014 is a coping resource often overlooked.',
+      considerations: [
+        'Vipassana, samatha, metta, tonglen, zazen are distinct practices; do not collapse to "meditation."',
+        'Suffering (dukkha) is a starting point in the tradition, not a problem to deny.',
+        'Tibetan, Vietnamese, Thai, Japanese, Korean Buddhism each have distinct forms.',
+        'Heritage vs convert Buddhist may have different relationships to scripture and clergy.',
+        'Refugee and immigrant Buddhist students may carry trauma that practice supports but does not erase.',
+        'Sangha (community) is one of the three jewels; collective belonging is core.',
+        'Meditation can intensify symptoms for some students; track and respond.',
+        'Engaged Buddhism connects practice to justice and activism.'
+      ],
+      adaptations: [
+        { traditional: 'Mindfulness breath', adaptation: 'Anapanasati from the Pali tradition; or shikantaza (just sitting) Zen', why: 'Honors specific lineage.' },
+        { traditional: 'Loving-kindness practice', adaptation: 'Metta bhavana in traditional five-phase form', why: 'Returns practice to source structure.' },
+        { traditional: 'Generic gratitude', adaptation: 'Mudita \u2014 sympathetic joy at others\' good fortune', why: 'Counters envy and isolation.' },
+        { traditional: 'Solo meditation', adaptation: 'Find or attend a sangha \u2014 in-person or online', why: 'Community is the third jewel.' },
+        { traditional: 'Crisis line', adaptation: '988 plus dharma teacher consultation when appropriate', why: 'Care is layered.' }
+      ],
+      helpfulResources: [
+        'Insight Meditation Society (IMS)',
+        'Plum Village (Thich Nhat Hanh tradition)',
+        'East Bay Meditation Center for POC and LGBTQ+ sangha',
+        'Lions Roar magazine for accessible Buddhist teachings'
+      ],
+      research: 'Kabat-Zinn on MBSR roots in Buddhism; Brewer on meditation and addiction; Olendzki on early Buddhist psychology; Brittain et al. on adverse meditation effects.'
+    },
+    {
+      id: 'cult-sikh',
+      context: 'Sikh students',
+      icon: '\uD83E\uDEAF',
+      traditionOrIdentity: 'Sikh students',
+      shortDesc: 'Coping anchored in Naam Simran, sangat (community), langar (shared meal), and seva (service).',
+      whyItMatters: 'Sikhism gives students a daily contemplative practice (Naam Simran), a community of equals (sangat), shared meals across all backgrounds (langar), and a strong service ethic (seva). All four are coping infrastructure already present in the student\'s life. Anti-Sikh racism, often confused with anti-Muslim racism, is a chronic stressor.',
+      considerations: [
+        'Naam Simran (repetition of God\'s name) is a primary contemplative practice; build on it.',
+        'Articles of faith (kesh, kara, kanga, kachera, kirpan) are religious obligations; never disrespect.',
+        'Anti-Sikh hate crimes are real; turbaned Sikh students may be daily targets.',
+        'Gurdwara community provides langar, sangat, and counsel; loop in respectfully.',
+        '1984 anti-Sikh violence and Punjab conflict carry intergenerational trauma.',
+        'Sikh principles of equality (women, caste, faith) shape student framework.',
+        'Seva \u2014 selfless service \u2014 can be both protective and a route to burnout; pace.',
+        'Family honor may complicate disclosure; gurdwara mental health programs help.'
+      ],
+      adaptations: [
+        { traditional: 'Mantra meditation', adaptation: 'Naam Simran \u2014 Waheguru repetition, paced with breath', why: 'Existing practice; deepen.' },
+        { traditional: 'Mindfulness retreat', adaptation: 'Akhand Path or attending kirtan as immersion', why: 'Tradition already structures sustained practice.' },
+        { traditional: 'Acts of kindness', adaptation: 'Seva at gurdwara langar \u2014 service as mood regulation', why: 'Embodied collective practice.' },
+        { traditional: 'Solo journaling', adaptation: 'Reflection on a shabad (hymn) from Guru Granth Sahib', why: 'Connects to text-rich devotional tradition.' },
+        { traditional: 'Crisis line', adaptation: 'Sikh Helpline + 988; SikhsPACT for anti-hate response', why: 'Culturally fluent supports.' }
+      ],
+      helpfulResources: [
+        'Sikh Coalition (sikhcoalition.org) for civil rights and support',
+        'SOVA \u2014 Surrey Online Voice of Asians (UK) for South Asian mental health',
+        'Sikh Family Center',
+        'Local gurdwara youth and counseling programs'
+      ],
+      research: 'Singh & Chan on Sikh mental health in diaspora; Ahluwalia on Sikh identity and racism; Khalsa on Naam Simran and contemplative practice.'
+    },
+    {
+      id: 'cult-secular-atheist',
+      context: 'Secular, spiritual-but-not-religious, and atheist students',
+      icon: '\uD83C\uDF0C',
+      traditionOrIdentity: 'Secular humanist, atheist, agnostic, SBNR, ex-religious students',
+      shortDesc: 'Coping rooted in meaning, values, awe, and community without theistic framing.',
+      whyItMatters: 'Many secular and ex-religious students have been told their distress reflects spiritual emptiness, and many have been pushed toward religious framing in care. Effective coping for secular students offers meaning, values, awe, and community without requiring belief. Ex-religious students may also be processing religious trauma.',
+      considerations: [
+        'Atheism is not nihilism; meaning-making without theism is rich.',
+        'Ex-religious / faith-deconstructing students may grieve loss of community and certainty.',
+        'Religious trauma is real and growing in the literature.',
+        'Awe (nature, music, science, art) is well-studied as a wellbeing booster.',
+        'Values-based coping (ACT) maps well onto secular meaning-making.',
+        'Some clinical materials use "spirituality" as code for religion; offer secular framing.',
+        'Community without belief \u2014 humanist groups, Sunday Assembly, secular AA \u2014 exists.',
+        'Existential anxiety (meaning, death) deserves direct engagement, not deflection.'
+      ],
+      adaptations: [
+        { traditional: 'Prayer as coping', adaptation: 'Values-based commitment \u2014 what would I want to stand for here?', why: 'ACT-aligned secular analog.' },
+        { traditional: 'Gratitude to God', adaptation: 'Gratitude to specific humans, ancestors, systems, ecosystems', why: 'Specific naming works without theology.' },
+        { traditional: 'Religious community', adaptation: 'Humanist chapter, Sunday Assembly, hiking group, book club, mutual aid', why: 'Belonging without belief.' },
+        { traditional: 'Spiritual surrender', adaptation: 'Stoic acceptance, ACT willingness \u2014 letting be without theology', why: 'Same skill, secular frame.' },
+        { traditional: 'Religious crisis line', adaptation: 'Recovering from Religion hotline 1-844-368-2848 for religious trauma; 988 otherwise', why: 'Specialized for ex-religious need.' }
+      ],
+      helpfulResources: [
+        'Recovering from Religion (recoveringfromreligion.org)',
+        'Secular Therapy Project (seculartherapy.org) \u2014 atheist-affirming therapists',
+        'Sunday Assembly local chapters',
+        'Greater Good Science Center for secular wellbeing science'
+      ],
+      research: 'Stewart on religious trauma syndrome; Galen on secular wellbeing; Hayes et al. on ACT; Keltner on awe and wellbeing.'
+    },
+    {
+      id: 'cult-poverty-food-insecurity',
+      context: 'Students experiencing poverty or food insecurity',
+      icon: '\uD83C\uDF4E',
+      traditionOrIdentity: 'Students in low-income households, food-insecure students',
+      shortDesc: 'Coping that does not require resources students do not have, and that names structural cause.',
+      whyItMatters: 'A coping curriculum that recommends a journal, a quiet room, a fidget toy, a yoga class, or a therapist may quietly require things many students do not have. Effective support uses free or school-provided resources, names the structural cause of stress, and connects students to material help when needed.',
+      considerations: [
+        'Hunger affects cognition and mood; address the food first.',
+        'Sleep is often disrupted by housing instability, shared rooms, work shifts.',
+        'Coping tools should be free, school-available, or hand-held.',
+        '"Self-care" can ring hollow if framed as buying things.',
+        'Adultification \u2014 caring for siblings, translating for parents, paying bills \u2014 is common.',
+        'Stigma in school (free lunch line, clothes, supplies) is a chronic stressor.',
+        'Material help (food pantry, clothing, supplies) is care, not charity.',
+        'Worry about parents is appropriate, not pathological.'
+      ],
+      adaptations: [
+        { traditional: 'Buy a journal', adaptation: 'School-provided notebook, scrap paper, voice notes on a free app', why: 'No-cost access.' },
+        { traditional: 'Take a yoga class', adaptation: 'Free YouTube yoga; school gym; movement at home', why: 'No-cost movement.' },
+        { traditional: '"Find a quiet space"', adaptation: 'Library, school counselor office, headphones in any space', why: 'Names that quiet space may not exist at home.' },
+        { traditional: 'See a therapist', adaptation: 'School-based mental health, community mental health center, sliding scale, 988', why: 'Free or low-cost paths.' },
+        { traditional: '"Treat yourself"', adaptation: 'Sensory grounding free anywhere \u2014 feet on floor, hand on heart, slow breath', why: 'Self-care that costs nothing.' }
+      ],
+      helpfulResources: [
+        'School social worker / counselor for connection to local resources',
+        'Feeding America food bank locator',
+        'United Way 211 for local crisis and material aid',
+        'McKinney-Vento liaison (for students experiencing homelessness)'
+      ],
+      research: 'Evans on cumulative risk and child poverty; Yoshikawa et al. on poverty and child development; Pollak on poverty and brain development.'
+    },
+    {
+      id: 'cult-foster-care',
+      context: 'Students in foster care',
+      icon: '\uD83C\uDFE0',
+      traditionOrIdentity: 'Students currently in or recently exited foster care',
+      shortDesc: 'Coping that respects disrupted attachment, agency, and the right to one\'s own story.',
+      whyItMatters: 'Foster youth move schools, homes, and caregivers, sometimes many times. Trust is hard-earned and easily broken by yet another adult who disappears. Coping support must be consistent, must give the student real choices, and must respect that the story of their life belongs to them.',
+      considerations: [
+        'Placement changes are not the student\'s fault; never frame as deserved.',
+        'Attachment is disrupted; building trust takes longer.',
+        'Bio family, foster family, and chosen family may all matter; do not flatten.',
+        'Court hearings, case worker visits, and reunification questions are chronic stressors.',
+        'Aging out is a cliff; plan early and concretely.',
+        'Records and labels follow students; advocate for fresh start at new school.',
+        'Trauma history is the rule, not the exception; trauma-informed care across all staff.',
+        'Siblings may be separated; honor that grief.'
+      ],
+      adaptations: [
+        { traditional: 'Family tree assignment', adaptation: 'Importance tree \u2014 who matters to you, however that looks', why: 'Avoids painful and exclusionary framing.' },
+        { traditional: 'Long-term goal planning', adaptation: 'Short-term + dream + transition-plan; weekly check-ins', why: 'Honors instability without abandoning future.' },
+        { traditional: 'Single counselor relationship', adaptation: 'Designated stable adult + warm handoffs at transitions', why: 'Prevents another disappearance.' },
+        { traditional: 'Sharing story for assignment', adaptation: 'Student-controlled disclosure; never required', why: 'Story belongs to the student.' },
+        { traditional: 'Crisis call to parent', adaptation: 'Student-named safe contact list; case worker, mentor, hotline', why: 'Adult-default may not apply.' }
+      ],
+      helpfulResources: [
+        'NCTSN \u2014 National Child Traumatic Stress Network resources for foster care',
+        'Foster Care to Success (fc2success.org)',
+        'CASA (Court Appointed Special Advocates) for youth',
+        'iFoster for transition-age youth'
+      ],
+      research: 'Casey Family Programs research; Greeson on foster youth and mentoring; Pecora et al. on foster care outcomes; Perry on trauma in foster care.'
+    },
+    {
+      id: 'cult-homelessness',
+      context: 'Students experiencing homelessness',
+      icon: '\uD83C\uDF19',
+      traditionOrIdentity: 'McKinney-Vento eligible students; doubled-up, sheltered, unsheltered, and unaccompanied youth',
+      shortDesc: 'Coping that uses school as anchor and names McKinney-Vento rights.',
+      whyItMatters: 'Students without stable housing often hide it. School can be the only stable anchor, and federal McKinney-Vento law guarantees rights (school of origin, transportation, immediate enrollment) that staff often do not know to invoke. Coping support starts with making sure the student is safe and knows their rights.',
+      considerations: [
+        'Homelessness includes doubled-up, motel, shelter, car, and unsheltered situations.',
+        'McKinney-Vento liaison exists in every district; know yours.',
+        'Backpack and storage logistics matter; offer secure lockers.',
+        'Shower, laundry, and phone-charging access affect daily functioning.',
+        'Sleep deprivation is the rule; offer rest space when possible.',
+        'Stigma is strong; protect privacy fiercely.',
+        'LGBTQ+ youth are over-represented in unaccompanied homelessness.',
+        'Food, transportation, and uniforms are often barriers; the law funds these.'
+      ],
+      adaptations: [
+        { traditional: '"Go home and do this exercise"', adaptation: 'Do it at school with adult support before leaving', why: 'Home may not be a coping-friendly space.' },
+        { traditional: 'Family-based coping', adaptation: 'Map the student\'s actual safe-person network; school staff included', why: 'Reflects lived reality.' },
+        { traditional: 'Sleep hygiene worksheet', adaptation: 'What rest is possible tonight, given today\'s situation', why: 'Honest about what the student can control.' },
+        { traditional: 'Generic referral', adaptation: 'Warm handoff to McKinney-Vento liaison and youth shelter', why: 'Connects to material support.' },
+        { traditional: '"Tell your parents"', adaptation: 'Identify any safe adult; never require parent contact', why: 'Family situation may be the stressor.' }
+      ],
+      helpfulResources: [
+        'National Center for Homeless Education (nche.ed.gov)',
+        'SchoolHouse Connection',
+        'Covenant House for unaccompanied youth (1-800-999-9999)',
+        'Local McKinney-Vento liaison \u2014 every district has one'
+      ],
+      research: 'Edidin et al. on health of homeless youth; Cutuli et al. on academic resilience in homeless students; NN4Y on unaccompanied homeless youth.'
+    },
+    {
+      id: 'cult-incarcerated-parent',
+      context: 'Students with incarcerated parents or caregivers',
+      icon: '\uD83D\uDD17',
+      traditionOrIdentity: 'Students whose parent, caregiver, or sibling is currently incarcerated',
+      shortDesc: 'Coping with stigma, attachment disruption, and complicated grief; access to age-appropriate resources.',
+      whyItMatters: 'More than 5 million US children have had a parent in prison or jail. Stigma keeps many students silent. Sesame Street\'s "Little Children, Big Challenges: Incarceration" toolkit changed the landscape by treating this as legitimate childhood experience. Coping support starts by removing the silence.',
+      considerations: [
+        'Stigma is strong; never disclose to other students without consent.',
+        'Visiting incarcerated parents involves logistics, intimidation, expense; honor the labor.',
+        'Reunification can be its own stressor, not only relief.',
+        'Anger at the incarcerated parent and love can coexist; let both be true.',
+        'Caregiver may be exhausted; check on whole family system.',
+        'Phone calls are expensive and rare; loss of contact is loss.',
+        'School-to-prison pipeline awareness for sibling support.',
+        'Race and class shape both who is incarcerated and how the student is treated.'
+      ],
+      adaptations: [
+        { traditional: '"Tell us about your family"', adaptation: 'Family-as-you-define-it; never require disclosure', why: 'Protects privacy and dignity.' },
+        { traditional: 'Father\'s/Mother\'s Day card', adaptation: 'Open-ended adult-who-cares-for-me; or send to incarcerated parent if student wants', why: 'Inclusive and student-led.' },
+        { traditional: 'Generic loss curriculum', adaptation: 'Ambiguous loss framework \u2014 present and absent at once', why: 'Names the specific shape of grief.' },
+        { traditional: 'Solo grief work', adaptation: 'Children of incarcerated parents groups (in-person or online)', why: 'Reduces isolation.' },
+        { traditional: 'Crisis line', adaptation: 'Sesame Street resources + local children-of-incarcerated-parents program + 988', why: 'Age-tailored options.' }
+      ],
+      helpfulResources: [
+        'Sesame Street in Communities: Incarceration (sesamestreetincommunities.org)',
+        'National Resource Center on Children & Families of the Incarcerated',
+        'Rutgers National Resource Center on Children and Families of the Incarcerated',
+        'Project WHAT! (We\'re Here And Talking) youth-led advocacy'
+      ],
+      research: 'Murray et al. on parental incarceration and child outcomes; Wakefield & Wildeman, Children of the Prison Boom; Boss on ambiguous loss.'
+    },
+    {
+      id: 'cult-multilingual-el',
+      context: 'Multilingual and English Learner students',
+      icon: '\uD83D\uDCAC',
+      traditionOrIdentity: 'Multilingual learners, English Learners, heritage speakers, bilingual students',
+      shortDesc: 'Coping that names the language a feeling actually lives in.',
+      whyItMatters: 'Feelings often have their first language. A coping curriculum that asks a student to name emotions only in their less-fluent language can shrink what the student can actually feel and process. Multilingual coping invites the whole language self.',
+      considerations: [
+        'Emotional vocabulary develops in the language of childhood; honor it.',
+        'Translanguaging \u2014 using multiple languages in one thought \u2014 is valid, not lazy.',
+        'Family/school language tension is a real stressor; let the student speak.',
+        'Heritage speakers may be ashamed of "imperfect" home language; gently affirm.',
+        'Some concepts (saudade, hygge, sisu, ubuntu) do not map cleanly to English; let them in.',
+        'Interpretation services in school are a right; do not use children as interpreters.',
+        'Code-switching fatigue is real; coping space can be a code-switch break.',
+        'Family literacy in English may vary; do not assume parent reading level from student\'s.'
+      ],
+      adaptations: [
+        { traditional: 'English feelings wheel', adaptation: 'Multilingual feelings wheel; let student pick the most-true word in any language', why: 'Affect access is language-bound.' },
+        { traditional: 'Write in English', adaptation: 'Write or speak in any language; translate after if at all', why: 'Removes language friction during regulation.' },
+        { traditional: '"Tell me how you feel"', adaptation: '"Tell me how you feel, in whichever language fits"', why: 'Permission opens doors.' },
+        { traditional: 'Mindfulness audio in English', adaptation: 'Heritage-language meditation audio (free apps exist in many languages)', why: 'Voice in heart language is more regulating.' },
+        { traditional: 'Crisis line', adaptation: '988 + Language Line; AT&T translation; community-specific hotlines', why: 'Crisis requires accessible language.' }
+      ],
+      helpfulResources: [
+        'WIDA for English Learner identification and rights',
+        'Colorin Colorado (colorincolorado.org) for bilingual student support',
+        'Office of English Language Acquisition (US Dept of Education)',
+        'Local refugee and immigrant family services'
+      ],
+      research: 'Garc\u00EDa & Wei on translanguaging; Pavlenko on emotion and bilingualism; Lopez-Class et al. on acculturation frameworks.'
+    },
+    {
+      id: 'cult-gifted-2e',
+      context: 'Gifted and twice-exceptional (2e) students',
+      icon: '\uD83C\uDF20',
+      traditionOrIdentity: 'Gifted, highly gifted, and twice-exceptional students (gifted plus LD, ADHD, autism, mental health condition)',
+      shortDesc: 'Coping with overexcitabilities, asynchronous development, perfectionism, and existential intensity.',
+      whyItMatters: 'Gifted students are often told their struggles are not real because they "should be fine." Dabrowski\'s overexcitabilities (intellectual, emotional, imaginational, psychomotor, sensual) and asynchronous development (mind age different from body age different from social age) explain a lot of distress that gets missed. 2e students sit at the intersection and are commonly under-identified for both halves.',
+      considerations: [
+        'Asynchronous development means a 9-year-old mind can be in a 7-year-old body with a 6-year-old social toolkit.',
+        'Overexcitabilities are intensities, not disorders; they need channels.',
+        'Perfectionism is the most common gifted mental health risk.',
+        'Existential anxiety (meaning, death, ethics) often arrives early.',
+        'Boredom in school is a stressor; advocacy for differentiation is care.',
+        '2e students are often missed: giftedness masks disability, disability masks giftedness.',
+        'Imposter syndrome and identity confusion ("am I really smart?") are common.',
+        'Social mismatch with age peers is real; mentor and interest-based peer groups help.'
+      ],
+      adaptations: [
+        { traditional: 'Generic stress curriculum', adaptation: 'Frame stress with Dabrowski overexcitability lens; name intensity as a feature', why: 'Reduces shame; offers vocabulary.' },
+        { traditional: '"Just relax"', adaptation: 'Channel intensity into focused project, deep reading, intense conversation', why: 'Discharge through depth, not suppression.' },
+        { traditional: 'Surface-level affirmation', adaptation: 'Real engagement with the student\'s actual questions and ideas', why: 'Patronizing affirmation lands as dismissal.' },
+        { traditional: 'Age-matched peer group', adaptation: 'Interest-matched or mental-age-matched peer group when possible', why: 'Reduces social mismatch.' },
+        { traditional: 'Generic perfectionism advice', adaptation: 'Healthy striving vs neurotic perfectionism distinction; permission to fail in low-stakes domains', why: 'Targeted to the actual mechanism.' }
+      ],
+      helpfulResources: [
+        'SENG \u2014 Supporting the Emotional Needs of the Gifted (sengifted.org)',
+        'Hoagies Gifted (hoagiesgifted.org)',
+        'National Association for Gifted Children (NAGC)',
+        '2e Newsletter and 2e Center for Research and Professional Development'
+      ],
+      research: 'Dabrowski Theory of Positive Disintegration; Silverman on asynchronous development; Webb on misdiagnosis of gifted; Reis & Renzulli on 2e students.'
+    },
+    {
+      id: 'cult-trauma-general',
+      context: 'Trauma-affected students (general)',
+      icon: '\uD83C\uDF27',
+      traditionOrIdentity: 'Students with single-incident, complex, or developmental trauma',
+      shortDesc: 'Coping that is choice-first, eyes-open, and never re-traumatizing.',
+      whyItMatters: 'Many standard coping practices \u2014 close your eyes, breathe deeply, lie down \u2014 can be triggering for trauma-affected students. Trauma-informed coping offers eyes-open versions, choice at every step, and a clear way to opt out. The goal is to widen the window of tolerance, not to push through it.',
+      considerations: [
+        'Trigger \u2260 inconvenience; treat as nervous-system event, not weakness.',
+        'Choice at every step; "if you\'d like to try" is the standard.',
+        'Eyes-open options for every breathing or grounding tool.',
+        'Predictability and consent reduce activation.',
+        'Hyperarousal and hypoarousal both need different tools.',
+        'Window of tolerance language helps students notice and name state.',
+        'Reading trauma symptoms as misbehavior is harm; train staff.',
+        'Specialized trauma therapy (TF-CBT, EMDR, somatic) belongs outside the school for most students; school supports daily coping.'
+      ],
+      adaptations: [
+        { traditional: 'Close your eyes and breathe', adaptation: 'Eyes open or soft gaze; breathe at your pace; opt out anytime', why: 'Restores choice and visual safety.' },
+        { traditional: 'Lie down for body scan', adaptation: 'Seated, standing, or moving body scan; chosen position', why: 'Lying down can feel unsafe.' },
+        { traditional: '"Tell me what happened"', adaptation: 'Tell me what you want me to know, when and how you want', why: 'Story belongs to student.' },
+        { traditional: 'Deep belly breath', adaptation: 'Slow exhale, sigh, hum, or "voo" sound \u2014 vagus-friendly without deep inhale', why: 'Some students cannot safely take a deep inhale.' },
+        { traditional: 'Group disclosure activity', adaptation: 'Written first, opt-out always; pair with trusted partner', why: 'Public disclosure can re-traumatize.' }
+      ],
+      helpfulResources: [
+        'NCTSN \u2014 National Child Traumatic Stress Network (nctsn.org)',
+        'Trauma-Informed Educators Network',
+        'Bessel van der Kolk, The Body Keeps the Score',
+        'CBITS \u2014 Cognitive Behavioral Intervention for Trauma in Schools'
+      ],
+      research: 'van der Kolk; Cohen & Mannarino on TF-CBT; Stein et al. on CBITS in schools; Felitti ACEs study; SAMHSA trauma-informed care principles.'
+    },
+    {
+      id: 'cult-eating-disorder',
+      context: 'Students with eating disorders',
+      icon: '\uD83C\uDF37',
+      traditionOrIdentity: 'Students with anorexia, bulimia, binge eating disorder, ARFID, OSFED, and disordered eating',
+      shortDesc: 'Coping that is body-respecting, weight-neutral, and does not become a new ED behavior.',
+      whyItMatters: 'Coping practices can be quietly co-opted by eating disorders: exercise becomes compensation, mindful eating becomes restriction, gratitude becomes body criticism. Effective support uses weight-neutral, body-respecting frames and stays in close contact with the student\'s treatment team if there is one.',
+      considerations: [
+        'EDs occur in all bodies, all genders, all races; do not gatekeep by body size.',
+        'Atypical anorexia (in larger bodies) is just as medically serious.',
+        'Diet talk, even casual, is a trigger; keep coping spaces diet-free.',
+        '"Healthy eating" curricula often deepen disordered eating; rethink.',
+        'Exercise as coping must be carefully framed; can be hijacked.',
+        'Body checking, food rules, and rituals are ED behaviors that look like coping.',
+        'Medical risk (cardiac, electrolyte) can be high even in functional-looking students.',
+        'Treatment team coordination is essential; do not freelance.'
+      ],
+      adaptations: [
+        { traditional: 'Mindful eating', adaptation: 'Pleasure-focused eating with treatment team approval; or skip and use other tools', why: 'Mindful eating can fuel restriction.' },
+        { traditional: 'Body scan', adaptation: 'Functional body scan \u2014 what does this part do for me \u2014 rather than appearance-based', why: 'Avoids body-focus that triggers.' },
+        { traditional: 'Exercise as mood booster', adaptation: 'Movement with treatment team guidance; pleasure movement only', why: 'Compulsive exercise risk.' },
+        { traditional: 'Gratitude for body', adaptation: 'Gratitude for non-body things; or for what your body lets you do, not how it looks', why: 'Reduces appearance focus.' },
+        { traditional: 'Crisis line', adaptation: 'NEDA Helpline 1-800-931-2237 or Crisis Text Line text NEDA to 741741; ANAD 1-888-375-7767', why: 'ED-fluent support.' }
+      ],
+      helpfulResources: [
+        'NEDA \u2014 National Eating Disorders Association 1-800-931-2237',
+        'ANAD \u2014 National Association of Anorexia Nervosa and Associated Disorders 1-888-375-7767',
+        'Project HEAL for treatment access',
+        'F.E.A.S.T. for family support'
+      ],
+      research: 'Tylka & Wood-Barcalow on body acceptance; Bacon, Health at Every Size; Lock & LeGrange on family-based treatment; Sonneville et al. on atypical anorexia.'
+    },
+    {
+      id: 'cult-substance-use',
+      context: 'Students with substance use struggles',
+      icon: '\uD83C\uDF31',
+      traditionOrIdentity: 'Students using, recovering from, or affected by substance use',
+      shortDesc: 'Harm reduction first; non-judgmental; SAMHSA helpline; recovery pathways are plural.',
+      whyItMatters: 'Zero-tolerance language pushes students away from disclosure and care. Harm reduction \u2014 meeting students where they are, reducing risk, preserving life \u2014 is evidence-based and is compatible with later abstinence if that is what the student chooses. Recovery pathways are plural (12-step, SMART Recovery, medication-assisted, secular, faith-based) and the student\'s choice.',
+      considerations: [
+        'Harm reduction saves lives; abstinence-only often fails.',
+        'Fentanyl in everything raises overdose risk; naloxone access is care.',
+        'Stigma blocks care more than substance does.',
+        'Family substance use shapes student risk and resilience.',
+        'Medication for opioid use disorder (buprenorphine, methadone) is medicine, not "trading one drug for another."',
+        'Co-occurring mental health is the rule, not the exception; treat together.',
+        'Recovery pathways are plural; student chooses.',
+        'Adolescent brain still developing; honest education without scare tactics.'
+      ],
+      adaptations: [
+        { traditional: '"Just say no"', adaptation: 'Honest education + harm reduction + connection to care', why: 'Evidence-based and respects student intelligence.' },
+        { traditional: 'Abstinence-only frame', adaptation: 'Spectrum of change \u2014 any reduction in risk counts', why: 'Meets student where they are.' },
+        { traditional: 'Solo coping', adaptation: 'Peer support \u2014 Alateen for affected youth, SMART Recovery, online communities', why: 'Connection is the opposite of addiction.' },
+        { traditional: 'Punishment for disclosure', adaptation: 'Confidential support, treatment referral, no punitive response', why: 'Trust enables care.' },
+        { traditional: 'Crisis line', adaptation: 'SAMHSA National Helpline 1-800-662-4357 (free, 24/7, confidential)', why: 'Treatment locator and support.' }
+      ],
+      helpfulResources: [
+        'SAMHSA National Helpline 1-800-662-4357',
+        'Alateen for youth affected by family substance use',
+        'SMART Recovery for Family and Friends',
+        'Partnership to End Addiction (drugfree.org)'
+      ],
+      research: 'Marlatt on harm reduction; Volkow on addiction neuroscience; NIDA Principles of Adolescent Substance Use Disorder Treatment; Hawk et al. on harm reduction with youth.'
+    },
+    {
+      id: 'cult-rural',
+      context: 'Students in rural areas',
+      icon: '\uD83C\uDF3E',
+      traditionOrIdentity: 'Rural and small-town students',
+      shortDesc: 'Coping with isolation, limited services, telehealth access, and rural-specific protective factors.',
+      whyItMatters: 'Rural students face provider shortages, long travel for care, and small communities where confidentiality is hard. They also have real protective factors \u2014 land, intergenerational neighbors, faith communities, hands-on competence. Coping support should use telehealth, school-based providers, and rural strengths.',
+      considerations: [
+        'Provider shortages are real; telehealth is often the only access.',
+        'Confidentiality is hard in small towns; mention only with consent.',
+        'Long travel to care is a cost; school-based is often more accessible.',
+        'Stigma can be stronger in close-knit communities.',
+        'Suicide rates are higher in many rural areas, especially with firearm access.',
+        'Means-restriction conversations matter (gun storage, medication storage).',
+        'Land, animals, work, and family are real coping resources.',
+        'Internet access varies; do not assume bandwidth for video calls.'
+      ],
+      adaptations: [
+        { traditional: 'In-person therapist', adaptation: 'Telehealth therapist; school-based mental health; rural-trained provider', why: 'Access where access exists.' },
+        { traditional: 'City-based crisis services', adaptation: 'Crisis Text Line + 988 + local sheriff CIT if trained', why: 'Distance-friendly help.' },
+        { traditional: '"Take a walk"', adaptation: 'Walk on the land you know \u2014 barn, woods, road', why: 'Uses available environment.' },
+        { traditional: 'Group support in person', adaptation: 'Online groups for specific identities (LGBTQ+ rural youth, etc.)', why: 'Mirroring without travel.' },
+        { traditional: 'Means-neutral safety plan', adaptation: 'Direct firearm storage and medication storage conversation', why: 'Rural means restriction saves lives.' }
+      ],
+      helpfulResources: [
+        'Rural Health Information Hub (ruralhealthinfo.org)',
+        '988 Suicide and Crisis Lifeline (call, text, chat)',
+        'TeleMental Health Institute',
+        'National Rural Health Association mental health resources'
+      ],
+      research: 'Smalley et al. on rural mental health; Hirsch on rural suicide; Mohatt et al. on rural health workforce; AAP rural pediatric mental health policy.'
+    }
+  ];
+
+  // \u2500\u2500 Spiritual & Contemplative Practices Library \u2500\u2500
+  // Practices from world religious and contemplative traditions, adapted for student use
+  var CONTEMPLATIVE_PRACTICES = [
+    {
+      id: 'cp-metta',
+      name: 'Loving-Kindness Meditation (Metta)',
+      tradition: 'Theravada Buddhism (Brahmaviharas), with strong secular research base',
+      icon: '\uD83D\uDC97',
+      description: {
+        elementary: 'A way of sending kind wishes to yourself, your family, your friends, and even people you do not know yet. You quietly say wishes like "may you be happy" in your mind. It is like sending good feelings out like little waves.',
+        middle: 'Loving-kindness, or metta, is a 2,500-year-old Buddhist practice where you silently repeat phrases like "may I be safe, may I be happy, may I be healthy, may I live with ease" toward yourself and then toward others. Modern research shows it boosts positive emotion and social connection.',
+        high: 'Metta is one of the four brahmaviharas (divine abodes) in Theravada Buddhism. The practice systematically extends benevolence outward in concentric rings: self, benefactor, friend, neutral person, difficult person, all beings. Secular research (Fredrickson, Hutcherson) shows measurable effects on positive affect, social connectedness, vagal tone, and even reduced implicit bias.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably with eyes open or closed.',
+          'Take three slow breaths.',
+          'Picture yourself and quietly say "may I be happy."',
+          'Picture someone you love and say "may you be happy."',
+          'Picture a friend and say the same words.',
+          'Picture someone you do not know well \u2014 a bus driver, a neighbor \u2014 and try the words for them too.',
+          'Take three more breaths and notice how you feel.'
+        ],
+        middle: [
+          'Find a quiet seat and let your eyes soften or close.',
+          'Bring yourself to mind. Repeat silently: "may I be safe, may I be happy, may I be healthy, may I live with ease."',
+          'Bring to mind a benefactor \u2014 someone whose love is easy to feel. Send the same wishes.',
+          'Bring a good friend to mind. Send the same wishes.',
+          'Bring a neutral person \u2014 someone you barely know \u2014 to mind. Same wishes.',
+          'When ready, try someone who is hard right now (skip if too much). Same wishes.',
+          'Open the wishes to all beings everywhere. End with three breaths.'
+        ],
+        high: [
+          'Sit upright in a stable posture; eyes open soft gaze or closed.',
+          'Begin with self: repeat the four phrases slowly enough to mean them, not just say them.',
+          'Move to benefactor, then good friend, then neutral person, then difficult person, then all beings.',
+          'If a phrase brings up resistance (especially for self), notice without judgment and stay with it gently.',
+          'If the difficult person stage is destabilizing, return to a stable category.',
+          'End by resting in whatever warmth has accumulated, without grasping.',
+          'Common length is 20-30 minutes; 10 minutes is plenty to start.'
+        ]
+      },
+      benefit: 'Increases positive emotion, social connectedness, self-compassion; reduces implicit bias and rumination; cardiovascular and vagal benefits documented.',
+      secularAdaptation: 'Drop "may" + replace with "I wish" if "may" feels prayerful. Use "may we all be well" framing without invoking any spiritual context. Fredrickson\'s book Love 2.0 provides a fully secular protocol.',
+      contraIndications: [
+        'For self can backfire in active suicidal crisis \u2014 start with benefactor instead.',
+        'Survivors of severe abuse may find the difficult-person stage destabilizing; skip without shame.',
+        'May surface grief; have support available.'
+      ],
+      research: 'Fredrickson et al. (2008) on positive emotions and vagal tone; Hutcherson, Seppala & Gross (2008) on social connectedness; Hofmann, Grossman & Hinton (2011) systematic review; Kang et al. on reduced implicit bias.'
+    },
+    {
+      id: 'cp-tonglen',
+      name: 'Tonglen (Taking and Sending)',
+      tradition: 'Tibetan Buddhism (Mahayana), associated with Lojong mind training',
+      icon: '\u2601',
+      description: {
+        elementary: 'Tonglen is a practice where you breathe in hard feelings (your own or someone else\'s) and breathe out kind feelings. It sounds backwards but it can make you feel less alone with hard stuff.',
+        middle: 'Tonglen, taught in Tibetan Buddhism, reverses our usual instinct: instead of pushing away pain, you breathe it in, and instead of holding tight to comfort, you breathe it out to someone who needs it. Pema Ch\u00F6dr\u00F6n teaches it widely.',
+        high: 'Tonglen is a Lojong (mind training) practice from Tibetan Buddhism, traced to the 11th-century Indian master Atisha. It uses the breath as a vehicle for the bodhicitta intention: take on the suffering of others, send out one\'s ease. Pema Ch\u00F6dr\u00F6n\'s teachings (Tonglen, 2001) bring it to Western readers.'
+      },
+      steps: {
+        elementary: [
+          'Sit quietly and take a few breaths.',
+          'Think of someone who is having a hard time (could be you).',
+          'Breathe in and imagine you are breathing in their hard feeling, like a dark cloud.',
+          'Breathe out and imagine you are sending them a bright, calm feeling.',
+          'Do this 5-10 times.',
+          'End with one big breath and notice how you feel.'
+        ],
+        middle: [
+          'Sit comfortably; let the body settle.',
+          'Take a few breaths to arrive.',
+          'Begin with whatever is alive in you \u2014 your own struggle, or a person\'s pain you have witnessed.',
+          'Breathe in the felt sense of that pain (as heat, dark, heavy).',
+          'Breathe out a felt sense of relief (as cool, light, spacious).',
+          'After a few breaths, widen: everyone everywhere with this same pain.',
+          'End by resting open, with no agenda.'
+        ],
+        high: [
+          'Establish a calm seat with stable breath for 1-2 minutes first.',
+          'Phase 1 (brief): rest in open awareness.',
+          'Phase 2: work with texture \u2014 breathe in hot/dark/heavy, breathe out cool/bright/spacious.',
+          'Phase 3: bring a specific person and specific pain. Inhale their pain; exhale ease toward them.',
+          'Phase 4: extend the same to all beings with that pain.',
+          'If feels too heavy, return to a simpler stage or to plain breath.',
+          'Close by dedicating any benefit to all beings (or to the specific person).'
+        ]
+      },
+      benefit: 'Builds courage to stay present with suffering (one\'s own and others\'); counteracts compassion fatigue; develops the bodhicitta intention; can shift caregiver burnout patterns.',
+      secularAdaptation: 'Frame as a "compassion breath" without bodhicitta or rebirth context. Use as caregiver self-care or as a way to process secondhand trauma exposure.',
+      contraIndications: [
+        'Active trauma flashbacks: postpone until stabilized.',
+        'Caregivers already overwhelmed may take on more than they can hold \u2014 pace gradually.',
+        'Not a substitute for trauma therapy if processing one\'s own abuse.'
+      ],
+      research: 'Less RCT evidence than metta; qualitative reports from Pema Ch\u00F6dr\u00F6n\'s teaching tradition; aligns with research on compassion training (Singer & Klimecki on Compassion Cultivation Training).'
+    },
+    {
+      id: 'cp-rain',
+      name: 'RAIN (Recognize, Allow, Investigate, Nurture)',
+      tradition: 'Modern Buddhist-derived (Michele McDonald, popularized by Tara Brach)',
+      icon: '\uD83C\uDF27',
+      description: {
+        elementary: 'RAIN is four steps to help with a big feeling. R is Recognize (what am I feeling?). A is Allow (it is okay to feel it). I is Investigate (where do I feel it in my body?). N is Nurture (be kind to yourself like a friend would).',
+        middle: 'RAIN is an acronym for working through a strong emotion: Recognize what is happening, Allow it to be there, Investigate with curiosity (especially in the body), and Nurture yourself with self-compassion. Tara Brach has taught it widely as a way to meet hard moments without getting swept away.',
+        high: 'RAIN was introduced by Michele McDonald and developed by Tara Brach as a four-step inquiry for working with difficult emotions. It draws on Insight Meditation tradition and integrates self-compassion (Neff) in the Nurture step. Brach\'s book RAIN: A Practice of Radical Compassion (2019) gives the full method.'
+      },
+      steps: {
+        elementary: [
+          'Notice you are having a big feeling. Pause.',
+          'R \u2014 Recognize: say to yourself, "this is _____" (sad, angry, scared).',
+          'A \u2014 Allow: say "it is okay that I feel this."',
+          'I \u2014 Investigate: where do you feel it in your body? What does it want to tell you?',
+          'N \u2014 Nurture: put a hand on your heart, say something kind like "you are okay, I am with you."'
+        ],
+        middle: [
+          'Notice a strong feeling. Stop what you are doing and turn toward it.',
+          'R \u2014 Recognize: name what is happening ("frustration," "hurt," "shame").',
+          'A \u2014 Allow: stop fighting it. Try "let me let this be here."',
+          'I \u2014 Investigate: where does it live in the body? What is the story underneath? What does the most vulnerable part of you need?',
+          'N \u2014 Nurture: offer yourself what that part needs \u2014 words, hand on heart, breath, an inner gesture of care.',
+          'After RAIN: rest in the space that opens.'
+        ],
+        high: [
+          'Pause when a strong emotion is present. Do not skip this pause.',
+          'R \u2014 Recognize: name precisely. "Anxiety about tomorrow\'s exam" is more useful than "stress."',
+          'A \u2014 Allow: drop the second arrow \u2014 the resistance to the feeling. Try "yes, this is here."',
+          'I \u2014 Investigate with kindness, not interrogation. Body location, sensation, image, age it feels.',
+          'N \u2014 Nurture: ask the inner part what it most needs to hear. Offer it (silently, sincerely).',
+          'After RAIN: rest in the natural awareness that holds it all. This after-the-RAIN moment is often the deepest part.'
+        ]
+      },
+      benefit: 'Gives a structured way to meet hard emotions; builds self-compassion; reduces avoidance; integrates well with CBT and DBT skills.',
+      secularAdaptation: 'Already largely secular as taught. Drop "natural awareness" / Buddhist framing in clinical settings if preferred; functions as an emotion regulation script.',
+      contraIndications: [
+        'For severe trauma: I (Investigate) can be activating; have a grounding plan ready.',
+        'Avoid using as bypass \u2014 "RAIN it away" defeats the purpose.',
+        'Acute crisis: use shorter grounding tools first; RAIN is for after immediate stabilization.'
+      ],
+      research: 'Self-compassion components have strong evidence base (Neff & Germer MSC trial 2013); RAIN itself is a delivery system more than an independent intervention. Aligned with mindfulness-based CT research.'
+    },
+    {
+      id: 'cp-centering-prayer',
+      name: 'Centering Prayer',
+      tradition: 'Christian contemplative (Thomas Keating, William Meninger, Basil Pennington)',
+      icon: '\uD83D\uDD4A',
+      description: {
+        elementary: 'Centering Prayer is a quiet Christian way to be with God. You pick a special word like "peace" or "Jesus" and gently come back to it when your mind wanders. It is mostly just being quiet together with God.',
+        middle: 'Centering Prayer is a Christian contemplative practice retrieved by Trappist monks in the 1970s. You choose a "sacred word" as a symbol of your consent to God\'s presence, sit silently, and when you notice you have drifted, gently return to the word. Twenty minutes, twice a day, is the classic dose.',
+        high: 'Centering Prayer was developed by Father Thomas Keating and colleagues at St. Joseph\'s Abbey in the 1970s to retrieve the Christian apophatic contemplative tradition (Cloud of Unknowing, John of the Cross). It is consent-based rather than concentration-based: the sacred word is not a mantra to focus on but a gesture of yielding to the Spirit\'s action.'
+      },
+      steps: {
+        elementary: [
+          'Pick a quiet place and a comfortable seat.',
+          'Choose your special word (peace, love, Jesus, Abba \u2014 any short word).',
+          'Close your eyes and silently say your word, like setting it on a table.',
+          'When you notice you are thinking about other stuff, gently say your word again.',
+          'Sit for 5 minutes (a timer helps).',
+          'End by saying a short "thank you" prayer or just opening your eyes.'
+        ],
+        middle: [
+          'Choose a sacred word that symbolizes your consent to God\'s presence and action within.',
+          'Sit comfortably with eyes closed; introduce the word.',
+          'When you notice you have engaged with thoughts, return ever so gently to the sacred word.',
+          'Aim for 20 minutes; start with 10 if new.',
+          'End with 1-2 minutes of silence before getting up; consider closing with the Lord\'s Prayer.',
+          'Do it twice a day if possible \u2014 Keating emphasizes consistency.'
+        ],
+        high: [
+          'Sit in stable posture, eyes closed.',
+          'Introduce the sacred word as a symbol of consent \u2014 not as a concentration object.',
+          'Whenever any thought, feeling, image, or memory arises, return gently to the sacred word. Do not push thoughts away; do not engage them; just return.',
+          'Sit for 20 minutes (use a quiet timer).',
+          'End with 2 minutes of silence allowing the fruits to integrate.',
+          'A daily rhythm (morning and evening) deepens the practice over months and years.',
+          'Consider a Centering Prayer group; the tradition is communal as well as solitary.'
+        ]
+      },
+      benefit: 'Deepens contemplative dimension of Christian life; produces measurable stress reduction and quality of life benefits; supports the "Welcoming Prayer" approach to emotional reactivity.',
+      secularAdaptation: 'Without Christian framing, this is functionally similar to mantra-based meditation (TM, Benson\'s Relaxation Response). The consent dimension is specifically theological and is hard to fully secularize.',
+      contraIndications: [
+        'Trauma-affected practitioners may find extended silent sitting destabilizing; build up gradually.',
+        'Dissociative tendencies: stay short and grounded; consult a therapist.',
+        'Active psychosis: avoid extended silent practice without clinical guidance.'
+      ],
+      research: 'Ferguson et al. on Centering Prayer and stress; Johnson on contemplative practice and mental health; Wachholtz & Pargament on spiritual vs secular meditation outcomes.'
+    },
+    {
+      id: 'cp-lectio-divina',
+      name: 'Lectio Divina (Sacred Reading)',
+      tradition: 'Christian monastic (Benedictine origins; codified by Guigo II, 12th c.)',
+      icon: '\uD83D\uDCDC',
+      description: {
+        elementary: 'Lectio Divina is a slow, prayerful way of reading a short Bible passage. You read it, think about a word that stands out, talk to God about it, and then just rest quietly.',
+        middle: 'Lectio Divina ("divine reading") is a Christian monastic practice with four steps: Lectio (read), Meditatio (reflect), Oratio (respond in prayer), Contemplatio (rest in God). A short passage (3-6 verses) is read slowly several times, with each pass deepening.',
+        high: 'Lectio Divina was codified by the Carthusian Guigo II in his Ladder of Monks (12th century), though the practice extends back to early monastic tradition. The four rungs \u2014 lectio, meditatio, oratio, contemplatio \u2014 move from active reading to silent abiding. Contemporary teachers include Michael Casey and the Centering Prayer movement (Keating integrated it).'
+      },
+      steps: {
+        elementary: [
+          'Pick a short Bible verse (or any sacred reading).',
+          'Read it slowly out loud.',
+          'Notice if a word or phrase stands out. Sit with that word.',
+          'Talk to God about why it might matter to you today.',
+          'Sit quietly for a minute, just being with God.',
+          'End with thank you.'
+        ],
+        middle: [
+          'Choose a passage of 3-6 verses; find quiet.',
+          'Lectio: read aloud, slowly, listening for a word or phrase that catches you.',
+          'Meditatio: stay with that word; let it interact with your day, your questions.',
+          'Oratio: respond \u2014 what do you want to say to God in light of this?',
+          'Contemplatio: rest silently in God\'s presence. No agenda; just be.',
+          'Close with thanks; consider journaling what stayed with you.'
+        ],
+        high: [
+          'Select passage; settle posture and breath.',
+          'Lectio: read the passage aloud at least twice, allowing a word to choose you.',
+          'Meditatio: ruminate (in the contemplative sense) \u2014 turn the word in the heart, let it work on you.',
+          'Oratio: pray it back \u2014 confession, gratitude, lament, petition, praise.',
+          'Contemplatio: silent abiding, beyond words. This is the heart of the practice.',
+          'Optional fifth rung (added in some traditions): operatio \u2014 how does this passage move into action today?',
+          'Practice daily over weeks for deepest fruit.'
+        ]
+      },
+      benefit: 'Roots prayer in scripture without intellectualizing; develops contemplative listening; supports spiritual formation; reduces anxiety for many practitioners.',
+      secularAdaptation: 'Can be adapted to any meaningful text (poetry, philosophy, sacred texts of other traditions) with same four-step structure. Loses theological core but retains contemplative depth.',
+      contraIndications: [
+        'Religious trauma involving scripture may surface; choose passages carefully or postpone.',
+        'Perfectionist tendencies can turn reading into achievement; gentle is the standard.',
+        'For students still working out faith: low-stakes passages (Psalm 23, Beatitudes) are good starts.'
+      ],
+      research: 'Less RCT base than secular mindfulness; qualitative theology literature is rich (Casey, Magrassi); aligns with broader contemplative-meditation research.'
+    },
+    {
+      id: 'cp-examen',
+      name: 'Ignatian Examen',
+      tradition: 'Christian (Ignatian / Jesuit, from the Spiritual Exercises of Ignatius of Loyola, 1548)',
+      icon: '\uD83D\uDD6F',
+      description: {
+        elementary: 'The Examen is a way of looking back on your day at bedtime. You think about a moment you felt happy or close to God, a moment that was hard, and then talk to God about tomorrow.',
+        middle: 'The Examen is a 5-step daily reflection from St. Ignatius of Loyola: become aware of God\'s presence, review the day with gratitude, notice your emotions, choose one moment to pray about, look toward tomorrow. Many Jesuits and Jesuit-educated students do it nightly.',
+        high: 'The Daily Examen is from the Spiritual Exercises of St. Ignatius of Loyola (1522-1548), structured as a discernment practice. The five movements help one notice God\'s movement in ordinary life, attend to consolation and desolation, and grow in freedom. Pope Francis (a Jesuit) does it daily and has spoken of its centrality.'
+      },
+      steps: {
+        elementary: [
+          'Get ready for bed. Sit quietly for a moment.',
+          'Say hi to God or just notice God is near.',
+          'Think of one thing you are thankful for today.',
+          'Think of one happy moment in your day.',
+          'Think of one hard moment.',
+          'Ask God to help you with tomorrow.',
+          'Goodnight.'
+        ],
+        middle: [
+          'Find a quiet spot at the end of the day.',
+          'Become aware of God\'s presence (a breath, a candle, silence).',
+          'Review the day with gratitude \u2014 what gifts stand out?',
+          'Notice emotions \u2014 when did you feel alive (consolation)? When drained (desolation)?',
+          'Choose one moment to pray about \u2014 talk to God honestly about it.',
+          'Look toward tomorrow \u2014 what do you want to ask God for?'
+        ],
+        high: [
+          'Set aside 10-15 minutes, typically at day\'s end or midday.',
+          'Step 1: Awareness \u2014 settle into God\'s presence; breath, posture, silence.',
+          'Step 2: Gratitude \u2014 review the day for gifts large and small; thank specifically.',
+          'Step 3: Review \u2014 let the day unspool; notice where you felt energy / openness (consolation) and where you felt drained / contracted (desolation). This is Ignatian discernment.',
+          'Step 4: Forgiveness / focus \u2014 choose one moment that matters; talk to God about it; ask forgiveness if needed.',
+          'Step 5: Renewal \u2014 look toward tomorrow with hope; ask for what you need.',
+          'Optional: keep a brief Examen journal \u2014 patterns emerge over weeks.'
+        ]
+      },
+      benefit: 'Builds reflective habit, emotional awareness (consolation/desolation), gratitude practice, and discernment skill; supports vocational and identity development; reduces rumination.',
+      secularAdaptation: 'Drop God language and frame as "values reflection" \u2014 gratitude, energy review, intention setting. The discernment of consolation/desolation maps onto an emotional values audit.',
+      contraIndications: [
+        'Can become self-critical for perfectionists; emphasize gratitude and forgiveness steps.',
+        'Depression can color the review negatively; pair with morning gratitude or positive practice.',
+        'Religious trauma: secular adaptation may be a better entry.'
+      ],
+      research: 'Limited direct RCT base; aligns with research on gratitude practice (Emmons), reflective journaling, and meaning-making.'
+    },
+    {
+      id: 'cp-breath-prayer',
+      name: 'Christian Breath Prayer (Jesus Prayer)',
+      tradition: 'Eastern Orthodox / Hesychast tradition; widely adopted in Western Christianity',
+      icon: '\uD83C\uDF2C',
+      description: {
+        elementary: 'A breath prayer is a short prayer you breathe with. A common one is "Lord Jesus Christ" when you breathe in, "have mercy on me" when you breathe out. It can calm you down when you are upset.',
+        middle: 'The Jesus Prayer ("Lord Jesus Christ, Son of God, have mercy on me, a sinner") comes from the Eastern Orthodox Hesychast tradition. Practiced for over a thousand years, often paced with the breath, it is one of Christianity\'s oldest contemplative prayers.',
+        high: 'The Jesus Prayer is central to Eastern Orthodox hesychasm and was popularized in the West by the 19th-century Russian text The Way of a Pilgrim. The full form is "Lord Jesus Christ, Son of God, have mercy on me, a sinner," though shorter forms (e.g., "Jesus, mercy") are also traditional. The hesychast tradition pairs it with breath and posture, ultimately aiming at unceasing prayer (1 Thessalonians 5:17).'
+      },
+      steps: {
+        elementary: [
+          'Sit or stand quietly.',
+          'Breathe in slowly: "Lord Jesus Christ."',
+          'Breathe out slowly: "have mercy on me."',
+          'Do this 10 times.',
+          'Notice how your body feels.'
+        ],
+        middle: [
+          'Choose a short prayer (Jesus Prayer, or "Be still and know," or "Abba, I belong to you").',
+          'Sit upright, eyes closed.',
+          'On inhale, silently say the first half; on exhale, the second half.',
+          'Match the rhythm of the prayer to your natural breath, not the other way around.',
+          'Do for 5-10 minutes; when mind wanders, return to the prayer.'
+        ],
+        high: [
+          'Establish posture: upright, relaxed, hands resting.',
+          'Choose your form: full Jesus Prayer or shorter; Eastern Orthodox students may consult a spiritual father about the practice.',
+          'Coordinate with breath: inhale on first phrase, exhale on second.',
+          'Aim for short sessions multiple times daily, eventually unceasing \u2014 the goal is the heart praying continually, not concentration alone.',
+          'Use a prayer rope (chotki) if traditional.',
+          'Practice for life, not for outcomes; the prayer changes the prayer.'
+        ]
+      },
+      benefit: 'Combines breath regulation with theological grounding; portable across the day; reduces anxiety; deepens devotional life.',
+      secularAdaptation: 'Substitute the prayer with any short paired phrase (e.g., "let in / let go," "I am here / it is now"). Functions as a paced breath with mental anchor.',
+      contraIndications: [
+        'Scrupulous or shame-prone students may over-focus on "a sinner"; use shorter form ("Lord, mercy").',
+        'Trauma-related shame: choose affirming phrasing instead.',
+        'Catholic and Orthodox traditions have specific theological context; respect it if borrowing.'
+      ],
+      research: 'Limited RCT base; aligned with research on mantra meditation and paced breathing (Lehrer & Gevirtz on coherent breathing).'
+    },
+    {
+      id: 'cp-hitbodedut',
+      name: 'Hitbodedut (Jewish Solitary Speaking)',
+      tradition: 'Hasidic Judaism (Rabbi Nachman of Breslov, late 18th c.)',
+      icon: '\uD83C\uDF3F',
+      description: {
+        elementary: 'Hitbodedut is a Jewish way of talking out loud to G-d like you would talk to a best friend. You go to a quiet place and just say whatever is on your heart.',
+        middle: 'Hitbodedut, taught by Rabbi Nachman of Breslov, is an hour a day of speaking out loud to G-d in your own words. It is unscripted, honest, often in the field or under the night sky. Many Hasidic Jews still practice it.',
+        high: 'Rabbi Nachman of Breslov (1772-1810) taught hitbodedut as the central daily practice: spend an hour alone, in nature when possible, speaking aloud to G-d in one\'s native tongue (not in liturgical Hebrew). It is radically unscripted \u2014 complaint, gratitude, confession, silence, all welcome. The practice predates Nachman but he made it central; Breslov communities still teach it.'
+      },
+      steps: {
+        elementary: [
+          'Find a quiet, private spot (outside is great).',
+          'Talk out loud to G-d like you are talking to a friend.',
+          'Tell G-d what is on your mind \u2014 happy, sad, mad, confused.',
+          'It is okay to be quiet too.',
+          'Start with 5 minutes.'
+        ],
+        middle: [
+          'Pick a private place \u2014 bedroom, walk, woods.',
+          'Speak aloud (whispering counts) to G-d in your own language.',
+          'Say what is true today \u2014 frustrations, hopes, questions, gratitude.',
+          'You do not have to be polite or eloquent; honesty matters more.',
+          'Aim for 15-30 minutes to start; Nachman recommended an hour.',
+          'Repeat daily.'
+        ],
+        high: [
+          'Choose a regular time and place (outdoors when possible).',
+          'Speak aloud in the language closest to your heart, not liturgical Hebrew.',
+          'Cover: thanks, what is hard, what you need, what you are confused about, what you regret, what you hope.',
+          'Silence between is part of the practice \u2014 listen.',
+          'Aim for the traditional hour, but begin where you can.',
+          'Many Breslov teachers recommend hitbodedut as the daily anchor of the spiritual life.'
+        ]
+      },
+      benefit: 'Externalizes inner struggle; honest emotional processing; sense of being heard; reduces isolation; integrates spiritual life with ordinary life.',
+      secularAdaptation: 'Speaking aloud to oneself, the universe, or a journal-figure works similarly. Therapy empty-chair work shares structural similarity.',
+      contraIndications: [
+        'Public speaking-to-self risks; do in private to avoid social complications.',
+        'Acute psychosis: the boundary between self-talk and other-voice may need clinical attention.',
+        'Religious trauma involving G-d as critic may surface; gentle theology helps.'
+      ],
+      research: 'Strong qualitative tradition; limited empirical study; aligns with emotional disclosure research (Pennebaker) and expressive talking research.'
+    },
+    {
+      id: 'cp-modeh-ani',
+      name: 'Modeh Ani (Jewish Morning Gratitude)',
+      tradition: 'Judaism (traditional morning prayer, post-medieval)',
+      icon: '\uD83C\uDF05',
+      description: {
+        elementary: 'Modeh Ani is a tiny Jewish prayer to say first thing in the morning. It thanks G-d for giving you your soul back after sleep. It is a way to start the day grateful that you woke up.',
+        middle: 'Modeh Ani ("I gratefully thank You") is recited by observant Jews upon waking, before getting out of bed. It thanks G-d for restoring the soul. The whole prayer takes about 15 seconds and is a foundational gratitude practice.',
+        high: 'Modeh Ani is recited upon waking, before any other activity, in observant Jewish practice. The full text: "Modeh ani lefanecha, melech chai vekayam, shehechezarta bi nishmati b\'chemla \u2014 raba emunatecha" ("I gratefully thank You, living and eternal King, for returning my soul to me with compassion \u2014 great is Your faithfulness"). It establishes the day in gratitude before the conscious mind has time to spool up worry.'
+      },
+      steps: {
+        elementary: [
+          'When you wake up, before getting out of bed, pause.',
+          'Say silently or aloud: "Thank you for giving me another day."',
+          'Take three breaths.',
+          'Now get up.'
+        ],
+        middle: [
+          'Set intention the night before: tomorrow I will pause when I wake.',
+          'Upon waking, before reaching for phone, say Modeh Ani (in Hebrew if you know it, or in English).',
+          'Notice the body, the breath, the gift of being alive.',
+          'Take a few moments before transitioning into the day.',
+          'Do this daily \u2014 the cumulative effect builds.'
+        ],
+        high: [
+          'Recite Modeh Ani as the first conscious act of the day, before phone, before bathroom.',
+          'Hebrew: "Modeh ani lefanecha..." (masculine) / "Modah ani lefanayich..." (feminine).',
+          'Pause after the prayer to feel what it points to \u2014 the return of consciousness as gift.',
+          'Pair with washing hands (negel vasser) in traditional practice.',
+          'Build a longer morning practice on this anchor if desired \u2014 additional psalms, gratitudes, intentions.'
+        ]
+      },
+      benefit: 'Establishes day in gratitude; interrupts cortisol-driven anxious wake; builds a tiny consistent contemplative habit; cumulative wellbeing effect.',
+      secularAdaptation: 'Drop G-d language; pause on waking and silently note "I am alive today, and that is a gift I did not earn." Functions as a gratitude micro-practice.',
+      contraIndications: [
+        'Depression can make wake-up gratitude feel forced; honor the gesture without forcing the feeling.',
+        'If trauma-related dread accompanies waking, pair with grounding rather than gratitude alone.'
+      ],
+      research: 'Gratitude practices have a strong evidence base (Emmons, Seligman); morning routines and circadian rhythm research support an early-day intentional pause.'
+    },
+    {
+      id: 'cp-wudu',
+      name: 'Wudu (Islamic Ritual Washing as Regulation)',
+      tradition: 'Islam (Sunni and Shia; obligatory before salah)',
+      icon: '\uD83D\uDCA7',
+      description: {
+        elementary: 'Wudu is the way Muslims wash before they pray. They wash their hands, mouth, nose, face, arms, head, and feet with cool water. It can also help your body calm down.',
+        middle: 'Wudu is the ritual washing Muslims perform before salah (prayer), involving washing hands, mouth, nose, face, arms, head, and feet in a specific order. Beyond its religious meaning, the cool water and sensory routine is a built-in regulation practice five times a day.',
+        high: 'Wudu (Arabic: \u0648\u0636\u0648\u0621) is the obligatory ritual purification before salah and certain other acts of worship. Its prescribed sequence \u2014 washing hands three times, rinsing mouth, sniffing water into the nose, washing the face, washing arms to the elbows, wiping the head, washing the feet to the ankles \u2014 combines cool-water sensory input, sequential attention, and intention (niyyah). From a regulation perspective, it functions as a powerful parasympathetic activator built into the day.'
+      },
+      steps: {
+        elementary: [
+          'Roll up sleeves.',
+          'Wash your hands three times with cool water.',
+          'Rinse your mouth, then nose.',
+          'Wash your face.',
+          'Wash your arms up to the elbow.',
+          'Wipe your head with wet hands.',
+          'Wash your feet up to the ankle.',
+          'Notice how you feel.'
+        ],
+        middle: [
+          'Set the intention (niyyah) \u2014 "I am doing wudu to prepare for prayer / to ground myself."',
+          'Say Bismillah.',
+          'Wash hands 3x; rinse mouth 3x; sniff water in nose 3x.',
+          'Wash face 3x; wash arms to elbows 3x (right then left).',
+          'Wipe head once; wipe ears once.',
+          'Wash feet to ankles 3x (right then left).',
+          'Take a breath; notice the body settled.'
+        ],
+        high: [
+          'Begin with niyyah (intention) \u2014 wudu is an act of worship, not just hygiene.',
+          'Follow the prescribed sequence with attention to each station.',
+          'Cool water on the face activates the diving reflex \u2014 a documented parasympathetic response.',
+          'The sequence engages bilateral attention and sequential motor planning, which calms a busy mind.',
+          'After wudu, sit briefly in stillness before salah; the body has already been prepared.',
+          'For non-Muslim students drawn to the sensory pattern: a brief cool-water face-and-hand rinse can offer some of the same regulation without the religious dimension.'
+        ]
+      },
+      benefit: 'Cool water + structured sequence is documented parasympathetic activator (mammalian diving reflex); built-in five-times-daily regulation; deepens intention before prayer.',
+      secularAdaptation: 'Cool water on face, neck, wrists with intentional pause functions as a regulation tool without the religious framing. The mammalian diving reflex is what underlies its calming effect.',
+      contraIndications: [
+        'Water sensitivity (some autistic students) \u2014 adapt or substitute.',
+        'OCD: be alert to ritualization beyond traditional structure; consult clinician if washing becomes compulsive.',
+        'Cold-water cautions for students with certain cardiac conditions; use cool not cold.'
+      ],
+      research: 'Mammalian diving reflex (cool water on face triggers vagal response) is well-documented; specific wudu research is limited but qualitative reports are consistent; pairs with research on cold-exposure regulation.'
+    },
+    {
+      id: 'cp-dhikr',
+      name: 'Dhikr (Islamic Remembrance / Repetition)',
+      tradition: 'Islam (especially Sufi tradition; also mainstream Sunni and Shia)',
+      icon: '\uD83D\uDCFF',
+      description: {
+        elementary: 'Dhikr means remembering. Muslims say short prayers like "Subhan\'Allah" (glory be to God) or "Alhamdulillah" (praise be to God) over and over, often counting on beads called tasbih. It can feel calm and steady.',
+        middle: 'Dhikr is the Islamic practice of remembering God through repeated phrases, often using a string of 99 beads (tasbih or misbaha). Common phrases include Subhan\'Allah, Alhamdulillah, Allahu Akbar, and La ilaha illa\'Allah. It can be done quietly anywhere and is a portable contemplative practice.',
+        high: 'Dhikr (Arabic: \u0630\u0643\u0631 \u2014 remembrance) is the practice of remembering God through repetition of names, phrases, or short prayers. It is central to all Islamic traditions and especially developed in Sufism, where specific dhikr formulas and group ceremonies (hadra) are core to the path. The 99 names of Allah (al-Asma al-Husna) are a traditional foundation. Tasbih (counting) supports the practice.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably.',
+          'Pick a short phrase: Subhan\'Allah, Alhamdulillah, or Allahu Akbar.',
+          'Say it quietly 33 times, counting on your fingers or on beads.',
+          'Notice how you feel.'
+        ],
+        middle: [
+          'Sit with eyes soft or closed.',
+          'Choose a tasbih sequence: Subhan\'Allah 33x, Alhamdulillah 33x, Allahu Akbar 34x (the Tasbih of Fatimah).',
+          'Pace with breath if you like.',
+          'When mind wanders, return to the phrase.',
+          'After 100 repetitions, sit briefly in silence.',
+          'Can be done after salah, before sleep, or during any quiet moment.'
+        ],
+        high: [
+          'Establish posture; tasbih beads in hand if used.',
+          'Choose form: Tasbih of Fatimah, a name of Allah, La ilaha illa\'Allah, or another.',
+          'Pace with breath: many traditions exhale on the dhikr.',
+          'Sufi traditions may use audible group dhikr with movement and music; consult a teacher if drawn to this.',
+          'The aim is not to count but to remember \u2014 the count supports presence.',
+          'Daily dhikr after fajr or before sleep is a traditional anchor.'
+        ]
+      },
+      benefit: 'Mantra-like effects (parasympathetic, attentional steadying); deep theological grounding; portable; the counting offers concrete completion.',
+      secularAdaptation: 'Any repeated short phrase serves similarly. The Tasbih structure (33+33+34) can be replaced with secular intention phrases. Loses theological depth but retains regulation.',
+      contraIndications: [
+        'Group Sufi dhikr can become trance-inducing; for some students with dissociative tendencies, stay with quiet individual dhikr.',
+        'OCD: be alert to ritualization; traditional counts are bounded for a reason.',
+        'Loud repetition near others may not be appropriate in all settings.'
+      ],
+      research: 'Mantra meditation research (Lynch et al., Travis on TM) supports the underlying mechanism; specific dhikr research is growing in Islamic psychology journals; aligns with research on coherent breathing when paced.'
+    },
+    {
+      id: 'cp-salah-breath-posture',
+      name: 'Salah Breath-and-Posture Awareness',
+      tradition: 'Islam (the five daily prayers)',
+      icon: '\uD83D\uDD4C',
+      description: {
+        elementary: 'Salah is the Muslim prayer done five times a day. It includes standing, bowing, going down to the ground, and sitting. The movements and breaths can be calming, even while you are praying.',
+        middle: 'Salah is the five daily Muslim prayers, each combining recitation, breath, and prescribed movements (standing, bowing, prostrating, sitting). Beyond worship, the rhythm of movement and breath has documented physiological effects.',
+        high: 'Salah is the second pillar of Islam, performed five times daily at prescribed times. Each prayer includes a sequence of rak\'at (units), each containing standing (qiyam), bowing (ruku), prostration (sujood), and sitting (jalsa). The full body engagement, paced breath, and recitation create a contemplative-physical practice repeated through the day.'
+      },
+      steps: {
+        elementary: [
+          'If you are Muslim, just do your prayer as usual.',
+          'While you pray, try to notice your breath at each part.',
+          'Notice the floor under you in sujood.',
+          'Notice your breath slowing.',
+          'Notice how you feel after.'
+        ],
+        middle: [
+          'Begin salah as you always do, with niyyah and takbir.',
+          'In standing (qiyam), let your breath be even.',
+          'In ruku (bowing), exhale slowly as you go down.',
+          'In sujood (prostration), notice the forehead on the ground; let the breath be full and slow.',
+          'In sitting (tashahhud), let the body rest.',
+          'After salaam, sit for a few breaths before getting up \u2014 let the practice integrate.'
+        ],
+        high: [
+          'Honor the religious meaning first; the contemplative-physical dimension is additional, not a substitute.',
+          'Slow your transitions slightly \u2014 let each posture register.',
+          'In sujood, the head is below the heart \u2014 a body position research links to lowered heart rate.',
+          'Bilateral floor contact (forehead, palms, knees, feet) provides strong proprioceptive grounding.',
+          'Many Muslim therapists frame salah as built-in mindful-movement practice; the regulation is real, not metaphorical.',
+          'For non-Muslims drawn to the form: borrow the postural arc (standing \u2014 folding \u2014 earthing \u2014 sitting) as movement meditation, with respect for source.'
+        ]
+      },
+      benefit: 'Combines breath, full-body movement, recitation, and intention five times a day; documented effects on heart rate variability and back health; integrates worship and regulation.',
+      secularAdaptation: 'Postural arc (standing \u2014 bowing \u2014 earthing \u2014 sitting) can be practiced as movement meditation without the religious recitation. Loses meaning but retains body benefits.',
+      contraIndications: [
+        'Physical limitations (knee, back) \u2014 salah has built-in adaptations (sitting, lying); use them.',
+        'For non-Muslim students: do not appropriate the prayer itself; the postural template may be borrowed respectfully.',
+        'Religious obligation should not be reduced to "just regulation" in Muslim students\' framing.'
+      ],
+      research: 'Doufesh et al. on salah and EEG/alpha waves; Reza et al. on salah movements as exercise; Henry & Wilson on prayer and stress reduction in Muslim populations.'
+    },
+    {
+      id: 'cp-naam-simran',
+      name: 'Naam Simran (Sikh Remembrance)',
+      tradition: 'Sikhism (foundational practice from Guru Nanak)',
+      icon: '\uD83E\uDEAF',
+      description: {
+        elementary: 'Naam Simran is the Sikh practice of remembering God by saying or thinking the word Waheguru. You breathe in and think Wahe, breathe out and think Guru. It is a calm, steady practice.',
+        middle: 'Naam Simran is the Sikh practice of remembering God through repetition of Naam ("the name"). Most commonly the word is Waheguru. It can be paced with the breath and is taught as a daily anchor that develops over a lifetime.',
+        high: 'Naam Simran ("remembrance of the Name") is a foundational Sikh practice taught from Guru Nanak (1469-1539) onward. The Name (Naam) can be Waheguru, Sat Naam, or other forms. Practice can be jaap (audible repetition), simran (silent remembrance), or paired with kirtan (devotional singing). Daily morning Nitnem and evening Rehras frame the practice with structured liturgy as well.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably.',
+          'Breathe in slowly and think "Wahe."',
+          'Breathe out slowly and think "Guru."',
+          'Do this for a few minutes.',
+          'Notice the feeling.'
+        ],
+        middle: [
+          'Find quiet (amrit vela \u2014 the pre-dawn hours \u2014 is traditional but any time works to start).',
+          'Sit upright with eyes closed or soft gaze.',
+          'On inhale: Wahe. On exhale: Guru.',
+          'Let the pace match your natural breath.',
+          'When mind wanders, gently return to Naam.',
+          'Aim for 10-20 minutes; build over weeks.',
+          'Pair with reading from Guru Granth Sahib if part of your tradition.'
+        ],
+        high: [
+          'Establish a stable posture; many sit cross-legged on the floor.',
+          'Use Naam of your choosing in your tradition: Waheguru, Sat Naam, etc.',
+          'Pace with breath: this is taught extensively by Sikh contemplative teachers.',
+          'Practice during amrit vela (3-6 am) if possible, as taught traditionally.',
+          'Combine with sangat (community simran) regularly.',
+          'Read accompanying Bani \u2014 daily Nitnem includes Japji Sahib, Jaap Sahib, etc.',
+          'The practice deepens over a lifetime; consistency matters more than intensity.'
+        ]
+      },
+      benefit: 'Daily contemplative anchor; cumulative practice over lifetime; supports identity and community connection; integrates devotional and meditative dimensions.',
+      secularAdaptation: 'Any breath-paired short phrase functions similarly at the regulation level. The theological dimension (remembering the Name) is specifically Sikh.',
+      contraIndications: [
+        'Sikh students may have specific lineage guidance from a Gursikh teacher; defer to that.',
+        'Pre-dawn rising can conflict with sleep needs of teens; honor sleep first while building practice.',
+        'For non-Sikh students drawn to the form: respect the source; consider studying with Sikh teachers rather than borrowing casually.'
+      ],
+      research: 'Limited RCT base specific to Naam Simran; aligns with mantra meditation and paced breathing research; Khalsa (Sikh medical researchers) have begun studying it.'
+    },
+    {
+      id: 'cp-trataka',
+      name: 'Trataka (Yogic Candle Gazing)',
+      tradition: 'Yoga / Hindu tradition (one of the six shatkarmas / purification practices)',
+      icon: '\uD83D\uDD6F',
+      description: {
+        elementary: 'Trataka is staring softly at a candle flame for a little while, then closing your eyes and seeing the flame in your mind. It can help you feel calm and focused.',
+        middle: 'Trataka is a yogic practice of steady, unblinking gaze at a single object \u2014 most commonly a candle flame \u2014 followed by closing the eyes and holding the after-image. It is listed in the Hatha Yoga Pradipika as one of the six purification practices (shatkarmas) and is taught as a concentration builder.',
+        high: 'Trataka comes from the Hatha Yoga Pradipika (15th c.) as one of the shatkarmas (six purifying practices). The practitioner gazes without blinking at a steady object (flame, dot, image) until tears come, then closes the eyes and holds the after-image. Traditional purposes include cleansing the eyes, building dharana (concentration), and preparing the mind for deeper meditation.'
+      },
+      steps: {
+        elementary: [
+          'Light a candle and sit a few feet away in a dim room.',
+          'Look at the flame without blinking for as long as you comfortably can.',
+          'When your eyes get tired, close them.',
+          'See the flame in your mind for a moment.',
+          'Open your eyes when ready.'
+        ],
+        middle: [
+          'Sit comfortably in a dim, quiet room; light a candle at eye level about an arm\'s length away.',
+          'Gaze at the flame steadily, not staring hard but resting attention there.',
+          'Try not to blink; when eyes water, close them gently.',
+          'Hold the after-image of the flame in your inner vision.',
+          'When the after-image fades, you can open eyes and gaze again, or end the practice.',
+          'Start with 1-3 minutes total; build slowly.'
+        ],
+        high: [
+          'Set up: dim room, stable seat, candle at eye level, no draft.',
+          'Begin with a few breaths to settle.',
+          'External gaze (bahir trataka): rest eyes on the flame; not strain, not unfocused.',
+          'When eyes naturally water or feel tired, close and hold the internal image (antar trataka).',
+          'Alternate as feels right; traditional practice can extend to 10-20 minutes.',
+          'End with a few breaths of pure rest.',
+          'Best done before formal meditation or before sleep.'
+        ]
+      },
+      benefit: 'Builds concentration and steadiness; rests the visual cortex; supports sleep when done before bed; eye health (traditional claim, partial modern support).',
+      secularAdaptation: 'Already largely secular as taught in many yoga studios. Frame as concentration practice without yogic terminology if preferred.',
+      contraIndications: [
+        'Photosensitive epilepsy: do not use flickering or strobing.',
+        'Eye conditions (glaucoma, dry eye): consult eye doctor.',
+        'Migraine-prone students: short durations only.',
+        'Dissociative tendencies: extended gaze can be destabilizing.'
+      ],
+      research: 'Talwadkar et al. on trataka and attention; Mallick & Kulkarni on cognitive effects; small but growing literature.'
+    },
+    {
+      id: 'cp-body-scan',
+      name: 'Body Scan (MBSR Body Scan)',
+      tradition: 'Secular mindfulness (Jon Kabat-Zinn, MBSR 1979); Buddhist roots',
+      icon: '\uD83E\uDEC0',
+      description: {
+        elementary: 'A body scan is when you lie down and pay attention to each part of your body, from your toes to your head. You notice how each part feels without trying to change it.',
+        middle: 'The body scan is a core MBSR practice: lying down (or sitting), systematically bringing awareness to each region of the body, noticing sensations without trying to change them. It typically takes 30-45 minutes in formal MBSR; shorter versions are useful daily.',
+        high: 'Jon Kabat-Zinn introduced the body scan as a foundational practice in Mindfulness-Based Stress Reduction (MBSR) at UMass Medical Center in 1979, adapted from Burmese vipassana practices and Goenka\'s teachings. It builds interoceptive awareness, reduces avoidance of body sensation, and is associated with measurable changes in pain perception, anxiety, and brain structure.'
+      },
+      steps: {
+        elementary: [
+          'Lie on your back somewhere comfortable.',
+          'Notice your toes. Wiggle them. Then just feel them.',
+          'Move up to your feet, ankles, legs, slowly.',
+          'Notice your belly going up and down with breath.',
+          'Notice your chest, arms, hands, neck, head.',
+          'When you are done, wiggle your fingers and toes and open your eyes.'
+        ],
+        middle: [
+          'Lie on your back (or sit if lying is hard); allow body to settle.',
+          'Take a few breaths into the belly.',
+          'Bring attention to the toes of your left foot; notice whatever is there \u2014 tingling, warmth, nothing.',
+          'Move slowly up: feet, ankles, lower legs, knees, thighs, hips.',
+          'Then up through belly, chest, back, shoulders, arms, hands, neck, face, head.',
+          'If a region is uncomfortable, breathe into it; if it is too much, move on.',
+          'End with awareness of the whole body breathing.',
+          'Aim for 20-30 minutes; shorter is fine.'
+        ],
+        high: [
+          'Choose lying or seated; eyes closed or soft gaze.',
+          'Establish a few minutes of breath awareness.',
+          'Move attention systematically from toes upward (or in any consistent order).',
+          'In each region: notice raw sensation; notice the absence of sensation; notice resistance or pleasantness.',
+          'Practice "being with" rather than "doing about."',
+          'When mind wanders, return to the body region without judgment.',
+          'Common length: 30-45 minutes; consistency over time builds the skill.',
+          'Trauma-adapted versions (David Treleaven) emphasize eyes-open, choice-based, shorter regions.'
+        ]
+      },
+      benefit: 'Builds interoception; reduces body-based avoidance; documented effects on chronic pain, anxiety, depression, immune function; cornerstone of MBSR.',
+      secularAdaptation: 'Already fully secular as taught in MBSR. The original Burmese vipassana context can be acknowledged or omitted as appropriate.',
+      contraIndications: [
+        'Trauma: lying down with eyes closed for 30+ minutes can be destabilizing; use trauma-adapted versions (Treleaven).',
+        'Eating disorders: body focus can be triggering; modify to "functional scan" (what does this body part do for me) with treatment team approval.',
+        'Dissociative tendencies: stay shorter and grounded.',
+        'Chronic pain: titrate; aggressive focus on painful areas can backfire.'
+      ],
+      research: 'Kabat-Zinn et al. on MBSR (1985, 1992 onwards); Gard et al. on body scan and pain; H\u00F6lzel et al. on MBSR and brain structure; Hofmann et al. meta-analysis on mindfulness interventions.'
+    },
+    {
+      id: 'cp-mindful-breath',
+      name: 'Mindfulness of Breath (Anapanasati)',
+      tradition: 'Secular MBSR/MBCT; original from Theravada Buddhism (Anapanasati Sutta)',
+      icon: '\uD83C\uDF2C',
+      description: {
+        elementary: 'Mindfulness of breath is when you pay attention to your breath going in and out. When your mind goes somewhere else, you bring it back to your breath. You do this over and over.',
+        middle: 'Mindfulness of breath is the core practice of secular mindfulness (MBSR, MBCT) and one of the oldest Buddhist meditation practices (Anapanasati). You rest attention on the natural breath \u2014 at the nostrils, chest, or belly \u2014 and gently return when the mind wanders.',
+        high: 'Anapanasati ("mindfulness of in-and-out breathing") is taught directly by the Buddha in the Anapanasati Sutta and develops the full path. Modern secular mindfulness (Kabat-Zinn, Segal & Teasdale\'s MBCT) extracts this practice for clinical use. It is the most-studied meditation practice in psychological science.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably with your back straight.',
+          'Close your eyes or look at the floor.',
+          'Notice your breath. Maybe at your nose, chest, or belly.',
+          'When your mind wanders, just notice and come back to your breath.',
+          'Try 1-3 minutes to start.'
+        ],
+        middle: [
+          'Find a comfortable upright seat.',
+          'Take a few deeper breaths to arrive; then let the breath be natural.',
+          'Choose an anchor: nostrils, chest, belly.',
+          'Rest attention there. Notice the in-breath beginning, middle, end; same for the out-breath.',
+          'When the mind wanders (it will), gently bring it back without self-judgment.',
+          'Start with 5-10 minutes; build to 20.'
+        ],
+        high: [
+          'Establish posture: upright, relaxed, dignified.',
+          'Allow the breath to be natural; you are not making it deep.',
+          'Choose an anchor and rest there.',
+          'Use noting practice if helpful \u2014 silently noting "in" and "out," or "rising" and "falling."',
+          'Each time the mind wanders, the moment of noticing is itself the practice \u2014 not failure.',
+          'Build endurance: 20-30 minutes daily; longer retreats deepen.',
+          'The Anapanasati Sutta describes 16 contemplative stages; the simple version above is the entry point.'
+        ]
+      },
+      benefit: 'Builds attention regulation; reduces rumination; documented effects on anxiety, depression, chronic pain, blood pressure; gateway practice for many other contemplative tools.',
+      secularAdaptation: 'Fully secular as taught in MBSR/MBCT. Buddhist roots can be acknowledged or omitted.',
+      contraIndications: [
+        'Hyperventilation tendency: do not try to control the breath; just observe.',
+        'Trauma: breath focus can be activating for some; switch anchor to sound or feet if needed.',
+        'Panic: short sessions only, eyes open; switch to grounding if activated.',
+        'Psychotic features: extended silent practice without support can intensify; consult clinician.'
+      ],
+      research: 'Hofmann et al. (2010) meta-analysis on MBSR/MBCT for anxiety and depression; Goyal et al. JAMA (2014) meta-analysis; Brewer on default mode network; Lutz et al. on attention regulation.'
+    },
+    {
+      id: 'cp-walking-meditation',
+      name: 'Walking Meditation',
+      tradition: 'Buddhist (most developed in Theravada and Zen; taught widely by Thich Nhat Hanh)',
+      icon: '\uD83D\uDEB6',
+      description: {
+        elementary: 'Walking meditation is when you walk really slowly and pay attention to each step. You notice your foot lifting, moving, and touching the ground. It is a way to be mindful while moving.',
+        middle: 'Walking meditation is the practice of bringing full attention to the act of walking \u2014 slowing the pace, feeling each step, syncing breath with steps. Thich Nhat Hanh taught it as a way to "arrive in the present moment with each step." Useful for students who struggle to sit still.',
+        high: 'Walking meditation has deep roots in many Buddhist traditions: Theravada kinhin between sitting periods, Zen walking meditation in monastic schedules, and Thich Nhat Hanh\'s widely-taught practice of mindful walking. It builds the same attention skills as sitting practice while keeping the body engaged \u2014 ideal for ADHD and high-energy students.'
+      },
+      steps: {
+        elementary: [
+          'Find a place where you can walk slowly back and forth.',
+          'Walk very slowly. Feel your foot lift up.',
+          'Feel your foot move forward.',
+          'Feel your foot touch the ground.',
+          'Do the same with the other foot.',
+          'Walk like this for 5 minutes.',
+          'Notice how you feel.'
+        ],
+        middle: [
+          'Choose a path 10-20 feet long, or a quiet outdoor route.',
+          'Stand at one end, feel both feet on the ground.',
+          'Begin walking slowly, attention on the soles of the feet.',
+          'Notice the lifting, moving, placing of each foot.',
+          'When mind wanders, return to the feet.',
+          'Sync with breath if you like \u2014 2-3 steps per inhale, 2-3 per exhale.',
+          'Walk for 10-15 minutes.'
+        ],
+        high: [
+          'Choose path and pace (slow for formal kinhin, normal for everyday mindful walking).',
+          'Stand and arrive in the body before stepping.',
+          'Three classic anchors: feet sensation, breath synced with steps, environment (sights, sounds).',
+          'Thich Nhat Hanh\'s practice: with each step, silently say a phrase ("I have arrived, I am home" / "in the here, in the now").',
+          'Outdoor walking adds nature exposure (forest bathing benefits).',
+          'Alternate with sitting practice; the two complement each other.',
+          'Can be brought to ordinary walking \u2014 to class, to the bus \u2014 as informal practice.'
+        ]
+      },
+      benefit: 'Movement-based mindfulness; accessible for those who cannot sit still; combines proprioception, breath, and attention; good entry practice for ADHD students.',
+      secularAdaptation: 'Already largely secular. Frame as "mindful walking" without Buddhist terminology if preferred.',
+      contraIndications: [
+        'Mobility limitations \u2014 adapt with wheelchair-based attention to the body, or stationary "rocking meditation."',
+        'In public, slow formal walking can draw attention; choose a private space or normal-pace mindful walking.',
+        'Some find slow pace agitating at first; combine with breath to settle.'
+      ],
+      research: 'Smith on walking meditation and mood; Edwards et al. on mindful walking for chronic pain; broader walking-meditation benefits documented in various MBSR-related studies.'
+    },
+    {
+      id: 'cp-mountain-meditation',
+      name: 'Mountain Meditation',
+      tradition: 'Secular guided meditation (Jon Kabat-Zinn, Wherever You Go There You Are)',
+      icon: '\u26F0',
+      description: {
+        elementary: 'In mountain meditation, you sit still and imagine you are a mountain \u2014 tall, strong, and steady. Weather changes around the mountain \u2014 sunny, cloudy, stormy \u2014 but the mountain stays. You can be like that too.',
+        middle: 'Mountain meditation is a guided visualization where you imagine yourself as a mountain \u2014 solid, grounded, unmoving. Weather changes (storms, seasons) sweep across the mountain, but the mountain remains. It builds a felt sense of stability during turbulent emotional weather.',
+        high: 'Jon Kabat-Zinn introduced mountain meditation in Wherever You Go There You Are (1994) as an imagery practice that builds equanimity. The mountain represents the dignified, grounded center of awareness; the weather represents thoughts, emotions, life events. The practice cultivates the felt sense that one is not the weather.'
+      },
+      steps: {
+        elementary: [
+          'Sit up tall.',
+          'Imagine a mountain \u2014 pick one in your mind.',
+          'Imagine you are that mountain. Your bottom is the wide base. Your head is the peak.',
+          'Picture sunshine, then clouds, then rain on the mountain. The mountain just stays.',
+          'You can be steady like that too. Sit for a minute and feel it.'
+        ],
+        middle: [
+          'Sit in a stable, dignified posture.',
+          'Take a few breaths to arrive.',
+          'Picture a mountain you have seen or imagined \u2014 strong, still, grounded.',
+          'Now imagine the mountain has your features \u2014 the base broad and rooted, the peak still, the sides solid.',
+          'Imagine weather passing across the mountain \u2014 sunrise, midday, sunset, storms, snow, spring.',
+          'The mountain abides. Feel yourself abiding through your own weather.',
+          'Sit for 10-15 minutes.'
+        ],
+        high: [
+          'Find your most upright, dignified seat.',
+          'Spend a few breaths arriving.',
+          'Build the image of the mountain \u2014 texture, shape, color, smell of the air.',
+          'Allow your body to take on the felt sense of the mountain \u2014 broad base, stable mass, still peak.',
+          'Run through the seasons and weather; let each be vivid.',
+          'Reflect: the mountain is itself in all weather. The weather is not separate from the mountain, yet does not destabilize it.',
+          'Bring the felt sense forward into your day, especially when emotional weather is intense.',
+          'Cousin practice: Lake Meditation (also Kabat-Zinn).'
+        ]
+      },
+      benefit: 'Builds equanimity; useful for emotion regulation in adolescence; particularly helpful for students who struggle with impermanence and instability.',
+      secularAdaptation: 'Already fully secular.',
+      contraIndications: [
+        'Trauma survivors who experienced being trapped or buried may find heavy-imagery destabilizing; choose lake or tree imagery instead.',
+        'For students with rigid trauma defenses ("I have to be a rock to survive"), mountain meditation can reinforce avoidance; pair with self-compassion.',
+        'Some students need movement first; do mountain meditation after walking or stretching.'
+      ],
+      research: 'Direct RCT base limited; benefits aligned with MBSR research and equanimity research (Desbordes et al.).'
+    },
+    {
+      id: 'cp-metta-for-self',
+      name: 'Loving-Kindness for Self',
+      tradition: 'Buddhist (Metta) + Self-Compassion (Kristin Neff)',
+      icon: '\uD83E\uDD32',
+      description: {
+        elementary: 'This is loving-kindness aimed just at yourself. You say nice wishes for yourself like "may I be happy, may I be safe, may I be okay." It can feel weird at first but it gets easier.',
+        middle: 'Loving-kindness for self is the part of metta that is often hardest. You repeat phrases like "may I be safe, may I be happy, may I be healthy, may I live with ease" toward yourself. For many students \u2014 especially those with strong inner critics \u2014 starting here is essential and difficult both.',
+        high: 'The self-focused phase of metta is the foundational rung in classical Theravada practice, on the principle that one cannot extend what one has not first cultivated within. Modern self-compassion research (Neff, Germer) finds that self-directed metta and related practices reduce shame, anxiety, and depression and increase resilience. For students with severe self-criticism, even sustained difficulty staying with the practice is meaningful.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably and put a hand on your heart.',
+          'Quietly say: "May I be happy. May I be safe. May I be healthy. May I be loved."',
+          'Say it a few times slowly.',
+          'Notice how it feels. It is okay if it feels weird.',
+          'You can do this anytime you are being hard on yourself.'
+        ],
+        middle: [
+          'Sit comfortably; place a hand on heart or belly if helpful.',
+          'Picture yourself, or just feel yourself sitting there.',
+          'Repeat slowly: "May I be safe. May I be happy. May I be healthy. May I live with ease."',
+          'If resistance comes up ("I don\'t deserve this"), notice without arguing.',
+          'You can try "may I be kind to myself" or "may I accept myself as I am" if the standard phrases don\'t land.',
+          'Sit with the practice for 10 minutes; consistency matters more than intensity.'
+        ],
+        high: [
+          'Establish stable posture and breath.',
+          'Bring yourself to mind \u2014 not a flattering self-image, just yourself.',
+          'Repeat phrases at a pace that lets you mean each word.',
+          'Common phrases: safe, happy, healthy, peace; also "may I be free from suffering," "may I have ease."',
+          'Notice resistance: "I should give this to others first," "I haven\'t earned this." Notice without engaging.',
+          'For survivors of severe abuse: this phase can flood; titrate with benefactor practice if needed.',
+          'Pair with self-compassion break (Neff) for additional structure.',
+          'Lifelong practice; resistance gentles with time.'
+        ]
+      },
+      benefit: 'Reduces self-criticism; builds capacity for self-compassion; documented reductions in shame, anxiety, depression; foundation for offering compassion to others.',
+      secularAdaptation: 'Self-Compassion Break (Kristin Neff) is a fully secular version with three components: mindfulness ("this is a moment of suffering"), common humanity ("suffering is part of life"), self-kindness ("may I be kind to myself").',
+      contraIndications: [
+        'In acute suicidal crisis, self-directed metta can backfire \u2014 sounds dishonest, deepens despair. Start with benefactor.',
+        'Severe trauma history: titrate, normalize resistance, use scaled-down phrases.',
+        'Narcissistic defenses can co-opt self-love into self-aggrandizement; the practice is gentle warmth, not inflation.'
+      ],
+      research: 'Neff & Germer MSC trials (2013, 2018); Hoffmann et al. on metta and depression; MacBeth & Gumley meta-analysis on self-compassion and psychopathology.'
+    },
+    {
+      id: 'cp-forgiveness',
+      name: 'Forgiveness Meditation',
+      tradition: 'Buddhist; widely taught secularly by Stephen Levine, Jack Kornfield, others',
+      icon: '\uD83D\uDD4A',
+      description: {
+        elementary: 'Forgiveness meditation is a way of letting go of being mad at someone (or at yourself) when you are ready. You silently say things like "I forgive you" or "I forgive myself" and see how it feels.',
+        middle: 'Forgiveness meditation has three directions: forgiveness from others ("forgive me for the ways I have caused harm"), forgiveness of others ("I forgive you for the ways you have caused me harm"), and forgiveness of self ("I forgive myself"). It is not about condoning harm; it is about releasing the burden of carrying it.',
+        high: 'Forgiveness practice as taught by Stephen Levine (A Year to Live), Jack Kornfield (The Wise Heart), and others is a structured meditation across three relational domains. It draws on Buddhist forgiveness teachings and aligns with secular forgiveness research (Worthington, Enright). The practice is not absolution of the wrongdoer but liberation of the practitioner from the weight of resentment.'
+      },
+      steps: {
+        elementary: [
+          'Sit quietly. Take a few breaths.',
+          'Think of someone you are mad at (or yourself).',
+          'Quietly say: "I am ready to let some of this go."',
+          'Say: "I forgive you, as much as I am ready to right now."',
+          'Notice how you feel. You don\'t have to feel any certain way.',
+          'End with a breath.'
+        ],
+        middle: [
+          'Sit comfortably; take a few breaths.',
+          'Phase 1 \u2014 Forgiveness from others: "If I have hurt anyone, knowingly or unknowingly, I ask forgiveness."',
+          'Phase 2 \u2014 Forgiveness of others: "Those who have hurt me, I forgive you to the extent I am able."',
+          'Phase 3 \u2014 Self-forgiveness: "For the ways I have hurt myself, I offer myself forgiveness."',
+          'You don\'t have to finish; partial forgiveness is forgiveness.',
+          'Repeat over weeks; depth grows.'
+        ],
+        high: [
+          'Establish stable seat and breath.',
+          'Phase 1: Bring to mind ways you may have caused harm. Acknowledge without drowning. "I ask forgiveness for the harm I have caused, knowingly or unknowingly."',
+          'Phase 2: Bring to mind specific people who have caused you harm. "I forgive you for what you have done, to the degree I am able right now." Do not force.',
+          'Phase 3: Bring yourself to mind. "I forgive myself for the harm I have caused to myself and others." Self-forgiveness is often hardest.',
+          'When forgiveness will not come, the willingness to consider it is itself the practice.',
+          'Closing: rest in the spaciousness that emerges as resentment loosens.',
+          'Not appropriate as a forced practice for acute or ongoing abuse.'
+        ]
+      },
+      benefit: 'Reduces resentment and rumination; physical health benefits (cardiovascular, immune); restores agency; supports long-term healing from interpersonal harm.',
+      secularAdaptation: 'Worthington\'s REACH model and Enright\'s forgiveness process are secular structured analogues. Frame as "releasing what you have been carrying" without spiritual context.',
+      contraIndications: [
+        'Active or recent abuse: forgiveness should not be pressured; safety and accountability first.',
+        'Bypassing legitimate anger can deepen depression; ensure anger has space first.',
+        'Religious pressure to forgive can cause harm; honor the student\'s pace.',
+        'Trauma survivors should work with a therapist for deep forgiveness practice.'
+      ],
+      research: 'Worthington on forgiveness (extensive); Enright forgiveness process model RCTs; Wade et al. meta-analysis on forgiveness interventions and mental health.'
+    },
+    {
+      id: 'cp-self-compassion-break',
+      name: 'Self-Compassion Break',
+      tradition: 'Mindful Self-Compassion (Kristin Neff & Christopher Germer, MSC program)',
+      icon: '\uD83D\uDC95',
+      description: {
+        elementary: 'A self-compassion break is three steps you do when you feel bad: 1) say "this is hard right now," 2) remember other people feel this too, 3) be kind to yourself. It only takes a minute.',
+        middle: 'The Self-Compassion Break has three components: mindfulness ("this is a moment of suffering"), common humanity ("suffering is part of being human; I am not alone in this"), and self-kindness ("may I be kind to myself in this moment"). Developed by Kristin Neff, it is the core micro-practice of Mindful Self-Compassion (MSC).',
+        high: 'The Self-Compassion Break is the central informal practice in the Mindful Self-Compassion program developed by Kristin Neff and Christopher Germer. It operationalizes Neff\'s three-component definition of self-compassion: self-kindness, common humanity, and mindfulness. It can be done in a minute and is portable across any difficult moment.'
+      },
+      steps: {
+        elementary: [
+          'When you feel bad, pause.',
+          'Say: "This is hard right now."',
+          'Say: "Other kids feel hard things too. I am not the only one."',
+          'Put a hand on your heart and say: "May I be kind to myself."',
+          'Take a breath.'
+        ],
+        middle: [
+          'Pause when you notice you are suffering \u2014 even if you cannot name why.',
+          'Step 1 \u2014 Mindfulness: "This is a moment of suffering" / "This hurts" / "This is stress."',
+          'Step 2 \u2014 Common humanity: "Suffering is part of life" / "I am not alone" / "Other people feel this too."',
+          'Step 3 \u2014 Self-kindness: place hand on heart and say "May I be kind to myself" or "May I give myself the compassion I need."',
+          'Take one breath. Continue your day.',
+          'Use multiple times daily as needed.'
+        ],
+        high: [
+          'Recognize the moment of suffering \u2014 this is its own micro-skill.',
+          'Step 1 \u2014 Mindfulness: acknowledge the pain without minimizing or dramatizing. Use whatever language fits ("ouch," "this hurts," "stress is here").',
+          'Step 2 \u2014 Common humanity: actively counter the isolating "only I" voice. Other people in this country, this school, this body are also suffering right now.',
+          'Step 3 \u2014 Self-kindness: physical touch (hand on heart, hands on cheeks, arm around self) amplifies. Add a phrase that fits the specific moment.',
+          'Combine with breath if helpful.',
+          'Build the habit of pausing \u2014 the pause itself is half the practice.',
+          'Cultivate as informal practice supported by formal MSC sitting practice.'
+        ]
+      },
+      benefit: 'One-minute portable self-compassion intervention; reduces shame, self-criticism, anxiety; increases resilience; documented effects on emotion regulation.',
+      secularAdaptation: 'Already fully secular as taught in MSC.',
+      contraIndications: [
+        'Severe shame can make all three steps feel impossible at first; start with just the pause.',
+        'In acute crisis, may need to combine with grounding or to skip to step 3 with a touch and a breath.',
+        'For students with very high self-criticism, the touch component alone (without phrases) can be a doorway.'
+      ],
+      research: 'Neff & Germer MSC RCT (2013); MacBeth & Gumley meta-analysis on self-compassion; Bluth et al. on adolescent self-compassion.'
+    },
+    {
+      id: 'cp-just-like-me',
+      name: 'Just Like Me Practice',
+      tradition: 'Modern compassion training (Compassion Cultivation Training, Stanford CCARE)',
+      icon: '\uD83E\uDD1D',
+      description: {
+        elementary: 'Just Like Me is when you look at someone (in person or in your mind) and quietly think: "This person wants to be happy, just like me. This person has felt sad, just like me. This person wants to be loved, just like me."',
+        middle: 'Just Like Me is a structured contemplation that builds the sense of shared humanity with people who feel different or difficult. You silently note common ground: they want to be happy just like me, they have suffered just like me, they want to be loved just like me. It softens othering and reduces conflict.',
+        high: 'The Just Like Me practice is a key component of Compassion Cultivation Training (CCT), developed at Stanford\'s Center for Compassion and Altruism Research and Education (CCARE) by Thupten Jinpa and colleagues. It draws on Tibetan analytical meditation and is supported by social psychology research on perspective-taking and outgroup empathy. It is especially useful in conflict, prejudice, and isolation.'
+      },
+      steps: {
+        elementary: [
+          'Think of a person \u2014 could be a friend, classmate, or someone you don\'t know well.',
+          'Quietly say in your mind: "This person wants to be happy, just like me."',
+          'Add: "This person has felt sad, just like me."',
+          'Add: "This person wants to be loved, just like me."',
+          'Notice if anything shifts.'
+        ],
+        middle: [
+          'Bring to mind a person \u2014 neutral (someone you barely know), then later someone you have conflict with.',
+          'Silently note: "Just like me, this person wants happiness."',
+          '"Just like me, this person has experienced loss."',
+          '"Just like me, this person has felt afraid and lonely."',
+          '"Just like me, this person wants to be loved and to belong."',
+          'Notice your sense of them softens, or notice resistance \u2014 both are useful information.'
+        ],
+        high: [
+          'Build a stable seat and breath.',
+          'Begin with a neutral person \u2014 barista, bus driver, stranger.',
+          'Walk through the Just Like Me reflections systematically (5-7 statements).',
+          'Then move to a person you have mild difficulty with.',
+          'Eventually, with care, someone you have larger conflict with (skip if not ready).',
+          'Reflect: this is not denying real harm or disagreement; it is reasserting shared humanity beneath disagreement.',
+          'CCT and other compassion programs use this practice to reduce prejudice and conflict; for students it is especially useful for bullying and social conflict.'
+        ]
+      },
+      benefit: 'Builds common-humanity perspective; reduces othering; useful for conflict, prejudice, isolation, and bullying contexts; supports moral development.',
+      secularAdaptation: 'Already fully secular.',
+      contraIndications: [
+        'Should not be used to dismiss real abuse or to pressure students to "see the humanity" of someone who is actively harming them.',
+        'Survivors of abuse should not be pushed to do this practice toward their abuser; safety first.',
+        'Can be misused to flatten real power differences; pair with justice-oriented reflection where relevant.'
+      ],
+      research: 'Jinpa et al. on Compassion Cultivation Training; Kang et al. on metta and implicit bias; broader perspective-taking research (Galinsky, Batson).'
+    },
+    {
+      id: 'cp-yoga-nidra',
+      name: 'Yoga Nidra (Yogic Sleep)',
+      tradition: 'Yoga (Satyananda lineage, Swami Satyananda Saraswati; older tantric roots)',
+      icon: '\uD83C\uDF19',
+      description: {
+        elementary: 'Yoga Nidra is a guided practice where you lie down and someone guides your attention through your body and through pictures in your mind. You stay awake but very, very relaxed.',
+        middle: 'Yoga Nidra ("yogic sleep") is a guided meditation done lying down. The teacher walks the practitioner through body sensing, breath awareness, opposites of feeling, and imagery, holding awareness in a liminal state between waking and sleep. A 45-minute practice is said to give the rest of a longer nap.',
+        high: 'Yoga Nidra was systematized by Swami Satyananda Saraswati in the 20th century from older tantric practices. The classical structure includes settling, sankalpa (intention), body rotation, breath awareness, pairs of opposites, visualization, sankalpa again, and grounded return. iRest (Richard Miller) is a clinical adaptation widely used in trauma care, including with veterans.'
+      },
+      steps: {
+        elementary: [
+          'Lie on your back somewhere comfortable.',
+          'Listen to a guided yoga nidra recording (lots of free ones online).',
+          'Follow along \u2014 they will name body parts, breath, and pictures.',
+          'You don\'t need to do anything except listen and stay awake-ish.',
+          'When it ends, take your time getting up.'
+        ],
+        middle: [
+          'Lie down (yoga mat, bed, blanket on floor).',
+          'Use a guided recording (Insight Timer, iRest, Satyananda tradition).',
+          'Set an intention (sankalpa) \u2014 a short, positive, present-tense statement.',
+          'Follow the guide through body rotation, breath, opposites, imagery.',
+          'Aim to stay in the liminal state \u2014 not fully asleep.',
+          'Return to your sankalpa.',
+          'Come back to ordinary awareness slowly.',
+          'Plan 20-45 minutes.'
+        ],
+        high: [
+          'Set up: comfortable supine position, blanket, bolster under knees, eye cover if used.',
+          'Use a trained teacher recording or live class.',
+          'Sankalpa: short, positive, present-tense intention you bring to the threshold ("I am whole and at peace").',
+          'Move through the full structure: settling, body rotation, breath awareness, opposite sensations, imagery, return to sankalpa, grounded return.',
+          'iRest (Richard Miller) is the trauma-adapted version widely used clinically.',
+          'Effects accumulate; weekly practice deepens.',
+          'Excellent for insomnia, anxiety, PTSD-adjacent populations.'
+        ]
+      },
+      benefit: 'Deep rest; documented effects on insomnia, PTSD, anxiety, chronic pain; restores parasympathetic baseline; supports trauma processing in clinical (iRest) form.',
+      secularAdaptation: 'iRest (Richard Miller, integrative restoration) is the fully secular evidence-based adaptation, used in VA hospitals and clinical settings.',
+      contraIndications: [
+        'Sleep apnea or other supine breathing issues \u2014 adapt position.',
+        'Severe dissociation: the liminal state can deepen dissociation; use iRest with a trained teacher.',
+        'Active psychosis: imagery components can be destabilizing.',
+        'Falling asleep is okay occasionally but defeats the practice if habitual.'
+      ],
+      research: 'Stankovic on iRest and PTSD in veterans; Eastman-Mueller et al. on yoga nidra and college stress; Pence et al. on yoga nidra and chronic pain.'
+    },
+    {
+      id: 'cp-heart-coherence',
+      name: 'Heart Coherence Breathing',
+      tradition: 'Secular biofeedback (HeartMath Institute, 1991)',
+      icon: '\uD83D\uDC93',
+      description: {
+        elementary: 'Heart coherence is a way of breathing slowly while thinking of something that makes you feel good. It can make your heart and breath work together in a calm way.',
+        middle: 'Heart coherence is a technique developed at the HeartMath Institute: slow paced breathing (about 5-6 breaths per minute) combined with focusing on the heart area and recalling a positive feeling. It produces measurable changes in heart rate variability and is often taught with biofeedback.',
+        high: 'HeartMath Institute introduced heart coherence training in the 1990s based on heart rate variability (HRV) research. The technique combines paced breathing at approximately 0.1 Hz (5-6 breaths per minute), attention on the heart area, and active recall of a positive emotion (gratitude, care, appreciation). This produces a coherent HRV pattern associated with reduced stress and improved cognitive performance.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably and put a hand over your heart.',
+          'Breathe in slowly for 5 seconds (count one-elephant, two-elephant, three-elephant, four-elephant, five-elephant).',
+          'Breathe out slowly for 5 seconds.',
+          'Think of something or someone you love.',
+          'Keep going for 2-3 minutes.'
+        ],
+        middle: [
+          'Sit with a relaxed but upright posture; hand on heart helps anchor attention.',
+          'Step 1 \u2014 Heart focus: bring attention to the heart area.',
+          'Step 2 \u2014 Heart breathing: breathe slowly in and out, 5-second inhale, 5-second exhale (about 6 breaths per minute).',
+          'Step 3 \u2014 Heart feeling: actively recall a feeling of gratitude, care, or appreciation toward a person, place, or pet.',
+          'Hold all three for 3-5 minutes.',
+          'Use before tests, conflict, or sleep.'
+        ],
+        high: [
+          'Establish a comfortable upright seat.',
+          'Synchronize breath to 0.1 Hz (5-6 breaths per minute). A visual or audio pacer helps.',
+          'Direct attention to the heart area; some prefer hand on heart for proprioceptive anchor.',
+          'Generate the felt sense of a positive heart-based emotion: care for a child, gratitude for a friend, appreciation of nature.',
+          'Practice for 5-10 minutes; consistency over weeks builds the trait.',
+          'Biofeedback devices (HeartMath emWave, Inner Balance) display real-time coherence.',
+          'Often used by athletes, executives, and students for performance + regulation; documented HRV benefits.'
+        ]
+      },
+      benefit: 'Increases HRV coherence; documented effects on stress, anxiety, cognitive performance, sleep; portable and quick; teaches conscious access to autonomic nervous system.',
+      secularAdaptation: 'Already fully secular.',
+      contraIndications: [
+        'For severe trauma, recalling positive feelings can paradoxically trigger grief; have a fallback grounding tool.',
+        'For students with cardiac conditions, paced breathing is generally safe but check with provider for special cases.',
+        'Biofeedback devices can become a target of perfectionism; emphasize the felt experience over the score.'
+      ],
+      research: 'McCraty et al. on HRV coherence (extensive HeartMath research); Lehrer & Gevirtz on resonance breathing; Goessl et al. meta-analysis on HRV biofeedback for anxiety and stress.'
+    },
+    {
+      id: 'cp-stop',
+      name: 'STOP (Stop, Take a Breath, Observe, Proceed)',
+      tradition: 'Secular mindfulness (Elisha Goldstein, MBSR-derived)',
+      icon: '\u23F8',
+      description: {
+        elementary: 'STOP is four steps for when you feel overwhelmed: S-Stop what you are doing. T-Take a breath. O-Observe how you feel. P-Proceed (decide what to do next).',
+        middle: 'STOP is a quick mindfulness intervention: Stop what you are doing, Take a conscious breath, Observe your body, emotions, thoughts, Proceed with awareness. It takes about 30 seconds and can be done anywhere.',
+        high: 'STOP was popularized by Elisha Goldstein and others from MBSR teaching traditions as a micro-practice for inserting awareness into reactive moments. Its brevity makes it deployable in classrooms, during conflict, before a difficult message, or any time autopilot threatens to drive a poor decision.'
+      },
+      steps: {
+        elementary: [
+          'S \u2014 Stop what you are doing right now.',
+          'T \u2014 Take one slow breath.',
+          'O \u2014 Observe: how does your body feel? What are you thinking?',
+          'P \u2014 Proceed: now choose what to do next.'
+        ],
+        middle: [
+          'When you notice yourself getting reactive \u2014 pause.',
+          'S \u2014 Stop your activity, your scrolling, your reply.',
+          'T \u2014 Take a conscious breath, deeper than your last one.',
+          'O \u2014 Observe: body (tight, warm, fast heart?), emotion (mad, scared, sad?), thought (what story am I telling?).',
+          'P \u2014 Proceed: with this added information, choose your next action with awareness.'
+        ],
+        high: [
+          'STOP is meant to be deployed at choice points \u2014 when you are about to send a text, walk into a room, react to something.',
+          'S \u2014 Full stop. Even if for 5 seconds.',
+          'T \u2014 One breath that is consciously taken; mark it as different from autopilot breath.',
+          'O \u2014 Quick triple scan: body sensations, emotional tone, dominant thought.',
+          'P \u2014 Now act, with the small additional space the STOP created.',
+          'Pair with longer formal mindfulness practice to build the underlying habit.',
+          'STOP is one of the most-taught micro-practices because it is doable when nothing else fits.'
+        ]
+      },
+      benefit: 'Inserts a tiny gap of awareness into reactive moments; reduces impulsive decisions; portable to any setting; gateway practice for those who think they cannot meditate.',
+      secularAdaptation: 'Already fully secular.',
+      contraIndications: [
+        'In actual emergencies (medical, safety), do not STOP \u2014 act.',
+        'For students with anxiety who use endless pauses to avoid action, STOP is a launch pad, not a stall.'
+      ],
+      research: 'Limited specific STOP research; aligns with broader mindfulness brief-intervention literature; intuitively similar to "urge surfing" research.'
+    },
+    {
+      id: 'cp-five-sense',
+      name: 'Five-Sense Grounding',
+      tradition: 'Secular trauma-informed grounding; widely used in DBT, EMDR, trauma therapy',
+      icon: '\uD83C\uDF10',
+      description: {
+        elementary: 'Five-sense grounding is when you name 5 things you see, 4 things you hear, 3 things you can touch, 2 things you smell, and 1 thing you taste. It brings you back to right now.',
+        middle: 'The 5-4-3-2-1 grounding technique uses the senses to bring attention out of distressing thought or memory and into the present moment. It is widely used in trauma therapy, anxiety treatment, and dissociation prevention.',
+        high: 'Five-sense grounding is a sensory anchoring practice with widespread use across trauma-informed care, dissociation prevention, anxiety management, and emergency mental health interventions. The standard form is 5-4-3-2-1: five things you see, four you hear, three you can touch, two you smell, one you taste. Variations include 3-2-1 for briefer use and reverse counting for additional cognitive engagement.'
+      },
+      steps: {
+        elementary: [
+          'Look around. Name 5 things you see.',
+          'Listen. Name 4 things you hear.',
+          'Touch. Name 3 things you can touch (your shirt, the chair, the floor).',
+          'Smell. Name 2 things you smell (or two smells you can remember).',
+          'Taste. Name 1 thing you can taste right now.'
+        ],
+        middle: [
+          'When overwhelmed, sit or stand wherever you are.',
+          '5 things you see \u2014 say them silently or aloud.',
+          '4 things you hear \u2014 including subtle background sounds.',
+          '3 things you can touch \u2014 really feel each one.',
+          '2 things you smell \u2014 coffee, soap, air.',
+          '1 thing you taste \u2014 toothpaste, sip of water, the inside of your mouth.',
+          'Notice you have returned to the present.'
+        ],
+        high: [
+          'Sit or stand; do not need to close eyes (eyes-open is trauma-friendly).',
+          'Move through the senses methodically; the cognitive work of identifying anchors attention.',
+          'Speak aloud if alone; silently in public.',
+          'For dissociation prevention, focus on tactile (3 things you can touch) most strongly.',
+          'Pair with cold water on face or hands for additional vagal input.',
+          'Can be repeated; sometimes one pass is enough, sometimes three.',
+          'Use proactively before known stressors, not just reactively.'
+        ]
+      },
+      benefit: 'Anchors attention in present; interrupts dissociation, flashback, panic; gives cognitive structure during emotional overwhelm; widely deployable.',
+      secularAdaptation: 'Already fully secular.',
+      contraIndications: [
+        'Some sensory environments are themselves distressing (loud, smelly); move to a calmer space first.',
+        'For students with sensory processing differences (autistic students), specific senses may be activating; adapt to use only calming senses.',
+        'Not a substitute for trauma therapy; use as one tool in a larger plan.'
+      ],
+      research: 'Wide clinical use across DBT, EMDR, trauma therapy; specific RCT base modest but aligned with broader grounding-and-exposure literature.'
+    },
+    {
+      id: 'cp-open-awareness',
+      name: 'Open Awareness (Spacious Awareness)',
+      tradition: 'Mahamudra / Dzogchen (Tibetan Buddhism); Shinzen Young\'s "Do Nothing"; modern secular versions',
+      icon: '\uD83C\uDF0C',
+      description: {
+        elementary: 'Open awareness is the opposite of focusing on one thing. You sit and just notice everything that comes \u2014 sounds, feelings, thoughts \u2014 without trying to pay attention to any one of them.',
+        middle: 'Open awareness practice rests attention in a wide, spacious mode rather than on a single anchor. Sounds, sensations, thoughts arise and pass; awareness itself stays open. It is technically more advanced than concentration practice and complements anchor-based meditation well.',
+        high: 'Open awareness has roots in Tibetan Mahamudra and Dzogchen traditions, where it is sometimes called "natural awareness" or "rigpa." Modern secular teachers (Shinzen Young, Loch Kelly, Sam Harris in his app) present versions accessible to beginners. The practice rests in awareness itself rather than directing attention to a particular object.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably with eyes open or closed.',
+          'Don\'t try to focus on anything.',
+          'Just let sounds, feelings, and thoughts come and go.',
+          'You are the sky; they are weather.',
+          'Sit for 3-5 minutes.'
+        ],
+        middle: [
+          'Begin with 1-2 minutes of breath awareness to settle.',
+          'Then release the breath anchor; let awareness be wide.',
+          'Sounds, body sensations, thoughts, emotions \u2014 all arise in awareness.',
+          'You are not chasing or pushing any of them.',
+          'When you notice you have grabbed onto something, gently release back to spacious mode.',
+          'Sit for 10-15 minutes.'
+        ],
+        high: [
+          'Establish stable posture and a few minutes of concentration practice first.',
+          'Release the anchor; let awareness rest in itself.',
+          'Notice the open quality \u2014 the space in which sounds, sensations, thoughts arise.',
+          'Loch Kelly\'s "glimpses" and Sam Harris\'s app pointers can guide this directly.',
+          'Without preliminary concentration, open awareness can collapse into daydreaming; build foundation first.',
+          'Traditional Tibetan teaching requires a qualified lama; modern secular versions are more accessible but less deep.',
+          'Best as alternation with concentration practice over years.'
+        ]
+      },
+      benefit: 'Develops meta-awareness; reduces clinging to specific contents of mind; advanced equanimity; insight into the nature of mind.',
+      secularAdaptation: 'Sam Harris, Loch Kelly, and Shinzen Young all teach secular pointing-out versions.',
+      contraIndications: [
+        'Without concentration foundation, can become spacey or dissociative.',
+        'Trauma-affected students: open awareness can let too much in at once; stay with anchored practice.',
+        'Active psychosis: extended open practice without guidance can amplify symptoms.',
+        'Not a beginner-only practice; honor the traditional preparation.'
+      ],
+      research: 'Limited direct RCT base; aligned with research on equanimity, meta-awareness, and advanced meditation practice (Lutz et al., Brewer); Tibetan tradition has extensive qualitative literature.'
+    },
+    {
+      id: 'cp-zazen',
+      name: 'Zazen (Zen Seated Meditation)',
+      tradition: 'Zen Buddhism (Soto and Rinzai schools)',
+      icon: '\uD83E\uDEB7',
+      description: {
+        elementary: 'Zazen is the Zen way of sitting. You sit very still, count your breaths, and when your mind wanders, you just start counting again. It is simple but not easy.',
+        middle: 'Zazen is the central practice of Zen Buddhism. You sit upright in a specific posture, often on a cushion (zafu), and rest attention on breath (often counted) or on bare awareness (shikantaza). Soto Zen emphasizes "just sitting"; Rinzai Zen uses koans alongside zazen.',
+        high: 'Zazen ("seated meditation") is the heart of Zen practice. Soto Zen, following Dogen (13th century), emphasizes shikantaza \u2014 "just sitting" \u2014 as the realization of awakening itself, not a means to it. Rinzai Zen often pairs zazen with koan practice. Form matters: half-lotus or full-lotus or seiza or chair sitting; hands in cosmic mudra; eyes half-open with soft downward gaze; tongue at the roof of the mouth.'
+      },
+      steps: {
+        elementary: [
+          'Sit cross-legged on a cushion or upright in a chair.',
+          'Keep your back straight and your eyes a little open looking at the floor.',
+          'Count your breaths: in is one, out is two, in is three, all the way to ten. Then start over.',
+          'When you lose count, just go back to one.',
+          'Sit for 5 minutes.'
+        ],
+        middle: [
+          'Sit on a zafu or chair; back upright; chin slightly tucked.',
+          'Hands in cosmic mudra (left hand on right palm, thumb tips touching) in lap.',
+          'Eyes half-open, gaze on the floor about 3 feet ahead.',
+          'Tongue at roof of mouth, mouth closed, teeth lightly together.',
+          'Count breaths 1-10, only on exhale. When you lose count, return to 1.',
+          'Sit for 20-30 minutes if possible; start with 10.',
+          'No fidgeting; sitting still is part of the practice.'
+        ],
+        high: [
+          'Posture is half the practice in Zen; learn it from a teacher if possible.',
+          'Full lotus, half lotus, Burmese, seiza, or chair \u2014 choose what your body can sustain.',
+          'Mudra, eye position, mouth, hands all part of the form.',
+          'Soto: shikantaza \u2014 just sit, no object, no counting, full presence.',
+          'Rinzai: zazen plus koan if assigned by a teacher.',
+          'Sesshin (multi-day intensive retreats) deepen practice.',
+          'Sangha \u2014 Zen practice center \u2014 is part of the tradition.',
+          'Walking meditation (kinhin) between sitting periods.'
+        ]
+      },
+      benefit: 'Develops stable, embodied attention; cultivates equanimity; reveals the nature of mind through direct experience; supports moral and existential maturation.',
+      secularAdaptation: 'Seated breath meditation as taught in MBSR is functionally similar at the entry level; loses lineage and koan dimensions.',
+      contraIndications: [
+        'Knee, hip, back injury \u2014 use chair sitting, do not push.',
+        'Long retreats can be destabilizing for trauma-affected practitioners; choose carefully.',
+        'Some lineages have authority structures; vet the teacher.',
+        'Koan practice without a teacher is generally not recommended.'
+      ],
+      research: 'Brief Zen meditation studies (Pagnoni et al.) on attention; longer-term Zen practitioner brain imaging; aligned with broader meditation research.'
+    },
+    {
+      id: 'cp-vipassana-noting',
+      name: 'Vipassana Noting (Mahasi Style)',
+      tradition: 'Theravada Buddhism (Mahasi Sayadaw, 20th c. Burma)',
+      icon: '\uD83C\uDFF7',
+      description: {
+        elementary: 'Vipassana noting is when you quietly name what you are noticing. If you feel your belly going up and down with breath, you whisper inside "rising, falling, rising, falling." It helps your mind stay with what is happening.',
+        middle: 'Mahasi-style noting is a vipassana practice where you mentally label whatever is most prominent: "rising" and "falling" for the belly\'s movement with breath, "hearing" for a sound, "thinking" for a thought, "feeling" for an emotion. The noting itself supports clear attention and reduces identification with mental content.',
+        high: 'Mahasi Sayadaw (1904-1982) systematized this noting practice in 20th-century Burma, drawing from older Theravada vipassana traditions. The student notes the rising and falling of the abdomen with the breath as a primary object, and any prominent sensation, thought, or emotion as a secondary object. The labels are short, silent, and rhythmic. Intensive retreats may have students noting 16+ hours a day.'
+      },
+      steps: {
+        elementary: [
+          'Sit comfortably with eyes closed.',
+          'Notice your belly going out when you breathe in (whisper inside: "rising").',
+          'Notice your belly going in when you breathe out (whisper inside: "falling").',
+          'If you hear a sound, note: "hearing." Then return to rising and falling.',
+          'If a thought comes, note: "thinking." Then return.',
+          'Try 3-5 minutes.'
+        ],
+        middle: [
+          'Sit upright; eyes closed.',
+          'Rest attention on the belly; note "rising" and "falling" with the breath.',
+          'When anything else becomes prominent \u2014 sound, thought, emotion, sensation \u2014 note it briefly and return to the breath.',
+          'Notes are short, soft, mental \u2014 "hearing, hearing, hearing," "thinking, thinking," "pain, pain."',
+          'Sit for 20-30 minutes.',
+          'Alternate with slow walking meditation, also noted ("lifting, moving, placing").'
+        ],
+        high: [
+          'Establish formal seated posture.',
+          'Primary object: the rising and falling of the abdomen.',
+          'Secondary object: whatever else arises and becomes prominent.',
+          'Noting is meant to be just-in-time; not before, not after.',
+          'On retreat, sitting and walking are alternated with all activities noted ("lifting, moving, placing, opening, drinking").',
+          'Insights arise from the practice; do not seek them.',
+          'A qualified teacher and retreat structure (10+ days) is the traditional container.',
+          'Less retreat-intensive home practice still benefits.'
+        ]
+      },
+      benefit: 'Builds precise moment-to-moment awareness; reveals impermanence directly; reduces identification with mental content; widely used as the foundation for insight in modern Theravada.',
+      secularAdaptation: 'Shinzen Young\'s "noting" system is a secular adaptation with different terminology; functionally similar.',
+      contraIndications: [
+        'Intensive retreat without preparation can destabilize trauma-affected practitioners (see Cheetah House research).',
+        'For students new to meditation, start with breath-only before adding noting.',
+        'Noting can become mechanical; periodically drop it and rest in awareness.'
+      ],
+      research: 'Mahasi tradition has extensive qualitative literature; modern adverse-effects research (Brittain et al., Cheetah House / Willoughby Britton) is essential reading for intensive practice.'
+    },
+    {
+      id: 'cp-sufi-whirling',
+      name: 'Sufi Whirling (Sema)',
+      tradition: 'Sufi Islam (Mevlevi order; from Rumi\'s 13th-century Konya)',
+      icon: '\uD83C\uDF00',
+      description: {
+        elementary: 'Sufi whirling is a way Sufi Muslims pray by slowly spinning in place with their arms out. Real whirling takes a lot of practice. Most people just learn a tiny version, and only with a teacher who knows how.',
+        middle: 'Sufi whirling, called sema in the Mevlevi (Rumi) tradition, is a sacred spinning practice done in ceremony. It involves specific dress, music, posture, and centering. It is a serious devotional practice, not a casual exercise, and should only be undertaken with a qualified teacher.',
+        high: 'Sema is the ceremonial practice of the Mevlevi Sufi order, founded by followers of Jalaluddin Rumi in 13th-century Konya. The dervish wears a tall hat (sikke) and white robe (tennure), and spins counterclockwise with the right palm up to receive grace and the left palm down to ground it to earth. It is a complete ceremony with music (ney flute), recitation, and prayer. Casual whirling outside this context strips it of meaning and can cause vestibular harm.'
+      },
+      steps: {
+        elementary: [
+          'Sufi whirling is best learned only with a teacher who really knows how.',
+          'If you are just curious, you can stand still and put your right hand up like you are catching rain, and your left hand down toward the ground.',
+          'Notice that posture for a minute. That is the dervish posture, even without spinning.',
+          'For actual whirling, find a Mevlevi teacher.'
+        ],
+        middle: [
+          'Read about sema and its meaning before any physical practice.',
+          'Watch sema ceremonies (Mevlevi videos) to understand the depth.',
+          'If interested in actual practice, seek a Mevlevi teacher or center.',
+          'For curious students: try the dervish posture standing \u2014 right hand up, left hand down \u2014 for one minute as a contemplative pause, without spinning.',
+          'Do not casually spin without guidance \u2014 vestibular harm and trivialization of the tradition.'
+        ],
+        high: [
+          'Sema is part of an initiated practice in the Mevlevi tradition; pursue only with proper teacher.',
+          'The full ceremony includes the entire ritual context, not just the spinning.',
+          'For non-Sufi students drawn to it: the most respectful entry is study of Rumi\'s poetry and Mevlevi history, not casual spinning.',
+          'For students with vestibular sensitivity, this practice is contraindicated entirely.',
+          'For those who do study with a teacher, the practice is years long and embedded in Sufi community life.'
+        ]
+      },
+      benefit: 'For initiated practitioners: profound contemplative and devotional experience, sense of cosmic alignment, transcendence.',
+      secularAdaptation: 'There is no good secular adaptation; the meaning is the practice. Casual "spin to feel dizzy" is not contemplative practice.',
+      contraIndications: [
+        'Vestibular conditions (vertigo, BPPV, Meniere\'s) \u2014 absolute contraindication.',
+        'Migraine, motion sickness \u2014 avoid.',
+        'Pregnancy \u2014 avoid.',
+        'Trauma-related dissociation \u2014 avoid; spinning can deepen dissociation.',
+        'Cultural appropriation \u2014 engage only through Mevlevi context.',
+        'Do not teach or guide without your own initiation in the tradition.'
+      ],
+      research: 'Limited Western research; qualitative literature in Sufi studies extensive; vestibular research suggests caution.'
+    },
+    {
+      id: 'cp-smudging-respectful',
+      name: 'Indigenous Smudging \u2014 Respectful Note',
+      tradition: 'Various Indigenous nations (specific protocols vary by tribe)',
+      icon: '\uD83C\uDF3E',
+      description: {
+        elementary: 'Smudging is a sacred Indigenous practice where someone burns plants like sage, sweetgrass, or cedar to cleanse and pray. It is not something everyone can just do \u2014 you should learn from an elder of that nation if you want to take part. There are other ways to do "clearing" that are not sacred to a specific people.',
+        middle: 'Smudging is a sacred ceremony in many Indigenous nations, using specific plants (sage, sweetgrass, cedar, tobacco) and specific prayers, varying by nation. It is not generic incense. Non-Indigenous people should not lead smudging or buy "smudge kits" from non-Native sources. If you are interested in the practice, build relationship with a local Indigenous community and follow their guidance.',
+        high: 'Smudging is a ceremonial practice in many Indigenous nations across North America, each with its own protocols, prayers, plants, and meanings. Common plants include white sage (often over-harvested and culturally protected), sweetgrass, cedar, and tobacco. Casual non-Indigenous use, especially commercial "smudge kits," is appropriation and contributes to the over-harvesting of white sage in California. Non-Indigenous practitioners should not perform smudging; they may seek a respectful invitation from a community, or use other cleansing practices that do not have specific cultural ownership.'
+      },
+      steps: {
+        elementary: [
+          'If you are Indigenous and from a nation that practices smudging, ask your elders.',
+          'If you are not Indigenous and want a similar feeling, you can use a different practice that does not belong to any one people, like lighting a regular candle and saying a quiet wish.',
+          'Do not buy a "smudge kit" from a regular store \u2014 it usually hurts the plants and the people.'
+        ],
+        middle: [
+          'Indigenous students from nations that practice smudging: ask elders or cultural mentors how it is done in your nation.',
+          'Non-Indigenous students: do not perform smudging as a personal practice; this is sacred to specific peoples.',
+          'Respectful alternatives: lighting a candle with intention; a brief blessing of a space with water or sound; opening a window and inviting fresh air.',
+          'If you are invited into a ceremony by an Indigenous community, follow their protocols exactly.',
+          'Do not purchase white sage from non-Native commercial sources; the plant is endangered and the practice is being commodified.'
+        ],
+        high: [
+          'Smudging belongs to specific Indigenous traditions with specific protocols.',
+          'Non-Indigenous practitioners should not lead or perform smudging.',
+          'Buying commercial "smudge sticks" contributes to over-harvesting of white sage in California and to the commodification of Indigenous ceremony.',
+          'If drawn to space-clearing or cleansing practice, use traditions you belong to (e.g., wudu for Muslims, mikvah for Jews, sprinkling holy water for Catholics) or use a secular intentional practice.',
+          'For schools: never institute "smudging" without partnership with the local Indigenous nation and their explicit lead.',
+          'Cultural humility includes saying no to practices that do not belong to you, even when invited by well-meaning teachers.'
+        ]
+      },
+      benefit: 'For lineage-holders: profound spiritual cleansing, connection to ancestors, ceremonial framing of transition. For non-lineage-holders: the benefit is in the act of restraint and respect itself, which is its own contemplative practice.',
+      secularAdaptation: 'Lighting an unscented candle, opening a window, sprinkling water with intention, sound (bell, singing bowl) \u2014 these are secular and do not borrow from specific cultural ceremony.',
+      contraIndications: [
+        'Cultural appropriation \u2014 for non-Indigenous practitioners, do not perform.',
+        'Smoke can trigger asthma, smoke allergies, smoke-related trauma.',
+        'School fire codes \u2014 sage smoke sets off detectors.',
+        'White sage over-harvesting \u2014 even for Indigenous practitioners, source matters.',
+        'Schools should not institute smudging without explicit partnership with local Indigenous nation.'
+      ],
+      research: 'Limited Western research on smudging specifically; broader Indigenous health research consistently shows cultural connection as protective factor (Walters, Brave Heart, Gone).'
+    },
+    {
+      id: 'cp-forest-bathing',
+      name: 'Forest Bathing (Shinrin-yoku)',
+      tradition: 'Japanese practice (developed 1980s by Japan\'s Forestry Ministry); strong research base',
+      icon: '\uD83C\uDF32',
+      description: {
+        elementary: 'Forest bathing is just being in the forest slowly with all your senses awake. You do not hike or exercise \u2014 you walk slowly, breathe, look, listen, touch leaves, smell pine. It can make you feel less stressed.',
+        middle: 'Forest bathing, or shinrin-yoku in Japanese, is the practice of slow, sensory immersion in a forest. Developed by Japan\'s Forestry Ministry in the 1980s and now backed by strong research, it differs from hiking or exercise \u2014 the goal is presence with the forest, not destination or workout.',
+        high: 'Shinrin-yoku ("forest bathing") was coined in 1982 by Japan\'s Forestry Ministry and has since become a major public health practice. Research, mostly Japanese and Korean, shows reductions in cortisol, blood pressure, and sympathetic nervous system activity, and increases in natural killer cell activity (immune function). The mechanism appears to involve phytoncides (airborne plant chemicals), reduced cognitive load, and parasympathetic activation through nature exposure.'
+      },
+      steps: {
+        elementary: [
+          'Go to a forest, park, or any green place.',
+          'Walk slowly. Slower than slow.',
+          'Stop often. Look up at trees. Listen for birds, wind, water.',
+          'Touch tree bark, leaves, moss.',
+          'Smell the air.',
+          'Stay for at least 20 minutes if you can.'
+        ],
+        middle: [
+          'Find a wooded park, trail, or even a tree-lined street.',
+          'Leave the phone in your pocket or at home.',
+          'Walk at half your normal pace.',
+          'Stop at intervals to notice with each sense \u2014 see (canopy, ground, mid-level), hear (near and distant sounds), smell, touch.',
+          'Sit somewhere for 5-10 minutes; just be there.',
+          'Aim for 2 hours over a few sessions per week, per the research.'
+        ],
+        high: [
+          'Choose a forest or strongly wooded park; even a single mature tree helps but the more nature, the more benefit.',
+          'Phone off or away.',
+          'Walk slowly \u2014 less than 1 mph; pause often.',
+          'Engage all five senses systematically; this is the "bathing" part.',
+          'Trained forest therapy guides (Association of Nature and Forest Therapy) offer structured practice.',
+          'Aim for 2-3 hours per session for full benefit; shorter sessions still help.',
+          'Combine with sit spot practice \u2014 return to the same place over weeks and months.',
+          'For urban students: parks, botanical gardens, indoor plants, nature soundscapes are partial substitutes.'
+        ]
+      },
+      benefit: 'Reduces cortisol, blood pressure, anxiety; increases parasympathetic activity, immune function (NK cells), positive affect; one of the most-studied nature-based interventions.',
+      secularAdaptation: 'Already fully secular.',
+      contraIndications: [
+        'Tick-borne illness areas: take precautions.',
+        'Plant or pollen allergies: time accordingly.',
+        'Trauma related to outdoor settings: choose alternative location.',
+        'Mobility limitations: adapted forest bathing exists; some accessible trails in many regions.',
+        'Safety in remote areas: go with someone or stay in well-trafficked parks.'
+      ],
+      research: 'Li (Yoshifumi Li) on shinrin-yoku and immune function; Park et al. on physiological effects of forest bathing; Hansen et al. (2017) systematic review; Twohig-Bennett & Jones meta-analysis on greenspace and health.'
+    }
+  ];
   STRATEGIES = STRATEGIES
     .concat(typeof EXT_BREATHING !== 'undefined' ? EXT_BREATHING : [])
     .concat(typeof EXT_MOVEMENT  !== 'undefined' ? EXT_MOVEMENT  : [])
