@@ -3569,7 +3569,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     anatomy: { system: 'skeletal', selectedStructure: null, detailLevel: 'standard', quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null },
     brainAtlas: { view: 'lateral', selectedRegion: null, detailLevel: 'standard', quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null },
     artStudio: { tab: 'color', hue: 0, sat: 100, lit: 50, harmony: 'complementary', color2: { h: 180, s: 100, l: 50 }, mixRatio: 50, mixMode: 'subtractive', pixelGrid: Array(256).fill(''), pixelColor: '#e74c3c', pixelSize: 16, symFolds: 6, symLines: [], fgHex: '#1a1a2e', bgHex: '#e8e8e8', quiz: null },
-    graphCalc: { tier: 'explorer', funcs: [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }], window: { xmin: -10, xmax: 10, ymin: -10, ymax: 10 }, showTable: false, showWindow: false, showChallenge: false, showMathPad: false, showArith: false, arithExpr: '', arithResult: '', showSliders: false, focusedInput: 0, tableX: -5, tableStep: 1, badges: [], aiMessages: [], aiInput: '', aiLoading: false },
+    graphCalc: { tier: 'explorer', funcs: [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#b45309' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }], window: { xmin: -10, xmax: 10, ymin: -10, ymax: 10 }, showTable: false, showWindow: false, showChallenge: false, showMathPad: false, showArith: false, arithExpr: '', arithResult: '', showSliders: false, focusedInput: 0, tableX: -5, tableStep: 1, badges: [], aiMessages: [], aiInput: '', aiLoading: false },
     algebraCAS: { mode: 'solve', expr: '', result: null, history: [], badges: [] }
   });
   const [cubeBuilderMode, setCubeBuilderMode] = useState('slider');
@@ -4655,7 +4655,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [generatedContent?.id, handleScoreUpdate]);
   const handleGameCompletion = useCallback((gameType, data) => {
     recordGameCompletion(generatedContent?.id, gameType, data);
-  }, [generatedContent?.id, recordGameCompletion]);
+    // Auto-unarm the teacher-armed interactive flag once a student completes the activity.
+    // Silent un-arm: the student stays on the Victory screen until they close it. When they do,
+    // the render gate falls back to the static diagram (because isInteractiveX is now false).
+    // Teachers keep their armed flag on so they can preview their own playthrough.
+    if (!isTeacherMode) {
+      switch (gameType) {
+        case 'tchartSort': setIsInteractiveTChart(false); break;
+        case 'causeEffectSort': setIsInteractiveCESort(false); break;
+        case 'pipelineBuilder': setIsInteractivePipeline(false); break;
+        case 'conceptMapSort': setIsInteractiveConceptMapSort(false); break;
+        case 'problemSolutionSort': setIsInteractiveProblemSolutionSort(false); break;
+        case 'fishboneSort': setIsInteractiveFishboneSort(false); break;
+        case 'outlineSort': setIsInteractiveOutlineSort(false); break;
+        case 'frayerSort': setIsInteractiveFrayerSort(false); break;
+        case 'seeThinkWonderSort': setIsInteractiveSeeThinkWonderSort(false); break;
+        case 'storyMapSort': setIsInteractiveStoryMapSort(false); break;
+      }
+    }
+  }, [generatedContent?.id, recordGameCompletion, isTeacherMode]);
   const handleCloseClassAnalytics = useCallback(() => setShowClassAnalytics(false), []);
   const handleCloseSubmitModal = useCallback(() => setShowSubmitModal(false), []);
   const handleCloseGate = useCallback(() => setIsGateOpen(false), []);
@@ -20994,10 +21012,10 @@ ${_toolList}
         }}>
           <div style={{ textAlign: 'center', maxWidth: '480px', padding: '0 24px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌊</div>
-            <h1 style={{ color: '#f1f5f9', fontSize: '28px', fontWeight: 700, margin: '0 0 8px' }}>
+            <h1 style={{ color: '#475569', fontSize: '28px', fontWeight: 700, margin: '0 0 8px' }}>
               AlloFlow
             </h1>
-            <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 32px' }}>
+            <p style={{ color: '#475569', fontSize: '14px', margin: '0 0 32px' }}>
               Preparing your learning environment...
             </p>
             <div style={{
@@ -22147,7 +22165,7 @@ ${_toolList}
                             className="w-3.5 h-3.5 text-purple-600 rounded cursor-pointer border-transparent focus:ring-offset-transparent focus:ring-white/50"
                         />
                         <label htmlFor="autoConfigToggle" className="text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none flex items-center gap-1">
-                            <Sparkles size={10} className="text-yellow-300 fill-current"/> {t('fullpack.auto_configure')}
+                            <Sparkles size={10} className="text-yellow-700 fill-current"/> {t('fullpack.auto_configure')}
                         </label>
                     </div>
                     {isAutoConfigEnabled && (
@@ -22215,7 +22233,7 @@ ${_toolList}
                             {standardsInput ? (isIndependentMode ? "Verify your mastery against standards." : (isParentMode ? "See how this matches school goals" : "Audits curriculum across 6 dimensions")) : "Audits curriculum across 5 dimensions (add standards for full audit)"}
                         </span>
                     </div>
-                    <ArrowRight size={16} className="text-teal-300 group-hover:text-teal-600" />
+                    <ArrowRight size={16} className="text-teal-700 group-hover:text-teal-600" />
                 </button>
             </div>
           </div>
@@ -22295,7 +22313,7 @@ ${_toolList}
                         title={isPaused ? t('audio_player.resume') : t('audio_player.pause')}
                         aria-label={isPaused ? t('audio_player.resume') : t('audio_player.pause')}
                     >
-                        {isPaused ? <MonitorPlay size={20} className="fill-current text-yellow-400"/> : <AudioWave />}
+                        {isPaused ? <MonitorPlay size={20} className="fill-current text-yellow-700"/> : <AudioWave />}
                     </button>
                     <div className="flex items-center gap-2 px-2 border-l border-slate-600 pl-4">
                         <span className="text-[11px] font-bold text-slate-600 w-8 text-right tabular-nums">{playbackRate}x</span>
@@ -23233,7 +23251,7 @@ ${_toolList}
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
                         <div className="bg-slate-900 text-slate-600 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-                                <div className="flex items-center gap-2 text-green-400 font-bold">
+                                <div className="flex items-center gap-2 text-green-700 font-bold">
                                     <Terminal size={18} />
                                     <span>{t('bridge.prompt_header')}</span>
                                 </div>
@@ -23248,7 +23266,7 @@ ${_toolList}
                                             {idx + 1}
                                         </div>
                                         <div className="bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors">
-                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200 overflow-x-auto font-mono mb-2">
+                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600 overflow-x-auto font-mono mb-2">
                                                 {promptStep}
                                             </pre>
                                             <div className="flex justify-end pt-2 border-t border-slate-700/50">
@@ -23803,7 +23821,7 @@ ${_toolList}
                     <div style={{fontWeight:800,fontSize:12,color:'#1e293b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.title || 'Untitled'}</div>
                     <div style={{fontSize:10,color:'#64748b'}}>By {sub.author || 'Student'} · {sub.wordCount || 0} words · {sub.vocabUsed || 0}/{sub.vocabTotal || 0} vocab</div>
                     {sub.gradingScore && <div style={{fontSize:10,color:'#7c3aed',fontWeight:700}}>Score: {sub.gradingScore}</div>}
-                    {sub.preview && <div style={{fontSize:10,color:'#94a3b8',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.preview}</div>}
+                    {sub.preview && <div style={{fontSize:10,color: '#475569',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.preview}</div>}
                   </div>
                 </div>
               ))}
@@ -23855,7 +23873,7 @@ ${_toolList}
                       return (
                         <div key={ii} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',borderRadius:'12px',background:_isNow?'rgba(99,102,241,0.08)':'rgba(0,0,0,0.02)',border:`1px solid ${_isNow?'rgba(99,102,241,0.25)':'rgba(0,0,0,0.06)'}`}}>
                           {_isNow && <span style={{fontSize:'12px',fontWeight:700,color:'#4f46e5',background:'#eef2ff',padding:'2px 7px',borderRadius:'6px',flexShrink:0}}>NOW</span>}
-                          {!_isNow && <span style={{width:'20px',height:'20px',borderRadius:'50%',background:'rgba(0,0,0,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'11px',color:'#94a3b8',fontWeight:700,flexShrink:0}}>{ii+1}</span>}
+                          {!_isNow && <span style={{width:'20px',height:'20px',borderRadius:'50%',background:'rgba(0,0,0,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'11px',color: '#475569',fontWeight:700,flexShrink:0}}>{ii+1}</span>}
                           {item.image && <img src={item.image} alt={item.label} style={{width:'40px',height:'40px',objectFit:'contain',borderRadius:'6px',background:'white',border:'1px solid rgba(0,0,0,0.08)'}} />}
                           <span style={{fontSize:'14px',fontWeight:600,color:'#1e293b'}}>{item.label}</span>
                         </div>
@@ -25014,7 +25032,7 @@ ${_toolList}
                   {/* Header */}
                   <div className="flex items-center justify-between p-3 border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
                       <div className="flex items-center gap-2 font-black text-sm">
-                          <Ear size={16} className="text-purple-400" />
+                          <Ear size={16} className="text-purple-700" />
                           <span>{t('read_this_page.title') || 'Read This Page'}</span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -25085,10 +25103,10 @@ class AlloFlowErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return React.createElement("div", {
         style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                 minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#0f172a", color: "#e2e8f0", padding: "2rem" }
+                 minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#0f172a", color: "#475569", padding: "2rem" }
       },
         React.createElement("h1", { style: { fontSize: "1.5rem", marginBottom: "1rem" } }, "Something went wrong"),
-        React.createElement("p", { style: { color: "#94a3b8", marginBottom: "1.5rem", textAlign: "center", maxWidth: "400px" } },
+        React.createElement("p", { style: { color: "#475569", marginBottom: "1.5rem", textAlign: "center", maxWidth: "400px" } },
           "AlloFlow encountered an unexpected error. This can happen if cached data is corrupted."),
         React.createElement("button", {
           onClick: () => {
