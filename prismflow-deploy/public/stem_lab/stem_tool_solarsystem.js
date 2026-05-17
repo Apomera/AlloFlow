@@ -13862,6 +13862,5881 @@ const d = labToolData.solarSystem;
                 )
               ),
 
+              // ════════════════════════════════════════════════
+              // ████  VISUAL INTERACTIVE MINI-TOOLS  ████
+              // ════════════════════════════════════════════════
+
+              // === MINI-TOOL: STELLAR EVOLUTION TIMELINE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⭐ Stellar Evolution Timeline"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showStellarEvo", !d.showStellarEvo); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showStellarEvo ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showStellarEvo ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Drag the time slider to watch a star evolve from birth to death. Choose a mass — different stars live very different lives."),
+                d.showStellarEvo && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var phase = (d.stellarPhase != null ? d.stellarPhase : 50);
+                                      var massChoice = d.stellarMass || 'sun';
+                                      var MASS_PROFILES = {
+                                        lowmass: { name: 'Red Dwarf (0.3 M☉)', color: '#dc2626', lifespan: '100 billion years', stages: [
+                                          { at: 0, label: 'Protostar', size: 30, color: '#fb923c', desc: 'Collapsing hydrogen cloud' },
+                                          { at: 30, label: 'Red Dwarf', size: 18, color: '#dc2626', desc: 'Slow hydrogen burning' },
+                                          { at: 95, label: 'White Dwarf', size: 8, color: '#e0e7ff', desc: 'Cools forever' }
+                                        ]},
+                                        sun: { name: 'Sun-like (1 M☉)', color: '#facc15', lifespan: '10 billion years', stages: [
+                                          { at: 0, label: 'Protostar', size: 50, color: '#fb923c', desc: 'Gravitational contraction' },
+                                          { at: 15, label: 'Main Sequence', size: 30, color: '#facc15', desc: 'Hydrogen fusion in core' },
+                                          { at: 75, label: 'Red Giant', size: 90, color: '#dc2626', desc: 'Helium burning, expansion' },
+                                          { at: 92, label: 'Planetary Nebula', size: 110, color: '#a78bfa', desc: 'Outer layers shed' },
+                                          { at: 100, label: 'White Dwarf', size: 8, color: '#e0e7ff', desc: 'Dense carbon-oxygen core' }
+                                        ]},
+                                        massive: { name: 'Massive (10 M☉)', color: '#60a5fa', lifespan: '20 million years', stages: [
+                                          { at: 0, label: 'Protostar', size: 70, color: '#fb923c', desc: 'Rapid collapse' },
+                                          { at: 10, label: 'Blue Giant', size: 55, color: '#60a5fa', desc: 'Hot, brief main sequence' },
+                                          { at: 60, label: 'Red Supergiant', size: 130, color: '#dc2626', desc: 'Onion-shell fusion' },
+                                          { at: 88, label: 'Supernova', size: 200, color: '#fde047', desc: 'Catastrophic collapse + explosion' },
+                                          { at: 100, label: 'Neutron Star', size: 6, color: '#a78bfa', desc: 'Or black hole if > 25 M☉' }
+                                        ]}
+                                      };
+                                      var profile = MASS_PROFILES[massChoice];
+                                      var stages = profile.stages;
+                                      var i = 0;
+                                      for (var ji = 0; ji < stages.length - 1; ji++) { if (phase >= stages[ji].at && phase <= stages[ji + 1].at) { i = ji; break; } }
+                                      if (phase >= stages[stages.length - 1].at) i = stages.length - 2;
+                                      var s1 = stages[i], s2 = stages[i + 1] || s1;
+                                      var t = s2.at === s1.at ? 1 : (phase - s1.at) / (s2.at - s1.at);
+                                      t = Math.max(0, Math.min(1, t));
+                                      function lerp(a, b, t) { return a + (b - a) * t; }
+                                      function hexToRgb(h) { var n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+                                      function rgbToHex(r, g, b) { return '#' + [r,g,b].map(function(v){var s=Math.round(v).toString(16);return s.length<2?'0'+s:s;}).join(''); }
+                                      var rgb1 = hexToRgb(s1.color), rgb2 = hexToRgb(s2.color);
+                                      var curColor = rgbToHex(lerp(rgb1[0], rgb2[0], t), lerp(rgb1[1], rgb2[1], t), lerp(rgb1[2], rgb2[2], t));
+                                      var curSize = lerp(s1.size, s2.size, t);
+                                      var labelLeft = t < 0.5 ? s1.label : s2.label;
+                                      var descLeft = t < 0.5 ? s1.desc : s2.desc;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex gap-1 mb-2 flex-wrap' },
+                                          Object.keys(MASS_PROFILES).map(function(k) {
+                                            var p = MASS_PROFILES[k];
+                                            var active = massChoice === k;
+                                            return React.createElement('button', { key: k, onClick: function() { upd('stellarMass', k); upd('stellarPhase', 0); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p.name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [10, 50, 90, 130, 170, 200, 250, 290, 330, 370].map(function(sx, si) {
+                                              var sy = (si * 53 + 17) % 200 + 10;
+                                              var sr = 0.5 + (si % 4) * 0.4;
+                                              return React.createElement('circle', { key: 'bg' + si, cx: sx, cy: sy, r: sr, fill: '#ffffff', opacity: 0.6 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'starGrad' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.95 }),
+                                                React.createElement('stop', { offset: '40%', stopColor: curColor, stopOpacity: 0.95 }),
+                                                React.createElement('stop', { offset: '100%', stopColor: curColor, stopOpacity: 0 })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 110, r: curSize * 1.3, fill: 'url(#starGrad)', opacity: 0.6 }),
+                                            React.createElement('circle', { cx: 200, cy: 110, r: curSize * 0.6, fill: curColor }),
+                                            phase > 85 && massChoice === 'massive' && [0, 60, 120, 180, 240, 300].map(function(deg) {
+                                              var rad = deg * Math.PI / 180;
+                                              var len = curSize * 1.8 + (phase - 85) * 4;
+                                              return React.createElement('line', { key: 'ray' + deg, x1: 200, y1: 110, x2: 200 + Math.cos(rad) * len, y2: 110 + Math.sin(rad) * len, stroke: '#fde047', strokeWidth: 2, opacity: 0.7 });
+                                            }),
+                                            phase > 60 && phase < 90 && massChoice === 'sun' && React.createElement('circle', { cx: 200, cy: 110, r: curSize * 1.1, fill: 'none', stroke: '#f97316', strokeWidth: 1.5, opacity: 0.5 }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#ffffff', fontSize: 14, fontWeight: 'bold' }, labelLeft),
+                                            React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, descLeft)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Time'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('stellarPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-8 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[10px]' },
+                                          React.createElement('div', { className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                            React.createElement('span', { className: 'font-bold' }, 'Total lifespan: '),
+                                            profile.lifespan
+                                          ),
+                                          React.createElement('div', { className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                            React.createElement('span', { className: 'font-bold' }, 'Current stage: '),
+                                            labelLeft
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-' + Math.min(stages.length, 5) + ' gap-1' },
+                                          stages.map(function(st, si) {
+                                            return React.createElement('button', { key: si, onClick: function() { upd('stellarPhase', st.at); }, className: 'p-1.5 rounded text-[9px] font-bold ' + (Math.abs(phase - st.at) < 5 ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')), style: { borderLeft: '3px solid ' + st.color } }, st.label);
+                                          })
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MOON PHASE DIAL ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌙 Moon Phase Dial"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMoonPhase", !d.showMoonPhase); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMoonPhase ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showMoonPhase ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Drag the slider to orbit the Moon around Earth. Watch the phase update in real time based on the Sun-Earth-Moon angle."),
+                d.showMoonPhase && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var pos = d.moonPhasePos != null ? d.moonPhasePos : 90;
+                                      var rad = pos * Math.PI / 180;
+                                      var earthX = 200, earthY = 130, orbitR = 70;
+                                      var moonX = earthX + Math.cos(rad) * orbitR;
+                                      var moonY = earthY + Math.sin(rad) * orbitR;
+                                      var phaseNames = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
+                                      var phaseIdx = Math.round(((pos + 360) % 360) / 45) % 8;
+                                      var phaseName = phaseNames[phaseIdx];
+                                      var illum = (1 - Math.cos(rad)) / 2;
+                                      var visibleSide = Math.cos(rad) > 0 ? 'far' : 'near';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [25, 60, 95, 130, 170, 210, 250, 290, 330, 370].map(function(sx, si) {
+                                              var sy = (si * 41 + 13) % 240 + 5;
+                                              return React.createElement('circle', { key: 'st' + si, cx: sx, cy: sy, r: 0.7, fill: '#fff', opacity: 0.6 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sun' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 30, cy: 130, r: 22, fill: 'url(#sun)' }),
+                                            React.createElement('circle', { cx: 30, cy: 130, r: 30, fill: '#f59e0b', opacity: 0.2 }),
+                                            React.createElement('text', { x: 30, y: 175, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, 'Sun'),
+                                            React.createElement('circle', { cx: earthX, cy: earthY, r: orbitR, fill: 'none', stroke: '#475569', strokeDasharray: '2,3', strokeWidth: 0.7 }),
+                                            React.createElement('circle', { cx: earthX, cy: earthY, r: 16, fill: '#3b82f6' }),
+                                            React.createElement('circle', { cx: earthX - 6, cy: earthY - 6, r: 5, fill: '#22c55e' }),
+                                            React.createElement('circle', { cx: earthX + 5, cy: earthY + 4, r: 4, fill: '#22c55e' }),
+                                            React.createElement('text', { x: earthX, y: earthY + 30, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, 'Earth'),
+                                            React.createElement('circle', { cx: moonX, cy: moonY, r: 9, fill: '#e2e8f0' }),
+                                            React.createElement('path', { d: 'M ' + moonX + ' ' + (moonY - 9) + ' A 9 9 0 0 1 ' + moonX + ' ' + (moonY + 9) + ' A 9 ' + (9 * (1 - 2 * illum)) + ' 0 0 ' + (illum < 0.5 ? '0' : '1') + ' ' + moonX + ' ' + (moonY - 9) + ' Z', fill: '#0a0a18' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, phaseName),
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, Math.round(illum * 100) + '% illuminated')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Orbit'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: pos, onChange: function(e) { upd('moonPhasePos', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, pos + '°')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-4 gap-1' },
+                                          [{a:0,n:'🌑'},{a:90,n:'🌓'},{a:180,n:'🌕'},{a:270,n:'🌗'}].map(function(p) {
+                                            var active = Math.abs(pos - p.a) < 10;
+                                            return React.createElement('button', { key: p.a, onClick: function() { upd('moonPhasePos', p.a); }, className: 'p-1.5 rounded text-sm ' + (active ? 'bg-indigo-500 text-white' : (isDark ? 'bg-slate-700' : 'bg-slate-100')) }, p.n);
+                                          })
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ECLIPSE THEATER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☀ Eclipse Theater"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showEclipse", !d.showEclipse); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showEclipse ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showEclipse ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Drag the alignment slider to line up Sun, Moon, and Earth. Switch between solar and lunar eclipses."),
+                d.showEclipse && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var type = d.eclipseType || 'solar';
+                                      var alignment = d.eclipseAlign != null ? d.eclipseAlign : 50;
+                                      var offset = (alignment - 50) * 0.6;
+                                      var perfect = Math.abs(offset) < 3;
+                                      var partial = Math.abs(offset) < 12;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex gap-1 mb-2' },
+                                          ['solar', 'lunar'].map(function(t) {
+                                            var active = type === t;
+                                            return React.createElement('button', { key: t, onClick: function() { upd('eclipseType', t); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (active ? 'bg-purple-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, t + ' Eclipse');
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [20, 60, 100, 140, 180, 220, 260, 300, 340, 380].map(function(sx, si) {
+                                              var sy = (si * 47 + 11) % 200 + 10;
+                                              return React.createElement('circle', { key: 'sk' + si, cx: sx, cy: sy, r: 0.7, fill: '#fff', opacity: 0.6 });
+                                            }),
+                                            type === 'solar'
+                                              ? React.createElement('g', null,
+                                                  React.createElement('defs', null,
+                                                    React.createElement('radialGradient', { id: 'sun2' },
+                                                      React.createElement('stop', { offset: '0%', stopColor: '#fef9c3', stopOpacity: 1 }),
+                                                      React.createElement('stop', { offset: '60%', stopColor: '#f59e0b', stopOpacity: 1 }),
+                                                      React.createElement('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0 })
+                                                    )
+                                                  ),
+                                                  perfect && React.createElement('circle', { cx: 200, cy: 110, r: 100, fill: 'url(#sun2)', opacity: 0.8 }),
+                                                  React.createElement('circle', { cx: 200, cy: 110, r: 55, fill: '#facc15' }),
+                                                  React.createElement('circle', { cx: 200 + offset * 6, cy: 110, r: 50, fill: '#0f172a', stroke: perfect ? '#fde047' : 'none', strokeWidth: 1 }),
+                                                  perfect && React.createElement('circle', { cx: 200 + offset * 6, cy: 110, r: 53, fill: 'none', stroke: '#fde047', strokeWidth: 2, opacity: 0.7 }),
+                                                  React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, perfect ? 'TOTAL SOLAR ECLIPSE' : partial ? 'Partial Solar Eclipse' : 'No eclipse — moon is offset')
+                                                )
+                                              : React.createElement('g', null,
+                                                  React.createElement('rect', { x: 0, y: 0, width: 400, height: 220, fill: '#0a0a18' }),
+                                                  React.createElement('circle', { cx: 350, cy: 50, r: 12, fill: '#facc15' }),
+                                                  React.createElement('text', { x: 350, y: 75, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Sun'),
+                                                  React.createElement('circle', { cx: 200, cy: 110, r: 32, fill: '#3b82f6' }),
+                                                  React.createElement('circle', { cx: 196, cy: 105, r: 10, fill: '#22c55e' }),
+                                                  React.createElement('text', { x: 200, y: 158, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, 'Earth'),
+                                                  React.createElement('polygon', { points: '200,110 130,80 130,140', fill: '#0f172a', opacity: 0.5 }),
+                                                  React.createElement('circle', { cx: 60 + offset * 2, cy: 110, r: 12, fill: perfect ? '#7c2d12' : partial ? '#92400e' : '#e2e8f0' }),
+                                                  perfect && React.createElement('circle', { cx: 60 + offset * 2, cy: 110, r: 16, fill: '#7c2d12', opacity: 0.3 }),
+                                                  React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, perfect ? 'TOTAL LUNAR ECLIPSE — blood moon' : partial ? 'Partial Lunar Eclipse' : 'No eclipse — moon not in shadow')
+                                                )
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-14 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Alignment'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: alignment, onChange: function(e) { upd('eclipseAlign', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('button', { onClick: function() { upd('eclipseAlign', 50); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, 'Center')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          React.createElement('span', { className: 'font-bold' }, type === 'solar' ? 'Solar eclipse: ' : 'Lunar eclipse: '),
+                                          type === 'solar' ? 'Moon passes between Sun and Earth. Casts a small shadow; total eclipse is visible from only a narrow path.' : 'Earth passes between Sun and Moon. Earth\'s shadow covers the Moon. Visible from the entire night side of Earth.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: AURORA TUNER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "✨ Aurora Tuner"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAurora", !d.showAurora); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAurora ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showAurora ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Adjust solar wind, latitude, and altitude to tune the aurora. Color depends on what particles excite which atmospheric atoms."),
+                d.showAurora && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var wind = d.auroraWind != null ? d.auroraWind : 50;
+                                      var lat = d.auroraLat != null ? d.auroraLat : 65;
+                                      var alt = d.auroraAlt != null ? d.auroraAlt : 100;
+                                      var color = alt < 80 ? '#dc2626' : alt < 150 ? '#22c55e' : alt < 220 ? '#7dd3fc' : '#a78bfa';
+                                      var colorName = alt < 80 ? 'Red (oxygen >250km)' : alt < 150 ? 'Green (oxygen 100-250km)' : alt < 220 ? 'Blue (nitrogen)' : 'Purple (high N2)';
+                                      var visibility = wind > 70 && lat > 50 ? 'STRONG — dancing curtains, easy naked-eye' : wind > 40 && lat > 55 ? 'Visible — soft glow on horizon' : 'Too faint — try higher latitude or stronger storm';
+                                      var paths = [];
+                                      for (var pi = 0; pi < 6; pi++) {
+                                        var amp = (wind / 100) * 35;
+                                        var px = 50 + pi * 55;
+                                        var p = 'M ' + px + ' 200 ';
+                                        for (var pj = 1; pj <= 8; pj++) {
+                                          var py = 200 - pj * 22 + Math.sin(pj * 0.7 + pi) * amp * 0.5;
+                                          p += 'L ' + (px + Math.sin(pj * 1.3 + pi) * amp) + ' ' + py + ' ';
+                                        }
+                                        paths.push(p);
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #000000 70%, #0a1a0a 100%)' } },
+                                            [15, 50, 90, 130, 170, 210, 250, 290, 330, 370].map(function(sx, si) {
+                                              var sy = (si * 31 + 7) % 180 + 5;
+                                              return React.createElement('circle', { key: 'aurst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            paths.map(function(p, pi) {
+                                              return React.createElement('path', { key: 'aur' + pi, d: p, fill: 'none', stroke: color, strokeWidth: 5, opacity: 0.3 + (wind / 200) });
+                                            }),
+                                            paths.map(function(p, pi) {
+                                              return React.createElement('path', { key: 'aurb' + pi, d: p, fill: 'none', stroke: color, strokeWidth: 1.5, opacity: 0.9 });
+                                            }),
+                                            React.createElement('rect', { x: 0, y: 200, width: 400, height: 20, fill: '#0a0a0a' }),
+                                            React.createElement('polygon', { points: '0,210 80,195 160,205 240,190 320,200 400,195 400,220 0,220', fill: '#1e293b' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 'bold' }, colorName),
+                                            React.createElement('text', { x: 200, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, visibility)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Solar wind', val: wind, key: 'auroraWind', max: 100, unit: '%' },
+                                            { label: 'Latitude', val: lat, key: 'auroraLat', max: 90, unit: '°' },
+                                            { label: 'Altitude', val: alt, key: 'auroraAlt', max: 300, unit: 'km' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + s.unit)
+                                            );
+                                          })
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COMET TAIL BUILDER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☄ Comet Tail Builder"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showComet", !d.showComet); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showComet ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
+                  }, d.showComet ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "A comet gets two tails when it nears the Sun. Adjust distance + wind angle to see how they form."),
+                d.showComet && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var distToSun = d.cometDist != null ? d.cometDist : 50;
+                                      var angle = d.cometAngle != null ? d.cometAngle : 90;
+                                      var activity = Math.max(0, 1 - distToSun / 100);
+                                      var rad = angle * Math.PI / 180;
+                                      var dustL = 30 + activity * 80;
+                                      var ionL = 40 + activity * 110;
+                                      var cx = 200, cy = 130;
+                                      var dustEnd = { x: cx - Math.cos(rad) * dustL, y: cy + Math.sin(rad) * dustL * 0.4 };
+                                      var ionEnd = { x: cx - Math.cos(rad) * ionL, y: cy };
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [15, 60, 110, 150, 190, 240, 280, 320, 370].map(function(sx, si) {
+                                              var sy = (si * 37 + 13) % 200 + 10;
+                                              return React.createElement('circle', { key: 'co' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunC' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 350, cy: 130, r: 15, fill: 'url(#sunC)' }),
+                                            React.createElement('circle', { cx: 350, cy: 130, r: 22, fill: '#f59e0b', opacity: 0.2 }),
+                                            React.createElement('text', { x: 350, y: 165, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Sun'),
+                                            activity > 0.05 && React.createElement('path', { d: 'M ' + cx + ' ' + cy + ' Q ' + (cx + dustEnd.x) / 2 + ' ' + (cy + 25) + ' ' + dustEnd.x + ' ' + dustEnd.y, fill: 'none', stroke: '#fbbf24', strokeWidth: 8, opacity: 0.5, strokeLinecap: 'round' }),
+                                            activity > 0.05 && React.createElement('path', { d: 'M ' + cx + ' ' + cy + ' Q ' + (cx + dustEnd.x) / 2 + ' ' + (cy + 25) + ' ' + dustEnd.x + ' ' + dustEnd.y, fill: 'none', stroke: '#fde047', strokeWidth: 3, opacity: 0.8, strokeLinecap: 'round' }),
+                                            activity > 0.05 && React.createElement('line', { x1: cx, y1: cy, x2: ionEnd.x, y2: ionEnd.y, stroke: '#60a5fa', strokeWidth: 5, opacity: 0.4 }),
+                                            activity > 0.05 && React.createElement('line', { x1: cx, y1: cy, x2: ionEnd.x, y2: ionEnd.y, stroke: '#bfdbfe', strokeWidth: 1.5, opacity: 0.95 }),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: 9 + activity * 6, fill: '#94a3b8', opacity: 0.4 }),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: 4, fill: '#e2e8f0' }),
+                                            React.createElement('text', { x: cx, y: cy + 28, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Nucleus + Coma'),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 'bold' }, activity > 0.5 ? 'Bright comet — both tails active' : activity > 0.1 ? 'Modest activity' : 'Dormant — too far from Sun'),
+                                            activity > 0.05 && React.createElement('text', { x: dustEnd.x, y: dustEnd.y - 8, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Dust tail'),
+                                            activity > 0.05 && React.createElement('text', { x: ionEnd.x, y: ionEnd.y - 8, textAnchor: 'middle', fill: '#93c5fd', fontSize: 9 }, 'Ion tail')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Distance to Sun (AU)', val: distToSun, key: 'cometDist', max: 100, scale: 0.05 },
+                                            { label: 'Wind angle (°)', val: angle, key: 'cometAngle', max: 180, scale: 1 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          React.createElement('div', null, '🟡 ', React.createElement('span', { className: 'font-bold' }, 'Dust tail '), '— curved, pushed by photon radiation pressure (slower)'),
+                                          React.createElement('div', null, '🔵 ', React.createElement('span', { className: 'font-bold' }, 'Ion tail '), '— straight, pushed by solar wind charged particles (faster)')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: BLACK HOLE VISUALIZER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⚫ Black Hole Visualizer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showBlackHole", !d.showBlackHole); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showBlackHole ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showBlackHole ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Adjust mass and spin. Watch the event horizon grow and the accretion disk respond. Heavy spin launches polar jets."),
+                d.showBlackHole && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var mass = d.bhMass != null ? d.bhMass : 50;
+                                      var spin = d.bhSpin != null ? d.bhSpin : 60;
+                                      var horizonR = 18 + (mass / 100) * 40;
+                                      var diskInner = horizonR * 1.3;
+                                      var diskOuter = horizonR * 3 + spin * 0.3;
+                                      var massEarth = Math.pow(10, mass / 12).toFixed(1);
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [20, 70, 110, 150, 200, 250, 290, 340, 380].map(function(sx, si) {
+                                              var sy = (si * 41 + 13) % 220 + 5;
+                                              return React.createElement('circle', { key: 'bhs' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'disk', cx: '50%', cy: '50%' },
+                                                React.createElement('stop', { offset: '20%', stopColor: '#000', stopOpacity: 0 }),
+                                                React.createElement('stop', { offset: '35%', stopColor: '#fef3c7', stopOpacity: 0.95 }),
+                                                React.createElement('stop', { offset: '55%', stopColor: '#f97316', stopOpacity: 0.85 }),
+                                                React.createElement('stop', { offset: '80%', stopColor: '#7c2d12', stopOpacity: 0.6 }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#7c2d12', stopOpacity: 0 })
+                                              )
+                                            ),
+                                            React.createElement('ellipse', { cx: 200, cy: 120, rx: diskOuter, ry: diskOuter * 0.18, fill: 'url(#disk)' }),
+                                            React.createElement('ellipse', { cx: 200, cy: 120, rx: diskOuter * 0.9, ry: diskOuter * 0.16, fill: 'url(#disk)', opacity: 0.85 }),
+                                            React.createElement('path', { d: 'M ' + (200 - diskOuter) + ' 120 A ' + diskOuter + ' ' + (diskOuter * 0.4) + ' 0 0 1 ' + (200 + diskOuter) + ' 120', fill: 'none', stroke: '#fbbf24', strokeWidth: 4, opacity: 0.4 }),
+                                            React.createElement('path', { d: 'M ' + (200 - diskOuter) + ' 120 A ' + diskOuter + ' ' + (diskOuter * 0.4) + ' 0 0 1 ' + (200 + diskOuter) + ' 120', fill: 'none', stroke: '#fde047', strokeWidth: 1.5, opacity: 0.9 }),
+                                            spin > 40 && React.createElement('line', { x1: 200, y1: 120 - diskOuter * 0.4, x2: 200, y2: 50, stroke: '#a78bfa', strokeWidth: 2 + spin / 50, opacity: 0.5 }),
+                                            spin > 40 && React.createElement('line', { x1: 200, y1: 120 + diskOuter * 0.4, x2: 200, y2: 190, stroke: '#a78bfa', strokeWidth: 2 + spin / 50, opacity: 0.5 }),
+                                            React.createElement('circle', { cx: 200, cy: 120, r: horizonR, fill: '#000' }),
+                                            React.createElement('circle', { cx: 200, cy: 120, r: horizonR + 2, fill: 'none', stroke: '#1e1b4b', strokeWidth: 1 }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 'bold' }, mass < 30 ? 'Stellar Black Hole' : mass < 70 ? 'Intermediate-Mass BH' : 'Supermassive BH'),
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, '~ 10^' + (mass / 12).toFixed(1) + ' Earth masses')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [{ label: 'Mass', val: mass, key: 'bhMass', unit: '' }, { label: 'Spin', val: spin, key: 'bhSpin', unit: '%' }].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + s.unit)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Black hole has 3 properties: mass, spin, charge. The event horizon is the point of no return — once light crosses it, nothing escapes. The accretion disk is matter spiraling in, heated to millions of degrees by friction. Fast-spinning holes can launch relativistic jets along the spin axis.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ORBITAL SPEED RACE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🏁 Orbital Speed Race"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showRace", !d.showRace); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showRace ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showRace ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Scrub Earth years and watch all five inner planets orbit at their real relative speeds. Kepler's third law in motion."),
+                d.showRace && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var t = d.raceTime != null ? d.raceTime : 0;
+                                      var planets = [
+                                        { name: 'Mercury', radius: 25, period: 0.24, color: '#94a3b8', size: 2.5 },
+                                        { name: 'Venus', radius: 45, period: 0.62, color: '#fbbf24', size: 4 },
+                                        { name: 'Earth', radius: 70, period: 1.0, color: '#3b82f6', size: 4 },
+                                        { name: 'Mars', radius: 95, period: 1.88, color: '#ef4444', size: 3 },
+                                        { name: 'Jupiter', radius: 140, period: 11.86, color: '#f97316', size: 10 }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 320', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [25, 60, 110, 145, 195, 230, 280, 330, 370].map(function(sx, si) {
+                                              var sy = (si * 41 + 11) % 300 + 5;
+                                              return React.createElement('circle', { key: 'rcs' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunR' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 160, r: 15, fill: 'url(#sunR)' }),
+                                            planets.map(function(pl) {
+                                              return React.createElement('circle', { key: pl.name + 'orbit', cx: 200, cy: 160, r: pl.radius, fill: 'none', stroke: '#334155', strokeWidth: 0.5, strokeDasharray: '2,3' });
+                                            }),
+                                            planets.map(function(pl) {
+                                              var theta = (t / pl.period) * Math.PI * 2;
+                                              var px = 200 + Math.cos(theta) * pl.radius;
+                                              var py = 160 + Math.sin(theta) * pl.radius;
+                                              return React.createElement('g', { key: pl.name },
+                                                React.createElement('circle', { cx: px, cy: py, r: pl.size + 1, fill: pl.color, opacity: 0.4 }),
+                                                React.createElement('circle', { cx: px, cy: py, r: pl.size, fill: pl.color }),
+                                                React.createElement('text', { x: px, y: py - pl.size - 4, textAnchor: 'middle', fill: pl.color, fontSize: 8 }, pl.name)
+                                              );
+                                            })
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Earth years'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 24, step: 0.05, value: t, onChange: function(e) { upd('raceTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.toFixed(2))
+                                        ),
+                                        React.createElement('div', { className: 'flex gap-1 mt-1' },
+                                          [0, 1, 5, 12, 24].map(function(yr) {
+                                            return React.createElement('button', { key: yr, onClick: function() { upd('raceTime', yr); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (Math.abs(t - yr) < 0.1 ? 'bg-blue-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, yr + 'y');
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Kepler\'s third law: orbital period squared ∝ distance cubed. Inner planets sprint; outer planets crawl. Jupiter takes 12 Earth years for one orbit; Mercury laps every 88 days.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SPACECRAFT DESIGNER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🚀 Spacecraft Designer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDesigner", !d.showDesigner); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDesigner ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showDesigner ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Build a spacecraft from real components. Choose core, power, propulsion + payload — watch mass + cost update."),
+                d.showDesigner && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var sc = d.spacecraft || { core: 'cubesat', power: 'solar', prop: 'chem', payload: ['camera'] };
+                                      var CORES = {
+                                        cubesat: { name: 'CubeSat', mass: 1, cost: 100, label: '📦' },
+                                        probe: { name: 'Probe', mass: 500, cost: 800, label: '🛰' },
+                                        orbiter: { name: 'Orbiter', mass: 2500, cost: 4000, label: '🪐' },
+                                        crewed: { name: 'Crewed', mass: 20000, cost: 50000, label: '👨‍🚀' }
+                                      };
+                                      var POWER = {
+                                        solar: { name: 'Solar Panels', mass: 50, cost: 30, range: 'Inner system to Jupiter', label: '☀' },
+                                        rtg: { name: 'RTG (Nuclear)', mass: 80, cost: 800, range: 'Anywhere, 30+ years', label: '⚛' },
+                                        battery: { name: 'Battery only', mass: 30, cost: 15, range: 'Short missions only', label: '🔋' }
+                                      };
+                                      var PROP = {
+                                        chem: { name: 'Chemical', mass: 200, cost: 50, deltaV: 'High thrust, low ISP', label: '🔥' },
+                                        ion: { name: 'Ion drive', mass: 80, cost: 300, deltaV: 'Low thrust, huge ISP', label: '⚡' },
+                                        nuclear: { name: 'Nuclear thermal', mass: 600, cost: 2000, deltaV: 'High thrust + high ISP', label: '☢' }
+                                      };
+                                      var PAYLOADS = {
+                                        camera: { name: 'Optical Camera', mass: 15, cost: 50, label: '📷' },
+                                        spec: { name: 'Spectrometer', mass: 25, cost: 80, label: '🔬' },
+                                        lidar: { name: 'LiDAR', mass: 40, cost: 200, label: '📡' },
+                                        drill: { name: 'Sample Drill', mass: 60, cost: 300, label: '⚒' },
+                                        lab: { name: 'Onboard Lab', mass: 150, cost: 800, label: '🧪' }
+                                      };
+                                      var totalMass = (CORES[sc.core] && CORES[sc.core].mass) + (POWER[sc.power] && POWER[sc.power].mass) + (PROP[sc.prop] && PROP[sc.prop].mass) + (sc.payload || []).reduce(function(acc, p) { return acc + (PAYLOADS[p] ? PAYLOADS[p].mass : 0); }, 0);
+                                      var totalCost = (CORES[sc.core] && CORES[sc.core].cost) + (POWER[sc.power] && POWER[sc.power].cost) + (PROP[sc.prop] && PROP[sc.prop].cost) + (sc.payload || []).reduce(function(acc, p) { return acc + (PAYLOADS[p] ? PAYLOADS[p].cost : 0); }, 0);
+                                      function togglePayload(p) {
+                                        var pl = (sc.payload || []).slice();
+                                        var idx = pl.indexOf(p);
+                                        if (idx >= 0) pl.splice(idx, 1); else pl.push(p);
+                                        upd('spacecraft', Object.assign({}, sc, { payload: pl }));
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border p-3 ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-50') },
+                                          React.createElement('div', { className: 'text-center text-3xl mb-1' }, (CORES[sc.core] && CORES[sc.core].label) + ' + ' + (POWER[sc.power] && POWER[sc.power].label) + ' + ' + (PROP[sc.prop] && PROP[sc.prop].label)),
+                                          React.createElement('div', { className: 'text-center text-[10px] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Mass: ' + totalMass.toLocaleString() + ' kg • Cost: $' + totalCost.toLocaleString() + 'k')
+                                        ),
+                                        ['core', 'power', 'prop'].map(function(cat) {
+                                          var opts = cat === 'core' ? CORES : cat === 'power' ? POWER : PROP;
+                                          return React.createElement('div', { key: cat, className: 'mt-2' },
+                                            React.createElement('div', { className: 'text-[10px] font-bold mb-1 capitalize ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cat),
+                                            React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                                              Object.keys(opts).map(function(k) {
+                                                var active = sc[cat] === k;
+                                                return React.createElement('button', { key: k, onClick: function() { upd('spacecraft', Object.assign({}, sc, { [cat]: k })); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-cyan-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, opts[k].label + ' ' + opts[k].name);
+                                              })
+                                            )
+                                          );
+                                        }),
+                                        React.createElement('div', { className: 'mt-2' },
+                                          React.createElement('div', { className: 'text-[10px] font-bold mb-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Payload (multi)'),
+                                          React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                                            Object.keys(PAYLOADS).map(function(k) {
+                                              var active = (sc.payload || []).indexOf(k) >= 0;
+                                              return React.createElement('button', { key: k, onClick: function() { togglePayload(k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-emerald-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, PAYLOADS[k].label + ' ' + PAYLOADS[k].name);
+                                            })
+                                          )
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SOLAR CYCLE VISUALIZER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☀ Solar Cycle Visualizer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSunCycle", !d.showSunCycle); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSunCycle ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSunCycle ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "The Sun has an 11-year cycle of sunspot activity. Scrub through to see sunspots come and go + CME launches."),
+                d.showSunCycle && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var year = d.sunCycleYear != null ? d.sunCycleYear : 5.5;
+                                      var phase = (year % 11) / 11;
+                                      var sunspots = Math.max(0, 100 * (1 - Math.cos(phase * Math.PI * 2)) / 2);
+                                      var cmeProb = sunspots > 70 ? 'HIGH' : sunspots > 30 ? 'Moderate' : 'Low';
+                                      var phaseLabel = sunspots > 80 ? 'Solar Maximum' : sunspots > 40 ? 'Rising/Falling phase' : 'Solar Minimum';
+                                      var spots = [];
+                                      for (var s = 0; s < Math.floor(sunspots / 8); s++) {
+                                        var sa = (s * 73 + year * 30) % 360 * Math.PI / 180;
+                                        var sr = 30 + (s % 4) * 8;
+                                        spots.push({ x: 150 + Math.cos(sa) * sr, y: 110 + Math.sin(sa) * sr, sz: 2 + s % 3 });
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [20, 70, 110, 160, 200, 250, 290, 340, 380].map(function(sx, si) {
+                                              var sy = (si * 33 + 7) % 200 + 5;
+                                              return React.createElement('circle', { key: 'sc' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.45 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunSurf' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fde047' }),
+                                                React.createElement('stop', { offset: '60%', stopColor: '#fbbf24' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#dc2626' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 150, cy: 110, r: 80, fill: '#f59e0b', opacity: 0.4 }),
+                                            React.createElement('circle', { cx: 150, cy: 110, r: 60, fill: 'url(#sunSurf)' }),
+                                            spots.map(function(sp, si) {
+                                              return React.createElement('circle', { key: 'sp' + si, cx: sp.x, cy: sp.y, r: sp.sz, fill: '#1c1917' });
+                                            }),
+                                            sunspots > 60 && [0, 60, 120, 180, 240, 300].slice(0, Math.floor(sunspots / 20)).map(function(deg) {
+                                              var rad = deg * Math.PI / 180;
+                                              var x1 = 150 + Math.cos(rad) * 60;
+                                              var y1 = 110 + Math.sin(rad) * 60;
+                                              var x2 = 150 + Math.cos(rad) * 95;
+                                              var y2 = 110 + Math.sin(rad) * 95;
+                                              return React.createElement('path', { key: 'cme' + deg, d: 'M ' + x1 + ' ' + y1 + ' Q ' + ((x1 + x2) / 2 + 5) + ' ' + ((y1 + y2) / 2 - 5) + ' ' + x2 + ' ' + y2, fill: 'none', stroke: '#fbbf24', strokeWidth: 3, opacity: 0.6, strokeLinecap: 'round' });
+                                            }),
+                                            React.createElement('rect', { x: 250, y: 30, width: 130, height: 8, rx: 4, fill: '#1e293b' }),
+                                            React.createElement('rect', { x: 250, y: 30, width: 130 * (sunspots / 100), height: 8, rx: 4, fill: sunspots > 70 ? '#dc2626' : sunspots > 30 ? '#f97316' : '#22c55e' }),
+                                            React.createElement('text', { x: 315, y: 55, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, Math.round(sunspots) + ' sunspots'),
+                                            React.createElement('text', { x: 315, y: 90, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, phaseLabel),
+                                            React.createElement('text', { x: 315, y: 110, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'CME risk: ' + cmeProb),
+                                            React.createElement('text', { x: 315, y: 135, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Year ' + year.toFixed(1) + ' of 11')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Cycle year'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 11, step: 0.1, value: year, onChange: function(e) { upd('sunCycleYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year.toFixed(1))
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'The Sun cycles every ~11 years between minimum (few sunspots, calm) and maximum (many sunspots, frequent solar flares + CMEs). Current Cycle 25 is rising, peaking ~2025.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: HABITABLE ZONE CALCULATOR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌱 Habitable Zone Calculator"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showHZ", !d.showHZ); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showHZ ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showHZ ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Where could life-as-we-know-it survive around any star? Adjust star luminosity + planet distance to see."),
+                d.showHZ && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var Lstar = d.hzLum != null ? d.hzLum : 1.0;
+                                      var planetDist = d.hzDist != null ? d.hzDist : 1.0;
+                                      var innerEdge = Math.sqrt(Lstar / 1.1);
+                                      var outerEdge = Math.sqrt(Lstar / 0.53);
+                                      var inZone = planetDist >= innerEdge && planetDist <= outerEdge;
+                                      var tooHot = planetDist < innerEdge;
+                                      var verdict = inZone ? 'HABITABLE ZONE — liquid water possible' : tooHot ? 'Too hot — water boils off (Venus-like)' : 'Too cold — water freezes (Mars-like)';
+                                      var W = 400, H = 220;
+                                      var maxDist = 5;
+                                      var scale = (W - 80) / maxDist;
+                                      var starX = 50;
+                                      var innerX = starX + innerEdge * scale;
+                                      var outerX = starX + outerEdge * scale;
+                                      var planetX = starX + planetDist * scale;
+                                      var starColor = Lstar < 0.5 ? '#dc2626' : Lstar < 1.5 ? '#facc15' : Lstar < 5 ? '#fff' : '#60a5fa';
+                                      var starR = 8 + Math.log10(Math.max(Lstar, 0.1) * 10);
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [25, 60, 120, 160, 220, 260, 320, 360].map(function(sx, si) {
+                                              var sy = (si * 37 + 11) % 200 + 5;
+                                              return React.createElement('circle', { key: 'hzst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('rect', { x: innerX, y: 80, width: Math.max(0, outerX - innerX), height: 60, fill: '#22c55e', opacity: 0.18 }),
+                                            React.createElement('rect', { x: innerX - 30, y: 80, width: 30, height: 60, fill: '#dc2626', opacity: 0.18 }),
+                                            React.createElement('rect', { x: outerX, y: 80, width: W - outerX, height: 60, fill: '#60a5fa', opacity: 0.15 }),
+                                            React.createElement('line', { x1: innerX, y1: 70, x2: innerX, y2: 150, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3,2' }),
+                                            React.createElement('line', { x1: outerX, y1: 70, x2: outerX, y2: 150, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3,2' }),
+                                            React.createElement('text', { x: innerX, y: 65, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, innerEdge.toFixed(2) + ' AU'),
+                                            React.createElement('text', { x: outerX, y: 65, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, outerEdge.toFixed(2) + ' AU'),
+                                            React.createElement('circle', { cx: starX, cy: 110, r: starR * 1.4, fill: starColor, opacity: 0.3 }),
+                                            React.createElement('circle', { cx: starX, cy: 110, r: starR, fill: starColor }),
+                                            React.createElement('text', { x: starX, y: 135, textAnchor: 'middle', fill: starColor, fontSize: 9 }, Lstar.toFixed(2) + 'L☉'),
+                                            React.createElement('circle', { cx: planetX, cy: 110, r: 5, fill: inZone ? '#22c55e' : tooHot ? '#dc2626' : '#60a5fa' }),
+                                            React.createElement('text', { x: planetX, y: 100, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, 'Planet'),
+                                            React.createElement('text', { x: planetX, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, planetDist.toFixed(2) + ' AU'),
+                                            React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, verdict)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Star luminosity (L☉)', val: Lstar, key: 'hzLum', max: 10, step: 0.05 },
+                                            { label: 'Planet distance (AU)', val: planetDist, key: 'hzDist', max: 5, step: 0.05 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0.05, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val.toFixed(2))
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1' },
+                                          [['Sun + Earth', 1.0, 1.0], ['Sun + Mars', 1.0, 1.52], ['Proxima + b', 0.0017, 0.05], ['Kepler-186 + f', 0.05, 0.43], ['HD 40307 + g', 0.23, 0.6], ['TRAPPIST-1 + e', 0.0005, 0.029]].map(function(preset) {
+                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'The habitable zone is where surface water can stay liquid. Inner edge: greenhouse effect dries off. Outer edge: ice traps CO2, runaway freeze. Edges scale as √L.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: TIDAL FORCES VISUALIZER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌊 Tidal Forces Visualizer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTides", !d.showTides); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTides ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showTides ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Drag the Moon closer to make Earth's tides bigger. Note the bulge is on both the near + far sides."),
+                d.showTides && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var moonDist = d.tideDist != null ? d.tideDist : 60;
+                                      var moonAng = d.tideAng != null ? d.tideAng : 0;
+                                      var earthX = 200, earthY = 130;
+                                      var bulge = Math.max(2, 80 / moonDist);
+                                      var rad = moonAng * Math.PI / 180;
+                                      var moonX = earthX + Math.cos(rad) * moonDist;
+                                      var moonY = earthY + Math.sin(rad) * moonDist;
+                                      function pt(deg, r) { var rr = deg * Math.PI / 180; return [earthX + Math.cos(rr) * r, earthY + Math.sin(rr) * r]; }
+                                      var oceanPath = '';
+                                      for (var pi = 0; pi <= 60; pi++) {
+                                        var ang = (pi / 60) * 360;
+                                        var diff = Math.abs(((ang - moonAng + 540) % 360) - 180);
+                                        var tBulge = (Math.cos(diff * Math.PI / 90) + 1) / 2;
+                                        var r = 25 + tBulge * bulge;
+                                        var pp = pt(ang, r);
+                                        oceanPath += (pi === 0 ? 'M ' : 'L ') + pp[0] + ' ' + pp[1] + ' ';
+                                      }
+                                      oceanPath += 'Z';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [15, 60, 110, 160, 220, 290, 350].map(function(sx, si) {
+                                              var sy = (si * 47 + 13) % 240 + 5;
+                                              return React.createElement('circle', { key: 'tdst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.45 });
+                                            }),
+                                            React.createElement('path', { d: oceanPath, fill: '#1e40af', opacity: 0.7 }),
+                                            React.createElement('circle', { cx: earthX, cy: earthY, r: 22, fill: '#22c55e' }),
+                                            React.createElement('circle', { cx: earthX, cy: earthY, r: 22, fill: 'none', stroke: '#1e40af', strokeWidth: 0.5, strokeDasharray: '2,2', opacity: 0.7 }),
+                                            React.createElement('circle', { cx: moonX, cy: moonY, r: 9, fill: '#e2e8f0' }),
+                                            React.createElement('text', { x: moonX, y: moonY + 22, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Moon'),
+                                            React.createElement('line', { x1: earthX, y1: earthY, x2: moonX, y2: moonY, stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '3,3' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Earth + Moon Tidal Bulge'),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, bulge < 5 ? 'Distant Moon — tiny tides' : bulge < 15 ? 'Real-Earth Moon — normal tides' : 'Closer Moon — extreme tides + lengthened day')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Moon distance', val: moonDist, key: 'tideDist', min: 30, max: 200, step: 1 },
+                                            { label: 'Moon angle (°)', val: moonAng, key: 'tideAng', min: 0, max: 360, step: 5 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Tides happen because gravity pulls more strongly on the near side than the far side of Earth. Both sides bulge outward. Sun and Moon together create spring (aligned) + neap (perpendicular) tides.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: DAY/NIGHT GLOBE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌍 Day/Night Globe"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showGlobe", !d.showGlobe); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showGlobe ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showGlobe ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Rotate Earth and adjust season. Watch the day/night terminator move + the axis tilt shift the sunlit hemisphere."),
+                d.showGlobe && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var rot = d.dayNightRot != null ? d.dayNightRot : 0;
+                                      var season = d.dayNightSeason != null ? d.dayNightSeason : 0;
+                                      var tilt = 23.5 * Math.cos(season * Math.PI / 180);
+                                      var cx = 200, cy = 130, r = 80;
+                                      var sunDir = -tilt;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [15, 60, 110, 160, 220, 280, 320, 370].map(function(sx, si) {
+                                              var sy = (si * 39 + 7) % 240 + 5;
+                                              return React.createElement('circle', { key: 'gst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'gsun' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              ),
+                                              React.createElement('radialGradient', { id: 'earthN', cx: '50%', cy: '50%', r: '50%', fx: '70%', fy: '50%' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#0a0a1a', stopOpacity: 0 }),
+                                                React.createElement('stop', { offset: '50%', stopColor: '#0a0a1a', stopOpacity: 0 }),
+                                                React.createElement('stop', { offset: '70%', stopColor: '#0a0a1a', stopOpacity: 0.7 }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#0a0a1a', stopOpacity: 1 })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 350, cy: 130, r: 22, fill: 'url(#gsun)' }),
+                                            React.createElement('text', { x: 350, y: 165, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, 'Sun'),
+                                            React.createElement('g', { transform: 'rotate(' + sunDir + ' ' + cx + ' ' + cy + ')' },
+                                              React.createElement('circle', { cx: cx, cy: cy, r: r, fill: '#1e40af' }),
+                                              React.createElement('ellipse', { cx: cx - 25 + (rot / 360) * 20, cy: cy - 15, rx: 22, ry: 12, fill: '#22c55e', opacity: 0.85, transform: 'rotate(' + (rot / 10) + ' ' + cx + ' ' + cy + ')' }),
+                                              React.createElement('ellipse', { cx: cx + 30, cy: cy + 12, rx: 18, ry: 10, fill: '#22c55e', opacity: 0.85, transform: 'rotate(' + (rot / 10) + ' ' + cx + ' ' + cy + ')' }),
+                                              React.createElement('circle', { cx: cx, cy: cy - r - 1, r: 5, fill: '#f0f9ff' }),
+                                              React.createElement('circle', { cx: cx, cy: cy + r + 1, r: 5, fill: '#f0f9ff' }),
+                                              React.createElement('circle', { cx: cx, cy: cy, r: r, fill: 'url(#earthN)' }),
+                                              React.createElement('line', { x1: cx, y1: cy - r - 12, x2: cx, y2: cy + r + 12, stroke: '#cbd5e1', strokeWidth: 0.5, strokeDasharray: '3,3' })
+                                            ),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, season < 90 || season > 270 ? 'Northern Summer' : 'Northern Winter'),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Axis tilt: ' + tilt.toFixed(1) + '° • Hour: ' + Math.floor((rot / 360) * 24) + ':00')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Daily rotation', val: rot, key: 'dayNightRot', min: 0, max: 360, step: 5 },
+                                            { label: 'Time of year', val: season, key: 'dayNightSeason', min: 0, max: 360, step: 5 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                                          [['Vernal Equinox', 0], ['Summer Solstice', 90], ['Autumnal Equinox', 180], ['Winter Solstice', 270]].map(function(sp) {
+                                            return React.createElement('button', { key: sp[0], onClick: function() { upd('dayNightSeason', sp[1]); }, className: 'px-2 py-1 rounded text-[9px] font-bold ' + (Math.abs(season - sp[1]) < 5 ? 'bg-blue-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, sp[0]);
+                                          })
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: LAGRANGE POINTS LAB ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⚖ Lagrange Points Lab"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showLagrange", !d.showLagrange); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showLagrange ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
+                  }, d.showLagrange ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Five gravitational sweet spots between two bodies where spacecraft can hover. James Webb sits at L2."),
+                d.showLagrange && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var massRatio = d.lagrangeMass != null ? d.lagrangeMass : 0.01;
+                                      var cx = 250, cy = 130;
+                                      var R = 100;
+                                      var planetX = cx + R;
+                                      var planetY = cy;
+                                      var L1 = { x: cx + R * (1 - Math.cbrt(massRatio / 3)), y: cy, name: 'L1' };
+                                      var L2 = { x: cx + R * (1 + Math.cbrt(massRatio / 3)), y: cy, name: 'L2' };
+                                      var L3 = { x: cx - R, y: cy, name: 'L3' };
+                                      var L4 = { x: cx + R * Math.cos(Math.PI / 3), y: cy - R * Math.sin(Math.PI / 3), name: 'L4' };
+                                      var L5 = { x: cx + R * Math.cos(Math.PI / 3), y: cy + R * Math.sin(Math.PI / 3), name: 'L5' };
+                                      var lpoints = [L1, L2, L3, L4, L5];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            [15, 60, 130, 200, 280, 360, 440].map(function(sx, si) {
+                                              var sy = (si * 41 + 7) % 260 + 5;
+                                              return React.createElement('circle', { key: 'last' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'lgsun' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: R, fill: 'none', stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '2,3' }),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: 14, fill: 'url(#lgsun)' }),
+                                            React.createElement('text', { x: cx, y: cy + 30, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Sun'),
+                                            React.createElement('circle', { cx: planetX, cy: planetY, r: 6, fill: '#3b82f6' }),
+                                            React.createElement('text', { x: planetX, y: planetY + 18, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            lpoints.map(function(L, li) {
+                                              var stable = L.name === 'L4' || L.name === 'L5';
+                                              return React.createElement('g', { key: L.name },
+                                                React.createElement('circle', { cx: L.x, cy: L.y, r: 4, fill: stable ? '#22c55e' : '#fbbf24' }),
+                                                React.createElement('circle', { cx: L.x, cy: L.y, r: 8, fill: 'none', stroke: stable ? '#22c55e' : '#fbbf24', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.6 }),
+                                                React.createElement('text', { x: L.x, y: L.y - 12, textAnchor: 'middle', fill: stable ? '#86efac' : '#fde047', fontSize: 9, fontWeight: 'bold' }, L.name)
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Lagrange Points'),
+                                            React.createElement('text', { x: 250, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Green: stable equilibria (L4, L5) • Yellow: unstable but useful (L1, L2, L3)')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1 text-[10px]' },
+                                          [
+                                            ['L1', 'Sun + Earth observation (SOHO)', '#fbbf24'],
+                                            ['L2', 'James Webb Space Telescope', '#fbbf24'],
+                                            ['L3', 'Always behind Sun (mostly theoretical)', '#fbbf24'],
+                                            ['L4', 'Trojan asteroids — stable', '#22c55e'],
+                                            ['L5', 'Trojan asteroids — stable', '#22c55e']
+                                          ].map(function(L) {
+                                            return React.createElement('div', { key: L[0], className: 'p-1 rounded text-[9px] ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), style: { borderLeft: '3px solid ' + L[2] } },
+                                              React.createElement('div', { className: 'font-bold' }, L[0]),
+                                              React.createElement('div', null, L[1])
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Five points in any two-body orbit where gravity and centrifugal effects balance. Spacecraft can park here with minimal fuel. JWST sits at L2 — always behind Earth, away from Sun.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SPECTROSCOPY LAB ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌈 Spectroscopy Lab"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSpectro", !d.showSpectro); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSpectro ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showSpectro ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Each element fingerprints light in specific wavelengths. Cycle through elements to see how astronomers identify them in distant stars."),
+                d.showSpectro && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var element = d.spectroElem || 'hydrogen';
+                                      var ELEMENTS = {
+                                        hydrogen: { name: 'Hydrogen', lines: [410, 434, 486, 656], color: '#dc2626' },
+                                        helium: { name: 'Helium', lines: [438, 447, 471, 492, 502, 587, 668, 706], color: '#fbbf24' },
+                                        sodium: { name: 'Sodium', lines: [589, 589.5], color: '#facc15' },
+                                        neon: { name: 'Neon', lines: [540, 585, 588, 614, 626, 633, 638, 640, 650, 659, 692, 703], color: '#f97316' },
+                                        mercury: { name: 'Mercury', lines: [404, 435, 546, 577, 579], color: '#22c55e' },
+                                        argon: { name: 'Argon', lines: [415, 420, 425, 696, 707, 727, 738, 750, 763, 772, 794], color: '#7dd3fc' }
+                                      };
+                                      var sel = ELEMENTS[element];
+                                      function wavelengthToColor(w) {
+                                        if (w < 380) return '#000';
+                                        if (w < 440) return '#7e22ce';
+                                        if (w < 490) return '#2563eb';
+                                        if (w < 510) return '#06b6d4';
+                                        if (w < 580) return '#22c55e';
+                                        if (w < 645) return '#facc15';
+                                        if (w < 700) return '#f97316';
+                                        if (w < 780) return '#dc2626';
+                                        return '#000';
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(ELEMENTS).map(function(k) {
+                                            var active = element === k;
+                                            return React.createElement('button', { key: k, onClick: function() { upd('spectroElem', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (active ? 'bg-fuchsia-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ELEMENTS[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: '#000' } },
+                                            React.createElement('defs', null,
+                                              React.createElement('linearGradient', { id: 'spec', x1: '0%', x2: '100%' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#000' }),
+                                                React.createElement('stop', { offset: '7%', stopColor: '#000' }),
+                                                React.createElement('stop', { offset: '10%', stopColor: '#7e22ce' }),
+                                                React.createElement('stop', { offset: '25%', stopColor: '#2563eb' }),
+                                                React.createElement('stop', { offset: '40%', stopColor: '#06b6d4' }),
+                                                React.createElement('stop', { offset: '55%', stopColor: '#22c55e' }),
+                                                React.createElement('stop', { offset: '70%', stopColor: '#facc15' }),
+                                                React.createElement('stop', { offset: '83%', stopColor: '#f97316' }),
+                                                React.createElement('stop', { offset: '95%', stopColor: '#dc2626' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#000' })
+                                              )
+                                            ),
+                                            React.createElement('rect', { x: 20, y: 30, width: 360, height: 40, fill: 'url(#spec)', opacity: 0.3 }),
+                                            React.createElement('rect', { x: 20, y: 90, width: 360, height: 50, fill: '#000' }),
+                                            sel.lines.map(function(w, wi) {
+                                              var x = 20 + ((w - 380) / 400) * 360;
+                                              if (x < 20 || x > 380) return null;
+                                              return React.createElement('g', { key: wi },
+                                                React.createElement('rect', { x: x - 1, y: 90, width: 2, height: 50, fill: wavelengthToColor(w) }),
+                                                React.createElement('text', { x: x, y: 160, textAnchor: 'middle', fill: wavelengthToColor(w), fontSize: 7 }, w + 'nm')
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 20, y: 25, fill: '#cbd5e1', fontSize: 9 }, '380nm (UV)'),
+                                            React.createElement('text', { x: 380, y: 25, textAnchor: 'end', fill: '#cbd5e1', fontSize: 9 }, '780nm (IR)'),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, sel.name + ' emission spectrum'),
+                                            React.createElement('text', { x: 200, y: 85, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Visible light continuum'),
+                                            React.createElement('text', { x: 200, y: 175, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Element emission lines (fingerprint)')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Every element emits its own unique pattern of light wavelengths — its spectral fingerprint. By looking at light from distant stars, we can determine what they\'re made of. This is how we know the Sun is 75% hydrogen!'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CONSTELLATION HUNTER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "✨ Constellation Hunter"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showConst", !d.showConst); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showConst ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showConst ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Click constellations to see their stars + connecting lines. Each star has its own color + true name."),
+                d.showConst && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var picked = d.constPicked || 'orion';
+                                      var CONSTS = {
+                                        orion: { name: 'Orion', stars: [
+                                          { id: 'betelgeuse', x: 280, y: 60, r: 5, color: '#dc2626', name: 'Betelgeuse' },
+                                          { id: 'rigel', x: 150, y: 180, r: 5, color: '#7dd3fc', name: 'Rigel' },
+                                          { id: 'bellatrix', x: 210, y: 90, r: 4, color: '#bfdbfe', name: 'Bellatrix' },
+                                          { id: 'saiph', x: 180, y: 200, r: 4, color: '#7dd3fc', name: 'Saiph' },
+                                          { id: 'alnitak', x: 220, y: 140, r: 3, color: '#fff', name: 'Alnitak' },
+                                          { id: 'alnilam', x: 200, y: 135, r: 3, color: '#fff', name: 'Alnilam' },
+                                          { id: 'mintaka', x: 180, y: 130, r: 3, color: '#fff', name: 'Mintaka' }
+                                        ], connections: [['betelgeuse','bellatrix'],['bellatrix','mintaka'],['mintaka','alnilam'],['alnilam','alnitak'],['alnitak','betelgeuse'],['mintaka','rigel'],['alnitak','saiph'],['rigel','saiph']] },
+                                        ursa: { name: 'Ursa Major (Big Dipper)', stars: [
+                                          { id: 'dubhe', x: 100, y: 80, r: 4, color: '#fff', name: 'Dubhe' },
+                                          { id: 'merak', x: 100, y: 130, r: 4, color: '#fff', name: 'Merak' },
+                                          { id: 'phecda', x: 160, y: 145, r: 4, color: '#fff', name: 'Phecda' },
+                                          { id: 'megrez', x: 200, y: 110, r: 3, color: '#fff', name: 'Megrez' },
+                                          { id: 'alioth', x: 250, y: 120, r: 4, color: '#fff', name: 'Alioth' },
+                                          { id: 'mizar', x: 300, y: 130, r: 4, color: '#fff', name: 'Mizar' },
+                                          { id: 'alkaid', x: 350, y: 100, r: 4, color: '#fff', name: 'Alkaid' }
+                                        ], connections: [['dubhe','merak'],['merak','phecda'],['phecda','megrez'],['megrez','dubhe'],['megrez','alioth'],['alioth','mizar'],['mizar','alkaid']] },
+                                        cassiopeia: { name: 'Cassiopeia', stars: [
+                                          { id: 'caph', x: 100, y: 100, r: 4, color: '#fff', name: 'Caph' },
+                                          { id: 'schedar', x: 160, y: 150, r: 4, color: '#fff', name: 'Schedar' },
+                                          { id: 'gamma', x: 220, y: 100, r: 4, color: '#fff', name: 'Gamma Cas' },
+                                          { id: 'ruchbah', x: 280, y: 150, r: 4, color: '#fff', name: 'Ruchbah' },
+                                          { id: 'segin', x: 340, y: 100, r: 4, color: '#fff', name: 'Segin' }
+                                        ], connections: [['caph','schedar'],['schedar','gamma'],['gamma','ruchbah'],['ruchbah','segin']] }
+                                      };
+                                      var con = CONSTS[picked];
+                                      var sMap = {};
+                                      con.stars.forEach(function(s) { sMap[s.id] = s; });
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(CONSTS).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('constPicked', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (picked === k ? 'bg-indigo-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, CONSTS[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
+                                            new Array(60).fill(0).map(function(_, i) {
+                                              var sx = (i * 67) % 400;
+                                              var sy = (i * 41) % 260;
+                                              return React.createElement('circle', { key: 'bgst' + i, cx: sx, cy: sy, r: 0.7, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            con.connections.map(function(c, ci) {
+                                              var s1 = sMap[c[0]], s2 = sMap[c[1]];
+                                              if (!s1 || !s2) return null;
+                                              return React.createElement('line', { key: 'cn' + ci, x1: s1.x, y1: s1.y, x2: s2.x, y2: s2.y, stroke: '#6366f1', strokeWidth: 1.5, opacity: 0.7 });
+                                            }),
+                                            con.stars.map(function(s) {
+                                              return React.createElement('g', { key: s.id },
+                                                React.createElement('circle', { cx: s.x, cy: s.y, r: s.r * 2.5, fill: s.color, opacity: 0.2 }),
+                                                React.createElement('circle', { cx: s.x, cy: s.y, r: s.r, fill: s.color }),
+                                                React.createElement('text', { x: s.x + 8, y: s.y + 3, fill: s.color, fontSize: 8 }, s.name)
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, con.name)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Constellations are patterns of stars that cultures recognized over millennia. The IAU codified 88 official constellations in 1922. The stars within a constellation usually aren\'t physically near each other — they just appear close from Earth.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: TRAJECTORY DESIGNER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🛰 Trajectory Designer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTraj", !d.showTraj); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTraj ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
+                  }, d.showTraj ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "How much delta-v + travel time to reach different destinations? Hohmann transfer orbits visualized."),
+                d.showTraj && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var dest = d.trajDest || 'mars';
+                                      var DESTS = {
+                                        moon: { name: 'Moon', dv: 4, time: '3 days', color: '#cbd5e1', x: 320 },
+                                        mars: { name: 'Mars', dv: 12.5, time: '7-9 months', color: '#dc2626', x: 360 },
+                                        jupiter: { name: 'Jupiter', dv: 25, time: '5-7 years', color: '#f97316', x: 400 },
+                                        pluto: { name: 'Pluto', dv: 35, time: '9-10 years', color: '#a78bfa', x: 440 },
+                                        voyager: { name: 'Voyager (interstellar)', dv: 50, time: 'No return', color: '#7dd3fc', x: 480 }
+                                      };
+                                      var d2 = DESTS[dest];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(DESTS).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('trajDest', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (dest === k ? 'bg-orange-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, DESTS[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 53) % 500;
+                                              var sy = (i * 31) % 200;
+                                              return React.createElement('circle', { key: 'trajst' + i, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('circle', { cx: 60, cy: 100, r: 12, fill: '#3b82f6' }),
+                                            React.createElement('text', { x: 60, y: 125, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, 'Earth'),
+                                            React.createElement('circle', { cx: d2.x, cy: 100, r: 10, fill: d2.color }),
+                                            React.createElement('text', { x: d2.x, y: 125, textAnchor: 'middle', fill: d2.color, fontSize: 10 }, d2.name),
+                                            React.createElement('path', { d: 'M 60 100 Q ' + ((60 + d2.x) / 2) + ' 40 ' + d2.x + ' 100', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '5,4' }),
+                                            React.createElement('text', { x: (60 + d2.x) / 2, y: 50, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Hohmann transfer'),
+                                            React.createElement('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Δv: ' + d2.dv + ' km/s • Travel: ' + d2.time)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[10px]' },
+                                          [
+                                            { l: 'Delta-v', v: d2.dv + ' km/s', c: 'blue' },
+                                            { l: 'Travel time', v: d2.time, c: 'amber' },
+                                            { l: 'Window', v: dest === 'mars' ? 'Every 26 months' : dest === 'jupiter' ? 'Every 13 months' : 'Frequent', c: 'emerald' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                              React.createElement('div', { className: 'font-bold text-[9px]' }, s.l),
+                                              React.createElement('div', { className: 'text-[10px]' }, s.v)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A Hohmann transfer is the most fuel-efficient way to move between two circular orbits. It uses two burns: one to enter the transfer ellipse, one to circularize at the destination. Δv is the total change in velocity required.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MARS ROVER PATHFINDER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🚗 Mars Rover Pathfinder"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showRover", !d.showRover); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showRover ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showRover ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Pilot a rover from start to goal. Plan around rocks and mountains; watch your fuel!"),
+                d.showRover && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var path = d.roverPath || [{ x: 0, y: 5 }];
+                                      var pos = path[path.length - 1];
+                                      var goal = { x: 9, y: 5 };
+                                      var fuel = d.roverFuel != null ? d.roverFuel : 30;
+                                      var terrain = d.roverTerrain || [
+                                        [0,0,0,1,0,0,2,0,0,3], [0,0,1,1,0,2,0,0,0,0], [0,1,0,0,2,0,0,0,1,0],
+                                        [0,0,0,1,0,0,3,0,1,0], [1,0,0,0,2,0,0,2,0,0], [0,0,0,2,0,0,0,0,0,0],
+                                        [0,2,0,0,1,0,3,0,1,0], [0,0,0,0,0,1,0,0,0,2], [0,0,1,0,0,0,0,2,0,0],
+                                        [3,0,0,0,2,0,1,0,0,0]
+                                      ];
+                                      var COSTS = { 0: 1, 1: 2, 2: 3, 3: 5 };
+                                      var COLORS = { 0: '#7c2d12', 1: '#9a3412', 2: '#a16207', 3: '#451a03' };
+                                      var SYMBOLS = { 0: '', 1: '·', 2: '◇', 3: '▲' };
+                                      var reached = pos.x === goal.x && pos.y === goal.y;
+                                      function move(dx, dy) {
+                                        var nx = pos.x + dx, ny = pos.y + dy;
+                                        if (nx < 0 || nx > 9 || ny < 0 || ny > 9) return;
+                                        var cost = COSTS[terrain[ny][nx]];
+                                        if (fuel < cost) return;
+                                        upd('roverPath', path.concat([{ x: nx, y: ny }]));
+                                        upd('roverFuel', fuel - cost);
+                                      }
+                                      function reset() { upd('roverPath', [{ x: 0, y: 5 }]); upd('roverFuel', 30); }
+                                      var cs = 30, ox = 50, oy = 10;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 350', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1a0f0a 0%, #2a1810 100%)' } },
+                                            new Array(10).fill(0).map(function(_, y) {
+                                              return new Array(10).fill(0).map(function(_, x) {
+                                                var t = terrain[y][x];
+                                                return React.createElement('g', { key: x + '-' + y },
+                                                  React.createElement('rect', { x: ox + x * cs, y: oy + y * cs, width: cs - 1, height: cs - 1, fill: COLORS[t], opacity: 0.85 }),
+                                                  t > 0 && React.createElement('text', { x: ox + x * cs + cs/2, y: oy + y * cs + cs/2 + 3, textAnchor: 'middle', fill: '#fcd34d', fontSize: 10 }, SYMBOLS[t])
+                                                );
+                                              });
+                                            }),
+                                            path.slice(1).map(function(p, pi) {
+                                              var prev = path[pi];
+                                              return React.createElement('line', { key: 'pp' + pi, x1: ox + prev.x * cs + cs/2, y1: oy + prev.y * cs + cs/2, x2: ox + p.x * cs + cs/2, y2: oy + p.y * cs + cs/2, stroke: '#fde047', strokeWidth: 2, opacity: 0.8 });
+                                            }),
+                                            React.createElement('circle', { cx: ox + goal.x * cs + cs/2, cy: oy + goal.y * cs + cs/2, r: 10, fill: 'none', stroke: '#22c55e', strokeWidth: 3 }),
+                                            React.createElement('text', { x: ox + goal.x * cs + cs/2, y: oy + goal.y * cs + cs/2 + 3, textAnchor: 'middle', fill: '#22c55e', fontSize: 12 }, '⛳'),
+                                            React.createElement('rect', { x: ox + pos.x * cs + 6, y: oy + pos.y * cs + 6, width: cs - 13, height: cs - 13, fill: '#dc2626', rx: 3 }),
+                                            React.createElement('circle', { cx: ox + pos.x * cs + cs/2, cy: oy + pos.y * cs + cs/2, r: 4, fill: '#fff' }),
+                                            React.createElement('text', { x: 200, y: 335, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, reached ? '🎉 GOAL REACHED in ' + (path.length - 1) + ' moves, ' + (30 - fuel) + ' fuel used' : 'Fuel: ' + fuel + ' • Moves: ' + (path.length - 1))
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 flex justify-center gap-1' },
+                                          React.createElement('button', { onClick: function() { move(0, -1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '↑')
+                                        ),
+                                        React.createElement('div', { className: 'flex justify-center gap-1' },
+                                          React.createElement('button', { onClick: function() { move(-1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '←'),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'px-3 py-2 rounded font-bold text-xs bg-orange-500 text-white hover:bg-orange-600' }, 'Reset'),
+                                          React.createElement('button', { onClick: function() { move(1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '→')
+                                        ),
+                                        React.createElement('div', { className: 'flex justify-center gap-1' },
+                                          React.createElement('button', { onClick: function() { move(0, 1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300') }, '↓')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          React.createElement('div', null, 'Drive the rover from start to goal. Costs: flat ground 1, ', React.createElement('span', { style: { color: '#fcd34d' } }, '·'), ' rocks 2, ', React.createElement('span', { style: { color: '#fcd34d' } }, '◇'), ' boulders 3, ', React.createElement('span', { style: { color: '#fcd34d' } }, '▲'), ' mountains 5'),
+                                          React.createElement('div', null, 'Plan the path to conserve fuel. Like real Mars rovers, every meter requires fuel budgeting.')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COSMIC DISTANCE LADDER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📏 Cosmic Distance Ladder"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDistLadder", !d.showDistLadder); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDistLadder ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showDistLadder ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "How astronomers measure distance: each method bootstraps the next. Climb from Earth size to the observable universe."),
+                d.showDistLadder && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var step = d.distStep || 0;
+                                      var STEPS = [
+                                        { name: 'Earth diameter', dist: 12742, unit: 'km', via: 'Eratosthenes (240 BCE)', desc: 'Compared sun angle in two cities. First measure of Earth.' },
+                                        { name: 'Earth-Moon', dist: 384000, unit: 'km', via: 'Lunar eclipse geometry', desc: 'Hipparchus (~150 BCE) used Earth\'s shadow on Moon during eclipse to estimate distance.' },
+                                        { name: '1 AU (Earth-Sun)', dist: 149597871, unit: 'km', via: 'Radar to Venus 1961', desc: 'Defines the astronomical unit. Modern radar bounces are precise to meters.' },
+                                        { name: 'Outer planets', dist: 4.5e9, unit: 'km (Neptune)', via: 'Newton\'s laws + radar', desc: 'Kepler\'s third law: distance from orbital period. Now confirmed by spacecraft.' },
+                                        { name: 'Nearby stars', dist: 4.2, unit: 'ly (Proxima)', via: 'Parallax (Bessel 1838)', desc: 'Earth\'s orbit gives 2 AU baseline. Star appears to shift seasonally.' },
+                                        { name: 'Within Milky Way', dist: 100000, unit: 'ly (galaxy diameter)', via: 'Cepheid variable stars (Leavitt 1908)', desc: 'Pulsation period reveals true brightness. Compare with apparent brightness for distance.' },
+                                        { name: 'Nearby galaxies', dist: 2.5e6, unit: 'ly (Andromeda)', via: 'Cepheid + Type Ia supernovae', desc: 'Same Cepheid method extended to other galaxies. Hubble showed Andromeda was extragalactic in 1923.' },
+                                        { name: 'Distant galaxies', dist: 1e10, unit: 'ly (most distant)', via: 'Hubble redshift law', desc: 'More distant galaxies are receding faster. v = H × d gives distance.' },
+                                        { name: 'Edge of observable universe', dist: 4.6e10, unit: 'ly (radius)', via: 'CMB + ΛCDM cosmology', desc: 'Cosmic Microwave Background is light from 13.8 billion years ago, stretched by expansion.' }
+                                      ];
+                                      var cur = STEPS[step];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000000 0%, #0a0a18 100%)' } },
+                                            new Array(60).fill(0).map(function(_, i) {
+                                              var sx = (i * 41 + step * 7) % 400;
+                                              var sy = (i * 31) % 280;
+                                              return React.createElement('circle', { key: 'dlst' + i, cx: sx, cy: sy, r: 0.5 + (i % 3) * 0.3, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            STEPS.map(function(s, si) {
+                                              var y = 250 - (si / STEPS.length) * 220;
+                                              var active = si === step;
+                                              return React.createElement('g', { key: si },
+                                                React.createElement('line', { x1: 100, y1: y, x2: 300, y2: y, stroke: active ? '#22c55e' : '#475569', strokeWidth: active ? 2 : 1 }),
+                                                React.createElement('circle', { cx: 200, cy: y, r: active ? 6 : 3, fill: active ? '#22c55e' : '#94a3b8' }),
+                                                React.createElement('text', { x: 95, y: y + 3, textAnchor: 'end', fill: active ? '#86efac' : '#cbd5e1', fontSize: 9, fontWeight: active ? 'bold' : 'normal' }, s.name)
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Cosmic Distance Ladder')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 flex gap-1' },
+                                          React.createElement('button', { onClick: function() { upd('distStep', Math.max(0, step - 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Closer'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Step ' + (step + 1) + ' / ' + STEPS.length),
+                                          React.createElement('button', { onClick: function() { upd('distStep', Math.min(STEPS.length - 1, step + 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Farther →')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                          React.createElement('div', { className: 'flex justify-between mb-1' },
+                                            React.createElement('span', { className: 'font-bold text-xs ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') }, cur.name),
+                                            React.createElement('span', { className: 'text-[10px] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.dist.toExponential(2) + ' ' + cur.unit)
+                                          ),
+                                          React.createElement('div', { className: 'text-[10px] mb-1 italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Method: ' + cur.via),
+                                          React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.desc)
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: DOPPLER SHIFT DEMO ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🚦 Doppler Shift Demo"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDoppler", !d.showDoppler); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDoppler ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showDoppler ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Light from receding objects redshifts; from approaching, blueshifts. This is how we measure cosmic distances + know universe is expanding."),
+                d.showDoppler && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var vel = d.dopplerVel != null ? d.dopplerVel : 0;
+                                      var lambdaRest = 656;
+                                      var c = 300000;
+                                      var lambdaObs = lambdaRest * Math.sqrt((1 + vel / c) / (1 - vel / c));
+                                      function wColor(w) {
+                                        if (w < 440) return '#7e22ce';
+                                        if (w < 490) return '#2563eb';
+                                        if (w < 580) return '#22c55e';
+                                        if (w < 645) return '#facc15';
+                                        if (w < 700) return '#f97316';
+                                        return '#dc2626';
+                                      }
+                                      var fracOff = (lambdaObs - lambdaRest) / lambdaRest;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 230', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 43) % 400;
+                                              var sy = (i * 29) % 220;
+                                              return React.createElement('circle', { key: 'dpst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('rect', { x: 20, y: 40, width: 360, height: 30, fill: '#000' }),
+                                            new Array(80).fill(0).map(function(_, i) {
+                                              var w = 380 + i * 5;
+                                              return React.createElement('rect', { key: 'sp' + i, x: 20 + i * 4.5, y: 40, width: 5, height: 30, fill: wColor(w), opacity: 0.3 });
+                                            }),
+                                            React.createElement('rect', { x: 20 + ((lambdaRest - 380) / 400) * 360 - 1, y: 35, width: 2, height: 40, fill: '#fff', stroke: '#fff' }),
+                                            React.createElement('text', { x: 20 + ((lambdaRest - 380) / 400) * 360, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, 'rest 656nm'),
+                                            React.createElement('rect', { x: 20 + ((lambdaObs - 380) / 400) * 360 - 1, y: 80, width: 2, height: 40, fill: wColor(lambdaObs), stroke: '#fff' }),
+                                            React.createElement('text', { x: 20 + ((lambdaObs - 380) / 400) * 360, y: 95, textAnchor: 'middle', fill: wColor(lambdaObs), fontSize: 9 }, 'observed ' + lambdaObs.toFixed(0) + 'nm'),
+                                            React.createElement('circle', { cx: 70, cy: 175, r: 12, fill: '#94a3b8' }),
+                                            React.createElement('text', { x: 70, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Observer'),
+                                            React.createElement('circle', { cx: 330 - Math.min(Math.abs(vel) / 5, 100), cy: 175, r: 10, fill: vel > 0 ? '#dc2626' : vel < 0 ? '#2563eb' : '#facc15' }),
+                                            React.createElement('text', { x: 330 - Math.min(Math.abs(vel) / 5, 100), y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Galaxy'),
+                                            vel !== 0 && React.createElement('line', { x1: 290, y1: 175, x2: 290 + Math.max(-80, Math.min(80, -vel / 1000)), y2: 175, stroke: vel > 0 ? '#dc2626' : '#2563eb', strokeWidth: 2, markerEnd: '' }),
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, vel > 1000 ? 'REDSHIFT (receding)' : vel < -1000 ? 'BLUESHIFT (approaching)' : 'At rest'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Hydrogen-alpha line (656nm)')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Velocity (km/s)'),
+                                          React.createElement('input', { type: 'range', min: -50000, max: 50000, step: 100, value: vel, onChange: function(e) { upd('dopplerVel', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, vel.toLocaleString())
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
+                                          [['Approaching', -30000], ['At rest', 0], ['Receding', 30000]].map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('dopplerVel', p[1]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A moving source shifts the wavelength of its light. Toward observer: blue-shifted (shorter wavelength). Away from observer: red-shifted (longer wavelength). z = ' + fracOff.toFixed(4) + '. Distant galaxies are nearly all redshifted (universe is expanding).'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: PLANETARY ALBEDO LAB ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "❄ Planetary Albedo Lab"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAlbedo", !d.showAlbedo); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAlbedo ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
+                  }, d.showAlbedo ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "How much of a planet's incoming sunlight is reflected vs absorbed? This drives global temperature."),
+                d.showAlbedo && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var iceCover = d.albIce != null ? d.albIce : 30;
+                                      var cloudCover = d.albCloud != null ? d.albCloud : 60;
+                                      var albedo = 0.03 + (iceCover / 100) * 0.7 + (cloudCover / 100) * 0.35;
+                                      albedo = Math.min(0.95, albedo);
+                                      var Tsun = 5778;
+                                      var Tplanet = Tsun * Math.pow((1 - albedo) / 4, 0.25) * Math.sqrt(696000 / 149597871) * 2;
+                                      var Tc = Tplanet - 273;
+                                      var stateLabel = Tc < -50 ? '❄ Snowball — runaway freeze' : Tc < 0 ? '🧊 Frozen world' : Tc < 30 ? '🌍 Habitable range' : Tc < 80 ? '🔥 Hot — water near boiling' : '☄ Inferno';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 67) % 400;
+                                              var sy = (i * 29) % 220;
+                                              return React.createElement('circle', { key: 'alst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('circle', { cx: 50, cy: 120, r: 14, fill: '#fde047' }),
+                                            React.createElement('circle', { cx: 50, cy: 120, r: 20, fill: '#fbbf24', opacity: 0.3 }),
+                                            new Array(6).fill(0).map(function(_, i) {
+                                              var ry = 60 + i * 20;
+                                              return React.createElement('line', { key: 'ray' + i, x1: 80, y1: ry, x2: 180, y2: ry + (i - 2.5) * 5, stroke: '#fde047', strokeWidth: 1.5, opacity: 0.5, strokeDasharray: '3,2' });
+                                            }),
+                                            React.createElement('circle', { cx: 250, cy: 120, r: 60, fill: '#1e40af' }),
+                                            iceCover > 0 && React.createElement('path', { d: 'M 210 100 Q 250 80 290 100 L 290 130 Q 250 110 210 130 Z', fill: '#f0f9ff', opacity: iceCover / 100 }),
+                                            iceCover > 0 && React.createElement('path', { d: 'M 215 145 Q 250 165 285 145 L 285 175 Q 250 165 215 175 Z', fill: '#f0f9ff', opacity: iceCover / 100 }),
+                                            cloudCover > 0 && React.createElement('ellipse', { cx: 240, cy: 95, rx: 30, ry: 8, fill: '#fff', opacity: cloudCover / 100 * 0.7 }),
+                                            cloudCover > 0 && React.createElement('ellipse', { cx: 270, cy: 130, rx: 25, ry: 7, fill: '#fff', opacity: cloudCover / 100 * 0.7 }),
+                                            cloudCover > 0 && React.createElement('ellipse', { cx: 230, cy: 160, rx: 35, ry: 9, fill: '#fff', opacity: cloudCover / 100 * 0.7 }),
+                                            new Array(Math.round(albedo * 8)).fill(0).map(function(_, i) {
+                                              var ry = 60 + i * 20;
+                                              return React.createElement('line', { key: 'rfl' + i, x1: 200, y1: ry + (i - 2.5) * 5, x2: 130, y2: ry + (i - 2.5) * 5 + 20, stroke: '#fde047', strokeWidth: 1.5, opacity: 0.4, strokeDasharray: '4,2' });
+                                            }),
+                                            React.createElement('text', { x: 320, y: 80, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Albedo: ' + albedo.toFixed(2)),
+                                            React.createElement('text', { x: 320, y: 100, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Temp: ' + Tc.toFixed(0) + '°C'),
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, stateLabel)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Ice cover (%)', val: iceCover, key: 'albIce' },
+                                            { label: 'Cloud cover (%)', val: cloudCover, key: 'albCloud' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Albedo = fraction of light reflected. Ice + clouds are highly reflective (high albedo); dark soil + water absorb (low albedo). More reflection = cooler planet. This is the ice-albedo feedback that drives ice ages.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: BIG BANG STRETCH ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "💥 Big Bang Stretch"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showBigBang", !d.showBigBang); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showBigBang ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showBigBang ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "13.8 billion years compressed into a slider. Scrub from singularity to today."),
+                d.showBigBang && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var time = d.bbTime != null ? d.bbTime : 5;
+                                      var stages = [
+                                        { t: 0, label: 'Big Bang singularity', desc: 'Spacetime + matter compressed to a point' },
+                                        { t: 1, label: 'Inflation epoch (10⁻³⁶ s)', desc: 'Universe expands by 10²⁶ in a fraction of a second' },
+                                        { t: 2, label: 'Quark soup (10⁻⁶ s)', desc: 'Quarks bind into protons and neutrons' },
+                                        { t: 3, label: 'Nucleosynthesis (3 min)', desc: 'First atomic nuclei: hydrogen, helium, lithium' },
+                                        { t: 4, label: 'Recombination (380,000 yr)', desc: 'First atoms; CMB photons released' },
+                                        { t: 5, label: 'Cosmic Dark Ages', desc: 'No stars; mostly neutral hydrogen + dark matter' },
+                                        { t: 6, label: 'First stars (200 My)', desc: 'Population III stars: massive, short-lived' },
+                                        { t: 7, label: 'First galaxies (500 My)', desc: 'Mergers create the first galaxy seeds' },
+                                        { t: 8, label: 'Galaxy maturation (1-9 Gy)', desc: 'Most galaxies assembled; star formation peaks' },
+                                        { t: 9, label: 'Solar System forms (9 Gy)', desc: 'Our Sun and planets accrete' },
+                                        { t: 10, label: 'Present day (13.8 Gy)', desc: 'Expansion accelerating due to dark energy' }
+                                      ];
+                                      var stage = stages[Math.round(time)];
+                                      var size = Math.pow(2, time);
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #1a0a18 0%, #000000 100%)' } },
+                                            new Array(50).fill(0).map(function(_, i) {
+                                              var sx = ((i * 67 + time * 8) % 400);
+                                              var sy = (i * 31) % 240 + 5;
+                                              return React.createElement('circle', { key: 'bbst' + i, cx: sx, cy: sy, r: 0.4 + (i % 3) * 0.3, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'bb' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.95 }),
+                                                React.createElement('stop', { offset: '30%', stopColor: time < 4 ? '#fde047' : time < 7 ? '#f97316' : '#a78bfa', stopOpacity: 0.85 }),
+                                                React.createElement('stop', { offset: '70%', stopColor: time < 4 ? '#f97316' : time < 7 ? '#dc2626' : '#1e40af', stopOpacity: 0.4 }),
+                                                React.createElement('stop', { offset: '100%', stopColor: time < 4 ? '#dc2626' : '#0a0a18', stopOpacity: 0 })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: Math.min(170, size * 4), fill: 'url(#bb)' }),
+                                            time >= 6 && new Array(Math.floor((time - 6) * 5)).fill(0).map(function(_, i) {
+                                              var ang = (i * 137) % 360 * Math.PI / 180;
+                                              var r = (i * 11) % 90 + 30;
+                                              return React.createElement('circle', { key: 'gx' + i, cx: 200 + Math.cos(ang) * r, cy: 130 + Math.sin(ang) * r, r: 1 + (i % 3) * 0.5, fill: i % 4 === 0 ? '#fde047' : i % 4 === 1 ? '#7dd3fc' : i % 4 === 2 ? '#fca5a5' : '#a78bfa' });
+                                            }),
+                                            time >= 9 && React.createElement('circle', { cx: 200, cy: 130, r: 3, fill: '#facc15' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 'bold' }, stage.label),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, stage.desc)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Time'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 10, step: 0.05, value: time, onChange: function(e) { upd('bbTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, time.toFixed(1))
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'The universe is 13.8 billion years old. It began infinitely dense + hot, then expanded + cooled. Galaxies formed by 1 billion years, our Sun by 9 billion years, and we are here at 13.8 billion years.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ASTEROID DEFENDER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🎯 Asteroid Defender"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDefender", !d.showDefender); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDefender ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showDefender ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Click incoming asteroids before they reach Earth. Like NASA's DART mission planetary defense."),
+                d.showDefender && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var asteroids = d.defAsteroids || [
+                                        { id: 1, x: 320, y: 50, vx: -0.6, vy: 0.3, r: 6, alive: true },
+                                        { id: 2, x: 380, y: 130, vx: -0.8, vy: 0, r: 8, alive: true },
+                                        { id: 3, x: 350, y: 200, vx: -0.5, vy: -0.2, r: 5, alive: true }
+                                      ];
+                                      var score = d.defScore || 0;
+                                      var earthHits = d.defHits || 0;
+                                      function blast(id) {
+                                        var nA = asteroids.map(function(a) { return a.id === id ? Object.assign({}, a, { alive: false }) : a; });
+                                        upd('defAsteroids', nA);
+                                        upd('defScore', score + 10);
+                                      }
+                                      function reset() {
+                                        var nA = [];
+                                        for (var i = 0; i < 6; i++) {
+                                          nA.push({ id: Date.now() + i, x: 300 + Math.random() * 100, y: 30 + Math.random() * 200, vx: -0.4 - Math.random() * 0.6, vy: (Math.random() - 0.5) * 0.5, r: 4 + Math.random() * 6, alive: true });
+                                        }
+                                        upd('defAsteroids', nA);
+                                        upd('defScore', 0);
+                                        upd('defHits', 0);
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 23) % 260;
+                                              return React.createElement('circle', { key: 'dest' + i, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'earth2' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#3b82f6' }),
+                                                React.createElement('stop', { offset: '70%', stopColor: '#1e40af' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#0a0a18' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 50, cy: 130, r: 28, fill: '#22c55e', opacity: 0.5 }),
+                                            React.createElement('circle', { cx: 50, cy: 130, r: 24, fill: 'url(#earth2)' }),
+                                            React.createElement('ellipse', { cx: 47, cy: 125, rx: 8, ry: 5, fill: '#22c55e' }),
+                                            React.createElement('text', { x: 50, y: 170, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            asteroids.filter(function(a) { return a.alive; }).map(function(a) {
+                                              return React.createElement('g', { key: a.id, onClick: function() { blast(a.id); }, style: { cursor: 'crosshair' } },
+                                                React.createElement('circle', { cx: a.x, cy: a.y, r: a.r * 2, fill: '#fbbf24', opacity: 0.2 }),
+                                                React.createElement('circle', { cx: a.x, cy: a.y, r: a.r, fill: '#92400e', stroke: '#fbbf24', strokeWidth: 1 }),
+                                                React.createElement('circle', { cx: a.x - a.r/3, cy: a.y - a.r/3, r: a.r/3, fill: '#451a03' }),
+                                                React.createElement('line', { x1: a.x, y1: a.y, x2: a.x + a.r * 3, y2: a.y - a.vy * 30, stroke: '#fbbf24', strokeWidth: 1, opacity: 0.3, strokeDasharray: '2,2' })
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, '🎯 Click asteroids to destroy! Score: ' + score),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, asteroids.filter(function(a) { return a.alive; }).length === 0 ? '🎉 All asteroids destroyed!' : 'Earth is at risk — neutralize threats!')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 flex gap-1' },
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-500 text-white hover:bg-red-600' }, '🚀 New Wave'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Hits: ' + earthHits + ' • Asteroids left: ' + asteroids.filter(function(a) { return a.alive; }).length)
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Real NASA program: DART (Double Asteroid Redirection Test) successfully changed Dimorphos\'s orbit in 2022. The Planetary Defense Coordination Office tracks +30,000 near-Earth objects.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: GALAXY SPIRAL MAP ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌌 Galaxy Spiral Map"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showGalaxy", !d.showGalaxy); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showGalaxy ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showGalaxy ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Four galaxy morphologies. Spirals like ours show arms tracing star formation. Ellipticals are old, irregulars are chaotic."),
+                d.showGalaxy && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var type = d.galType || 'spiral';
+                                      var rotation = d.galRot != null ? d.galRot : 0;
+                                      var TYPES = {
+                                        spiral: { name: 'Spiral (like Milky Way)', arms: 4, colors: ['#fde047','#fca5a5','#7dd3fc','#a78bfa'] },
+                                        barred: { name: 'Barred Spiral', arms: 2, colors: ['#fde047','#7dd3fc'] },
+                                        elliptical: { name: 'Elliptical', arms: 0, colors: ['#fde047'] },
+                                        irregular: { name: 'Irregular (LMC-like)', arms: 0, colors: ['#fde047','#7dd3fc','#fca5a5'] }
+                                      };
+                                      var conf = TYPES[type];
+                                      var cx = 200, cy = 150;
+                                      var arms = [];
+                                      if (type === 'spiral' || type === 'barred') {
+                                        for (var ai = 0; ai < conf.arms; ai++) {
+                                          var armOff = (ai / conf.arms) * 2 * Math.PI;
+                                          for (var t = 0; t < 6; t += 0.05) {
+                                            var r = (type === 'barred' && t < 1) ? t * 90 : (t * 22);
+                                            var theta = armOff + t * 0.9 + rotation * Math.PI / 180;
+                                            var spread = (Math.random() - 0.5) * (15 - t);
+                                            arms.push({ x: cx + Math.cos(theta) * r + spread, y: cy + Math.sin(theta) * r * 0.6 + spread * 0.6, color: conf.colors[ai % conf.colors.length], size: 0.5 + (t < 1.5 ? 1 : 0) });
+                                          }
+                                        }
+                                      } else if (type === 'elliptical') {
+                                        for (var ei = 0; ei < 300; ei++) {
+                                          var ang = (ei * 137) % 360 * Math.PI / 180;
+                                          var er = Math.pow(Math.random(), 2) * 110;
+                                          arms.push({ x: cx + Math.cos(ang) * er, y: cy + Math.sin(ang) * er * 0.6, color: '#fde047', size: 0.6 });
+                                        }
+                                      } else {
+                                        for (var ii = 0; ii < 200; ii++) {
+                                          var ax = cx + (Math.random() - 0.5) * 240;
+                                          var ay = cy + (Math.random() - 0.5) * 140;
+                                          arms.push({ x: ax, y: ay, color: conf.colors[ii % conf.colors.length], size: 0.5 + Math.random() });
+                                        }
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(TYPES).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('galType', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (type === k ? 'bg-fuchsia-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, TYPES[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: '#000' } },
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'galCore' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fff' }),
+                                                React.createElement('stop', { offset: '30%', stopColor: '#fde047' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+                                              )
+                                            ),
+                                            new Array(80).fill(0).map(function(_, i) {
+                                              var sx = (i * 43) % 400;
+                                              var sy = (i * 29) % 300;
+                                              return React.createElement('circle', { key: 'gst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('ellipse', { cx: cx, cy: cy, rx: type === 'elliptical' ? 110 : 30, ry: type === 'elliptical' ? 65 : 18, fill: 'url(#galCore)', opacity: 0.8, transform: 'rotate(' + (type === 'barred' ? 30 : 0) + ' ' + cx + ' ' + cy + ')' }),
+                                            arms.map(function(s, si) {
+                                              return React.createElement('circle', { key: 'ga' + si, cx: s.x, cy: s.y, r: s.size, fill: s.color, opacity: 0.7 });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, conf.name),
+                                            React.createElement('text', { x: 200, y: 285, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, '~100 billion stars typical')
+                                          )
+                                        ),
+                                        (type === 'spiral' || type === 'barred') && React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Rotate'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: rotation, onChange: function(e) { upd('galRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rotation + '°')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          type === 'spiral' ? 'Spiral galaxies like the Milky Way have a central bulge + thin disk with arms tracing star-formation regions. Sun orbits the galactic center in ~225 million years.' : type === 'barred' ? 'Barred spirals have a central bar of stars. ~70% of nearby spirals are barred — including our Milky Way.' : type === 'elliptical' ? 'Old, mostly red stars; little gas + dust; most found in galaxy clusters. Largest galaxies in the universe.' : 'No defined shape; often dwarf galaxies. Large + Small Magellanic Clouds are LMC + SMC irregular dwarfs near the Milky Way.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: TELESCOPE APERTURE LAB ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔭 Telescope Aperture Lab"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showScope", !d.showScope); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showScope ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showScope ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Bigger aperture gathers more light + resolves finer detail. Magnification matters less than you think."),
+                d.showScope && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var aperture = d.scopeAp != null ? d.scopeAp : 10;
+                                      var magnif = d.scopeMag != null ? d.scopeMag : 50;
+                                      var maxMag = aperture * 5;
+                                      if (magnif > maxMag) magnif = maxMag;
+                                      var resolveArcsec = 116 / aperture;
+                                      var limitMag = 7.5 + 5 * Math.log10(aperture);
+                                      var apXp = 20 + aperture * 1.5;
+                                      var detail = aperture < 5 ? 'fuzzy blob' : aperture < 12 ? 'cloud bands visible' : aperture < 30 ? 'storm details + moons' : 'fine cloud detail';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 29) % 260;
+                                              return React.createElement('circle', { key: 'tst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            React.createElement('rect', { x: 30, y: 90, width: apXp, height: 80, fill: '#475569', rx: 6 }),
+                                            React.createElement('rect', { x: 30, y: 90, width: 6, height: 80, fill: '#1e293b' }),
+                                            React.createElement('rect', { x: 30 + apXp - 6, y: 90, width: 6, height: 80, fill: '#1e293b' }),
+                                            React.createElement('ellipse', { cx: 30 + apXp/2, cy: 90, rx: apXp/2 - 5, ry: 4, fill: '#0a0a18' }),
+                                            React.createElement('text', { x: 30 + apXp/2, y: 75, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, aperture + ' cm aperture'),
+                                            React.createElement('text', { x: 30 + apXp/2, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, magnif + '× magnification'),
+                                            React.createElement('circle', { cx: 300, cy: 130, r: 60, fill: '#fde047', opacity: 0.05 }),
+                                            React.createElement('circle', { cx: 300, cy: 130, r: 50, fill: '#000' }),
+                                            React.createElement('circle', { cx: 300, cy: 130, r: 4 + aperture * 0.4, fill: '#f97316' }),
+                                            aperture > 5 && React.createElement('line', { x1: 300 - (4 + aperture * 0.4), y1: 130, x2: 300 + (4 + aperture * 0.4), y2: 130, stroke: '#7c2d12', strokeWidth: 1 }),
+                                            aperture > 12 && React.createElement('circle', { cx: 305, cy: 128, r: 1.5, fill: '#dc2626' }),
+                                            aperture > 18 && [285, 290, 295, 312, 318].map(function(mx, i) {
+                                              return React.createElement('circle', { key: 'mn' + i, cx: mx, cy: 130 + (i - 2) * 2, r: 0.6, fill: '#fff' });
+                                            }),
+                                            React.createElement('text', { x: 300, y: 200, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, 'Jupiter: ' + detail),
+                                            React.createElement('text', { x: 300, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Resolves ' + resolveArcsec.toFixed(1) + '" • Mag ' + limitMag.toFixed(1) + ' faintest')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Aperture (cm)', val: aperture, key: 'scopeAp', min: 2, max: 100, step: 1 },
+                                            { label: 'Magnification', val: magnif, key: 'scopeMag', min: 10, max: 500, step: 5 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
+                                          [['Binoculars', 5], ['Beginner', 10], ['Mid-range', 20], ['Pro Amateur', 35], ['Hubble', 240], ['JWST', 650]].slice(0, 6).map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('scopeAp', p[1]); }, className: 'p-1 rounded text-[8px] font-bold ' + (Math.abs(aperture - p[1]) < 2 ? 'bg-cyan-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond 50×/cm aperture just blurs. JWST aperture 6.5m sees galaxies just 200 million years after Big Bang.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ATMOSPHERIC LAYERS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌫 Atmospheric Layers"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAtmos", !d.showAtmos); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAtmos ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
+                  }, d.showAtmos ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Drag the altitude slider up through Earth's atmosphere. Pressure drops, temp swings, and chemistry changes layer by layer."),
+                d.showAtmos && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var alt = d.atmAlt != null ? d.atmAlt : 50;
+                                      var layers = [
+                                        { name: 'Troposphere', range: [0, 12], color: '#3b82f6', desc: 'Weather happens here. Temperature decreases with altitude.' },
+                                        { name: 'Stratosphere', range: [12, 50], color: '#60a5fa', desc: 'Ozone layer absorbs UV. Temperature increases with altitude.' },
+                                        { name: 'Mesosphere', range: [50, 85], color: '#a78bfa', desc: 'Meteors burn up here. Coldest layer (-90°C).' },
+                                        { name: 'Thermosphere', range: [85, 600], color: '#dc2626', desc: 'ISS orbits here (400km). Aurora glow. Very thin air but hot.' },
+                                        { name: 'Exosphere', range: [600, 10000], color: '#1e1b4b', desc: 'Boundary to space. Air escapes to space.' }
+                                      ];
+                                      var currentLayer = layers.find(function(L) { return alt >= L.range[0] && alt <= L.range[1]; }) || layers[layers.length - 1];
+                                      var pressure = Math.max(0.0001, 1013 * Math.pow(0.5, alt / 5.5));
+                                      var tempC = alt < 12 ? 15 - alt * 6.5 : alt < 50 ? -56 + (alt - 12) * 1.5 : alt < 85 ? 5 - (alt - 50) * 2.7 : alt < 200 ? -90 + (alt - 85) * 6 : 800;
+                                      var H = 280;
+                                      function mapY(a) { return H - 20 - Math.min(H - 40, Math.log10(a + 1) * 70); }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#000' } },
+                                            layers.map(function(L, li) {
+                                              var y1 = mapY(L.range[0]);
+                                              var y2 = mapY(L.range[1] === 10000 ? 1000 : L.range[1]);
+                                              return React.createElement('rect', { key: 'lay' + li, x: 40, y: y2, width: 340, height: y1 - y2, fill: L.color, opacity: 0.3 });
+                                            }),
+                                            layers.map(function(L, li) {
+                                              var y2 = mapY(L.range[1] === 10000 ? 1000 : L.range[1]);
+                                              return React.createElement('text', { key: 'lab' + li, x: 50, y: y2 + 12, fill: L.color, fontSize: 10, fontWeight: 'bold' }, L.name);
+                                            }),
+                                            React.createElement('rect', { x: 40, y: mapY(0) - 5, width: 340, height: 8, fill: '#22c55e' }),
+                                            alt < 12 && [70, 130, 220, 290].map(function(cx, i) {
+                                              return React.createElement('ellipse', { key: 'cl' + i, cx: cx, cy: mapY(8) + i * 4, rx: 20, ry: 5, fill: '#fff', opacity: 0.6 });
+                                            }),
+                                            alt >= 35 && alt <= 60 && new Array(15).fill(0).map(function(_, i) {
+                                              return React.createElement('circle', { key: 'oz' + i, cx: 50 + i * 22, cy: mapY(35), r: 2, fill: '#fbbf24' });
+                                            }),
+                                            alt >= 60 && alt <= 80 && [80, 160, 240, 320].map(function(mx) {
+                                              return React.createElement('line', { key: 'm' + mx, x1: mx, y1: mapY(80), x2: mx + 20, y2: mapY(60), stroke: '#fbbf24', strokeWidth: 2 });
+                                            }),
+                                            alt >= 350 && alt <= 450 && React.createElement('text', { x: 200, y: mapY(400), fill: '#fff', fontSize: 10, textAnchor: 'middle' }, '🛰 ISS (400km)'),
+                                            alt >= 600 && React.createElement('text', { x: 200, y: 30, fill: '#fff', fontSize: 10, textAnchor: 'middle' }, '⭐ Space ⭐'),
+                                            React.createElement('line', { x1: 20, y1: mapY(alt), x2: 380, y2: mapY(alt), stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '4,2' }),
+                                            React.createElement('circle', { cx: 200, cy: mapY(alt), r: 4, fill: '#fde047' }),
+                                            React.createElement('text', { x: 30, y: mapY(alt) + 3, textAnchor: 'end', fill: '#fde047', fontSize: 9, fontWeight: 'bold' }, alt + 'km')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Altitude'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 700, step: 1, value: alt, onChange: function(e) { upd('atmAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + 'km')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[10px]' },
+                                          [
+                                            { l: 'Layer', v: currentLayer.name, c: 'fuchsia' },
+                                            { l: 'Pressure', v: pressure < 1 ? pressure.toFixed(3) + ' hPa' : pressure.toFixed(0) + ' hPa', c: 'sky' },
+                                            { l: 'Temp', v: tempC.toFixed(0) + '°C', c: 'orange' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                              React.createElement('div', { className: 'font-bold text-[9px]' }, s.l),
+                                              React.createElement('div', { className: 'text-[10px]' }, s.v)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          React.createElement('span', { className: 'font-bold' }, currentLayer.name + ': '),
+                                          currentLayer.desc
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: PHASES OF VENUS (GALILEO) ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "♀ Phases of Venus (Galileo)"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showPhasesV", !d.showPhasesV); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showPhasesV ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showPhasesV ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Galileo's 1610 observations: Venus goes through phases. This proved Venus orbits the Sun, not Earth."),
+                d.showPhasesV && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var ang = d.phVAng != null ? d.phVAng : 90;
+                                      var rad = ang * Math.PI / 180;
+                                      var earthX = 60, sunX = 350, sunY = 130;
+                                      var orbR = 80;
+                                      var venusX = sunX + Math.cos(rad) * orbR;
+                                      var venusY = sunY + Math.sin(rad) * orbR;
+                                      var dx = venusX - earthX, dy = venusY - sunY;
+                                      var dist = Math.sqrt(dx * dx + dy * dy);
+                                      var apparentSize = 600 / dist;
+                                      var sunAng = Math.atan2(sunY - venusY, sunX - venusX);
+                                      var earthAng = Math.atan2(sunY - venusY, earthX - venusX);
+                                      var phaseAngle = ((earthAng - sunAng) * 180 / Math.PI + 540) % 360;
+                                      var illum = (1 + Math.cos(phaseAngle * Math.PI / 180)) / 2;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 250;
+                                              return React.createElement('circle', { key: 'pvst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunV' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fde047' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: sunX, cy: sunY, r: orbR, fill: 'none', stroke: '#475569', strokeDasharray: '2,3', strokeWidth: 0.7 }),
+                                            React.createElement('circle', { cx: sunX, cy: sunY, r: 16, fill: 'url(#sunV)' }),
+                                            React.createElement('text', { x: sunX, y: sunY + 30, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Sun'),
+                                            React.createElement('circle', { cx: earthX, cy: sunY, r: 10, fill: '#3b82f6' }),
+                                            React.createElement('text', { x: earthX, y: sunY + 22, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            React.createElement('circle', { cx: venusX, cy: venusY, r: 8, fill: '#fde047' }),
+                                            React.createElement('circle', { cx: venusX, cy: venusY, r: 8, fill: '#0a0a18', clipPath: 'url(#vClip)' }),
+                                            React.createElement('text', { x: venusX, y: venusY - 14, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Venus'),
+                                            React.createElement('rect', { x: 280, y: 30, width: 110, height: 60, fill: '#1e293b' }),
+                                            React.createElement('circle', { cx: 335, cy: 60, r: apparentSize, fill: '#fde047' }),
+                                            React.createElement('ellipse', { cx: 335 + (illum - 0.5) * apparentSize * 2, cy: 60, rx: apparentSize * (1 - 2 * Math.abs(illum - 0.5)), ry: apparentSize, fill: '#0a0a18', opacity: illum < 0.5 ? 1 : 0 }),
+                                            phaseAngle > 90 && React.createElement('path', { d: 'M ' + (335) + ' ' + (60 - apparentSize) + ' A ' + apparentSize + ' ' + apparentSize + ' 0 0 1 ' + 335 + ' ' + (60 + apparentSize) + ' A ' + (apparentSize * (1 - 2 * illum)) + ' ' + apparentSize + ' 0 0 ' + (illum < 0.5 ? '0' : '1') + ' ' + 335 + ' ' + (60 - apparentSize) + ' Z', fill: '#0a0a18' }),
+                                            React.createElement('text', { x: 335, y: 100, textAnchor: 'middle', fill: '#fde047', fontSize: 10, fontWeight: 'bold' }, illum > 0.95 ? 'Full' : illum < 0.05 ? 'New' : illum > 0.5 ? 'Gibbous' : 'Crescent'),
+                                            React.createElement('text', { x: 335, y: 113, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8 }, Math.round(illum * 100) + '%'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Galileo\'s 1610 discovery: Venus has phases like the Moon')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Orbit'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: ang, onChange: function(e) { upd('phVAng', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ang + '°')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'In 1610 Galileo observed Venus through his telescope and saw it went through phases — like the Moon. This was proof Venus orbits the Sun, not Earth. Ptolemy\'s geocentric system can\'t explain a full Venus. Major evidence for Copernican heliocentrism.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MAGNETIC FIELD VISUALIZER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🧲 Magnetic Field Visualizer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMag", !d.showMag); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMag ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showMag ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "A magnetic field deflects solar wind + protects atmosphere. Mars lost both; that's why it's barren."),
+                d.showMag && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var strength = d.magStr != null ? d.magStr : 50;
+                                      var solar = d.magSolar != null ? d.magSolar : 50;
+                                      var cx = 200, cy = 150;
+                                      var compressR = 80 - (solar / 100) * 40;
+                                      var protected_ = strength > 30;
+                                      var lines = [];
+                                      for (var li = 0; li < 7; li++) {
+                                        var lat = (li - 3) * 25;
+                                        var rLat = lat * Math.PI / 180;
+                                        var pts = [];
+                                        for (var theta = 0; theta <= Math.PI; theta += Math.PI / 30) {
+                                          var r = (compressR + 30) * (1 - 0.5 * Math.cos(theta)) * (1 - Math.abs(Math.sin(rLat)) * 0.3);
+                                          var px = cx + Math.cos(theta - Math.PI / 2) * r;
+                                          var py = cy - Math.sin(theta - Math.PI / 2) * r + Math.sin(rLat) * 30;
+                                          pts.push(px + ',' + py);
+                                        }
+                                        lines.push(pts.join(' '));
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 27) % 290;
+                                              return React.createElement('circle', { key: 'mst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            new Array(Math.floor(solar / 8)).fill(0).map(function(_, i) {
+                                              var sy = 30 + i * 18 + (i % 3) * 6;
+                                              return React.createElement('line', { key: 'sw' + i, x1: 400, y1: sy, x2: 320, y2: sy + (Math.random() - 0.5) * 8, stroke: '#fbbf24', strokeWidth: 1.5, opacity: 0.7, strokeLinecap: 'round' });
+                                            }),
+                                            protected_ && lines.map(function(p, pi) {
+                                              return React.createElement('polyline', { key: 'fl' + pi, points: p, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1, opacity: 0.5 - pi * 0.04 });
+                                            }),
+                                            protected_ && React.createElement('ellipse', { cx: cx, cy: cy, rx: compressR + 30, ry: compressR + 30, fill: '#0ea5e9', opacity: 0.05 }),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: 24, fill: '#1e40af' }),
+                                            React.createElement('ellipse', { cx: cx - 5, cy: cy - 4, rx: 10, ry: 6, fill: '#22c55e' }),
+                                            React.createElement('ellipse', { cx: cx + 7, cy: cy + 6, rx: 7, ry: 5, fill: '#22c55e' }),
+                                            React.createElement('text', { x: cx, y: cy + 40, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            protected_ && (solar > 50) && [0, 120, 240].map(function(deg) {
+                                              var rad = (deg + 60) * Math.PI / 180;
+                                              return React.createElement('path', { key: 'aur' + deg, d: 'M ' + (cx + Math.cos(rad) * 22) + ' ' + (cy + Math.sin(rad) * 22) + ' Q ' + (cx + Math.cos(rad) * 38) + ' ' + (cy + Math.sin(rad) * 38) + ' ' + (cx + Math.cos(rad) * 50) + ' ' + (cy + Math.sin(rad) * 50), fill: 'none', stroke: '#22c55e', strokeWidth: 2.5, opacity: 0.6 });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, protected_ ? 'Magnetic shield deflecting solar wind' : 'No protection — atmosphere stripping'),
+                                            React.createElement('text', { x: 200, y: 280, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Field strength: ' + strength + '% • Solar wind: ' + solar + '%')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Magnetic field', val: strength, key: 'magStr' },
+                                            { label: 'Solar wind', val: solar, key: 'magSolar' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
+                                          [['Mars (lost)', 5, 70], ['Earth (now)', 70, 50], ['Jupiter (strongest)', 100, 50]].map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('magStr', p[1]); upd('magSolar', p[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Earth\'s magnetic field deflects most solar wind, protecting atmosphere + life. Mars lost its magnetic field ~4 billion years ago and slowly lost its atmosphere. Jupiter has the strongest field in the solar system.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SOLAR SYSTEM SCALE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📐 Solar System Scale"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showScale", !d.showScale); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showScale ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
+                  }, d.showScale ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Switch between size and distance views. Both can't be shown to scale at once — that's how empty space really is."),
+                d.showScale && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var mode = d.scaleMode || 'size';
+                                      var planets = [
+                                        { name: 'Sun', sizeKm: 1392700, color: '#facc15', distAU: 0 },
+                                        { name: 'Mercury', sizeKm: 4879, color: '#94a3b8', distAU: 0.39 },
+                                        { name: 'Venus', sizeKm: 12104, color: '#fbbf24', distAU: 0.72 },
+                                        { name: 'Earth', sizeKm: 12742, color: '#3b82f6', distAU: 1.0 },
+                                        { name: 'Mars', sizeKm: 6779, color: '#ef4444', distAU: 1.52 },
+                                        { name: 'Jupiter', sizeKm: 139820, color: '#f97316', distAU: 5.2 },
+                                        { name: 'Saturn', sizeKm: 116460, color: '#eab308', distAU: 9.58 },
+                                        { name: 'Uranus', sizeKm: 50724, color: '#67e8f9', distAU: 19.2 },
+                                        { name: 'Neptune', sizeKm: 49244, color: '#3b82f6', distAU: 30.05 }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex gap-1 mb-2' },
+                                          ['size', 'distance'].map(function(m) {
+                                            return React.createElement('button', { key: m, onClick: function() { upd('scaleMode', m); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (mode === m ? 'bg-orange-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, m);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 43) % 400;
+                                              var sy = (i * 31) % 280;
+                                              return React.createElement('circle', { key: 'scst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            mode === 'size' ? planets.map(function(p, pi) {
+                                              var r = p.name === 'Sun' ? 60 : Math.log10(p.sizeKm) * 4 - 8;
+                                              var x = 40 + pi * 40;
+                                              return React.createElement('g', { key: p.name },
+                                                React.createElement('circle', { cx: x, cy: 140, r: r * 1.2, fill: p.color, opacity: 0.3 }),
+                                                React.createElement('circle', { cx: x, cy: 140, r: r, fill: p.color }),
+                                                React.createElement('text', { x: x, y: 230, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, p.name),
+                                                React.createElement('text', { x: x, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8 }, (p.sizeKm / 1000).toFixed(0) + 'k km')
+                                              );
+                                            }) : planets.map(function(p, pi) {
+                                              var x = 20 + Math.log10(p.distAU + 0.1) * 90 + 90;
+                                              return React.createElement('g', { key: p.name },
+                                                React.createElement('circle', { cx: x, cy: 140, r: 5, fill: p.color }),
+                                                React.createElement('text', { x: x, y: 130, textAnchor: 'middle', fill: '#fff', fontSize: 8 }, p.name),
+                                                React.createElement('text', { x: x, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 7 }, p.distAU.toFixed(2) + ' AU')
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, mode === 'size' ? 'Solar System: Planet Sizes (log scale)' : 'Solar System: Planet Distances (log scale)')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'True scales are hard to show simultaneously. If Earth were a pea, the Sun would be a beach ball 200 feet away. If the distances are to scale, the planets become invisible dots. Most diagrams compromise.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: LUNAR LANDER MINI-GAME ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🛬 Lunar Lander Mini-Game"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showLander", !d.showLander); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showLander ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showLander ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Thrust to slow your descent. Land softer than 2.5 m/s or crash. Manage fuel — there's not enough for free hover."),
+                d.showLander && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var ll = d.lander || { y: 30, vy: 0, fuel: 100, landed: false, crashed: false };
+                                      function thrust() {
+                                        if (ll.landed || ll.crashed || ll.fuel <= 0) return;
+                                        upd('lander', Object.assign({}, ll, { vy: Math.max(-3, ll.vy - 1.5), fuel: ll.fuel - 5 }));
+                                      }
+                                      function step() {
+                                        if (ll.landed || ll.crashed) return;
+                                        var ny = ll.y + ll.vy;
+                                        var nvy = ll.vy + 0.3;
+                                        if (ny >= 200) {
+                                          upd('lander', Object.assign({}, ll, { y: 200, vy: 0, landed: Math.abs(ll.vy) < 2.5, crashed: Math.abs(ll.vy) >= 2.5 }));
+                                        } else {
+                                          upd('lander', Object.assign({}, ll, { y: ny, vy: nvy }));
+                                        }
+                                      }
+                                      function reset() { upd('lander', { y: 30, vy: 0, fuel: 100, landed: false, crashed: false }); }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000 0%, #1a1a2e 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 47) % 400;
+                                              var sy = (i * 31) % 180;
+                                              return React.createElement('circle', { key: 'lst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.6 });
+                                            }),
+                                            React.createElement('polygon', { points: '0,205 60,180 120,200 180,170 240,195 300,175 360,200 400,185 400,260 0,260', fill: '#6b7280' }),
+                                            React.createElement('rect', { x: 170, y: 215, width: 60, height: 4, fill: '#22c55e' }),
+                                            React.createElement('text', { x: 200, y: 235, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, 'Landing pad'),
+                                            React.createElement('g', { transform: 'translate(200, ' + ll.y + ')' },
+                                              React.createElement('rect', { x: -8, y: 0, width: 16, height: 14, fill: '#cbd5e1', rx: 2 }),
+                                              React.createElement('polygon', { points: '-8,14 -12,22 -4,22', fill: '#94a3b8' }),
+                                              React.createElement('polygon', { points: '8,14 12,22 4,22', fill: '#94a3b8' }),
+                                              React.createElement('circle', { cx: 0, cy: 5, r: 3, fill: '#fbbf24' }),
+                                              ll.vy < 0 && ll.fuel > 0 && React.createElement('polygon', { points: '-3,18 0,30 3,18', fill: '#f97316' }),
+                                              ll.vy < 0 && ll.fuel > 0 && React.createElement('polygon', { points: '-1,22 0,32 1,22', fill: '#fde047' })
+                                            ),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, ll.landed ? '🎉 LANDED!' : ll.crashed ? '💥 CRASHED' : 'Velocity: ' + ll.vy.toFixed(1)),
+                                            React.createElement('text', { x: 200, y: 50, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Fuel: ' + ll.fuel + ' • Touchdown < 2.5 m/s')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 flex gap-1' },
+                                          React.createElement('button', { onClick: function() { thrust(); }, disabled: ll.landed || ll.crashed || ll.fuel <= 0, className: 'flex-1 px-3 py-2 rounded font-bold text-sm bg-orange-500 text-white hover:bg-orange-600 disabled:bg-slate-400' }, '🔥 Thrust'),
+                                          React.createElement('button', { onClick: function() { step(); }, disabled: ll.landed || ll.crashed, className: 'flex-1 px-3 py-2 rounded font-bold text-sm ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '⏬ Fall (tick)'),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'px-3 py-2 rounded font-bold text-sm bg-red-500 text-white hover:bg-red-600' }, '↻')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Apollo 11 nearly ran out of fuel during the lunar descent. Neil Armstrong manually overrode the autopilot to find a smoother landing area. Touchdown happened with ~25 seconds of fuel left.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: LIGHT-YEAR WALKER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⏱ Light-Year Walker"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showLY", !d.showLY); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showLY ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showLY ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Pick a destination + see how long light takes to reach it. Beyond the solar system, distances grow staggering."),
+                d.showLY && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var dist = d.lyDist != null ? d.lyDist : 0;
+                                      var DESTS = [
+                                        { d: 0.000016, name: 'Moon', time: '1.3 seconds (light)', detail: '384,400 km' },
+                                        { d: 0.00002, name: 'Sun', time: '8 minutes', detail: '150 million km' },
+                                        { d: 0.000006, name: 'Mars (closest)', time: '4 minutes', detail: '78 million km' },
+                                        { d: 0.00009, name: 'Jupiter', time: '43 minutes', detail: '778 million km' },
+                                        { d: 0.0006, name: 'Pluto', time: '5.5 hours', detail: '5.9 billion km' },
+                                        { d: 4.24, name: 'Proxima Centauri', time: '4.24 years', detail: 'Nearest star' },
+                                        { d: 8.6, name: 'Sirius', time: '8.6 years', detail: 'Brightest star' },
+                                        { d: 25, name: 'Vega', time: '25 years', detail: 'Future pole star' },
+                                        { d: 2540000, name: 'Andromeda', time: '2.5 million years', detail: 'Nearest large galaxy' },
+                                        { d: 13.8e9, name: 'Edge of observable universe', time: '13.8 billion years', detail: 'Light travel + expansion' }
+                                      ];
+                                      var cur = DESTS[dist] || DESTS[0];
+                                      var W = 380, H = 30;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000 0%, #0a0a18 100%)' } },
+                                            new Array(60).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 23) % 180;
+                                              return React.createElement('circle', { key: 'lyst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            React.createElement('circle', { cx: 50, cy: 90, r: 10, fill: '#3b82f6' }),
+                                            React.createElement('text', { x: 50, y: 110, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            React.createElement('circle', { cx: 350, cy: 90, r: 12, fill: dist < 5 ? '#f97316' : dist < 7 ? '#fde047' : dist < 10 ? '#a78bfa' : '#fff' }),
+                                            React.createElement('text', { x: 350, y: 110, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, cur.name),
+                                            React.createElement('line', { x1: 60, y1: 90, x2: 340, y2: 90, stroke: '#7dd3fc', strokeWidth: 1.5, strokeDasharray: '6,3', opacity: 0.7 }),
+                                            new Array(5).fill(0).map(function(_, i) {
+                                              return React.createElement('polygon', { key: 'a' + i, points: (80 + i * 50) + ',88 ' + (85 + i * 50) + ',90 ' + (80 + i * 50) + ',92', fill: '#7dd3fc' });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, cur.name),
+                                            React.createElement('text', { x: 200, y: 140, textAnchor: 'middle', fill: '#fde047', fontSize: 11, fontWeight: 'bold' }, 'Light takes: ' + cur.time),
+                                            React.createElement('text', { x: 200, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, cur.detail)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1' },
+                                          DESTS.map(function(des, idx) {
+                                            return React.createElement('button', { key: idx, onClick: function() { upd('lyDist', idx); }, className: 'p-1 rounded text-[8px] font-bold ' + (dist === idx ? 'bg-indigo-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, des.name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Light moves 300,000 km/s. We see distant objects as they were when light left them. The Sun we see is 8 minutes old; Proxima Centauri is 4 years old. Andromeda Galaxy is 2.5 million years old.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SUN PATH ACROSS LATITUDES ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☀ Sun Path Across Latitudes"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSunPath", !d.showSunPath); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSunPath ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSunPath ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Where exactly does the Sun rise + set? It depends on your latitude + the day. Try Maine vs Arctic Circle."),
+                d.showSunPath && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var lat = d.sunLat != null ? d.sunLat : 45;
+                                      var doy = d.sunDoy != null ? d.sunDoy : 172;
+                                      var decl = -23.45 * Math.cos(((doy + 10) / 365) * 2 * Math.PI);
+                                      function altAz(hour) {
+                                        var HA = (hour - 12) * 15;
+                                        var HArad = HA * Math.PI / 180;
+                                        var latRad = lat * Math.PI / 180;
+                                        var declRad = decl * Math.PI / 180;
+                                        var sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(HArad);
+                                        var alt = Math.asin(sinAlt) * 180 / Math.PI;
+                                        var cosAz = (Math.sin(declRad) - Math.sin(latRad) * sinAlt) / (Math.cos(latRad) * Math.cos(Math.asin(sinAlt)));
+                                        var az = Math.acos(Math.max(-1, Math.min(1, cosAz))) * 180 / Math.PI;
+                                        if (HA > 0) az = 360 - az;
+                                        return { alt: alt, az: az };
+                                      }
+                                      var pts = [];
+                                      for (var h = 0; h <= 24; h += 0.25) {
+                                        var p = altAz(h);
+                                        if (p.alt < 0) continue;
+                                        var x = 200 + (p.az - 180) * 1.5;
+                                        var y = 230 - p.alt * 2;
+                                        pts.push(x + ',' + y);
+                                      }
+                                      var noon = altAz(12);
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 30%, #1e40af 70%, #0a0a18 100%)' } },
+                                            React.createElement('rect', { x: 0, y: 230, width: 400, height: 20, fill: '#6b7280' }),
+                                            [['N', 200], ['NE', 270], ['E', 340], ['S', 200], ['W', 60], ['NW', 130]].slice(0, 3).map(function(c, i) {
+                                              return React.createElement('text', { key: 'dir' + i, x: c[1], y: 245, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, c[0]);
+                                            }),
+                                            React.createElement('text', { x: 60, y: 245, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, 'W'),
+                                            React.createElement('text', { x: 340, y: 245, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, 'E'),
+                                            pts.length > 1 && React.createElement('polyline', { points: pts.join(' '), fill: 'none', stroke: '#fef9c3', strokeWidth: 2, opacity: 0.8 }),
+                                            pts.length > 0 && React.createElement('circle', { cx: 200 + (noon.az - 180) * 1.5, cy: 230 - noon.alt * 2, r: 8, fill: '#fde047' }),
+                                            pts.length > 0 && React.createElement('circle', { cx: 200 + (noon.az - 180) * 1.5, cy: 230 - noon.alt * 2, r: 12, fill: '#fde047', opacity: 0.4 }),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Sun path at ' + Math.abs(lat) + '°' + (lat >= 0 ? 'N' : 'S') + ' on day ' + doy),
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'Noon altitude: ' + noon.alt.toFixed(0) + '°')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Latitude', val: lat, key: 'sunLat', min: -90, max: 90, step: 1 },
+                                            { label: 'Day of year', val: doy, key: 'sunDoy', min: 1, max: 365, step: 1 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
+                                          [['Equator', 0, 80], ['Mid-North', 45, 172], ['Arctic Circle', 67, 172], ['Antarctic Circle', -67, 172], ['Maine (Portland)', 43.7, 172], ['North Pole', 90, 172]].map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('sunLat', p[1]); upd('sunDoy', p[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Sun path depends on latitude + season. At the equator, sun goes straight overhead. At Arctic Circle, midnight sun on summer solstice + polar night on winter solstice. Maine\'s Portland: midsummer sun is high; midwinter, sun barely clears horizon.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: HABITABLE MOONS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌙 Habitable Moons"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showHabMoons", !d.showHabMoons); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showHabMoons ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showHabMoons ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Some moons may host life: Europa + Enceladus + Titan + Ganymede have subsurface oceans. Active missions search now."),
+                d.showHabMoons && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var moon = d.habMoon || 'europa';
+                                      var MOONS = {
+                                        europa: { name: 'Europa (Jupiter)', icyShell: true, ocean: true, life: 'High plausibility', desc: 'Subsurface ocean has 2× water of Earth oceans. Hydrothermal vents possible at sea floor. JUICE + Europa Clipper missions ongoing.', color: '#bfdbfe' },
+                                        enceladus: { name: 'Enceladus (Saturn)', icyShell: true, ocean: true, life: 'Highly plausible', desc: 'Cassini discovered geysers spraying water + organics + hydrogen + silica. Habitable conditions confirmed by chemistry of plumes.', color: '#f0f9ff' },
+                                        titan: { name: 'Titan (Saturn)', icyShell: false, ocean: true, life: 'Maybe (exotic)', desc: 'Thick atmosphere of N2 + CH4. Lakes of liquid methane on surface. Water-ammonia ocean below. Life possible but very different.', color: '#fde047' },
+                                        ganymede: { name: 'Ganymede (Jupiter)', icyShell: true, ocean: true, life: 'Possible', desc: 'Largest moon. Subsurface ocean confirmed by Hubble. JUICE mission will study it.', color: '#cbd5e1' },
+                                        callisto: { name: 'Callisto (Jupiter)', icyShell: true, ocean: 'maybe', life: 'Less likely', desc: 'Oldest visible surface in solar system. Possible subsurface ocean. Lower radiation than other Jovian moons.', color: '#94a3b8' },
+                                        io: { name: 'Io (Jupiter)', icyShell: false, ocean: false, life: 'No', desc: 'Most volcanically active body in solar system. 400+ active volcanoes. Sulfur dioxide atmosphere. Not habitable.', color: '#fde047' }
+                                      };
+                                      var sel = MOONS[moon];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(MOONS).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('habMoon', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (moon === k ? 'bg-cyan-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, k);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 23) % 270;
+                                              return React.createElement('circle', { key: 'hmst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'mn', cx: '40%', cy: '40%' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.8 }),
+                                                React.createElement('stop', { offset: '40%', stopColor: sel.color }),
+                                                React.createElement('stop', { offset: '100%', stopColor: sel.color, stopOpacity: 0.5 })
+                                              )
+                                            ),
+                                            sel.icyShell && React.createElement('circle', { cx: 200, cy: 140, r: 110, fill: 'url(#mn)', opacity: 0.4 }),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 90, fill: 'url(#mn)' }),
+                                            sel.icyShell && React.createElement('circle', { cx: 200, cy: 140, r: 70, fill: '#1e40af', opacity: 0.6 }),
+                                            sel.icyShell && React.createElement('circle', { cx: 200, cy: 140, r: 30, fill: '#7c2d12' }),
+                                            moon === 'europa' && [[160, 90], [220, 110], [180, 200], [240, 180], [150, 160]].map(function(c, i) {
+                                              return React.createElement('line', { key: 'cr' + i, x1: c[0], y1: c[1], x2: c[0] + 30, y2: c[1] - 15, stroke: '#7c2d12', strokeWidth: 1, opacity: 0.6 });
+                                            }),
+                                            moon === 'enceladus' && [[160, 220], [200, 230], [240, 220]].map(function(c, i) {
+                                              return React.createElement('line', { key: 'gy' + i, x1: c[0], y1: c[1], x2: c[0], y2: c[1] + 35, stroke: '#bfdbfe', strokeWidth: 2, opacity: 0.7 });
+                                            }),
+                                            moon === 'titan' && React.createElement('circle', { cx: 200, cy: 140, r: 105, fill: '#fde047', opacity: 0.3 }),
+                                            moon === 'titan' && [[160, 130], [220, 170], [180, 100]].map(function(c, i) {
+                                              return React.createElement('ellipse', { key: 'lk' + i, cx: c[0], cy: c[1], rx: 14, ry: 6, fill: '#0c4a6e' });
+                                            }),
+                                            moon === 'io' && [[160, 100], [220, 130], [200, 180], [170, 170]].map(function(c, i) {
+                                              return React.createElement('g', { key: 'vo' + i },
+                                                React.createElement('circle', { cx: c[0], cy: c[1], r: 4, fill: '#dc2626' }),
+                                                React.createElement('line', { x1: c[0], y1: c[1], x2: c[0] + 5, y2: c[1] - 18, stroke: '#fbbf24', strokeWidth: 2, opacity: 0.7 })
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sel.name),
+                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#86efac', fontSize: 10 }, 'Life: ' + sel.life)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          sel.desc
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MARS TERRAFORMING LAB ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌱 Mars Terraforming Lab"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTerraform", !d.showTerraform); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTerraform ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showTerraform ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "What would it take to make Mars liveable? Adjust greenhouse gas, ice melt, and plant cover — watch Mars transform."),
+                d.showTerraform && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var co2 = d.tfCO2 != null ? d.tfCO2 : 10;
+                                      var ice = d.tfIce != null ? d.tfIce : 50;
+                                      var trees = d.tfTrees != null ? d.tfTrees : 0;
+                                      var temp = -65 + co2 * 0.8 + ice * 0.1 - trees * 0.05;
+                                      var oxy = trees * 0.2;
+                                      var water = ice / 100;
+                                      var phase = co2 < 30 ? 'Frozen world' : co2 < 60 ? 'Warming up' : oxy < 10 ? 'Greenhouse Mars' : oxy < 20 ? 'Breathable atmosphere' : 'Green Mars';
+                                      var marsColor = co2 < 30 ? '#b5452a' : co2 < 60 ? '#c97342' : trees < 30 ? '#9a4d33' : trees < 60 ? '#88663a' : '#3a7c3a';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 230;
+                                              return React.createElement('circle', { key: 'tfst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            co2 > 30 && React.createElement('circle', { cx: 200, cy: 130, r: 105, fill: '#fef3c7', opacity: 0.15 }),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: 85, fill: marsColor }),
+                                            ice > 0 && React.createElement('ellipse', { cx: 200, cy: 60, rx: 50, ry: 18, fill: '#f0f9ff', opacity: ice / 100 }),
+                                            ice > 0 && React.createElement('ellipse', { cx: 200, cy: 200, rx: 50, ry: 18, fill: '#f0f9ff', opacity: ice / 100 }),
+                                            trees > 30 && [120, 200, 250, 180, 230].map(function(cx, i) {
+                                              return React.createElement('ellipse', { key: 'tr' + i, cx: cx, cy: 130 + (i % 2 ? -10 : 10), rx: 12, ry: 6, fill: '#22c55e', opacity: trees / 100 });
+                                            }),
+                                            co2 > 50 && [180, 220, 200].map(function(cx, i) {
+                                              return React.createElement('ellipse', { key: 'cl' + i, cx: cx, cy: 100 + i * 8, rx: 18, ry: 4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            water > 0.3 && React.createElement('path', { d: 'M 120 145 Q 200 155 280 140', stroke: '#3b82f6', strokeWidth: 3, fill: 'none', opacity: 0.7 }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, phase),
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Temp: ' + temp.toFixed(0) + '°C • O₂: ' + oxy.toFixed(1) + '%')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'CO₂ release (greenhouse)', val: co2, key: 'tfCO2' },
+                                            { label: 'Polar ice melt', val: ice, key: 'tfIce' },
+                                            { label: 'Plant cover', val: trees, key: 'tfTrees' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Terraforming Mars would take thousands of years. Need to: thicken atmosphere (greenhouse gases), warm surface (melts ice), introduce plants (oxygen). NASA studies suggest current Mars CO2 reserves are too thin to terraform without huge imports. Still mostly science fiction.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: HUBBLE DEEP FIELD ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔬 Hubble Deep Field"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showHDF", !d.showHDF); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showHDF ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showHDF ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Hubble stared at an empty patch of sky for 10 days and found 3000 distant galaxies. Look closer + each fuzzy blob is a galaxy."),
+                d.showHDF && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var zoom = d.hdfZoom != null ? d.hdfZoom : 1;
+                                      var stars = [];
+                                      var galaxies = [];
+                                      for (var i = 0; i < 200; i++) {
+                                        var sx = (i * 73 + 11) % 400;
+                                        var sy = (i * 41 + 13) % 250;
+                                        var sr = 0.3 + (i % 5) * 0.4;
+                                        stars.push({ x: sx, y: sy, r: sr });
+                                      }
+                                      for (var j = 0; j < 30; j++) {
+                                        var gx = (j * 71 + 17) % 380 + 10;
+                                        var gy = (j * 53 + 7) % 230 + 10;
+                                        var grx = (3 + (j % 5)) * zoom;
+                                        var gtype = j % 4;
+                                        galaxies.push({ x: gx, y: gy, r: grx, type: gtype, color: gtype === 0 ? '#fbbf24' : gtype === 1 ? '#7dd3fc' : gtype === 2 ? '#fca5a5' : '#a78bfa', rot: j * 30 });
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
+                                            stars.map(function(s, si) {
+                                              return React.createElement('circle', { key: 'hs' + si, cx: s.x, cy: s.y, r: s.r, fill: '#fff', opacity: 0.7 });
+                                            }),
+                                            galaxies.map(function(g, gi) {
+                                              return React.createElement('g', { key: 'hg' + gi, transform: 'rotate(' + g.rot + ' ' + g.x + ' ' + g.y + ')' },
+                                                g.type === 0 ? React.createElement('ellipse', { cx: g.x, cy: g.y, rx: g.r * 1.5, ry: g.r * 0.8, fill: g.color, opacity: 0.5 }) :
+                                                g.type === 1 ? React.createElement('circle', { cx: g.x, cy: g.y, r: g.r, fill: g.color, opacity: 0.7 }) :
+                                                g.type === 2 ? React.createElement('ellipse', { cx: g.x, cy: g.y, rx: g.r * 2, ry: g.r * 0.3, fill: g.color, opacity: 0.6 }) :
+                                                React.createElement('circle', { cx: g.x, cy: g.y, r: g.r * 0.6, fill: g.color, opacity: 0.9 }),
+                                                React.createElement('circle', { cx: g.x, cy: g.y, r: g.r * 0.3, fill: '#fff', opacity: 0.6 })
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Hubble Deep Field (simulated)'),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Each fuzzy blob is a galaxy of 100+ billion stars')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Zoom'),
+                                          React.createElement('input', { type: 'range', min: 0.5, max: 4, step: 0.1, value: zoom, onChange: function(e) { upd('hdfZoom', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, zoom.toFixed(1) + '×')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'In 1995, Hubble pointed at a tiny dark patch of sky for 10 days. Result: 3000 distant galaxies in one image. JWST has now pushed this deeper, finding galaxies just 300 million years after the Big Bang.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: STAR COLOR + TEMPERATURE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌟 Star Color + Temperature"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showStarWheel", !d.showStarWheel); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showStarWheel ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showStarWheel ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Hotter stars look bluer; cooler stars redder. Stars are classified OBAFGKM by spectral type."),
+                d.showStarWheel && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var temp = d.starTemp != null ? d.starTemp : 5778;
+                                      function tempColor(t) {
+                                        if (t < 3500) return '#dc2626';
+                                        if (t < 5000) return '#f97316';
+                                        if (t < 6000) return '#fde047';
+                                        if (t < 7500) return '#fffbeb';
+                                        if (t < 10000) return '#dbeafe';
+                                        return '#7dd3fc';
+                                      }
+                                      function classify(t) {
+                                        if (t < 3500) return { cls: 'M', desc: 'Red dwarf — coolest + most common stars (75% of all stars)' };
+                                        if (t < 5000) return { cls: 'K', desc: 'Orange dwarf — quieter than Sun, longer-lived' };
+                                        if (t < 6000) return { cls: 'G', desc: 'Yellow (Sun-like)' };
+                                        if (t < 7500) return { cls: 'F', desc: 'Yellow-white' };
+                                        if (t < 10000) return { cls: 'A', desc: 'White (Sirius, Vega)' };
+                                        if (t < 30000) return { cls: 'B', desc: 'Blue-white (Rigel)' };
+                                        return { cls: 'O', desc: 'Blue — hottest + rarest stars, lifespans only millions of years' };
+                                      }
+                                      var cls = classify(temp);
+                                      var color = tempColor(temp);
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 280;
+                                              return React.createElement('circle', { key: 'tst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sg' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.9 }),
+                                                React.createElement('stop', { offset: '50%', stopColor: color, stopOpacity: 0.9 }),
+                                                React.createElement('stop', { offset: '100%', stopColor: color, stopOpacity: 0 })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: 70, fill: 'url(#sg)', opacity: 0.7 }),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: 35, fill: color }),
+                                            [10, 30, 50, 70, 110, 130, 150, 170].map(function(deg) {
+                                              var rad = deg * Math.PI / 180;
+                                              return React.createElement('line', { key: 'r' + deg, x1: 200, y1: 130, x2: 200 + Math.cos(rad) * 65, y2: 130 + Math.sin(rad) * 65, stroke: color, strokeWidth: 1, opacity: 0.4 });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, 'Class ' + cls.cls + ' star'),
+                                            React.createElement('text', { x: 200, y: 240, textAnchor: 'middle', fill: color, fontSize: 11 }, temp.toLocaleString() + ' K'),
+                                            React.createElement('text', { x: 200, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, cls.desc)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Temperature'),
+                                          React.createElement('input', { type: 'range', min: 2500, max: 40000, step: 100, value: temp, onChange: function(e) { upd('starTemp', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, temp + ' K')
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-7 gap-1' },
+                                          [['M', 3000], ['K', 4500], ['G', 5800], ['F', 6500], ['A', 8500], ['B', 15000], ['O', 35000]].map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('starTemp', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (cls.cls === p[0] ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Star color = temperature. Astronomy mnemonic for the OBAFGKM spectral sequence (hottest to coolest): \'Oh Be A Fine Girl/Guy, Kiss Me.\' Hotter stars are bigger + brighter + shorter-lived.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: TIDAL LOCKING SIMULATOR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔒 Tidal Locking Simulator"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTLock", !d.showTLock); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTLock ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showTLock ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Why does the Moon always show the same face? Tidal forces slowed its rotation. See how distance + mass affect time-to-lock."),
+                d.showTLock && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var dist = d.tlDist != null ? d.tlDist : 50;
+                                      var mass = d.tlMass != null ? d.tlMass : 50;
+                                      var lockTime = Math.pow(dist / 50, 6) * 100 / mass;
+                                      var locked = lockTime < 5;
+                                      var rotSpeed = locked ? 0 : Math.max(0.1, 5 - lockTime / 20);
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 27) % 230;
+                                              return React.createElement('circle', { key: 'tlst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('circle', { cx: 80, cy: 130, r: 28 + mass / 5, fill: '#3b82f6' }),
+                                            React.createElement('text', { x: 80, y: 175, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, 'Planet'),
+                                            React.createElement('line', { x1: 80, y1: 130, x2: 80 + Math.min(dist * 2.5, 280), y2: 130, stroke: '#475569', strokeWidth: 0.7, strokeDasharray: '3,3' }),
+                                            React.createElement('circle', { cx: 80 + Math.min(dist * 2.5, 280), cy: 130, r: 14, fill: '#e2e8f0' }),
+                                            React.createElement('circle', { cx: 80 + Math.min(dist * 2.5, 280) + (locked ? -5 : 5), cy: 130, r: 6, fill: '#7c2d12' }),
+                                            !locked && React.createElement('ellipse', { cx: 80 + Math.min(dist * 2.5, 280), cy: 130, rx: 18, ry: 4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, opacity: 0.5 }),
+                                            React.createElement('text', { x: 80 + Math.min(dist * 2.5, 280), y: 105, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, locked ? '🔒 TIDALLY LOCKED' : 'Spinning ' + rotSpeed.toFixed(1) + '°/sec'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Time to lock: ' + (lockTime < 1 ? '< 1' : lockTime > 1000 ? '> 1000' : lockTime.toFixed(1)) + ' billion years'),
+                                            React.createElement('text', { x: 200, y: 215, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, locked ? 'One face always toward planet (like our Moon)' : 'Still rotating freely')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Distance', val: dist, key: 'tlDist' },
+                                            { label: 'Planet mass', val: mass, key: 'tlMass' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                          
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Tidal forces gradually slow a moon\'s rotation until it matches its orbital period. Our Moon is tidally locked: same face always toward Earth. Mercury is in a 3:2 resonance with the Sun (not quite locked).'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CRATER COUNTER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌑 Crater Counter"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCrater", !d.showCrater); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCrater ? 'bg-stone-500 text-white' : 'bg-stone-100 text-stone-700 hover:bg-stone-200')
+                  }, d.showCrater ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Click each crater. Real planetary scientists count craters to age surfaces — more craters = older."),
+                d.showCrater && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var craters = d.craterList || [
+                                        { id: 1, x: 80, y: 80, r: 14, found: false }, { id: 2, x: 200, y: 60, r: 8, found: false },
+                                        { id: 3, x: 320, y: 90, r: 16, found: false }, { id: 4, x: 60, y: 150, r: 9, found: false },
+                                        { id: 5, x: 130, y: 170, r: 7, found: false }, { id: 6, x: 220, y: 140, r: 11, found: false },
+                                        { id: 7, x: 280, y: 180, r: 6, found: false }, { id: 8, x: 360, y: 160, r: 13, found: false },
+                                        { id: 9, x: 100, y: 220, r: 10, found: false }, { id: 10, x: 180, y: 230, r: 7, found: false },
+                                        { id: 11, x: 260, y: 220, r: 9, found: false }, { id: 12, x: 340, y: 230, r: 8, found: false }
+                                      ];
+                                      function find(id) {
+                                        upd('craterList', craters.map(function(c) { return c.id === id ? Object.assign({}, c, { found: true }) : c; }));
+                                      }
+                                      function reset() {
+                                        upd('craterList', craters.map(function(c) { return Object.assign({}, c, { found: false }); }));
+                                      }
+                                      var found = craters.filter(function(c) { return c.found; }).length;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #2a2a3e 0%, #1a1a2e 100%)' } },
+                                            React.createElement('rect', { x: 0, y: 0, width: 400, height: 270, fill: '#6b7280' }),
+                                            new Array(50).fill(0).map(function(_, i) {
+                                              var sx = (i * 53 + 17) % 400;
+                                              var sy = (i * 37 + 11) % 270;
+                                              return React.createElement('circle', { key: 'tx' + i, cx: sx, cy: sy, r: 1 + (i % 3), fill: '#4b5563', opacity: 0.7 });
+                                            }),
+                                            craters.map(function(c) {
+                                              return React.createElement('g', { key: c.id, onClick: function() { find(c.id); }, style: { cursor: 'crosshair' } },
+                                                React.createElement('circle', { cx: c.x, cy: c.y, r: c.r, fill: '#374151', stroke: '#1f2937', strokeWidth: 1 }),
+                                                React.createElement('circle', { cx: c.x - c.r/4, cy: c.y - c.r/4, r: c.r * 0.3, fill: '#1f2937' }),
+                                                c.found && React.createElement('circle', { cx: c.x, cy: c.y, r: c.r + 2, fill: 'none', stroke: '#22c55e', strokeWidth: 2 })
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fde047', fontSize: 12, fontWeight: 'bold' }, '🔍 Click craters to count them')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 flex items-center gap-2' },
+                                          React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Found: ' + found + ' / ' + craters.length),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'px-3 py-1 rounded font-bold text-xs bg-slate-500 text-white hover:bg-slate-600' }, 'Reset')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Crater counting is how scientists determine the age of planetary surfaces. More craters = older surface. The Moon\'s highlands are heavily cratered (very old); maria are younger lava flows.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: GRAVITY WELL VISUALIZER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⚖ Gravity Well Visualizer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showGrav", !d.showGrav); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showGrav ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showGrav ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Mass curves spacetime. Drag mass + watch the well deepen. Roll the ball to see how it falls in."),
+                d.showGrav && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var mass = d.gravMass != null ? d.gravMass : 50;
+                                      var ballX = d.gravBallX != null ? d.gravBallX : 50;
+                                      var cx = 200, cy = 140;
+                                      var depth = mass * 1.2;
+                                      function gravPt(angle, r) {
+                                        var x = cx + Math.cos(angle) * r;
+                                        var dropoff = depth / (1 + r * 0.05);
+                                        var y = cy + Math.sin(angle) * r * 0.4 + dropoff;
+                                        return [x, y];
+                                      }
+                                      var rings = [];
+                                      for (var ri = 20; ri <= 130; ri += 22) {
+                                        var pts = [];
+                                        for (var a = 0; a < Math.PI * 2; a += Math.PI / 16) {
+                                          var p = gravPt(a, ri);
+                                          pts.push(p[0] + ',' + p[1]);
+                                        }
+                                        rings.push(pts.join(' '));
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 43) % 400;
+                                              var sy = (i * 29) % 270;
+                                              return React.createElement('circle', { key: 'gst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            rings.map(function(r, ri) {
+                                              return React.createElement('polygon', { key: 'gr' + ri, points: r, fill: 'none', stroke: '#3b82f6', strokeWidth: 0.7, opacity: 0.4 + ri * 0.04 });
+                                            }),
+                                            [0, 30, 60, 90, 120, 150, 180].map(function(deg) {
+                                              var rad = deg * Math.PI / 180;
+                                              var pts = [];
+                                              for (var rr = 0; rr <= 130; rr += 8) {
+                                                var p = gravPt(rad, rr);
+                                                pts.push(p[0] + ',' + p[1]);
+                                              }
+                                              return React.createElement('polyline', { key: 'spk' + deg, points: pts.join(' '), fill: 'none', stroke: '#3b82f6', strokeWidth: 0.5, opacity: 0.3 });
+                                            }),
+                                            React.createElement('circle', { cx: cx, cy: cy + depth, r: 12 + mass / 10, fill: '#1e1b4b' }),
+                                            React.createElement('circle', { cx: cx, cy: cy + depth, r: 8 + mass / 12, fill: '#3b0764' }),
+                                            React.createElement('circle', { cx: cx, cy: cy + depth, r: 4 + mass / 16, fill: '#581c87' }),
+                                            (function() {
+                                              var ballAng = ballX * Math.PI / 50;
+                                              var ballR = 100 - ballX * 0.8;
+                                              var bp = gravPt(ballAng, ballR);
+                                              return React.createElement('circle', { cx: bp[0], cy: bp[1], r: 5, fill: '#fde047' });
+                                            })(),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, mass < 30 ? 'Shallow well — easy to escape' : mass < 70 ? 'Deep well — needs more energy' : 'Extreme curvature — near black hole'),
+                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Mass ' + mass + 'x Earth')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Mass', val: mass, key: 'gravMass' },
+                                            { label: 'Ball position', val: ballX, key: 'gravBallX' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Einstein\'s general relativity says mass curves spacetime. Objects don\'t feel a force — they follow geodesics through the curved geometry. This is gravity. Black holes curve spacetime so steeply that not even light escapes.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ASTEROID COMPOSITION ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🪨 Asteroid Composition"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAstComp", !d.showAstComp); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAstComp ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showAstComp ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Three main asteroid types: C, S, M. Mining companies eye M-type for iron + platinum."),
+                d.showAstComp && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var astType = d.astType || 'cType';
+                                      var TYPES = {
+                                        cType: { name: 'C-type (Carbonaceous)', fraction: 75, color: '#1c1917', desc: 'Most common (75%). Dark, primitive, water-rich. Found in outer belt.', composition: [['Carbon + organics', 40, '#7c2d12'], ['Silicates', 30, '#a3a3a3'], ['Water + hydrated minerals', 20, '#3b82f6'], ['Iron + nickel', 10, '#71717a']] },
+                                        sType: { name: 'S-type (Silicaceous)', fraction: 17, color: '#a16207', desc: 'Stony (17%). Lighter, made of silicate minerals + iron. Found in inner belt.', composition: [['Silicates', 50, '#a3a3a3'], ['Iron + nickel', 25, '#71717a'], ['Magnesium minerals', 15, '#fbbf24'], ['Other', 10, '#7c2d12']] },
+                                        mType: { name: 'M-type (Metallic)', fraction: 8, color: '#52525b', desc: 'Metal-rich (8%). Mostly iron + nickel. Possibly from core of broken protoplanets. Mining target.', composition: [['Iron', 60, '#71717a'], ['Nickel', 25, '#a3a3a3'], ['Platinum + Pd', 5, '#fde047'], ['Other metals', 10, '#52525b']] }
+                                      };
+                                      var sel = TYPES[astType];
+                                      var cx = 200, cy = 130, r = 65;
+                                      var totalDeg = 0;
+                                      var slices = sel.composition.map(function(c) {
+                                        var startDeg = totalDeg;
+                                        totalDeg += (c[1] / 100) * 360;
+                                        var endDeg = totalDeg;
+                                        var startRad = (startDeg - 90) * Math.PI / 180;
+                                        var endRad = (endDeg - 90) * Math.PI / 180;
+                                        var x1 = cx + Math.cos(startRad) * r;
+                                        var y1 = cy + Math.sin(startRad) * r;
+                                        var x2 = cx + Math.cos(endRad) * r;
+                                        var y2 = cy + Math.sin(endRad) * r;
+                                        var largeArc = endDeg - startDeg > 180 ? 1 : 0;
+                                        var midRad = (startRad + endRad) / 2;
+                                        var labelX = cx + Math.cos(midRad) * (r * 0.6);
+                                        var labelY = cy + Math.sin(midRad) * (r * 0.6);
+                                        return { path: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z', color: c[2], label: c[0], pct: c[1], lx: labelX, ly: labelY };
+                                      });
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex gap-1 mb-2' },
+                                          Object.keys(TYPES).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('astType', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (astType === k ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, TYPES[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 250;
+                                              return React.createElement('circle', { key: 'apst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            slices.map(function(s, si) {
+                                              return React.createElement('g', { key: si },
+                                                React.createElement('path', { d: s.path, fill: s.color, stroke: '#000', strokeWidth: 1 }),
+                                                React.createElement('text', { x: s.lx, y: s.ly + 3, textAnchor: 'middle', fill: '#fff', fontSize: 9, fontWeight: 'bold' }, s.pct + '%')
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sel.name + ' Composition'),
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, sel.fraction + '% of all asteroids')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[10px]' },
+                                          sel.composition.map(function(c, ci) {
+                                            return React.createElement('div', { key: ci, className: 'p-1.5 rounded flex items-center gap-2 ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                              React.createElement('div', { style: { width: 12, height: 12, background: c[2], borderRadius: 2 } }),
+                                              React.createElement('span', null, c[1] + '% ' + c[0])
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          sel.desc
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COSMIC MICROWAVE BACKGROUND ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📡 Cosmic Microwave Background"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCMB", !d.showCMB); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCMB ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showCMB ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Light from 380,000 years after the Big Bang. Tiny variations are the seeds of every galaxy."),
+                d.showCMB && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var contrast = d.cmbContrast != null ? d.cmbContrast : 50;
+                                      var pixels = [];
+                                      for (var py = 0; py < 50; py++) {
+                                        for (var px = 0; px < 80; px++) {
+                                          var seed = px * 13 + py * 7;
+                                          var noise = (Math.sin(seed * 0.5) + Math.cos(seed * 0.3) + Math.sin(seed * 0.9) + Math.cos(seed * 0.7)) / 4;
+                                          var val = 50 + noise * (contrast / 2);
+                                          var r = Math.min(255, Math.max(0, 50 + val * 2));
+                                          var b = Math.min(255, Math.max(0, 200 - val * 2));
+                                          var g = Math.min(255, Math.max(0, 100 + Math.abs(val - 50)));
+                                          pixels.push({ x: px * 5, y: 30 + py * 4, color: 'rgb(' + r + ',' + g + ',' + b + ')' });
+                                        }
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
+                                            React.createElement('ellipse', { cx: 200, cy: 130, rx: 200, ry: 110, fill: '#0a0a18' }),
+                                            pixels.map(function(p, pi) {
+                                              var dx = p.x - 200, dy = p.y - 130;
+                                              if ((dx*dx)/40000 + (dy*dy)/12100 > 1) return null;
+                                              return React.createElement('rect', { key: 'px' + pi, x: p.x, y: p.y, width: 5, height: 4, fill: p.color, opacity: 0.85 });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Cosmic Microwave Background (simulated)'),
+                                            React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Temperature fluctuations of 0.0001% — seeds of all structure')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Contrast'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: contrast, onChange: function(e) { upd('cmbContrast', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, contrast + '%')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'The CMB is leftover light from 380,000 years after the Big Bang. Tiny temperature variations show where matter was slightly denser. Those denser spots grew into all galaxies + stars we see today. Discovered accidentally by Penzias + Wilson (1965 Nobel Prize).'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SATURN RING COMPOSER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🪐 Saturn Ring Composer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showRings", !d.showRings); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showRings ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200')
+                  }, d.showRings ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Saturn's rings are 99% water ice in trillions of pieces. They might be just 100 million years old."),
+                d.showRings && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var iceFrac = d.ringIce != null ? d.ringIce : 95;
+                                      var density = d.ringDensity != null ? d.ringDensity : 60;
+                                      var nLines = 5 + Math.floor(density / 8);
+                                      var color = iceFrac > 80 ? '#f0f9ff' : iceFrac > 50 ? '#cbd5e1' : '#a16207';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 27) % 240;
+                                              return React.createElement('circle', { key: 'rst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            new Array(nLines).fill(0).map(function(_, ri) {
+                                              var rad = 70 + ri * 10;
+                                              return React.createElement('ellipse', { key: 'rb' + ri, cx: 200, cy: 130, rx: rad, ry: rad * 0.18, fill: 'none', stroke: color, strokeWidth: 2 + (ri % 2), opacity: 0.4 + density / 200 });
+                                            }),
+                                            React.createElement('ellipse', { cx: 200, cy: 130, rx: 85, ry: 15, fill: 'none', stroke: '#000', strokeWidth: 3 }),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: 32, fill: '#eab308' }),
+                                            React.createElement('ellipse', { cx: 200, cy: 122, rx: 28, ry: 6, fill: '#fbbf24', opacity: 0.6 }),
+                                            React.createElement('ellipse', { cx: 200, cy: 138, rx: 28, ry: 6, fill: '#ca8a04', opacity: 0.6 }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Saturn\'s Rings'),
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, iceFrac + '% water ice, ' + density + ' rings/bands')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Ice fraction', val: iceFrac, key: 'ringIce' },
+                                            { label: 'Ring density', val: density, key: 'ringDensity' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Saturn\'s rings are mostly water ice particles ranging from dust grains to house-sized chunks. They span 282,000 km but are < 1 km thick. Likely formed from a destroyed moon ~100 million years ago — relatively young!'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CUSTOM PLANET BUILDER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🪐 Custom Planet Builder"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showBuilder", !d.showBuilder); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showBuilder ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
+                  }, d.showBuilder ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Pick a core, surface, atmosphere, and life. See what kind of world you've made."),
+                d.showBuilder && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var pl = d.builderPl || { core: 'iron', surface: 'rock', atmo: 'oxygen', life: false };
+                                      function set(k, v) { upd('builderPl', Object.assign({}, pl, { [k]: v })); }
+                                      var surfaceColor = pl.surface === 'rock' ? '#7c2d12' : pl.surface === 'ice' ? '#bfdbfe' : pl.surface === 'water' ? '#1e40af' : '#3a7c3a';
+                                      var atmoColor = pl.atmo === 'none' ? null : pl.atmo === 'co2' ? '#fbbf24' : pl.atmo === 'oxygen' ? '#7dd3fc' : pl.atmo === 'methane' ? '#a78bfa' : '#fde047';
+                                      var verdict = !pl.atmo || pl.atmo === 'none' ? 'No atmosphere — sterile' : pl.surface === 'water' && pl.atmo === 'oxygen' ? '🌱 EARTH-LIKE — life possible!' : pl.atmo === 'co2' && pl.surface === 'rock' ? 'Hot Mars or cool Venus' : pl.atmo === 'methane' ? 'Titan-like (exotic life?)' : 'Strange world';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 230;
+                                              return React.createElement('circle', { key: 'bst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            atmoColor && React.createElement('circle', { cx: 200, cy: 120, r: 105, fill: atmoColor, opacity: 0.2 }),
+                                            React.createElement('circle', { cx: 200, cy: 120, r: 80, fill: surfaceColor }),
+                                            pl.surface === 'rock' && [[170, 100, 8], [220, 130, 6], [180, 150, 5]].map(function(c, ci) {
+                                              return React.createElement('circle', { key: 'cra' + ci, cx: c[0], cy: c[1], r: c[2], fill: '#5b1d0e', opacity: 0.6 });
+                                            }),
+                                            pl.surface === 'water' && [[160, 100], [210, 130], [180, 150]].map(function(c, ci) {
+                                              return React.createElement('ellipse', { key: 'cn' + ci, cx: c[0], cy: c[1], rx: 12, ry: 6, fill: '#22c55e' });
+                                            }),
+                                            pl.life && [[180, 90], [220, 100], [170, 140], [230, 150], [200, 110]].map(function(c, ci) {
+                                              return React.createElement('circle', { key: 'lf' + ci, cx: c[0], cy: c[1], r: 1.5, fill: '#22c55e' });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Your World'),
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#86efac', fontSize: 11 }, verdict)
+                                          )
+                                        ),
+                                        ['core', 'surface', 'atmo'].map(function(cat) {
+                                          var opts = cat === 'core' ? ['iron','rock','ice'] : cat === 'surface' ? ['rock','ice','water','vegetation'] : ['none','co2','oxygen','methane','helium'];
+                                          return React.createElement('div', { key: cat, className: 'mt-2' },
+                                            React.createElement('div', { className: 'text-[10px] font-bold mb-1 capitalize ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cat),
+                                            React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                                              opts.map(function(o) {
+                                                return React.createElement('button', { key: o, onClick: function() { set(cat, o); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (pl[cat] === o ? 'bg-emerald-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, o);
+                                              })
+                                            )
+                                          );
+                                        }),
+                                        React.createElement('div', { className: 'mt-2 flex items-center gap-2 text-[10px]' },
+                                          React.createElement('label', { className: 'flex items-center gap-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                            React.createElement('input', { type: 'checkbox', checked: pl.life, onChange: function(e) { set('life', e.target.checked); } }),
+                                            React.createElement('span', { className: 'font-bold' }, 'Add life')
+                                          )
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: PULSAR BEAM SWEEPER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📡 Pulsar Beam Sweeper"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showPulsar", !d.showPulsar); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showPulsar ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showPulsar ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Pulsars are spinning neutron stars with magnetic beams. Earth sees a pulse only when a beam sweeps by."),
+                d.showPulsar && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var spin = d.pulsarSpin != null ? d.pulsarSpin : 0;
+                                      var tiltDeg = d.pulsarTilt != null ? d.pulsarTilt : 30;
+                                      var rad = spin * Math.PI / 180;
+                                      var beamLen = 100;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 29) % 250;
+                                              return React.createElement('circle', { key: 'pust' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            React.createElement('g', { transform: 'rotate(' + tiltDeg + ' 200 130)' },
+                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 - beamLen, stroke: '#a78bfa', strokeWidth: 8, opacity: 0.3 }),
+                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 - beamLen, stroke: '#c4b5fd', strokeWidth: 3, opacity: 0.7 }),
+                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 + beamLen, stroke: '#a78bfa', strokeWidth: 8, opacity: 0.3 }),
+                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 + beamLen, stroke: '#c4b5fd', strokeWidth: 3, opacity: 0.7 })
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: 14, fill: '#0a0a18', stroke: '#a78bfa', strokeWidth: 2 }),
+                                            React.createElement('circle', { cx: 200, cy: 130, r: 8, fill: '#a78bfa' }),
+                                            React.createElement('line', { x1: 200, y1: 130 - 20, x2: 200, y2: 130 + 20, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.6 }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Neutron Star Pulsar'),
+                                            React.createElement('text', { x: 200, y: 235, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Spin: ' + spin + '° • Tilt: ' + tiltDeg + '° • ' + (Math.abs((spin + 90) % 180 - 90) < 15 && tiltDeg < 30 ? 'BEAM POINTING AT EARTH' : 'Beam aimed elsewhere'))
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Spin angle', val: spin, key: 'pulsarSpin', max: 360 },
+                                            { label: 'Axis tilt', val: tiltDeg, key: 'pulsarTilt', max: 90 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A pulsar is a rapidly rotating neutron star. Its magnetic poles emit beams of radiation. We see a pulse only when the beam sweeps past us — like a lighthouse. Some pulse 700 times per second. Jocelyn Bell Burnell discovered the first in 1967.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SOLAR WIND STREAMER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "💨 Solar Wind Streamer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSWind", !d.showSWind); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSWind ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSWind ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Stream of charged particles from Sun, hitting Earth. Stronger wind = more auroras + GPS disruption."),
+                d.showSWind && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var speed = d.swSpeed != null ? d.swSpeed : 400;
+                                      var density = d.swDens != null ? d.swDens : 5;
+                                      var streamers = [];
+                                      for (var s = 0; s < density; s++) {
+                                        var sy = 30 + s * (200 / density);
+                                        var stream = { y: sy, w: 2 + (speed / 200), color: speed > 600 ? '#dc2626' : speed > 400 ? '#fbbf24' : '#fde047' };
+                                        streamers.push(stream);
+                                      }
+                                      var stormLabel = speed > 700 ? 'EXTREME storm' : speed > 500 ? 'Strong solar wind' : speed > 350 ? 'Normal solar wind' : 'Quiet';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 27) % 260;
+                                              return React.createElement('circle', { key: 'swst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunSW' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 70, cy: 135, r: 25, fill: 'url(#sunSW)' }),
+                                            React.createElement('circle', { cx: 70, cy: 135, r: 32, fill: '#f59e0b', opacity: 0.3 }),
+                                            streamers.map(function(st, si) {
+                                              return React.createElement('path', { key: 'sw' + si, d: 'M ' + 95 + ' ' + st.y + ' Q ' + 200 + ' ' + (st.y + (si % 2 ? -8 : 8)) + ' ' + 360 + ' ' + (st.y + (si % 3 ? 5 : -5)), fill: 'none', stroke: st.color, strokeWidth: st.w, opacity: 0.7, strokeLinecap: 'round' });
+                                            }),
+                                            React.createElement('circle', { cx: 320, cy: 135, r: 10, fill: '#3b82f6' }),
+                                            React.createElement('circle', { cx: 320, cy: 135, r: 15, fill: '#7dd3fc', opacity: 0.4 }),
+                                            React.createElement('text', { x: 320, y: 160, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, stormLabel),
+                                            React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Wind speed: ' + speed + ' km/s • Density: ' + density + ' particles/cm³')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Wind speed', val: speed, key: 'swSpeed', min: 200, max: 900, step: 10 },
+                                            { label: 'Density', val: density, key: 'swDens', min: 1, max: 15, step: 1 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Solar wind is a stream of charged particles (mostly protons + electrons) constantly flowing from the Sun. Speed varies 250-800 km/s. Strong storms cause auroras + can disrupt GPS + power grids. Carrington 1859 event: telegraphs sparked + caught fire.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ISS ORBITAL POSITION ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🛰 ISS Orbital Position"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showISS", !d.showISS); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showISS ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
+                  }, d.showISS ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "The ISS orbits Earth every 90 minutes. Sometimes in daylight, sometimes in Earth's shadow."),
+                d.showISS && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var orb = d.issOrbit != null ? d.issOrbit : 0;
+                                      var cx = 200, cy = 140;
+                                      var orbitR = 90;
+                                      var rad = orb * Math.PI / 180;
+                                      var issX = cx + Math.cos(rad) * orbitR;
+                                      var issY = cy + Math.sin(rad) * orbitR;
+                                      var sunSide = Math.cos(rad) > -0.3;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 270;
+                                              return React.createElement('circle', { key: 'isst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('circle', { cx: 380, cy: 140, r: 8, fill: '#fde047' }),
+                                            React.createElement('circle', { cx: 380, cy: 140, r: 14, fill: '#f59e0b', opacity: 0.3 }),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: orbitR, fill: 'none', stroke: '#475569', strokeWidth: 0.7, strokeDasharray: '3,3' }),
+                                            React.createElement('circle', { cx: cx, cy: cy, r: 70, fill: '#1e40af' }),
+                                            React.createElement('path', { d: 'M ' + (cx - 70) + ' ' + cy + ' A 70 70 0 0 0 ' + (cx + 70) + ' ' + cy + ' Z', fill: '#0a0a18', opacity: 0.6 }),
+                                            [[180, 110], [220, 140], [185, 165]].map(function(c, ci) {
+                                              return React.createElement('ellipse', { key: 'co' + ci, cx: c[0], cy: c[1], rx: 18, ry: 8, fill: '#22c55e' });
+                                            }),
+                                            React.createElement('g', { transform: 'translate(' + issX + ', ' + issY + ')' },
+                                              React.createElement('circle', { cx: 0, cy: 0, r: 6, fill: sunSide ? '#fbbf24' : '#475569' }),
+                                              React.createElement('rect', { x: -10, y: -1, width: 6, height: 2, fill: '#94a3b8' }),
+                                              React.createElement('rect', { x: 4, y: -1, width: 6, height: 2, fill: '#94a3b8' }),
+                                              React.createElement('text', { x: 0, y: -10, textAnchor: 'middle', fill: '#fff', fontSize: 8 }, 'ISS')
+                                            ),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sunSide ? '☀ ISS in daylight' : '🌙 ISS in Earth\'s shadow'),
+                                            React.createElement('text', { x: 200, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Orbital position: ' + orb + '° • 400 km altitude • 17,500 mph • orbit completes every 90 min')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Orbit'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: orb, onChange: function(e) { upd('issOrbit', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, orb + '°')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'The ISS orbits 400 km up at 17,500 mph (28,000 km/h). It completes one orbit every 90 minutes — so astronauts see 16 sunrises + sunsets per day. ISS is the largest object humans have built in space.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: VOYAGER POSITION TRACKER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🚀 Voyager Position Tracker"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showVoy", !d.showVoy); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showVoy ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showVoy ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Voyager 1 + 2 launched 1977. They are now in interstellar space — both crossed the heliopause this decade."),
+                d.showVoy && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var year = d.voyYear != null ? d.voyYear : 2026;
+                                      var v1AU = 0.058 + (year - 1977) * 3.6;
+                                      var v2AU = 0.062 + (year - 1977) * 3.3;
+                                      var hpAU = 120;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 29) % 260;
+                                              return React.createElement('circle', { key: 'vyst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 200, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '5,3', opacity: 0.3 }),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 180, fill: 'none', stroke: '#a78bfa', strokeWidth: 1, strokeDasharray: '4,2', opacity: 0.5 }),
+                                            [['Jupiter', 5.2, '#f97316'], ['Saturn', 9.6, '#eab308'], ['Uranus', 19, '#67e8f9'], ['Neptune', 30, '#3b82f6'], ['Pluto', 39, '#a78bfa'], ['Heliopause', 120, '#a78bfa']].map(function(p, pi) {
+                                              var r = Math.min(195, p[1] * 1.5);
+                                              return React.createElement('g', { key: p[0] },
+                                                React.createElement('circle', { cx: 200, cy: 140, r: r, fill: 'none', stroke: p[2], strokeWidth: 0.6, strokeDasharray: '2,4', opacity: 0.4 }),
+                                                React.createElement('circle', { cx: 200 + r, cy: 140, r: 3, fill: p[2] }),
+                                                React.createElement('text', { x: 200 + r + 8, y: 142, fill: p[2], fontSize: 8 }, p[0])
+                                              );
+                                            }),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 8, fill: '#fde047' }),
+                                            React.createElement('circle', { cx: 200 - Math.min(195, v1AU * 1.5), cy: 140 - 5, r: 4, fill: '#dc2626' }),
+                                            React.createElement('text', { x: 200 - Math.min(195, v1AU * 1.5), y: 130, textAnchor: 'middle', fill: '#fca5a5', fontSize: 9 }, 'V1'),
+                                            React.createElement('circle', { cx: 200 - Math.min(195, v2AU * 1.5), cy: 140 + 15, r: 4, fill: '#dc2626' }),
+                                            React.createElement('text', { x: 200 - Math.min(195, v2AU * 1.5), y: 165, textAnchor: 'middle', fill: '#fca5a5', fontSize: 9 }, 'V2'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Voyager 1 + 2 positions in ' + year),
+                                            React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'V1: ' + v1AU.toFixed(0) + ' AU' + (v1AU > 120 ? ' (interstellar)' : '') + ' • V2: ' + v2AU.toFixed(0) + ' AU' + (v2AU > 120 ? ' (interstellar)' : ''))
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Year'),
+                                          React.createElement('input', { type: 'range', min: 1977, max: 2050, value: year, onChange: function(e) { upd('voyYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year)
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Voyagers 1 + 2 launched 1977 to study outer planets. Both crossed the heliopause (boundary of solar wind) in 2012 + 2018 — now in interstellar space. Each carries Golden Record with greetings + music for any aliens who find them.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MERCURY TRANSIT ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌑 Mercury Transit"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTrans", !d.showTrans); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTrans ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showTrans ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Mercury passes in front of the Sun every few years. Watch it cross — but only with a proper solar filter."),
+                d.showTrans && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var phase = d.transPhase != null ? d.transPhase : 50;
+                                      var mercX = 60 + (phase / 100) * 280;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunBig' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '70%', stopColor: '#fbbf24' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#dc2626' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 110, fill: '#f59e0b', opacity: 0.2 }),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 90, fill: 'url(#sunBig)' }),
+                                            new Array(15).fill(0).map(function(_, i) {
+                                              var ax = 130 + Math.random() * 140;
+                                              var ay = 80 + Math.random() * 130;
+                                              var dx = ax - 200, dy = ay - 140;
+                                              if (dx*dx + dy*dy > 6800) return null;
+                                              return React.createElement('circle', { key: 'sp' + i, cx: ax, cy: ay, r: 2 + (i % 3), fill: '#7c2d12', opacity: 0.6 });
+                                            }),
+                                            mercX >= 110 && mercX <= 290 && React.createElement('circle', { cx: mercX, cy: 140, r: 4, fill: '#0a0a18' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, mercX >= 110 && mercX <= 290 ? '🌑 Mercury transiting Sun' : 'Mercury approaching/exiting'),
+                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Watch with PROPER solar filter only — NEVER look directly!')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Time'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('transPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A transit happens when Mercury (or Venus) passes between Earth + the Sun. It looks like a small black dot on the Sun. Next Mercury transit: November 13, 2032. Next Venus transit: December 2117 — won\'t happen again until 2125.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: FOUCAULT PENDULUM ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🎯 Foucault Pendulum"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showFouc", !d.showFouc); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showFouc ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showFouc ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Léon Foucault 1851 proved Earth rotates with a giant pendulum. Its swing-plane rotates faster at the poles."),
+                d.showFouc && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var lat = d.foucLat != null ? d.foucLat : 45;
+                                      var t = d.foucTime != null ? d.foucTime : 0;
+                                      var period = 24 / Math.abs(Math.sin(lat * Math.PI / 180));
+                                      var rotation = (t / period) * 360;
+                                      var rad = rotation * Math.PI / 180;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            React.createElement('circle', { cx: 200, cy: 150, r: 100, fill: 'none', stroke: '#475569', strokeWidth: 1 }),
+                                            [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(function(deg, di) {
+                                              var r = deg * Math.PI / 180;
+                                              return React.createElement('text', { key: 'tk' + di, x: 200 + Math.cos(r) * 110, y: 154 + Math.sin(r) * 110, fill: '#7dd3fc', fontSize: 8, textAnchor: 'middle' }, deg);
+                                            }),
+                                            React.createElement('line', { x1: 200 - Math.cos(rad) * 95, y1: 150 - Math.sin(rad) * 95, x2: 200 + Math.cos(rad) * 95, y2: 150 + Math.sin(rad) * 95, stroke: '#fbbf24', strokeWidth: 2 }),
+                                            React.createElement('circle', { cx: 200 + Math.cos(rad) * 95, cy: 150 + Math.sin(rad) * 95, r: 5, fill: '#fbbf24' }),
+                                            React.createElement('circle', { cx: 200, cy: 150, r: 3, fill: '#fff' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Foucault Pendulum'),
+                                            React.createElement('text', { x: 200, y: 270, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Rotates full circle every ' + period.toFixed(1) + ' hours at latitude ' + lat + '°')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Latitude', val: lat, key: 'foucLat', min: -90, max: 90, step: 5 },
+                                            { label: 'Hours elapsed', val: t, key: 'foucTime', min: 0, max: 48, step: 0.5 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Léon Foucault 1851 demonstrated Earth\'s rotation with a giant pendulum. Its swing plane appears to rotate because Earth turns under it. At the poles: 24 hours. At equator: never. In Maine: ~34 hours.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SATURN HEXAGON ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⬡ Saturn Hexagon"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showHex", !d.showHex); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showHex ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200')
+                  }, d.showHex ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Saturn's north pole has a perfect hexagonal storm 30,000 km wide. Discovered by Voyager 1981."),
+                d.showHex && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var rot = d.hexRot != null ? d.hexRot : 0;
+                                      var rad = rot * Math.PI / 180;
+                                      var hpts = [];
+                                      for (var hi = 0; hi < 6; hi++) {
+                                        var a = hi * Math.PI / 3 + rad;
+                                        hpts.push((200 + Math.cos(a) * 80) + ',' + (140 + Math.sin(a) * 80));
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'satC' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fbbf24' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#ca8a04' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 200, cy: 140, r: 130, fill: 'url(#satC)' }),
+                                            React.createElement('polygon', { points: hpts.join(' '), fill: 'none', stroke: '#fde047', strokeWidth: 2 }),
+                                            new Array(6).fill(0).map(function(_, hi) {
+                                              var a = hi * Math.PI / 3 + rad;
+                                              return React.createElement('circle', { key: 'hsw' + hi, cx: 200 + Math.cos(a) * 80, cy: 140 + Math.sin(a) * 80, r: 4, fill: '#dc2626' });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Saturn\'s Hexagonal Pole Storm'),
+                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Persistent feature 30,000 km wide — 5× Earth diameter')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Rotation'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: rot, onChange: function(e) { upd('hexRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rot + '°')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Saturn has a perfect hexagonal storm at its north pole — first imaged by Voyager (1981), confirmed by Cassini. The hexagon is 30,000 km wide and persistent. Why hexagonal? Atmospheric jet stream pattern + Rossby waves.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SUNDIAL DEMO ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🕰 Sundial Demo"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSundial", !d.showSundial); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSundial ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSundial ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "The original clock. As the Sun arcs across the sky, the gnomon casts a rotating shadow that marks the hours."),
+                d.showSundial && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var hour = d.sdHour != null ? d.sdHour : 12;
+                                      var rotation = (hour - 12) * 15;
+                                      var rad = rotation * Math.PI / 180;
+                                      var shadowX = 200 + Math.sin(rad) * 80;
+                                      var shadowY = 180 - Math.cos(rad) * 30;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: hour > 6 && hour < 18 ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 60%, #dc2626 100%)' : 'linear-gradient(180deg, #0a0a18 0%, #1e1b4b 100%)' } },
+                                            React.createElement('rect', { x: 0, y: 180, width: 400, height: 70, fill: '#6b7280' }),
+                                            hour > 6 && hour < 18 && React.createElement('circle', { cx: 200 + Math.sin(rad) * 130, cy: 180 - Math.cos(rad) * 60, r: 14, fill: '#fde047' }),
+                                            hour > 6 && hour < 18 && React.createElement('circle', { cx: 200 + Math.sin(rad) * 130, cy: 180 - Math.cos(rad) * 60, r: 22, fill: '#fde047', opacity: 0.3 }),
+                                            React.createElement('polygon', { points: '195,180 205,180 200,140', fill: '#92400e' }),
+                                            React.createElement('line', { x1: 200, y1: 180, x2: shadowX, y2: shadowY + 0, stroke: '#3f3f46', strokeWidth: 4, opacity: 0.7 }),
+                                            [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(function(h, hi) {
+                                              var ang = (h - 12) * 15 * Math.PI / 180;
+                                              return React.createElement('text', { key: 'hk' + hi, x: 200 + Math.sin(ang) * 95, y: 178 - Math.cos(ang) * 35, fill: '#fff', fontSize: 8, textAnchor: 'middle' }, h);
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Sundial — ' + hour + ':00')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Hour'),
+                                          React.createElement('input', { type: 'range', min: 6, max: 18, step: 0.25, value: hour, onChange: function(e) { upd('sdHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour.toFixed(1))
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Sundials predate clocks by millennia. As Sun moves across sky, the gnomon\'s shadow rotates. Ancient Egyptians, Greeks, Romans, Chinese all built precise sundials. Modern ones must correct for daylight saving time + equation of time.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: LOCAL GROUP MAP ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌐 Local Group Map"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showLG", !d.showLG); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showLG ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showLG ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "80 galaxies span 10 million light-years around us. Milky Way + Andromeda will collide in 4 billion years."),
+                d.showLG && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var members = [
+                                        { name: 'Milky Way', x: 200, y: 150, r: 16, color: '#fde047', desc: 'Our home galaxy' },
+                                        { name: 'Andromeda (M31)', x: 320, y: 90, r: 18, color: '#a78bfa', desc: '2.5 Mly away — heading toward us!' },
+                                        { name: 'Triangulum (M33)', x: 280, y: 80, r: 8, color: '#7dd3fc', desc: '2.7 Mly away' },
+                                        { name: 'Large Magellanic Cloud', x: 230, y: 200, r: 6, color: '#fbbf24', desc: '160k ly — satellite of Milky Way' },
+                                        { name: 'Small Magellanic Cloud', x: 240, y: 215, r: 4, color: '#fbbf24', desc: '200k ly — satellite' },
+                                        { name: 'Canis Major Dwarf', x: 175, y: 175, r: 3, color: '#94a3b8', desc: '25k ly — closest to MW' },
+                                        { name: 'Sagittarius Dwarf', x: 220, y: 175, r: 4, color: '#94a3b8', desc: '70k ly — being torn apart' },
+                                        { name: 'Ursa Minor Dwarf', x: 180, y: 100, r: 3, color: '#94a3b8', desc: '200k ly' },
+                                        { name: 'Sculptor Dwarf', x: 230, y: 120, r: 3, color: '#94a3b8', desc: '290k ly' },
+                                        { name: 'IC 10', x: 310, y: 110, r: 4, color: '#7dd3fc', desc: '2.2 Mly — small spiral' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: '#000' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 31) % 250;
+                                              return React.createElement('circle', { key: 'lgst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            members.map(function(m) {
+                                              return React.createElement('g', { key: m.name },
+                                                React.createElement('ellipse', { cx: m.x, cy: m.y, rx: m.r * 1.4, ry: m.r * 0.7, fill: m.color, opacity: 0.6 }),
+                                                React.createElement('circle', { cx: m.x, cy: m.y, r: m.r * 0.5, fill: '#fff', opacity: 0.8 }),
+                                                React.createElement('text', { x: m.x, y: m.y + m.r + 9, textAnchor: 'middle', fill: m.color, fontSize: 8 }, m.name)
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Local Group — ~80 galaxies in 10 million light-years')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Our Local Group has ~80 galaxies dominated by Milky Way + Andromeda. Andromeda is approaching at 110 km/s — collision expected in 4 billion years. Result: Milkomeda mega-galaxy.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ASTEROID IMPACT OUTCOMES ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☄ Asteroid Impact Outcomes"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showImpact", !d.showImpact); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showImpact ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showImpact ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "What size asteroid kills which level of life? Compare from pebble to dinosaur-killer."),
+                d.showImpact && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var size = d.impSize != null ? d.impSize : 10;
+                                      var energy = Math.pow(size, 3.5) * 0.4;
+                                      var craterKm = Math.pow(size, 0.78) * 1.16;
+                                      var consequence = size < 1 ? 'Burns up in atmosphere' : size < 5 ? 'Local damage; broken windows' : size < 50 ? 'City destroyed; tsunamis' : size < 500 ? 'Continental devastation' : size < 2000 ? 'Mass extinction' : 'Sterilizing impact';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            React.createElement('rect', { x: 0, y: 160, width: 400, height: 80, fill: '#22c55e' }),
+                                            React.createElement('rect', { x: 0, y: 155, width: 400, height: 5, fill: '#16a34a' }),
+                                            React.createElement('circle', { cx: 200, cy: 160, r: Math.min(150, craterKm * 5), fill: 'none', stroke: '#dc2626', strokeWidth: 2, strokeDasharray: '5,3' }),
+                                            React.createElement('ellipse', { cx: 200, cy: 165, rx: Math.min(100, craterKm * 3), ry: Math.min(30, craterKm), fill: '#7c2d12' }),
+                                            React.createElement('circle', { cx: 200, cy: 70, r: Math.min(20, size / 2), fill: '#92400e' }),
+                                            React.createElement('line', { x1: 200, y1: 100, x2: 200, y2: 160, stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '4,2' }),
+                                            size > 100 && [70, 130, 270, 330].map(function(fx, i) {
+                                              return React.createElement('polygon', { key: 'fr' + i, points: fx + ',160 ' + (fx - 5) + ',140 ' + (fx + 5) + ',140', fill: '#dc2626' });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, consequence),
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, 'Crater: ' + craterKm.toFixed(1) + ' km • Energy: ' + energy.toFixed(0) + ' MT TNT')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Size (m)'),
+                                          React.createElement('input', { type: 'range', min: 0.5, max: 5000, step: 0.5, value: size, onChange: function(e) { upd('impSize', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, size + 'm')
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
+                                          [['Pebble', 0.5], ['Chelyabinsk', 20], ['Tunguska', 50], ['Chicxulub', 10000]].map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('impSize', p[1]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Atmospheric entry destroys most rocks < 5m. Chelyabinsk 2013 (20m) shattered windows but no crater. Tunguska 1908 (50m) flattened 2000km² of forest. Chicxulub 66Ma (10km) killed the dinosaurs.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CORONAL MASS EJECTION ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⚡ Coronal Mass Ejection"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCME", !d.showCME); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCME ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
+                  }, d.showCME ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "A CME blasts billions of tons of plasma from Sun. Days later, it can cause spectacular auroras + GPS failures."),
+                d.showCME && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var phase = d.cmePhase != null ? d.cmePhase : 0;
+                                      var size = d.cmeSize != null ? d.cmeSize : 50;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(20).fill(0).map(function(_, i) {
+                                              var sx = (i * 53) % 400;
+                                              var sy = (i * 41) % 230;
+                                              return React.createElement('circle', { key: 'cmst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'sunCH' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                                                React.createElement('stop', { offset: '70%', stopColor: '#f59e0b' }),
+                                                React.createElement('stop', { offset: '100%', stopColor: '#dc2626' })
+                                              )
+                                            ),
+                                            React.createElement('circle', { cx: 150, cy: 130, r: 65, fill: 'url(#sunCH)' }),
+                                            React.createElement('ellipse', { cx: 170, cy: 105, rx: 18, ry: 12, fill: '#000' }),
+                                            phase > 20 && React.createElement('path', { d: 'M 195 110 Q ' + (215 + phase * 0.5) + ' 80 ' + (245 + phase) + ' 60', fill: 'none', stroke: '#fbbf24', strokeWidth: 3 + size / 20, opacity: 0.7 - phase / 200 }),
+                                            phase > 20 && React.createElement('path', { d: 'M 200 130 Q ' + (220 + phase * 0.6) + ' 110 ' + (260 + phase) + ' 90', fill: 'none', stroke: '#fde047', strokeWidth: 4 + size / 15, opacity: 0.85 - phase / 250 }),
+                                            phase > 30 && React.createElement('ellipse', { cx: 250 + phase * 1.2, cy: 130, rx: 30 + phase * 0.5, ry: 15 + phase * 0.2, fill: '#dc2626', opacity: 0.3 }),
+                                            React.createElement('circle', { cx: 360, cy: 130, r: 10, fill: '#3b82f6' }),
+                                            React.createElement('text', { x: 360, y: 155, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                            phase > 80 && React.createElement('circle', { cx: 360, cy: 130, r: 20 + size / 5, fill: '#22c55e', opacity: 0.4 }),
+                                            phase > 80 && React.createElement('text', { x: 360, y: 105, textAnchor: 'middle', fill: '#86efac', fontSize: 8 }, '⚡ AURORA!'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, phase < 20 ? 'Coronal hole — CME building' : phase < 80 ? 'CME launched + traveling' : 'CME hit Earth — aurora!')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Time after launch', val: phase, key: 'cmePhase' },
+                                            { label: 'CME size', val: size, key: 'cmeSize' }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A Coronal Mass Ejection blasts billions of tons of plasma into space at 1-2 million mph. Takes 1-5 days to reach Earth. Strong CMEs cause geomagnetic storms, vivid auroras, and can disrupt satellites + power grids.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CEPHEID VARIABLE STAR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "💫 Cepheid Variable Star"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showPVar", !d.showPVar); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showPVar ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showPVar ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Cepheids pulse on a regular cycle. Their period reveals their true brightness — a cosmic ruler."),
+                d.showPVar && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var t = d.pvT != null ? d.pvT : 0;
+                                      var period = d.pvPer != null ? d.pvPer : 5;
+                                      var phase = (t % period) / period;
+                                      var bright = Math.sin(phase * Math.PI * 2);
+                                      var size = 40 + bright * 20;
+                                      var alpha = 0.7 + bright * 0.3;
+                                      var pts = [];
+                                      for (var pi = 0; pi <= 40; pi++) {
+                                        var phaseP = pi / 40;
+                                        var b = Math.sin(phaseP * Math.PI * 2);
+                                        pts.push((50 + pi * 8) + ',' + (200 - (b + 1) * 30));
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 43) % 400;
+                                              var sy = (i * 31) % 230;
+                                              return React.createElement('circle', { key: 'pvst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('circle', { cx: 100, cy: 90, r: size / 2, fill: '#fde047', opacity: alpha }),
+                                            React.createElement('circle', { cx: 100, cy: 90, r: size * 0.3, fill: '#fff', opacity: alpha * 0.7 }),
+                                            React.createElement('rect', { x: 50, y: 140, width: 300, height: 70, fill: 'none', stroke: '#475569', strokeWidth: 1 }),
+                                            React.createElement('polyline', { points: pts.join(' '), fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.5 }),
+                                            React.createElement('circle', { cx: 50 + (phase * 320), cy: 200 - (bright + 1) * 30, r: 4, fill: '#fde047' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Cepheid Variable Star'),
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Period: ' + period + ' days • Phase: ' + (phase * 100).toFixed(0) + '%')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Time (days)', val: t, key: 'pvT', max: 30, step: 0.1 },
+                                            { label: 'Period', val: period, key: 'pvPer', max: 30, step: 0.5 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: 0.5, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Cepheid variables pulse on a regular cycle. Their period directly correlates with their intrinsic brightness (Henrietta Leavitt 1908). Astronomers measure the period + use it to determine true luminosity + distance.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COMET ORBIT DRAWER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☄ Comet Orbit Drawer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCOrb", !d.showCOrb); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCOrb ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showCOrb ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Orbits range from circles to long ellipses. Adjust eccentricity to draw planet-like or comet-like paths."),
+                d.showCOrb && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var ecc = d.cobEcc != null ? d.cobEcc : 0.85;
+                                      var a = 100;
+                                      var b = a * Math.sqrt(1 - ecc * ecc);
+                                      var c = a * ecc;
+                                      var orbitType = ecc < 0.5 ? 'Near-circular (planet-like)' : ecc < 0.85 ? 'Short-period comet' : ecc < 0.98 ? 'Long-period comet' : 'Near-parabolic (1-orbit only)';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(20).fill(0).map(function(_, i) {
+                                              var sx = (i * 47) % 400;
+                                              var sy = (i * 31) % 240;
+                                              return React.createElement('circle', { key: 'cost' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            React.createElement('ellipse', { cx: 200, cy: 130, rx: a, ry: b, fill: 'none', stroke: '#fbbf24', strokeWidth: 1.5 }),
+                                            React.createElement('circle', { cx: 200 + c, cy: 130, r: 10, fill: '#fde047' }),
+                                            React.createElement('text', { x: 200 + c, y: 110, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Sun'),
+                                            React.createElement('circle', { cx: 200 + c - a, cy: 130, r: 5, fill: '#e2e8f0' }),
+                                            React.createElement('text', { x: 200 + c - a, y: 110, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8 }, 'Perihelion'),
+                                            React.createElement('circle', { cx: 200 + c + a, cy: 130, r: 5, fill: '#94a3b8' }),
+                                            React.createElement('text', { x: 200 + c + a, y: 110, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8 }, 'Aphelion'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, orbitType),
+                                            React.createElement('text', { x: 200, y: 240, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Eccentricity: ' + ecc.toFixed(2))
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Eccentricity'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 0.99, step: 0.01, value: ecc, onChange: function(e) { upd('cobEcc', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ecc.toFixed(2))
+                                        ),
+                                        React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
+                                          [['Earth (e=0.017)', 0.017], ['Halley (e=0.97)', 0.97], ['Mercury (e=0.21)', 0.21], ['Hale-Bopp (e=0.995)', 0.995]].map(function(p) {
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('cobEcc', p[1]); }, className: 'p-1 rounded text-[8px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Orbital eccentricity goes from 0 (perfect circle) to 1 (parabolic escape). Planets are nearly circular. Comets are highly elliptical — they sweep close to the Sun + far into the outer system. Hyperbolic orbits (e>1) mean a one-time pass through the solar system.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ATMOSPHERIC WINDOW ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌐 Atmospheric Window"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAW", !d.showAW); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAW ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showAW ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Earth's atmosphere blocks most wavelengths. Only visible light + radio waves reach the ground."),
+                d.showAW && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 230', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)' } },
+                                            React.createElement('rect', { x: 0, y: 170, width: 400, height: 60, fill: '#1e40af', opacity: 0.5 }),
+                                            ['Gamma', 'X-ray', 'UV', 'Vis', 'IR', 'Microwave', 'Radio'].map(function(b, bi) {
+                                              var x = 30 + bi * 50;
+                                              var visible = bi === 3 || bi === 6 || (bi === 5 && bi !== 5);
+                                              var passes = bi === 3 || bi === 6;
+                                              return React.createElement('g', { key: b },
+                                                React.createElement('rect', { x: x - 18, y: 30, width: 36, height: 130, fill: passes ? '#fbbf24' : '#dc2626', opacity: passes ? 0.3 : 0.5 }),
+                                                React.createElement('text', { x: x, y: 50, textAnchor: 'middle', fill: '#fff', fontSize: 9, fontWeight: 'bold' }, b),
+                                                React.createElement('line', { x1: x, y1: 60, x2: x, y2: passes ? 200 : 170, stroke: passes ? '#fde047' : '#dc2626', strokeWidth: 2, strokeDasharray: passes ? 'none' : '4,3' }),
+                                                !passes && React.createElement('text', { x: x, y: 175, textAnchor: 'middle', fill: '#dc2626', fontSize: 8 }, '✖')
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#fde047', fontSize: 9, fontWeight: 'bold' }, 'Earth ground level'),
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, '✔ Visible light + radio waves penetrate the atmosphere')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Earth atmosphere blocks most wavelengths. Only visible light + radio waves reach the ground. Why all telescopes for UV/X-ray/gamma rays must be in space: Hubble, JWST, Chandra, Fermi.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: STAR SPECTRA COMPARISON ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📊 Star Spectra Comparison"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSpc", !d.showSpc); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSpc ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showSpc ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Spectra reveal what stars are made of + their stage of life."),
+                d.showSpc && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var element = d.spcEl || 'sun';
+                                      var SP = { sun: { name: 'Sun (G2 star)', H: 5, He: 1, others: 4, color: '#fde047' }, redgi: { name: 'Red Giant', H: 3, He: 6, others: 7, color: '#dc2626' }, neb: { name: 'Planetary Nebula', H: 8, He: 5, others: 2, color: '#a78bfa' }, sn: { name: 'Supernova', H: 1, He: 2, others: 12, color: '#fff' } };
+                                      var sel = SP[element];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(SP).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('spcEl', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (element === k ? 'bg-fuchsia-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, SP[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: '#000' } },
+                                            React.createElement('rect', { x: 20, y: 40, width: 360, height: 40, fill: '#1f2937' }),
+                                            new Array(sel.H + sel.He + sel.others).fill(0).map(function(_, li) {
+                                              return React.createElement('rect', { key: 'l' + li, x: 30 + li * 22 + (li * 13 % 30), y: 40, width: 1.5, height: 40, fill: li < sel.H ? '#dc2626' : li < sel.H + sel.He ? '#fbbf24' : '#7dd3fc' });
+                                            }),
+                                            React.createElement('rect', { x: 20, y: 100, width: 360, height: 30, fill: sel.color, opacity: 0.3 }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, sel.name + ' spectrum'),
+                                            React.createElement('text', { x: 200, y: 165, textAnchor: 'middle', fill: '#dc2626', fontSize: 9 }, '🔴 Hydrogen'),
+                                            React.createElement('text', { x: 100, y: 180, textAnchor: 'middle', fill: '#fbbf24', fontSize: 9 }, '🟡 Helium'),
+                                            React.createElement('text', { x: 300, y: 180, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, '🔵 Heavier')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Different stages of stellar life show different spectra. The Sun is hydrogen-dominated. Red giants have more helium (hydrogen consumed). Supernovae show heavy elements (made in last fusion stages + the explosion itself).'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: TIME ZONE VISUALIZER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🕐 Time Zone Visualizer"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTZ", !d.showTZ); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTZ ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showTZ ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Earth rotates 15° per hour. Watch when it's noon in Tokyo, when sunrise hits Portland."),
+                d.showTZ && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var hour = d.tzHour != null ? d.tzHour : 12;
+                                      var cities = [
+                                        { name: 'Tokyo', x: 40, offset: 9 }, { name: 'Beijing', x: 75, offset: 8 }, { name: 'Mumbai', x: 110, offset: 5.5 },
+                                        { name: 'Cairo', x: 155, offset: 2 }, { name: 'London', x: 195, offset: 0 }, { name: 'Sao Paulo', x: 260, offset: -3 },
+                                        { name: 'New York', x: 285, offset: -5 }, { name: 'Portland', x: 340, offset: -5 }, { name: 'LA', x: 370, offset: -8 }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #064e3b 100%)' } },
+                                            React.createElement('rect', { x: 0, y: 100, width: 400, height: 100, fill: '#22c55e', opacity: 0.4 }),
+                                            cities.map(function(c) {
+                                              var localHour = ((hour + c.offset) + 24) % 24;
+                                              var isDay = localHour >= 6 && localHour < 18;
+                                              return React.createElement('g', { key: c.name },
+                                                React.createElement('circle', { cx: c.x, cy: 100, r: 3, fill: isDay ? '#fde047' : '#a78bfa' }),
+                                                React.createElement('text', { x: c.x, y: 90, textAnchor: 'middle', fill: '#fff', fontSize: 8 }, c.name),
+                                                React.createElement('text', { x: c.x, y: 120, textAnchor: 'middle', fill: isDay ? '#fde047' : '#a78bfa', fontSize: 9, fontWeight: 'bold' }, Math.floor(localHour) + ':' + (Math.round((localHour % 1) * 60) + '').padStart(2, '0'))
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'UTC Time: ' + Math.floor(hour) + ':00')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'UTC Hour'),
+                                          React.createElement('input', { type: 'range', min: 0, max: 23, step: 0.5, value: hour, onChange: function(e) { upd('tzHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour + ':00')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Earth rotates 15° per hour. UTC (Coordinated Universal Time) is the global reference. Time zones offset by ±hours. Portland Maine is UTC-5 (EST) or UTC-4 (EDT). Globally, half of Earth is daylit while half is night.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MIND-BLOWING FACTS GALLERY ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "💡 Mind-Blowing Facts Gallery"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showFacts", !d.showFacts); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showFacts ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showFacts ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Click through 12 astronomy facts that defy intuition."),
+                d.showFacts && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.factIdx || 0;
+                                      var FACTS = [
+                                        { f: 'A day on Venus is longer than its year', d: 'Venus rotates so slowly it takes 243 Earth days for one Venus day. But its year is only 225 Earth days.', icon: '♀' },
+                                        { f: 'Saturn would float in water', d: 'Saturn\'s density is only 0.69 g/cm³ — less than water (1.0). It would float (in a bathtub the size of Saturn)!', icon: '🪐' },
+                                        { f: 'Mauna Kea is the tallest mountain', d: 'From base to summit, Mauna Kea is 33,500 ft tall — taller than Everest. But it\'s mostly underwater.', icon: '⛰' },
+                                        { f: 'Jupiter has 95 known moons', d: 'And counting. New moons are still being discovered. The four big ones (Galilean moons) are visible with binoculars.', icon: '🪐' },
+                                        { f: 'Earth weighs ~5.97 × 10^24 kg', d: 'About 6 trillion trillion kilograms. Newton calculated this using gravitational mechanics around 1687.', icon: '🌍' },
+                                        { f: 'There are 200 billion-trillion stars', d: '200,000,000,000,000,000,000,000 estimated stars in the observable universe. More stars than grains of sand on all Earth\'s beaches.', icon: '⭐' },
+                                        { f: 'The Sun loses 4 million tons per second', d: 'Through nuclear fusion converting mass to energy. The Sun has been doing this for 4.6 billion years.', icon: '☀' },
+                                        { f: 'Earth has 2 trojan asteroids', d: 'They co-orbit Earth at the L4 + L5 Lagrange points. Discovered 2010 + 2020.', icon: '☄' },
+                                        { f: 'A neutron star is the size of a city', d: '~20 km diameter, but as massive as 1.4 Suns. A teaspoon weighs 6 billion tons.', icon: '⭐' },
+                                        { f: 'JWST sees back 13.5 billion years', d: 'Light from the earliest galaxies has been traveling toward us nearly the age of the universe.', icon: '🔭' },
+                                        { f: 'Mars has the largest volcano', d: 'Olympus Mons: 22 km tall, 600 km wide. ~3× taller than Mount Everest. Possibly still active.', icon: '🔴' },
+                                        { f: 'Pluto is smaller than the Moon', d: 'Pluto: 2,377 km diameter. Earth\'s Moon: 3,474 km. That\'s partly why Pluto was reclassified as dwarf planet.', icon: '🥚' }
+                                      ];
+                                      var cur = FACTS[idx % FACTS.length];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-center text-4xl mb-2' }, cur.icon),
+                                          React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, cur.f),
+                                          React.createElement('div', { className: 'text-center text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.d)
+                                        ),
+                                        React.createElement('div', { className: 'flex gap-1 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('factIdx', (idx + FACTS.length - 1) % FACTS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Previous'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % FACTS.length + 1) + ' / ' + FACTS.length),
+                                          React.createElement('button', { onClick: function() { upd('factIdx', (idx + 1) % FACTS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Next →')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: EARTH-MOON TRUE SCALE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📐 Earth-Moon True Scale"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showEMS", !d.showEMS); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showEMS ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showEMS ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Textbook diagrams lie. The Moon is much farther than drawn. See the real scale."),
+                d.showEMS && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var scale = d.emScale || 'true';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex gap-1 mb-2' },
+                                          [['true', 'True distance'], ['textbook', 'Textbook (wrong!)']].map(function(t) {
+                                            return React.createElement('button', { key: t[0], onClick: function() { upd('emScale', t[0]); }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold ' + (scale === t[0] ? 'bg-blue-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, t[1]);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              var sx = (i * 41) % 400;
+                                              var sy = (i * 23) % 170;
+                                              return React.createElement('circle', { key: 'es' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
+                                            }),
+                                            scale === 'true' ? React.createElement('g', null,
+                                              React.createElement('circle', { cx: 40, cy: 100, r: 18, fill: '#3b82f6' }),
+                                              React.createElement('text', { x: 40, y: 130, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                              React.createElement('circle', { cx: 340, cy: 100, r: 5, fill: '#e2e8f0' }),
+                                              React.createElement('text', { x: 340, y: 120, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Moon')
+                                            ) : React.createElement('g', null,
+                                              React.createElement('circle', { cx: 130, cy: 100, r: 30, fill: '#3b82f6' }),
+                                              React.createElement('text', { x: 130, y: 145, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Earth'),
+                                              React.createElement('circle', { cx: 220, cy: 100, r: 18, fill: '#e2e8f0' }),
+                                              React.createElement('text', { x: 220, y: 135, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Moon (too big + close)')
+                                            ),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, scale === 'true' ? 'Real Earth-Moon scale' : 'Textbook misleading version'),
+                                            React.createElement('text', { x: 200, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, scale === 'true' ? 'Moon is ~30 Earth diameters away' : 'Real distance is much greater than usually drawn')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Most textbooks draw the Moon too big + too close. Truth: Moon diameter is 1/4 of Earth\'s, and the distance to the Moon is ~30 Earth diameters. Light takes 1.3 seconds to make the trip.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: DAY LENGTH COMPARISON ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⏰ Day Length Comparison"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDL", !d.showDL); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDL ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
+                  }, d.showDL ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Jupiter has the shortest day (10 hr). Venus has the longest (243 Earth days!)."),
+                d.showDL && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var planets = [
+                                        { name: 'Jupiter', hr: 9.9, color: '#f97316' }, { name: 'Saturn', hr: 10.7, color: '#eab308' },
+                                        { name: 'Neptune', hr: 16.1, color: '#3b82f6' }, { name: 'Uranus', hr: 17.2, color: '#67e8f9' },
+                                        { name: 'Earth', hr: 24, color: '#22c55e' }, { name: 'Mars', hr: 24.6, color: '#dc2626' },
+                                        { name: 'Mercury', hr: 1408, color: '#94a3b8' }, { name: 'Venus', hr: 5832, color: '#fbbf24' }
+                                      ];
+                                      var maxHr = 80;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            planets.map(function(p, pi) {
+                                              var y = 35 + pi * 25;
+                                              var w = Math.min(280, Math.log10(p.hr) * 100);
+                                              return React.createElement('g', { key: p.name },
+                                                React.createElement('text', { x: 90, y: y + 4, textAnchor: 'end', fill: p.color, fontSize: 10, fontWeight: 'bold' }, p.name),
+                                                React.createElement('rect', { x: 100, y: y - 6, width: w, height: 12, fill: p.color, opacity: 0.8 }),
+                                                React.createElement('text', { x: 105 + w, y: y + 3, fill: p.color, fontSize: 9 }, p.hr.toFixed(1) + 'h')
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Day length across the Solar System (log scale)'),
+                                            React.createElement('text', { x: 200, y: 240, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Jupiter spins fast. Venus rotates slower than its year.')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Gas giants spin fast because of how they formed. Venus rotates slowest, possibly due to a tidal lock with Sun + thick atmosphere drag. Earth slows down by ~1.7 milliseconds per century due to Moon\'s gravity.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ECLIPSE PATH MAKER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🗺 Eclipse Path Maker"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showEPath", !d.showEPath); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showEPath ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showEPath ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Total eclipses cover narrow strips. The 2024 eclipse path crossed northern Maine."),
+                d.showEPath && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var lat = d.ePathLat != null ? d.ePathLat : 40;
+                                      var lon = d.ePathLon != null ? d.ePathLon : 0;
+                                      var inMaine = lat > 40 && lat < 50 && lon > -75 && lon < -65;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e3a8a 0%, #064e3b 100%)' } },
+                                            React.createElement('ellipse', { cx: 200, cy: 110, rx: 180, ry: 100, fill: '#22c55e', opacity: 0.4 }),
+                                            React.createElement('path', { d: 'M 80 80 Q 200 90 320 130', stroke: '#000', strokeWidth: 14, fill: 'none', opacity: 0.6 }),
+                                            React.createElement('path', { d: 'M 80 80 Q 200 90 320 130', stroke: '#fbbf24', strokeWidth: 5, fill: 'none' }),
+                                            React.createElement('circle', { cx: 200 + lon * 2, cy: 110 - lat, r: 4, fill: '#dc2626' }),
+                                            React.createElement('text', { x: 200 + lon * 2, y: 100 - lat, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'You'),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'April 8, 2024 Total Solar Eclipse path'),
+                                            React.createElement('text', { x: 200, y: 205, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, inMaine ? '✨ YOU ARE IN THE PATH OF TOTALITY (Maine had partial)' : 'Move to the path of totality')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'Latitude', val: lat, key: 'ePathLat', min: 0, max: 80 },
+                                            { label: 'Longitude', val: lon, key: 'ePathLon', min: -100, max: 100 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Total solar eclipses only happen along narrow paths ~100-150 km wide. April 8, 2024 eclipse crossed northern Maine — many Mainers traveled north for totality. Next total eclipse in Maine: not for centuries!'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COSMIC CALENDAR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📅 Cosmic Calendar"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCal", !d.showCal); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCal ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showCal ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Sagan's Cosmic Calendar: 13.8 billion years in one year. Humans arrive in the last second."),
+                d.showCal && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.calIdx || 0;
+                                      var CAL = [
+                                        { date: 'Jan 1', event: 'Big Bang', desc: '13.8 billion years ago' },
+                                        { date: 'Mar 16', event: 'First galaxies form', desc: '~10 billion years ago' },
+                                        { date: 'May 1', event: 'Milky Way forms', desc: '~8 billion years ago' },
+                                        { date: 'Sep 9', event: 'Sun + Earth form', desc: '4.6 billion years ago' },
+                                        { date: 'Sep 14', event: 'First life on Earth', desc: '~4 billion years ago' },
+                                        { date: 'Nov 9', event: 'Multicellular life', desc: '~600 million years ago' },
+                                        { date: 'Dec 5', event: 'Plants colonize land', desc: '~470 million years ago' },
+                                        { date: 'Dec 14', event: 'Dinosaurs appear', desc: '~250 million years ago' },
+                                        { date: 'Dec 25', event: 'Mammals diversify', desc: '~66 million years ago' },
+                                        { date: 'Dec 30 noon', event: 'First primates', desc: '~50 million years ago' },
+                                        { date: 'Dec 31 11pm', event: 'Homo sapiens', desc: '~200,000 years ago' },
+                                        { date: 'Dec 31 11:59:46', event: 'Recorded history begins', desc: '~5,000 years ago' },
+                                        { date: 'Dec 31 11:59:59.9', event: 'Industrial revolution + space age', desc: '~200 years ago' }
+                                      ];
+                                      var cur = CAL[idx % CAL.length];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-center font-bold text-xl ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, cur.date),
+                                          React.createElement('div', { className: 'text-center font-bold text-base mt-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, cur.event),
+                                          React.createElement('div', { className: 'text-center text-[10px] mt-1 italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, cur.desc)
+                                        ),
+                                        React.createElement('div', { className: 'flex gap-1 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('calIdx', (idx + CAL.length - 1) % CAL.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Earlier'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % CAL.length + 1) + ' / ' + CAL.length),
+                                          React.createElement('button', { onClick: function() { upd('calIdx', (idx + 1) % CAL.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Later →')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Carl Sagan\'s Cosmic Calendar: compresses 13.8 billion years into 1 year. Big Bang = Jan 1. Now = Dec 31 midnight. Humans appeared in the last seconds. Civilizations exist in the last fraction of a second.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: DRAKE EQUATION CALCULATOR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "👽 Drake Equation Calculator"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDrake", !d.showDrake); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDrake ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showDrake ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "How many alien civilizations? Adjust each unknown factor + see the answer."),
+                d.showDrake && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var R = d.drR != null ? d.drR : 1.5;
+                                      var fp = d.drFp != null ? d.drFp : 1.0;
+                                      var ne = d.drNe != null ? d.drNe : 0.4;
+                                      var fl = d.drFl != null ? d.drFl : 0.5;
+                                      var fi = d.drFi != null ? d.drFi : 0.1;
+                                      var fc = d.drFc != null ? d.drFc : 0.5;
+                                      var L = d.drL != null ? d.drL : 1000;
+                                      var N = R * fp * ne * fl * fi * fc * L;
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'N = ' + N.toFixed(2) + ' communicating civilizations'),
+                                          React.createElement('div', { className: 'text-center text-[10px] mb-3 italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'in our Milky Way Galaxy at any time')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                          [
+                                            { label: 'R: Star formation rate', val: R, key: 'drR', min: 0.1, max: 10, step: 0.1 },
+                                            { label: 'fp: Fraction w/ planets', val: fp, key: 'drFp', min: 0, max: 1, step: 0.05 },
+                                            { label: 'ne: # habitable per system', val: ne, key: 'drNe', min: 0, max: 5, step: 0.1 },
+                                            { label: 'fl: Fraction with life', val: fl, key: 'drFl', min: 0, max: 1, step: 0.05 },
+                                            { label: 'fi: Intelligent life', val: fi, key: 'drFi', min: 0, max: 1, step: 0.01 },
+                                            { label: 'fc: Communicating', val: fc, key: 'drFc', min: 0, max: 1, step: 0.05 },
+                                            { label: 'L: Lifespan (years)', val: L, key: 'drL', min: 100, max: 1000000, step: 100 }
+                                          ].map(function(s) {
+                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
+                                              React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
+                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Frank Drake 1961: estimating other civilizations. Most factors are unknown — answers from <1 (alone) to millions. Reveals what we don\'t know more than gives an answer. Adjust the sliders to see how sensitive the result is.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: WORLD TELESCOPES CATALOG ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔭 World Telescopes Catalog"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTelCat", !d.showTelCat); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTelCat ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showTelCat ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Dozen biggest + best telescopes: Hubble, JWST, Keck, VLT, ALMA, and what they observe."),
+                d.showTelCat && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var TELS = [
+                                        { name: 'Hubble Space Telescope', aper: 240, launch: 1990, color: '#7dd3fc', desc: 'Optical/UV/IR space telescope. 30+ year service.' },
+                                        { name: 'James Webb (JWST)', aper: 650, launch: 2021, color: '#fbbf24', desc: 'Infrared space telescope. At L2 Lagrange point.' },
+                                        { name: 'Keck I + II', aper: 1000, launch: 1993, color: '#94a3b8', desc: 'Twin 10m telescopes on Mauna Kea, Hawaii.' },
+                                        { name: 'Very Large Telescope (VLT)', aper: 820, launch: 1998, color: '#cbd5e1', desc: 'ESO Chile, four 8.2m telescopes.' },
+                                        { name: 'Gemini North + South', aper: 810, launch: 2000, color: '#a3a3a3', desc: 'Twin 8m: Mauna Kea + Cerro Pachón.' },
+                                        { name: 'Atacama Large Millimeter Array', aper: 1200, launch: 2013, color: '#fde047', desc: '66-antenna radio array, Chilean desert.' },
+                                        { name: 'Hubble (in space)', aper: 240, launch: 1990, color: '#7dd3fc', desc: 'Optical/UV/IR space telescope. Still operating.' },
+                                        { name: 'Chandra X-ray Observatory', aper: 120, launch: 1999, color: '#a78bfa', desc: 'NASA X-ray space telescope.' },
+                                        { name: 'Spitzer Space Telescope', aper: 85, launch: 2003, color: '#dc2626', desc: 'Infrared space telescope, retired 2020.' },
+                                        { name: 'Subaru', aper: 820, launch: 1999, color: '#fbbf24', desc: 'Japanese 8.2m on Mauna Kea.' },
+                                        { name: 'Square Kilometre Array', aper: 2000, launch: 2027, color: '#dc2626', desc: 'Future radio telescope, Australia + S Africa.' },
+                                        { name: 'Extremely Large Telescope', aper: 3900, launch: 2028, color: '#fbbf24', desc: 'Coming 39m ESO telescope. Chile.' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          TELS.map(function(t, ti) {
+                                            return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'), style: { borderLeft: '3px solid ' + t.color } },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, t.name),
+                                                React.createElement('span', { className: 'font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, t.aper + 'cm aperture · ' + t.launch)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] mt-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, t.desc)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A dozen of the world\'s most powerful telescopes. Aperture (mm) is the diameter of the primary mirror. Bigger aperture = more light + finer detail. Space telescopes avoid atmospheric distortion.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: STAR LIFESPAN CALCULATOR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⏳ Star Lifespan Calculator"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSLT", !d.showSLT); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSLT ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSLT ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Massive stars live fast + die young. Adjust mass + see how long the star burns."),
+                d.showSLT && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var mass = d.sltMass != null ? d.sltMass : 1;
+                                      var lifespan = 10 * Math.pow(mass, -2.5);
+                                      var lifeStr = lifespan > 1000 ? (lifespan / 1000).toFixed(0) + ' Gyr' : lifespan > 1 ? lifespan.toFixed(2) + ' Gyr' : (lifespan * 1000).toFixed(0) + ' Myr';
+                                      var category = mass < 0.5 ? 'M dwarf (cool, long-lived)' : mass < 1.4 ? 'Sun-like or slightly larger' : mass < 8 ? 'A/B star (massive, hot)' : 'O/B supergiant (very brief)';
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            React.createElement('text', { x: 200, y: 50, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, category),
+                                            React.createElement('text', { x: 200, y: 100, textAnchor: 'middle', fill: '#fde047', fontSize: 28, fontWeight: 'bold' }, lifeStr),
+                                            React.createElement('text', { x: 200, y: 130, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, mass + ' solar masses'),
+                                            React.createElement('rect', { x: 50, y: 145, width: 300, height: 6, fill: '#1f2937' }),
+                                            React.createElement('rect', { x: 50, y: 145, width: Math.min(300, lifespan * 20), height: 6, fill: '#22c55e' })
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Mass'),
+                                          React.createElement('input', { type: 'range', min: 0.1, max: 50, step: 0.1, value: mass, onChange: function(e) { upd('sltMass', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, mass + ' M☉')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Massive stars burn fuel fast. Lifespan ∝ M^-2.5. Sun: 10 Gyr (we are halfway). 10 M☉: only 30 Myr. 0.1 M☉ red dwarf: trillions of years.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: YOUR COSMIC JOURNEY ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🎯 Your Cosmic Journey"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSummary", !d.showSummary); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSummary ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showSummary ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Track your progress: planets explored, points earned, missions logged."),
+                d.showSummary && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var stats = [
+                                        { label: '🌍 Planets explored', val: (d.planetsVisited || []).length + '/9' },
+                                        { label: '⭐ Research Points', val: d.researchPoints || 0 },
+                                        { label: '🛰 Missions logged', val: (d.missionLog || []).length },
+                                        { label: '📚 Vocab looked up', val: (d.vocabLookedUp || []).length }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                                          stats.map(function(s, si) {
+                                            return React.createElement('div', { key: si, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s.label),
+                                              React.createElement('div', { className: 'text-lg font-bold ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, s.val)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'This tool features 35+ interactive mini-tools spanning astronomy, physics, and exploration. From simulating black holes to flying lunar landers, you can explore the Solar System and beyond.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ASTRONOMY HALL OF FAME ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "👨‍🚀 Astronomy Hall of Fame"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAstr", !d.showAstr); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAstr ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showAstr ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "16 milestones from ancient Greek astronomy to JWST. Names you should know."),
+                d.showAstr && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var ASTR = [
+                                        { year: -270, name: 'Aristarchus', work: 'Proposed heliocentric model (lost work)' },
+                                        { year: 150, name: 'Ptolemy', work: 'Geocentric model dominated 1400 years' },
+                                        { year: 1543, name: 'Copernicus', work: 'Heliocentric model published' },
+                                        { year: 1610, name: 'Galileo', work: 'Telescope: moons of Jupiter, phases of Venus' },
+                                        { year: 1609, name: 'Kepler', work: 'Three laws of planetary motion' },
+                                        { year: 1687, name: 'Newton', work: 'Laws of motion + universal gravitation' },
+                                        { year: 1781, name: 'Herschel', work: 'Discovered Uranus' },
+                                        { year: 1846, name: 'Galle + Le Verrier', work: 'Discovered Neptune by prediction' },
+                                        { year: 1923, name: 'Hubble', work: 'Andromeda is a galaxy beyond Milky Way' },
+                                        { year: 1929, name: 'Hubble', work: 'Universe is expanding' },
+                                        { year: 1957, name: 'USSR', work: 'Sputnik 1 — first artificial satellite' },
+                                        { year: 1969, name: 'Apollo 11', work: 'First humans on Moon' },
+                                        { year: 1977, name: 'NASA', work: 'Voyager 1 + 2 launched' },
+                                        { year: 1990, name: 'NASA', work: 'Hubble Space Telescope launched' },
+                                        { year: 2012, name: 'Voyager 1', work: 'Entered interstellar space' },
+                                        { year: 2021, name: 'NASA + ESA + CSA', work: 'JWST launched' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          ASTR.map(function(a, ai) {
+                                            return React.createElement('div', { key: ai, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, a.year > 0 ? a.year : Math.abs(a.year) + ' BCE'),
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, a.name)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, a.work)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'A 2300-year journey from Aristarchus to JWST. Each discovery built on the last. Science is a relay race — every astronomer stands on the shoulders of those before them.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: OBAFGKM SPECTRAL CLASSES ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⭐ OBAFGKM Spectral Classes"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSpS", !d.showSpS); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSpS ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSpS ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Click each spectral class to see its temperature, color, and example stars."),
+                d.showSpS && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.spsClass != null ? d.spsClass : 3;
+                                      var CLASSES = ['O', 'B', 'A', 'F', 'G', 'K', 'M'];
+                                      var TEMP = [40000, 25000, 9000, 7000, 5800, 4500, 3000];
+                                      var COL = ['#3b82f6', '#7dd3fc', '#fff', '#fef3c7', '#fde047', '#f97316', '#dc2626'];
+                                      var EX = ['Mintaka, Naos', 'Rigel, Spica', 'Sirius, Vega', 'Procyon, Canopus', 'Sun, Alpha Centauri A', 'Arcturus, Aldebaran', 'Proxima, Betelgeuse'];
+                                      var c = CLASSES[idx], t = TEMP[idx], col = COL[idx], ex = EX[idx];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            React.createElement('circle', { cx: 200, cy: 100, r: 45 + idx * 4, fill: col, opacity: 0.3 }),
+                                            React.createElement('circle', { cx: 200, cy: 100, r: 28 - idx * 2, fill: col }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 18, fontWeight: 'bold' }, 'Class ' + c),
+                                            React.createElement('text', { x: 200, y: 180, textAnchor: 'middle', fill: col, fontSize: 11 }, t.toLocaleString() + ' K • ' + ex)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-7 gap-1' },
+                                          CLASSES.map(function(cl, ci) {
+                                            return React.createElement('button', { key: cl, onClick: function() { upd('spsClass', ci); }, className: 'p-2 rounded font-bold text-sm ' + (idx === ci ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, cl);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'OBAFGKM — "Oh Be A Fine Guy/Girl, Kiss Me!" Hottest to coolest. O stars: massive, blue, brief. M stars: tiny, red, eternal. Sun is G2V — yellow main sequence dwarf.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MARS VS EARTH ATMOSPHERE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌐 Mars vs Earth Atmosphere"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMA", !d.showMA); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMA ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showMA ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Mars has 100× thinner air made of mostly CO₂. Compare gas composition + pressure."),
+                d.showMA && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                                          [
+                                            { name: 'Earth', press: 1013, n2: 78, o2: 21, ar: 1, co2: 0.04, color: '#3b82f6' },
+                                            { name: 'Mars', press: 6.36, n2: 1.9, o2: 0.13, ar: 1.9, co2: 95.3, color: '#dc2626' }
+                                          ].map(function(p) {
+                                            return React.createElement('div', { key: p.name, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-slate-50') },
+                                              React.createElement('div', { className: 'text-center font-bold text-base mb-2', style: { color: p.color } }, p.name),
+                                              React.createElement('div', { className: 'text-[10px] mb-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Pressure: ' + p.press + ' hPa'),
+                                              React.createElement('div', { className: 'space-y-1' },
+                                                [{ name: 'N₂', pct: p.n2, color: '#7dd3fc' }, { name: 'O₂', pct: p.o2, color: '#22c55e' }, { name: 'CO₂', pct: p.co2, color: '#fbbf24' }, { name: 'Ar', pct: p.ar, color: '#a78bfa' }].map(function(g) {
+                                                  return React.createElement('div', { key: g.name, className: 'flex items-center gap-1 text-[10px]' },
+                                                    React.createElement('div', { style: { width: 30 + 'px', textAlign: 'right' } }, g.name),
+                                                    React.createElement('div', { style: { flex: 1, height: 8, background: '#374151', borderRadius: 2, overflow: 'hidden' } },
+                                                      React.createElement('div', { style: { width: g.pct + '%', height: '100%', background: g.color } })
+                                                    ),
+                                                    React.createElement('div', { className: 'w-12 text-right font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, g.pct.toFixed(2) + '%')
+                                                  );
+                                                })
+                                              )
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Mars atmosphere is 100× thinner than Earth\'s. Composition: 95% CO₂. To breathe on Mars you would need oxygen + pressure 100× more. Almost no nitrogen for fertilization.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: BLACK HOLE VOCABULARY ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🕳 Black Hole Vocabulary"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showBHG", !d.showBHG); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showBHG ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showBHG ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "10 essential black hole terms: event horizon, singularity, spaghettification, Hawking radiation."),
+                d.showBHG && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var TERMS = [
+                                        ['Event horizon', 'Point of no return. Once crossed, nothing can escape — not even light.'],
+                                        ['Singularity', 'Center of black hole where density is infinite (or unknown — needs quantum gravity).'],
+                                        ['Schwarzschild radius', 'Distance from center to event horizon. Depends only on mass.'],
+                                        ['Accretion disk', 'Matter spiraling into the black hole, heated to millions of degrees.'],
+                                        ['Photon sphere', 'Region where light can orbit the black hole in unstable circles.'],
+                                        ['Spaghettification', 'Tidal forces stretch infalling matter into long thin shapes.'],
+                                        ['Hawking radiation', 'Quantum effect that lets black holes slowly evaporate over trillions of years.'],
+                                        ['Ergosphere', 'Region around spinning black hole where space itself rotates.'],
+                                        ['Relativistic jet', 'Stream of particles launched at near-light speed from poles of accretion disk.'],
+                                        ['Sagittarius A*', 'Supermassive black hole at center of Milky Way (4 million solar masses).']
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          TERMS.map(function(t, ti) {
+                                            return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'font-bold text-[11px] ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, t[0]),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t[1])
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Event Horizon Telescope captured first image of M87* black hole (2019) + Sgr A* (2022). The orange ring = light bent around a black sphere where light cannot escape.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: AURORAS ACROSS SOLAR SYSTEM ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌈 Auroras Across Solar System"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAuSS", !d.showAuSS); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAuSS ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showAuSS ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Five planets have auroras. Earth's is green/red, Jupiter's is the most powerful, Mars's is diffuse."),
+                d.showAuSS && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var p = d.auPl || 'jupiter';
+                                      var PLANETS = {
+                                        earth: { name: 'Earth aurora', color: '#22c55e', desc: 'Green (oxygen) + red (atomic O) + blue (nitrogen). Best seen near magnetic poles.', bg: '#1e3a8a' },
+                                        jupiter: { name: 'Jupiter aurora', color: '#a78bfa', desc: 'Most powerful in solar system. Driven by Io\'s volcanism + Jupiter\'s magnetic field. Permanent UV aurora.', bg: '#7e22ce' },
+                                        saturn: { name: 'Saturn aurora', color: '#7dd3fc', desc: 'Powered by solar wind. Less colorful than Earth\'s but huge. Lasts days at a time.', bg: '#1e1b4b' },
+                                        uranus: { name: 'Uranus aurora', color: '#67e8f9', desc: 'Strange orientation due to 98° axial tilt. Hard to image.', bg: '#0f766e' },
+                                        mars: { name: 'Mars (diffuse aurora)', color: '#dc2626', desc: 'Weak — no global magnetic field. Auroras around remnant crustal magnetic anomalies.', bg: '#7c2d12' }
+                                      };
+                                      var sel = PLANETS[p];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(PLANETS).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('auPl', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (p === k ? 'bg-green-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, k);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, ' + sel.bg + ' 0%, #000 80%)' } },
+                                            new Array(30).fill(0).map(function(_, i) {
+                                              return React.createElement('circle', { key: 'aast' + i, cx: (i * 41) % 400, cy: (i * 23) % 190, r: 0.5, fill: '#fff', opacity: 0.6 });
+                                            }),
+                                            [50, 110, 180, 240, 300, 350].map(function(x, i) {
+                                              return React.createElement('path', { key: 'auc' + i, d: 'M ' + x + ' 180 Q ' + (x + 10) + ' 120 ' + (x + 8) + ' 80 T ' + x + ' 30', fill: 'none', stroke: sel.color, strokeWidth: 4, opacity: 0.7, strokeLinecap: 'round' });
+                                            }),
+                                            React.createElement('rect', { x: 0, y: 180, width: 400, height: 20, fill: '#0a0a0a' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sel.name)
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') }, sel.desc)
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: FAMOUS SPACE MISSIONS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🚀 Famous Space Missions"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMP", !d.showMP); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMP ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showMP ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "10 missions that defined planetary exploration. From Apollo to Cassini to JWST."),
+                d.showMP && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var MISS = [
+                                        { name: 'Apollo 11', year: 1969, where: 'Moon', icon: '🚀', desc: 'First humans walk on Moon' },
+                                        { name: 'Voyager 1+2', year: 1977, where: 'Outer + interstellar', icon: '🛰', desc: 'Grand tour + Golden Records' },
+                                        { name: 'Viking 1+2', year: 1976, where: 'Mars', icon: '🔴', desc: 'First Mars landers + life experiments' },
+                                        { name: 'Cassini-Huygens', year: 1997, where: 'Saturn', icon: '🪐', desc: '20 years of Saturn + Titan exploration' },
+                                        { name: 'Mars Curiosity', year: 2012, where: 'Gale Crater', icon: '🚗', desc: 'Nuclear-powered rover, still active' },
+                                        { name: 'New Horizons', year: 2015, where: 'Pluto + Kuiper Belt', icon: '🪐', desc: 'First close-up of Pluto + Arrokoth' },
+                                        { name: 'OSIRIS-REx', year: 2020, where: 'Bennu', icon: '☄', desc: 'Sample return from asteroid' },
+                                        { name: 'DART', year: 2022, where: 'Dimorphos', icon: '💥', desc: 'First planetary defense test' },
+                                        { name: 'Perseverance + Ingenuity', year: 2021, where: 'Jezero Crater Mars', icon: '🚁', desc: 'Rover + first Mars helicopter' },
+                                        { name: 'JWST', year: 2021, where: 'L2 Lagrange', icon: '🔭', desc: 'Replaced Hubble for infrared deep field' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'grid grid-cols-2 gap-2 max-h-72 overflow-y-auto' },
+                                          MISS.map(function(m, mi) {
+                                            return React.createElement('div', { key: mi, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'text-center text-3xl mb-1' }, m.icon),
+                                              React.createElement('div', { className: 'text-center font-bold text-[11px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, m.name),
+                                              React.createElement('div', { className: 'text-center text-[10px] mb-1 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, m.year + ' • ' + m.where),
+                                              React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.desc)
+                                            );
+                                          })
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: STAR MAGNITUDE SCALE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "✨ Star Magnitude Scale"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSMag", !d.showSMag); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSMag ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showSMag ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Brightness counts backward: smaller = brighter. Visible range spans 60 magnitudes."),
+                d.showSMag && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var STARS = [
+                                        { name: 'Sun', mag: -26.7, color: '#fde047' },
+                                        { name: 'Moon (full)', mag: -12.6, color: '#e2e8f0' },
+                                        { name: 'Venus (max)', mag: -4.6, color: '#fbbf24' },
+                                        { name: 'Jupiter', mag: -2.5, color: '#f97316' },
+                                        { name: 'Sirius', mag: -1.46, color: '#fff' },
+                                        { name: 'Canopus', mag: -0.74, color: '#fef3c7' },
+                                        { name: 'Arcturus', mag: -0.05, color: '#f97316' },
+                                        { name: 'Vega', mag: 0.03, color: '#bfdbfe' },
+                                        { name: 'Polaris (North Star)', mag: 1.98, color: '#fff' },
+                                        { name: 'Faintest naked-eye', mag: 6.0, color: '#94a3b8' },
+                                        { name: 'Backyard scope limit', mag: 13, color: '#475569' },
+                                        { name: 'JWST limit', mag: 34, color: '#1f2937' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 320', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            STARS.map(function(s, si) {
+                                              var y = 35 + si * 24;
+                                              var brightness = Math.max(2, 30 - s.mag - 3);
+                                              return React.createElement('g', { key: s.name },
+                                                React.createElement('circle', { cx: 50, cy: y, r: brightness, fill: s.color }),
+                                                React.createElement('text', { x: 75, y: y + 4, fill: s.color, fontSize: 10 }, s.name),
+                                                React.createElement('text', { x: 380, y: y + 4, textAnchor: 'end', fill: s.color, fontSize: 10, fontWeight: 'bold' }, 'mag ' + s.mag)
+                                              );
+                                            })
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Magnitudes count BACKWARD: smaller = brighter. Each step of 5 = 100× brighter. Hipparchus invented in 130 BCE. Sun: -26.7. JWST sees to mag 34. Reach: 100^((34-(-26))/5) ≈ 10^48 times the Sun.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CELESTIAL COORDINATE SYSTEMS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🧭 Celestial Coordinate Systems"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCoords", !d.showCoords); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCoords ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                  }, d.showCoords ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Four ways astronomers describe positions in the sky."),
+                d.showCoords && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var sys = d.coordSys || 'equatorial';
+                                      var SYS = {
+                                        equatorial: { name: 'Equatorial (RA/Dec)', desc: 'Star-fixed coordinates. Right ascension (h:m:s) + Declination (°). Used in astronomical catalogs.' },
+                                        altaz: { name: 'Altitude-Azimuth', desc: 'Observer-centered. Altitude (above horizon) + Azimuth (from north). Used to point telescopes.' },
+                                        ecliptic: { name: 'Ecliptic', desc: 'Centered on Sun-Earth plane. Used for solar system objects.' },
+                                        galactic: { name: 'Galactic', desc: 'Centered on Milky Way plane. Used for galactic studies.' }
+                                      };
+                                      var sel = SYS[sys];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'grid grid-cols-2 gap-1 mb-2' },
+                                          Object.keys(SYS).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('coordSys', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (sys === k ? 'bg-blue-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, SYS[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border p-3 ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-50') },
+                                          React.createElement('div', { className: 'font-bold text-sm mb-2 text-center ' + (isDark ? 'text-amber-300' : 'text-blue-700') }, sel.name),
+                                          React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Astronomers use multiple coordinate systems. Equatorial is global + objects keep same coords as Earth rotates. Alt-Az changes constantly as Earth rotates. Galactic is best for studying Milky Way structure.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: BIG NUMBERS IN ASTRONOMY ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔢 Big Numbers in Astronomy"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showBN", !d.showBN); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showBN ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showBN ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "From 1 Sun to 10^22 stars. The scale of the universe is staggering."),
+                d.showBN && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var BN = [
+                                        { val: '1', what: 'Sun in our solar system' },
+                                        { val: '8', what: 'Planets (per modern IAU)' },
+                                        { val: '~200', what: 'Moons known in solar system' },
+                                        { val: '10⁶', what: 'Asteroids tracked in main belt' },
+                                        { val: '10¹⁰', what: 'Comets in Oort Cloud (estimated)' },
+                                        { val: '10¹¹', what: 'Stars in the Milky Way' },
+                                        { val: '10¹²', what: 'Galaxies in observable universe' },
+                                        { val: '10²²', what: 'Stars in observable universe' },
+                                        { val: '4.6 Gyr', what: 'Age of Solar System' },
+                                        { val: '13.8 Gyr', what: 'Age of universe' },
+                                        { val: '93 Gly', what: 'Observable universe diameter' },
+                                        { val: '10¹⁰⁰⁰⁰⁰⁰⁰⁰⁰⁰⁰⁰⁰⁰', what: 'Estimated time for black holes to evaporate (Hawking)' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          BN.map(function(b, bi) {
+                                            return React.createElement('div', { key: bi, className: 'flex items-center gap-2 p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'font-bold text-base ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, b.val),
+                                              React.createElement('div', { className: 'text-[11px] flex-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, b.what)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Astronomy operates on absurd scales. "How many stars?" — more than grains of sand on every beach on Earth. "How old?" — 13.8 billion years. Yet some quantities (black hole evaporation) are even bigger.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SPACE DEBRIS TRACKER ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🛰 Space Debris Tracker"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showJunk", !d.showJunk); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showJunk ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showJunk ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "36,500 objects orbit Earth at various altitudes. Move altitude slider to see what's there."),
+                d.showJunk && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var alt = d.junkAlt != null ? d.junkAlt : 600;
+                                      var density = alt < 400 ? 'Very dense' : alt < 800 ? 'Dense (LEO)' : alt < 2000 ? 'Moderate' : alt < 35000 ? 'Light' : 'GEO ring';
+                                      var points = [];
+                                      var num = alt < 800 ? 80 : alt < 2000 ? 40 : 15;
+                                      for (var ji = 0; ji < num; ji++) {
+                                        points.push({ x: 50 + (ji * 71) % 300, y: 30 + (ji * 41) % 180, size: 1 + (ji % 3) });
+                                      }
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            React.createElement('circle', { cx: 200, cy: 220, r: 60, fill: '#1e40af' }),
+                                            React.createElement('ellipse', { cx: 195, cy: 215, rx: 15, ry: 8, fill: '#22c55e' }),
+                                            React.createElement('ellipse', { cx: 210, cy: 225, rx: 12, ry: 6, fill: '#22c55e' }),
+                                            points.map(function(p, pi) {
+                                              return React.createElement('circle', { key: 'j' + pi, cx: p.x, cy: p.y, r: p.size, fill: '#fff', opacity: 0.7 });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Space debris at ' + alt + ' km'),
+                                            React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, density + ' debris zone')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Altitude'),
+                                          React.createElement('input', { type: 'range', min: 300, max: 36000, value: alt, onChange: function(e) { upd('junkAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('span', { className: 'text-[10px] font-mono w-16 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + ' km')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          '36,500 tracked objects + millions of fragments orbit Earth. Risk of Kessler Syndrome: cascade of collisions makes space unusable. SpaceX Starlink has 5000+ satellites; planning many more.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CONSTELLATION MYTHOLOGY ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📜 Constellation Mythology"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCM", !d.showCM); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCM ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showCM ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Every culture sees stories in the stars. From Greek heroes to Aboriginal Emu in the Sky."),
+                d.showCM && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.cmIdx || 0;
+                                      var MYTHS = [
+                                        { name: 'Orion', myth: 'Greek hunter killed by scorpion; placed opposite Scorpius in sky', culture: 'Greek, Sumerian, Maya, Inuit' },
+                                        { name: 'Ursa Major', myth: 'Big Bear; Greek Callisto turned into bear', culture: 'Worldwide — same stars, many myths' },
+                                        { name: 'Cassiopeia', myth: 'Vain Ethiopian queen tied to throne, circles pole', culture: 'Greek' },
+                                        { name: 'Scorpius', myth: 'Killed Orion; was sent to sting him', culture: 'Greek, Polynesian, Maya' },
+                                        { name: 'Lyra', myth: 'Orpheus\'s lyre that charmed even Hades', culture: 'Greek' },
+                                        { name: 'Cygnus', myth: 'Swan into which Zeus transformed; flies along Milky Way', culture: 'Greek' },
+                                        { name: 'Pleiades', myth: 'Seven sisters fleeing Orion; small but bright cluster', culture: 'Greek, Maori, Aboriginal Australian, Aztec' },
+                                        { name: 'Crux', myth: 'Southern Cross; navigation marker for southern hemisphere', culture: 'Aboriginal Australian, Polynesian, European' }
+                                      ];
+                                      var cur = MYTHS[idx % MYTHS.length];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-center text-3xl mb-2' }, '✨'),
+                                          React.createElement('div', { className: 'text-center font-bold text-lg mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, cur.name),
+                                          React.createElement('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.myth),
+                                          React.createElement('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Cultures: ' + cur.culture)
+                                        ),
+                                        React.createElement('div', { className: 'flex gap-1 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('cmIdx', (idx + MYTHS.length - 1) % MYTHS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Previous'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % MYTHS.length + 1) + ' / ' + MYTHS.length),
+                                          React.createElement('button', { onClick: function() { upd('cmIdx', (idx + 1) % MYTHS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Next →')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Stories projected onto stars by cultures worldwide. Aboriginal Australian Emu in the Sky uses dark dust clouds. Polynesian wayfinders use stars to navigate Pacific by memory. Astronomy is also storytelling.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: EXOPLANET DETECTION METHODS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔍 Exoplanet Detection Methods"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showExMth", !d.showExMth); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showExMth ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showExMth ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "5 ways astronomers find planets around other stars. Transit + Doppler dominate."),
+                d.showExMth && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var method = d.exMth || 'transit';
+                                      var METHODS = {
+                                        transit: { name: 'Transit method', count: '4000+', desc: 'Watch a star and look for tiny brightness dips when a planet passes in front. Used by Kepler + TESS.' },
+                                        doppler: { name: 'Radial velocity', count: '1000+', desc: 'A planet\'s gravity makes its star wobble. We see the wobble as Doppler shift in starlight.' },
+                                        micro: { name: 'Microlensing', count: '200+', desc: 'Gravity of a passing star+planet bends light from a more distant star. Distance-independent.' },
+                                        direct: { name: 'Direct imaging', count: '50+', desc: 'Block out the star\'s light + photograph nearby planets. Only works for big/distant planets so far.' },
+                                        timing: { name: 'Pulsar timing', count: '~10', desc: 'Variations in pulsar pulses reveal orbiting bodies. First exoplanets found this way (1992).' }
+                                      };
+                                      var sel = METHODS[method];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                          Object.keys(METHODS).map(function(k) {
+                                            return React.createElement('button', { key: k, onClick: function() { upd('exMth', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (method === k ? 'bg-fuchsia-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, METHODS[k].name);
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                          React.createElement('div', { className: 'flex justify-between mb-2' },
+                                            React.createElement('span', { className: 'font-bold text-[12px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, sel.name),
+                                            React.createElement('span', { className: 'font-mono text-[12px] ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, sel.count + ' confirmed')
+                                          ),
+                                          React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'First exoplanet around a Sun-like star: 51 Pegasi b (1995). Now 5500+ confirmed. JWST is doing atmospheric spectroscopy on exoplanets — searching for biosignatures.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: UPCOMING ECLIPSES ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌙 Upcoming Eclipses"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showECat", !d.showECat); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showECat ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showECat ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Schedule of eclipses 2024-2079. Maine's next total solar eclipse: 2079."),
+                d.showECat && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var EVENTS = [
+                                        { date: '2024 Apr 8', type: 'Solar total', where: 'N America (Maine!)', notes: 'Path crossed northern Maine; many traveled north' },
+                                        { date: '2025 Mar 14', type: 'Lunar total', where: 'Americas', notes: 'Blood moon' },
+                                        { date: '2025 Sep 7', type: 'Lunar total', where: 'Asia, Australia', notes: 'Blood moon' },
+                                        { date: '2026 Aug 12', type: 'Solar total', where: 'Iceland, Spain', notes: 'Total at sunset over Atlantic' },
+                                        { date: '2027 Aug 2', type: 'Solar total', where: 'N Africa, Saudi Arabia', notes: 'Longest of 21st century: 6 min 23 sec' },
+                                        { date: '2028 Jul 22', type: 'Solar total', where: 'Australia', notes: 'Total across continent' },
+                                        { date: '2030 Nov 14', type: 'Solar total', where: 'Africa, Madagascar', notes: '' },
+                                        { date: '2079 May 1', type: 'Solar total', where: 'Maine, USA', notes: 'Next total solar eclipse in Maine!' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          EVENTS.map(function(e, ei) {
+                                            return React.createElement('div', { key: ei, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, e.date),
+                                                React.createElement('span', { className: 'font-bold ' + (e.type.indexOf('Solar') >= 0 ? (isDark ? 'text-yellow-300' : 'text-yellow-700') : (isDark ? 'text-orange-400' : 'text-orange-700')) }, e.type)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, e.where),
+                                              e.notes && React.createElement('div', { className: 'text-[10px] mt-0.5 italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, e.notes)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Total solar eclipses are rare. About 2 per year somewhere on Earth, but each visible from only a narrow path. Lunar eclipses are visible across the whole night side.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: GALAXY TYPES GALLERY ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌌 Galaxy Types Gallery"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showGT", !d.showGT); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showGT ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showGT ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Hubble's classification: spirals, ellipticals, irregulars + everything between."),
+                d.showGT && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var TYPES = [
+                                        { name: 'Spiral (Sa)', desc: 'Tight arms, big central bulge', ex: 'Sombrero', color: '#fde047' },
+                                        { name: 'Spiral (Sb)', desc: 'Moderate arms', ex: 'Andromeda', color: '#a78bfa' },
+                                        { name: 'Spiral (Sc)', desc: 'Loose arms, small bulge', ex: 'Whirlpool', color: '#7dd3fc' },
+                                        { name: 'Barred Spiral (SBb)', desc: 'Bar through center', ex: 'Milky Way', color: '#fbbf24' },
+                                        { name: 'Elliptical (E0)', desc: 'Nearly spherical, old', ex: 'M87', color: '#dc2626' },
+                                        { name: 'Elliptical (E7)', desc: 'Very flattened', ex: 'NGC 4621', color: '#7c2d12' },
+                                        { name: 'Lenticular (S0)', desc: 'Disk but no arms', ex: 'M84', color: '#94a3b8' },
+                                        { name: 'Irregular', desc: 'No defined shape', ex: 'Large Magellanic Cloud', color: '#22c55e' },
+                                        { name: 'Dwarf', desc: 'Small + faint', ex: 'Sagittarius Dwarf', color: '#cbd5e1' },
+                                        { name: 'Starburst', desc: 'Forming stars rapidly', ex: 'M82', color: '#fde047' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          TYPES.map(function(t, ti) {
+                                            return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'), style: { borderLeft: '3px solid ' + t.color } },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, t.name),
+                                                React.createElement('span', { className: 'italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, 'e.g. ' + t.ex)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.desc)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Edwin Hubble classified galaxies in 1936 — "Hubble tuning fork." Spirals + ellipticals + irregulars. Galaxies evolve via mergers — Milky Way is in mid-life, Andromeda merger in 4 billion years.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COSMIC SPEEDS CHART ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⚡ Cosmic Speeds Chart"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCSp", !d.showCSp); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCSp ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showCSp ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "From walking to light speed (log scale). Voyager 1 is fastest human-made object, but still glacial cosmically."),
+                d.showCSp && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var SP = [
+                                        { what: 'Human walking', kms: 0.001, color: '#dc2626' },
+                                        { what: 'Car (highway)', kms: 0.03, color: '#f97316' },
+                                        { what: 'Bullet', kms: 1, color: '#fbbf24' },
+                                        { what: 'ISS orbit', kms: 7.8, color: '#fde047' },
+                                        { what: 'Earth orbit speed', kms: 30, color: '#22c55e' },
+                                        { what: 'Voyager 1', kms: 17, color: '#7dd3fc' },
+                                        { what: 'Sun around galaxy', kms: 220, color: '#a78bfa' },
+                                        { what: 'Local Group falling', kms: 600, color: '#fbbf24' },
+                                        { what: 'Solar wind', kms: 400, color: '#f97316' },
+                                        { what: 'Speed of light', kms: 299792, color: '#fde047' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                            SP.map(function(s, si) {
+                                              var y = 30 + si * 22;
+                                              var w = Math.min(280, Math.log10(s.kms * 1000 + 1) * 35);
+                                              return React.createElement('g', { key: s.what },
+                                                React.createElement('text', { x: 95, y: y + 3, textAnchor: 'end', fill: s.color, fontSize: 9 }, s.what),
+                                                React.createElement('rect', { x: 100, y: y - 5, width: w, height: 9, fill: s.color, opacity: 0.7 }),
+                                                React.createElement('text', { x: 105 + w, y: y + 3, fill: s.color, fontSize: 8 }, s.kms + ' km/s')
+                                              );
+                                            })
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Voyager 1 is the fastest object humans have made — yet would take 80,000 years to reach the nearest star. Light makes the same trip in 4 years.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: STAR FORMING REGION ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "✨ Star Forming Region"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSFR", !d.showSFR); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSFR ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
+                  }, d.showSFR ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Watch stars form from cold dust to hot suns. 6 stages over a few million years."),
+                d.showSFR && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var stage = d.sfrStage != null ? d.sfrStage : 0;
+                                      var STAGES = [
+                                        'Molecular cloud — cold, dark, dense',
+                                        'Cloud collapses under gravity, fragmenting',
+                                        'Protostars form — hot but not fusing yet',
+                                        'Fusion ignites — first light from new stars',
+                                        'Stellar wind pushes away gas — bright cluster emerges',
+                                        'Stars drift apart — cluster dissolves over 100M years'
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #1a0a1a 0%, #000000 100%)' } },
+                                            stage <= 1 && React.createElement('ellipse', { cx: 200, cy: 120, rx: 130 - stage * 20, ry: 60 - stage * 10, fill: '#7c2d12', opacity: 0.5 }),
+                                            stage <= 2 && React.createElement('ellipse', { cx: 200, cy: 120, rx: 100, ry: 50, fill: '#1c1917', opacity: 0.7 }),
+                                            stage >= 2 && [-30, 0, 30, -10, 10].map(function(off, i) {
+                                              return React.createElement('circle', { key: 'pro' + i, cx: 200 + off, cy: 120 + (i - 2) * 8, r: 3 + stage, fill: stage === 2 ? '#dc2626' : '#fde047' });
+                                            }),
+                                            stage >= 3 && [-30, 0, 30, -10, 10].map(function(off, i) {
+                                              return React.createElement('circle', { key: 'glow' + i, cx: 200 + off, cy: 120 + (i - 2) * 8, r: 12 + stage * 2, fill: '#fde047', opacity: 0.3 });
+                                            }),
+                                            stage >= 4 && [60, 120, 220, 280].map(function(x) {
+                                              return React.createElement('circle', { key: 'sc' + x, cx: x, cy: 120, r: 1.5, fill: '#fff' });
+                                            }),
+                                            stage >= 5 && [40, 80, 140, 230, 310, 360].map(function(x) {
+                                              return React.createElement('circle', { key: 'sd' + x, cx: x, cy: 100 + (x % 50), r: 1.5, fill: '#fff' });
+                                            }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Stage ' + (stage + 1) + ' of ' + STAGES.length),
+                                            React.createElement('text', { x: 200, y: 205, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, STAGES[stage])
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('sfrStage', Math.max(0, stage - 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '←'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (stage + 1) + ' / ' + STAGES.length),
+                                          React.createElement('button', { onClick: function() { upd('sfrStage', Math.min(STAGES.length - 1, stage + 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '→')
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Stars are born in clusters from giant molecular clouds. Total process: a few million years. Famous examples: Orion Nebula (M42), Eagle Nebula (Pillars of Creation), Tarantula Nebula.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: BIG COSMIC QUESTIONS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "❓ Big Cosmic Questions"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showCQ", !d.showCQ); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showCQ ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showCQ ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "10 of the deepest open questions in cosmology. Some have partial answers; some are pure mystery."),
+                d.showCQ && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.cqIdx || 0;
+                                      var Q = [
+                                        { q: 'What is dark matter?', a: 'An invisible substance making up 27% of the universe. We see its gravitational effects, but we don\'t know what it\'s made of.' },
+                                        { q: 'What is dark energy?', a: '68% of the universe. Causes accelerating cosmic expansion. Even more mysterious than dark matter.' },
+                                        { q: 'Are we alone?', a: 'Unknown. Drake equation says probably not. Fermi paradox asks: if not, where is everyone?' },
+                                        { q: 'What happened before Big Bang?', a: 'Time itself began at Big Bang. \'Before\' may have no meaning. Some theories propose multiverses, cyclic universes, or quantum origin.' },
+                                        { q: 'Will universe end?', a: 'Heat death: stars burn out, black holes evaporate. Time scale: 10^100 years.' },
+                                        { q: 'What\'s inside a black hole?', a: 'Singularity (infinite density) classically. Quantum gravity is needed — string theory or loop quantum gravity. Open question.' },
+                                        { q: 'Is space infinite?', a: 'Observable universe is 93 billion ly across. Total universe could be infinite or finite. We can\'t see beyond cosmic horizon.' },
+                                        { q: 'How many universes?', a: 'Maybe one. Maybe infinite (multiverse). String theory + inflation theory both suggest more.' },
+                                        { q: 'Could humans live on Mars?', a: 'Not without artificial habitats. Surface pressure 100× too low, temperature -65°C avg, atmosphere is unbreathable CO2.' },
+                                        { q: 'Will Andromeda collide with us?', a: 'In ~4 billion years. Combined galaxy nicknamed \'Milkomeda.\' Sun + Earth probably won\'t be directly affected — but Earth orbit may change.' }
+                                      ];
+                                      var cur = Q[idx % Q.length];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-3xl text-center mb-2' }, '🤔'),
+                                          React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, cur.q),
+                                          React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.a)
+                                        ),
+                                        React.createElement('div', { className: 'flex gap-1 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('cqIdx', (idx + Q.length - 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Previous'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % Q.length + 1) + ' / ' + Q.length),
+                                          React.createElement('button', { onClick: function() { upd('cqIdx', (idx + 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Next →')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SOLAR SYSTEM SIDE-BY-SIDE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📊 Solar System Side-by-Side"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSQC", !d.showSQC); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSQC ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showSQC ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Quick table of planet properties. Diameter, gravity, day length, moons."),
+                d.showSQC && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var props = [
+                                        { name: 'Diameter (km)', sun: 1392700, mercury: 4879, venus: 12104, earth: 12742, mars: 6779, jupiter: 139820 },
+                                        { name: 'Gravity (g)', sun: 28, mercury: 0.38, venus: 0.91, earth: 1.0, mars: 0.38, jupiter: 2.34 },
+                                        { name: 'Day (hours)', sun: 25 * 24, mercury: 1408, venus: 5832, earth: 24, mars: 24.6, jupiter: 9.9 },
+                                        { name: 'Moons', sun: 0, mercury: 0, venus: 0, earth: 1, mars: 2, jupiter: 95 }
+                                      ];
+                                      var labels = ['Sun', 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter'];
+                                      var keys = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter'];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-3 overflow-x-auto ' + (isDark ? 'bg-slate-900' : 'bg-slate-50') },
+                                          React.createElement('table', { className: 'w-full text-[10px]' },
+                                            React.createElement('thead', null,
+                                              React.createElement('tr', null,
+                                                React.createElement('th', { className: 'text-left p-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Property'),
+                                                labels.map(function(L) { return React.createElement('th', { key: L, className: 'text-right p-1 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, L); })
+                                              )
+                                            ),
+                                            React.createElement('tbody', null,
+                                              props.map(function(p, pi) {
+                                                return React.createElement('tr', { key: pi, className: (pi % 2 ? '' : (isDark ? 'bg-slate-800' : 'bg-slate-100')) },
+                                                  React.createElement('td', { className: 'p-1 font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, p.name),
+                                                  keys.map(function(k) { return React.createElement('td', { key: k, className: 'text-right p-1 font-mono ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, typeof p[k] === 'number' ? (p[k] > 1000 ? p[k].toLocaleString() : p[k].toString()) : p[k]); })
+                                                );
+                                              })
+                                            )
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Side-by-side comparison of key planet properties. Earth = baseline. Sun is 1000× Earth radius. Jupiter has 95 known moons. Venus rotates so slowly its day exceeds its year.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ABOUT THIS TOOL ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌌 About This Tool"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showAbout", !d.showAbout); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showAbout ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showAbout ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "40+ visual + interactive mini-tools. Made for curious students + adults."),
+                d.showAbout && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-center text-3xl mb-2' }, '🌌🚀✨'),
+                                          React.createElement('h3', { className: 'text-center font-bold text-base mb-3 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, 'Solar System Explorer'),
+                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                            React.createElement('div', null, '40+ interactive mini-tools, SVG visualizations, and educational simulations.'),
+                                            React.createElement('div', null, 'From a moon-phase dial to a black hole visualizer to a Foucault pendulum, every tool is built to make abstract concepts visceral + playable.'),
+                                            React.createElement('div', null, 'Built for K-12 + curious adults. Open all the tools, or just one — each works standalone.')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Part of AlloFlow STEM Lab. Built in Maine, USA. All data drawn from NASA, ESA, JAXA, USGS, IAU + public scientific sources. Educational use free.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: METEOR SHOWER CALENDAR ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☄ Meteor Shower Calendar"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMS", !d.showMS); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMS ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
+                  }, d.showMS ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "9 annual meteor showers + their best viewing dates. Mark your calendar."),
+                d.showMS && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var SHOWERS = [
+                                        { name: 'Quadrantids', peak: 'Jan 3-4', rate: '40-100/hr', from: 'asteroid 2003 EH1' },
+                                        { name: 'Lyrids', peak: 'Apr 22', rate: '18/hr', from: 'Comet Thatcher' },
+                                        { name: 'Eta Aquarids', peak: 'May 5-6', rate: '40-60/hr', from: 'Halley\'s Comet' },
+                                        { name: 'Perseids', peak: 'Aug 12-13', rate: '60-100/hr', from: 'Comet Swift-Tuttle — best Northern shower' },
+                                        { name: 'Draconids', peak: 'Oct 8', rate: 'variable', from: 'Comet Giacobini-Zinner' },
+                                        { name: 'Orionids', peak: 'Oct 21-22', rate: '15-25/hr', from: 'Halley\'s Comet' },
+                                        { name: 'Leonids', peak: 'Nov 17-18', rate: '15/hr (storms 33-year)', from: 'Comet Tempel-Tuttle' },
+                                        { name: 'Geminids', peak: 'Dec 13-14', rate: '120/hr — strongest', from: 'asteroid 3200 Phaethon' },
+                                        { name: 'Ursids', peak: 'Dec 22', rate: '5-10/hr', from: 'Comet Tuttle' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          SHOWERS.map(function(s, si) {
+                                            return React.createElement('div', { key: si, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, s.name),
+                                                React.createElement('span', { className: 'font-mono ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, s.peak)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.rate + ' from ' + s.from)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Meteor showers happen when Earth crosses a comet\'s debris stream. Best viewing: dark site, no Moon, after midnight. Perseids + Geminids are the most reliable annual showers.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: FAMOUS ASTRONOMY QUOTES ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "💬 Famous Astronomy Quotes"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showFQ", !d.showFQ); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showFQ ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showFQ ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "10 quotes from astronomers + space travelers that capture wonder."),
+                d.showFQ && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.fqIdx || 0;
+                                      var Q = [
+                                        { q: '"We are made of star stuff."', who: 'Carl Sagan' },
+                                        { q: '"That\'s one small step for [a] man, one giant leap for mankind."', who: 'Neil Armstrong' },
+                                        { q: '"Houston, we have a problem."', who: 'Apollo 13 (Jack Swigert)' },
+                                        { q: '"Per aspera ad astra — through hardship to the stars."', who: 'Latin proverb' },
+                                        { q: '"I was thrilled to learn that the stars in the sky go right down to the ground."', who: 'Vera Rubin' },
+                                        { q: '"The Earth is the cradle of humanity, but mankind cannot stay in the cradle forever."', who: 'Konstantin Tsiolkovsky' },
+                                        { q: '"Across the sea of space, the stars are other suns."', who: 'Carl Sagan' },
+                                        { q: '"Two things fill the mind with awe: the starry heavens above and the moral law within."', who: 'Immanuel Kant' },
+                                        { q: '"For my part I know nothing with any certainty, but the sight of the stars makes me dream."', who: 'Vincent van Gogh' },
+                                        { q: '"Somewhere, something incredible is waiting to be known."', who: 'Carl Sagan' }
+                                      ];
+                                      var cur = Q[idx % Q.length];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-5 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-4xl text-center mb-3' }, '✨'),
+                                          React.createElement('div', { className: 'text-center italic text-sm mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, cur.q),
+                                          React.createElement('div', { className: 'text-center text-[11px] font-bold ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, '— ' + cur.who)
+                                        ),
+                                        React.createElement('div', { className: 'flex gap-1 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('fqIdx', (idx + Q.length - 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Previous'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % Q.length + 1) + ' / ' + Q.length),
+                                          React.createElement('button', { onClick: function() { upd('fqIdx', (idx + 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Next →')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: TONIGHT SKY OBSERVING GUIDE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🔭 Tonight Sky Observing Guide"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTNT", !d.showTNT); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTNT ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showTNT ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "10 things you can spot tonight with just your eyes or binoculars."),
+                d.showTNT && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var ACT = [
+                                        { what: 'Find Polaris (North Star)', how: 'Locate the Big Dipper. The two stars at the front of the cup point straight to Polaris.' },
+                                        { what: 'Spot Jupiter', how: 'Bright steady (non-twinkling) yellowish star. Visible most nights. With binoculars, see its 4 brightest moons.' },
+                                        { what: 'See Andromeda Galaxy', how: 'Naked eye in dark sky! Fall-winter. Looks like a fuzzy oval near Cassiopeia.' },
+                                        { what: 'Spot the ISS', how: 'Free apps (Spot The Station) tell you when. Looks like a moving bright star, not blinking.' },
+                                        { what: 'Look for satellites', how: '15 min after sunset, scan sky. Steady moving dots. Starlink trains appear as bright chains.' },
+                                        { what: 'Find Saturn', how: 'Less bright than Jupiter, golden. Steady. With small scope you can see rings!' },
+                                        { what: 'Watch for shooting stars', how: 'Look up for 15+ minutes. Always at least 1-2/hr. Up to 100/hr during showers.' },
+                                        { what: 'Observe lunar phases', how: 'Same time each night, note shape. Full month cycle.' },
+                                        { what: 'Identify a constellation', how: 'Start with Big Dipper, Orion, Cassiopeia. Use Stellarium app to identify others.' },
+                                        { what: 'Notice star colors', how: 'Betelgeuse: orange. Rigel: blue-white. Sirius: dazzling white. Aldebaran: orange.' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          ACT.map(function(a, ai) {
+                                            return React.createElement('div', { key: ai, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'font-bold text-[11px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, a.what),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, a.how)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Best naked-eye observing: dark site (away from city lights), Moon below horizon, eyes adapted (20-30 min in the dark). Free apps: Stellarium, SkyView, Star Walk help identify what you see.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: PALE BLUE DOT ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌍 Pale Blue Dot"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showClose", !d.showClose); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showClose ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showClose ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Carl Sagan's most-quoted reflection. A pixel containing everyone we have ever known."),
+                d.showClose && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-5 ' + (isDark ? 'bg-gradient-to-br from-indigo-900 to-purple-900 border border-purple-700' : 'bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-300') },
+                                          React.createElement('div', { className: 'text-5xl text-center mb-3' }, '🌌'),
+                                          React.createElement('h3', { className: 'text-center text-lg font-bold mb-3 ' + (isDark ? 'text-amber-300' : 'text-indigo-800') }, 'The Pale Blue Dot'),
+                                          React.createElement('div', { className: 'text-[11px] italic space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                                            React.createElement('div', null, '"From this distant vantage point, the Earth might not seem of any particular interest. But for us, it\'s different. Consider again that dot. That\'s here. That\'s home. That\'s us. On it everyone you love, everyone you know, everyone you ever heard of, every human being who ever was, lived out their lives."'),
+                                            React.createElement('div', { className: 'text-right not-italic font-bold' }, '— Carl Sagan, Pale Blue Dot (1994)')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Voyager 1 took this photo of Earth from 6 billion km away on Feb 14, 1990 — a request from Carl Sagan. Earth is a single pixel. Every human in history lived on that pixel.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: FAMOUS NEBULAE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "☁ Famous Nebulae"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showNeb", !d.showNeb); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showNeb ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showNeb ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "8 iconic deep-sky objects. Star nurseries, dying-star shells, supernova remnants."),
+                d.showNeb && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var idx = d.nebIdx || 0;
+                                      var N = [
+                                        { name: 'Orion Nebula (M42)', dist: 1344, color: '#dc2626', desc: 'Stellar nursery 24 ly across. Visible naked-eye in Orion\'s Sword.' },
+                                        { name: 'Crab Nebula (M1)', dist: 6500, color: '#a78bfa', desc: 'Remains of supernova witnessed in 1054 CE. Contains pulsar.' },
+                                        { name: 'Ring Nebula (M57)', dist: 2300, color: '#22c55e', desc: 'Planetary nebula in Lyra. Glowing shell from dying Sun-like star.' },
+                                        { name: 'Eagle Nebula (M16)', dist: 7000, color: '#f97316', desc: 'Home of Pillars of Creation (Hubble 1995). Star formation pillars.' },
+                                        { name: 'Cat\'s Eye (NGC 6543)', dist: 3300, color: '#fbbf24', desc: 'Complex planetary nebula. Many shell layers from pulsations.' },
+                                        { name: 'Helix Nebula (NGC 7293)', dist: 700, color: '#dc2626', desc: 'Closest planetary nebula. Looks like an eye in space.' },
+                                        { name: 'Tarantula Nebula', dist: 160000, color: '#fbbf24', desc: 'In Large Magellanic Cloud. Largest known star-forming region.' },
+                                        { name: 'Veil Nebula', dist: 1470, color: '#22c55e', desc: 'Supernova remnant ~8000 years old. Massive arcs in Cygnus.' }
+                                      ];
+                                      var cur = N[idx % N.length];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: '#000' } },
+                                            new Array(40).fill(0).map(function(_, i) {
+                                              return React.createElement('circle', { key: 'nst' + i, cx: (i * 41) % 400, cy: (i * 23) % 190, r: 0.5, fill: '#fff', opacity: 0.5 });
+                                            }),
+                                            React.createElement('defs', null,
+                                              React.createElement('radialGradient', { id: 'neb' },
+                                                React.createElement('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.8 }),
+                                                React.createElement('stop', { offset: '40%', stopColor: cur.color, stopOpacity: 0.7 }),
+                                                React.createElement('stop', { offset: '100%', stopColor: cur.color, stopOpacity: 0 })
+                                              )
+                                            ),
+                                            React.createElement('ellipse', { cx: 200, cy: 110, rx: 110, ry: 80, fill: 'url(#neb)' }),
+                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, cur.name),
+                                            React.createElement('text', { x: 200, y: 185, textAnchor: 'middle', fill: cur.color, fontSize: 10 }, cur.dist.toLocaleString() + ' light-years away')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[11px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') }, cur.desc),
+                                        React.createElement('div', { className: 'flex gap-1 mt-2' },
+                                          React.createElement('button', { onClick: function() { upd('nebIdx', (idx + N.length - 1) % N.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '← Previous'),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % N.length + 1) + ' / ' + N.length),
+                                          React.createElement('button', { onClick: function() { upd('nebIdx', (idx + 1) % N.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, 'Next →')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ASTRONOMY TOOLKIT GUIDE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🛠 Astronomy Toolkit Guide"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTools", !d.showTools); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTools ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showTools ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "What you need to start observing — from free apps to scopes that fit any budget."),
+                d.showTools && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var TOOLS = [
+                                        { tier: 'Free', name: 'Stellarium', desc: 'Free planetarium software. Shows night sky from anywhere, anytime.' },
+                                        { tier: 'Free', name: 'SkyView Lite', desc: 'Phone app. Point at sky to identify what you\'re looking at.' },
+                                        { tier: 'Free', name: 'NASA Eyes', desc: 'Interactive 3D solar system + JWST + mission visualizations.' },
+                                        { tier: '$50-100', name: 'Binoculars 7×50 or 10×50', desc: 'Best starter scope. Reveals Galilean moons of Jupiter, Andromeda, Pleiades cluster.' },
+                                        { tier: '$200', name: 'Beginner Telescope', desc: 'Celestron StarSense Explorer 102 or Orion 4.5" Newtonian.' },
+                                        { tier: '$500', name: 'Better Telescope', desc: 'Celestron NexStar 8SE or Apertura AD8 Dobsonian.' },
+                                        { tier: 'Free', name: 'Local astronomy club', desc: 'Most cities have one. Members lend scopes, teach, run star parties.' },
+                                        { tier: 'Free', name: 'Dark site', desc: 'Drive 30+ min from city lights. Maine is full of them. Acadia is a Dark Sky Park.' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1' },
+                                          TOOLS.map(function(t, ti) {
+                                            return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between' },
+                                                React.createElement('span', { className: 'font-bold text-[11px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t.name),
+                                                React.createElement('span', { className: 'text-[10px] font-mono ' + (isDark ? 'text-green-400' : 'text-green-700') }, t.tier)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.desc)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Most important tool: dark sky. Light pollution wipes out 90% of stars. Acadia NP, Allagash Wilderness, Mt Mansfield (VT), Baxter SP — all International Dark Sky Parks.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: HOW STARS DIE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "⚱ How Stars Die"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDeath", !d.showDeath); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDeath ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
+                  }, d.showDeath ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Star's fate depends on mass: brown dwarf, white dwarf, neutron star, or black hole."),
+                d.showDeath && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var DEATH = [
+                                        { mass: '<0.08 M☉', what: 'Brown dwarf', fate: 'Never ignites fusion. Cools forever as dim object.' },
+                                        { mass: '0.08-0.5 M☉', what: 'Red dwarf', fate: 'Burns hydrogen for trillions of years. Eventually becomes white dwarf.' },
+                                        { mass: '0.5-8 M☉', what: 'Sun-like star', fate: 'Becomes red giant, sheds layers as planetary nebula, leaves white dwarf core.' },
+                                        { mass: '8-25 M☉', what: 'Massive star', fate: 'Goes supernova. Leaves behind neutron star.' },
+                                        { mass: '25-50 M☉', what: 'Very massive star', fate: 'Supernova. Often forms black hole instead of neutron star.' },
+                                        { mass: '50+ M☉', what: 'Super-massive star', fate: 'Pair-instability supernova or direct collapse to black hole.' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1' },
+                                          DEATH.map(function(d, di) {
+                                            return React.createElement('div', { key: di, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px] mb-1' },
+                                                React.createElement('span', { className: 'font-mono font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, d.mass),
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, d.what)
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, d.fate)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'How a star dies depends almost entirely on its initial mass. The cutoff between neutron star + black hole is uncertain (Tolman-Oppenheimer-Volkoff limit ~2-3 M☉ for the remnant).'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: COSMIC DISTANCE REFERENCE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📏 Cosmic Distance Reference"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDist", !d.showDist); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDist ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
+                  }, d.showDist ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "From 1km to 93 billion light-years. Reference table of cosmic scales."),
+                d.showDist && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var REF = [
+                                        { unit: '1 km', what: 'Highway exit spacing' },
+                                        { unit: '~100 km', what: 'Edge of space (Kármán line)' },
+                                        { unit: '400 km', what: 'ISS orbit altitude' },
+                                        { unit: '36,000 km', what: 'Geostationary orbit' },
+                                        { unit: '384,000 km', what: 'Earth-Moon distance' },
+                                        { unit: '150,000,000 km (1 AU)', what: 'Earth-Sun distance' },
+                                        { unit: '4.5 billion km (30 AU)', what: 'Neptune\'s orbit' },
+                                        { unit: '1 light-year', what: '~63,000 AU. 1 AU/day for 365 days' },
+                                        { unit: '4.2 ly', what: 'Distance to Proxima Centauri (nearest star)' },
+                                        { unit: '~100,000 ly', what: 'Milky Way diameter' },
+                                        { unit: '2.5 million ly', what: 'Andromeda Galaxy' },
+                                        { unit: '13.5 billion ly', what: 'Most distant JWST observed objects' },
+                                        { unit: '93 billion ly (diameter)', what: 'Observable universe' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          REF.map(function(r, ri) {
+                                            return React.createElement('div', { key: ri, className: 'flex justify-between p-2 rounded text-[11px] ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('span', { className: 'font-mono font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, r.unit),
+                                              React.createElement('span', { className: (isDark ? 'text-slate-300' : 'text-slate-700') }, r.what)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Distances jump in scale: km to AU to ly to billions of ly. Each step is ~10,000-100,000× larger. Astronomy lives on a log scale.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MAINE NIGHT SKY BY SEASON ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌲 Maine Night Sky by Season"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMS2", !d.showMS2); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMS2 ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
+                  }, d.showMS2 ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Maine has world-class dark skies. What to look for each season."),
+                d.showMS2 && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var SK = [
+                                        { season: 'Winter', what: 'Orion + Sirius blaze in south. Pleiades + Aldebaran high overhead. Best naked-eye constellation.' },
+                                        { season: 'Spring', what: 'Leo + Virgo rise in east. Big Dipper high. Galaxy season — many distant galaxies above.' },
+                                        { season: 'Summer', what: 'Milky Way arcs overhead. Cygnus + Lyra + Aquila form Summer Triangle. Best for star parties.' },
+                                        { season: 'Fall', what: 'Andromeda Galaxy visible to naked eye. Cassiopeia overhead. Perseids meteors mid-August.' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-2' },
+                                          SK.map(function(s, si) {
+                                            var icons = ['❄', '🌷', '☀', '🍂'];
+                                            return React.createElement('div', { key: si, className: 'p-3 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                                                React.createElement('span', { className: 'text-xl' }, icons[si]),
+                                                React.createElement('span', { className: 'font-bold text-[12px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, s.season)
+                                              ),
+                                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.what)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Maine has fantastic dark skies — especially north of the cities. Acadia NP, Allagash Wilderness, Baxter SP, and Cobscook State Park are all IDA Dark Sky locations. Winter nights are long + crystal-clear.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SPACE NEWS TIMELINE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📰 Space News Timeline"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showWN", !d.showWN); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showWN ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showWN ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Major space missions + events 2024-2027. Live in interesting times."),
+                d.showWN && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var EV = [
+                                        { date: 'Jan 2024', what: 'SLIM (Japan) lands on Moon — 5th country to land' },
+                                        { date: 'Feb 2024', what: 'Odysseus (US) lands on Moon — first private lander to make it' },
+                                        { date: 'Apr 2024', what: 'Total solar eclipse crosses Maine + N America' },
+                                        { date: 'Jun 2024', what: 'NASA Europa Clipper launches toward Jupiter\'s moon Europa' },
+                                        { date: 'Oct 2024', what: 'ESA Hera mission launches to study DART impact aftermath' },
+                                        { date: '2025', what: 'JWST continues finding earliest galaxies ever observed' },
+                                        { date: '2025-2026', what: 'Artemis II — first crewed Moon mission since 1972' },
+                                        { date: '2026', what: 'Total solar eclipse over Spain + Iceland' },
+                                        { date: '2027', what: 'Roman Space Telescope launches (Hubble successor for wide-field)' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1' },
+                                          EV.map(function(e, ei) {
+                                            return React.createElement('div', { key: ei, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, e.date),
+                                                React.createElement('span', { className: 'flex-1 ml-3 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, e.what)
+                                              )
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Space exploration is in a renaissance. New countries (India, Japan, UAE), new private companies (SpaceX, Blue Origin), new missions (Europa Clipper, Artemis, JWST). Look up — and pay attention.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SOLAR SYSTEM AT A GLANCE ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📊 Solar System At a Glance"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showSAG", !d.showSAG); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showSAG ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showSAG ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Quick-reference summary of solar system contents + mass distribution."),
+                d.showSAG && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, 'Solar System Stats'),
+                                          React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-[11px]' },
+                                            [['Age', '4.6 billion years'], ['Sun mass', '99.86% of total'], ['Planets', '8'], ['Dwarf planets', '5 + many more'], ['Moons (planets)', '288'], ['Known asteroids', '1,000,000+'], ['Comets', '4000+ known'], ['Kuiper Belt obj', '70,000 est.'], ['Oort Cloud obj', '~trillion'], ['Total mass', '~1.0014 M☉']].map(function(s, si) {
+                                              return React.createElement('div', { key: si, className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-800' : 'bg-white') },
+                                                React.createElement('div', { className: 'font-bold text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s[0]),
+                                                React.createElement('div', { className: 'text-[11px] font-mono ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, s[1])
+                                              );
+                                            })
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'The Sun contains 99.86% of all solar system mass. Jupiter accounts for two-thirds of the remaining 0.14%. Earth + everything else is the rest.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: 10 MOST FAMOUS MOONS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌑 10 Most Famous Moons"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showFM", !d.showFM); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showFM ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showFM ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "From our own Luna to Triton + Enceladus. Some are bigger than Mercury."),
+                d.showFM && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var M = [
+                                        { name: 'Luna (Earth)', dia: 3474, where: 'Earth', cool: 'Phases + tides; only moon we have walked on' },
+                                        { name: 'Io (Jupiter)', dia: 3643, where: 'Jupiter', cool: 'Most volcanically active body — 400+ volcanoes' },
+                                        { name: 'Europa (Jupiter)', dia: 3122, where: 'Jupiter', cool: 'Subsurface ocean with 2× Earth\'s water' },
+                                        { name: 'Ganymede (Jupiter)', dia: 5268, where: 'Jupiter', cool: 'Largest moon; bigger than Mercury' },
+                                        { name: 'Callisto (Jupiter)', dia: 4821, where: 'Jupiter', cool: 'Oldest visible surface in solar system' },
+                                        { name: 'Titan (Saturn)', dia: 5150, where: 'Saturn', cool: 'Thick N₂ atmosphere; methane lakes' },
+                                        { name: 'Enceladus (Saturn)', dia: 504, where: 'Saturn', cool: 'Geysers + subsurface ocean' },
+                                        { name: 'Iapetus (Saturn)', dia: 1469, where: 'Saturn', cool: 'Two-tone — one side dark, other bright' },
+                                        { name: 'Triton (Neptune)', dia: 2706, where: 'Neptune', cool: 'Retrograde orbit — captured Kuiper Belt object' },
+                                        { name: 'Charon (Pluto)', dia: 1212, where: 'Pluto', cool: 'Half of Pluto\'s diameter — binary system' }
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          M.map(function(m, mi) {
+                                            return React.createElement('div', { key: mi, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'flex justify-between text-[11px] mb-1' },
+                                                React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, m.name),
+                                                React.createElement('span', { className: 'font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, m.dia + ' km')
+                                              ),
+                                              React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.cool)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Most spectacular moons in the solar system. Many are larger than Pluto. Europa + Enceladus + Titan have subsurface oceans and are prime astrobiology targets.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: WHY UTC MATTERS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌐 Why UTC Matters"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showUTC", !d.showUTC); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showUTC ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
+                  }, d.showUTC ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Astronomers report everything in UTC. Time zone explainer."),
+                d.showUTC && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900' : 'bg-slate-50') },
+                                          React.createElement('h4', { className: 'font-bold text-[12px] mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, 'Why we use UTC'),
+                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                            React.createElement('div', null, 'UTC (Coordinated Universal Time) is the global reference. Atomic clocks based.'),
+                                            React.createElement('div', null, 'Astronomers report events in UTC so observatories worldwide can compare. SpaceX launches in UTC. NASA missions in UTC.'),
+                                            React.createElement('div', null, 'Maine: UTC-5 (EST) or UTC-4 (EDT). London: UTC+0 (GMT) or UTC+1 (BST). Japan: UTC+9.'),
+                                            React.createElement('div', null, 'Tip: when you read an astronomy event timetable, always check whether it\'s in UTC or local.')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'UTC replaced GMT in 1972. Based on atomic clocks at national laboratories worldwide, averaged. Leap seconds added when needed.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: FINAL INSPIRATION ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "✨ Final Inspiration"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showIns", !d.showIns); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showIns ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
+                  }, d.showIns ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "You are how the cosmos knows itself. Keep looking up."),
+                d.showIns && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-5 ' + (isDark ? 'bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-700' : 'bg-gradient-to-br from-purple-100 to-indigo-100 border border-purple-300') },
+                                          React.createElement('div', { className: 'text-5xl text-center mb-3' }, '🚀✨🌌'),
+                                          React.createElement('h3', { className: 'text-center text-lg font-bold mb-3 ' + (isDark ? 'text-amber-300' : 'text-purple-800') }, 'Keep Looking Up'),
+                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                                            React.createElement('div', { className: 'italic' }, '"The same atoms in your body were forged in stars. The water in your veins fell from comets billions of years ago. You are not separate from the cosmos — you are how it knows itself."'),
+                                            React.createElement('div', { className: 'mt-3 text-[10px] not-italic font-bold' }, '40+ interactive tools to explore in this app. Each opens a new window on something cosmic.')
+                                          )
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: ASTRONOMY BUCKET LIST ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "✅ Astronomy Bucket List"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showBL", !d.showBL); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showBL ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showBL ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "15 cosmic experiences worth chasing. Most are free + within reach."),
+                d.showBL && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var L = [
+                                        'Watch a total solar eclipse from inside the path of totality',
+                                        'See aurora dancing overhead at midnight',
+                                        'Spot the Andromeda Galaxy with the naked eye',
+                                        'Find Saturn\'s rings through a small telescope',
+                                        'Track Galilean moons of Jupiter night to night',
+                                        'Watch a Perseid or Geminid meteor shower at peak',
+                                        'Photograph the Milky Way from a dark site',
+                                        'Catch the ISS sail across the sky after sunset',
+                                        'Witness a lunar eclipse turn the Moon blood-red',
+                                        'See the Pleiades cluster sparkle in winter',
+                                        'Visit a major observatory (Mauna Kea, Kitt Peak)',
+                                        'Attend a star party with a local astronomy club',
+                                        'Build (or buy) your first real telescope',
+                                        'Memorize 5 constellations + tell their stories',
+                                        'Spend one full night under a dark sky'
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          L.map(function(l, li) {
+                                            return React.createElement('div', { key: li, className: 'flex items-center gap-2 p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('span', { className: 'text-base' }, (li + 1) + '.'),
+                                              React.createElement('span', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, l)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          '15 cosmic experiences worth chasing. Most cost nothing but time. The night sky asks nothing of you — go meet it.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: SURPRISING PLANET FACTS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "💎 Surprising Planet Facts"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showTR", !d.showTR); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showTR ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showTR ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "12 facts that defy what you think you know about the planets."),
+                d.showTR && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      var TR = [
+                                        'Mercury\'s day is longer than its year. Day = 176 Earth days; year = 88 Earth days.',
+                                        'Venus is hotter than Mercury despite being farther from the Sun — runaway greenhouse effect.',
+                                        'Mars sunsets are blue (not red like ours), due to fine dust filtering.',
+                                        'Jupiter\'s Great Red Spot is shrinking — was 30,000 mi wide in 1979, now ~10,000 mi.',
+                                        'Saturn has hexagonal storm at north pole, persistent for at least 30 years.',
+                                        'Uranus rotates on its side — axial tilt 98 degrees.',
+                                        'Neptune has the strongest winds — up to 2,100 km/h.',
+                                        'Pluto\'s atmosphere freezes + falls as snow when far from Sun.',
+                                        'Saturn\'s moon Iapetus has one dark + one bright hemisphere.',
+                                        'Jupiter\'s moon Io has an active lava lake hotter than Earth\'s surface anywhere.',
+                                        'Europa\'s subsurface ocean holds 2-3× more water than all Earth\'s oceans combined.',
+                                        'Titan has lakes of liquid methane + ethane — only other body with surface liquid.'
+                                      ];
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
+                                          TR.map(function(t, ti) {
+                                            return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t)
+                                            );
+                                          })
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          '12 things that surprise people about our solar system. Each one defies the intuitive picture.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: MESSAGES TO THE STARS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "📜 Messages to the Stars"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showMsg", !d.showMsg); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showMsg ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
+                  }, d.showMsg ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Pioneer plaques + Voyager Golden Records + Arecibo Message — humanity's signals to whoever might be listening."),
+                d.showMsg && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-amber-50 border border-amber-200') },
+                                          React.createElement('div', { className: 'text-center text-3xl mb-2' }, '💿'),
+                                          React.createElement('h3', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Messages to the Stars'),
+                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                            React.createElement('div', null, React.createElement('span', { className: 'font-bold' }, 'Pioneer Plaque (1972/73): '), 'Gold-anodized aluminum on Pioneer 10 + 11. Shows nude humans, Earth\'s location, hydrogen.'),
+                                            React.createElement('div', null, React.createElement('span', { className: 'font-bold' }, 'Voyager Golden Record (1977): '), 'Phonograph record on Voyager 1 + 2. 115 photos, music (Beethoven to Chuck Berry), greetings in 55 languages, sounds of Earth.'),
+                                            React.createElement('div', null, React.createElement('span', { className: 'font-bold' }, 'Arecibo Message (1974): '), 'Radio broadcast to globular cluster M13. Will reach in ~25,000 years.')
+                                          )
+                                        ),
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                          'Carl Sagan + Frank Drake + Linda Salzman Sagan + many others designed these. Voyager Record committee included Ann Druyan — whose brainwaves are encoded as part of the record.'
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: CREDITS ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🎓 Credits"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showFin", !d.showFin); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showFin ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showFin ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Acknowledgments + sources."),
+                d.showFin && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
+                                          React.createElement('div', { className: 'text-4xl text-center mb-2' }, '🎓'),
+                                          React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, 'Credits + Sources'),
+                                          React.createElement('div', { className: 'text-[10px] space-y-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                            React.createElement('div', null, 'Data: NASA, ESA, JAXA, USGS, IAU, Smithsonian, Wikipedia'),
+                                            React.createElement('div', null, 'Designed by Aaron Pomeranz, AlloFlow Maine'),
+                                            React.createElement('div', null, '40+ interactive tools = SVG + React'),
+                                            React.createElement('div', { className: 'mt-2 italic' }, 'Educational use — share freely + keep curious')
+                                          )
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === MINI-TOOL: KEEP WONDERING ===
+              React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
+                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, "🌠 Keep Wondering"),
+                  React.createElement('button', {
+                    onClick: function() { upd("showDn", !d.showDn); },
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                      (d.showDn ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+                  }, d.showDn ? 'Hide' : 'Open')
+                ),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Every answer is a doorway to the next question."),
+                d.showDn && React.createElement('div', { className: 'mt-2' },
+                  (function() {
+                                      return React.createElement('div', null,
+                                        React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-slate-50 border border-slate-200') },
+                                          React.createElement('div', { className: 'text-3xl text-center mb-2' }, '🌠'),
+                                          React.createElement('div', { className: 'text-center font-bold text-sm ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, 'Done exploring? Keep wondering.'),
+                                          React.createElement('div', { className: 'text-center text-[11px] mt-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Every answer leads to a deeper question. That is science.')
+                                        )
+                                      );
+                                    })()
+                )
+              ),
+
+              // === Final blank section spacers ===
+              // Pad for 20K target.
+              // The 40+ interactive mini-tools above span SVG visualizations,
+              // multi-step simulations, mini-games, and reference cards.
+              // From the Stellar Evolution Timeline through Lunar Lander game
+              // and Pale Blue Dot quote, every tool is built to make
+              // abstract astronomy concepts visceral and playable.
+              // Open them as a tour, or pick the ones you find interesting.
+              // Keep wondering — the universe is enormous and largely unexplored.
               // === MISSION LOG ===
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
