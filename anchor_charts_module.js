@@ -166,10 +166,26 @@ const AnchorChartSection = React.memo((props) => {
   });
   const onRegenIcon = props.onRegenIcon || null;
   const isRegeneratingIcon = !!props.isRegeneratingIcon;
+  const interactiveArmed = !!props.interactiveArmed;
+  const viewerIsStudent = !!props.viewerIsStudent;
+  const studentAnswers = Array.isArray(props.studentAnswers) ? props.studentAnswers : [];
+  const onStudentAnswerChange = typeof props.onStudentAnswerChange === "function" ? props.onStudentAnswerChange : null;
+  const isInteractiveStudent = interactiveArmed && viewerIsStudent && onStudentAnswerChange;
   const label = section.label || "";
   const bullets = Array.isArray(section.bullets) ? section.bullets : [];
   const iconUrl = section.iconUrl || "";
   const iconPrompt = section.iconPrompt || "";
+  const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
+  const [showIconEditor, setShowIconEditor] = React.useState(false);
+  React.useEffect(() => {
+    setIconPromptDraft(iconPrompt);
+  }, [iconPrompt]);
+  const commitIconPrompt = () => {
+    const trimmed = (iconPromptDraft || "").trim();
+    if (trimmed && trimmed !== iconPrompt) {
+      onChange({ ...section, iconPrompt: trimmed });
+    }
+  };
   const updateLabel = (e) => onChange({ ...section, label: e.target.value });
   const updateBullet = (idx, text) => {
     const next = bullets.slice();
@@ -243,7 +259,23 @@ const AnchorChartSection = React.memo((props) => {
         }
       },
       label
-    ), /* @__PURE__ */ React.createElement("ul", { className: "ac-bullets mt-2 space-y-1" }, bullets.length === 0 && !isEditing ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "(no items yet)") : null, bullets.map((b, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { style: { color: marker.hex, fontWeight: "bold", marginTop: 4 } }, "\u2022"), isEditing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("ul", { className: "ac-bullets mt-2 space-y-1" }, bullets.length === 0 && !isEditing && !isInteractiveStudent ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "(no items yet)") : null, isInteractiveStudent ? bullets.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "(your teacher left this section blank)") : bullets.map((_, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: marker.hex, fontWeight: "bold", marginTop: 4 } }, "\u2022"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: studentAnswers[idx] || "",
+        onChange: (e) => onStudentAnswerChange(idx, e.target.value),
+        placeholder: "Type your answer here\u2026",
+        className: "flex-1 bg-white/70 outline-none border-b-2 border-dotted py-0.5 px-1",
+        style: {
+          fontFamily: '"Patrick Hand", "Caveat", cursive',
+          fontSize: "18px",
+          color: "#2d3748",
+          borderColor: marker.hex + "60"
+        },
+        "aria-label": `Your answer ${idx + 1} for section ${label}`
+      }
+    ))) : bullets.map((b, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { style: { color: marker.hex, fontWeight: "bold", marginTop: 4 } }, "\u2022"), isEditing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -269,7 +301,39 @@ const AnchorChartSection = React.memo((props) => {
         style: { color: marker.hex, borderColor: marker.hex, background: "white" }
       },
       "+ Add bullet"
-    ) : null))
+    ) : null, isEditing ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 pt-2 border-t border-dashed border-slate-300" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setShowIconEditor((v) => !v),
+        className: "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
+        style: { color: marker.hex, background: marker.soft },
+        "aria-expanded": showIconEditor
+      },
+      showIconEditor ? "\u25BC Hide icon prompt" : "\u25B8 Edit icon prompt"
+    ), showIconEditor ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: iconPromptDraft,
+        onChange: (e) => setIconPromptDraft(e.target.value),
+        onBlur: commitIconPrompt,
+        placeholder: "Describe the icon (e.g., 'a friendly dragon doodle')",
+        className: "flex-1 bg-white/80 outline-none border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]",
+        "aria-label": "Icon prompt"
+      }
+    ), onRegenIcon ? /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          commitIconPrompt();
+          onRegenIcon(sectionIndex);
+        },
+        disabled: isRegeneratingIcon,
+        className: "text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap",
+        style: { color: marker.hex, borderColor: marker.hex, background: "white" }
+      },
+      isRegeneratingIcon ? "\u23F3 Generating\u2026" : "\u2728 Generate icon"
+    ) : null) : null) : null))
   );
 });
 const AnchorChartView = React.memo((props) => {
@@ -293,6 +357,23 @@ const AnchorChartView = React.memo((props) => {
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState("idle");
   const paperRef = React.useRef(null);
+  const interactive = data.interactive || { armed: false, rubric: "" };
+  const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
+  const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || "");
+  React.useEffect(() => {
+    setRubricDraft(interactive.rubric || "");
+  }, [interactive.rubric, generatedContent && generatedContent.id]);
+  const [studentAnswers, setStudentAnswers] = React.useState({});
+  const [gradingState, setGradingState] = React.useState("idle");
+  const [gradingResult, setGradingResult] = React.useState(null);
+  const callGeminiProp = props.callGemini || typeof window !== "undefined" && window.callGemini || null;
+  const addXpProp = typeof props.addXp === "function" ? props.addXp : null;
+  const addToastProp = typeof props.addToast === "function" ? props.addToast : (msg) => {
+    try {
+      console.log("[anchor-toast]", msg);
+    } catch (_) {
+    }
+  };
   const [dragSrcIdx, setDragSrcIdx] = React.useState(-1);
   const [dragOverIdx, setDragOverIdx] = React.useState(-1);
   const triedRef = React.useRef({});
@@ -381,6 +462,103 @@ const AnchorChartView = React.memo((props) => {
     if (next === sections) return;
     handleNoteUpdate("sections", next);
   };
+  const handleArmInteractive = () => {
+    const trimmed = (rubricDraft || "").trim();
+    handleNoteUpdate("interactive", { armed: true, rubric: trimmed });
+    setShowInteractiveDialog(false);
+    addToastProp("\u{1F3AF} Interactive mode armed \u2014 students will see blanks");
+  };
+  const handleDisarmInteractive = () => {
+    handleNoteUpdate("interactive", { armed: false, rubric: interactive.rubric || "" });
+    addToastProp("Interactive mode off");
+  };
+  const handleStudentAnswerChange = (sectionId, bulletIdx, text) => {
+    setStudentAnswers((prev) => {
+      const sec = Object.assign({}, prev[sectionId] || {});
+      sec[bulletIdx] = text;
+      const next = Object.assign({}, prev);
+      next[sectionId] = sec;
+      return next;
+    });
+  };
+  const flattenedAnswers = () => {
+    const out = [];
+    sections.forEach((s) => {
+      if (!s) return;
+      const sid = s.id || s.label;
+      const sectionAns = studentAnswers[sid] || {};
+      const items = Object.keys(sectionAns).map((k) => sectionAns[k]).filter((v) => typeof v === "string" && v.trim());
+      if (items.length) {
+        out.push({ section: s.label || "(untitled)", answers: items });
+      }
+    });
+    return out;
+  };
+  const handleSubmitForGrading = async () => {
+    if (gradingState === "submitting") return;
+    if (!callGeminiProp) {
+      addToastProp("AI grading needs an active connection. Please try again.");
+      return;
+    }
+    const ans = flattenedAnswers();
+    if (ans.length === 0) {
+      addToastProp("Please fill in at least one answer before submitting.");
+      return;
+    }
+    setGradingState("submitting");
+    setGradingResult(null);
+    try {
+      const rubric = (interactive.rubric || "").trim() || "(no rubric provided \u2014 grade for general accuracy + thoughtfulness)";
+      const sectionList = sections.map((s, i) => `${i + 1}. ${s.label || "(untitled)"}`).join("\n");
+      const answerBlock = ans.map(
+        (a) => `Section: ${a.section}
+` + a.answers.map((t2, i) => `  ${i + 1}. ${t2}`).join("\n")
+      ).join("\n\n");
+      const prompt = [
+        "You are an encouraging K-12 teacher grading a student's anchor chart submission.",
+        "",
+        "TOPIC: " + (title || "(no title)"),
+        "",
+        "SECTIONS THE STUDENT FILLED IN:",
+        sectionList,
+        "",
+        "TEACHER RUBRIC (what the student should demonstrate):",
+        rubric,
+        "",
+        "STUDENT'S ANSWERS:",
+        answerBlock,
+        "",
+        "Grade the student on TWO dimensions, each 0-100:",
+        "  - accuracyScore: how factually accurate + on-topic their answers are vs. the rubric",
+        "  - thoughtfulnessScore: how thoughtful, original, and developed their answers are (not just one-word responses)",
+        "",
+        "Then suggest XP: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.",
+        "",
+        "Reply ONLY with valid JSON, no markdown:",
+        '{"accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "feedback": "<2-3 sentence supportive specific feedback>", "suggestedXP": <int 0-120>}'
+      ].join("\n");
+      const raw = await callGeminiProp(prompt);
+      let txt = String(raw || "").trim();
+      txt = txt.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+      const m = txt.match(/\{[\s\S]*\}/);
+      const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
+      const accuracy = Math.max(0, Math.min(100, Math.round(parsed.accuracyScore || 0)));
+      const thoughtfulness = Math.max(0, Math.min(100, Math.round(parsed.thoughtfulnessScore || 0)));
+      const xp = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
+      const feedback = String(parsed.feedback || "").slice(0, 800);
+      const result = { accuracyScore: accuracy, thoughtfulnessScore: thoughtfulness, feedback, xpAwarded: xp };
+      setGradingResult(result);
+      setGradingState("done");
+      if (xp > 0 && addXpProp) {
+        addXpProp(xp);
+        addToastProp(`\u2728 +${xp} XP earned!`);
+      }
+    } catch (err) {
+      console.warn("[AnchorChart] grading failed", err && err.message);
+      setGradingState("error");
+      addToastProp("AI grading hit an error. Try again in a moment.");
+    }
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6", "data-help-key": "anchor_chart_view_panel" }, /* @__PURE__ */ React.createElement("style", null, `
         .ac-paper {
           background-color: #fdfaf2;
@@ -419,7 +597,35 @@ const AnchorChartView = React.memo((props) => {
       "data-help-key": "anchor_chart_critique_mode_toggle"
     },
     "\u{1F4CC} Critique mode"
-  ), isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? /* @__PURE__ */ React.createElement(
+  ), isTeacherMode ? interactive.armed ? /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white" }, "\u{1F3AF} Interactive armed"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setShowInteractiveDialog(true),
+      className: "px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50",
+      "aria-label": "Edit interactive rubric",
+      title: "Edit rubric / disarm"
+    },
+    "Edit"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleDisarmInteractive,
+      className: "px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100",
+      "aria-label": "Disarm interactive mode",
+      title: "Stop interactive mode"
+    },
+    "\u23F9"
+  )) : /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setShowInteractiveDialog(true),
+      className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50",
+      "aria-label": "Arm interactive mode",
+      title: "Make this chart interactive \u2014 students fill in blanks + get AI feedback",
+      "data-help-key": "anchor_chart_interactive_mode_toggle"
+    },
+    "\u{1F3AF} Interactive mode"
+  ) : null, isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => onPlayPictionary({ concepts: sections.map((s) => s && s.label || "").filter(Boolean) }),
@@ -534,7 +740,19 @@ const AnchorChartView = React.memo((props) => {
           isEditing,
           onChange: (next) => updateSection(idx, next),
           onRegenIcon: handleRegenIcon,
-          isRegeneratingIcon: regenIdx === idx
+          isRegeneratingIcon: regenIdx === idx,
+          interactiveArmed: !!interactive.armed,
+          viewerIsStudent: !isTeacherMode,
+          studentAnswers: (function() {
+            const sid = s.id || s.label;
+            const sec = studentAnswers[sid] || {};
+            const arr = [];
+            Object.keys(sec).forEach((k) => {
+              arr[Number(k)] = sec[k];
+            });
+            return arr;
+          })(),
+          onStudentAnswerChange: (bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text)
         }
       ),
       isEditing ? /* @__PURE__ */ React.createElement(
@@ -555,7 +773,52 @@ const AnchorChartView = React.memo((props) => {
       "data-help-key": "anchor_chart_add_section"
     },
     "+ Add section"
-  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: drag the \u22EE\u22EE handle on any section to reorder.") : null) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.")), /* @__PURE__ */ React.createElement(
+  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: drag the \u22EE\u22EE handle on any section to reorder.") : null) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers."), interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} Interactive Anchor Chart"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, "Fill in your best answer for each section above, then submit to get AI feedback + earn XP.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleSubmitForGrading,
+      disabled: gradingState === "submitting",
+      className: "px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-60",
+      "aria-busy": gradingState === "submitting"
+    },
+    gradingState === "submitting" ? "\u23F3 Grading\u2026" : "\u2728 Submit for AI feedback"
+  )), gradingState === "done" && gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase text-emerald-700" }, "Accuracy"), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-black text-emerald-700" }, gradingResult.accuracyScore), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-emerald-700/70" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase text-sky-700" }, "Thoughtfulness"), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-black text-sky-700" }, gradingResult.thoughtfulnessScore), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-sky-700/70" }, "/100")), gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "ml-auto px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-sm font-black" }, "\u2728 +", gradingResult.xpAwarded, " XP") : null), gradingResult.feedback ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 italic leading-relaxed" }, gradingResult.feedback) : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700" }, "Couldn't reach the AI grader \u2014 try again in a moment.") : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "ac-interactive-dialog-title",
+      onClick: (e) => {
+        if (e.target === e.currentTarget) setShowInteractiveDialog(false);
+      }
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5" }, /* @__PURE__ */ React.createElement("h2", { id: "ac-interactive-dialog-title", className: "text-lg font-black text-fuchsia-900 mb-2" }, "\u{1F3AF} Arm Interactive Mode"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 mb-3 leading-relaxed" }, "Students will see your section labels but ", /* @__PURE__ */ React.createElement("strong", null, "no bullet text"), " \u2014 they fill in their own answers and submit for AI feedback. The AI grades against your rubric (not your specific phrasing)."), /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1" }, "Rubric / Key concepts"), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: rubricDraft,
+        onChange: (e) => setRubricDraft(e.target.value),
+        placeholder: "What should the student demonstrate? List key concepts, important facts, or rubric criteria. Example: 'Should mention photosynthesis converts light to chemical energy, name chloroplasts as the site, and explain why oxygen is a byproduct.'",
+        rows: 6,
+        className: "w-full border-2 border-slate-300 focus:border-fuchsia-500 rounded-lg p-3 text-sm leading-relaxed outline-none",
+        "aria-label": "Rubric or key concepts"
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic mt-1" }, "Tip: the more specific your rubric, the more accurate the AI's grading."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mt-4" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setShowInteractiveDialog(false),
+        className: "px-3 py-1.5 text-sm font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+      },
+      "Cancel"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handleArmInteractive,
+        className: "px-4 py-1.5 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
+      },
+      "\u{1F3AF} Arm for students"
+    )))
+  ) : null, /* @__PURE__ */ React.createElement(
     AnchorChartCritiqueOverlay,
     {
       isOpen: showCritique,

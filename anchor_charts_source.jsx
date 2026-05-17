@@ -172,10 +172,27 @@ const AnchorChartSection = React.memo((props) => {
   const onChange = props.onChange || (() => {});
   const onRegenIcon = props.onRegenIcon || null;
   const isRegeneratingIcon = !!props.isRegeneratingIcon;
+  // Interactive mode props — when armed and viewer is a student, bullets
+  // become editable inputs; teacher's bullet text is hidden.
+  const interactiveArmed = !!props.interactiveArmed;
+  const viewerIsStudent = !!props.viewerIsStudent;
+  const studentAnswers = Array.isArray(props.studentAnswers) ? props.studentAnswers : [];
+  const onStudentAnswerChange = typeof props.onStudentAnswerChange === 'function' ? props.onStudentAnswerChange : null;
+  const isInteractiveStudent = interactiveArmed && viewerIsStudent && onStudentAnswerChange;
   const label = section.label || '';
   const bullets = Array.isArray(section.bullets) ? section.bullets : [];
   const iconUrl = section.iconUrl || '';
   const iconPrompt = section.iconPrompt || '';
+  // Inline icon-prompt editor (Phase 10) — only shown while editing.
+  const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
+  const [showIconEditor, setShowIconEditor] = React.useState(false);
+  React.useEffect(() => { setIconPromptDraft(iconPrompt); }, [iconPrompt]);
+  const commitIconPrompt = () => {
+    const trimmed = (iconPromptDraft || '').trim();
+    if (trimmed && trimmed !== iconPrompt) {
+      onChange({ ...section, iconPrompt: trimmed });
+    }
+  };
 
   const updateLabel = (e) => onChange({ ...section, label: e.target.value });
   const updateBullet = (idx, text) => {
@@ -259,33 +276,61 @@ const AnchorChartSection = React.memo((props) => {
             >{label}</div>
           )}
           <ul className="ac-bullets mt-2 space-y-1">
-            {bullets.length === 0 && !isEditing ? (
+            {bullets.length === 0 && !isEditing && !isInteractiveStudent ? (
               <li className="text-xs text-slate-600 italic">(no items yet)</li>
             ) : null}
-            {bullets.map((b, idx) => (
-              <li key={idx} className="flex items-start gap-2 group">
-                <span style={{ color: marker.hex, fontWeight: 'bold', marginTop: 4 }}>•</span>
-                {isEditing ? (
-                  <>
+            {/* Interactive student mode: render ONE empty input per bullet
+                slot (no teacher text shown). Otherwise: edit or read view. */}
+            {isInteractiveStudent ? (
+              bullets.length === 0 ? (
+                <li className="text-xs text-slate-600 italic">(your teacher left this section blank)</li>
+              ) : (
+                bullets.map((_, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span style={{ color: marker.hex, fontWeight: 'bold', marginTop: 4 }}>•</span>
                     <input
                       type="text"
-                      value={b}
-                      onChange={(e) => updateBullet(idx, e.target.value)}
-                      className="flex-1 bg-transparent outline-none border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5"
-                      style={{ fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: '18px', color: '#2d3748' }}
-                      aria-label={`Bullet ${idx + 1}`}
+                      value={studentAnswers[idx] || ''}
+                      onChange={(e) => onStudentAnswerChange(idx, e.target.value)}
+                      placeholder="Type your answer here…"
+                      className="flex-1 bg-white/70 outline-none border-b-2 border-dotted py-0.5 px-1"
+                      style={{
+                        fontFamily: '"Patrick Hand", "Caveat", cursive',
+                        fontSize: '18px',
+                        color: '#2d3748',
+                        borderColor: marker.hex + '60',
+                      }}
+                      aria-label={`Your answer ${idx + 1} for section ${label}`}
                     />
-                    <button
-                      onClick={() => removeBullet(idx)}
-                      className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
-                      aria-label="Remove bullet"
-                    >✕</button>
-                  </>
-                ) : (
-                  <span style={{ fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: '18px', color: '#2d3748', lineHeight: 1.3 }}>{b}</span>
-                )}
-              </li>
-            ))}
+                  </li>
+                ))
+              )
+            ) : (
+              bullets.map((b, idx) => (
+                <li key={idx} className="flex items-start gap-2 group">
+                  <span style={{ color: marker.hex, fontWeight: 'bold', marginTop: 4 }}>•</span>
+                  {isEditing ? (
+                    <>
+                      <input
+                        type="text"
+                        value={b}
+                        onChange={(e) => updateBullet(idx, e.target.value)}
+                        className="flex-1 bg-transparent outline-none border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5"
+                        style={{ fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: '18px', color: '#2d3748' }}
+                        aria-label={`Bullet ${idx + 1}`}
+                      />
+                      <button
+                        onClick={() => removeBullet(idx)}
+                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
+                        aria-label="Remove bullet"
+                      >✕</button>
+                    </>
+                  ) : (
+                    <span style={{ fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: '18px', color: '#2d3748', lineHeight: 1.3 }}>{b}</span>
+                  )}
+                </li>
+              ))
+            )}
           </ul>
           {isEditing ? (
             <button
@@ -293,6 +338,39 @@ const AnchorChartSection = React.memo((props) => {
               className="mt-2 text-[11px] font-bold px-2 py-0.5 rounded-full border"
               style={{ color: marker.hex, borderColor: marker.hex, background: 'white' }}
             >+ Add bullet</button>
+          ) : null}
+          {/* Inline icon-prompt editor — only visible in edit mode. Lets the
+              teacher type a refined prompt, then regenerate the icon with it. */}
+          {isEditing ? (
+            <div className="mt-2 pt-2 border-t border-dashed border-slate-300">
+              <button
+                onClick={() => setShowIconEditor((v) => !v)}
+                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                style={{ color: marker.hex, background: marker.soft }}
+                aria-expanded={showIconEditor}
+              >{showIconEditor ? '▼ Hide icon prompt' : '▸ Edit icon prompt'}</button>
+              {showIconEditor ? (
+                <div className="mt-2 flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={iconPromptDraft}
+                    onChange={(e) => setIconPromptDraft(e.target.value)}
+                    onBlur={commitIconPrompt}
+                    placeholder="Describe the icon (e.g., 'a friendly dragon doodle')"
+                    className="flex-1 bg-white/80 outline-none border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
+                    aria-label="Icon prompt"
+                  />
+                  {onRegenIcon ? (
+                    <button
+                      onClick={() => { commitIconPrompt(); onRegenIcon(sectionIndex); }}
+                      disabled={isRegeneratingIcon}
+                      className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
+                      style={{ color: marker.hex, borderColor: marker.hex, background: 'white' }}
+                    >{isRegeneratingIcon ? '⏳ Generating…' : '✨ Generate icon'}</button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>
@@ -326,6 +404,22 @@ const AnchorChartView = React.memo((props) => {
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState('idle');  // 'idle' | 'rendering' | 'error'
   const paperRef = React.useRef(null);
+  // ── Interactive mode (Phase 10) ──
+  // When `interactive.armed`, students see blanked bullets + input fields and
+  // can submit for AI feedback graded against `interactive.rubric`. Teacher
+  // arms / disarms via the dialog. State lives on `data.interactive` so it
+  // round-trips through save/load.
+  const interactive = data.interactive || { armed: false, rubric: '' };
+  const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
+  const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || '');
+  React.useEffect(() => { setRubricDraft(interactive.rubric || ''); }, [interactive.rubric, generatedContent && generatedContent.id]);
+  // Student-side state: answers keyed by section id+idx, and grading result.
+  const [studentAnswers, setStudentAnswers] = React.useState({}); // { [sectionId]: { [idx]: text } }
+  const [gradingState, setGradingState] = React.useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
+  const [gradingResult, setGradingResult] = React.useState(null); // { accuracyScore, thoughtfulnessScore, feedback, xpAwarded } | null
+  const callGeminiProp = props.callGemini || (typeof window !== 'undefined' && window.callGemini) || null;
+  const addXpProp = typeof props.addXp === 'function' ? props.addXp : null;
+  const addToastProp = typeof props.addToast === 'function' ? props.addToast : (msg) => { try { console.log('[anchor-toast]', msg); } catch (_) {} };
   // Drag-and-drop reorder state. dragSrcIdx = the section being dragged;
   // dragOverIdx = the section currently hovered as the drop target. Used to
   // render visual feedback (opacity + drop-line). Touch devices work via the
@@ -424,6 +518,111 @@ const AnchorChartView = React.memo((props) => {
     if (next === sections) return;
     handleNoteUpdate('sections', next);
   };
+  // ── Interactive mode handlers ──
+  const handleArmInteractive = () => {
+    const trimmed = (rubricDraft || '').trim();
+    handleNoteUpdate('interactive', { armed: true, rubric: trimmed });
+    setShowInteractiveDialog(false);
+    addToastProp('🎯 Interactive mode armed — students will see blanks');
+  };
+  const handleDisarmInteractive = () => {
+    handleNoteUpdate('interactive', { armed: false, rubric: interactive.rubric || '' });
+    addToastProp('Interactive mode off');
+  };
+  const handleStudentAnswerChange = (sectionId, bulletIdx, text) => {
+    setStudentAnswers((prev) => {
+      const sec = Object.assign({}, prev[sectionId] || {});
+      sec[bulletIdx] = text;
+      const next = Object.assign({}, prev);
+      next[sectionId] = sec;
+      return next;
+    });
+  };
+  // Build a flat student-answer summary for the grading prompt.
+  const flattenedAnswers = () => {
+    const out = [];
+    sections.forEach((s) => {
+      if (!s) return;
+      const sid = s.id || s.label;
+      const sectionAns = studentAnswers[sid] || {};
+      const items = Object.keys(sectionAns)
+        .map((k) => sectionAns[k])
+        .filter((v) => typeof v === 'string' && v.trim());
+      if (items.length) {
+        out.push({ section: s.label || '(untitled)', answers: items });
+      }
+    });
+    return out;
+  };
+  const handleSubmitForGrading = async () => {
+    if (gradingState === 'submitting') return;
+    if (!callGeminiProp) {
+      addToastProp('AI grading needs an active connection. Please try again.');
+      return;
+    }
+    const ans = flattenedAnswers();
+    if (ans.length === 0) {
+      addToastProp('Please fill in at least one answer before submitting.');
+      return;
+    }
+    setGradingState('submitting');
+    setGradingResult(null);
+    try {
+      // Standards-based grading: AI sees the topic + rubric + section labels +
+      // student's answers. AI does NOT see the teacher's bullets — by design,
+      // grading is against the standards/rubric, not against the teacher's
+      // specific phrasing.
+      const rubric = (interactive.rubric || '').trim() || '(no rubric provided — grade for general accuracy + thoughtfulness)';
+      const sectionList = sections.map((s, i) => `${i + 1}. ${s.label || '(untitled)'}`).join('\n');
+      const answerBlock = ans.map((a) =>
+        `Section: ${a.section}\n` + a.answers.map((t, i) => `  ${i + 1}. ${t}`).join('\n')
+      ).join('\n\n');
+      const prompt = [
+        'You are an encouraging K-12 teacher grading a student\'s anchor chart submission.',
+        '',
+        'TOPIC: ' + (title || '(no title)'),
+        '',
+        'SECTIONS THE STUDENT FILLED IN:',
+        sectionList,
+        '',
+        'TEACHER RUBRIC (what the student should demonstrate):',
+        rubric,
+        '',
+        'STUDENT\'S ANSWERS:',
+        answerBlock,
+        '',
+        'Grade the student on TWO dimensions, each 0-100:',
+        '  - accuracyScore: how factually accurate + on-topic their answers are vs. the rubric',
+        '  - thoughtfulnessScore: how thoughtful, original, and developed their answers are (not just one-word responses)',
+        '',
+        'Then suggest XP: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.',
+        '',
+        'Reply ONLY with valid JSON, no markdown:',
+        '{"accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "feedback": "<2-3 sentence supportive specific feedback>", "suggestedXP": <int 0-120>}'
+      ].join('\n');
+      const raw = await callGeminiProp(prompt);
+      // Robust JSON extraction (strip any code fences if model added them)
+      let txt = String(raw || '').trim();
+      txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+      const m = txt.match(/\{[\s\S]*\}/);
+      const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
+      const accuracy = Math.max(0, Math.min(100, Math.round(parsed.accuracyScore || 0)));
+      const thoughtfulness = Math.max(0, Math.min(100, Math.round(parsed.thoughtfulnessScore || 0)));
+      const xp = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
+      const feedback = String(parsed.feedback || '').slice(0, 800);
+      const result = { accuracyScore: accuracy, thoughtfulnessScore: thoughtfulness, feedback: feedback, xpAwarded: xp };
+      setGradingResult(result);
+      setGradingState('done');
+      if (xp > 0 && addXpProp) {
+        addXpProp(xp);
+        addToastProp(`✨ +${xp} XP earned!`);
+      }
+    } catch (err) {
+      console.warn('[AnchorChart] grading failed', err && err.message);
+      setGradingState('error');
+      addToastProp('AI grading hit an error. Try again in a moment.');
+    }
+  };
 
   return (
     <div className="ac-root max-w-5xl mx-auto px-4 py-6" data-help-key="anchor_chart_view_panel">
@@ -468,6 +667,34 @@ const AnchorChartView = React.memo((props) => {
             aria-label="Open critique mode"
             data-help-key="anchor_chart_critique_mode_toggle"
           >📌 Critique mode</button>
+          {/* Interactive mode toggle — teacher only. Shows "Armed" badge when on. */}
+          {isTeacherMode ? (
+            interactive.armed ? (
+              <span className="inline-flex items-center gap-1">
+                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white">🎯 Interactive armed</span>
+                <button
+                  onClick={() => setShowInteractiveDialog(true)}
+                  className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
+                  aria-label="Edit interactive rubric"
+                  title="Edit rubric / disarm"
+                >Edit</button>
+                <button
+                  onClick={handleDisarmInteractive}
+                  className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                  aria-label="Disarm interactive mode"
+                  title="Stop interactive mode"
+                >⏹</button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setShowInteractiveDialog(true)}
+                className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
+                aria-label="Arm interactive mode"
+                title="Make this chart interactive — students fill in blanks + get AI feedback"
+                data-help-key="anchor_chart_interactive_mode_toggle"
+              >🎯 Interactive mode</button>
+            )
+          ) : null}
           {isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? (
             <button
               onClick={() => onPlayPictionary({ concepts: sections.map(s => (s && s.label) || '').filter(Boolean) })}
@@ -573,6 +800,17 @@ const AnchorChartView = React.memo((props) => {
                   onChange={(next) => updateSection(idx, next)}
                   onRegenIcon={handleRegenIcon}
                   isRegeneratingIcon={regenIdx === idx}
+                  interactiveArmed={!!interactive.armed}
+                  viewerIsStudent={!isTeacherMode}
+                  studentAnswers={(function () {
+                    const sid = s.id || s.label;
+                    const sec = studentAnswers[sid] || {};
+                    // Convert {0: 'a', 1: 'b'} → ['a', 'b']
+                    const arr = [];
+                    Object.keys(sec).forEach((k) => { arr[Number(k)] = sec[k]; });
+                    return arr;
+                  })()}
+                  onStudentAnswerChange={(bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text)}
                 />
                 {isEditing ? (
                   <button
@@ -600,7 +838,90 @@ const AnchorChartView = React.memo((props) => {
         <div className="text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print">
           Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.
         </div>
+        {/* Student submit panel — visible only when interactive armed + viewer is student */}
+        {interactive.armed && !isTeacherMode ? (
+          <div className="mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div>
+                <div className="text-sm font-bold text-fuchsia-900">🎯 Interactive Anchor Chart</div>
+                <div className="text-[12px] text-fuchsia-800/80 mt-1">Fill in your best answer for each section above, then submit to get AI feedback + earn XP.</div>
+              </div>
+              <button
+                onClick={handleSubmitForGrading}
+                disabled={gradingState === 'submitting'}
+                className="px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-60"
+                aria-busy={gradingState === 'submitting'}
+              >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
+            </div>
+            {gradingState === 'done' && gradingResult ? (
+              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200">
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-bold uppercase text-emerald-700">Accuracy</span>
+                    <span className="text-lg font-black text-emerald-700">{gradingResult.accuracyScore}</span>
+                    <span className="text-[10px] text-emerald-700/70">/100</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-bold uppercase text-sky-700">Thoughtfulness</span>
+                    <span className="text-lg font-black text-sky-700">{gradingResult.thoughtfulnessScore}</span>
+                    <span className="text-[10px] text-sky-700/70">/100</span>
+                  </div>
+                  {gradingResult.xpAwarded > 0 ? (
+                    <div className="ml-auto px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-sm font-black">
+                      ✨ +{gradingResult.xpAwarded} XP
+                    </div>
+                  ) : null}
+                </div>
+                {gradingResult.feedback ? (
+                  <div className="text-sm text-slate-800 italic leading-relaxed">{gradingResult.feedback}</div>
+                ) : null}
+              </div>
+            ) : null}
+            {gradingState === 'error' ? (
+              <div className="mt-2 text-[12px] text-red-700">Couldn't reach the AI grader — try again in a moment.</div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
+      {/* Interactive-mode rubric dialog (teacher only) */}
+      {showInteractiveDialog ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ac-interactive-dialog-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowInteractiveDialog(false); }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5">
+            <h2 id="ac-interactive-dialog-title" className="text-lg font-black text-fuchsia-900 mb-2">🎯 Arm Interactive Mode</h2>
+            <p className="text-sm text-slate-700 mb-3 leading-relaxed">
+              Students will see your section labels but <strong>no bullet text</strong> — they fill in their own answers and submit for AI feedback. The AI grades against your rubric (not your specific phrasing).
+            </p>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">Rubric / Key concepts</label>
+            <textarea
+              value={rubricDraft}
+              onChange={(e) => setRubricDraft(e.target.value)}
+              placeholder="What should the student demonstrate? List key concepts, important facts, or rubric criteria. Example: 'Should mention photosynthesis converts light to chemical energy, name chloroplasts as the site, and explain why oxygen is a byproduct.'"
+              rows={6}
+              className="w-full border-2 border-slate-300 focus:border-fuchsia-500 rounded-lg p-3 text-sm leading-relaxed outline-none"
+              aria-label="Rubric or key concepts"
+            />
+            <div className="text-[11px] text-slate-500 italic mt-1">
+              Tip: the more specific your rubric, the more accurate the AI's grading.
+            </div>
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <button
+                onClick={() => setShowInteractiveDialog(false)}
+                className="px-3 py-1.5 text-sm font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+              >Cancel</button>
+              <button
+                onClick={handleArmInteractive}
+                className="px-4 py-1.5 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
+              >🎯 Arm for students</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <AnchorChartCritiqueOverlay
         isOpen={showCritique}
         onClose={() => setShowCritique(false)}

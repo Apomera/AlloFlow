@@ -1721,6 +1721,11 @@ const SESSION_TIER1_LEAVES = new Set([
   // drawerUids[], status }. No student-typed content; concept text only travels
   // over WebRTC to assigned drawers, never to Firestore.
   'pictionaryRound',
+  // Visual-organizer interactive mode (teacher-armed): { type: 'tchart'|'venn'|...,
+  // armedAt: ms-timestamp } | null. type is an enum from a small fixed set in code;
+  // armedAt is a numeric timestamp used by students to distinguish new arm events
+  // from arm events they've already dismissed. No student-typed content; Tier-1 safe.
+  'interactiveOrganizer',
 ]);
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
@@ -6949,6 +6954,53 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isInteractiveFrayerSort, setIsInteractiveFrayerSort] = useState(false);
   const [isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort] = useState(false);
   const [isInteractiveStoryMapSort, setIsInteractiveStoryMapSort] = useState(false);
+
+  // ── Cross-device sync for teacher-armed organizer interactive mode ──
+  // Writes go to sessionDoc.interactiveOrganizer (Tier-1). Students subscribe
+  // via sessionData and get armed when armedAt changes. Dismissing locally
+  // does NOT re-arm because lastSeenInteractiveArmRef tracks the last armedAt
+  // the student has already reacted to.
+  const lastSeenInteractiveArmRef = useRef(null);
+  const _interactiveOrganizerSetters = {
+    venn: setIsInteractiveVenn,
+    tchart: setIsInteractiveTChart,
+    cesort: setIsInteractiveCESort,
+    pipeline: setIsInteractivePipeline,
+    conceptmap: setIsInteractiveConceptMapSort,
+    outline: setIsInteractiveOutlineSort,
+    fishbone: setIsInteractiveFishboneSort,
+    problemsolution: setIsInteractiveProblemSolutionSort,
+    frayer: setIsInteractiveFrayerSort,
+    seethinkwonder: setIsInteractiveSeeThinkWonderSort,
+    storymap: setIsInteractiveStoryMapSort,
+  };
+  const broadcastInteractiveOrganizer = useCallback(async (type) => {
+    if (!isTeacherMode || !activeSessionCode) return;
+    try {
+      const targetAppId = activeSessionAppId || appId;
+      const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+      const payload = type ? { interactiveOrganizer: { type: type, armedAt: Date.now() } } : { interactiveOrganizer: null };
+      await window.__alloWriteToSession(sessionRef, payload);
+    } catch (e) { try { warnLog('interactiveOrganizer sync failed:', e); } catch(_) {} }
+  }, [isTeacherMode, activeSessionCode, activeSessionAppId, appId]);
+  useEffect(() => {
+    if (isTeacherMode) return;
+    const remote = sessionData?.interactiveOrganizer;
+    if (!remote || !remote.type) {
+      // Teacher cleared (or no arm yet) — clear all student-side flags.
+      Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
+      lastSeenInteractiveArmRef.current = null;
+      return;
+    }
+    // Only react when this is a NEW arm (different armedAt). If the student already
+    // dismissed this same arm event, don't re-arm — wait for the teacher to cycle.
+    if (remote.armedAt === lastSeenInteractiveArmRef.current) return;
+    lastSeenInteractiveArmRef.current = remote.armedAt;
+    Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
+    const setter = _interactiveOrganizerSetters[remote.type];
+    if (setter) setter(true);
+  }, [sessionData?.interactiveOrganizer?.type, sessionData?.interactiveOrganizer?.armedAt, isTeacherMode]);
+
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
           const { main, branches, challenge, nodes: savedNodes, edges: savedEdges } = generatedContent?.data;
@@ -23147,6 +23199,8 @@ ${_toolList}
                     handleNoteUpdate, callImagen,
                     activeSessionCode,
                     onPlayPictionary: handlePlayPictionaryFromAnchorChart,
+                    // Phase 10: interactive grading + XP
+                    callGemini, addXp, addToast,
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,
