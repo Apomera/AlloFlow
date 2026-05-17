@@ -244,6 +244,9 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         "button",
         {
           type: "button",
+          onMouseDown: function(e) {
+            e.preventDefault();
+          },
           onClick: function() {
             onDelete(a.id);
           },
@@ -1007,7 +1010,7 @@ function Sidebar(props) {
       role: "region",
       "aria-label": "Annotation list"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, "\u{1F4CB} Annotations ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 font-normal" }, "(", counts.total, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, onImport && /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, "\u{1F4CB} Annotations ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", counts.total, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, onImport && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1029,7 +1032,7 @@ function Sidebar(props) {
       X ? /* @__PURE__ */ React.createElement(X, { size: 14 }) : /* @__PURE__ */ React.createElement("span", null, "\u2715")
     ))),
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-3 py-2 border-b border-slate-200" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), Pill("mine", isTeacher ? "Teacher" : "Mine", mineCount)),
-    /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1", style: { minHeight: 100 } }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-6 text-center text-[11px] text-slate-400 italic" }, "No annotations match this filter."), visible.map(function(a) {
+    /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1", style: { minHeight: 100 } }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-6 text-center text-[11px] text-slate-600 italic" }, "No annotations match this filter."), visible.map(function(a) {
       const isTeacherAnno = a.author === "teacher";
       const canDelete = isTeacher || a.author === "student";
       const title = buildStickerTitle(a);
@@ -1059,7 +1062,7 @@ function Sidebar(props) {
               e.stopPropagation();
               onDelete(a.id);
             },
-            className: "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 text-slate-400 hover:text-red-500 rounded",
+            className: "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 text-slate-600 hover:text-red-500 rounded",
             "aria-label": "Delete " + annotationPreview(a),
             title: "Delete"
           },

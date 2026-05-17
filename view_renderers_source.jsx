@@ -335,6 +335,12 @@ const renderOutlineContent = (deps) => {
                         >
                             <Gamepad2 size={16}/> {t('games.pipeline.play_btn') || 'Build the Flow'}
                         </button>
+                        {isInteractivePipeline && isTeacherMode && (
+                          <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                            <button onClick={() => setIsInteractivePipeline(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                          </div>
+                        )}
                     </div>
                     )}
                     <MainTitle />
@@ -522,10 +528,10 @@ const renderOutlineContent = (deps) => {
                                     {vennGameData.setA.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('setA', i)} className="text-rose-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button onClick={() => handleRemoveVennItem('setA', i)} className="text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-400 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                             <div className="bg-purple-50 rounded-xl border-2 border-purple-200 p-4 flex flex-col">
@@ -545,10 +551,10 @@ const renderOutlineContent = (deps) => {
                                     {vennGameData.shared.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('shared', i)} className="text-purple-300 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button onClick={() => handleRemoveVennItem('shared', i)} className="text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-400 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                             <div className="bg-blue-50 rounded-xl border-2 border-blue-200 p-4 flex flex-col">
@@ -568,10 +574,10 @@ const renderOutlineContent = (deps) => {
                                     {vennGameData.setB.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('setB', i)} className="text-blue-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button onClick={() => handleRemoveVennItem('setB', i)} className="text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-400 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                         </div>
@@ -580,7 +586,7 @@ const renderOutlineContent = (deps) => {
                             className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-xl shadow-lg hover:bg-indigo-700 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                             onClick={handleSetIsVennPlayingToTrue}
                         >
-                            <Gamepad2 size={24} className="fill-current text-yellow-400"/> {t('concept_map.venn.start_game')}
+                            <Gamepad2 size={24} className="fill-current text-yellow-700"/> {t('concept_map.venn.start_game')}
                         </button>
                     </div>
                 );
@@ -746,7 +752,7 @@ const renderOutlineContent = (deps) => {
                                 );
                             })}
                             {items.length === 0 && (
-                                <li className="text-xs italic text-slate-400 text-center py-4">{t('outline.no_items') || 'No items'}</li>
+                                <li className="text-xs italic text-slate-600 text-center py-4">{t('outline.no_items') || 'No items'}</li>
                             )}
                         </ul>
                     </div>
@@ -766,6 +772,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.tchart_sort.play_btn') || 'Sort Into Columns'}
                             </button>
+                            {isInteractiveTChart && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveTChart(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -837,6 +849,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.fishbone_sort.play_btn') || 'Sort Causes Onto Bones'}
                             </button>
+                            {isInteractiveFishboneSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveFishboneSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     {/* SVG fishbone skeleton — purely decorative, the real content is in the cards below */}
@@ -941,7 +959,7 @@ const renderOutlineContent = (deps) => {
                                             );
                                         })}
                                         {items.length === 0 && (
-                                            <li className="text-xs italic text-slate-400 text-center py-2">{t('outline.no_items') || 'No causes in this category'}</li>
+                                            <li className="text-xs italic text-slate-600 text-center py-2">{t('outline.no_items') || 'No causes in this category'}</li>
                                         )}
                                     </ul>
                                 </div>
@@ -1000,6 +1018,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                             </button>
+                            {isInteractiveCESort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveCESort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                         )}
                         <MainTitle />
@@ -1056,6 +1080,12 @@ const renderOutlineContent = (deps) => {
                         >
                             <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                         </button>
+                        {isInteractiveCESort && isTeacherMode && (
+                          <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                            <button onClick={() => setIsInteractiveCESort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                          </div>
+                        )}
                     </div>
                     )}
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
@@ -1141,6 +1171,12 @@ const renderOutlineContent = (deps) => {
                              >
                                  <Gamepad2 size={16}/> {t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
                              </button>
+                             {isInteractiveProblemSolutionSort && isTeacherMode && (
+                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                 <button onClick={() => setIsInteractiveProblemSolutionSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                               </div>
+                             )}
                          </div>
                      )}
                      <div className="relative z-10 mb-16">
@@ -1257,6 +1293,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.concept_map_sort.play_btn') || 'Sort Onto Branches'}
                             </button>
+                            {isInteractiveConceptMapSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveConceptMapSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} />
@@ -1329,7 +1371,7 @@ const renderOutlineContent = (deps) => {
                                     <span>{text}</span>
                                 </li>
                             )) : (
-                                <li className="text-xs text-slate-400 italic">—</li>
+                                <li className="text-xs text-slate-600 italic">—</li>
                             )}
                         </ul>
                     </div>
@@ -1348,6 +1390,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.frayer_sort.play_btn') || 'Sort into Quadrants'}
                             </button>
+                            {isInteractiveFrayerSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveFrayerSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
@@ -1443,7 +1491,7 @@ const renderOutlineContent = (deps) => {
                                     <span>{text}</span>
                                 </li>
                             )) : (
-                                <li className="text-xs text-slate-400 italic">—</li>
+                                <li className="text-xs text-slate-600 italic">—</li>
                             )}
                         </ul>
                     </div>
@@ -1463,6 +1511,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.see_think_wonder_sort.play_btn') || 'Sort: Observation, Inference, or Question?'}
                             </button>
+                            {isInteractiveSeeThinkWonderSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveSeeThinkWonderSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
@@ -1501,7 +1555,7 @@ const renderOutlineContent = (deps) => {
                                     <span>{text}</span>
                                 </li>
                             )) : (
-                                <li className="text-xs text-slate-400 italic">{placeholderWhenEmpty || '—'}</li>
+                                <li className="text-xs text-slate-600 italic">{placeholderWhenEmpty || '—'}</li>
                             )}
                         </ul>
                     </div>
@@ -1558,6 +1612,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.story_map_sort.play_btn') || 'Sort Events Along the Arc'}
                             </button>
+                            {isInteractiveStoryMapSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveStoryMapSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
@@ -1584,7 +1644,7 @@ const renderOutlineContent = (deps) => {
                                             {items.length > 0 ? items.map((text, k) => (
                                                 <li key={k} className="text-xs text-slate-700 leading-snug">• {text}</li>
                                             )) : (
-                                                <li className="text-xs text-slate-400 italic">—</li>
+                                                <li className="text-xs text-slate-600 italic">—</li>
                                             )}
                                         </ul>
                                     </div>
@@ -1630,6 +1690,12 @@ const renderOutlineContent = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {t('games.outline_sort.play_btn') || 'Sort Under Headings'}
                             </button>
+                            {isInteractiveOutlineSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => setIsInteractiveOutlineSort(false)} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="relative mt-8 space-y-8 ml-4 md:ml-12">
@@ -1947,18 +2013,18 @@ const renderInteractiveMap = (deps) => {
                   {generatedContent?.data?.structureType === 'Cause and Effect' && (
                       <div className="absolute inset-0 pointer-events-none z-0 flex">
                           <div className="w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200">
-                              <div className="absolute top-3 left-4 text-orange-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <div className="w-2.5 h-2.5 rounded-full bg-orange-300"></div>
                                   CAUSES
                               </div>
                           </div>
                           <div className="w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40">
-                              <div className="absolute top-3 right-4 text-teal-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   EFFECTS
                                   <div className="w-2.5 h-2.5 rounded-full bg-teal-300"></div>
                               </div>
                           </div>
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-300">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600">
                               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
                                   <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
                               </svg>
@@ -1969,19 +2035,19 @@ const renderInteractiveMap = (deps) => {
                   {generatedContent?.data?.structureType === 'Problem Solution' && (
                       <div className="absolute inset-0 pointer-events-none z-0 flex flex-col">
                           <div className="h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200">
-                              <div className="absolute top-3 left-4 text-red-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 left-4 text-red-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                                   PROBLEM
                               </div>
                           </div>
                           <div className="flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent">
-                              <div className="absolute top-[22%] left-4 text-green-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-[22%] left-4 text-green-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <div className="w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45"></div>
                                   SOLUTIONS
                               </div>
                           </div>
                           <div className="h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200">
-                              <div className="absolute bottom-3 left-4 text-blue-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute bottom-3 left-4 text-blue-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                                   OUTCOME
                               </div>

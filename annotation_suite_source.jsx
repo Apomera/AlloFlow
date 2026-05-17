@@ -335,6 +335,12 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
           {typeof onDelete === 'function' && (
             <button
               type="button"
+              // preventDefault on mousedown stops the textarea from losing focus,
+              // which would otherwise fire onBlur → commit → setExpanded(false),
+              // unmounting this button before its onClick can fire. Without this,
+              // clicking ✕ silently saves the draft and collapses instead of
+              // deleting the annotation.
+              onMouseDown={function (e) { e.preventDefault(); }}
               onClick={function () { onDelete(a.id); }}
               className="px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold"
               aria-label="Delete note"
@@ -1161,7 +1167,7 @@ function Sidebar(props) {
     >
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl">
         <div className="text-xs font-bold text-slate-700">
-          📋 Annotations <span className="text-slate-400 font-normal">({counts.total})</span>
+          📋 Annotations <span className="text-slate-600 font-normal">({counts.total})</span>
         </div>
         <div className="flex items-center gap-1">
           {onImport && (
@@ -1189,7 +1195,7 @@ function Sidebar(props) {
       </div>
       <div className="overflow-y-auto flex-1 px-1 py-1" style={{ minHeight: 100 }}>
         {visible.length === 0 && (
-          <div className="px-3 py-6 text-center text-[11px] text-slate-400 italic">
+          <div className="px-3 py-6 text-center text-[11px] text-slate-600 italic">
             No annotations match this filter.
           </div>
         )}
@@ -1216,7 +1222,7 @@ function Sidebar(props) {
                   <button
                     type="button"
                     onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
-                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 text-slate-400 hover:text-red-500 rounded"
+                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 text-slate-600 hover:text-red-500 rounded"
                     aria-label={'Delete ' + annotationPreview(a)}
                     title="Delete"
                   >{X ? <X size={12} /> : <span>✕</span>}</button>

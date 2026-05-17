@@ -244,6 +244,9 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         "button",
         {
           type: "button",
+          onMouseDown: function(e) {
+            e.preventDefault();
+          },
           onClick: function() {
             onDelete(a.id);
           },
