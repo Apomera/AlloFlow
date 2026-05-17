@@ -8,6 +8,113 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// ── Festival mode CSS (opt-in high-stim mode) ──
+// Default UX is sensory-friendly (sound + motion are muted by default).
+// Festival mode is the OPPOSITE: rainbow background, all mascots cheering,
+// confetti per word, screen shake on big combo. Designed for ADHD-pattern
+// brains + students who find calm UIs boring. prefers-reduced-motion still
+// caps the shake + sparkle classes (handled by the rule above).
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('tp-festival-css')) return;
+  var st = document.createElement('style');
+  st.id = 'tp-festival-css';
+  st.textContent = [
+    '@keyframes tp-fest-rainbow-bg {',
+    '  0%   { background-position: 0% 50%; }',
+    '  100% { background-position: 200% 50%; }',
+    '}',
+    '@keyframes tp-fest-shake {',
+    '  0%, 100% { transform: translate(0, 0) rotate(0deg); }',
+    '  20% { transform: translate(-4px, 2px) rotate(-0.4deg); }',
+    '  40% { transform: translate(4px, -2px) rotate(0.4deg); }',
+    '  60% { transform: translate(-3px, 1px) rotate(-0.3deg); }',
+    '  80% { transform: translate(3px, -1px) rotate(0.3deg); }',
+    '}',
+    '@keyframes tp-fest-confetti-fall {',
+    '  0%   { transform: translate(0, -20px) rotate(0deg);   opacity: 1; }',
+    '  100% { transform: translate(var(--tp-fest-dx, 40px), 320px) rotate(720deg); opacity: 0; }',
+    '}',
+    '@keyframes tp-fest-sparkle-pop {',
+    '  0%   { transform: scale(0.2) translate(0, 0); opacity: 1; }',
+    '  60%  { transform: scale(1.2) translate(var(--tp-fest-sdx, 0), var(--tp-fest-sdy, -30px)); opacity: 1; }',
+    '  100% { transform: scale(0.4) translate(var(--tp-fest-sdx, 0), var(--tp-fest-sdy, -60px)); opacity: 0; }',
+    '}',
+    '@keyframes tp-fest-mascot-bob {',
+    '  0%, 100% { transform: translateY(0) rotate(-2deg); }',
+    '  50%      { transform: translateY(-12px) rotate(2deg); }',
+    '}',
+    '@keyframes tp-fest-streak-pulse {',
+    '  0%, 100% { transform: scale(1); }',
+    '  50%      { transform: scale(1.15); }',
+    '}',
+    // Rainbow-background shell — applied to the drill content wrapper
+    '.tp-fest-shell {',
+    '  position: relative;',
+    '  background: linear-gradient(90deg, #fef3c7, #fce7f3, #dbeafe, #dcfce7, #fef3c7);',
+    '  background-size: 400% 400%;',
+    '  animation: tp-fest-rainbow-bg 18s linear infinite;',
+    '}',
+    '.tp-fest-shake { animation: tp-fest-shake 0.45s ease-in-out; }',
+    // Mascot row at the bottom — all 5 visible
+    '.tp-fest-mascot-row {',
+    '  position: absolute; bottom: 12px; left: 0; right: 0;',
+    '  display: flex; justify-content: space-around; align-items: flex-end;',
+    '  pointer-events: none; z-index: 2;',
+    '  padding: 0 24px;',
+    '}',
+    '.tp-fest-mascot-row > * {',
+    '  animation: tp-fest-mascot-bob 2.2s ease-in-out infinite;',
+    '}',
+    '.tp-fest-mascot-row > *:nth-child(2) { animation-delay: 0.2s; }',
+    '.tp-fest-mascot-row > *:nth-child(3) { animation-delay: 0.4s; }',
+    '.tp-fest-mascot-row > *:nth-child(4) { animation-delay: 0.6s; }',
+    '.tp-fest-mascot-row > *:nth-child(5) { animation-delay: 0.8s; }',
+    // Streak counter big badge
+    '.tp-fest-streak-badge {',
+    '  position: absolute; top: 16px; right: 16px; z-index: 3;',
+    '  background: linear-gradient(135deg, #f97316, #ec4899, #8b5cf6);',
+    '  color: white; padding: 8px 16px; border-radius: 999px;',
+    '  font-weight: 900; font-size: 18px;',
+    '  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);',
+    '  animation: tp-fest-streak-pulse 0.6s ease-in-out infinite;',
+    '  pointer-events: none;',
+    '  text-shadow: 0 1px 2px rgba(0,0,0,0.3);',
+    '}',
+    // Confetti pieces (positioned absolutely by JS)
+    '.tp-fest-confetti {',
+    '  position: absolute; width: 8px; height: 12px; pointer-events: none;',
+    '  animation: tp-fest-confetti-fall 1.2s ease-out forwards;',
+    '  z-index: 10;',
+    '}',
+    '.tp-fest-sparkle {',
+    '  position: absolute; pointer-events: none;',
+    '  font-size: 18px; line-height: 1;',
+    '  animation: tp-fest-sparkle-pop 0.7s ease-out forwards;',
+    '  z-index: 11;',
+    '}',
+    // Festival mode toggle button — eye-catching rainbow
+    '.tp-fest-toggle {',
+    '  background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7);',
+    '  background-size: 200% 100%;',
+    '  color: white;',
+    '  padding: 8px 16px;',
+    '  border-radius: 999px;',
+    '  font-weight: 800;',
+    '  font-size: 13px;',
+    '  border: none;',
+    '  cursor: pointer;',
+    '  box-shadow: 0 2px 8px rgba(0,0,0,0.15);',
+    '  animation: tp-fest-rainbow-bg 4s linear infinite;',
+    '  text-shadow: 0 1px 2px rgba(0,0,0,0.4);',
+    '  letter-spacing: 0.02em;',
+    '}',
+    '.tp-fest-toggle:hover { transform: scale(1.05); }',
+    '.tp-fest-toggle[aria-pressed="true"] { box-shadow: 0 0 0 3px white, 0 0 0 6px #ec4899, 0 4px 16px rgba(236,72,153,0.5); }'
+  ].join('\n');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_typingpractice.js — Typing Practice: Disability-first keyboarding
 // Four pillars: (1) accommodations AS the product (dyslexia font, motor-planning
@@ -105,6 +212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     audioTheme: 'chime',       // 'chime' (default) | 'soft' | 'mute'
     accentColor: 'blue',       // 'blue' (default) | 'teal' | 'violet' | 'amber' | 'rose'
     theme: 'default',          // named visual theme: default | steampunk | cyberpunk | kawaii | neutral
+    festivalMode: false,       // 🌈 high-stim opt-in mode — all mascots cheer, confetti per word, screen shake on big combo. Default OFF (sensory-friendly). Designed for ADHD-pattern brains.
     // Lifetime totals survive session-array capping, so the IEP report stays
     // accurate for long-term students even after the 200-session cap trims
     // the oldest records.
@@ -4016,7 +4124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'neutral')   return 'Theme';
                 return '🎨 Look';
               })()),
-              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
                 THEME_OPTIONS.map(function(opt) {
                   var isActive = (state.theme || 'default') === opt.id;
                   return h('button', {
@@ -4055,7 +4163,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       }
                     })
                   );
-                })
+                }),
+                // ── 🌈 Festival mode toggle ──
+                // Opt-in high-stim mode: all 5 mascots cheering, confetti per
+                // word, screen shake on big combos. Default OFF (calm is the
+                // baseline). Sits with the theme swatches because it's a
+                // top-level vibe choice, not a buried setting.
+                h('button', {
+                  className: 'tp-fest-toggle',
+                  onClick: function() { upd('festivalMode', !state.festivalMode); },
+                  'aria-pressed': state.festivalMode ? 'true' : 'false',
+                  'aria-label': state.festivalMode ? 'Festival mode is on. Click to turn off.' : 'Turn on festival mode — all mascots cheer, confetti per word, screen shake on combos. High-stim.',
+                  title: state.festivalMode ? 'Festival mode ON — click to turn off' : 'Festival mode OFF — click for max stim'
+                }, state.festivalMode ? '🌈 Festival ON' : '🌈 Festival')
               ),
               // Active theme name + keyboard hint — the text label is the
               // color-independent indicator of which theme is active,
@@ -6708,15 +6828,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               label: 'Companion mascot — ' + companionState
             });
           }
+          // ── 🌈 Festival mode overlay state ──
+          // Hooks `wordPulse.key` for confetti bursts + `streak` for shake.
+          // Lives next to drill state so it picks up the same change signals
+          // already in use by the calm mode (word pulse, streak chip).
+          var festActive = !!state.festivalMode;
+          var festShellRef = useRef(null);
+          var festConfettiRef = useRef([]);  // [{key, color, dx, top, left}]
+          var [festConfettiTick, setFestConfettiTick] = useState(0);
+          // Word complete → spawn ~14 confetti pieces. wordPulse.key already
+          // increments on every space-ended word (existing system).
+          useEffect(function() {
+            if (!festActive) return;
+            if (wordPulse.key === 0) return;
+            var palette2 = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+            var pieces = [];
+            for (var i = 0; i < 14; i++) {
+              pieces.push({
+                key: wordPulse.key + ':' + i + ':' + Date.now(),
+                color: palette2[i % palette2.length],
+                dx: (Math.random() * 200 - 100) + 'px',
+                top: Math.round(80 + Math.random() * 40),
+                left: Math.round(20 + Math.random() * 60)
+              });
+            }
+            festConfettiRef.current = festConfettiRef.current.concat(pieces);
+            setFestConfettiTick(function(t) { return t + 1; });
+            // Garbage-collect pieces after animation finishes (1.2s)
+            setTimeout(function() {
+              var live = festConfettiRef.current.filter(function(p) {
+                return pieces.indexOf(p) === -1;
+              });
+              festConfettiRef.current = live;
+              setFestConfettiTick(function(t) { return t + 1; });
+            }, 1300);
+          }, [festActive, wordPulse.key]);
+          // Combo-10 → screen shake (450ms). Just add a class; CSS does the rest.
+          useEffect(function() {
+            if (!festActive) return;
+            if (streak === 0 || streak % 10 !== 0) return;
+            var el = festShellRef.current;
+            if (!el) return;
+            el.classList.add('tp-fest-shake');
+            var to = setTimeout(function() { el.classList.remove('tp-fest-shake'); }, 460);
+            return function() { clearTimeout(to); };
+          }, [festActive, streak]);
           return h('div', {
-            className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage',
+            ref: festShellRef,
+            className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage' + (festActive ? ' tp-fest-shell' : ''),
             style: {
               padding: '20px',
               maxWidth: '960px',
               margin: '0 auto',
               color: palette.text,
               fontFamily: fontFamily,
-              background: palette.bg,
+              background: festActive ? undefined : palette.bg,  // let .tp-fest-shell rainbow show through
               minHeight: '60vh',
               position: 'relative',
               overflow: 'hidden'
@@ -6737,6 +6903,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + i });
               })
             ),
+            // ── 🌈 Festival overlay ──
+            // Mounted only when festivalMode is on. Three layers:
+            //   1. All 5 mascots cheering in a row at the bottom.
+            //   2. Big rainbow streak badge top-right when streak ≥ 5.
+            //   3. Live confetti pieces from word-completion bursts.
+            festActive ? h('div', {
+              key: 'fest-overlay',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 1 }
+            },
+              // Mascot row — all 5 of them, in combo state
+              h('div', { className: 'tp-fest-mascot-row' },
+                ['default', 'steampunk', 'cyberpunk', 'kawaii', 'oceanic'].map(function(themeId) {
+                  return h('div', { key: 'festmas-' + themeId, style: { width: 64, height: 64 } },
+                    renderBattleMascot(themeId, 'combo', { size: 64, label: themeId + ' cheering' })
+                  );
+                })
+              ),
+              // Streak badge — only at 5+ so it doesn't pop on every keystroke
+              streak >= 5 ? h('div', { className: 'tp-fest-streak-badge' },
+                '🔥 ' + streak + ' STREAK'
+              ) : null,
+              // Confetti pieces (transient — auto-removed after animation)
+              festConfettiRef.current.map(function(p) {
+                return h('span', {
+                  key: 'fconf-' + p.key,
+                  className: 'tp-fest-confetti',
+                  style: {
+                    background: p.color,
+                    top: p.top + 'px',
+                    left: p.left + '%',
+                    '--tp-fest-dx': p.dx,
+                    borderRadius: Math.random() > 0.5 ? '50%' : '2px'
+                  }
+                });
+              })
+            ) : null,
             // Companion in top-right corner — absolute so it doesn't
             // disturb the existing drill layout. Hidden when neutral
             // theme (renderBattleMascot returns null) or toggle is off.
