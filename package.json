@@ -2,6 +2,9 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
     "verify": "node dev-tools/verify_all.cjs",
     "verify:all": "node dev-tools/verify_all.cjs --all",
     "verify:registry": "node dev-tools/verify_module_registry.cjs",
@@ -44,6 +47,7 @@
   "devDependencies": {
     "@babel/cli": "^7.28.6",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
+    "@playwright/test": "^1.60.0",
     "diff": "^9.0.0",
     "jsdom": "^29.1.0",
     "playwright": "^1.59.1",

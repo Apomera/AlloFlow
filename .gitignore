@@ -144,3 +144,8 @@ nest_track.js
 star_code_map.txt
 add_features.js
 test_extract_query.js
+
+# Playwright e2e artifacts
+test-results/
+playwright-report/
+playwright/.cache/

@@ -1,27 +1,69 @@
-# AlloFlow Clinical Logic Test Suite
+# AlloFlow Test Suites
 
-## Why These Tests Exist
+This directory holds **two complementary suites**:
+
+1. **Unit / clinical-logic tests** (Node + vitest) — verify pure functions: scoring, classification, PII scrubbing, RTI tiers, etc.
+2. **End-to-end browser tests** (Playwright) — verify the live deployed app: app boots, modals open, all 174 STEM + SEL tool CDN files are reachable, flagship tools render without throwing.
+
+## Layout
+
+```
+tests/
+  # — Unit / clinical-logic tests (Node + vitest) —
+  clinical_tests.js              # 111 tests across 3 tiers (Tier 1/2/3)
+  *.test.js                      # anchor_charts, glossary, math_helpers, etc.
+  extracted_logic/
+    clinical_logic.js            # Pure functions copied from source modules
+  setup.js
+  README.md                      # this file
+
+  # — End-to-end Playwright suite (~280 tests, runs against production) —
+  e2e/
+    01-app-boot.spec.ts                 # 6 tests — page mounts, no critical errors
+    02-launch-pad.spec.ts               # 5 — mode picker (Full/Guided/Learning/Educator)
+    03-cdn-modules.spec.ts              # 4 — lazy CDN module loading
+    04-learning-hub.spec.ts             # 6 — Learning Hub modal + 6 tiles
+    05-sidebar-controls.spec.ts         # 10 — mute/theme/animation/language toggles
+    06-stem-lab-modal.spec.ts           # 5 — STEM Lab modal + registry contract
+    07-sel-hub-modal.spec.ts            # 5 — SEL Hub + StoryForge + AlloHaven
+    08-sidebar-tool-categories.spec.ts  # 23 — sidebar tool categories visible
+    09-a11y-baseline.spec.ts            # 7 — lang/landmarks/alt/keyboard nav
+    10-public-pages.spec.ts             # 8 — catalog.html, contribute.html, critical CDN
+    11-stem-tools-load.spec.ts          # 26 — 13 flagship STEM tools: CDN + registry
+    12-sel-tools-load.spec.ts           # 70 — every SEL Hub tool CDN reachable
+    13-stem-tools-all-cdn.spec.ts       # 104 — every STEM Lab tool CDN reachable
+    14-flagship-tool-render.spec.ts     # 6 — Optics/Solar/Plate/Cell/Chem/Raptor render
+    helpers.ts
+    README.md                            # E2E-specific docs
+```
+
+## Quick Start
+
+### Unit tests (clinical logic)
+```bash
+node tests/clinical_tests.js     # standalone (no deps)
+npm test                          # all vitest tests
+```
+
+### E2E (Playwright)
+```bash
+npm run test:e2e                  # all tests, headless, against production
+npm run test:e2e:headed           # visible browser
+npm run test:e2e:report           # open HTML report from last run
+PW_BASE_URL=http://localhost:3000 npm run test:e2e   # against local dev server
+npx playwright test tests/e2e/01-app-boot.spec.ts    # single file
+npx playwright test --grep "Optics"                  # tests matching a name
+```
+
+E2E suite takes ~15-18 minutes against production. Run unit tests in seconds.
+
+---
+
+## Why the Unit Tests Exist
 
 AlloFlow's clinical tools make real decisions about real students. The Report Writer generates psychoeducational reports used in IEP meetings. The RTI Dashboard classifies students into intervention tiers. The familiarity system determines which words to practice. A regression in any of these functions could affect the services a student receives.
 
 These tests verify the **pure logic** — the scoring algorithms, classification lookups, and data transformations — that form the clinical decision-making core of AlloFlow.
-
-## Quick Start
-
-```bash
-# Run all tests (no dependencies required — just Node.js)
-node tests/clinical_tests.js
-```
-
-## Architecture
-
-```
-tests/
-  clinical_tests.js              # 111 tests across 3 tiers
-  extracted_logic/
-    clinical_logic.js            # Pure functions extracted from source modules
-  README.md                      # This file
-```
 
 ### How It Works
 

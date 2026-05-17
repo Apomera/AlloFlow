@@ -2078,6 +2078,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   }
 
   // ─────────────────────────────────────────────────────────
+  // 🎺 Synth "meme vibes" sound pack
+  // ─────────────────────────────────────────────────────────
+  // All synthesized via Web Audio — zero asset loading, no licensing
+  // exposure (the actual viral SFX like Vine boom / SpongeBob / Mario
+  // are copyrighted; this pack captures the VIBE without using them).
+  // Helper for richer envelopes than playTone exposes: lets us swoop
+  // pitch over time + apply ADSR-style gain shapes.
+  function _playSwoopTone(opts) {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = opts.type || 'sine';
+      var now = ctx.currentTime;
+      var dur = (opts.durationMs || 200) / 1000;
+      // Pitch envelope: linear or exponential from startHz → endHz
+      osc.frequency.setValueAtTime(opts.startHz, now);
+      if (opts.exponential) {
+        // Exponential ramp can't reach 0 — clamp endHz
+        osc.frequency.exponentialRampToValueAtTime(Math.max(20, opts.endHz), now + dur);
+      } else {
+        osc.frequency.linearRampToValueAtTime(opts.endHz, now + dur);
+      }
+      // Gain envelope: attack + sustain + release
+      var peak = opts.peakGain || 0.12;
+      var attack = (opts.attackMs || 5) / 1000;
+      var release = (opts.releaseMs || 30) / 1000;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(peak, now + attack);
+      gain.gain.setValueAtTime(peak, now + Math.max(attack, dur - release));
+      gain.gain.linearRampToValueAtTime(0, now + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+    } catch (e) { /* swallow */ }
+  }
+
+  // AIRHORN — the classic "blaaaat blaaaat blaaaaaaat" pattern.
+  // Sawtooth at ~340Hz with a slight pitch wobble, three pulses (short,
+  // short, long). For 10-streak milestones — celebratory not piercing.
+  function audioFestivalAirhorn() {
+    var pulses = [{ d: 120, gap: 40 }, { d: 120, gap: 40 }, { d: 380, gap: 0 }];
+    var t = 0;
+    pulses.forEach(function(p) {
+      setTimeout(function() {
+        _playSwoopTone({ startHz: 320, endHz: 360, type: 'sawtooth', durationMs: p.d, peakGain: 0.14, attackMs: 8, releaseMs: 40 });
+        // Layer a fifth above for thickness
+        _playSwoopTone({ startHz: 480, endHz: 540, type: 'sawtooth', durationMs: p.d, peakGain: 0.07, attackMs: 8, releaseMs: 40 });
+      }, t);
+      t += p.d + p.gap;
+    });
+  }
+
+  // VINE-BOOM-STYLE THUMP — sub-bass thump that drops in pitch fast.
+  // For dramatic moments (e.g., after a long error-free run). Heavy but short.
+  function audioFestivalBoom() {
+    // Main sub-bass
+    _playSwoopTone({ startHz: 120, endHz: 32, type: 'sine', durationMs: 500, peakGain: 0.25, attackMs: 3, releaseMs: 200, exponential: true });
+    // Click at the top for transient punch
+    _playSwoopTone({ startHz: 800, endHz: 200, type: 'triangle', durationMs: 80, peakGain: 0.08, attackMs: 2, releaseMs: 60, exponential: true });
+  }
+
+  // PARTY HORN — quick rising sawtooth (the kazoo-y kid's-birthday vibe).
+  // Pairs with combo milestone phrases for cheap dopamine.
+  function audioFestivalPartyHorn() {
+    _playSwoopTone({ startHz: 280, endHz: 720, type: 'sawtooth', durationMs: 220, peakGain: 0.10, attackMs: 10, releaseMs: 30 });
+    // Tiny pop at the end
+    setTimeout(function() { playTone(900, 40, 'square'); }, 230);
+  }
+
+  // BASS DROP — sweep from high to low (DJ-style drop).
+  // For really big moments: 50+ streak.
+  function audioFestivalBassDrop() {
+    _playSwoopTone({ startHz: 1600, endHz: 60, type: 'sawtooth', durationMs: 700, peakGain: 0.16, attackMs: 10, releaseMs: 100, exponential: true });
+    // Land with a thud
+    setTimeout(function() {
+      _playSwoopTone({ startHz: 80, endHz: 40, type: 'sine', durationMs: 260, peakGain: 0.22, attackMs: 2, releaseMs: 150, exponential: true });
+    }, 700);
+  }
+
+  // POWER-UP SWEEP — ascending square-wave swoop. For 25-streak.
+  // Evokes the "you just got a star" vibe without using the actual sound.
+  function audioFestivalPowerUp() {
+    var notes = [262, 330, 392, 523, 659, 784, 988, 1175, 1397];
+    notes.forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 50, 'square'); }, i * 35);
+    });
+  }
+
+  // VICTORY FANFARE — brass-stack-style triadic resolution. For 100-streak
+  // and perfect drill. Sawtooth gives the "trumpet" character.
+  function audioFestivalVictory() {
+    var chord = [392, 523, 659, 784]; // G major-ish
+    // Anticipation: short rising line
+    [440, 523, 659].forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 90, 'sawtooth'); }, i * 70);
+    });
+    // Resolution: chord stack held for ~900ms
+    setTimeout(function() {
+      chord.forEach(function(n) {
+        _playSwoopTone({ startHz: n, endHz: n, type: 'sawtooth', durationMs: 900, peakGain: 0.07, attackMs: 30, releaseMs: 300 });
+      });
+    }, 240);
+  }
+
+  // CROWD CHEER — burst of filtered noise + multiple detuned tones to
+  // suggest voices. Not vocal-quality, but reads as "cheering" in context.
+  function audioFestivalCheer() {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      // Noise burst (the "crowd" texture)
+      var bufSize = ctx.sampleRate * 0.6;
+      var noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      var data = noiseBuf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
+      var noise = ctx.createBufferSource();
+      noise.buffer = noiseBuf;
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1200;
+      filter.Q.value = 0.6;
+      var noiseGain = ctx.createGain();
+      var now = ctx.currentTime;
+      noiseGain.gain.setValueAtTime(0, now);
+      noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.06);
+      noiseGain.gain.linearRampToValueAtTime(0, now + 0.6);
+      noise.connect(filter).connect(noiseGain).connect(ctx.destination);
+      noise.start(now);
+      noise.stop(now + 0.62);
+    } catch (e) {}
+    // Layer voiced tones — slight detunes suggest multiple "yeahs"
+    [523, 587, 659].forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 350, 'triangle'); }, i * 30);
+    });
+  }
+
+  // DING DING DING — three-bell winner ping. For first session of the day
+  // or other milestone-of-the-day events (currently not wired but available).
+  function audioFestivalDing() {
+    playTone(1320, 90, 'sine');
+    setTimeout(function() { playTone(1320, 90, 'sine'); }, 130);
+    setTimeout(function() { playTone(1320, 200, 'sine'); }, 260);
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 3: STYLE HELPERS
   // ─────────────────────────────────────────────────────────
   // Palette matches other STEM Lab tools (roadready-style dark UI).
@@ -7053,7 +7200,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 el.classList.add('tp-fest-shake');
                 setTimeout(function() { el.classList.remove('tp-fest-shake'); }, 460);
               }
-              try { audioFestivalCombo(); } catch (_) {}
+              try {
+                if (streak >= 100)      { audioFestivalVictory(); audioFestivalAirhorn(); }
+                else if (streak >= 50)  { audioFestivalCheer(); audioFestivalBoom(); }
+                else if (streak >= 25)  { audioFestivalBassDrop(); audioFestivalPowerUp(); }
+                else if (streak >= 10)  { audioFestivalAirhorn(); }
+                else                    { audioFestivalCombo(); }
+              } catch (_) {}
+            }
+            if (phrase) {
+              try { audioFestivalPartyHorn(); } catch (_) {}
             }
           }, [festActive, streak]);
           // Mascot speech bubbles — every ~5s during drilling, a random
@@ -7085,7 +7241,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var acc = totalKeystrokes > 0 ? Math.round((typed.length / totalKeystrokes) * 100) : 0;
             if (acc >= 100 && !festFinale) {
               setFestFinale(true);
-              try { audioFestivalFinale(); } catch (_) {}
+              try {
+                audioFestivalFinale();
+                setTimeout(function() { try { audioFestivalVictory(); } catch (_) {} }, 250);
+                setTimeout(function() { try { audioFestivalAirhorn(); } catch (_) {} }, 900);
+                setTimeout(function() { try { audioFestivalDing(); } catch (_) {} }, 1700);
+              } catch (_) {}
               setTimeout(function() { setFestFinale(false); }, 3000);
             }
           }, [festActive, drillComplete, typed.length, errorCount]);
