@@ -125,6 +125,360 @@
       ng: "ring", ck: "duck", ph: "phone", oo: "moon", ee: "bee",
       ai: "rain", ay: "play", oa: "boat", ow: "owl", ou: "cloud",
     };
+
+    // ═══════════════════════════════════════════════════════════════
+    // GRAPHOPHONEME_ANCHORS — explicit letter ↔ sound pairing for the
+    // persistent anchor strip rendered alongside isolation, blending,
+    // manipulation, rhyme, syllable, sound-sort drills. The anchor
+    // closes the transfer gap from pure phonological awareness to
+    // decoding by keeping the grapheme, key word, IPA symbol, and
+    // sample sentence visible while the student works the activity.
+    //
+    // Built from PHONEME_KEYWORDS so existing AAC mode (Jolly-Phonics
+    // style key-word images) reuses the same keyword table.
+    //
+    // Shape per entry:
+    //   graphemes:        array of grapheme spellings for this sound
+    //                     (primary first, variants after)
+    //   keyWord:          short word containing the target grapheme
+    //   ipa:              IPA symbol used by IPA_TO_AUDIO lookups
+    //   sample:           sample sentence using the key word
+    //   sampleHighlight:  [start, end] char indices to bold the target
+    //                     letters inside the sample (for the anchor UI)
+    //   rule:             optional pedagogical rule (hard/soft c, etc.)
+    //   note:             optional teacher-facing pedagogy note
+    // ═══════════════════════════════════════════════════════════════
+    const GRAPHOPHONEME_ANCHORS = {
+      // ── Single consonants ──
+      a:  { graphemes: ["a"],  keyWord: "apple",    ipa: "æ",  sample: "The apple is red.",           sampleHighlight: [4, 5] },
+      b:  { graphemes: ["b", "bb"], keyWord: "ball", ipa: "b", sample: "The ball is round.",          sampleHighlight: [4, 5] },
+      c:  { graphemes: ["c"],  keyWord: "cat",      ipa: "k",  sample: "A cat sat on the mat.",      sampleHighlight: [2, 3],
+            rule: "Hard c (sounds like /k/) before a, o, u, or consonants.",
+            note: "Pair with the soft-c anchor (cent, city) for older students." },
+      d:  { graphemes: ["d", "dd"], keyWord: "dog", ipa: "d",  sample: "My dog can run fast.",       sampleHighlight: [3, 4] },
+      e:  { graphemes: ["e"],  keyWord: "egg",      ipa: "ɛ",  sample: "The egg is in the nest.",    sampleHighlight: [4, 5] },
+      f:  { graphemes: ["f", "ff", "ph"], keyWord: "fish", ipa: "f", sample: "A fish swims fast.",   sampleHighlight: [2, 3] },
+      g:  { graphemes: ["g", "gg"], keyWord: "goat", ipa: "g", sample: "The goat ate the grass.",    sampleHighlight: [4, 5],
+            rule: "Hard g before a, o, u, or consonants.",
+            note: "Pair with soft-g anchor (gem, giant) for older students." },
+      h:  { graphemes: ["h"],  keyWord: "hat",      ipa: "h",  sample: "My hat is on my head.",      sampleHighlight: [3, 4] },
+      i:  { graphemes: ["i"],  keyWord: "igloo",    ipa: "ɪ",  sample: "An igloo is made of ice.",   sampleHighlight: [3, 4] },
+      j:  { graphemes: ["j"],  keyWord: "jet",      ipa: "ʤ",  sample: "The jet flies high.",        sampleHighlight: [4, 5] },
+      k:  { graphemes: ["k"],  keyWord: "kite",     ipa: "k",  sample: "My kite is in the sky.",     sampleHighlight: [3, 4] },
+      l:  { graphemes: ["l", "ll"], keyWord: "lion", ipa: "l", sample: "The lion is brave.",         sampleHighlight: [4, 5] },
+      m:  { graphemes: ["m", "mm"], keyWord: "moon", ipa: "m", sample: "The moon is bright.",        sampleHighlight: [4, 5] },
+      n:  { graphemes: ["n", "nn"], keyWord: "nest", ipa: "n", sample: "The nest is in the tree.",   sampleHighlight: [4, 5] },
+      o:  { graphemes: ["o"],  keyWord: "octopus",  ipa: "ɒ",  sample: "The octopus has eight arms.", sampleHighlight: [4, 5] },
+      p:  { graphemes: ["p", "pp"], keyWord: "pig", ipa: "p",  sample: "The pig is pink.",           sampleHighlight: [4, 5] },
+      q:  { graphemes: ["q", "qu"], keyWord: "queen", ipa: "k", sample: "The queen sits on a chair.", sampleHighlight: [4, 5],
+            note: "q is almost always followed by u in English." },
+      r:  { graphemes: ["r", "rr"], keyWord: "ring", ipa: "r", sample: "The ring is gold.",          sampleHighlight: [4, 5] },
+      s:  { graphemes: ["s", "ss"], keyWord: "sun", ipa: "s",  sample: "The sun is hot.",            sampleHighlight: [4, 5] },
+      t:  { graphemes: ["t", "tt"], keyWord: "tree", ipa: "t", sample: "The tree is tall.",          sampleHighlight: [4, 5] },
+      u:  { graphemes: ["u"],  keyWord: "umbrella", ipa: "ʌ",  sample: "I use an umbrella in the rain.", sampleHighlight: [9, 10] },
+      v:  { graphemes: ["v"],  keyWord: "van",      ipa: "v",  sample: "The van is fast.",           sampleHighlight: [4, 5] },
+      w:  { graphemes: ["w"],  keyWord: "web",      ipa: "w",  sample: "The spider made a web.",     sampleHighlight: [19, 20] },
+      x:  { graphemes: ["x"],  keyWord: "fox",      ipa: "ks", sample: "The fox runs quickly.",      sampleHighlight: [6, 7] },
+      y:  { graphemes: ["y"],  keyWord: "yarn",     ipa: "j",  sample: "The yarn is soft.",          sampleHighlight: [4, 5] },
+      z:  { graphemes: ["z", "zz"], keyWord: "zebra", ipa: "z", sample: "The zebra has stripes.",    sampleHighlight: [4, 5] },
+      // ── Digraphs and trigraphs ──
+      sh: { graphemes: ["sh", "ti", "ci", "ssi"], keyWord: "ship", ipa: "ʃ", sample: "The ship sails on the sea.",   sampleHighlight: [4, 6],
+            note: "Multi-grapheme phoneme. Common in -tion (action) and -cian (musician) endings." },
+      ch: { graphemes: ["ch", "tch"], keyWord: "chair", ipa: "ʧ", sample: "The chair is by the table.",              sampleHighlight: [4, 6],
+            rule: "Use tch after a short vowel (catch, watch, witch).",
+            note: "ch can also say /k/ in Greek words (school, chorus) and /sh/ in French (chef)." },
+      th: { graphemes: ["th"], keyWord: "thumb", ipa: "θ", sample: "I hurt my thumb.",                                sampleHighlight: [12, 14],
+            note: "th has TWO sounds: voiceless (thumb, thin) and voiced (this, that). Both spelled the same." },
+      wh: { graphemes: ["wh"], keyWord: "whale", ipa: "w", sample: "The whale swims in the ocean.",                   sampleHighlight: [4, 6],
+            note: "In most American English, wh sounds the same as w. Historically /hw/." },
+      ng: { graphemes: ["ng"], keyWord: "ring", ipa: "ŋ", sample: "The bell rings loudly.",                           sampleHighlight: [9, 11],
+            note: "Always appears at the end of a syllable. Never starts a word in English." },
+      ck: { graphemes: ["ck"], keyWord: "duck", ipa: "k", sample: "The duck swims on the pond.",                      sampleHighlight: [6, 8],
+            rule: "Use ck after a short vowel at the end of a one-syllable word (back, duck, sock)." },
+      ph: { graphemes: ["ph"], keyWord: "phone", ipa: "f", sample: "The phone is ringing.",                           sampleHighlight: [4, 6],
+            note: "Greek-origin spelling for /f/. Other examples: graph, photo, dolphin." },
+      // ── Long vowels and vowel teams ──
+      oo: { graphemes: ["oo", "u_e", "ew", "ue"], keyWord: "moon", ipa: "u", sample: "The moon shines at night.",     sampleHighlight: [4, 6],
+            note: "oo has TWO sounds: long /u/ (moon, food) and short /ʊ/ (book, foot)." },
+      ee: { graphemes: ["ee", "ea", "y", "e_e", "ie"], keyWord: "bee", ipa: "i", sample: "A bee buzzes in the garden.", sampleHighlight: [2, 4],
+            note: "Long e has many spellings. Most common: ee, ea, y (at end of word)." },
+      ai: { graphemes: ["ai", "ay", "a_e", "eigh"], keyWord: "rain", ipa: "e", sample: "The rain falls on the roof.", sampleHighlight: [4, 6],
+            rule: "Use ai in the middle of a word, ay at the end (rain / play)." },
+      ay: { graphemes: ["ay", "ai", "a_e", "eigh"], keyWord: "play", ipa: "e", sample: "Let's play in the park.",     sampleHighlight: [6, 8],
+            rule: "Use ay at the end of a word or syllable (play, today)." },
+      oa: { graphemes: ["oa", "o_e", "ow", "oe"], keyWord: "boat", ipa: "o", sample: "The boat floats on the lake.",   sampleHighlight: [4, 6],
+            rule: "Use oa in the middle of a word, ow often at the end (boat / snow)." },
+      ow: { graphemes: ["ow", "ou"], keyWord: "owl", ipa: "aʊ", sample: "An owl hoots at night.",                      sampleHighlight: [3, 5],
+            note: "ow has TWO sounds: /aʊ/ (owl, cow) and /o/ (snow, low). Context determines which." },
+      ou: { graphemes: ["ou", "ow"], keyWord: "cloud", ipa: "aʊ", sample: "The cloud is white and fluffy.",            sampleHighlight: [4, 6],
+            rule: "Use ou in the middle of a word, ow often at the end (cloud / cow)." },
+    };
+
+    // Soft-c and soft-g paired anchors (used for the multi-phoneme grapheme
+    // explorer in older-student mode).
+    const GRAPHEME_RULE_PAIRS = {
+      c: {
+        hard: { ipa: "k", keyWord: "cat",  context: "before a, o, u, or consonants", examples: ["cat", "cot", "cup", "club"] },
+        soft: { ipa: "s", keyWord: "cent", context: "before e, i, y",                 examples: ["cent", "city", "cycle", "ice"] },
+      },
+      g: {
+        hard: { ipa: "g", keyWord: "goat", context: "before a, o, u, or consonants", examples: ["goat", "got", "gum", "glad"] },
+        soft: { ipa: "ʤ", keyWord: "gem",  context: "before e, i, y (usually)",      examples: ["gem", "giant", "gym", "page"] },
+      },
+    };
+
+    // Mastery-driven anchor visibility default. Reads/writes the user's preference
+    // from localStorage so the setting persists across sessions.
+    const ANCHOR_MODE_STORAGE_KEY = "allo_word_sounds_anchor_mode_v1";
+    function getStoredAnchorMode() {
+      try {
+        const v = (typeof localStorage !== "undefined") ? localStorage.getItem(ANCHOR_MODE_STORAGE_KEY) : null;
+        if (v === "full" || v === "compact" || v === "hidden") return v;
+      } catch (_) {}
+      return "full";
+    }
+    function setStoredAnchorMode(mode) {
+      try {
+        if (typeof localStorage !== "undefined") localStorage.setItem(ANCHOR_MODE_STORAGE_KEY, mode);
+      } catch (_) {}
+    }
+
+    // Look up the anchor for a given target. Accepts a single letter
+    // ("m"), a digraph ("sh"), or a whole word in which case it derives
+    // the first-letter anchor as a safe fallback. Returns null if no
+    // anchor data exists.
+    function getAnchor(target) {
+      if (!target || typeof target !== "string") return null;
+      const t = target.toLowerCase().trim();
+      if (GRAPHOPHONEME_ANCHORS[t]) return GRAPHOPHONEME_ANCHORS[t];
+      // Try digraph match on a 2-letter prefix or first character
+      if (t.length >= 2 && GRAPHOPHONEME_ANCHORS[t.slice(0, 2)]) return GRAPHOPHONEME_ANCHORS[t.slice(0, 2)];
+      if (GRAPHOPHONEME_ANCHORS[t[0]]) return GRAPHOPHONEME_ANCHORS[t[0]];
+      return null;
+    }
+
+    // Render the persistent anchor strip above an activity drill.
+    // Props:
+    //   target     — grapheme/letter to anchor (e.g. "m", "sh", "ai")
+    //   mode       — "full" | "compact" | "hidden" (controlled by parent)
+    //   onModeChange  — (newMode) => void; persisted to localStorage
+    //   onPlaySound   — () => void; play the phoneme audio (delegates to
+    //                   the existing IPA_TO_AUDIO + onPlayAudio infra)
+    //   onShowMultiSpelling — optional, opens multi-grapheme explorer
+    //
+    // Returns a React.createElement tree using the existing inline
+    // compiled-JSX style of this module.
+    function AnchorStrip(props) {
+      const target = props.target;
+      const mode = props.mode || "full";
+      if (mode === "hidden" || !target) return null;
+      const anchor = getAnchor(target);
+      if (!anchor) return null;
+      const handleModeToggle = () => {
+        const next = mode === "full" ? "compact" : "full";
+        if (typeof props.onModeChange === "function") props.onModeChange(next);
+      };
+      const handleHide = () => {
+        if (typeof props.onModeChange === "function") props.onModeChange("hidden");
+      };
+      const handlePlay = () => {
+        if (typeof props.onPlaySound === "function") props.onPlaySound(anchor.ipa, anchor.keyWord);
+      };
+      const hasMultiSpellings = (anchor.graphemes || []).length > 1;
+      const primaryGrapheme = (anchor.graphemes && anchor.graphemes[0]) || target;
+      // ── COMPACT MODE ──
+      if (mode === "compact") {
+        return React.createElement(
+          "div",
+          {
+            role: "region",
+            "aria-label": `Anchor: letter ${primaryGrapheme} says ${anchor.ipa}, like ${anchor.keyWord}`,
+            className: "mx-auto mb-3 flex items-center gap-3 px-4 py-2 rounded-full bg-amber-50 border-2 border-amber-300 shadow-sm max-w-md",
+          },
+          React.createElement(
+            "div",
+            { className: "flex items-center gap-1 font-black text-xl text-amber-700", "aria-hidden": "true" },
+            primaryGrapheme.toUpperCase(),
+            React.createElement("span", { className: "text-slate-700" }, "/"),
+            primaryGrapheme,
+          ),
+          React.createElement("span", { className: "text-amber-800 font-mono text-sm", "aria-hidden": "true" }, "/" + anchor.ipa + "/"),
+          React.createElement("span", { className: "text-slate-700 text-sm font-semibold" }, "like " + anchor.keyWord),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: handlePlay,
+              "aria-label": "Hear the sound " + anchor.ipa,
+              className: "ml-auto p-1.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
+            },
+            "🔊",
+          ),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: handleModeToggle,
+              "aria-label": "Expand anchor",
+              className: "p-1.5 rounded-full hover:bg-amber-100 text-amber-600 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
+            },
+            "⇲",
+          ),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: handleHide,
+              "aria-label": "Hide anchor",
+              className: "p-1.5 rounded-full hover:bg-slate-100 text-slate-700 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
+            },
+            "×",
+          ),
+        );
+      }
+      // ── FULL MODE ──
+      const sampleStart = (anchor.sampleHighlight && anchor.sampleHighlight[0]) || 0;
+      const sampleEnd   = (anchor.sampleHighlight && anchor.sampleHighlight[1]) || 0;
+      const sampleBefore = anchor.sample.slice(0, sampleStart);
+      const sampleHi     = anchor.sample.slice(sampleStart, sampleEnd);
+      const sampleAfter  = anchor.sample.slice(sampleEnd);
+      // Apply an error-remediation highlight ring when the parent signals
+      // a recent incorrect answer. The `ws-glow` keyframe is already defined
+      // in the existing celebration CSS at the top of this module, and the
+      // global prefers-reduced-motion rule disables animations for users
+      // with vestibular concerns.
+      const errorFlash = !!props.errorFlash;
+      const flashClasses = errorFlash
+        ? " ring-4 ring-red-400 ring-offset-2 ws-correct-shake"
+        : "";
+      return React.createElement(
+        "div",
+        {
+          role: "region",
+          "aria-label": `Anchor card for the sound ${anchor.ipa}, spelled ${primaryGrapheme}, like the word ${anchor.keyWord}` + (errorFlash ? ". Reviewing this letter sound." : ""),
+          "aria-live": errorFlash ? "polite" : undefined,
+          className: "mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all" + flashClasses,
+        },
+        // Header row
+        React.createElement(
+          "div",
+          { className: "flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200" },
+          React.createElement(
+            "span",
+            { className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider" },
+            "Anchor",
+          ),
+          React.createElement(
+            "div",
+            { className: "flex items-center gap-1" },
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: handleModeToggle,
+                "aria-label": "Switch to compact anchor view",
+                className: "px-2 py-0.5 rounded text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
+              },
+              "Compact",
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: handleHide,
+                "aria-label": "Hide anchor",
+                className: "px-2 py-0.5 rounded text-[10px] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
+              },
+              "Hide",
+            ),
+          ),
+        ),
+        // Body grid: letter card on left, info on right
+        React.createElement(
+          "div",
+          { className: "flex items-stretch gap-4 p-4" },
+          // Letter card (upper/lower stacked)
+          React.createElement(
+            "div",
+            {
+              className: "flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]",
+              "aria-hidden": "true",
+            },
+            React.createElement("div", { className: "font-black text-4xl text-amber-700 leading-none" }, primaryGrapheme.toUpperCase()),
+            React.createElement("div", { className: "h-px w-8 bg-amber-300 my-1" }),
+            React.createElement("div", { className: "font-black text-4xl text-amber-700 leading-none" }, primaryGrapheme),
+          ),
+          // Info column
+          React.createElement(
+            "div",
+            { className: "flex-1 flex flex-col gap-2 min-w-0" },
+            React.createElement(
+              "div",
+              { className: "flex items-center gap-2 flex-wrap" },
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-700 uppercase" }, "Key word:"),
+              React.createElement("span", { className: "text-base font-bold text-slate-800" }, anchor.keyWord),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  onClick: handlePlay,
+                  "aria-label": "Hear the sound " + anchor.ipa + " in the word " + anchor.keyWord,
+                  className: "ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500",
+                },
+                "🔊 ",
+                React.createElement("span", { className: "font-mono" }, "/" + anchor.ipa + "/"),
+              ),
+            ),
+            React.createElement(
+              "p",
+              { className: "text-sm text-slate-700 leading-relaxed" },
+              sampleBefore,
+              React.createElement(
+                "strong",
+                {
+                  className: "px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black",
+                  "aria-label": "highlighted: " + sampleHi,
+                },
+                sampleHi,
+              ),
+              sampleAfter,
+            ),
+            anchor.rule
+              ? React.createElement(
+                  "div",
+                  { className: "text-[11px] text-slate-700 italic flex items-start gap-1" },
+                  React.createElement("span", { "aria-hidden": "true" }, "📐"),
+                  React.createElement("span", null, anchor.rule),
+                )
+              : null,
+            hasMultiSpellings
+              ? React.createElement(
+                  "div",
+                  { className: "flex flex-wrap items-center gap-1 mt-1" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-700 uppercase mr-1" }, "Other spellings:"),
+                  ...anchor.graphemes.slice(1).map((g, i) =>
+                    React.createElement(
+                      "span",
+                      { key: "g-" + i, className: "px-1.5 py-0.5 rounded bg-white border border-amber-300 text-amber-700 text-xs font-mono font-bold" },
+                      g,
+                    ),
+                  ),
+                )
+              : null,
+          ),
+        ),
+        anchor.note
+          ? React.createElement(
+              "div",
+              { className: "px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[11px] text-slate-700" },
+              React.createElement("span", { className: "font-bold mr-1" }, "Teacher note:"),
+              anchor.note,
+            )
+          : null,
+      );
+    }
+    // Expose for external use (teacher dashboard, parent mode, future tools)
+    window.__alloAnchor = { getAnchor: getAnchor, GRAPHOPHONEME_ANCHORS: GRAPHOPHONEME_ANCHORS, GRAPHEME_RULE_PAIRS: GRAPHEME_RULE_PAIRS };
     // ── HOMOPHONE GUARD ──
     // Blend-Sounds / Syllable-Blending presents the target word spoken and then
     // asks students to pick the matching written word. If a distractor SOUNDS
@@ -1659,6 +2013,59 @@
       const [errorMessage, setErrorMessage] = React.useState(null);
       const [showSessionComplete, setShowSessionComplete] =
         React.useState(false);
+      // ── Graphophonemic anchor strip state (persistent letter ↔ sound card) ──
+      // Mode ('full' | 'compact' | 'hidden') is persisted to localStorage.
+      const [anchorMode, setAnchorMode] = React.useState(() => getStoredAnchorMode());
+      const updateAnchorMode = React.useCallback((mode) => {
+        setAnchorMode(mode);
+        setStoredAnchorMode(mode);
+      }, []);
+      // Derive the anchor target for the current item across activity types:
+      //   - isolation:    isolationState.correctSound, else first letter
+      //   - blending:     first letter of word
+      //   - manipulation: targetPhoneme from the task
+      //   - rhyme/rime:   the rime ending (e.g. "at", "in")
+      // Activity-renderer code reads anchorTarget directly.
+      const anchorTarget = React.useMemo(() => {
+        try {
+          const iso = isolationStateRef.current;
+          if (iso && iso.correctSound) return String(iso.correctSound).toLowerCase().trim();
+        } catch (_) {}
+        if (data && data.targetPhoneme) return String(data.targetPhoneme).toLowerCase().trim();
+        if (data && data.word) return String(data.word).toLowerCase().trim()[0] || null;
+        return null;
+      }, [data?.word, data?.targetPhoneme, isolationState?.correctSound]);
+      // Anchor play handler: speak the key word so the student hears the
+      // sound in its keyword context (Jolly-Phonics style). Falls back to
+      // attempting to play the phoneme directly if no key word is available.
+      const handleAnchorPlay = React.useCallback((ipa, keyWord) => {
+        if (typeof onPlayAudio === "function") {
+          if (keyWord) { onPlayAudio(keyWord); return; }
+          if (ipa) onPlayAudio(ipa);
+        }
+      }, [onPlayAudio]);
+      // Post-error remediation: when the student gets an answer wrong, briefly
+      // flash the anchor and auto-play the key word so the letter ↔ sound
+      // association is reinforced immediately (classic OG corrective procedure).
+      const [anchorErrorFlash, setAnchorErrorFlash] = React.useState(false);
+      const lastFeedbackRef = React.useRef(null);
+      React.useEffect(() => {
+        if (!wordSoundsFeedback) return;
+        // Only react to NEW feedback events that are incorrect.
+        if (lastFeedbackRef.current === wordSoundsFeedback) return;
+        lastFeedbackRef.current = wordSoundsFeedback;
+        if (wordSoundsFeedback.isCorrect) return;
+        // Flash for 1.6 s and auto-play the key word (respects reduced-motion via
+        // the existing prefers-reduced-motion CSS already injected at the top).
+        setAnchorErrorFlash(true);
+        const anchor = getAnchor(anchorTarget);
+        if (anchor && anchor.keyWord) {
+          // Brief delay so the incorrect-feedback chime plays first.
+          setTimeout(function() { handleAnchorPlay(anchor.ipa, anchor.keyWord); }, 400);
+        }
+        const t = setTimeout(function() { setAnchorErrorFlash(false); }, 1600);
+        return function() { clearTimeout(t); };
+      }, [wordSoundsFeedback, anchorTarget, handleAnchorPlay]);
       React.useEffect(() => {
         if (!showSessionComplete) return;
         if (activitySequence && activitySequence.length > 0) {
@@ -14204,6 +14611,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 className:
                   "animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both",
               },
+              // ── Graphophonemic anchor strip (WCAG-aligned, Orton-Gillingham style) ──
+              // Persists letter ↔ sound ↔ key-word ↔ sentence association across every
+              // PA activity so the student maintains the decoding bridge. Hidden for
+              // connected-text activities (ORF, spelling_bee) where it would distract.
+              // Mode (full / compact / hidden) persists to localStorage.
+              (function() {
+                var _hideAnchorForActivity = (
+                  wordSoundsActivity === "orf" ||
+                  wordSoundsActivity === "spelling_bee" ||
+                  wordSoundsActivity === "sight_words" ||
+                  isProbeMode
+                );
+                if (_hideAnchorForActivity) return null;
+                return /*#__PURE__*/ React.createElement(AnchorStrip, {
+                  target: anchorTarget,
+                  // Promote to "full" mode briefly during error remediation
+                  // even if user has it set to compact / hidden, so the
+                  // corrective procedure is visible.
+                  mode: anchorErrorFlash ? "full" : anchorMode,
+                  onModeChange: updateAnchorMode,
+                  onPlaySound: handleAnchorPlay,
+                  errorFlash: anchorErrorFlash,
+                });
+              })(),
               renderActivityContent(),
             ),
             wordSoundsFeedback &&
