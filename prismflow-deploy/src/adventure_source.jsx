@@ -678,7 +678,7 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
 // ═══ AdventureShop (lines 10923-11011) ═══
 const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
   const shopRef = useRef(null);
-  useFocusTrap(shopRef, true);
+  useFocusTrap(shopRef, true, onClose);
   const { t } = useContext(LanguageContext);
   return (
     <div

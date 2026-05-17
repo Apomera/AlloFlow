@@ -1144,8 +1144,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${rawWithCitations}
               `;
               try {
+                  const _optTimeoutMs = (window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.contentEngineOptimizeMs) || 90000;
                   const timeoutPromise = new Promise((_, reject) =>
-                      setTimeout(() => reject(new Error("Optimization timed out")), 60000)
+                      setTimeout(() => reject(new Error("Optimization timed out")), _optTimeoutMs)
                   );
                   const cleaned = await Promise.race([
                       callGemini(cleanupPrompt),

@@ -139,7 +139,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, "sentence-frames": false, brainstorm: false, faq: false, outline: false, adventure: false, "concept-sort": false, image: false, timeline: false });
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
-  useFocusTrap(panelRef, isOpen);
+  useFocusTrap(panelRef, isOpen, onClose);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
@@ -2930,7 +2930,7 @@ const LearnerProgressView = React.memo(({
 const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast: addToast2, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
-  useFocusTrap(modalRef, true);
+  useFocusTrap(modalRef, true, onClose);
   const [gradedIds, setGradedIds] = useState(/* @__PURE__ */ new Set());
   const [teacherComments, setTeacherComments] = useState(() => {
     try {

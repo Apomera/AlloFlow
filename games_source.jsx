@@ -2231,6 +2231,15 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (gameLang === 'english' && item.translation) return item.translation;
       return item.text;
   };
+  // Returns the BCP-47 lang code for the *currently-displayed* text from getText().
+  // Used to satisfy WCAG 3.1.2 Language of Parts when rendering target-language
+  // vocabulary alongside the English UI.
+  const getTextLang = (item) => {
+      const isEnglish = (gameLang === 'english' && item.translation);
+      if (isEnglish) return 'en';
+      try { return (window.AlloFlowLang && window.AlloFlowLang.bcp47(primaryLanguage)) || 'en'; }
+      catch (_) { return 'en'; }
+  };
   const bothLabel = BOTH_TRANSLATIONS[primaryLanguage] || BOTH_TRANSLATIONS.English;
   const getTitle = (key) => {
       if (key === 'shared') return titles.shared ? (typeof titles.shared === 'string' ? titles.shared : titles.shared.text || bothLabel) : bothLabel;
@@ -2355,7 +2364,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                                 data-help-key="venn_sorted_item" className={`bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 animate-in zoom-in cursor-pointer hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
-                                {getText(item)}
+                                <span lang={getTextLang(item)}>{getText(item)}</span>
                               </div>
                           ))}
                       </div>
@@ -2381,7 +2390,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                                 data-help-key="venn_sorted_item" className={`bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 animate-in zoom-in cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
-                                {getText(item)}
+                                <span lang={getTextLang(item)}>{getText(item)}</span>
                               </div>
                           ))}
                       </div>
@@ -2408,7 +2417,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                                 data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
-                                {getText(item)}
+                                <span lang={getTextLang(item)}>{getText(item)}</span>
                               </div>
                           ))}
                       </div>
@@ -2431,7 +2440,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                           onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                           data-help-key="venn_bank_item" className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
                       >
-                          {getText(item)}
+                          <span lang={getTextLang(item)}>{getText(item)}</span>
                           <SpeakButton text={getText(item)} size={11} />
                       </div>
                   ))}

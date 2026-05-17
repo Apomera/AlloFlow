@@ -190,7 +190,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       audio = preloadedAudio;
       if (audio instanceof Promise) {
         try {
-          const _tOut = window._kokoroTTS ? 9e4 : 15e3;
+          const _tOut = window._kokoroTTS ? 9e4 : window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut));
           audio = await Promise.race([audio, timeoutPromise]);
         } catch (e) {
@@ -208,7 +208,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     } else {
       if (audioBufferRef.current[bufferKey]) {
         try {
-          const _tOut2 = window._kokoroTTS ? 9e4 : 15e3;
+          const _tOut2 = window._kokoroTTS ? 9e4 : window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut2));
           audioUrl = await Promise.race([audioBufferRef.current[bufferKey], timeoutPromise]);
         } catch (e) {
@@ -222,7 +222,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         });
         audioBufferRef.current[bufferKey] = promise;
         try {
-          const _tOut3 = window._kokoroTTS ? 9e4 : 15e3;
+          const _tOut3 = window._kokoroTTS ? 9e4 : window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut3));
           audioUrl = await Promise.race([promise, timeoutPromise]);
         } catch (e) {

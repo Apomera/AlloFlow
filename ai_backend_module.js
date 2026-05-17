@@ -634,7 +634,7 @@ const WebSearchProvider = {
             console.log(`[WebSearch] Calling Serper proxy: ${this._serperProxyUrl}`);
             response = await fetch(url, {
                 mode: 'cors',
-                signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined,
+                signal: AbortSignal.timeout ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000) : undefined,
             });
         } catch (fetchErr) {
             // Network/CORS/timeout error
@@ -1239,7 +1239,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     size: `${width}x${width}`,
                     response_format: 'b64_json',
                 }),
-                signal: AbortSignal.timeout(120000), // 2 min timeout for image gen
+                signal: AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000), // user-configurable; default 3 min
             });
             if (fluxResp.ok) {
                 const fluxData = await fluxResp.json();
@@ -1365,7 +1365,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     response_format: 'b64_json',
                     strength: 0.75,
                 }),
-                signal: AbortSignal.timeout(120000),
+                signal: AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000),
             });
             if (fluxResp.ok) {
                 const fluxData = await fluxResp.json();
