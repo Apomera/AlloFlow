@@ -221,13 +221,35 @@ register (formal vs. casual) accordingly.
 
 1. Add UI strings to the appropriate section in `ui_strings.js` (or create a new section if needed)
 2. If the strings include `{placeholders}`, document them in the source comment
-3. After deploy, run `npm run build:lang -- --lang="Spanish (Latin America)" --resume` to add the new strings to that language pack. The `--resume` flag preserves existing translations; only new keys are sent to Gemini.
-4. Repeat for each language pack in `lang/`
-5. Or: ask Claude in chat to fill the gap with high-quality translations matching the existing pack's style.
+3. After deploy, run a batch refresh of all existing packs with `--resume` so
+   only the new keys hit the API:
+
+   ```bash
+   npm run build:lang:resume
+   ```
+
+   The `--resume` flag preserves existing translations verbatim; only new
+   keys are sent to Gemini. Full workflow + tier definitions are in
+   `lang/README.md`.
 
 **Coverage check:** A future automated check (`dev-tools/check_lang_coverage.cjs`)
 should be added that diffs each pack's keys against `ui_strings.js` keys and
 fails CI if coverage drops below 99%.
+
+## Producing the packs themselves
+
+End-to-end workflow lives in [`lang/README.md`](lang/README.md). Summary:
+
+- `npm run build:lang:tier1` — 4 highest-priority PPS packs (Spanish LatAm, Haitian Creole, Somali, Arabic)
+- `npm run build:lang:priority` — all 17 tier 1+2+3 packs
+- `npm run build:lang -- --lang="..." --model="gemini-3-pro"` — one pack, Pro tier
+- Requires `GEMINI_API_KEY` set in env. Get a key at <https://aistudio.google.com/app/apikey>.
+
+The CLI mirrors the runtime translateChunk pipeline byte-for-byte: DNT
+masking, domain glossary preamble, 200-key chunks, placeholder validation.
+The same code path that powers live translation produces the pre-built packs,
+so a pre-built pack is at minimum as good as the runtime fallback (and with
+`--model="gemini-3-pro"`, meaningfully better).
 
 ## Locale variants — when to make a new pack vs reuse
 
