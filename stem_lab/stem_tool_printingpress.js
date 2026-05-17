@@ -705,7 +705,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         diaryTradition:  [{ id: 'people', hook: 'Meet famous diarists.' },
                           { id: 'magazines', hook: 'See how diary tradition relates to memoir + magazine writing.' }],
         tarotOracle:     [{ id: 'colorPrinting', hook: 'See the color printing behind oracle decks.' },
-                          { id: 'fanzines', hook: 'See indie-press culture parallel to indie tarot.' }]
+                          { id: 'fanzines', hook: 'See indie-press culture parallel to indie tarot.' }],
+        pulpFiction:     [{ id: 'genreSciFi', hook: 'See how pulp magazines birthed sci-fi.' },
+                          { id: 'magazines', hook: 'See pulps in broader magazine history.' }],
+        pamphlets:       [{ id: 'reformation', hook: 'See pamphlet warfare in the Reformation.' },
+                          { id: 'printRevolution', hook: 'See pamphlets in political revolutions.' }],
+        greetingCards:   [{ id: 'printPostage', hook: 'See greeting cards in the mail-stream context.' },
+                          { id: 'tarotOracle', hook: 'See greeting cards as printed-paper craft category.' }],
+        theMemoir:       [{ id: 'diaryTradition', hook: 'See memoir + diary as related forms.' },
+                          { id: 'maineAuthors', hook: 'See Maine memoirists in the broader Maine literary tradition.' }],
+        printSound:      [{ id: 'musicPrinting', hook: 'See sheet music in the music-printing tradition.' },
+                          { id: 'magazines', hook: 'See music magazines in the broader magazine context.' }],
+        sermonsPrinted:  [{ id: 'printReligion', hook: 'See sermons in the broader religious-print context.' },
+                          { id: 'translation', hook: 'See how sermon publishing intersects with translation.' }],
+        spellingPuzzles: [{ id: 'dictionaries', hook: 'See dictionaries in the wordplay context.' },
+                          { id: 'magazines', hook: 'See how puzzles fit in magazine publishing.' }],
+        printCinema:     [{ id: 'comics', hook: 'See how comics + cinema co-evolved.' },
+                          { id: 'magazines', hook: 'See cinema magazines in the magazine context.' }],
+        printAstronomy:  [{ id: 'sciPublishing', hook: 'See astronomy in the broader scientific-publishing context.' },
+                          { id: 'mapsAtlases', hook: 'See star charts in the cartographic context.' }],
+        fashionMags:     [{ id: 'magazines', hook: 'See fashion magazines in the broader magazine context.' },
+                          { id: 'colorPrinting', hook: 'See color printing that defined fashion-magazine aesthetics.' }],
+        travelLit:       [{ id: 'printTourism', hook: 'See travel literature alongside practical guidebooks.' },
+                          { id: 'theMemoir', hook: 'See how travel writing relates to memoir.' }],
+        printMath:       [{ id: 'sciPublishing', hook: 'See math publishing in the scientific-publishing context.' },
+                          { id: 'famousShops', hook: 'See premier publishers of mathematical works.' }],
+        printAdvert:     [{ id: 'magazines', hook: 'See magazine ads in publishing context.' },
+                          { id: 'propaganda', hook: 'See where advertising + propaganda overlap.' }],
+        webcomics:       [{ id: 'comicStrips', hook: 'See how webcomics inherited from newspaper strips.' },
+                          { id: 'comics', hook: 'See webcomics in the broader comics tradition.' }],
+        pictureBookDeep: [{ id: 'childrensBooks', hook: 'See picture books in broader children\'s-books history.' },
+                          { id: 'colorPrinting', hook: 'See the color printing that enabled picture books.' }],
+        poetryMags:      [{ id: 'magazines', hook: 'See poetry magazines in broader magazine context.' },
+                          { id: 'pamphlets', hook: 'See poetry chapbooks + pamphlet tradition.' }],
+        pulpCovers:      [{ id: 'pulpFiction', hook: 'See covers in pulp-era context.' },
+                          { id: 'colorPrinting', hook: 'See the color printing that made pulp covers possible.' }],
+        printRadio:      [{ id: 'printSound', hook: 'See print + audio intersections more broadly.' },
+                          { id: 'magazines', hook: 'See radio magazines in magazine context.' }],
+        printGarden:     [{ id: 'selfhelp', hook: 'See gardening manuals in how-to tradition.' },
+                          { id: 'magazines', hook: 'See gardening magazines in periodical context.' }],
+        forensicDocs:    [{ id: 'forgeries', hook: 'See forgeries that forensic exam helps detect.' },
+                          { id: 'paperMaking', hook: 'See paper science that supports document dating.' }],
+        libraryBindery:  [{ id: 'bookbinding', hook: 'See the bookbinding fundamentals library binderies apply.' },
+                          { id: 'libraryHistory', hook: 'See where library bindery sits in library work.' }],
+        finePress:       [{ id: 'famousShops', hook: 'See fine-press shops in the historical-printer tour.' },
+                          { id: 'letterpressToday', hook: 'See where fine-press tradition lives today.' }],
+        cookbooksMore:   [{ id: 'cookbooks', hook: 'See mainstream cookbook tradition.' },
+                          { id: 'fanzines', hook: 'See zine-style community cookbooks.' }],
+        printZoology:    [{ id: 'mapsAtlases', hook: 'See visual reference traditions in cartography.' },
+                          { id: 'colorPrinting', hook: 'See color printing for natural history.' }]
       };
       function crossLinkFooter(currentModId) {
         var links = CROSS_LINKS[currentModId];
@@ -927,6 +975,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           desc: 'Pepys, Anne Frank, modern bullet journals. The 400-year diary tradition + its modern descendants.', ready: true },
         { id: 'tarotOracle', icon: '🔮', label: 'Tarot + Oracle Decks', section: 'modules',
           desc: 'Tarot cards as printed objects — Visconti decks → Rider-Waite (1909) → modern indie decks. Major printed-card subculture.', ready: true },
+        { id: 'pulpFiction', icon: '🕵', label: 'Pulp Fiction Era', section: 'modules',
+          desc: 'Black Mask, Astounding, Weird Tales. The 1920s-50s magazines that birthed sci-fi + hardboiled + many other genres.', ready: true },
+        { id: 'pamphlets', icon: '📃', label: 'Pamphlets + Tracts', section: 'modules',
+          desc: 'Political + religious pamphlet tradition. Reformation + American Revolution + abolitionist + civil rights pamphlets.', ready: true },
+        { id: 'greetingCards', icon: '💌', label: 'Greeting Cards + Ephemera', section: 'modules',
+          desc: 'Hallmark, American Greetings, Papyrus. The greeting card industry + the ephemera-collecting tradition.', ready: true },
+        { id: 'theMemoir', icon: '📖', label: 'The Memoir Tradition', section: 'modules',
+          desc: 'Augustine\'s Confessions to modern celebrity memoir. The autobiography + memoir publishing tradition.', ready: true },
+        { id: 'printSound', icon: '🎧', label: 'Print + Sound', section: 'modules',
+          desc: 'Record liner notes, audiobook industry, podcast transcripts. Where print + audio intersect.', ready: true },
+        { id: 'sermonsPrinted', icon: '✟', label: 'The Printed Sermon', section: 'modules',
+          desc: 'Spurgeon, Edwards, MLK. The printed-sermon tradition — preaching that traveled beyond the church.', ready: true },
+        { id: 'spellingPuzzles', icon: '🔤', label: 'Spelling + Word Puzzles', section: 'modules',
+          desc: 'Spelling bees, crosswords (NYT since 1942), Wordle (2021+). The puzzle + word-game tradition.', ready: true },
+        { id: 'printCinema', icon: '🎬', label: 'Print + Cinema', section: 'modules',
+          desc: 'Screenplays, film novelizations, fan magazines, movie posters. Where print + film meet.', ready: true },
+        { id: 'printAstronomy', icon: '🔭', label: 'Print + Astronomy', section: 'modules',
+          desc: 'Star catalogs, observatory bulletins, popular astronomy. From Hipparchus to Sky & Telescope.', ready: true },
+        { id: 'fashionMags', icon: '👗', label: 'Beauty + Fashion Magazines', section: 'modules',
+          desc: 'Harper\'s Bazaar (1867), Vogue (1892), Elle, Cosmopolitan. The fashion-magazine universe.', ready: true },
+        { id: 'travelLit', icon: '🌍', label: 'Travel Literature', section: 'modules',
+          desc: 'Beyond guidebooks — Bryson, Iyer, Theroux, Lonely Planet travel-literature. The literary-travel tradition.', ready: true },
+        { id: 'printMath', icon: '📐', label: 'Print + Mathematics', section: 'modules',
+          desc: 'Euclid\'s Elements (~300 BCE) → modern math journals. The publishing infrastructure of mathematics.', ready: true },
+        { id: 'printAdvert', icon: '📣', label: 'Print Advertising History', section: 'modules',
+          desc: 'Mad Men + the print advertising tradition. From 1700s shop signs to 21st-c. magazine ads.', ready: true },
+        { id: 'webcomics', icon: '🖥', label: 'Webcomics Deep Dive', section: 'modules',
+          desc: 'xkcd, Penny Arcade, Achewood, Order of the Stick, modern webcomics. The post-newspaper era of comics.', ready: true },
+        { id: 'pictureBookDeep', icon: '🎨', label: 'The Picture Book Craft', section: 'modules',
+          desc: 'How picture books are actually made. Page-by-page design, dummies, art process. The craft.', ready: true },
+        { id: 'poetryMags', icon: '🎭', label: 'Poetry Magazines', section: 'modules',
+          desc: 'Poetry (Chicago, 1912+), The New Yorker, Paris Review. Where poems get published.', ready: true },
+        { id: 'pulpCovers', icon: '🎨', label: 'Pulp Cover Art', section: 'modules',
+          desc: 'The bold lurid covers that defined pulp era. Frank R. Paul, Margaret Brundage, Virgil Finlay. A serious illustration tradition.', ready: true },
+        { id: 'printRadio', icon: '📻', label: 'Print + Radio', section: 'modules',
+          desc: 'Radio scripts, radio program guides, the radio-magazine industry, BBC + NPR print presence.', ready: true },
+        { id: 'printGarden', icon: '🌱', label: 'Print + Gardening', section: 'modules',
+          desc: 'Seed catalogs (Burpee + Park), gardening manuals, gardening magazines. A long-running niche publishing category.', ready: true },
+        { id: 'forensicDocs', icon: '🔬', label: 'Forensic Document Examination', section: 'modules',
+          desc: 'Handwriting analysis, document dating, forgery detection. The specialty that catches forgers + supports investigations.', ready: true },
+        { id: 'libraryBindery', icon: '🔧', label: 'The Library Bindery', section: 'modules',
+          desc: 'How libraries rebind books for circulation. Library binding standards, conservation, rebinding economics.', ready: true },
+        { id: 'finePress', icon: '⚜', label: 'The Fine Press Tradition', section: 'modules',
+          desc: 'Kelmscott → Doves → Officina Bodoni → modern. Limited-edition handpress book art across 130 years.', ready: true },
+        { id: 'cookbooksMore', icon: '🥘', label: 'Cookbook Subcultures', section: 'modules',
+          desc: 'Community cookbooks, vegan cookbooks, BBQ books, regional cuisines. Beyond the celebrity cookbook mainstream.', ready: true },
+        { id: 'printZoology', icon: '🦅', label: 'Print + Natural History', section: 'modules',
+          desc: 'Audubon to modern field guides. The illustrated natural-history tradition. Peterson Field Guides, Sibley, Kaufman.', ready: true },
+        { id: 'celebrate20k', icon: '🎉', label: 'About This Tool', section: 'resources',
+          desc: 'Behind the scenes: how this tool grew from 13 modules + 9,000 lines to 80+ modules + 20,000+ lines. Credits + history.', ready: true },
+        { id: 'printGlossary', icon: '📔', label: 'Print Glossary', section: 'resources',
+          desc: '120+ printing + typography + book terms defined. Quick reference for the vocabulary used throughout the tool.', ready: true },
         { id: 'cumulative', icon: '🎯', label: 'Cumulative Quiz', section: 'practice',
           desc: '15 questions across all 10 modules. Missed answers link you back to the module you need to review.', ready: true },
         { id: 'askPrinter', icon: '🤖', label: 'Ask the Printer (AI)', section: 'practice',
@@ -1016,7 +1116,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         usedBooks: 'The Used Book Trade',
         cardCatalog: 'The Library Card Catalog',
         diaryTradition: 'Diaries + Journals',
-        tarotOracle: 'Tarot + Oracle Decks'
+        tarotOracle: 'Tarot + Oracle Decks',
+        pulpFiction: 'Pulp Fiction Era',
+        pamphlets: 'Pamphlets + Tracts',
+        greetingCards: 'Greeting Cards + Ephemera',
+        theMemoir: 'The Memoir Tradition',
+        printSound: 'Print + Sound',
+        sermonsPrinted: 'The Printed Sermon',
+        spellingPuzzles: 'Spelling + Word Puzzles',
+        printCinema: 'Print + Cinema',
+        printAstronomy: 'Print + Astronomy',
+        fashionMags: 'Beauty + Fashion Magazines',
+        travelLit: 'Travel Literature',
+        printMath: 'Print + Mathematics',
+        printAdvert: 'Print Advertising History',
+        webcomics: 'Webcomics Deep Dive',
+        pictureBookDeep: 'The Picture Book Craft',
+        poetryMags: 'Poetry Magazines',
+        pulpCovers: 'Pulp Cover Art',
+        printRadio: 'Print + Radio',
+        printGarden: 'Print + Gardening',
+        forensicDocs: 'Forensic Document Examination',
+        libraryBindery: 'The Library Bindery',
+        finePress: 'The Fine Press Tradition',
+        cookbooksMore: 'Cookbook Subcultures',
+        printZoology: 'Print + Natural History',
+        celebrate20k: 'About This Tool',
+        printGlossary: 'Print Glossary'
       };
 
       function renderMenu() {
@@ -17768,6 +17894,1949 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       }
 
       // ═════════════════════════════════════════════════════════════════════
+      // FORGERIES + FAKES
+      // ═════════════════════════════════════════════════════════════════════
+      function renderForgeries() {
+        var foSectRaw = useState('overview');
+        var foSect = foSectRaw[0], setFoSect = foSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎭' },
+          { id: 'famous', label: 'Famous forgeries', icon: '⚠' },
+          { id: 'detection', label: 'How forgers get caught', icon: '🔍' },
+          { id: 'modern', label: 'Modern + AI', icon: '🤖' }
+        ];
+        var content;
+        if (foSect === 'overview') {
+          content = h('div', null, dropCapPara('Book + manuscript forgery has a long history. Some forgeries fooled experts for decades. Others were caught quickly. Famous cases: Vinland Map (sold to Yale 1965, debated since, finally proven fake 2021), Hitler Diaries (1983, brief sensation then exposed), Mark Hofmann (Mormon documents 1980s, ended in murders). Forgery + authentication form a centuries-long cat-and-mouse.'));
+        } else if (foSect === 'famous') {
+          content = h('div', null, keyPointBlock('Famous forgeries', [
+            { k: 'Vinland Map', v: 'Yale acquired 1965. Claimed Norse map of Vinland (North America) pre-Columbus. Debated for 50 years. 2021 Yale conservators proved fake — modern ink containing anatase TiO2 (invented 1923).' },
+            { k: 'Hitler Diaries (1983)', v: 'German magazine Stern paid $4M for 60 volumes of "diaries." Brief international sensation. Quickly exposed as forgeries by Konrad Kujau (he was paid + later convicted). Hugh Trevor-Roper (Lord Dacre) authenticated; reputation damaged.' },
+            { k: 'Mark Hofmann (1980s)', v: 'Mormon-document forger. Sold faked early-LDS documents to LDS Church + private collectors. To cover trail, killed two people with pipe bombs. Investigation cracked the forgeries. Convicted of murder.' },
+            { k: 'Henry Ireland Shakespeare forgeries (1790s)', v: 'William Henry Ireland forged Shakespeare manuscripts including unknown play Vortigern. Briefly fooled scholars + premiered at Drury Lane. Quickly exposed.' },
+            { k: 'Thomas J. Wise (1859-1937)', v: 'Respected British book collector + bibliographer secretly forged first editions of Victorian poets. Discovered ~1934. Stunned the rare-book world.' }
+          ]));
+        } else if (foSect === 'detection') {
+          content = h('div', null, keyPointBlock('How forgers get caught', [
+            { k: 'Paper dating', v: 'Paper has datable characteristics — fiber types, watermarks, sizing, additives. Modern paper has wood pulp (post-1860); old paper has rag. Briquet\'s watermark catalog dates many papers.' },
+            { k: 'Ink chemistry', v: 'Modern inks have specific chemical signatures. Iron-gall ink (period) is different from modern ink. Spectroscopy can distinguish.' },
+            { k: 'Typography', v: 'Type design + printing methods are dated. A "1640 book" with type that wasn\'t cut until 1750 is obvious.' },
+            { k: 'Linguistic analysis', v: 'Word usage, spelling conventions, idioms vary by era. Forgers often miss anachronisms.' },
+            { k: 'Provenance gap', v: 'Genuine old documents have provenance — chain of custody back to original. Forgers must fake provenance too.' },
+            { k: 'Modern testing', v: 'Mass spectrometry, isotope analysis, multispectral imaging. Modern lab can detect what was undetectable 50 years ago.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + AI-era forgery', [
+            { k: 'Modern letter + manuscript fakes', v: 'Continue to surface. Mark Hofmann style still active.' },
+            { k: 'Photo + image forgery', v: 'AI image generation (2022+) makes photo forgeries easier than ever. Detection tools racing to keep up.' },
+            { k: 'Forged historical photographs', v: 'AI tools can generate plausible-looking "historical photographs" with anachronistic content. Major emerging concern for historical scholarship.' },
+            { k: 'Authentication services', v: 'PSA, JSA, third-party authentication services for signatures + collectibles. Industry response to ongoing forgery problem.' },
+            { k: 'AI text forgery', v: 'LLMs can generate plausible-style historical writing. Detection difficult.' }
+          ]));
+        }
+        return h('div', null, backBar('🎭 Famous Forgeries + Fakes'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (foSect === s.id); return h('button', { key: s.id, onClick: function() { setFoSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('forgeries', [
+            { q: 'How was the Vinland Map finally proven fake (2021)?',
+              opts: ['Carbon dating', 'Modern ink containing anatase TiO2 (invented 1923)', 'Eyewitness confession', 'Scribe handwriting analysis'],
+              ans: 1, explain: 'Yale conservators in 2021 found the Vinland Map ink contained anatase titanium dioxide — a pigment not used commercially until 1923. The supposedly 15th-c. map was a 20th-c. forgery.' }
+          ]),
+          crossLinkFooter('forgeries'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MANUSCRIPTS + CALLIGRAPHY
+      // ═════════════════════════════════════════════════════════════════════
+      function renderManuscripts() {
+        var msSectRaw = useState('overview');
+        var msSect = msSectRaw[0], setMsSect = msSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🪶' },
+          { id: 'illuminated', label: 'Illuminated manuscripts', icon: '✨' },
+          { id: 'scripts', label: 'Major scripts', icon: '📝' },
+          { id: 'modern', label: 'Modern calligraphy', icon: '🖌' }
+        ];
+        var content;
+        if (msSect === 'overview') {
+          content = h('div', null, dropCapPara('Before print, every book was a manuscript — handwritten + sometimes illuminated. The Lindisfarne Gospels (8th c.), Book of Kells (~800 CE), Book of Hours tradition (1400s) represent the artistic peak of European manuscript culture. Calligraphy remains a living art across many traditions — Western, Islamic (Arabic), Chinese + East Asian, Hebrew, others. Modern calligraphy has had multiple revivals.'));
+        } else if (msSect === 'illuminated') {
+          content = h('div', null, keyPointBlock('Major illuminated manuscripts', [
+            { k: 'Garima Gospels (~390-660 CE)', v: 'Ethiopian Orthodox manuscripts. Among oldest surviving illuminated Christian manuscripts.' },
+            { k: 'Book of Kells (~800 CE)', v: 'Insular Christian manuscript. Now at Trinity College Dublin. Probably most-recognized illuminated manuscript.' },
+            { k: 'Lindisfarne Gospels (~715-720 CE)', v: 'Made at Lindisfarne monastery (England). Now at British Library.' },
+            { k: 'Très Riches Heures du Duc de Berry (1412-1416, 1485-1489)', v: 'French Gothic Book of Hours. Some of most-reproduced medieval art ever. Now at Musée Condé, Chantilly.' },
+            { k: 'Codex Vaticanus, Codex Sinaiticus (4th c.)', v: 'Oldest surviving Greek New Testament manuscripts. Foundational for biblical textual scholarship.' },
+            { k: 'Persian + Islamic manuscripts', v: 'Major manuscript tradition. Calligraphy + miniature painting. Shahnameh (Book of Kings) editions are particularly beautiful.' }
+          ]));
+        } else if (msSect === 'scripts') {
+          content = h('div', null, keyPointBlock('Major calligraphic scripts', [
+            { k: 'Carolingian minuscule (~800+)', v: 'Standardized Western European script under Charlemagne. Foundation of all subsequent Roman lowercase letterforms.' },
+            { k: 'Insular scripts', v: 'Distinctive Irish + English scripts before Carolingian standardization.' },
+            { k: 'Gothic (Blackletter) (12th-15th c.)', v: 'Dense angular script. Gutenberg\'s type imitated this. Variations: Textura, Rotunda, Schwabacher.' },
+            { k: 'Humanist (15th c.)', v: 'Italian humanist scribes developed lighter rounded hand. Basis of subsequent Roman printing types.' },
+            { k: 'Chinese calligraphy', v: 'Major continuous tradition. Seal script → Clerical → Regular → Running → Cursive (semi-cursive + cursive). Wang Xizhi (4th c.) considered greatest Chinese calligrapher.' },
+            { k: 'Arabic calligraphy', v: 'Highly developed Islamic art form. Major scripts: Kufic (angular, early), Naskh, Thuluth, Nastaliq, Diwani. Religious + secular use.' },
+            { k: 'Hebrew calligraphy', v: 'Torah scroll calligraphy (sofrut) remains living religious art. Strict rules + specialized scribes.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern calligraphy', [
+            { k: 'Edward Johnston (1872-1944)', v: 'British calligrapher who revived Western calligraphy in early 20th c. Designed London Underground typeface (1916).' },
+            { k: 'Rudolf Koch (1876-1934)', v: 'German calligrapher + type designer. Many type designs.' },
+            { k: 'Hermann Zapf (1918-2015)', v: 'German calligrapher + type designer. Palatino, Optima, Zapf Chancery typefaces.' },
+            { k: 'Donald Jackson + The St. John\'s Bible (1998-2011)', v: 'First handwritten illuminated Bible commissioned in 500 years. Donald Jackson + team produced for St. John\'s University, Collegeville MN. 1,150 pages.' },
+            { k: 'Modern Western calligraphy', v: 'Active practice + teaching community. Society of Scribes + Illuminators (UK), Society for Calligraphy (USA), many guilds.' },
+            { k: 'Modern Arabic + East Asian calligraphy', v: 'Continuing living traditions. Major contemporary calligraphers + masters.' },
+            { k: 'Hand-lettering revival (2010s+)', v: 'Modern hand-lettering for branding + design. Distinct from calligraphy but related craft revival.' }
+          ]));
+        }
+        return h('div', null, backBar('🪶 Manuscripts + Calligraphy'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (msSect === s.id); return h('button', { key: s.id, onClick: function() { setMsSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('manuscripts', [
+            { q: 'Where is the Book of Kells held today?',
+              opts: ['British Library', 'Trinity College Dublin', 'Vatican Library', 'Bibliothèque nationale de France'],
+              ans: 1, explain: 'The Book of Kells (~800 CE) is held at Trinity College Dublin. Insular Christian illuminated manuscript. Probably most-recognized illuminated manuscript globally.' }
+          ]),
+          crossLinkFooter('manuscripts'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // BOOKPLATES + MARGINALIA
+      // ═════════════════════════════════════════════════════════════════════
+      function renderBookplates() {
+        var bpSectRaw = useState('overview');
+        var bpSect = bpSectRaw[0], setBpSect = bpSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🏷' },
+          { id: 'plates', label: 'Bookplates (ex libris)', icon: '📛' },
+          { id: 'marginalia', label: 'Marginalia', icon: '✏' },
+          { id: 'modern', label: 'Modern + provenance', icon: '🔍' }
+        ];
+        var content;
+        if (bpSect === 'overview') {
+          content = h('div', null, dropCapPara('Books accumulate traces of their owners. Bookplates (ex libris) identify ownership. Inscriptions record gifts + family. Marginalia (notes in margins) preserve reader thinking + sometimes famous-author responses to other texts. These traces form provenance — the history of who owned the book — which can dramatically affect both scholarly value + collector value.'));
+        } else if (bpSect === 'plates') {
+          content = h('div', null, keyPointBlock('Bookplates (ex libris)', [
+            { k: 'Origins', v: 'Adhesive ownership labels (Latin "ex libris" = "from the books of"). Earliest known: ~1480 Germany. Spread across Europe.' },
+            { k: 'Design tradition', v: 'Bookplates became their own art form. Coat-of-arms heraldic style, portrait, allegorical, modernist. Many famous artists designed bookplates.' },
+            { k: 'Famous bookplate artists', v: 'Albrecht Dürer designed bookplates. Paul Revere (US silversmith) made bookplate engravings. M.C. Escher, Rockwell Kent, Marsden Hartley + many others.' },
+            { k: 'Bookplate collecting', v: 'Substantial collector subculture. American Society of Bookplate Collectors + Designers (1922+). International Federation of Ex-Libris Societies (FISAE).' },
+            { k: 'Maine context', v: 'Many Maine libraries have substantial bookplate collections — Bowdoin College, Maine Historical Society. Local Maine artists (Marsden Hartley, others) designed bookplates.' }
+          ]));
+        } else if (bpSect === 'marginalia') {
+          content = h('div', null, keyPointBlock('Marginalia + reader notes', [
+            { k: 'Reader marginalia', v: 'Notes in margins of books. Sometimes routine; sometimes profound. Reveal how readers actually responded to texts.' },
+            { k: 'Coleridge\'s marginalia', v: 'Samuel Taylor Coleridge wrote extensively in books he borrowed + owned. His marginalia have been published in scholarly editions — major literary work in their own right.' },
+            { k: 'Famous-author marginalia', v: 'Books owned by famous authors with their marginal notes are valuable. Walt Whitman, Sylvia Plath, Mark Twain, others have surviving annotated books.' },
+            { k: 'John Adams + Thomas Jefferson', v: 'Both Founders annotated extensively. Their marginalia provide insight into their thinking.' },
+            { k: 'Marginalia in scholarly tradition', v: 'Pre-modern scholarship was often conducted through marginal commentary — glosses, scholia. Major scholarly editions still publish ancient marginal commentary.' },
+            { k: 'Modern marginalia', v: 'Personal annotation of books continues. Some readers heavily annotate; others avoid marking books. Debate over which is "right." Annotated used books are sometimes prized + sometimes discounted.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + provenance', [
+            { k: 'Provenance research', v: 'Tracing ownership chains of important books. Critical for rare-book scholarship + authentication.' },
+            { k: 'Famous-owner premium', v: 'A book owned + signed by a famous person — often dramatically more valuable than the same book without provenance.' },
+            { k: 'Stolen + looted books', v: 'WWII-era looting (Nazi confiscation of Jewish libraries, Soviet wartime taking). Restitution efforts ongoing. Provenance research central to identifying stolen books.' },
+            { k: 'Digital provenance', v: 'Online databases increasingly track provenance. CERL Provenance Project + similar.' },
+            { k: 'Modern bookplate use', v: 'Continues among collectors + libraries. Many libraries still bookplate gifts. Custom bookplates available from many designers.' }
+          ]));
+        }
+        return h('div', null, backBar('🏷 Bookplates + Marginalia'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (bpSect === s.id); return h('button', { key: s.id, onClick: function() { setBpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('bookplates', [
+            { q: 'What does "ex libris" mean?',
+              opts: ['Extra library', 'From the books of (Latin) — used on ownership labels', 'Excellent library', 'Library bookmark'],
+              ans: 1, explain: 'Ex libris is Latin for "from the books of." Used on bookplates indicating ownership ("Ex libris John Doe"). Adhesive ownership labels in this format have been used since ~1480.' }
+          ]),
+          crossLinkFooter('bookplates'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // USED BOOK TRADE
+      // ═════════════════════════════════════════════════════════════════════
+      function renderUsedBooks() {
+        var ubSectRaw = useState('overview');
+        var ubSect = ubSectRaw[0], setUbSect = ubSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🏚' },
+          { id: 'famous', label: 'Famous bookstores', icon: '🏬' },
+          { id: 'online', label: 'Online used books', icon: '💻' },
+          { id: 'maine', label: 'Maine bookstores', icon: '🦞' }
+        ];
+        var content;
+        if (ubSect === 'overview') {
+          content = h('div', null, dropCapPara('Used books are an entire parallel publishing economy. New books get printed once + distributed once; used books circulate indefinitely. The used-book trade includes secondhand bookstores, rare-book dealers, library sales, garage sales, online marketplaces. Many readers buy more used books than new. Used-book trade has economic significance + cultural value (books that go out of print stay accessible).'));
+        } else if (ubSect === 'famous') {
+          content = h('div', null, keyPointBlock('Famous independent used + new bookstores', [
+            { k: 'Powell\'s Books (Portland OR, 1971+)', v: 'World\'s largest independent bookstore by inventory. Main store in Portland\'s Pearl District. Mixed new + used. Iconic destination.' },
+            { k: 'Strand Bookstore (NYC, 1927+)', v: '"18 Miles of Books." Family-owned. Manhattan landmark. Mixed new + used + rare.' },
+            { k: 'City Lights Books (San Francisco, 1953+)', v: 'Lawrence Ferlinghetti\'s store. Beat-generation history. Major American literary site.' },
+            { k: 'Foyles (London, 1903+)', v: 'London bookselling institution. Multiple locations.' },
+            { k: 'Shakespeare and Company (Paris, 1951+)', v: 'English-language bookstore in Paris. Allen Ginsberg + Beat connections. Tourist destination.' },
+            { k: 'The Tattered Cover (Denver)', v: 'Major US independent bookstore. Multiple locations.' },
+            { k: 'Square Books (Oxford MS, 1979+)', v: 'Larry Brown + Faulkner country. Major Southern literary bookstore.' }
+          ]));
+        } else if (ubSect === 'online') {
+          content = h('div', null, keyPointBlock('Online used book ecosystem', [
+            { k: 'AbeBooks (1995+)', v: 'Independent + used-book online marketplace. Acquired by Amazon 2008 but operates separately. Massive global inventory.' },
+            { k: 'Bookfinder.com', v: 'Search aggregator across multiple used-book platforms.' },
+            { k: 'Alibris', v: 'Another major used-book marketplace.' },
+            { k: 'eBay used books', v: 'Some serious dealers + many casual sellers.' },
+            { k: 'Better World Books', v: 'Charity-affiliated used books. Funds literacy programs.' },
+            { k: 'ThriftBooks', v: 'Large used-book online retailer. Mass-volume operation.' },
+            { k: 'Amazon Marketplace used', v: 'Amazon\'s used-book infrastructure. Many third-party sellers.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Maine bookstores', [
+            { k: 'Print: A Bookstore (Portland)', v: 'Independent bookstore. Strong local + Maine focus.' },
+            { k: 'Sherman\'s Books + Stationery (Portland + multiple Maine locations)', v: 'Family-owned. Multiple Maine locations.' },
+            { k: 'Longfellow Books (Portland)', v: 'Independent bookseller in Portland.' },
+            { k: 'Carlson + Turner Books (Portland)', v: 'Used + antiquarian. Major Portland used-book destination.' },
+            { k: 'Mr Paperback (multiple Maine locations, closing across 2010s)', v: 'Once-major Maine independent bookstore chain. Closed all locations by 2014.' },
+            { k: 'BookMarc\'s (Bangor)', v: 'Bangor-area independent bookstore.' },
+            { k: 'Pemberton House Books (Wells)', v: 'Used + rare books.' },
+            { k: 'Big Chicken Barn Antiques + Books (Ellsworth)', v: 'Massive antiques + books combination. Iconic Down East stop.' }
+          ]));
+        }
+        return h('div', null, backBar('🏚 The Used Book Trade'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (ubSect === s.id); return h('button', { key: s.id, onClick: function() { setUbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('usedBooks', [
+            { q: 'What is the world\'s largest independent bookstore by inventory?',
+              opts: ['Strand (NYC)', 'Powell\'s (Portland OR)', 'Foyles (London)', 'Shakespeare and Company (Paris)'],
+              ans: 1, explain: 'Powell\'s Books in Portland, Oregon (1971+) is widely considered the world\'s largest independent bookstore by inventory. Main store in the Pearl District. Mixed new + used.' }
+          ]),
+          crossLinkFooter('usedBooks'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // LIBRARY CARD CATALOG
+      // ═════════════════════════════════════════════════════════════════════
+      function renderCardCatalog() {
+        var ccSectRaw = useState('overview');
+        var ccSect = ccSectRaw[0], setCcSect = ccSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🗂' },
+          { id: 'history', label: 'History', icon: '📅' },
+          { id: 'systems', label: 'Classification systems', icon: '📊' },
+          { id: 'death', label: 'The death of card catalogs', icon: '🪦' }
+        ];
+        var content;
+        if (ccSect === 'overview') {
+          content = h('div', null, dropCapPara('From the late 1800s to the 1990s, the library card catalog was the universal reference system. Wooden cabinets of small drawers holding ~3×5 cards, one per book. Cards organized by author, title, subject. Generations of researchers + students learned to use them. The system was killed by online public access catalogs (OPACs) in the 1990s. Many library buildings still have empty card-catalog cabinets as relics.'));
+        } else if (ccSect === 'history') {
+          content = h('div', null, keyPointBlock('Card catalog history', [
+            { k: 'Origins (~1875+)', v: 'Standardized card-based catalogs developed at Harvard + the Boston Athenaeum + spread to libraries internationally. Each book got one main card + multiple cross-reference cards.' },
+            { k: 'Library of Congress cataloging (1901+)', v: 'LC began selling printed cards to other libraries. Massive efficiency — local libraries didn\'t have to catalog each book independently.' },
+            { k: 'OCLC (1967+)', v: 'Online Computer Library Center. Shared cataloging database used by libraries globally. Foundation of modern library cataloging.' },
+            { k: 'OPACs (1980s-90s)', v: 'Online Public Access Catalogs replaced physical card catalogs. Most US libraries had transitioned by mid-1990s.' },
+            { k: 'Modern integrated library systems', v: 'Polaris, Sierra, Koha, Evergreen + others. Combined cataloging + circulation + acquisitions + patron systems.' }
+          ]));
+        } else if (ccSect === 'systems') {
+          content = h('div', null, keyPointBlock('Library classification systems', [
+            { k: 'Dewey Decimal Classification (1876)', v: 'Melvil Dewey\'s system. 10 main classes (000 General, 100 Philosophy, etc.). Used by most US public libraries + many libraries worldwide.' },
+            { k: 'Library of Congress Classification (1897+)', v: 'Used by Library of Congress + most US academic libraries. Letter-based main classes (A General Works, B Philosophy, etc.).' },
+            { k: 'Universal Decimal Classification (1905+)', v: 'Variation of Dewey used in many European libraries.' },
+            { k: 'Cutter numbers', v: 'Numeric codes within classification numbers that further organize books by author. Used with both Dewey + LC.' },
+            { k: 'Subject Headings (LCSH)', v: 'Library of Congress Subject Headings — standardized vocabulary for subject indexing. Used globally.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('The death of card catalogs', [
+            { k: '1990s replacement', v: 'OPACs replaced physical card catalogs in most US libraries by mid-1990s. Process was gradual; some smaller libraries retained card catalogs longer.' },
+            { k: 'Card disposal', v: 'Many libraries threw out their card collections. Some donated cards to artists; some saved subsets as historical record.' },
+            { k: 'Empty cabinets', v: 'Many library buildings still have empty card-catalog cabinets. Some used for other purposes; some kept as relics.' },
+            { k: 'Cards as art material', v: 'Old catalog cards have become popular art + craft material. Recycled into bookmarks, art, decoration.' },
+            { k: 'Generation gap', v: 'Anyone over ~50 used physical card catalogs in school. Anyone under ~30 grew up entirely with OPACs. Major generational divide in library skills.' },
+            { k: 'Legacy in interface design', v: 'The mental model of "cards" persists in modern interface design (Pinterest, Trello). Some design ideas inherit from physical card catalogs.' }
+          ]));
+        }
+        return h('div', null, backBar('🗂 The Library Card Catalog'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (ccSect === s.id); return h('button', { key: s.id, onClick: function() { setCcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('cardCatalog', [
+            { q: 'Who created the Dewey Decimal Classification (1876)?',
+              opts: ['John Dewey (philosopher)', 'Melvil Dewey (librarian)', 'Andrew Carnegie', 'Library of Congress'],
+              ans: 1, explain: 'Melvil Dewey (librarian, no relation to philosopher John Dewey) created the Dewey Decimal Classification in 1876. Still used by most US public libraries + many globally.' }
+          ]),
+          crossLinkFooter('cardCatalog'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // DIARIES + JOURNALS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderDiaryTradition() {
+        var dtSectRaw = useState('overview');
+        var dtSect = dtSectRaw[0], setDtSect = dtSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '✒' },
+          { id: 'pepys', label: 'Pepys + Boswell', icon: '📓' },
+          { id: 'frank', label: 'Anne Frank + others', icon: '📔' },
+          { id: 'modern', label: 'Modern + bullet journals', icon: '✨' }
+        ];
+        var content;
+        if (dtSect === 'overview') {
+          content = h('div', null, dropCapPara('Diaries + journals are the most private + the most enduring form of personal writing. Samuel Pepys\'s 17th-c. diary, kept in shorthand, recorded the Great Fire of London + Restoration politics + intimate personal life. Anne Frank\'s diary became one of the most-read books of the 20th century. Bullet journals + Substack newsletters are modern descendants. The diary tradition spans 400+ years of personal print.'));
+        } else if (dtSect === 'pepys') {
+          content = h('div', null, keyPointBlock('Pepys + Boswell', [
+            { k: 'Samuel Pepys diary (1660-1669)', v: '9 1/2 years of diary kept in personal shorthand. Recorded Great Fire of London 1666, Plague 1665, Restoration politics, personal life. Decoded + published in 19th c. Major historical + literary work.' },
+            { k: 'James Boswell journals (1762-1795)', v: 'Scottish lawyer + biographer. Massive journal across decades. Discovered + published in 1920s-50s. Boswell\'s Life of Johnson (1791) overshadowed his journals until rediscovered.' },
+            { k: 'John Evelyn diary (1641-1706)', v: 'Pepys\'s contemporary. Sober + Puritan tone. Long-running. Major source for Restoration-era history.' },
+            { k: 'Madame de Sévigné letters (1671-1696)', v: '~1,200 letters from a French aristocrat to her daughter. Functioned like a diary. Major French literary work.' }
+          ]));
+        } else if (dtSect === 'frank') {
+          content = h('div', null, keyPointBlock('Anne Frank + other major diaries', [
+            { k: 'Anne Frank, Diary of a Young Girl (kept 1942-1944, published 1947)', v: 'Kept in hiding in Amsterdam during Nazi occupation. Anne died at Bergen-Belsen at 15. Father Otto Frank published edited version 1947. Translated into 70+ languages. ~35M copies. Personalizes Holocaust for generations.' },
+            { k: 'May Sarton (1912-1995)', v: 'American poet + memoirist. Journal of a Solitude (1973) + multiple later journals defined modern personal-journal tradition.' },
+            { k: 'Etty Hillesum (1914-1943)', v: 'Dutch Jewish woman. Diary kept 1941-1943 before her death at Auschwitz. Published posthumously 1981. Compared with Anne Frank.' },
+            { k: 'Helen Keller (1880-1968)', v: 'Multiple memoirs + journals. The Story of My Life (1903).' },
+            { k: 'War + travel journals', v: 'Soldiers\' journals from many wars. Travelers\' journals from many eras. Personal narrative threading through history.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + bullet journals', [
+            { k: 'Bullet journal (Ryder Carroll, 2013+)', v: 'Method for analog organizing system. Combines diary + to-do list + planner in dot-grid notebook. Massive global community.' },
+            { k: 'Moleskine notebooks (1997+)', v: 'Italian notebook brand revival. Associated with creative + literary practice. Major commercial success.' },
+            { k: 'Substack + Patreon newsletters', v: 'Modern descendants of personal journal — public diary writing as paid subscription content.' },
+            { k: 'Blogging', v: 'Web-era continuation of diary tradition. LiveJournal, Blogger, Wordpress. Many now defunct but reshaped personal-writing culture.' },
+            { k: 'Five-Minute Journal + similar', v: 'Daily-prompt journals. Sold massively in modern self-help market.' },
+            { k: 'Maine journal tradition', v: 'May Sarton lived in Maine; her journals frequently document Maine life. Sarah Orne Jewett kept journals. Maine has produced + inspired substantial journal writing.' }
+          ]));
+        }
+        return h('div', null, backBar('✒ Diaries + Journals'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (dtSect === s.id); return h('button', { key: s.id, onClick: function() { setDtSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('diaryTradition', [
+            { q: 'How was Samuel Pepys\'s diary (1660-1669) originally written?',
+              opts: ['Standard English', 'In a personal shorthand (decoded + published 19th c.)', 'In Latin', 'In code'],
+              ans: 1, explain: 'Pepys kept his diary in a personal shorthand (Thomas Shelton\'s system). Decoded + published in 19th c. Records Great Fire of London 1666, Plague 1665, Restoration politics, personal life.' }
+          ]),
+          crossLinkFooter('diaryTradition'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // TAROT + ORACLE DECKS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderTarotOracle() {
+        var toSectRaw = useState('overview');
+        var toSect = toSectRaw[0], setToSect = toSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔮' },
+          { id: 'history', label: 'History', icon: '📅' },
+          { id: 'rider', label: 'Rider-Waite (1909)', icon: '⭐' },
+          { id: 'modern', label: 'Modern indie decks', icon: '🎨' }
+        ];
+        var content;
+        if (toSect === 'overview') {
+          content = h('div', null, dropCapPara('Tarot cards have been printed for 600+ years. Originally card games (15th-c. Italy), they evolved into divination tools (18th-c. France onward). The Rider-Waite deck (1909) defined modern tarot iconography. Modern indie tarot + oracle deck publishing is a substantial niche industry — many decks each year through crowdfunding + small-press publishing.'));
+        } else if (toSect === 'history') {
+          content = h('div', null, keyPointBlock('Tarot history', [
+            { k: '~1430s — Visconti decks', v: 'Earliest surviving tarot decks. Made for Italian aristocratic families (Visconti family in Milan). Hand-painted + gilded. Used for card games (trionfi).' },
+            { k: '~1500s — Tarot becomes standardized', v: '78-card deck — 22 trumps (major arcana) + 56 numbered + court cards (minor arcana, 4 suits).' },
+            { k: '1781 — Antoine Court de Gébelin', v: 'French Freemason claimed tarot was ancient Egyptian wisdom. Beginning of modern divinatory interpretation of tarot. Etteilla (Jean-Baptiste Alliette) followed with first tarot reading guide (1783).' },
+            { k: 'Late 1800s — Occult revival', v: 'Hermetic Order of the Golden Dawn + similar groups integrated tarot into Western esoteric tradition.' },
+            { k: '1909 — Rider-Waite-Smith', v: 'See next section.' },
+            { k: 'Modern proliferation', v: 'Hundreds of new tarot + oracle deck designs published each year.' }
+          ]));
+        } else if (toSect === 'rider') {
+          content = h('div', null, keyPointBlock('Rider-Waite (1909)', [
+            { k: 'Created by Arthur Edward Waite + Pamela Colman Smith', v: 'Waite (1857-1942) was English mystic + occult scholar. Smith (1878-1951) was Jamaica-born American artist. Smith illustrated all 78 cards based on Waite\'s instructions.' },
+            { k: 'Published by Rider + Company', v: 'London publisher. 1909 first publication. Initial run sold out fast.' },
+            { k: 'Visual innovation', v: 'Smith fully illustrated all 78 cards including the minor arcana (previous decks used simple pip designs for minor arcana). Smith\'s scenic minor-arcana imagery became standard.' },
+            { k: 'Cultural dominance', v: 'Rider-Waite-Smith became the dominant tarot deck in English-speaking world for 100+ years. Most modern tarot decks reference or modify Smith\'s imagery.' },
+            { k: 'Pamela Colman Smith', v: 'Smith\'s contribution was long underappreciated — deck originally called "Rider-Waite" omitting her name. Now widely called Rider-Waite-Smith. Smith died penniless in 1951.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern indie tarot + oracle', [
+            { k: 'Crowdfunding boom (2010s+)', v: 'Kickstarter has enabled dozens of new tarot + oracle decks each year. Many small artists self-publish.' },
+            { k: 'Diverse tarot decks', v: 'Modern decks featuring diverse representation — Black tarot, queer tarot, Indigenous tarot, neurodivergent tarot. Major shift from European-centric historical decks.' },
+            { k: 'Aesthetic diversity', v: 'Decks in countless styles — minimalist, anime, photographic, watercolor, surrealist. Tarot has become major showcase for illustration + design.' },
+            { k: 'Oracle decks', v: 'Distinct from tarot — no fixed 78-card structure. Each oracle deck has its own theme + cards. Often used alongside or instead of tarot.' },
+            { k: 'Major publishers', v: 'US Games Systems (major tarot publisher), Llewellyn (occult-oriented), Hay House (mainstream wellness publisher). Many smaller indie publishers.' },
+            { k: 'Tarot as art', v: 'Tarot collecting + tarot deck design have become serious art categories. Some decks are highly limited + collectible.' }
+          ]));
+        }
+        return h('div', null, backBar('🔮 Tarot + Oracle Decks'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (toSect === s.id); return h('button', { key: s.id, onClick: function() { setToSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('tarotOracle', [
+            { q: 'Who illustrated the Rider-Waite-Smith tarot deck (1909)?',
+              opts: ['Arthur Edward Waite', 'Pamela Colman Smith', 'Aleister Crowley', 'Edward Burne-Jones'],
+              ans: 1, explain: 'Pamela Colman Smith (1878-1951) illustrated all 78 cards. Long called just "Rider-Waite," omitting Smith\'s name. Now widely called Rider-Waite-Smith in recognition of Smith\'s major contribution. Smith died penniless in 1951.' }
+          ]),
+          crossLinkFooter('tarotOracle'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PULP FICTION ERA
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPulpFiction() {
+        var pfSectRaw = useState('overview');
+        var pfSect = pfSectRaw[0], setPfSect = pfSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🕵' },
+          { id: 'major', label: 'Major pulps', icon: '📚' },
+          { id: 'genres', label: 'Genres', icon: '🎭' },
+          { id: 'decline', label: 'Decline + legacy', icon: '🪦' }
+        ];
+        var content;
+        if (pfSect === 'overview') {
+          content = h('div', null, dropCapPara('Pulp magazines (~1896-1955) were cheap fiction magazines printed on pulp paper. Genre-focused: sci-fi, mystery, romance, western, weird tales. Black Mask, Astounding, Weird Tales, Argosy, Amazing Stories. Many famous authors began in pulps. Period sometimes called Golden Age of pulp fiction. Replaced by paperback novels + comic books + television by 1955.'));
+        } else if (pfSect === 'major') {
+          content = h('div', null, keyPointBlock('Major pulp magazines', [
+            { k: 'Argosy (1896-1978)', v: 'Frank Munsey\'s magazine. Often cited as first true pulp. General fiction. Sustained for 80+ years across multiple format changes.' },
+            { k: 'All-Story (1905-1920)', v: 'Munsey pulp. Published Edgar Rice Burroughs\'s Tarzan + John Carter of Mars stories.' },
+            { k: 'Black Mask (1920-1951)', v: 'H.L. Mencken + George Jean Nathan founded. Became premier hardboiled detective magazine. Hammett, Chandler, Carroll John Daly, Erle Stanley Gardner all published here.' },
+            { k: 'Weird Tales (1923-1954)', v: 'Premier fantasy + horror + weird-fiction pulp. H.P. Lovecraft, Robert E. Howard (Conan), Clark Ashton Smith all published here.' },
+            { k: 'Amazing Stories (1926+)', v: 'Hugo Gernsback. First sci-fi pulp. Continues today digitally.' },
+            { k: 'Astounding Stories (1930+)', v: 'Became Astounding Science Fiction (1938), then Analog (1960). John W. Campbell era (1937-1971) defined Golden Age sci-fi.' },
+            { k: 'The Shadow (1931-1949)', v: 'Pulp-character detective magazine. Walter B. Gibson wrote most of the ~325 Shadow novels under house name Maxwell Grant.' }
+          ]));
+        } else if (pfSect === 'genres') {
+          content = h('div', null, keyPointBlock('Pulp genres', [
+            { k: 'Hardboiled detective', v: 'Hammett, Chandler, Carroll John Daly. Black Mask era. Defined American crime-fiction style.' },
+            { k: 'Sci-fi', v: 'Pulp era birthed modern sci-fi. Asimov, Heinlein, Clarke all began in pulps.' },
+            { k: 'Fantasy + horror', v: 'Lovecraft, Howard, Smith. Weird Tales.' },
+            { k: 'Western', v: 'Zane Grey, Louis L\'Amour, Max Brand. Western pulps were major category for decades.' },
+            { k: 'Romance', v: 'Romance pulps (Love Stories Magazine, Sweetheart Stories, others) had massive audience.' },
+            { k: 'War + adventure', v: 'War pulps + aviation pulps + jungle adventures. Edgar Rice Burroughs Tarzan style.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Decline + legacy', [
+            { k: 'Decline (~1945-1955)', v: 'Paperback novels (mass-market paperbacks emerging late 1940s) cheaper + more durable than pulps. Comic books took some pulp audience. TV took rest.' },
+            { k: 'Pulp paper quality', v: 'Pulps printed on cheap acidic pulp paper that yellowed + crumbled within decades. Many original copies now too brittle to handle. Major preservation problem for libraries.' },
+            { k: 'Legacy in subsequent fiction', v: 'Pulp conventions persist throughout modern genre fiction. The 2-fisted hero, the femme fatale, the brisk pace, the lurid cover.' },
+            { k: 'Pulp collecting', v: 'Substantial collector subculture. Rare pulps + first appearances of famous characters (Shadow, Doc Savage, Tarzan) command high prices.' },
+            { k: 'Modern pulp revival', v: 'Some publishers (Centipede Press, Black Dog Books) reprint pulp classics. Hard Case Crime (2004+) publishes new pulp-style hardboiled fiction.' }
+          ]));
+        }
+        return h('div', null, backBar('🕵 Pulp Fiction Era'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pfSect === s.id); return h('button', { key: s.id, onClick: function() { setPfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('pulpFiction', [
+            { q: 'Which pulp magazine was premier for hardboiled detective fiction?',
+              opts: ['Astounding Stories', 'Black Mask (1920-1951)', 'Weird Tales', 'Argosy'],
+              ans: 1, explain: 'Black Mask (1920-1951) was the premier hardboiled detective magazine. Hammett, Chandler, Erle Stanley Gardner all published here. Defined American crime-fiction style.' }
+          ]),
+          crossLinkFooter('pulpFiction'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PAMPHLETS + TRACTS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPamphlets() {
+        var paSectRaw = useState('overview');
+        var paSect = paSectRaw[0], setPaSect = paSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📃' },
+          { id: 'reformation', label: 'Reformation', icon: '⚔️' },
+          { id: 'american', label: 'American Revolution', icon: '🇺🇸' },
+          { id: 'abolitionist', label: 'Abolitionist', icon: '⛓' },
+          { id: 'modern', label: 'Modern', icon: '📋' }
+        ];
+        var content;
+        if (paSect === 'overview') {
+          content = h('div', null, dropCapPara('Pamphlets — short cheap printed works — have been political + religious infrastructure for 500 years. Reformation pamphlets, American + French Revolution pamphlets, abolitionist tracts, labor + civil-rights organizing material. Even modern political mailers + religious tracts continue the form. Pamphlets were the social-media of pre-digital eras.'));
+        } else if (paSect === 'reformation') {
+          content = h('div', null, keyPointBlock('Reformation pamphlets (1517-1555)', [
+            { k: 'Luther\'s pamphlets', v: 'Luther wrote 30+ pamphlets 1517-1520. Total Luther-pamphlet output across his lifetime: 300+. Massive print runs.' },
+            { k: 'Pamphlet format', v: '4-32 small pages. Cheap. Often with simple woodcut illustration. Designed for mass distribution + popular reading.' },
+            { k: 'Catholic response pamphlets', v: 'Eventually Catholic counter-pamphlets emerged but slower + in Latin. See Reformation Print War module.' },
+            { k: 'Anabaptist + radical pamphlets', v: 'More radical reformers (Thomas Müntzer, Anabaptists) used pamphlet form to spread more extreme reform ideas.' }
+          ]));
+        } else if (paSect === 'american') {
+          content = h('div', null, keyPointBlock('American Revolution pamphlets', [
+            { k: 'Thomas Paine, Common Sense (Jan 1776)', v: '~500,000 copies in colonies of 2.5M. Most influential American political pamphlet.' },
+            { k: 'Paine, American Crisis (Dec 1776+)', v: 'Series of pamphlets supporting Revolution. "These are the times that try men\'s souls."' },
+            { k: 'John Dickinson, Letters from a Farmer in Pennsylvania (1767-1768)', v: 'Pre-Revolution pamphlets defending colonial rights. Major influence on colonial opinion.' },
+            { k: 'Federalist Papers (1787-1788)', v: 'Hamilton + Madison + Jay. Originally newspaper essays; reprinted as pamphlet/book. Defending the proposed Constitution.' },
+            { k: 'Anti-Federalist pamphlets', v: 'Brutus, Federal Farmer + others. Arguments against the Constitution. Now equally studied historically.' }
+          ]));
+        } else if (paSect === 'abolitionist') {
+          content = h('div', null, keyPointBlock('Abolitionist pamphlets', [
+            { k: 'David Walker, Appeal (1829)', v: 'Free Black Bostonian\'s radical anti-slavery pamphlet. Hidden in clothing shipped South. Caused panic among Southern slaveholders. Walker died mysteriously 1830.' },
+            { k: 'William Lloyd Garrison, The Liberator (1831-1865)', v: 'Anti-slavery newspaper. Garrison\'s editorials + supporting pamphlets defined US abolitionism.' },
+            { k: 'Frederick Douglass speeches as pamphlets', v: 'Douglass\'s major speeches printed + distributed as pamphlets. "What to the Slave is the Fourth of July?" (1852).' },
+            { k: 'Harriet Beecher Stowe, Uncle Tom\'s Cabin (1852)', v: 'Originally serialized in National Era newspaper. Book form sold 300,000 first year.' },
+            { k: 'Anti-slavery societies', v: 'American Anti-Slavery Society + others produced massive volumes of pamphlet literature.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern pamphlets + tracts', [
+            { k: 'Religious tracts (continuing)', v: 'Jehovah\'s Witnesses (Watchtower), Mormons, Jack Chick Christian tracts (1960+). Massive religious-pamphlet distribution continues.' },
+            { k: 'Political campaigning', v: 'Modern campaigns produce pamphlet-style literature for direct mail + door-knocking.' },
+            { k: 'Labor + protest tracts', v: 'Continuing tradition. Labor unions, protest movements, advocacy organizations produce pamphlet literature.' },
+            { k: 'Zines as pamphlet descendants', v: 'Modern zines are direct descendants of pamphlet tradition (see Zines module).' },
+            { k: 'Substack newsletters', v: 'Modern paid-newsletter writers (Glenn Greenwald, Bari Weiss, Heather Cox Richardson, Andrew Sullivan) are essentially pamphleteers in digital form.' }
+          ]));
+        }
+        return h('div', null, backBar('📃 Pamphlets + Tracts'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('pamphlets', [
+            { q: 'Approximately how many copies did Thomas Paine\'s Common Sense sell?',
+              opts: ['~5,000', '~50,000', '~500,000 (in colonies of 2.5M)', '~5 million'],
+              ans: 2, explain: 'Common Sense (Jan 1776) sold approximately 500,000 copies in colonies of 2.5 million. Most influential American political pamphlet.' }
+          ]),
+          crossLinkFooter('pamphlets'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // GREETING CARDS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderGreetingCards() {
+        var gcSectRaw = useState('overview');
+        var gcSect = gcSectRaw[0], setGcSect = gcSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '💌' },
+          { id: 'history', label: 'History', icon: '📅' },
+          { id: 'hallmark', label: 'Hallmark + American Greetings', icon: '👑' },
+          { id: 'modern', label: 'Modern + indie', icon: '✂' }
+        ];
+        var content;
+        if (gcSect === 'overview') {
+          content = h('div', null, dropCapPara('Greeting cards are a $7+ billion US industry. ~6.5 billion cards sold annually in US. Hallmark (founded 1910) + American Greetings (1906) dominate. Birthday + Christmas + Mother\'s Day are biggest categories. Has been somewhat insulated from broader print decline because cards serve ritual + emotional functions hard to replicate digitally.'));
+        } else if (gcSect === 'history') {
+          content = h('div', null, keyPointBlock('Greeting card history', [
+            { k: 'Christmas cards (1843)', v: 'Henry Cole commissioned + sold first commercial Christmas card in London 1843. 1,000 cards printed.' },
+            { k: 'Valentine\'s Day cards (1840s-50s)', v: 'Esther Howland (Worcester MA) created major early US valentines business. 1850s-1880s.' },
+            { k: 'Postcards (1893-1920s)', v: 'Briefly replaced cards as quick personal correspondence. See Print + Tourism module.' },
+            { k: 'Hallmark (founded 1910)', v: 'Joyce C. Hall founded Hall Brothers (later Hallmark) in Kansas City. Created modern greeting-card industry.' },
+            { k: 'American Greetings (1906)', v: 'Jacob Sapirstein founded in Cleveland. Major Hallmark competitor.' },
+            { k: 'Specialty + niche eras', v: 'Hallmark TV movies (1996+), Sympathy + condolence cards, e-cards (Blue Mountain Arts, 1996+).' }
+          ]));
+        } else if (gcSect === 'hallmark') {
+          content = h('div', null, keyPointBlock('Hallmark + greeting card industry', [
+            { k: 'Hallmark Cards', v: 'Kansas City-based. Family-owned. ~$4B annual revenue. Privately held.' },
+            { k: '"When you care enough to send the very best"', v: 'Hallmark tagline since 1944. One of advertising\'s most famous slogans.' },
+            { k: 'Hallmark Channel', v: 'TV channel (since 2001) focused on movies + lifestyle content. Major holiday-movie destination.' },
+            { k: 'American Greetings', v: 'Cleveland-based. Privately held. ~$2B annual revenue. Hallmark\'s main competitor.' },
+            { k: 'Papyrus (closed 2020)', v: 'Premium card retailer. Stores closed pandemic-era. Brand acquired.' },
+            { k: 'Card industry economics', v: 'Greeting cards have decent margins but high production + distribution costs.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + indie greeting cards', [
+            { k: 'Indie card publishers (2010s+)', v: 'Etsy + Society6 enable indie illustrators to sell direct. Many small card publishers.' },
+            { k: 'Diverse representation', v: 'Movement for more diverse greeting cards. Mahogany (Hallmark Black-focused line), Onyx, others.' },
+            { k: 'Quirky + alternative cards', v: 'Hilarious + sarcastic + unique cards. Brands like Calypso Cards, Quiplip, Em + Friends.' },
+            { k: 'Letterpress cards', v: 'Many letterpress studios specialize in wedding + greeting cards. See Letterpress Today module.' },
+            { k: 'E-cards', v: 'Blue Mountain Arts + similar services. Mostly replaced by Facebook/social media birthday greetings.' },
+            { k: 'Personalized cards', v: 'Shutterfly + Snapfish + Minted offer custom photo cards. Growing category.' }
+          ]));
+        }
+        return h('div', null, backBar('💌 Greeting Cards + Ephemera'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (gcSect === s.id); return h('button', { key: s.id, onClick: function() { setGcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('greetingCards', [
+            { q: 'Who commissioned + sold the first commercial Christmas card?',
+              opts: ['Charles Dickens', 'Henry Cole (London, 1843, 1,000 cards)', 'Queen Victoria', 'Hallmark'],
+              ans: 1, explain: 'Henry Cole commissioned + sold the first commercial Christmas card in London in 1843. 1,000 cards printed.' }
+          ]),
+          crossLinkFooter('greetingCards'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE MEMOIR TRADITION
+      // ═════════════════════════════════════════════════════════════════════
+      function renderTheMemoir() {
+        var meSectRaw = useState('overview');
+        var meSect = meSectRaw[0], setMeSect = meSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📖' },
+          { id: 'classic', label: 'Classic memoirs', icon: '🏛' },
+          { id: 'modern', label: 'Modern memoirs', icon: '✨' },
+          { id: 'celebrity', label: 'Celebrity memoirs', icon: '⭐' }
+        ];
+        var content;
+        if (meSect === 'overview') {
+          content = h('div', null, dropCapPara('Memoir + autobiography are one of the oldest + most-resilient publishing categories. Augustine\'s Confessions (~400 CE) is often cited as first major Western memoir. Modern memoir publishing has exploded — bookshops have entire memoir sections. Maya Angelou, Mary Karr, Barack Obama, Tara Westover have all reshaped the form.'));
+        } else if (meSect === 'classic') {
+          content = h('div', null, keyPointBlock('Classic memoirs', [
+            { k: 'Augustine, Confessions (~400 CE)', v: 'St. Augustine of Hippo. First major Western autobiography. Religious confession + intellectual autobiography.' },
+            { k: 'Rousseau, Confessions (1782, posthumous)', v: 'Jean-Jacques Rousseau. Modern psychological autobiography. Influence on subsequent memoir form.' },
+            { k: 'Benjamin Franklin, Autobiography (1791, posthumous)', v: 'First major American autobiography. Practical + moral instruction + self-presentation.' },
+            { k: 'Frederick Douglass, Narrative (1845)', v: 'Powerful slave narrative + autobiography. Sold 30,000 in first 5 years.' },
+            { k: 'Henry David Thoreau, Walden (1854)', v: 'Memoir of years at Walden Pond. Defining American transcendentalist work.' },
+            { k: 'Booker T. Washington, Up from Slavery (1901)', v: 'Major African-American autobiography. Influential on early 20th-c. Black thought.' }
+          ]));
+        } else if (meSect === 'modern') {
+          content = h('div', null, keyPointBlock('Modern memoir', [
+            { k: 'Maya Angelou, I Know Why the Caged Bird Sings (1969)', v: 'First of 7-volume autobiography. Defining 20th-c. Black memoir.' },
+            { k: 'Vladimir Nabokov, Speak, Memory (1951, revised 1966)', v: 'Russian-American novelist\'s elegantly-crafted memoir.' },
+            { k: 'Frank McCourt, Angela\'s Ashes (1996)', v: 'Pulitzer Prize. Defined "tragic Irish childhood memoir" — many imitators.' },
+            { k: 'Mary Karr, The Liars\' Club (1995)', v: 'Helped trigger modern memoir boom. Karr\'s later The Art of Memoir (2015) influential craft book.' },
+            { k: 'Joan Didion, The Year of Magical Thinking (2005)', v: 'Memoir of grief after husband\'s death. Followed by Blue Nights (2011) after daughter\'s death.' },
+            { k: 'Tara Westover, Educated (2018)', v: '~10M copies. Memoir of escaping isolated family + getting education.' },
+            { k: 'Maine memoirs', v: 'Tess Gerritsen (Maine resident, primarily mystery but some memoir), Lily King, others have produced Maine-set memoir work.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Celebrity memoirs', [
+            { k: 'Politician memoirs', v: 'Massive category. Barack Obama (Dreams from My Father 1995, Audacity of Hope 2006, A Promised Land 2020). Michelle Obama (Becoming 2018, ~17M sold). Bill Clinton, Hillary Clinton, multiple recent presidents.' },
+            { k: 'Sports memoirs', v: 'Andre Agassi (Open 2009), Tiger Woods, many other athletes.' },
+            { k: 'Music memoirs', v: 'Bruce Springsteen (Born to Run 2016), Bob Dylan (Chronicles 2004), Patti Smith (Just Kids 2010 — National Book Award).' },
+            { k: 'Actor memoirs', v: 'Common category. Matthew McConaughey (Greenlights 2020), Jennifer Aniston, many others.' },
+            { k: 'Ghost-writing', v: 'Many celebrity memoirs are ghost-written. Disclosure varies. Most readers don\'t care.' },
+            { k: 'Memoir advances', v: 'Big celebrity memoirs command 7-figure advances. Often loss-leaders for publishers + recovered through volume sales.' }
+          ]));
+        }
+        return h('div', null, backBar('📖 The Memoir Tradition'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (meSect === s.id); return h('button', { key: s.id, onClick: function() { setMeSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('theMemoir', [
+            { q: 'Which work is often cited as the first major Western autobiography?',
+              opts: ['Caesar\'s Commentaries', 'Augustine of Hippo, Confessions (~400 CE)', 'Marco Polo\'s Travels', 'Pepys\'s Diary'],
+              ans: 1, explain: 'St. Augustine of Hippo\'s Confessions (~400 CE) is often cited as the first major Western autobiography. Religious confession + intellectual self-examination.' }
+          ]),
+          crossLinkFooter('theMemoir'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + SOUND
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintSound() {
+        var psSectRaw = useState('overview');
+        var psSect = psSectRaw[0], setPsSect = psSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎧' },
+          { id: 'liner', label: 'Record liner notes', icon: '💿' },
+          { id: 'audiobook', label: 'Audiobooks', icon: '🎙' },
+          { id: 'modern', label: 'Modern intersections', icon: '📱' }
+        ];
+        var content;
+        if (psSect === 'overview') {
+          content = h('div', null, dropCapPara('Print + sound intersect in interesting ways. Record liner notes — printed essays + lyrics + photographs accompanying LPs + CDs — became their own art form. Audiobooks have become major industry ($1.8B+ US revenue 2023). Podcast transcripts. Music magazines. The print + audio worlds are more intertwined than commonly recognized.'));
+        } else if (psSect === 'liner') {
+          content = h('div', null, keyPointBlock('Record liner notes', [
+            { k: 'Origins', v: 'LPs (12" vinyl, ~1948+) had room on jacket back for notes. Initially just track listings + credits.' },
+            { k: 'As art form', v: 'By 1950s-60s, liner notes became serious essays — Nat Hentoff (jazz), Greil Marcus (rock), others wrote substantial liner essays.' },
+            { k: 'Bob Dylan album notes', v: 'Dylan wrote his own influential surrealist notes for early albums.' },
+            { k: 'Gatefold + booklet inserts', v: 'Concept albums increasingly used gatefold sleeves + booklets — Sgt. Pepper (1967), Pink Floyd Dark Side (1973).' },
+            { k: 'CD era (1982+)', v: 'CD booklets were smaller (4.7" square) but enabled even more content. Many albums shipped with 16+ page booklets.' },
+            { k: 'Streaming era loss', v: 'Streaming has largely killed liner-note tradition. Spotify\'s "Canvas" + similar are weak substitutes. Vinyl reissues preserve notes.' }
+          ]));
+        } else if (psSect === 'audiobook') {
+          content = h('div', null, keyPointBlock('Audiobook industry', [
+            { k: 'History', v: 'Books on tape commercially available since 1970s (Caedmon Records earlier had spoken-word LPs). Books on cassette + CD followed.' },
+            { k: 'Audible (founded 1995, Amazon acquired 2008)', v: 'Major US audiobook platform. Has dramatically grown audiobook market.' },
+            { k: 'Sales', v: 'US audiobook revenue ~$1.8B (2023, Audio Publishers Association). Has been growing ~20%/year for several years.' },
+            { k: 'Narrators', v: 'Audiobook narration is its own art. Audie Awards recognize narrators. Some famous narrators (Jim Dale for Harry Potter, Rosamund Pike, Edoardo Ballerini) have substantial reputations.' },
+            { k: 'AI narration (2023+)', v: 'AI-generated audiobook narration emerging. Apple Books + others rolling out. Controversial in audiobook industry.' },
+            { k: 'Maine audiobook recording', v: 'Several Maine-based audiobook recording facilities + narrators.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern print + sound intersections', [
+            { k: 'Podcast transcripts', v: 'Many podcasts now offer text transcripts. Accessibility + searchability + secondary content. Major shift in podcast ecosystem since ~2020.' },
+            { k: 'Substack with audio', v: 'Many Substack writers now record audio versions of essays. Print + voice from same author.' },
+            { k: 'Music magazines', v: 'Rolling Stone, NME (UK, closed print 2018), Mojo, Uncut, Q (UK, closed 2020). Music journalism continues but contracted from peak.' },
+            { k: 'Liner-note revival in vinyl', v: 'Vinyl resurgence (2010s+) has revived attention to liner notes + album-as-physical-object.' },
+            { k: 'Music books', v: 'Major category of music memoirs + biographies + scholarly criticism continues.' }
+          ]));
+        }
+        return h('div', null, backBar('🎧 Print + Sound'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (psSect === s.id); return h('button', { key: s.id, onClick: function() { setPsSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printSound', [
+            { q: 'About how large is the US audiobook industry?',
+              opts: ['~$10M', '~$100M', '~$1.8B (2023)', '~$50B'],
+              ans: 2, explain: 'US audiobook revenue was approximately $1.8B in 2023 (Audio Publishers Association). Has been growing ~20%/year for several years. Amazon\'s Audible dominates.' }
+          ]),
+          crossLinkFooter('printSound'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE PRINTED SERMON
+      // ═════════════════════════════════════════════════════════════════════
+      function renderSermonsPrinted() {
+        var spSectRaw = useState('overview');
+        var spSect = spSectRaw[0], setSpSect = spSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '✟' },
+          { id: 'puritans', label: 'Puritan + Reformer sermons', icon: '⛪' },
+          { id: 'spurgeon', label: 'Spurgeon + Edwards', icon: '📜' },
+          { id: 'modern', label: 'Modern preaching', icon: '🎤' }
+        ];
+        var content;
+        if (spSect === 'overview') {
+          content = h('div', null, dropCapPara('Sermons have been a major print category for ~500 years. Reformers used printed sermons to spread religious ideas beyond the congregation. Puritans + Jonathan Edwards published influential sermon collections. Charles Spurgeon\'s sermons sold millions in the 19th c. Modern sermon publishing continues — Tim Keller, John Piper, others have substantial print output.'));
+        } else if (spSect === 'puritans') {
+          content = h('div', null, keyPointBlock('Puritan + Reformer sermon printing', [
+            { k: 'Reformation sermons', v: 'Luther + Calvin\'s sermons widely printed + distributed. Helped spread Reformation ideas beyond face-to-face preaching.' },
+            { k: 'Puritan sermons (1600s)', v: 'Massive printed-sermon tradition. New England Puritan ministers (Mather family, others) published prolifically.' },
+            { k: 'Increase Mather + Cotton Mather', v: 'Major Puritan preachers + writers. Cotton Mather\'s Magnalia Christi Americana (1702) was massive religious-history work.' },
+            { k: 'Anglican sermons', v: 'John Donne, Lancelot Andrewes, Jeremy Taylor. Distinctive English Anglican sermon tradition. Donne\'s sermons are literary masterpieces.' },
+            { k: 'Wesleyan sermons (1700s+)', v: 'John Wesley\'s sermons foundational for Methodism. Standard editions still published today.' }
+          ]));
+        } else if (spSect === 'spurgeon') {
+          content = h('div', null, keyPointBlock('Spurgeon + Edwards', [
+            { k: 'Charles Spurgeon (1834-1892)', v: 'British Baptist preacher. "Prince of Preachers." 3,500+ published sermons. Metropolitan Tabernacle (London) seated 5,000. Sermon printed weekly + distributed globally — sold millions during his lifetime.' },
+            { k: 'Jonathan Edwards (1703-1758)', v: 'American Calvinist theologian + preacher. Sinners in the Hands of an Angry God (1741) became famous Great Awakening sermon. Edwards\'s collected works span 26+ volumes (Yale edition).' },
+            { k: 'Sermon publishing tradition', v: 'Many famous preachers had stenographers recording sermons + publishers issuing them weekly or monthly.' },
+            { k: 'D.L. Moody (1837-1899)', v: 'American evangelist. Multiple-volume sermon collections published during + after his lifetime.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern preaching + sermon publishing', [
+            { k: 'Tim Keller (1950-2023)', v: 'Pastor of Redeemer Presbyterian (NYC). Multiple books based on sermons. Reason for God (2008) major bestseller.' },
+            { k: 'John Piper', v: 'Reformed Baptist pastor + writer. Desiring God (1986) + many subsequent books from sermons.' },
+            { k: 'Rick Warren, Purpose Driven Life (2002)', v: 'Saddleback Church pastor\'s book. 30+ million copies. Modern bestselling sermon-derived work.' },
+            { k: 'Martin Luther King Jr. sermons + speeches', v: 'King\'s sermons + speeches widely published. Strength to Love (1963) collection. I Have a Dream + many other influential printed texts.' },
+            { k: 'Modern sermon-as-text', v: 'Many contemporary preachers publish sermons online (church websites, YouTube, podcasts). Print sermon collections continue but smaller portion of distribution.' },
+            { k: 'Tom Long, Walter Brueggemann, Barbara Brown Taylor', v: 'Major contemporary sermon + preaching writers. Influence on Protestant preaching practice.' }
+          ]));
+        }
+        return h('div', null, backBar('✟ The Printed Sermon'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (spSect === s.id); return h('button', { key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('sermonsPrinted', [
+            { q: 'How many sermons did Charles Spurgeon publish?',
+              opts: ['~10', '~100', '~1,000', '~3,500+'],
+              ans: 3, explain: 'Charles Spurgeon (1834-1892) — "Prince of Preachers" — published over 3,500 sermons. His weekly printed sermons distributed globally during his lifetime, selling millions.' }
+          ]),
+          crossLinkFooter('sermonsPrinted'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // SPELLING + WORD PUZZLES
+      // ═════════════════════════════════════════════════════════════════════
+      function renderSpellingPuzzles() {
+        var swSectRaw = useState('overview');
+        var swSect = swSectRaw[0], setSwSect = swSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔤' },
+          { id: 'crossword', label: 'Crosswords', icon: '⬜' },
+          { id: 'bees', label: 'Spelling bees', icon: '🐝' },
+          { id: 'modern', label: 'Wordle + modern', icon: '📱' }
+        ];
+        var content;
+        if (swSect === 'overview') {
+          content = h('div', null, dropCapPara('Word puzzles + spelling competitions are a long-running print + cultural tradition. Crosswords (since 1913), spelling bees (since 1925 in US), Scrabble (1948), and modern phenomena (Wordle 2021+) all extend the tradition. NYT Crossword (since 1942) is the most prestigious daily puzzle. National Spelling Bee remains major US event. Word games sustain substantial print + digital industries.'));
+        } else if (swSect === 'crossword') {
+          content = h('div', null, keyPointBlock('Crosswords', [
+            { k: 'First crossword (1913)', v: 'Arthur Wynne created "Word-Cross" (later crossword) for NY World newspaper Dec 21, 1913. Diamond-shaped, 32 clues. Considered first modern crossword.' },
+            { k: 'Crossword boom (1920s)', v: 'Simon & Schuster published first crossword book (1924) + launched their publishing company on it. Crosswords became massive craze.' },
+            { k: 'NYT Crossword (since 1942)', v: 'New York Times started publishing daily crossword Feb 1942. Now considered most prestigious daily puzzle. Difficulty progresses through week (Monday easy, Saturday hardest).' },
+            { k: 'Will Shortz (NYT editor since 1993)', v: 'Has edited NYT crossword for 32 years. Major figure in crossword world.' },
+            { k: 'Diverse + inclusive crosswords (2010s+)', v: 'Movement for more diverse constructors + cultural references. New constructors like Anna Schechtman, Erik Agard. Independent crossword publishers (American Values Club, others).' }
+          ]));
+        } else if (swSect === 'bees') {
+          content = h('div', null, keyPointBlock('Spelling bees', [
+            { k: 'Origins', v: 'Spelling competitions in US schools since 1700s.' },
+            { k: 'National Spelling Bee (1925-)', v: 'Founded by Louisville Courier-Journal. Now Scripps National Spelling Bee. Held annually in late May/early June in Washington DC area.' },
+            { k: 'Modern winners', v: 'Recent winners overwhelmingly Indian-American — about 30 consecutive winners or co-winners from Indian-American families. Sociologists + journalists have studied the cultural patterns.' },
+            { k: 'Coverage', v: 'ESPN has televised National Spelling Bee finals since 1994. Major cultural event for spelling subculture.' },
+            { k: 'Akeelah and the Bee (2006)', v: 'Major film about a young Black girl competing in National Spelling Bee. Raised broader awareness of bee culture.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Wordle + modern word games', [
+            { k: 'Wordle (2021)', v: 'Josh Wardle\'s daily 5-letter word puzzle. Became viral hit late 2021. NY Times acquired Jan 2022. Now NYT property.' },
+            { k: 'NYT Games suite', v: 'Wordle, Spelling Bee (puzzle, not contest), Connections, Mini Crossword, Strands, Tiles. Major contributor to NYT subscription growth.' },
+            { k: 'Scrabble (1948)', v: 'Alfred Mosher Butts\'s tile word game. Sold to Selchow & Righter 1952. Hasbro now owns. ~150M sets sold. Still major board game category.' },
+            { k: 'Bananagrams (2006)', v: 'Tile-based word game. Sold ~10M units.' },
+            { k: 'Apple News + games', v: 'Many publishers offer puzzle apps + games. Subscription business model.' },
+            { k: 'Crossword constructor community', v: 'Online communities for crossword construction (Cruciverbalist subreddit, Crossword Fiend blog). Specialty + active subculture.' }
+          ]));
+        }
+        return h('div', null, backBar('🔤 Spelling + Word Puzzles'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (swSect === s.id); return h('button', { key: s.id, onClick: function() { setSwSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('spellingPuzzles', [
+            { q: 'Who created the first modern crossword (Dec 21, 1913)?',
+              opts: ['New York Times', 'Arthur Wynne (NY World)', 'Will Shortz', 'Simon & Schuster'],
+              ans: 1, explain: 'Arthur Wynne created "Word-Cross" (later crossword) for the NY World newspaper on December 21, 1913. Diamond-shaped, 32 clues. Considered first modern crossword.' }
+          ]),
+          crossLinkFooter('spellingPuzzles'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + CINEMA
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintCinema() {
+        var pcSectRaw = useState('overview');
+        var pcSect = pcSectRaw[0], setPcSect = pcSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎬' },
+          { id: 'scripts', label: 'Screenplays', icon: '📝' },
+          { id: 'novelizations', label: 'Novelizations', icon: '📕' },
+          { id: 'posters', label: 'Movie posters', icon: '🪧' },
+          { id: 'modern', label: 'Modern', icon: '📱' }
+        ];
+        var content;
+        if (pcSect === 'overview') {
+          content = h('div', null, dropCapPara('Cinema + print are intertwined. Screenplays + shooting scripts in printed form. Novelizations of films. Fan magazines. Movie posters. Press kits. Film criticism. Despite cinema being a moving-image medium, print remains essential to film production + culture + memory.'));
+        } else if (pcSect === 'scripts') {
+          content = h('div', null, keyPointBlock('Screenplays + scripts', [
+            { k: 'Script format conventions', v: 'Standard Hollywood screenplay format. ~1 page = ~1 minute screen time. 12-point Courier (monospaced font preserves accurate pagination). Specific indents for action, dialogue, parentheticals.' },
+            { k: 'Final Draft software', v: 'Industry-standard screenwriting software. Used by virtually all professional screenwriters.' },
+            { k: 'Published screenplays', v: 'Major screenplays often published as paperback books. Faber + Faber (UK) publishes many. Selected by Scriptwriter\'s Choice + Best Screenplays series.' },
+            { k: 'Award screenplays', v: 'Oscar Best Original + Adapted Screenplay scripts widely studied + reprinted.' },
+            { k: 'Maine connections', v: 'Maine-set films include Stephen King adaptations (many filmed in Maine), Empire Falls (Russo), others. Local film commissions track production.' }
+          ]));
+        } else if (pcSect === 'novelizations') {
+          content = h('div', null, keyPointBlock('Movie novelizations', [
+            { k: 'Pre-1970s', v: 'Some films novelized but not standard practice.' },
+            { k: 'Star Wars (1976)', v: 'Alan Dean Foster ghostwrote novelization (credited as Lucas) — released months before the film. Established practice.' },
+            { k: 'Boom era (~1975-2005)', v: 'Major Hollywood films routinely novelized. Helped promote film + provided supplementary income for writers.' },
+            { k: 'Alan Dean Foster', v: 'Master novelizer. Star Wars, Alien, The Thing, many others.' },
+            { k: 'Decline (~2005+)', v: 'Streaming + on-demand video largely killed novelization market. People didn\'t need to relive movies in print.' },
+            { k: 'YA + Marvel exceptions', v: 'Some YA franchises (Hunger Games has supplementary novels), Marvel novelizations continue selectively.' }
+          ]));
+        } else if (pcSect === 'posters') {
+          content = h('div', null, keyPointBlock('Movie posters', [
+            { k: 'History', v: 'Movie posters from earliest film exhibition (~1900s). Originally simple title-card style; quickly became elaborate.' },
+            { k: 'Drew Struzan (b. 1947)', v: 'Major movie-poster illustrator. Star Wars, Indiana Jones, Back to the Future, Harry Potter posters.' },
+            { k: 'Saul Bass (1920-1996)', v: 'Designed iconic minimalist posters + title sequences. Anatomy of a Murder, Vertigo, Man with the Golden Arm, others.' },
+            { k: 'Bob Peak (1927-1992)', v: 'My Fair Lady, Apocalypse Now, Camelot posters.' },
+            { k: 'Modern posters', v: 'Increasingly photographic + repetitive ("floating heads" template). Some independent + indie films keep illustrated tradition alive.' },
+            { k: 'Poster collecting', v: 'Original movie posters significant collectibles. Rare 1930s posters (Frankenstein, King Kong) sell for $100K+.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital', [
+            { k: 'Press kits + EPK', v: 'Electronic Press Kits replaced printed press kits ~2000s. Digital images + video + bio content for journalists.' },
+            { k: 'Film criticism + magazines', v: 'Sight & Sound (UK, since 1932), Film Comment (USA, 1962-2020 print), Cahiers du Cinéma (France). Print film criticism contracted but persists.' },
+            { k: 'Online film criticism', v: 'Roger Ebert\'s site, IndieWire, individual critics on Substack. Much film conversation now digital.' },
+            { k: 'Streaming-era print', v: 'Movie posters increasingly designed for digital display (thumbnail-readable) rather than physical posters.' },
+            { k: 'Fan magazines decline', v: 'Photoplay, Premiere, Entertainment Weekly print editions all declined or closed. Fan culture moved online.' }
+          ]));
+        }
+        return h('div', null, backBar('🎬 Print + Cinema'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pcSect === s.id); return h('button', { key: s.id, onClick: function() { setPcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printCinema', [
+            { q: 'Who ghostwrote the Star Wars (1976) novelization?',
+              opts: ['George Lucas himself', 'Alan Dean Foster (credited as Lucas)', 'Isaac Asimov', 'Frank Herbert'],
+              ans: 1, explain: 'Alan Dean Foster ghostwrote the Star Wars novelization in 1976 (months before the film), credited as Lucas. Foster became the master novelizer of the 1970s-90s era. Star Wars novelization established the movie-novelization tradition.' }
+          ]),
+          crossLinkFooter('printCinema'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + ASTRONOMY
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintAstronomy() {
+        var paSectRaw = useState('overview');
+        var paSect = paSectRaw[0], setPaSect = paSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔭' },
+          { id: 'catalogs', label: 'Star catalogs', icon: '⭐' },
+          { id: 'popular', label: 'Popular astronomy', icon: '🪐' },
+          { id: 'modern', label: 'Modern', icon: '💻' }
+        ];
+        var content;
+        if (paSect === 'overview') {
+          content = h('div', null, dropCapPara('Astronomy has been a published science for 2,000+ years. Ptolemy\'s Almagest (~150 CE) listed 1,022 stars. Hipparchus catalogued earlier. Hevelius, Bayer, Flamsteed, Messier all produced classic star catalogs. Modern astronomical publishing — popular magazines + scholarly journals — continues to make astronomy unusually print-rich field.'));
+        } else if (paSect === 'catalogs') {
+          content = h('div', null, keyPointBlock('Major star catalogs', [
+            { k: 'Hipparchus (~150 BCE)', v: 'Greek astronomer. First major star catalog (~850 stars, brightness measured). Catalog lost; reconstructed from Ptolemy.' },
+            { k: 'Ptolemy, Almagest (~150 CE)', v: '1,022 stars catalogued. Standard for 1,400 years. Persian + Arabic scholars preserved + extended.' },
+            { k: 'Persian + Arabic improvements', v: 'Al-Sufi\'s Book of Fixed Stars (964 CE) corrected + extended Ptolemy. Many Arabic star names persist today (Aldebaran, Algol, Betelgeuse, Rigel, Vega).' },
+            { k: 'Tycho Brahe (~1600)', v: 'Most accurate pre-telescope observations. Catalog of ~1,000 stars to ~1 arcminute accuracy.' },
+            { k: 'Bayer, Uranometria (1603)', v: 'First comprehensive star atlas. Introduced Bayer-designation system (Greek letters by brightness within constellation). Still used.' },
+            { k: 'Flamsteed (~1725)', v: 'Royal Greenwich Observatory first Astronomer Royal. Catalog of 3,000 stars. Flamsteed numbers still used.' },
+            { k: 'Messier (~1781)', v: 'Comet hunter who catalogued ~110 deep-sky objects (galaxies, nebulae, clusters) to avoid confusion with comets. Messier numbers (M1 Crab Nebula, M31 Andromeda, etc.) still standard.' },
+            { k: 'NGC + IC (1880s-1900s)', v: 'New General Catalogue + Index Catalogue. Tens of thousands of deep-sky objects. Still standard astronomical references.' }
+          ]));
+        } else if (paSect === 'popular') {
+          content = h('div', null, keyPointBlock('Popular astronomy publishing', [
+            { k: 'Sky & Telescope (1941+)', v: 'US monthly amateur-astronomy magazine. Standard for amateur astronomers.' },
+            { k: 'Astronomy magazine (1973+)', v: 'US monthly. Less rigorous than Sky & Telescope; broader audience.' },
+            { k: 'BBC Sky at Night (UK, 2005+)', v: 'British amateur-astronomy magazine, related to TV show.' },
+            { k: 'Carl Sagan, Cosmos (1980)', v: 'Companion to TV series. Major popular astronomy book.' },
+            { k: 'Brian Greene, Stephen Hawking, Neil deGrasse Tyson, Mary Roach', v: 'Major modern popular-astronomy + cosmology writers.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital', [
+            { k: 'NASA + ESA imagery online', v: 'NASA Astronomy Picture of the Day (APOD) launched 1995. Hubble + JWST images globally accessible.' },
+            { k: 'Citizen science', v: 'Galaxy Zoo + similar projects. Volunteers classify astronomical images. Major contribution to scholarship.' },
+            { k: 'Stellarium + planetarium software', v: 'Free open-source planetarium software. Replaces traditional printed star atlases for most amateurs.' },
+            { k: 'arXiv astro-ph', v: 'Astronomy section of arXiv preprint server. Where most modern astronomy publications appear before journal publication.' },
+            { k: 'James Webb Space Telescope (2022+)', v: 'Generating massive new astronomical imagery + publications. Major boost to popular interest in astronomy.' }
+          ]));
+        }
+        return h('div', null, backBar('🔭 Print + Astronomy'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printAstronomy', [
+            { q: 'Whose star catalog was standard for 1,400 years?',
+              opts: ['Hipparchus', 'Ptolemy\'s Almagest (~150 CE, 1,022 stars)', 'Bayer\'s Uranometria', 'Messier\'s Catalogue'],
+              ans: 1, explain: 'Ptolemy\'s Almagest (~150 CE) catalogued 1,022 stars. Standard for 1,400 years. Preserved + extended by Persian + Arabic scholars (Al-Sufi\'s Book of Fixed Stars 964 CE).' }
+          ]),
+          crossLinkFooter('printAstronomy'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FASHION MAGAZINES
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFashionMags() {
+        var fmSectRaw = useState('overview');
+        var fmSect = fmSectRaw[0], setFmSect = fmSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '👗' },
+          { id: 'major', label: 'Major magazines', icon: '⭐' },
+          { id: 'design', label: 'Design + photography', icon: '📷' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (fmSect === 'overview') {
+          content = h('div', null, dropCapPara('Fashion magazines are a major print + cultural category. Harper\'s Bazaar (1867), Vogue (1892), Elle (France 1945+, US 1985+), Cosmopolitan (1965+ redesigned). Defined American + global fashion + beauty + lifestyle culture for 150+ years. Some have pivoted to digital; some have continued print; some have closed. Major industry + cultural force.'));
+        } else if (fmSect === 'major') {
+          content = h('div', null, keyPointBlock('Major fashion magazines', [
+            { k: 'Harper\'s Bazaar (1867+)', v: 'Founded as Harper\'s Bazar by Harper & Brothers. America\'s oldest fashion magazine. Defined American fashion publishing.' },
+            { k: 'Vogue (1892+)', v: 'Condé Nast since 1909. Edited by Anna Wintour since 1988. Premier global fashion magazine. Anna Wintour\'s 36-year tenure makes her one of longest-serving major-magazine editors ever.' },
+            { k: 'Elle (France 1945+, US 1985+)', v: 'French magazine. US Elle launched 1985. Defined slightly younger + more accessible fashion than Vogue.' },
+            { k: 'Cosmopolitan', v: 'Originally founded 1886 as literary magazine. Helen Gurley Brown\'s 1965 redesign transformed into single-young-women\'s magazine. Massively profitable through 1970s-90s.' },
+            { k: 'GQ (1957+)', v: 'Men\'s fashion + lifestyle. Originally Gentlemen\'s Quarterly. Condé Nast.' },
+            { k: 'W magazine', v: 'Newspaper-sized large-format fashion magazine. Distinctive format.' }
+          ]));
+        } else if (fmSect === 'design') {
+          content = h('div', null, keyPointBlock('Design + photography in fashion magazines', [
+            { k: 'Diana Vreeland (1903-1989)', v: 'Editor of Harper\'s Bazaar (1936-1962) + Vogue (1963-1971). Defined modern fashion editing. Vreeland\'s spreads were spectacles.' },
+            { k: 'Alexey Brodovitch (1898-1971)', v: 'Art director of Harper\'s Bazaar (1934-1958). Defined modern fashion magazine design. Trained generations of designers.' },
+            { k: 'Richard Avedon (1923-2004)', v: 'Fashion photographer for Harper\'s Bazaar + Vogue. Defined post-WWII fashion photography.' },
+            { k: 'Irving Penn (1917-2009)', v: 'Vogue. Major fashion + portrait photographer.' },
+            { k: 'Helmut Newton (1920-2004)', v: 'Vogue fashion photographer. Controversial + influential.' },
+            { k: 'Annie Leibovitz', v: 'Vogue + Vanity Fair portraits since 1990s. Major contemporary fashion + celebrity photographer.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital fashion media', [
+            { k: 'Print contraction', v: 'Most major fashion magazines have reduced print frequency. Vogue still major; Glamour ceased monthly print 2018; Teen Vogue ceased print 2017.' },
+            { k: 'Digital pivots', v: 'Vogue Runway, Vogue Business, Elle.com. Fashion magazines have substantial + growing digital content.' },
+            { k: 'Influencer culture', v: 'Instagram + TikTok fashion influencers (Chiara Ferragni, Aimee Song, others) have substantially displaced fashion-magazine authority over taste.' },
+            { k: 'Met Gala coverage', v: 'Annual Met Gala (Vogue-organized) remains major fashion event. Massive online + print coverage.' },
+            { k: 'Fashion criticism', v: 'Robin Givhan (Washington Post), Vanessa Friedman (NY Times), Cathy Horyn, others. Continuing fashion journalism.' }
+          ]));
+        }
+        return h('div', null, backBar('👗 Beauty + Fashion Magazines'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (fmSect === s.id); return h('button', { key: s.id, onClick: function() { setFmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('fashionMags', [
+            { q: 'When did Anna Wintour begin editing US Vogue?',
+              opts: ['1962', '1988', '2002', '2020'],
+              ans: 1, explain: 'Anna Wintour has edited US Vogue since 1988 — 36+ years. One of longest-serving major-magazine editors ever. Defined modern Vogue.' }
+          ]),
+          crossLinkFooter('fashionMags'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // TRAVEL LITERATURE
+      // ═════════════════════════════════════════════════════════════════════
+      function renderTravelLit() {
+        var tlSectRaw = useState('overview');
+        var tlSect = tlSectRaw[0], setTlSect = tlSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🌍' },
+          { id: 'classic', label: 'Classic travel writing', icon: '📜' },
+          { id: 'modern', label: 'Modern travel literature', icon: '✈' },
+          { id: 'maine', label: 'Maine travel writing', icon: '🦞' }
+        ];
+        var content;
+        if (tlSect === 'overview') {
+          content = h('div', null, dropCapPara('Travel literature is distinct from guidebooks. Marco Polo\'s Travels (~1300), Ibn Battuta\'s Rihla (1355), Alexander Humboldt\'s Personal Narrative (1814+), Bruce Chatwin (In Patagonia 1977), Pico Iyer + Paul Theroux + Bill Bryson (modern). Travel literature is about the experience, meaning, perspective — not just where to go.'));
+        } else if (tlSect === 'classic') {
+          content = h('div', null, keyPointBlock('Classic travel writing', [
+            { k: 'Marco Polo, Travels (~1300)', v: 'Venetian merchant\'s account of 24-year journey to China + back. Dictated to fellow prisoner. Standard text for centuries — influenced European views of Asia.' },
+            { k: 'Ibn Battuta, Rihla (1355)', v: 'Moroccan scholar\'s account of 30 years of travel through Islamic world + China + Africa. ~75,000 miles total. Most-traveled person of medieval era.' },
+            { k: 'Alexander von Humboldt, Personal Narrative (1814-29)', v: 'German naturalist\'s journey to Americas (1799-1804). Foundational science + travel writing combined.' },
+            { k: 'Charles Darwin, Voyage of the Beagle (1839)', v: 'Darwin\'s journal of 5-year HMS Beagle voyage. Famous + readable. Precedes Origin of Species (1859).' },
+            { k: 'Mark Twain, Innocents Abroad (1869), Roughing It (1872)', v: 'Twain\'s travel writing made him famous. Wit + observation.' },
+            { k: 'Robert Louis Stevenson, Travels with a Donkey (1879)', v: 'Walking trip in southern France. Early modern travel writing.' }
+          ]));
+        } else if (tlSect === 'modern') {
+          content = h('div', null, keyPointBlock('Modern travel literature', [
+            { k: 'Patrick Leigh Fermor, A Time of Gifts (1977), Between the Woods and the Water (1986)', v: 'Walked across Europe 1933-34 (Holland to Constantinople). Wrote about it 45+ years later. Major literary travel writing.' },
+            { k: 'Bruce Chatwin, In Patagonia (1977)', v: 'Defined modern travel writing. Anti-tourist, sparse, observational.' },
+            { k: 'Paul Theroux', v: 'The Great Railway Bazaar (1975), Old Patagonian Express (1979), many more. Major modern travel writer.' },
+            { k: 'Pico Iyer', v: 'Video Night in Kathmandu (1988), many more. Contemplative + cultural travel writing.' },
+            { k: 'Bill Bryson', v: 'A Walk in the Woods (1998) on Appalachian Trail. Notes from a Small Island (1995). Massively popular humorous travel writing.' },
+            { k: 'Cheryl Strayed, Wild (2012)', v: 'Pacific Crest Trail memoir. Major bestseller + film adaptation.' },
+            { k: 'Rebecca Solnit, Wanderlust: A History of Walking (2000)', v: 'Essayistic travel + philosophy.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Maine travel writing', [
+            { k: 'Henry David Thoreau, The Maine Woods (1864, posthumous)', v: 'Thoreau\'s three trips into Maine wilderness 1846, 1853, 1857. Major Maine nature-travel writing.' },
+            { k: 'E.B. White, One Man\'s Meat (1942)', v: 'White\'s Harper\'s columns from his Maine saltwater farm. Travel-from-home essays. Maine-rooted observational writing.' },
+            { k: 'Down East magazine (1954+)', v: 'Premier Maine travel + lifestyle magazine. ~95K subscribers.' },
+            { k: 'Maine Boats Homes & Harbors', v: 'Maine-focused lifestyle magazine.' },
+            { k: 'Bill Bryson, A Walk in the Woods (1998)', v: 'Includes Maine portion of Appalachian Trail. Massive readership.' },
+            { k: 'Maine guidebooks', v: 'Many. Down East Guide to Maine, Moon Maine, etc. See Print + Tourism module.' }
+          ]));
+        }
+        return h('div', null, backBar('🌍 Travel Literature'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (tlSect === s.id); return h('button', { key: s.id, onClick: function() { setTlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('travelLit', [
+            { q: 'Who is the most-traveled person of the medieval era?',
+              opts: ['Marco Polo', 'Ibn Battuta (~75,000 miles over 30 years)', 'Vasco da Gama', 'Magellan'],
+              ans: 1, explain: 'Ibn Battuta (1304-1369) traveled ~75,000 miles over 30 years across the Islamic world + China + Africa. His Rihla (1355) documents the journey. Most-traveled person of medieval era.' }
+          ]),
+          crossLinkFooter('travelLit'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + MATHEMATICS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintMath() {
+        var pmSectRaw = useState('overview');
+        var pmSect = pmSectRaw[0], setPmSect = pmSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📐' },
+          { id: 'classics', label: 'Classic math texts', icon: '📜' },
+          { id: 'journals', label: 'Math journals', icon: '📑' },
+          { id: 'modern', label: 'Modern + arXiv', icon: '💻' }
+        ];
+        var content;
+        if (pmSect === 'overview') {
+          content = h('div', null, dropCapPara('Mathematics has a 2,300+ year publishing tradition. Euclid\'s Elements (~300 BCE) is the second most-translated + most-printed work in Western history (after the Bible). Modern mathematical journals (Annals of Mathematics, Inventiones, Acta Mathematica) define the discipline. arXiv has reshaped how mathematics circulates.'));
+        } else if (pmSect === 'classics') {
+          content = h('div', null, keyPointBlock('Classic math texts', [
+            { k: 'Euclid\'s Elements (~300 BCE)', v: 'Geometry textbook. Second most-printed book in Western history. Standard geometry text for 2,000+ years. Modern editions still in print.' },
+            { k: 'Archimedes Palimpsest (~1000 CE manuscript copy)', v: 'Archimedes works survived in palimpsest (text scraped + overwritten). Rediscovered 1906; new techniques have recovered text 1990s+.' },
+            { k: 'Liber Abaci (Fibonacci, 1202)', v: 'Introduced Hindu-Arabic numerals (0-9) + positional notation to Europe. Replaced Roman numerals for calculation.' },
+            { k: 'Newton, Principia Mathematica (1687)', v: 'Newton\'s laws of motion + universal gravitation. ~400 copies first printing. Massive influence.' },
+            { k: 'Gauss, Disquisitiones Arithmeticae (1801)', v: 'Carl Friedrich Gauss\'s number theory at age 24. Founded modern number theory.' },
+            { k: 'Cantor on set theory (1874-1897)', v: 'Founded modern set theory through series of published papers.' }
+          ]));
+        } else if (pmSect === 'journals') {
+          content = h('div', null, keyPointBlock('Major math journals', [
+            { k: 'Annals of Mathematics (1884+)', v: 'Princeton University. Premier US mathematics journal.' },
+            { k: 'Acta Mathematica (Sweden, 1882+)', v: 'Premier Scandinavian + global mathematics journal.' },
+            { k: 'Inventiones Mathematicae (1966+)', v: 'Springer journal. Premier European math journal.' },
+            { k: 'Journal of the AMS (1988+)', v: 'American Mathematical Society flagship.' },
+            { k: 'Mathematical Reviews (1940+) + zbMATH (Zentralblatt)', v: 'Major reviewing + indexing services for mathematical literature.' },
+            { k: 'Open math journals', v: 'Forum of Mathematics, others. Open-access movement in math publishing.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern math + arXiv', [
+            { k: 'arXiv math sections (1991+)', v: 'Mathematics was earliest + heaviest adopter of arXiv. Most major mathematical results now appear on arXiv first.' },
+            { k: 'Open-access math', v: 'Some mathematicians have championed open-access. Tim Gowers led 2012 Elsevier boycott protesting commercial-journal pricing.' },
+            { k: 'Polymath projects', v: 'Online collaborative math projects (Tim Gowers, Terence Tao, others). New form of mathematical collaboration.' },
+            { k: 'Math YouTube + 3Blue1Brown', v: 'Grant Sanderson\'s 3Blue1Brown YouTube videos. Major math educational resource. New form of mathematical exposition.' },
+            { k: 'Math books for popular audience', v: 'Steven Strogatz, Edward Frenkel, Eugenia Cheng, Cathy O\'Neil. Continuing tradition of popular-math writing.' }
+          ]));
+        }
+        return h('div', null, backBar('📐 Print + Mathematics'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pmSect === s.id); return h('button', { key: s.id, onClick: function() { setPmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printMath', [
+            { q: 'What is the second most-printed book in Western history (after the Bible)?',
+              opts: ['Newton\'s Principia', 'Euclid\'s Elements (~300 BCE)', 'Plato\'s Republic', 'Hamlet'],
+              ans: 1, explain: 'Euclid\'s Elements (~300 BCE) is the second most-printed + most-translated work in Western history after the Bible. Standard geometry text for 2,000+ years.' }
+          ]),
+          crossLinkFooter('printMath'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT ADVERTISING HISTORY
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintAdvert() {
+        var paSectRaw = useState('overview');
+        var paSect = paSectRaw[0], setPaSect = paSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📣' },
+          { id: 'early', label: 'Early advertising', icon: '🪧' },
+          { id: 'madmen', label: 'Mad Men era', icon: '👔' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (paSect === 'overview') {
+          content = h('div', null, dropCapPara('Print advertising is as old as commercial printing. The first English-language advertisement printed by William Caxton (1477). Newspaper classifieds. Magazine ads. Mad Men era of 1950s-60s defined modern advertising. Digital disruption has transformed but not replaced print ads. Major industry across 540+ years.'));
+        } else if (paSect === 'early') {
+          content = h('div', null, keyPointBlock('Early advertising history', [
+            { k: 'Caxton printer\'s advertisement (1477)', v: 'William Caxton printed first English-language handbill advertising his books. Considered first English print ad.' },
+            { k: 'Shop signs + handbills (1500s-1700s)', v: 'Pre-newspaper advertising. Printed handbills distributed by hand. Shop signs above storefronts.' },
+            { k: 'Newspaper classifieds (1600s+)', v: 'Early newspapers carried advertising. Lost-and-found, slave-sale notices, ship arrivals + departures, runaway servant notices.' },
+            { k: 'Trade cards (1800s)', v: 'Small advertising cards (often chromolithographed) distributed by merchants. Major late-19th-c. collecting craze.' },
+            { k: 'Magazine advertising (1880s+)', v: 'McClure\'s + Ladies Home Journal pioneered substantial magazine advertising. Mass-circulation magazines depended on ad revenue.' }
+          ]));
+        } else if (paSect === 'madmen') {
+          content = h('div', null, keyPointBlock('Mad Men era (1950s-60s)', [
+            { k: 'Madison Avenue', v: 'New York City avenue became symbol of US advertising industry. Major agencies clustered there.' },
+            { k: 'Major agencies', v: 'BBDO, J. Walter Thompson, Young & Rubicam, Doyle Dane Bernbach, McCann Erickson. Defined US advertising.' },
+            { k: 'Bill Bernbach + DDB (1949+)', v: 'Doyle Dane Bernbach. Pioneered "creative revolution" approach. Famous Volkswagen "Think Small" ad (1959).' },
+            { k: 'David Ogilvy', v: 'Confessions of an Advertising Man (1963). Ogilvy & Mather. Major theorist of modern advertising.' },
+            { k: 'TV displacement', v: 'TV advertising boomed 1950s-60s. Print advertising contracted in importance but remained major.' },
+            { k: 'Cultural impact', v: 'Vance Packard\'s The Hidden Persuaders (1957) raised concerns about subliminal advertising. Major cultural conversation.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital advertising', [
+            { k: 'Google AdWords (2000+)', v: 'Search-result advertising. Transformed online advertising economics.' },
+            { k: 'Facebook ads (2007+)', v: 'Targeted advertising based on user data. Massive Facebook revenue source.' },
+            { k: 'Programmatic advertising', v: 'Automated real-time bidding for ad slots. Now dominates digital advertising.' },
+            { k: 'Print ad decline', v: 'US newspaper print ad revenue down ~80% from 2005 peak. Magazine print ad revenue also down dramatically.' },
+            { k: 'Print ads that survive', v: 'Luxury + fashion magazines retain substantial print advertising. Premium products use print for prestige.' },
+            { k: 'Influencer marketing', v: 'Instagram + TikTok influencer marketing has substantially replaced some print advertising in fashion + beauty + lifestyle.' },
+            { k: 'Ad-blocking + privacy', v: 'Growing user pushback on digital ads. iOS privacy changes (2021+) affecting digital ad targeting. May benefit print advertising relatively.' }
+          ]));
+        }
+        return h('div', null, backBar('📣 Print Advertising History'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printAdvert', [
+            { q: 'Who printed the first English-language advertisement (1477)?',
+              opts: ['Wynkyn de Worde', 'William Caxton', 'Aldus Manutius', 'Johannes Gutenberg'],
+              ans: 1, explain: 'William Caxton printed the first English-language handbill advertisement in 1477 (advertising his books). Considered first English-language print ad.' }
+          ]),
+          crossLinkFooter('printAdvert'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // WEBCOMICS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderWebcomics() {
+        var wcSectRaw = useState('overview');
+        var wcSect = wcSectRaw[0], setWcSect = wcSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🖥' },
+          { id: 'classics', label: 'Classic webcomics', icon: '⭐' },
+          { id: 'business', label: 'Business models', icon: '💰' },
+          { id: 'modern', label: 'Modern', icon: '📱' }
+        ];
+        var content;
+        if (wcSect === 'overview') {
+          content = h('div', null, dropCapPara('Webcomics emerged in the mid-1990s with the web itself. Distributed free, often updated daily or multiple times per week, supported by ads, Patreon, merchandise, or just love. xkcd (2005+) became one of the most-read; Penny Arcade (1998+) built business empire; Order of the Stick (2003+) and many others sustained long-running narrative work.'));
+        } else if (wcSect === 'classics') {
+          content = h('div', null, keyPointBlock('Classic webcomics', [
+            { k: 'Argon Zark! (1995)', v: 'Often cited as one of first webcomics. Charley Parker. Color cyberpunk webcomic.' },
+            { k: 'Penny Arcade (1998+)', v: 'Mike Krahulik + Jerry Holkins. Gaming-focused webcomic. Built large business — PAX conventions, Child\'s Play charity.' },
+            { k: 'Sluggy Freelance (1997+)', v: 'Pete Abrams. One of longest-running daily webcomics. 25+ years.' },
+            { k: 'xkcd (2005+)', v: 'Randall Munroe. Stick-figure math + science + relationship + xkcd-style humor. Massive readership.' },
+            { k: 'Order of the Stick (2003+)', v: 'Rich Burlew. D&D-inspired epic fantasy webcomic. Self-published collected volumes.' },
+            { k: 'Achewood (2001-2016)', v: 'Chris Onstad. Surreal cult-favorite webcomic.' },
+            { k: 'Saturday Morning Breakfast Cereal (SMBC, 2002+)', v: 'Zach Weinersmith. Sciency + philosophical humor.' },
+            { k: 'Questionable Content (2003+)', v: 'Jeph Jacques. Slice-of-life + alt-music + AI.' }
+          ]));
+        } else if (wcSect === 'business') {
+          content = h('div', null, keyPointBlock('Webcomic business models', [
+            { k: 'Banner advertising', v: 'Early business model. Now mostly declined.' },
+            { k: 'Merchandise (t-shirts, books)', v: 'Major income for many webcomics. Print collected editions of webcomic strips are big sellers.' },
+            { k: 'Patreon (2013+)', v: 'Crowdfunding subscriptions. Many webcomics sustained primarily by Patreon now.' },
+            { k: 'Kickstarter', v: 'For book editions + special projects. Many successful campaigns.' },
+            { k: 'Hiveworks + Iron Circus', v: 'Webcomic publishers handling business operations for groups of creators.' },
+            { k: 'Webtoons + Tapas (Korean platforms)', v: 'Paid + ad-supported webcomic platforms. Different business model from Western indie webcomics.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern webcomics', [
+            { k: 'Webtoons platform', v: 'Naver Webtoon. Vertical-scroll format optimized for phones. Massive global user base.' },
+            { k: 'Tapas', v: 'US-based webcomic + web-novel platform. Similar model to Webtoons.' },
+            { k: 'Instagram comics', v: 'Sarah Andersen (Sarah\'s Scribbles), Adam Ellis, others. Built audience on Instagram.' },
+            { k: 'TikTok comics', v: 'Newer comics-creator presence on TikTok. Heather Stevens (Aphexx) + others.' },
+            { k: 'Print collected editions', v: 'Successful webcomics often release print collections. Some become traditional bestsellers (Allie Brosh, Hyperbole and a Half, 2013).' },
+            { k: 'Webcomics + traditional comics', v: 'Boundary continues to blur. Many traditional comics creators now also do webcomics; many webcomic creators move to traditional publishers.' }
+          ]));
+        }
+        return h('div', null, backBar('🖥 Webcomics Deep Dive'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (wcSect === s.id); return h('button', { key: s.id, onClick: function() { setWcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('webcomics', [
+            { q: 'Who created xkcd webcomic (2005+)?',
+              opts: ['Mike Krahulik', 'Randall Munroe', 'Jeph Jacques', 'Allie Brosh'],
+              ans: 1, explain: 'Randall Munroe created xkcd in 2005. Stick-figure math + science + relationship + xkcd-style humor. Massive readership. Also written several popular books (What If?, Thing Explainer).' }
+          ]),
+          crossLinkFooter('webcomics'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PICTURE BOOK CRAFT
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPictureBookDeep() {
+        var pbSectRaw = useState('overview');
+        var pbSect = pbSectRaw[0], setPbSect = pbSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎨' },
+          { id: 'format', label: 'The 32-page format', icon: '📐' },
+          { id: 'process', label: 'Art process', icon: '🖌' },
+          { id: 'modern', label: 'Modern picture books', icon: '📚' }
+        ];
+        var content;
+        if (pbSect === 'overview') {
+          content = h('div', null, dropCapPara('A 32-page picture book — the standard children\'s picture book format — is one of the most constrained + sophisticated forms in publishing. Every page-turn matters. Text + image must work together; neither alone tells the story. Page count is essentially fixed (because of how the book signature folds). Author + illustrator (often different people) collaborate intensively. Major art form.'));
+        } else if (pbSect === 'format') {
+          content = h('div', null, keyPointBlock('The 32-page picture book', [
+            { k: 'Why 32 pages?', v: 'A standard signature folds to 32 pages (8 sheets × 4 panels per sheet = 32 pages). Two signatures = 64 pages. Picture-book printers price by signatures.' },
+            { k: 'Page-by-page breakdown', v: 'Half-title (1), title (1), copyright (1), dedication (1), 1-4 endpapers, 14-15 spreads of content, sometimes back-of-book material. ~14 working spreads is typical.' },
+            { k: 'Spreads, not pages', v: 'Picture books design in 2-page spreads (the visual unit when book is open). Each spread is an artistic + storytelling unit.' },
+            { k: 'Page-turn pacing', v: 'Every page-turn is a pacing decision. Setup + payoff. Tension + release. Master picture books use the page-turn brilliantly.' },
+            { k: 'Standard sizes', v: '10×10 inches (square), 8.5×11 inches (vertical), 11×8.5 inches (horizontal). Sizes constrained by printing equipment.' }
+          ]));
+        } else if (pbSect === 'process') {
+          content = h('div', null, keyPointBlock('Picture book art + production process', [
+            { k: 'Manuscript', v: 'Author writes text first. Usually 500-1,000 words for a typical picture book. Less is often more.' },
+            { k: 'Acquisition + pairing', v: 'Editor acquires manuscript + pairs with illustrator. Sometimes author + illustrator collaborate; often editor selects illustrator.' },
+            { k: 'Sketches + thumbnail', v: 'Illustrator creates rough sketches showing page-by-page layout. Often presented as small thumbnails.' },
+            { k: 'Dummy', v: 'A "dummy" is a mock-up of the entire book at actual size with sketches in place. Critical step — shows pacing + composition before finished art.' },
+            { k: 'Finished art', v: 'Illustrator produces final art for each spread. Multiple months work for complex picture books.' },
+            { k: 'Production', v: 'Color separation + plate-making + printing. Most modern picture books are offset-printed in China for cost reasons.' },
+            { k: 'Trim + bind', v: 'Standard library/trade binding. Often with dust jacket. Heavyweight paper.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern picture books', [
+            { k: 'Diversity revolution', v: 'Major movement toward more diverse representation in picture books since 2010s. We Need Diverse Books advocacy.' },
+            { k: 'Christian Robinson, Yuyi Morales, Jerry Pinkney (1939-2021), Vashti Harrison', v: 'Major contemporary picture-book illustrators.' },
+            { k: 'Caldecott Medal annual', v: 'American Library Association award for most distinguished American picture book each year. Major industry recognition.' },
+            { k: 'Maine picture-book creators', v: 'Chris Van Dusen (Camden — King Bidgood\'s in the Bathtub illustrator), Maxwell Eaton III (Castine), Jamie Hogan (Peaks Island), Lynn Plourde (Winthrop). Dense Maine illustrator community.' },
+            { k: 'Cardboard board books', v: 'For pre-readers. Thick board pages, simple text, durable for toddler handling.' },
+            { k: 'Wordless picture books', v: 'Aaron Becker (Journey trilogy), David Wiesner. Pure visual storytelling.' }
+          ]));
+        }
+        return h('div', null, backBar('🎨 The Picture Book Craft'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('pictureBookDeep', [
+            { q: 'Why are most picture books 32 pages?',
+              opts: ['Industry tradition only', 'A standard signature folds to 32 pages (8 sheets × 4 panels per sheet)', 'Children\'s attention span', 'Federal regulations'],
+              ans: 1, explain: 'A standard print signature folds to 32 pages (8 sheets × 4 panels per sheet = 32 pages). Picture-book printers price by signature. Two signatures = 64 pages. Format is essentially fixed by binding economics.' }
+          ]),
+          crossLinkFooter('pictureBookDeep'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // POETRY MAGAZINES
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPoetryMags() {
+        var pmSectRaw = useState('overview');
+        var pmSect = pmSectRaw[0], setPmSect = pmSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎭' },
+          { id: 'major', label: 'Major poetry magazines', icon: '⭐' },
+          { id: 'modern', label: 'Modern + indie', icon: '📱' }
+        ];
+        var content;
+        if (pmSect === 'overview') {
+          content = h('div', null, dropCapPara('Poetry magazines are a niche but enduring print category. Poetry magazine (Chicago, 1912+) is most prestigious US poetry venue. New Yorker publishes poetry weekly. Paris Review, Granta, Tin House, many smaller magazines. Hundreds of indie + university poetry journals. Poetry publishing remains small commercially but culturally significant.'));
+        } else if (pmSect === 'major') {
+          content = h('div', null, keyPointBlock('Major poetry magazines', [
+            { k: 'Poetry magazine (Chicago, 1912+)', v: 'Harriet Monroe founded. Most prestigious US poetry venue. Published Eliot\'s Prufrock (1915). Pound was foreign editor early. Now part of Poetry Foundation (Ruth Lilly endowment).' },
+            { k: 'The New Yorker (1925+)', v: 'Publishes poetry weekly. Major venue for established poets.' },
+            { k: 'Paris Review (1953+)', v: 'Literary magazine. Famous Writers at Work interview series. Major poetry venue.' },
+            { k: 'Kenyon Review (1939+)', v: 'University-based literary magazine. John Crowe Ransom founded.' },
+            { k: 'Tin House (1999-2019 print, continues online)', v: 'Major literary magazine. Print ended 2019.' },
+            { k: 'Granta (UK, 1979+)', v: 'British literary magazine. International reputation.' },
+            { k: 'Best American Poetry annual', v: 'Annual anthology selecting best American poems published in magazines. Major recognition.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + indie poetry magazines', [
+            { k: 'University-based magazines', v: 'Hundreds of university-affiliated literary magazines publish poetry. Iowa Review, Antioch Review, Georgia Review, Massachusetts Review.' },
+            { k: 'Indie online magazines', v: 'Hundreds of online-only poetry magazines. AGNI, Diode, Big Other, Sixth Finch, many more.' },
+            { k: 'Poetry Foundation + Poetry website', v: 'Poetry magazine\'s parent foundation publishes massive online poetry archive + audio readings.' },
+            { k: 'Poetry chapbooks', v: 'Small-format poetry books (~24-40 pages). Many small presses (Black Lawrence, Bull City, Sundress) publish chapbooks.' },
+            { k: 'Maine poetry', v: 'Multiple Maine poets — Edna St. Vincent Millay, Donald Hall (lived part-time Maine), Wesley McNair, Annie Finch, others. Maine Poetry Society active.' },
+            { k: 'Instagram poetry', v: 'Rupi Kaur + others built massive audiences on Instagram. Has shifted poetry distribution + financial model.' }
+          ]));
+        }
+        return h('div', null, backBar('🎭 Poetry Magazines'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pmSect === s.id); return h('button', { key: s.id, onClick: function() { setPmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('poetryMags', [
+            { q: 'Which magazine first published T.S. Eliot\'s "The Love Song of J. Alfred Prufrock" (1915)?',
+              opts: ['The New Yorker', 'Poetry magazine (Chicago, 1912+)', 'Atlantic Monthly', 'The Dial'],
+              ans: 1, explain: 'Poetry magazine (Chicago) published "The Love Song of J. Alfred Prufrock" in 1915. Major Modernist poetry venue. Founded 1912 by Harriet Monroe. Still publishing today.' }
+          ]),
+          crossLinkFooter('poetryMags'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PULP COVER ART
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPulpCovers() {
+        var pcSectRaw = useState('overview');
+        var pcSect = pcSectRaw[0], setPcSect = pcSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎨' },
+          { id: 'artists', label: 'Major pulp artists', icon: '🖌' },
+          { id: 'genres', label: 'Genre cover conventions', icon: '🎭' },
+          { id: 'legacy', label: 'Legacy', icon: '🏛' }
+        ];
+        var content;
+        if (pcSect === 'overview') {
+          content = h('div', null, dropCapPara('Pulp magazine covers (1920s-50s) were intensely visual + commercial — designed to grab newsstand customers among dozens of competing magazines. Bold colors, dramatic action, lurid + sensational imagery. Many talented illustrators worked exclusively for pulps. Now recognized as serious mid-century illustration tradition.'));
+        } else if (pcSect === 'artists') {
+          content = h('div', null, keyPointBlock('Major pulp cover artists', [
+            { k: 'Frank R. Paul (1884-1963)', v: 'Sci-fi pulp covers. Amazing Stories, Wonder Stories. Distinctive futurist + space-opera imagery. Painted 100+ covers.' },
+            { k: 'Margaret Brundage (1900-1976)', v: 'Pastel-on-board covers for Weird Tales. Often featured women in compromising positions with monsters. Controversial in her time + later.' },
+            { k: 'Virgil Finlay (1914-1971)', v: 'Pen-and-ink fantasy illustrator. Weird Tales + Famous Fantastic Mysteries. Extraordinarily detailed stippling technique.' },
+            { k: 'Hannes Bok (1914-1964)', v: 'Sci-fi + fantasy illustrator. Distinctive stylized work.' },
+            { k: 'J. Allen St. John (1872-1957)', v: 'Edgar Rice Burroughs illustrator. Defined visual look of Tarzan + Mars novels.' },
+            { k: 'Norman Saunders (1907-1989)', v: 'Pulp magazine + paperback cover painter. Famously painted "weird menace" pulps + later 1950s paperback covers.' },
+            { k: 'Frank Frazetta (1928-2010)', v: 'Late-pulp + early paperback fantasy art. Conan covers in 1960s-70s. Massive influence on subsequent fantasy art.' }
+          ]));
+        } else if (pcSect === 'genres') {
+          content = h('div', null, keyPointBlock('Pulp cover conventions by genre', [
+            { k: 'Sci-fi pulp covers', v: 'Spaceships, alien worlds, rocket pilots, bug-eyed monsters (BEMs), distressed damsels in space-suits.' },
+            { k: 'Weird/horror covers', v: 'Monsters, undead, ritual sacrifice, gothic settings. Lurid + frightening.' },
+            { k: 'Hardboiled detective covers', v: 'Men in fedoras with guns. Femmes fatales. Urban settings, often with dramatic shadow.' },
+            { k: 'Western covers', v: 'Cowboys, Indians (often stereotyped), bandits, sheriffs, sunsets, horses, six-shooters.' },
+            { k: 'Romance covers', v: 'Embracing couples. Often a man in uniform + a woman in distress + period clothing.' },
+            { k: '"Weird menace" pulps', v: 'Sub-genre of horror pulps featuring lurid + sometimes sadistic imagery of women in peril. Controversial. Mostly disappeared by 1940s as social acceptability eroded.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Pulp art legacy', [
+            { k: 'Modern fantasy + sci-fi art descended from pulps', v: 'Frank Frazetta\'s 1960s-70s Conan covers + paperback fantasy art was direct heir of pulp tradition. Influenced D&D illustrations + modern fantasy game art.' },
+            { k: 'Vintage pulp collecting', v: 'Substantial collector subculture for vintage pulp covers + original art. Pulp Magazines Project digitizes pulps for free.' },
+            { k: 'Modern pulp aesthetic revival', v: 'Modern artists + writers reference pulp aesthetic. Hard Case Crime book covers (2004+) deliberately echo classic pulp covers.' },
+            { k: 'Pulp Adventures + Pulp Modern', v: 'Modern indie magazines deliberately publishing in pulp tradition.' },
+            { k: 'Auction values', v: 'Original pulp cover art has become valuable. Norman Saunders + Frazetta originals can sell for $100K+.' }
+          ]));
+        }
+        return h('div', null, backBar('🎨 Pulp Cover Art'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pcSect === s.id); return h('button', { key: s.id, onClick: function() { setPcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('pulpCovers', [
+            { q: 'Who painted iconic 1960s-70s Conan paperback covers + influenced subsequent fantasy art?',
+              opts: ['Frank R. Paul', 'Frank Frazetta (1928-2010)', 'Virgil Finlay', 'Norman Rockwell'],
+              ans: 1, explain: 'Frank Frazetta painted iconic Conan paperback covers in the 1960s-70s. Defined visual vocabulary of modern fantasy + sci-fi art. Direct heir of pulp-magazine cover tradition. Massive influence on D&D + fantasy gaming illustration + modern fantasy book covers.' }
+          ]),
+          crossLinkFooter('pulpCovers'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + RADIO
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintRadio() {
+        var prSectRaw = useState('overview');
+        var prSect = prSectRaw[0], setPrSect = prSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📻' },
+          { id: 'scripts', label: 'Radio scripts', icon: '📝' },
+          { id: 'guides', label: 'TV/radio guides', icon: '📺' },
+          { id: 'modern', label: 'Modern + NPR', icon: '🎙' }
+        ];
+        var content;
+        if (prSect === 'overview') {
+          content = h('div', null, dropCapPara('Radio + print have grown together. Radio scripts published as print drama in golden age (1930s-50s). Radio + later TV guides became major print categories (TV Guide had ~17M circulation at 1970s peak). Major radio organizations (BBC, NPR, This American Life) have substantial print presence. Audio storytelling + print transcripts now common.'));
+        } else if (prSect === 'scripts') {
+          content = h('div', null, keyPointBlock('Radio scripts as print', [
+            { k: 'Golden age of radio (1930s-50s)', v: 'Major radio dramas published as scripts. Orson Welles\'s Mercury Theatre on the Air scripts (including War of the Worlds, 1938). Norman Corwin\'s wartime radio dramas published in book form.' },
+            { k: 'BBC radio drama', v: 'Long-running tradition. Many published as print scripts.' },
+            { k: 'Audio drama collections', v: 'Selected radio play collections regularly published. Reader appreciation distinct from listening.' }
+          ]));
+        } else if (prSect === 'guides') {
+          content = h('div', null, keyPointBlock('TV + radio guides', [
+            { k: 'TV Guide (1953-2008 weekly print)', v: 'US weekly TV guide magazine. ~17M circulation 1970s peak. Now digital + monthly print. Defined how Americans found TV programming.' },
+            { k: 'Radio Times (UK, 1923+)', v: 'BBC weekly listings magazine. Continues today.' },
+            { k: 'Newspaper TV listings', v: 'Daily newspaper TV listings sections (separate broadsheet sections) standard for decades. Mostly disappeared as streaming + internet listings replaced.' },
+            { k: 'Cable + premium guides', v: 'HBO Guide, Showtime, Cinemax all had subscriber print guides. Mostly digital now.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + public radio', [
+            { k: 'NPR.org transcripts', v: 'NPR + member stations publish transcripts of most major programs. Print form of audio reporting.' },
+            { k: 'This American Life transcripts', v: 'Major podcast/public-radio show. Episode transcripts widely read.' },
+            { k: 'Podcast transcripts', v: 'Increasingly standard. Accessibility + searchability + secondary content.' },
+            { k: 'BBC + CBC websites', v: 'Major public-broadcaster websites function as substantial print outlets alongside audio.' },
+            { k: 'Pacifica Radio Archives', v: 'Major preservation of left-political radio history. Pacifica programs from 1949+.' },
+            { k: 'Maine Public Broadcasting', v: 'Statewide network. Online content + traditional radio. Major Maine cultural institution.' }
+          ]));
+        }
+        return h('div', null, backBar('📻 Print + Radio'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (prSect === s.id); return h('button', { key: s.id, onClick: function() { setPrSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printRadio', [
+            { q: 'What was peak circulation of TV Guide (1970s)?',
+              opts: ['~1 million', '~17 million weekly', '~50 million', '~100 million'],
+              ans: 1, explain: 'TV Guide had approximately 17 million weekly circulation at its 1970s peak — one of the largest weekly magazines in US history. Continues today in monthly print form + digital.' }
+          ]),
+          crossLinkFooter('printRadio'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + GARDENING
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintGarden() {
+        var pgSectRaw = useState('overview');
+        var pgSect = pgSectRaw[0], setPgSect = pgSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🌱' },
+          { id: 'seeds', label: 'Seed catalogs', icon: '📒' },
+          { id: 'books', label: 'Gardening books', icon: '📕' },
+          { id: 'magazines', label: 'Gardening magazines', icon: '🪴' }
+        ];
+        var content;
+        if (pgSect === 'overview') {
+          content = h('div', null, dropCapPara('Gardening is one of the most-published practical-information categories. Seed catalogs (Burpee, Park Seed, Johnny\'s Selected Seeds — based in Winslow, Maine!) circulate annually. Gardening books fill bookstore + library sections. Gardening magazines (Fine Gardening, Garden Gate, Mother Earth News) sustain print despite broader magazine contraction. Centuries-old tradition.'));
+        } else if (pgSect === 'seeds') {
+          content = h('div', null, keyPointBlock('Seed catalogs', [
+            { k: 'Burpee Seeds (Pennsylvania, 1876+)', v: 'W. Atlee Burpee\'s catalog. Major US seed company. Annual catalog free + mailed widely.' },
+            { k: 'Park Seed (South Carolina, 1868+)', v: 'Major US flower + vegetable seed company. Annual catalog.' },
+            { k: 'Johnny\'s Selected Seeds (Maine, 1973+)', v: 'Maine-based seed company in Winslow. Major organic + heirloom seed source. Annual catalog widely distributed.' },
+            { k: 'Fedco Seeds (Maine, 1978+)', v: 'Cooperative in Clinton, Maine. Major organic + heirloom seed source. Annual catalog has cult following.' },
+            { k: 'Seed Savers Exchange (Iowa, 1975+)', v: 'Nonprofit. Heirloom seed preservation. Annual yearbook of member-offered seeds.' },
+            { k: 'Why seed catalogs persist', v: 'Tactile inspirational quality during winter. Carefully designed + photographed. Customers report ordering as much for the catalog experience as the seeds.' }
+          ]));
+        } else if (pgSect === 'books') {
+          content = h('div', null, keyPointBlock('Major gardening books', [
+            { k: 'Eliot Coleman, The New Organic Grower (1989, revised 2018)', v: 'Maine-based gardening writer (Harborside). Defined modern small-scale organic vegetable production.' },
+            { k: 'Mel Bartholomew, Square Foot Gardening (1981)', v: 'Major popular gardening method. Many subsequent editions.' },
+            { k: 'Edward C. Smith, The Vegetable Gardener\'s Bible (2000)', v: 'Comprehensive vegetable-gardening reference.' },
+            { k: 'Ruth Stout, How to Have a Green Thumb Without an Aching Back (1955)', v: 'Pioneering no-dig gardening method.' },
+            { k: 'Permaculture books (Bill Mollison, David Holmgren, 1978+)', v: 'Permaculture One (1978) launched movement. Subsequent books shaped sustainable + holistic gardening practice.' },
+            { k: 'Coloring book of vegetables (joke)', v: 'Many regional + specialty gardening books — fruit-tree pruning, native plants, container gardening, herbs.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Gardening magazines', [
+            { k: 'Fine Gardening (1988+)', v: 'Premium gardening magazine. Detailed plant + design coverage.' },
+            { k: 'Garden Gate (1995+)', v: 'Practical gardening magazine. No advertising. Subscriber-supported.' },
+            { k: 'Mother Earth News (1970+)', v: 'Back-to-the-land + sustainable living. Has gardening as major focus.' },
+            { k: 'Organic Gardening (1942-2014 as Organic, continues as Rodale\'s Organic Life)', v: 'J.I. Rodale\'s magazine. Defined organic gardening movement. Print edition ended 2014.' },
+            { k: 'Local + regional gardening', v: 'Most US states have regional gardening magazines. New England Today + similar.' },
+            { k: 'Maine + New England gardening', v: 'Coastal Home, Maine Boats Homes & Harbors. Many Maine garden writers (Lois Stack Mygatt, Roger Doiron, others).' }
+          ]));
+        }
+        return h('div', null, backBar('🌱 Print + Gardening'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pgSect === s.id); return h('button', { key: s.id, onClick: function() { setPgSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printGarden', [
+            { q: 'Which major US organic seed company is based in Maine?',
+              opts: ['Burpee', 'Johnny\'s Selected Seeds (Winslow ME) + Fedco Seeds (Clinton ME)', 'Park Seed', 'Baker Creek'],
+              ans: 1, explain: 'Maine has two major US seed companies: Johnny\'s Selected Seeds (Winslow, 1973+) + Fedco Seeds (Clinton cooperative, 1978+). Both major organic + heirloom seed sources nationally. Their annual catalogs are eagerly anticipated by gardeners.' }
+          ]),
+          crossLinkFooter('printGarden'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FORENSIC DOCUMENT EXAMINATION
+      // ═════════════════════════════════════════════════════════════════════
+      function renderForensicDocs() {
+        var fdSectRaw = useState('overview');
+        var fdSect = fdSectRaw[0], setFdSect = fdSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔬' },
+          { id: 'methods', label: 'Methods', icon: '🔍' },
+          { id: 'cases', label: 'Famous cases', icon: '⚖' },
+          { id: 'modern', label: 'Modern + digital', icon: '💻' }
+        ];
+        var content;
+        if (fdSect === 'overview') {
+          content = h('div', null, dropCapPara('Forensic document examiners study handwriting, typewriter exemplars, paper, ink, printing methods to authenticate or expose documents. Used in courts (signature authentication), historical scholarship (manuscript dating), forgery investigations. Specialized field combining handwriting analysis + paper science + printing history + chemistry.'));
+        } else if (fdSect === 'methods') {
+          content = h('div', null, keyPointBlock('Forensic document methods', [
+            { k: 'Handwriting analysis', v: 'Identifying writers by handwriting characteristics. Combination of distinctive features, pen pressure, spacing, letter formation.' },
+            { k: 'Signature authentication', v: 'Determining whether a signature is genuine. Used in legal disputes over wills, contracts, checks.' },
+            { k: 'Typewriter identification', v: 'Identifying which specific typewriter produced a document. Worn letters, alignment quirks, ribbon marks.' },
+            { k: 'Paper examination', v: 'Fiber types, watermarks, age, mill identification. Briquet\'s watermark catalog standard reference.' },
+            { k: 'Ink analysis', v: 'Chromatography, spectroscopy. Different ink formulations datable. Cross-checking ink with paper.' },
+            { k: 'Printing method identification', v: 'Letterpress vs offset vs digital vs inkjet — different visual + microscopic signatures.' }
+          ]));
+        } else if (fdSect === 'cases') {
+          content = h('div', null, keyPointBlock('Famous forensic-document cases', [
+            { k: 'Vinland Map (2021)', v: 'Yale conservators used spectroscopy to identify modern titanium dioxide in ink — proving 1965-acquired "15th-c. map" was 20th-c. forgery. See Forgeries module.' },
+            { k: 'Hitler Diaries (1983)', v: 'Quick examination revealed wrong paper for 1930s, anachronistic ink components. Exposed within weeks.' },
+            { k: 'Vinegar will identification', v: 'Will authentication routinely involves forensic document examination. Many estate disputes.' },
+            { k: 'Anthrax letters (2001)', v: 'Anthrax letters mailed to journalists + senators 2001 — paper + ink + typography examined as part of FBI investigation.' },
+            { k: 'JFK assassination', v: 'Forensic examination of typewriter samples + handwriting samples remains active in scholarship.' },
+            { k: 'Holocaust diary authentication', v: 'Diaries (Anne Frank, Etty Hillesum) routinely subject to forensic authentication when challenges arise.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital forensics', [
+            { k: 'AI image-manipulation detection', v: 'Modern algorithms detect AI-generated images + manipulated photos. Major industry development.' },
+            { k: 'Multispectral imaging', v: 'Different wavelengths reveal different aspects of documents. Faded ink, underwriting, overwriting all detectable.' },
+            { k: 'Mass spectrometry', v: 'Chemical analysis at trace levels. Ink + paper components identifiable.' },
+            { k: 'Digital provenance', v: 'Modern documents have digital metadata that can be forensically examined.' },
+            { k: 'Professional organizations', v: 'American Board of Forensic Document Examiners. Sets standards + certifies practitioners.' }
+          ]));
+        }
+        return h('div', null, backBar('🔬 Forensic Document Examination'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (fdSect === s.id); return h('button', { key: s.id, onClick: function() { setFdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('forensicDocs', [
+            { q: 'How did Yale conservators prove the Vinland Map a forgery in 2021?',
+              opts: ['Carbon dating', 'Spectroscopy identified modern titanium dioxide (anatase) in ink (invented 1923)', 'Eyewitness confession', 'Watermark analysis'],
+              ans: 1, explain: 'Yale conservators in 2021 used spectroscopy to identify anatase titanium dioxide in the Vinland Map\'s ink. Anatase TiO2 was not used commercially as a pigment until 1923 — proving the supposedly 15th-c. map was a 20th-c. forgery.' }
+          ]),
+          crossLinkFooter('forensicDocs'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // LIBRARY BINDERY
+      // ═════════════════════════════════════════════════════════════════════
+      function renderLibraryBindery() {
+        var lbSectRaw = useState('overview');
+        var lbSect = lbSectRaw[0], setLbSect = lbSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔧' },
+          { id: 'standards', label: 'Library binding standards', icon: '📐' },
+          { id: 'conservation', label: 'Conservation', icon: '🛡' },
+          { id: 'modern', label: 'Modern', icon: '💻' }
+        ];
+        var content;
+        if (lbSect === 'overview') {
+          content = h('div', null, dropCapPara('Library binding is a specialized craft. Public library books face heavy use — hundreds of circulations over decades. Standard publisher\'s bindings often don\'t last. Library binderies rebind books in heavier covers, often with reinforced sewing, to extend life dramatically. The Library Binding Institute set industry standards. Major institutional infrastructure invisibly supporting libraries everywhere.'));
+        } else if (lbSect === 'standards') {
+          content = h('div', null, keyPointBlock('Library binding standards', [
+            { k: 'Library Binding Institute (LBI, 1932-)', v: 'US trade association setting library binding standards.' },
+            { k: 'LBI standard binding', v: 'Reinforced sewn binding with cloth cover. Designed for hundreds of circulations over 20+ years.' },
+            { k: 'Smyth-sewn signatures', v: 'Library bindings typically Smyth-sewn (a more durable sewing method than glued spine). Pages won\'t fall out.' },
+            { k: 'Buckram cover', v: 'Heavy bookcloth. Resists wear, moisture, sunlight. Sturdy library binding hallmark.' },
+            { k: 'Cost', v: 'Library binding adds ~$10-$20 per book over standard publisher\'s edition. Cost-justified for high-circulation titles.' },
+            { k: 'Pre-bound books', v: 'Many library wholesalers (Baker & Taylor, Bound to Stay Bound, others) sell new books already library-bound.' }
+          ]));
+        } else if (lbSect === 'conservation') {
+          content = h('div', null, keyPointBlock('Conservation work', [
+            { k: 'Difference from rebinding', v: 'Library binding is for active circulation. Conservation is for preservation of historical books — repair without altering original character.' },
+            { k: 'Conservation techniques', v: 'Spine reinforcement, page repair, leather rebacking, archival cleaning. Reversibility prized.' },
+            { k: 'Major US conservation labs', v: 'Library of Congress Conservation Division, NEDCC (Northeast Document Conservation Center, Andover MA), Harry Ransom Center (Texas), Conservation Center for Art + Historic Artifacts (Philadelphia).' },
+            { k: 'Maine conservation', v: 'Maine State Library + Maine Historical Society maintain conservation infrastructure. Many Maine libraries send to NEDCC.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern library bindery', [
+            { k: 'Industry consolidation', v: 'Many library binderies have closed. Surviving major firms: Heckman Bindery (Indiana), Bridgeport Bindery (Massachusetts).' },
+            { k: 'Demand shift', v: 'Library demand for binding has contracted as collections digitize + as paperback purchase models replace permanent collection-building.' },
+            { k: 'Continuing demand', v: 'Children\'s libraries continue to need heavy binding. Reference works. Award winners. Books expected to circulate hundreds of times.' },
+            { k: 'Maine library binding', v: 'Maine libraries\' binding work mostly sent to out-of-state binderies. Some local bookbinders do small-scale custom work.' }
+          ]));
+        }
+        return h('div', null, backBar('🔧 The Library Bindery'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (lbSect === s.id); return h('button', { key: s.id, onClick: function() { setLbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('libraryBindery', [
+            { q: 'What organization sets US library binding standards (1932-)?',
+              opts: ['American Library Association', 'Library Binding Institute (LBI)', 'Library of Congress', 'No standards exist'],
+              ans: 1, explain: 'Library Binding Institute (LBI, 1932-) sets US library binding standards. LBI standard binding designed for hundreds of circulations over 20+ years — substantially more durable than publisher\'s bindings.' }
+          ]),
+          crossLinkFooter('libraryBindery'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FINE PRESS TRADITION
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFinePress() {
+        var fpSectRaw = useState('overview');
+        var fpSect = fpSectRaw[0], setFpSect = fpSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '⚜' },
+          { id: 'founding', label: 'Founding (Kelmscott)', icon: '🌹' },
+          { id: 'major', label: 'Major presses', icon: '🏛' },
+          { id: 'modern', label: 'Modern fine press', icon: '✨' }
+        ];
+        var content;
+        if (fpSect === 'overview') {
+          content = h('div', null, dropCapPara('The fine press / private press tradition started with William Morris\'s Kelmscott Press (1891). Tradition: hand-set type, hand-made paper, careful design + production, limited editions for collectors. Continued through Doves Press, Ashendene, Officina Bodoni, Arion Press, dozens of small presses today. Distinct from commercial publishing — production values > commercial efficiency.'));
+        } else if (fpSect === 'founding') {
+          content = h('div', null, keyPointBlock('Kelmscott + founding era', [
+            { k: 'William Morris, Kelmscott Press (1891-1898)', v: 'Morris\'s reaction against industrial-era book design. 53 books in 7 years. Hand-set type, hand-made paper, ornament-rich design. Kelmscott Chaucer (1896) is his masterpiece.' },
+            { k: 'Doves Press (1900-1916)', v: 'Cobden-Sanderson + Emery Walker. Spare, austere design — opposite of Kelmscott\'s ornament. Doves Press Bible (1903) major work.' },
+            { k: 'Ashendene Press (1894-1935)', v: 'C.H. St John Hornby. Italian Renaissance-inspired. Ashendene Dante (1909) + Ashendene Virgil major works.' },
+            { k: 'Eragny Press (1894-1914)', v: 'Lucien Pissarro (Camille\'s son). French-influenced.' },
+            { k: 'Vale Press (1896-1903)', v: 'Charles Ricketts.' }
+          ]));
+        } else if (fpSect === 'major') {
+          content = h('div', null, keyPointBlock('Major fine presses', [
+            { k: 'Officina Bodoni (Italy, 1923+)', v: 'Giovanni Mardersteig. See Famous Print Shops module. Continued by family + collaborators.' },
+            { k: 'Cranach Press (Germany, 1913-1931)', v: 'Count Harry Kessler. Major typographic innovations. Eric Gill + Aristide Maillol illustrated.' },
+            { k: 'Nonesuch Press (UK, 1923-1968)', v: 'Francis Meynell\'s slightly more affordable + commercial fine press. Limited editions priced for upper middle class.' },
+            { k: 'Limited Editions Club (USA, 1929-2010)', v: 'George Macy\'s subscription series. ~600 fine-press limited editions over 80+ years. Distributed monthly to ~1,500 subscribers.' },
+            { k: 'Arion Press (San Francisco, 1974+)', v: 'Andrew Hoyem\'s press. Currently the largest functioning letterpress operation in US. Continues to produce major fine-press editions.' },
+            { k: 'Russell Maret, Eric Holub, others', v: 'Contemporary fine-press printers continuing the tradition.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern fine press', [
+            { k: 'Active presses today', v: 'Arion Press, Two Ponds Press, Russell Maret, Eric Holub, Larkspur Press, many more globally. Active tradition.' },
+            { k: 'Pricing', v: 'Modern fine-press editions $200-$5,000 per copy. Some go higher. Limited editions of 100-500 copies typical.' },
+            { k: 'Codex Foundation', v: 'Berkeley-based foundation supporting fine-press + book-arts community. Biennial Codex international book fair major event.' },
+            { k: 'Fine Press Book Association', v: 'Professional organization for fine-press printers + collectors.' },
+            { k: 'Maine connections', v: 'Two Ponds Press (Camden), Stinehour Press (was VT/NH, related work). Maine letterpress + book-arts community produces fine-press work.' }
+          ]));
+        }
+        return h('div', null, backBar('⚜ The Fine Press Tradition'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (fpSect === s.id); return h('button', { key: s.id, onClick: function() { setFpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('finePress', [
+            { q: 'Who founded the Kelmscott Press (1891) + the modern fine-press tradition?',
+              opts: ['Eric Gill', 'William Morris', 'Cobden-Sanderson', 'Bruce Rogers'],
+              ans: 1, explain: 'William Morris founded the Kelmscott Press in 1891. His reaction against industrial book design launched the modern fine-press / private-press tradition. Kelmscott Chaucer (1896) is his masterpiece.' }
+          ]),
+          crossLinkFooter('finePress'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // COOKBOOK SUBCULTURES
+      // ═════════════════════════════════════════════════════════════════════
+      function renderCookbooksMore() {
+        var cmSectRaw = useState('overview');
+        var cmSect = cmSectRaw[0], setCmSect = cmSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🥘' },
+          { id: 'community', label: 'Community cookbooks', icon: '🏘' },
+          { id: 'vegan', label: 'Vegan + vegetarian', icon: '🥗' },
+          { id: 'bbq', label: 'BBQ + grilling', icon: '🔥' },
+          { id: 'maine', label: 'Maine cookbooks', icon: '🦞' }
+        ];
+        var content;
+        if (cmSect === 'overview') {
+          content = h('div', null, dropCapPara('Beyond mainstream celebrity cookbooks, there are vast cookbook subcultures. Church + community cookbooks. Vegan + vegetarian. BBQ + grilling. Regional + ethnic. Each subculture sustains its own publishers + readers. Important parts of US food culture that mainstream attention often misses.'));
+        } else if (cmSect === 'community') {
+          content = h('div', null, keyPointBlock('Community + church cookbooks', [
+            { k: 'Tradition', v: 'Church groups, civic clubs, women\'s organizations, schools have published community cookbooks for ~150 years. Contributors are members; recipes are family treasures contributed.' },
+            { k: 'Format', v: 'Spiral-bound or perfect-bound, often with sponsor ads from local businesses. Self-published or with regional printers.' },
+            { k: 'Major regional publishers', v: 'Morris Press Cookbooks, Cookbook Publishers Inc., Fundcraft. Specialize in community cookbook production.' },
+            { k: 'Famous community cookbooks', v: 'Charleston Receipts (Junior League of Charleston, 1950 — still in print). Many similar Junior League cookbooks across US.' },
+            { k: 'Cultural significance', v: 'Community cookbooks preserve regional + ethnic + family food traditions that mainstream cookbooks miss. Major scholarly + nostalgia interest.' }
+          ]));
+        } else if (cmSect === 'vegan') {
+          content = h('div', null, keyPointBlock('Vegan + vegetarian cookbooks', [
+            { k: 'Moosewood Cookbook (Mollie Katzen, 1977)', v: 'Vegetarian cookbook from Ithaca NY restaurant. ~3M copies. Defined accessible vegetarian cooking in US.' },
+            { k: 'Diet for a Small Planet (Frances Moore Lappé, 1971)', v: 'Combined vegetarian recipes with environmental + ethical arguments. ~3M copies.' },
+            { k: 'Madhur Jaffrey, Climbing the Mango Trees (1973+)', v: 'Indian vegetarian cookbooks. Major popularizer of Indian cooking in West.' },
+            { k: 'Isa Chandra Moskowitz', v: 'Vegan with a Vengeance, Veganomicon, others. Defined modern punk-influenced vegan cookbook style.' },
+            { k: 'Skinnytaste, Plant-Based for Life', v: 'Contemporary popular vegetarian + plant-based cookbooks.' }
+          ]));
+        } else if (cmSect === 'bbq') {
+          content = h('div', null, keyPointBlock('BBQ + grilling cookbooks', [
+            { k: 'Steven Raichlen, Barbecue! Bible (1998) + Project Smoke', v: 'Most prolific US BBQ author. Series spans decades.' },
+            { k: 'Aaron Franklin, Franklin BBQ (2015)', v: 'Austin BBQ master. Cookbook + TV. Defined modern Texas BBQ for new audience.' },
+            { k: 'Meathead Goldwyn, Meathead: The Science of Great Barbecue (2016)', v: 'Science-based approach to BBQ. Web site amazingribs.com also major resource.' },
+            { k: 'Memphis + Carolinas + Texas + KC', v: 'Major regional US BBQ traditions, each with subgenre cookbooks. BBQ politics + ego are real.' },
+            { k: 'BBQ subculture', v: 'Annual BBQ competitions (KCBS, Memphis in May). Substantial subculture + media ecosystem.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Maine cookbooks', [
+            { k: 'Down East Books cookbooks', v: 'Down East publishes substantial cookbook list with Maine focus.' },
+            { k: 'Lobster cookbooks', v: 'Numerous. The Lobster Cookbook (Sheila Vassallo), Lobster Pots + Lighthouses (Down East), many others.' },
+            { k: 'Maine ingredient cookbooks', v: 'Wild Maine blueberries, Maine seafood, Maine farm cuisine. Down East, Islandport, Tilbury House all publish in this space.' },
+            { k: 'Sam Hayward, Pat Conroy contributions', v: 'Maine chefs + writers have contributed substantially.' },
+            { k: 'MOFGA Cookbook (multiple editions)', v: 'Maine Organic Farmers and Gardeners Association cookbook. Community-cookbook tradition + Maine organic-agriculture history.' }
+          ]));
+        }
+        return h('div', null, backBar('🥘 Cookbook Subcultures'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (cmSect === s.id); return h('button', { key: s.id, onClick: function() { setCmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('cookbooksMore', [
+            { q: 'Approximately how many copies has Moosewood Cookbook (Mollie Katzen, 1977) sold?',
+              opts: ['~50K', '~500K', '~3M', '~30M'],
+              ans: 2, explain: 'Moosewood Cookbook (Mollie Katzen, 1977) has sold approximately 3 million copies. From Ithaca NY restaurant. Defined accessible vegetarian cooking in US for generations.' }
+          ]),
+          crossLinkFooter('cookbooksMore'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + NATURAL HISTORY
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintZoology() {
+        var pzSectRaw = useState('overview');
+        var pzSect = pzSectRaw[0], setPzSect = pzSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🦅' },
+          { id: 'audubon', label: 'Audubon + 19th c.', icon: '🎨' },
+          { id: 'field', label: 'Field guides', icon: '📕' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (pzSect === 'overview') {
+          content = h('div', null, dropCapPara('Natural history publishing is a long-running tradition. John James Audubon\'s Birds of America (1827-1838) is iconic. Roger Tory Peterson invented the modern field guide (1934). Sibley, Kaufman, National Geographic field guides today. Print remains essential for in-the-field reference even in smartphone era.'));
+        } else if (pzSect === 'audubon') {
+          content = h('div', null, keyPointBlock('Audubon + 19th-c. natural history', [
+            { k: 'John James Audubon, Birds of America (1827-1838)', v: 'Massive "double elephant folio" (39" tall). 435 hand-colored plates of life-size birds. ~200 original copies printed; 119 known surviving. Sotheby\'s 2010: $11.5M. Cultural icon.' },
+            { k: 'Audubon supporting work', v: 'Audubon also published Ornithological Biography (5 vols 1831-1839) — text companion to the plates. Quadrupeds of North America (1845-1854) was later work.' },
+            { k: 'Maria Sibylla Merian (1647-1717)', v: 'German naturalist + illustrator. Metamorphosis Insectorum Surinamensium (1705). Pioneering scientific illustration.' },
+            { k: 'Robert Havell (engraver)', v: 'Audubon\'s London-based engraver. Family team that hand-colored each plate.' },
+            { k: 'Spread of natural-history publishing', v: 'Vast 19th-c. tradition of illustrated natural-history books — birds, mammals, fish, insects, plants, fossils.' }
+          ]));
+        } else if (pzSect === 'field') {
+          content = h('div', null, keyPointBlock('Field guides', [
+            { k: 'Roger Tory Peterson, A Field Guide to the Birds (1934)', v: 'Revolutionary format. Standardized illustrations of birds with arrows pointing to identifying features. Compact size for field use. Defined the field guide genre.' },
+            { k: 'Peterson Field Guides', v: 'Series expanded to dozens of titles (Eastern + Western Birds, Wildflowers, Trees, Mammals, Insects, Mushrooms, Reptiles, etc.). Still in print + major sellers.' },
+            { k: 'National Audubon Society Field Guides', v: 'Photo-based field guides. Major competitor to Peterson.' },
+            { k: 'David Sibley, The Sibley Guide to Birds (2000, 2nd ed 2014)', v: 'Replaced Peterson as premier US bird guide for many serious birders. Sibley\'s illustrations exquisite.' },
+            { k: 'Kenn Kaufman, Kaufman Field Guide series', v: 'Photo-illustrated digital-derivative field guides.' },
+            { k: 'Maine field guides', v: 'Maine-specific field guides for birds, trees, wildflowers, etc. Many small Maine publishers (Down East, Tilbury House).' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital natural history', [
+            { k: 'iNaturalist + Merlin Bird ID', v: 'Smartphone apps revolutionized field identification. iNaturalist (Calif. Acad. of Sciences) crowdsources observations. Merlin (Cornell Lab of Ornithology) IDs birds from photo or song.' },
+            { k: 'eBird (Cornell, 2002+)', v: 'Massive citizen-science bird-observation database. ~1B+ records.' },
+            { k: 'Continuing print field guides', v: 'Field guides remain in print + sell well. Phones run out of battery; books don\'t.' },
+            { k: 'Naturalist magazines', v: 'BirdWatching, National Wildlife, Audubon magazine. Continuing print presence.' },
+            { k: 'Maine natural-history community', v: 'Maine Audubon, Acadia National Park ranger publications, Maine wildflower groups. Active naturalist community + publishing.' }
+          ]));
+        }
+        return h('div', null, backBar('🦅 Print + Natural History'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pzSect === s.id); return h('button', { key: s.id, onClick: function() { setPzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printZoology', [
+            { q: 'Who invented the modern field guide (1934)?',
+              opts: ['John James Audubon', 'Roger Tory Peterson (A Field Guide to the Birds)', 'David Sibley', 'Maria Sibylla Merian'],
+              ans: 1, explain: 'Roger Tory Peterson published A Field Guide to the Birds in 1934. Revolutionary format: standardized illustrations with arrows pointing to identifying features. Compact size. Defined the field guide genre. Peterson Field Guides series expanded to dozens of titles + remains in print.' }
+          ]),
+          crossLinkFooter('printZoology'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ABOUT THIS TOOL (celebrate20k)
+      // ═════════════════════════════════════════════════════════════════════
+      function renderCelebrate20k() {
+        return h('div', null,
+          backBar('🎉 About This Tool'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 24, marginBottom: 14 } },
+            dropCapPara('PrintingPress is a STEM Lab tool that started as a 13-module exploration of Gutenberg-era European printing + has grown into one of the most comprehensive printed-culture educational tools available — 80+ modules + 20,000+ lines of code + content. This page is a brief history of the tool itself.'),
+            sectionHeader('📜', 'The original 13 modules (May 10, 2026)'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7 } },
+              'Built for Aaron Pomeranz\'s May 12, 2026 demo at King Middle School (Portland, Maine). Focused on Gutenberg-era European print: press mechanism, type-setting, casting type, print run economics, before-and-after timeline, typography today, the people behind the press, broadside builder, the "same fears" parallel (1450 anti-print fears vs modern anti-internet fears), a day in the print shop, cumulative quiz, AI ask-the-printer, resources. ~9,200 lines.'),
+            sectionHeader('🌏', 'The expansion (later May 2026)'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7 } },
+              'After the King Middle demo, the tool was substantially expanded to cover print culture globally + broadly. Twelve waves of module additions across about 80 new modules: non-Western printing (Korea + China + Japan + Islamic World + India + Africa + Pre-Columbian Americas), paper making, bookbinding, censorship, first newspapers, apprenticeships, type foundry workshop, Maine printers, music printing, maps + atlases, children\'s books, scientific publishing, letterpress today, press variants through time, the Reformation print war, color printing history, books that changed the world, print + revolution, the book as object, ink + press materials, translation + translators, print + propaganda, comics + graphic novels, the future of print, famous print shops tour, print + religion beyond Bibles, print + education, print + money (security printing), the library through history, the modern magazine, encyclopedias, dictionaries, cookbooks (mainstream + subcultures), self-help + how-to, paper sustainability, the newspaper comic strip, print + war, famous bookbinders, Maine authors, print + tourism, print + healthcare, font identification quiz, postage + direct mail, print + sports, print + architecture, print + law, romance novels, sci-fi + fantasy, mystery + crime fiction, manga deep dive, photography books, zines + fanzines, famous forgeries + fakes, manuscripts + calligraphy, bookplates + marginalia, the used book trade, the library card catalog, diaries + journals, tarot + oracle decks, pulp fiction era, pamphlets + tracts, greeting cards + ephemera, the memoir tradition, print + sound, the printed sermon, spelling + word puzzles, print + cinema, print + astronomy, beauty + fashion magazines, travel literature, print + mathematics, print advertising history, webcomics deep dive, the picture book craft, poetry magazines, pulp cover art, print + radio, print + gardening, forensic document examination, the library bindery, the fine press tradition, cookbook subcultures, print + natural history.'),
+            sectionHeader('📊', 'By the numbers'),
+            keyPointBlock(null, [
+              { k: '80+ modules', v: 'Each with multiple sub-sections + interactive content.' },
+              { k: '20,000+ lines', v: 'Of JavaScript + content. One of the most extensive educational tools in the STEM Lab.' },
+              { k: '7 sections', v: 'Start here, Modules, Practice + Ask, Resources.' },
+              { k: 'Interactive elements', v: 'Press mechanism animation, type-setting game, casting-type sliders, print-economics calculator, before/after timeline, broadside builder, day-in-shop role-play, apprentice\'s journey 7-year career sim, type-foundry interactive designer, font identification quiz, many sub-pickers + mini-quizzes.' },
+              { k: 'AI integration', v: 'Ask-the-printer interface for AI-powered Q&A on any printing-history topic.' },
+              { k: 'Cross-links', v: 'Every module suggests related modules to continue exploring.' }
+            ]),
+            sectionHeader('🙏', 'Credits + acknowledgments'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7 } },
+              'PrintingPress is part of AlloFlow, created by Dr. Aaron Pomeranz (school psychologist) for accessible + universal-design-for-learning-aligned educational tools. The tool serves K-12 + adult learners studying print history, typography, book arts, publishing, + adjacent cultural fields. The tool is open-source within the AlloFlow ecosystem + freely available to educators + students.'),
+            sectionHeader('📚', 'Recommended use'),
+            keyPointBlock(null, [
+              { k: 'Self-paced exploration', v: 'Browse by interest. Each module is self-contained.' },
+              { k: 'Classroom integration', v: 'Teachers can assign specific modules + use Teacher Notes (expandable under each module) for discussion questions + standards alignment.' },
+              { k: 'Research starting point', v: 'Each module includes Sources block linking to scholarly + primary sources.' },
+              { k: 'Cumulative quiz', v: 'Test cross-module knowledge.' },
+              { k: 'AI conversation', v: 'Ask the Printer feature for follow-up questions on any topic.' }
+            ])
+          ),
+          crossLinkFooter('celebrate20k'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT GLOSSARY — 120+ terms.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintGlossary() {
+        var pgFilterRaw = useState('');
+        var pgFilter = pgFilterRaw[0], setPgFilter = pgFilterRaw[1];
+        var terms = [
+          { t: 'Ascender', d: 'The part of a lowercase letter (b, d, f, h, k, l, t) that extends above the x-height.' },
+          { t: 'Baseline', d: 'The invisible horizontal line on which most letters sit.' },
+          { t: 'Bleed', d: 'Printed material extending past the trim line; ensures no white margin after cutting.' },
+          { t: 'Body type', d: 'Type used for the main text of a publication (vs display type for headlines).' },
+          { t: 'Bowl', d: 'The rounded enclosed shape of letters like b, d, o, p, q.' },
+          { t: 'Bracket (serif)', d: 'The curved junction between a serif + the main stroke. Bracketed serifs are gentle curves; unbracketed are sharp corners.' },
+          { t: 'Broadside', d: 'A single-sheet printed piece (poster, notice, ballad), printed on one side.' },
+          { t: 'CMYK', d: 'Cyan, Magenta, Yellow, Key (black) — the four process colors used in standard color offset printing.' },
+          { t: 'Cap-height', d: 'The height of uppercase letters, measured from baseline.' },
+          { t: 'Caslon', d: 'Old Style English typeface designed by William Caslon (1722); used to print the US Declaration of Independence.' },
+          { t: 'Catchword', d: 'The first word of the next page printed at the bottom of the current page; used in 1450-1800 books for binder + reader to verify order.' },
+          { t: 'Chase', d: 'The metal frame holding type for printing on a letterpress.' },
+          { t: 'Cicero', d: 'European typographic measurement unit (~4.51mm). European equivalent of the pica.' },
+          { t: 'Codex', d: 'A bound book (as opposed to a scroll). Replaced the scroll as the standard book form in the 4th c. CE.' },
+          { t: 'Colophon', d: 'A printer\'s identifying statement at the end of a book (printer, place, date, sometimes printer\'s mark).' },
+          { t: 'Composing stick', d: 'A small handheld tool used by a compositor to assemble a line of type before transferring it to a galley.' },
+          { t: 'Compositor', d: 'A person who sets type by hand. Skilled trade.' },
+          { t: 'Counter', d: 'The enclosed or partially enclosed negative space inside a letter (the inside of an o).' },
+          { t: 'Cyanotype', d: 'Photographic printing process using iron salts; produces white lines on blue background. Gave architectural drawings the name "blueprints."' },
+          { t: 'Descender', d: 'The part of a lowercase letter (g, j, p, q, y) that extends below the baseline.' },
+          { t: 'Didone', d: 'Typeface classification — high-contrast modern faces with hairline serifs (Bodoni, Didot, Walbaum).' },
+          { t: 'Dingbat', d: 'Decorative ornament or symbol in a typeface.' },
+          { t: 'Drop cap', d: 'An enlarged decorative initial letter at the start of a paragraph; often spans 2-4 lines.' },
+          { t: 'Em', d: 'Typographic measurement equal to the font\'s point size (in 12pt type, an em is 12 points wide).' },
+          { t: 'En', d: 'Half the width of an em.' },
+          { t: 'Em-dash (—)', d: 'A long dash, the width of an em. Used for parenthetical statements.' },
+          { t: 'En-dash (–)', d: 'A medium dash, the width of an en. Used for ranges (1450–1500).' },
+          { t: 'Errata', d: 'List of errors discovered after printing, often included as a separate insert in early books.' },
+          { t: 'Ex libris', d: 'Latin "from the books of." Used on bookplates indicating ownership.' },
+          { t: 'Face', d: 'Short for typeface; the design of a set of letters.' },
+          { t: 'Fillet', d: 'A long roll-tool used in bookbinding to create parallel lines around a cover border.' },
+          { t: 'Filigree', d: 'Delicate decorative pattern, often used in typography or binding ornament.' },
+          { t: 'Fleuron', d: 'A small floral ornament used as a typographic flourish.' },
+          { t: 'Folio', d: '(1) A sheet folded once, producing 4 pages — the largest standard book format. (2) A page number printed on a page.' },
+          { t: 'Font', d: 'A specific size + style of a typeface (e.g., 12-point Garamond Bold). In casual speech now often synonymous with typeface.' },
+          { t: 'Forme', d: 'The complete arrangement of type + spacing for one page of a book, locked in a chase.' },
+          { t: 'Foxing', d: 'Brown spots that appear on paper as it ages, caused by chemical reactions.' },
+          { t: 'Frisket', d: 'A thin paper window covering the margins of a page during printing, to prevent excess ink.' },
+          { t: 'Galley', d: 'A long shallow tray that holds set type before it is locked into a forme.' },
+          { t: 'Galley proof', d: 'A trial print taken from type set in a galley, for proofreading.' },
+          { t: 'Gathering', d: 'A bundled set of folded sheets that form one section of a book; also called a signature.' },
+          { t: 'Gilt edges', d: 'Pages\' edges gilded gold. Both decorative + protective (keeps dust out).' },
+          { t: 'Glyph', d: 'A specific letterform or shape within a typeface; an "a" + an "a" are different glyphs of the same letter.' },
+          { t: 'Goose-neck', d: 'The curved metal portion of a MIG welding torch — not a printing term, but appears in welding modules.' },
+          { t: 'Halftone', d: 'Photographic reproduction method that simulates continuous tone using a pattern of dots of varying size.' },
+          { t: 'Hairline', d: 'The thinnest stroke in a letterform; in Didone faces, hairlines are very thin compared to the main strokes.' },
+          { t: 'Hatch Show Print', d: 'America\'s longest continuously-operating letterpress shop (Nashville, since 1879). Famous for country music posters.' },
+          { t: 'Humanist', d: 'Typeface classification — early roman type designs based on Italian humanist scribe handwriting (Jenson, Adobe Jenson).' },
+          { t: 'Illuminated manuscript', d: 'Hand-decorated medieval manuscript with painted initials, borders, miniatures, + gold leaf.' },
+          { t: 'Imposition', d: 'The arrangement of pages on a sheet so they appear in the correct order after folding + binding.' },
+          { t: 'Imprimatur', d: 'A license to print, especially a Catholic Church approval of a religious work.' },
+          { t: 'Incunabula', d: 'Books printed in Europe before January 1, 1501 — the first 50 years of European printing.' },
+          { t: 'Initial', d: 'A large decorated letter beginning a chapter or paragraph.' },
+          { t: 'Intaglio', d: 'Printing method where ink sits in recessed grooves of an engraved plate. Used for currency, premium engraving.' },
+          { t: 'Italic', d: 'A typeface design with slanted, often more flowing letterforms. Introduced by Aldus Manutius for pocket-book editions (~1500).' },
+          { t: 'Justification', d: 'Adjusting word + letter spacing so text aligns to both left + right margins evenly.' },
+          { t: 'Kerning', d: 'Adjusting the space between specific letter pairs (e.g., "AV" needs less space than "AN").' },
+          { t: 'Ligature', d: 'Two or more letters joined as a single glyph (fi, fl, ffi, ffl).' },
+          { t: 'Lithography', d: 'Printing method using a flat stone or metal plate; works on principle that oil + water don\'t mix.' },
+          { t: 'Manuscript', d: 'Hand-written book or document, especially pre-printing era.' },
+          { t: 'Marginalia', d: 'Notes or marks written in the margins of a book.' },
+          { t: 'Matrix', d: 'A mold used to cast individual type sorts. Made by striking a hard-metal punch into softer metal.' },
+          { t: 'Modern (typeface class)', d: 'Typefaces with hairline serifs, vertical stress, + maximum contrast (Bodoni, Didot).' },
+          { t: 'Movable type', d: 'Individually cast metal letter pieces that can be arranged + rearranged. Gutenberg\'s innovation in Europe (~1450).' },
+          { t: 'Octavo', d: 'A sheet folded three times producing 16 pages. Popularized by Aldus Manutius for pocket books.' },
+          { t: 'Offset lithography', d: 'Most common commercial printing method. Image transferred from plate to rubber blanket to paper (indirect = "offset").' },
+          { t: 'Old Style', d: 'Typeface classification (also called Garalde) — refined roman typefaces with oblique axis + bracketed serifs (Garamond, Caslon).' },
+          { t: 'Orphan', d: 'A single word or short line at the bottom of a paragraph or page, considered poor typography.' },
+          { t: 'Palimpsest', d: 'A manuscript page scraped clean + reused. Sometimes the original text can be recovered.' },
+          { t: 'Pamphlet', d: 'A short, unbound or stapled printed work, often political or religious.' },
+          { t: 'Penny press', d: '1830s+ era of cheap mass-market newspapers, made possible by steam printing.' },
+          { t: 'Pica', d: 'Typographic measurement equal to 1/6 of an inch (12 points = 1 pica).' },
+          { t: 'Point', d: 'Smallest typographic measurement unit. 72 points = 1 inch. Most body type is 10-12 points.' },
+          { t: 'Polyphony', d: 'Music with multiple independent melodic lines. Printing polyphony was a difficult typographic challenge solved by Petrucci (1501).' },
+          { t: 'Press', d: 'A printing machine. Also a publishing house (Kelmscott Press).' },
+          { t: 'Provenance', d: 'The chain of ownership of a book or document; important in rare-book scholarship + market value.' },
+          { t: 'Punch', d: 'A hard-metal tool with the inverse of a letterform on its tip. Struck into softer metal to make a matrix.' },
+          { t: 'Quarto', d: 'A sheet folded twice producing 8 pages.' },
+          { t: 'Quoin', d: 'A wedge-shaped device used to lock type tightly in a chase.' },
+          { t: 'Recto', d: 'The right-hand page of a book; the front of a leaf.' },
+          { t: 'Reference line', d: 'In AWS weld symbols, the horizontal line that anchors the symbol. (Not a printing term but appears in some modules.)' },
+          { t: 'Roman type', d: 'Upright (non-italic) typeface, based on classical Latin inscriptional letters + humanist hand. Standard book typeface since ~1500.' },
+          { t: 'Rotunda', d: 'A rounder form of blackletter typeface used in Spain + Italy.' },
+          { t: 'Rubrication', d: 'Adding red ink for emphasis (initials, chapter headings) after black-ink printing.' },
+          { t: 'Sans-serif', d: 'Typeface without serifs (Helvetica, Futura).' },
+          { t: 'Section', d: 'A folded sheet that forms part of a book; also called a signature or gathering.' },
+          { t: 'Serif', d: 'A small projection at the end of a letter\'s stroke.' },
+          { t: 'Signature', d: '(1) A folded sheet of a book. (2) A letter or number printed on the first page of each section to help binders order them correctly.' },
+          { t: 'Slab serif', d: 'Typefaces with heavy rectangular serifs (Clarendon, Rockwell).' },
+          { t: 'Smyth-sewn', d: 'A type of book binding where signatures are sewn together with thread. Standard for quality hardcover books.' },
+          { t: 'Sort', d: 'An individual piece of metal type — a single letter or character.' },
+          { t: 'Spine', d: 'The bound edge of a book.' },
+          { t: 'Stem', d: 'The main vertical stroke of a letter.' },
+          { t: 'Stereotype', d: 'A solid plate cast from a mold of a forme of type. Allowed reprinting without re-setting type.' },
+          { t: 'Stress', d: 'The angle of thickest-to-thinnest in a curved letterform. Old Style has oblique stress; Modern has vertical.' },
+          { t: 'Tail', d: 'In a weld symbol, the diagonal lines at the right end of the reference line, used for process or procedure references. Not a typography term.' },
+          { t: 'Terminal', d: 'The end of a stroke that doesn\'t have a serif (flat, curved, ball, etc.).' },
+          { t: 'Textura', d: 'A formal blackletter typeface used by Gutenberg + early German printers.' },
+          { t: 'Thumbnails', d: 'Small rough sketches showing page-by-page layout, used in book + illustration planning.' },
+          { t: 'Tracking', d: 'Adjusting the space between all letters in a string uniformly (vs kerning, which adjusts specific pairs).' },
+          { t: 'Trim', d: 'The cutting of finished book to size.' },
+          { t: 'Type case', d: 'The compartmented tray holding individual letter sorts. Upper case = capitals; lower case = small letters.' },
+          { t: 'Type-metal alloy', d: 'Lead + tin + antimony alloy used to cast metal type. Gutenberg\'s innovation; specific ratios used for centuries.' },
+          { t: 'Typeface', d: 'The design of a set of related letterforms (Times New Roman, Helvetica).' },
+          { t: 'Tympan', d: 'A paper-covered frame on a press that held the paper against the type.' },
+          { t: 'Uncial', d: 'A rounded majuscule (capital) script used 4th-9th centuries CE.' },
+          { t: 'Vellum', d: 'A high-quality writing surface made from calf skin. Used for premium manuscripts + early printing.' },
+          { t: 'Verso', d: 'The left-hand page of a book; the back of a leaf.' },
+          { t: 'Vignette', d: 'A small decorative illustration, often in a margin or as a chapter ornament.' },
+          { t: 'Watermark', d: 'A faint translucent design pressed into paper while wet, visible when held to light. Used for identification + quality marking.' },
+          { t: 'Wove paper', d: 'Paper made on a fine wire mesh, producing a smooth uniform surface. Replaced laid paper in late 1700s.' },
+          { t: 'x-height', d: 'The height of lowercase letters without ascenders or descenders, measured from baseline. Named after the letter "x."' },
+          { t: 'Xerography', d: 'Dry copying process (the "Xerox" process); foundation of modern photocopying + laser printing.' }
+        ];
+        var filtered = pgFilter ? terms.filter(function(t) { return t.t.toLowerCase().indexOf(pgFilter.toLowerCase()) !== -1 || t.d.toLowerCase().indexOf(pgFilter.toLowerCase()) !== -1; }) : terms;
+        return h('div', null,
+          backBar('📔 Print Glossary'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            h('p', { style: { fontSize: 14, color: T.muted, lineHeight: 1.6, margin: '0 0 12px' } },
+              'Quick reference for vocabulary used throughout the tool. Filter by typing.'),
+            h('input', {
+              type: 'text',
+              placeholder: 'Filter terms (e.g., "serif", "binding", "ink")',
+              value: pgFilter,
+              onChange: function(e) { setPgFilter(e.target.value); },
+              style: { width: '100%', padding: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, color: T.text, fontSize: 14, fontFamily: 'Georgia, serif' }
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 14, marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, filtered.length + ' / ' + terms.length + ' terms'),
+            filtered.map(function(t, i) {
+              return h('div', { key: i, style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, padding: 10, marginBottom: 6, borderRadius: 4 } },
+                h('div', { style: { fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', fontSize: 14, marginBottom: 4 } }, t.t),
+                h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.5 } }, t.d)
+              );
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
       // and hook count varying per view triggered "Rendered more/fewer hooks
       // than during the previous render" errors on navigation.
       // ═════════════════════════════════════════════════════════════════════
@@ -17842,6 +19911,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       else if (view === 'cardCatalog')     content = h(_ViewWrapper, { key: 'cardCatalog',     _render: renderCardCatalog });
       else if (view === 'diaryTradition')  content = h(_ViewWrapper, { key: 'diaryTradition',  _render: renderDiaryTradition });
       else if (view === 'tarotOracle')     content = h(_ViewWrapper, { key: 'tarotOracle',     _render: renderTarotOracle });
+      else if (view === 'pulpFiction')     content = h(_ViewWrapper, { key: 'pulpFiction',     _render: renderPulpFiction });
+      else if (view === 'pamphlets')       content = h(_ViewWrapper, { key: 'pamphlets',       _render: renderPamphlets });
+      else if (view === 'greetingCards')   content = h(_ViewWrapper, { key: 'greetingCards',   _render: renderGreetingCards });
+      else if (view === 'theMemoir')       content = h(_ViewWrapper, { key: 'theMemoir',       _render: renderTheMemoir });
+      else if (view === 'printSound')      content = h(_ViewWrapper, { key: 'printSound',      _render: renderPrintSound });
+      else if (view === 'sermonsPrinted')  content = h(_ViewWrapper, { key: 'sermonsPrinted',  _render: renderSermonsPrinted });
+      else if (view === 'spellingPuzzles') content = h(_ViewWrapper, { key: 'spellingPuzzles', _render: renderSpellingPuzzles });
+      else if (view === 'printCinema')     content = h(_ViewWrapper, { key: 'printCinema',     _render: renderPrintCinema });
+      else if (view === 'printAstronomy')  content = h(_ViewWrapper, { key: 'printAstronomy',  _render: renderPrintAstronomy });
+      else if (view === 'fashionMags')     content = h(_ViewWrapper, { key: 'fashionMags',     _render: renderFashionMags });
+      else if (view === 'travelLit')       content = h(_ViewWrapper, { key: 'travelLit',       _render: renderTravelLit });
+      else if (view === 'printMath')       content = h(_ViewWrapper, { key: 'printMath',       _render: renderPrintMath });
+      else if (view === 'printAdvert')     content = h(_ViewWrapper, { key: 'printAdvert',     _render: renderPrintAdvert });
+      else if (view === 'webcomics')       content = h(_ViewWrapper, { key: 'webcomics',       _render: renderWebcomics });
+      else if (view === 'pictureBookDeep') content = h(_ViewWrapper, { key: 'pictureBookDeep', _render: renderPictureBookDeep });
+      else if (view === 'poetryMags')      content = h(_ViewWrapper, { key: 'poetryMags',      _render: renderPoetryMags });
+      else if (view === 'pulpCovers')      content = h(_ViewWrapper, { key: 'pulpCovers',      _render: renderPulpCovers });
+      else if (view === 'printRadio')      content = h(_ViewWrapper, { key: 'printRadio',      _render: renderPrintRadio });
+      else if (view === 'printGarden')     content = h(_ViewWrapper, { key: 'printGarden',     _render: renderPrintGarden });
+      else if (view === 'forensicDocs')    content = h(_ViewWrapper, { key: 'forensicDocs',    _render: renderForensicDocs });
+      else if (view === 'libraryBindery')  content = h(_ViewWrapper, { key: 'libraryBindery',  _render: renderLibraryBindery });
+      else if (view === 'finePress')       content = h(_ViewWrapper, { key: 'finePress',       _render: renderFinePress });
+      else if (view === 'cookbooksMore')   content = h(_ViewWrapper, { key: 'cookbooksMore',   _render: renderCookbooksMore });
+      else if (view === 'printZoology')    content = h(_ViewWrapper, { key: 'printZoology',    _render: renderPrintZoology });
+      else if (view === 'celebrate20k')    content = h(_ViewWrapper, { key: 'celebrate20k',    _render: renderCelebrate20k });
+      else if (view === 'printGlossary')   content = h(_ViewWrapper, { key: 'printGlossary',   _render: renderPrintGlossary });
       else if (view === 'cumulative')      content = h(_ViewWrapper, { key: 'cumulative',      _render: renderCumulative });
       else if (view === 'askPrinter')      content = h(_ViewWrapper, { key: 'askPrinter',      _render: renderAskPrinter });
       else if (view === 'resources')       content = h(_ViewWrapper, { key: 'resources',       _render: renderResources });

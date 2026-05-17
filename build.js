@@ -830,6 +830,9 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_raptorhunt.js',
     'stem_lab/stem_tool_swimlab.js',
     'stem_lab/stem_tool_printingpress.js',
+    'stem_lab/stem_tool_aquaculture.js',
+    'stem_lab/stem_tool_fisherlab.js',
+    'stem_lab/stem_tool_atcTower.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
@@ -892,7 +895,14 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_friendship.js',
     'sel_hub/sel_tool_compassion.js',
     'sel_hub/sel_tool_upstander.js',
-    'sel_hub/sel_tool_conflicttheater.js'
+    'sel_hub/sel_tool_conflicttheater.js',
+    'sel_hub/sel_tool_crisiscompanion.js',
+    'sel_hub/sel_tool_digitalwellbeing.js',
+    'sel_hub/sel_tool_execfunction.js',
+    'sel_hub/sel_tool_peersupport.js',
+    'sel_hub/sel_tool_selfadvocacy.js',
+    'sel_hub/sel_tool_sociallab.js',
+    'sel_hub/sel_tool_voicedetective.js'
 ];
 
 // ── Source → Module compilation ─────────────────────────────────
