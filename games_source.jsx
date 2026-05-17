@@ -69,7 +69,7 @@ const GameThemeToggle = () => {
     <button
       onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
       className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
-      aria-label={t('games.theme_toggle_aria') || 'Toggle theme (light / dark / high contrast)'}
+      aria-label="Toggle theme (light / dark / high contrast)"
       title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
       type="button"
     >
@@ -84,7 +84,7 @@ const SpeakButton = ({ text, size = 13, className = "" }) => (
     onClick={(e) => { e.stopPropagation(); e.preventDefault(); speakText(text); }}
     className={`inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${className}`}
     aria-label={`Read aloud: ${text || ""}`}
-    title={t('games.read_aloud_title') || 'Read aloud'}
+    title="Read aloud"
     type="button"
   >
     <Volume2 size={size} />
