@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "generated": "2026-05-18T22:39:29.848Z",
+  "generated": "2026-05-18T22:44:07.852Z",
   "count": 7,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "arabic",
       "display": "Arabic",
-      "keys": 5412,
-      "bytes": 405809,
+      "keys": 5823,
+      "bytes": 443051,
       "updated": "2026-05-18"
     },
     {
@@ -35,8 +35,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 8027,
-      "bytes": 730653,
+      "keys": 8125,
+      "bytes": 783827,
       "updated": "2026-05-18"
     },
     {
