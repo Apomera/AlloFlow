@@ -8220,5 +8220,388 @@
     "cat_vocab": "Vocabulaire",
     "cat_analysis": "Analyse",
     "team_default_name": "Équipe"
+  },
+  "text_tools": {
+    "click_to_add": "Cliquer pour ajouter au glossaire",
+    "click_to_phonics": "Cliquer pour écouter la phonétique",
+    "click_to_define": "Cliquer pour définir",
+    "menu_placeholder": "Comment devrions-nous changer ceci ?",
+    "simplify": "Simplifier",
+    "custom": "Révisions personnalisées",
+    "explain": "Expliquer",
+    "define": "Définir",
+    "add_term": "Ajouter un terme"
+  },
+  "languages": {
+    "english": "Anglais",
+    "all_selected": "Toutes les langues sélectionnées",
+    "english_only": "Anglais uniquement"
+  },
+  "audio_player": {
+    "resume": "Reprendre l'audio",
+    "pause": "Mettre en pause l'audio",
+    "speed": "Vitesse de lecture",
+    "stop": "Arrêter l'audio et réinitialiser"
+  },
+  "visual_director": {
+    "multi_panel": "Multi-panneaux ({{count}} panneaux)",
+    "generating_panels": "Génération de l'illustration multi-panneaux...",
+    "refining_panel": "Affinement du panneau...",
+    "refining_panel_n": "Affinement du panneau {{n}} sur {{total}}...",
+    "refining_all_panels": "Affinement de tous les panneaux...",
+    "all_panels_refined": "Tous les panneaux affinés !",
+    "panels_downloaded": "Panneaux téléchargés !",
+    "refine_failed": "Échec de l'affinement du panneau.",
+    "panel_refined": "Panneau affiné !"
+  },
+  "fullpack": {
+    "button_label": "Générer le pack de ressources complet",
+    "helper_text": "Crée analyse, texte, glossaire, visuels, quiz et plus (séquentiel)",
+    "auto_configure": "Auto-configurer",
+    "limit_tooltip": "Limiter le nombre de ressources générées",
+    "option_auto": "Auto (l'IA décide)",
+    "option_short": "Court (5)",
+    "option_standard": "Standard (8)",
+    "option_deep": "Approfondi (12)",
+    "option_all": "Tous les outils",
+    "status_init": "Initialisation du pack de ressources...",
+    "status_start": "Démarrage de la séquence de génération...",
+    "group_all": "Tous les groupes",
+    "group_current": "Paramètres actuels",
+    "group_tooltip": "Générer pour un groupe spécifique ou tous les groupes"
+  },
+  "udl_advice": {
+    "title": "Stratégie CUA",
+    "header_description": "<strong>Stratégie CUA :</strong> conseils pédagogiques pour la différenciation et l'inclusion."
+  },
+  "progression": {
+    "title": "Progression du curriculum",
+    "analyze_btn": "Générer la prochaine leçon logique",
+    "analyzing_btn": "Analyse de la portée et de la séquence...",
+    "helper_text": "Identifier la prochaine étape de cette unité selon les standards.",
+    "recommended_header": "Prochaine étape recommandée",
+    "build_btn": "Construire cette leçon maintenant",
+    "toast_success": "Chemin de progression identifié !",
+    "toast_error": "Impossible de déterminer la prochaine leçon.",
+    "toast_activated": "Prochaine leçon configurée. Prête à générer.",
+    "bot_intro": "J'ai configuré le sujet de la prochaine leçon : « **{topic}** ».\n\nJ'ai prérempli les paramètres de génération de source selon la progression du curriculum.\n\n**Souhaitez-vous que je génère le texte source maintenant ?** (Vous pouvez aussi ajuster le ton, la longueur ou les instructions dans le panneau d'abord)."
+  },
+  "export_menu": {
+    "label": "Télécharger sous...",
+    "qti": "Quiz Canvas (QTI)",
+    "print": "Imprimer / Enregistrer en PDF",
+    "clean_pdf": "Fichier PDF épuré",
+    "worksheet": "Feuille de travail",
+    "html": "Paquet HTML",
+    "slides": "Diapositives PowerPoint",
+    "ims": "Paquet LMS (IMS)"
+  },
+  "student": {
+    "save_banner_title": "Enregistre ta progression",
+    "save_banner_desc": "Sauvegarde tes ressources pour garder une copie de ton travail.",
+    "save_drive": "Enregistrer le fichier",
+    "load_file": "Charger un fichier",
+    "resume_adventure": "Reprendre l'aventure",
+    "resume_adventure_desc": "Continue ton aventure enregistrée",
+    "adventure_restored": "Progression de l'aventure restaurée !",
+    "adventure_saved": "Progression de l'aventure incluse dans l'enregistrement"
+  },
+  "tools": {
+    "source": "Matériel source",
+    "glossary": "Glossaire et sélection de langue",
+    "simplified": "Adaptation du texte et engagement",
+    "outline": "Organisateur visuel",
+    "quiz": "Billet de sortie",
+    "adventure": "Mode aventure"
+  },
+  "actions": {
+    "rename": "Renommer",
+    "move_up": "Monter",
+    "move_down": "Descendre",
+    "remove": "Retirer"
+  },
+  "timer": {
+    "title": "Minuteur de tâche",
+    "label_task": "Tâche actuelle",
+    "placeholder": "Sur quoi travailles-tu ?",
+    "start": "Démarrer",
+    "pause": "Pause",
+    "reset": "Réinitialiser le minuteur",
+    "set_btn": "Définir",
+    "time_up_msg": "Le temps est écoulé ! Belle concentration."
+  },
+  "roles": {
+    "title": "Bienvenue dans AlloFlow",
+    "subtitle": "Comment utiliseras-tu l'application aujourd'hui ?",
+    "student": "Élève",
+    "teacher": "Enseignant",
+    "parent": "Parent",
+    "independent": "Apprenant autonome",
+    "mic_setup": "Configuration optionnelle",
+    "mic_ready": "Microphone prêt",
+    "mic_denied": "Accès refusé (vérifier les paramètres du navigateur)",
+    "mic_requesting": "Demande d'accès...",
+    "mic_enable": "Activer l'accès au microphone",
+    "mic_tip": "Recommandé : clique ci-dessus pour éviter les interruptions plus tard.",
+    "voice_not_supported": "Les fonctions vocales ne sont pas prises en charge dans ce navigateur."
+  },
+  "entry": {
+    "placeholder": "ex. Faucon Rouge",
+    "warning": "N'utilise pas ton vrai nom.",
+    "start": "Démarrer une nouvelle aventure",
+    "load": "Charger un fichier enregistré"
+  },
+  "welcome": {
+    "load": "Charger un fichier de cours",
+    "skip": "Passer (démarrer un nouveau)",
+    "prompt": "As-tu un fichier de cours à charger ?",
+    "close_aria": "Fermer"
+  },
+  "grades_short": {
+    "k": "Mat.",
+    "g1": "CP",
+    "g2": "CE1",
+    "g3": "CE2",
+    "g4": "CM1",
+    "g5": "CM2",
+    "g6": "6e",
+    "g7": "5e",
+    "g8": "4e",
+    "g9": "3e",
+    "g10": "2nde",
+    "g11": "1re",
+    "g12": "Term.",
+    "college": "Univ."
+  },
+  "student_dashboard": {
+    "level_progress": "Progression du niveau",
+    "level_abbr": "Niv.",
+    "total_xp": "XP total",
+    "no_activities": "Aucune activité terminée pour l'instant."
+  },
+  "prompts": {
+    "verified_correct": "**Bonne réponse vérifiée :**",
+    "actual_correct": "**Bonne réponse réelle :**",
+    "correction_warning": "**CORRECTION / AVERTISSEMENT :**",
+    "why_incorrect": "**Pourquoi les autres options sont incorrectes :**"
+  },
+  "error": {
+    "syntax_scramble": "Syntaxe Mélangée a rencontré une erreur."
+  },
+  "chat": {
+    "location_unknown": "Je ne suis pas sûr où « {target} » se trouve dans l'interface.",
+    "generating_resource": "Compris. Génération de la ressource Texte nivelé maintenant...",
+    "settings_updated": "J'ai mis à jour vos paramètres :\n- {changes}\n\nPrêt à générer ?",
+    "settings_failed": "J'ai compris que vous vouliez changer les paramètres, mais je n'ai pas pu détecter de valeurs spécifiques. Veuillez réessayer.",
+    "find_feature_error": "Impossible de trouver cette fonctionnalité."
+  },
+  "socratic": {
+    "title": "Tuteur socratique",
+    "thinking": "Réflexion...",
+    "placeholder": "Demande un indice...",
+    "welcome": "Bonjour ! Je suis ton tuteur. Je ne te donnerai pas les réponses, mais je peux t'aider à les trouver. Sur quoi travailles-tu ?",
+    "ask_for_help": "Demander de l'aide",
+    "auto_read": "Lecture auto des réponses",
+    "auto_send": "Envoi auto vocal",
+    "mic_tooltip": "Entrée vocale",
+    "listening": "Écoute en cours...",
+    "expand_tooltip": "Agrandir le chat",
+    "collapse_tooltip": "Replier le chat",
+    "drag_hint": "Glisser pour déplacer"
+  },
+  "hints": {
+    "title": "Astuces utiles et idées",
+    "loading_title": "Pendant que tu attends...",
+    "empty_state": "Aucune astuce générée pour l'instant. Générez des ressources pour voir des conseils IA ici !",
+    "synthesizing": "Synthèse des connexions...",
+    "generate_extensions": "Générer des extensions de leçon approfondies",
+    "save_to_history": "Enregistrer dans l'historique",
+    "apply_brainstorm": "Appliquer au brainstorming",
+    "apply_brainstorm_tooltip": "Utiliser cette idée pour générer des activités de brainstorming"
+  },
+  "organizer": {
+    "labels": {
+      "cause": "Cause",
+      "effect": "Effet",
+      "end": "Fin",
+      "problem_label": "Problème",
+      "solutions": "Solutions"
+    }
+  },
+  "quick_start": {
+    "article_imported": "Article importé et nettoyé !",
+    "copy_paste_instruction": "Veuillez copier l'URL du nouvel onglet et la coller ici.",
+    "error_auto_search": "Échec de la recherche. Veuillez réessayer.",
+    "error_extract": "Impossible d'extraire le texte. L'URL est peut-être invalide ou bloque l'accès.",
+    "error_no_urls": "Impossible de trouver des URLs spécifiques. Essayez un autre sujet.",
+    "error_read_file": "Échec de la lecture du fichier texte.",
+    "search_failed": "Échec de la recherche.",
+    "found_resources": "{count} ressources trouvées"
+  },
+  "stem_lab": {
+    "save_to_resources": "Enregistrer dans les ressources",
+    "assessment_saved": "Évaluation STEM enregistrée dans les ressources !",
+    "assessment_prefix": "Évaluation STEM :"
+  },
+  "survey": {
+    "tam_student_usefulness": "AlloFlow m'aide à m'améliorer en lecture et en maths",
+    "tam_student_ease": "AlloFlow est facile à utiliser",
+    "tam_student_intention": "Je veux continuer à utiliser AlloFlow",
+    "tam_teacher_usefulness": "AlloFlow améliore significativement les résultats de littératie des élèves",
+    "tam_teacher_ease": "AlloFlow s'intègre facilement à mon flux de travail existant",
+    "tam_teacher_intention": "Je prévois de continuer à utiliser AlloFlow l'année scolaire prochaine",
+    "tam_parent_usefulness": "AlloFlow a été utile pour l'apprentissage de mon enfant",
+    "tam_parent_intention": "Je recommanderais AlloFlow à d'autres parents"
+  },
+  "rti": {
+    "progress_monitor": "Moniteur de progression RTI",
+    "baseline": "Référence",
+    "target_wcpm": "MCPM cible",
+    "target_date": "Date cible",
+    "trend_line_comparison": "Comparaison des lignes de tendance",
+    "ncii_recommended": "Recommandé par NCII",
+    "frequency": "Fréquence",
+    "weekly": "Hebdomadaire",
+    "group_size": "Taille du groupe",
+    "start_date": "Date de début",
+    "download_report_title": "Télécharger un rapport axé sur la croissance, adapté au partage avec la famille"
+  },
+  "glossary_health": {
+    "composite_accuracy": "Précision composite",
+    "grade_level": "Niveau scolaire",
+    "vocabulary_tiers": "Niveaux de vocabulaire",
+    "suggested_terms": "Termes supplémentaires suggérés",
+    "concept_web": "Toile conceptuelle"
+  },
+  "resource_builder": {
+    "question": "Question",
+    "quick_templates": "Modèles rapides",
+    "use_current_text": "Utiliser le texte actuel",
+    "attach_image": "Joindre une image",
+    "use_generated": "Utiliser le généré",
+    "generation_mode": "Mode de génération",
+    "target_group": "Groupe cible",
+    "target_language": "Langue cible",
+    "reading_level": "Niveau de lecture"
+  },
+  "splash": {
+    "tagline": "Niveaux, couches et productions adaptatifs ➔ options d'apprentissage flexibles pour une éducation centrée sur l'élève dans sa globalité",
+    "rights": "Licence AGPLv3 • Droits d'auteur © 2026 Aaron Pomeranz, PsyD",
+    "udl_tagline": "Inspiré par la Conception Universelle de l'Apprentissage",
+    "initializing": "Initialisation...",
+    "loading_resources": "Chargement des ressources...",
+    "preparing_workspace": "Préparation de votre espace de travail...",
+    "almost_ready": "Presque prêt...",
+    "loading_screen_aria": "Écran de chargement d'AlloFlow"
+  },
+  "report_writer": {
+    "loading": "Chargement de Report Writer...",
+    "loading_hint": "Module en cours de chargement depuis le CDN. Si cela persiste, vérifiez votre connexion."
+  },
+  "learning_hub": {
+    "title": "Outils d'apprentissage",
+    "subtitle": "Choisis un outil à explorer",
+    "stem_title": "STEM Lab",
+    "stem_desc": "Plus de 40 explorations interactives en maths et sciences",
+    "storyforge_title": "StoryForge",
+    "storyforge_desc": "Crée des histoires illustrées avec des outils d'écriture IA",
+    "sel_title": "SEL Hub",
+    "sel_desc": "Apprentissage socio-émotionnel pour la conscience de soi et la croissance",
+    "close_aria": "Fermer le centre d'apprentissage",
+    "litlab_title": "LitLab",
+    "litlab_desc": "Donne vie aux histoires avec voix de personnages et analyse littéraire",
+    "poettree_title": "PoetTree",
+    "poettree_desc": "Écris des poèmes avec des étayages de forme, analyse de rimes et de mètre, retour IA"
+  },
+  "sel_hub": {
+    "loading": "Chargement de SEL Hub...",
+    "loading_hint": "Module en cours de chargement depuis le CDN. Si cela persiste, vérifiez votre connexion."
+  },
+  "adventure_title": "Aventure",
+  "cancel": "Annuler",
+  "move_down": "Descendre",
+  "move_up": "Monter",
+  "docbuilder": {
+    "search_aria": "Rechercher des blocs",
+    "search_placeholder": "Rechercher des blocs…"
+  },
+  "note_taking": {
+    "template_label": "Type de modèle",
+    "cornell": "Notes Cornell (2 colonnes + résumé)",
+    "lab_report": "Rapport de laboratoire (Q / hypothèse / méthode / données / CER / conclusion)",
+    "reading_response": "Entrée de journal de réponse à la lecture",
+    "help": "Chaque modèle est étayé à partir du texte source d'aujourd'hui mais persiste dans ton historique pour que tu puisses continuer à y ajouter au fil des leçons.",
+    "generate": "Générer le modèle"
+  },
+  "anchor_chart": {
+    "type_label": "Type de cartel",
+    "reference": "Référence (caractéristiques / normes / conventions)",
+    "process": "Processus (étapes séquentielles)",
+    "concept_map": "Carte conceptuelle (parties d'un tout)",
+    "comparison": "Comparaison (entre catégories)",
+    "help": "Cartel ancla de classe style EL. L'IA rédige la structure et les icônes dessinées à la main ; modifie à tout moment ; ouvre le mode critique pour que les pairs laissent des notes « Je remarque / Je me demande ».",
+    "generate": "Générer le cartel ancla"
+  },
+  "fluency_maze": {
+    "title": "Labyrinthe de fluidité",
+    "description": "Navigue dans un donjon éclairé aux torches. Chaque porte est verrouillée par un fait mathématique — résous-le pour passer. Trouve la clé dorée pour déverrouiller la sortie.",
+    "open_aria": "Ouvrir le Labyrinthe de fluidité en vue principale",
+    "open_button": "🚪 Ouvrir le labyrinthe (vue complète)",
+    "saved_note": "Enregistré dans l'historique pour que tu puisses revenir plus tard.",
+    "tagline": "Les faits mathématiques déverrouillent les portes"
+  },
+  "lms": {
+    "dismiss_banner_aria": "Ignorer la bannière LMS",
+    "dismiss_button": "Ignorer",
+    "audit_queue_help": "Cliquez sur un document pour le récupérer et le charger dans le pipeline d'accessibilité. Certains fichiers LMS peuvent nécessiter que vous soyez connecté au LMS dans ce navigateur."
+  },
+  "annotation": {
+    "undo_tooltip": "Annuler la dernière annotation ({count} disponibles) — Ctrl/Cmd+Z",
+    "nothing_to_undo": "Rien à annuler",
+    "undo_aria": "Annuler la dernière annotation",
+    "undo_button": "↩ Annuler",
+    "show_all_tooltip": "Afficher toutes les annotations",
+    "toggle_list_aria": "Activer/désactiver la liste des annotations",
+    "list_button": "📋 Liste"
+  },
+  "live_polling": {
+    "open_aria": "Ouvrir le sondage en direct",
+    "button": "Sondage en direct"
+  },
+  "pictionary": {
+    "open_aria": "Ouvrir Pictionary de concepts",
+    "button": "🎨 Pictionary"
+  },
+  "visual_support": {
+    "teacher_modal_aria": "Soutien visuel de votre enseignant"
+  },
+  "canvas_settings": {
+    "title": "Paramètres avancés",
+    "google_api_label": "Clé API Google Search",
+    "google_api_placeholder": "Votre clé API Google...",
+    "google_api_hint": "Utilisateurs avancés : saisissez votre propre clé API Google Custom Search (100 requêtes gratuites/jour)",
+    "wolfram_label": "App ID Wolfram Alpha",
+    "wolfram_placeholder": "XXXXX-XXXXXXXXXX (depuis developer.wolframalpha.com)",
+    "wolfram_hint": "Gratuit : 2 000 requêtes/mois. Ajoute la résolution math exacte et la vérification étape par étape"
+  },
+  "read_this_page": {
+    "panel_aria": "Panneau Lire cette page",
+    "title": "Lire cette page",
+    "read_all_button": "Tout lire",
+    "stop_button": "Arrêter",
+    "focus_narration_label": "Narration du focus du clavier",
+    "focus_narration_on_hint": "Tab pour entendre les commandes"
+  },
+  "fab": {
+    "visual_supports": "Soutiens visuels"
+  },
+  "volume_builder": {
+    "zoom_out_aria": "Zoom arrière",
+    "zoom_in_aria": "Zoom avant",
+    "reset_view_aria": "Réinitialiser la vue",
+    "help_caption": "Glisser pour pivoter • Faire défiler pour zoomer • Construire des prismes rectangulaires ou des blocs en L avec des cubes unitaires (5.MD.3-5)",
+    "shape_radiogroup_aria": "Forme du constructeur de volume",
+    "answer_placeholder": "Saisir le volume...",
+    "answer_aria": "Réponse de volume"
   }
 }
