@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-18T20:47:58.298Z",
-  "count": 4,
+  "generated": "2026-05-18T20:49:06.488Z",
+  "count": 5,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -17,6 +17,13 @@
       "keys": 925,
       "bytes": 49293,
       "updated": "2026-05-17"
+    },
+    {
+      "slug": "portuguese_brazil",
+      "display": "Portuguese (Brazil)",
+      "keys": 81,
+      "bytes": 4677,
+      "updated": "2026-05-18"
     },
     {
       "slug": "somali",
