@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-18T21:36:05.715Z",
+  "generated": "2026-05-18T21:36:35.771Z",
   "count": 7,
   "total_keys_expected": 9307,
   "available": [
@@ -14,8 +14,8 @@
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
-      "keys": 75,
-      "bytes": 3848,
+      "keys": 150,
+      "bytes": 7266,
       "updated": "2026-05-18"
     },
     {
@@ -42,8 +42,8 @@
     {
       "slug": "somali",
       "display": "Somali",
-      "keys": 8620,
-      "bytes": 577266,
+      "keys": 8720,
+      "bytes": 635043,
       "updated": "2026-05-18"
     },
     {
