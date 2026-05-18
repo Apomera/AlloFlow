@@ -1,20 +1,26 @@
 # Spanish (Latin America) Translation Handoff
 
-**For:** Claude (next session) continuing the Spanish pack translation
-**As of:** 2026-05-17, commit `4a962970` on `main` branch
-**Status:** 8,044 / 9,307 keys translated (86% coverage). 6 commits pushed to Cloudflare this session.
+**For:** Claude (next session) — Spanish pack is now COMPLETE; this doc is a reference for future language packs.
+**As of:** 2026-05-18, commit `e6f108b9` on `main` branch
+**Status:** ✅ DONE. 8,440 keys translated, ~90% coverage. All 11 help_strings batches shipped to Cloudflare.
 
-## The job in one sentence
+## Final tally (Spanish complete)
 
-Translate the remaining ~407 entries of `help_strings.js` (hover-help text shown when users activate Help Mode) into Latin American Spanish, adding them to the existing `help_mode` section of `lang/spanish_latin_america.js`, in batches of 75 keys per Edit.
+- `lang/spanish_latin_america.js` — 1,025 KB, 131 sections, 8,440 total keys
+- `help_mode` section: **782/782 help_strings keys translated** + 14 ui_strings.help_mode keys = 796 help_mode entries
+- All `ui_strings.js` top-level sections: 100% translated
+- Live on Cloudflare CDN at `alloflow-cdn.pages.dev/lang/spanish_latin_america.js`
 
-## Current pack state
+## The job in one sentence (historical)
+
+Translate the entries of `help_strings.js` (hover-help text shown when users activate Help Mode) into Latin American Spanish, adding them to the existing `help_mode` section of `lang/spanish_latin_america.js`, in batches of 75 keys per Edit.
+
+## Previous pack state (kept for reference of the batch workflow)
 
 - File: `lang/spanish_latin_america.js`
-- Size: 764 KB
 - Top-level sections: 131 (all 100% translated)
 - `help_mode` section: 400 keys done (25 from `ui_strings.help_mode` + 375 from `help_strings.js`)
-- `help_strings.js` has 782 total keys; **407 remain** in keys 375-782
+- `help_strings.js` has 782 total keys; **0 remain** ✅
 
 Verify state at any time:
 
