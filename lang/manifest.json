@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "generated": "2026-05-18T17:18:30.615Z",
-  "count": 3,
+  "generated": "2026-05-18T18:33:41.041Z",
+  "count": 4,
   "total_keys_expected": 9307,
   "available": [
+    {
+      "slug": "french",
+      "display": "French",
+      "keys": 75,
+      "bytes": 4392,
+      "updated": "2026-05-18"
+    },
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
@@ -14,8 +21,8 @@
     {
       "slug": "somali",
       "display": "Somali",
-      "keys": 3453,
-      "bytes": 204328,
+      "keys": 3941,
+      "bytes": 233136,
       "updated": "2026-05-18"
     },
     {
