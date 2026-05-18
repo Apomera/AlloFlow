@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-18T21:06:49.447Z",
+  "generated": "2026-05-18T21:07:30.457Z",
   "count": 5,
   "total_keys_expected": 9307,
   "available": [
@@ -21,8 +21,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 1280,
-      "bytes": 75431,
+      "keys": 1504,
+      "bytes": 88013,
       "updated": "2026-05-18"
     },
     {
