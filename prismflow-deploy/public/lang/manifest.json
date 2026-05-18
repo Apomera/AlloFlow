@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-18T21:54:08.642Z",
+  "generated": "2026-05-18T21:55:28.055Z",
   "count": 7,
   "total_keys_expected": 9307,
   "available": [
@@ -14,8 +14,8 @@
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
-      "keys": 1504,
-      "bytes": 77591,
+      "keys": 1647,
+      "bytes": 84301,
       "updated": "2026-05-18"
     },
     {
