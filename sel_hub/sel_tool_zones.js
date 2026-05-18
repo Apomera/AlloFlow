@@ -28069,6 +28069,3121 @@ window.SelHub = window.SelHub || {
       research: 'Brackett & Rivers on emotional intelligence; Mood Meter app studies; Hoffmann et al. on RULER outcomes for adolescents.'
     }
   ];
+  // ── Pre-Built Personal Zone Plans Library ──
+  // 80+ ready-to-customize plans for common student situations
+  var ZONE_PLANS = [
+    // ===== ACADEMIC =====
+    {
+      id: 'test_anxiety_red',
+      scenario: 'Test anxiety that has hit Red Zone (full panic, can\'t read questions, hands shaking)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Classroom during a test',
+      earlyWarnings: ['Heart pounding before you open the test', 'Reading the first question three times without absorbing it', 'Thoughts like "I\'m going to fail"', 'Hands sweating or shaking', 'Tunnel vision on the clock'],
+      preventionPlan: {
+        night_before: ['Pack everything the night before so morning is calm', 'Review notes for 20 minutes max, not cramming', 'Light dinner, no caffeine after 4pm', 'In bed by your usual time, not earlier (sleep anxiety makes it worse)'],
+        morning_of: ['Eat protein + complex carbs (eggs + toast, yogurt + granola)', 'Skip extra caffeine if you don\'t normally drink it', 'Arrive 10 minutes early, not 30 (less waiting = less spiraling)', 'Bring a water bottle and a fidget if allowed'],
+        just_before: ['Use the bathroom even if you don\'t need to', 'Box breathing for 60 seconds (4 in, 4 hold, 4 out, 4 hold)', 'Look at the floor not other students', 'Remind yourself: "This test does not define me"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Put pencil down', 'Hand on chest, feel breath rise and fall 3 times', 'Look at one fixed point in the room for 5 seconds', 'Whisper to yourself: "I am safe. This is a test."'],
+        next_2min: ['Find ONE question you know the answer to and do it', 'Skip anything hard, mark it, come back later', 'Stand and stretch if allowed (ask teacher with hand signal)', 'Sip water slowly'],
+        if_still_activated: ['Raise hand, ask for a 2-minute hallway break', 'Splash cold water on wrists in bathroom (vagus nerve reset)', 'Text a parent/counselor if phone allowed at lunch', 'Tell teacher after: "I need to talk about an accommodation"']
+      },
+      afterPlan: {
+        immediate: ['Don\'t talk about the test with classmates ("I think I failed!" spirals everyone)', 'Eat something. Drink water.', 'Take a walk if you can'],
+        same_day: ['Do ONE pleasant thing (show, walk, music) before homework', 'Tell one safe person it was hard', 'Don\'t look up answers obsessively'],
+        longer_term: ['Ask counselor about test accommodations (extended time, separate room, breaks)', 'If panic is recurrent, talk to doctor or therapist', 'Practice tests at home with a timer to desensitize']
+      },
+      peopleToCall: ['School counselor', 'Trusted parent or guardian', 'Therapist if you have one', '988 if panic becomes overwhelming'],
+      selfTalk: 'I have prepared what I could. My worth is not on this paper. I can take this one question at a time.',
+      reminders: ['One bad test will not ruin my life', 'Anxiety is not danger, it just feels like it', 'Other students are anxious too, I just can\'t see it', 'My brain works, it\'s just overloaded'],
+      whenToEscalate: 'If panic attacks happen every test, or if you start avoiding school, talk to a counselor or doctor. This is treatable.',
+      customization: 'For students with documented anxiety, request a 504/IEP meeting. For autistic students, ask about a quieter testing environment.',
+      research: 'Test anxiety affects 25-40% of students (American Test Anxieties Association). CBT and exposure-based approaches are most effective.'
+    },
+    {
+      id: 'test_anxiety_yellow',
+      scenario: 'Test anxiety building in Yellow Zone (worried but functional) before it hits Red',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Day or two before a test',
+      earlyWarnings: ['Stomach knot when you think about the test', 'Trouble falling asleep', 'Snapping at family over small things', 'Avoiding studying because it makes you more anxious', 'Catastrophic thinking ("If I fail this, I\'ll fail the class, I\'ll fail school...")'],
+      preventionPlan: {
+        night_before: ['Study in 25-minute blocks with 5-minute breaks (Pomodoro)', 'Stop studying 1 hour before bed minimum', 'Write down ONE worry on paper, then close the notebook'],
+        morning_of: ['Normal breakfast, normal routine', 'Walk or stretch for 5 minutes', 'Listen to one calming song on the way to school'],
+        just_before: ['Talk to a friend about anything BUT the test', 'Three slow breaths before walking in', 'Remind yourself: "I have studied. I will do my best. That is enough."']
+      },
+      inMomentPlan: {
+        first_30sec: ['Notice the Yellow without judging it ("I\'m nervous, that\'s normal")', 'Breathe out longer than you breathe in (4 in, 6 out)', 'Wiggle your toes inside your shoes'],
+        next_2min: ['Start with easiest questions first to build momentum', 'Use scratch paper to do a quick brain dump if formulas are slipping', 'Glance at the clock once, then ignore it'],
+        if_still_activated: ['Mini-break: close eyes, count 5 things you can hear', 'Roll shoulders back twice', 'Re-anchor with self-talk']
+      },
+      afterPlan: {
+        immediate: ['Celebrate finishing, regardless of score', 'Don\'t check answers immediately', 'Snack and water'],
+        same_day: ['Note what worked so you can repeat it', 'Note what didn\'t so you can adjust'],
+        longer_term: ['Build a regular study schedule so test prep isn\'t cram-and-pray', 'Practice mindfulness 5 min/day to lower baseline anxiety']
+      },
+      peopleToCall: ['Friend who is calm', 'Parent or sibling', 'School counselor'],
+      selfTalk: 'I am nervous because I care. Caring is okay. Nervous is not the same as failing.',
+      reminders: ['Yellow Zone means alert, not in danger', 'I have studied. I can do this.', 'My brain remembers more than I think it does'],
+      whenToEscalate: 'If Yellow is becoming Red consistently, or if you\'re losing sleep for days before every test, talk to your counselor.',
+      customization: 'For perfectionist students, focus reminders on "good enough" not "A+." For students with ADHD, build movement into study blocks.',
+      research: 'Moderate anxiety (Yerkes-Dodson) can actually boost performance; the goal is not zero anxiety but manageable Yellow.'
+    },
+    {
+      id: 'forgot_homework_shame',
+      scenario: 'Forgot homework and now in Yellow heading to Red shame spiral',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Classroom when teacher asks for assignment',
+      earlyWarnings: ['Stomach drops when teacher mentions the assignment', 'Inner voice: "I\'m so stupid"', 'Wanting to disappear or hide', 'Considering lying about it', 'Heat rising in face'],
+      preventionPlan: {
+        night_before: ['Use a planner or phone reminder for EVERY assignment', 'Pack backpack the night before, not morning', 'If ADHD: take a photo of your assignment list before leaving school'],
+        morning_of: ['Quick scan of planner with breakfast', 'Set phone alarm for any due-today items'],
+        just_before: ['If you realize at school: tell teacher BEFORE class starts, not when called on']
+      },
+      inMomentPlan: {
+        first_30sec: ['Take one deep breath', 'Tell yourself: "Forgetting homework is a mistake, not a character flaw"', 'Look up at teacher, not down at desk (down feeds shame)'],
+        next_2min: ['Tell the truth: "I don\'t have it, I\'m sorry, can I turn it in tomorrow?"', 'Don\'t over-explain or grovel', 'Accept the late penalty if there is one without arguing'],
+        if_still_activated: ['Ask to use the bathroom if you need 60 seconds alone', 'Splash cold water on face', 'Re-enter and move on']
+      },
+      afterPlan: {
+        immediate: ['Write it down RIGHT NOW for tomorrow', 'Don\'t ruminate during the next class'],
+        same_day: ['Do the missing assignment first when you get home', 'Tell a parent so they\'re not blindsided by a grade dip'],
+        longer_term: ['Set up a system: planner, phone alarms, end-of-day backpack check', 'If this is constant, ask for executive-function support']
+      },
+      peopleToCall: ['Parent (to tell them, not to blame)', 'A friend who can help you laugh about it', 'School counselor if shame is overwhelming'],
+      selfTalk: 'I forgot one assignment. I am not my mistakes. I can fix this.',
+      reminders: ['Everyone forgets things sometimes', 'My teacher has seen this 1000 times', 'Owning it is more grown-up than hiding it', 'One missing grade will not define me'],
+      whenToEscalate: 'If you\'re forgetting things constantly and feel like you\'re drowning, ask for an evaluation. ADHD and executive dysfunction are treatable.',
+      customization: 'For ADHD students, externalize EVERYTHING (planner, sticky notes, phone alarms). For perfectionist students, work on self-compassion not just systems.',
+      research: 'Shame, not guilt, predicts avoidance and worse outcomes (Tangney & Dearing, 2002). Self-compassion improves academic resilience.'
+    },
+    {
+      id: 'presentation_panic',
+      scenario: 'Presentation panic in Red Zone before or during speaking',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Front of classroom about to present',
+      earlyWarnings: ['Voice shaking', 'Mouth completely dry', 'Knees wobbling', 'Mind going blank', 'Wanting to fake sick and leave'],
+      preventionPlan: {
+        night_before: ['Practice OUT LOUD, not just in your head, 3 times', 'Record yourself once and watch it (yes it\'s cringe, do it anyway)', 'Lay out clothes that feel comfortable'],
+        morning_of: ['Eat something light; full stomach feels worse', 'Avoid extra caffeine', 'Bring water bottle for dry mouth'],
+        just_before: ['Power pose in bathroom for 60 seconds (hands on hips, chest out)', 'Wiggle hands and shake out arms', 'Three slow breaths', 'Find ONE friendly face in the audience']
+      },
+      inMomentPlan: {
+        first_30sec: ['Plant both feet on the floor, evenly', 'Look at your friendly face for the opening line', 'Speak SLOWER than feels natural; nervous = fast', 'Pause is okay, silence won\'t kill you'],
+        next_2min: ['Sip water if mouth is dry', 'If you lose your place, say "Let me find my spot" and look at notes', 'Move to next slide rather than freezing'],
+        if_still_activated: ['Take a sip of water, count to 3, keep going', 'If voice cracks, smile and say "wow, nerves" and continue', 'It is okay to read from notes; not a failure']
+      },
+      afterPlan: {
+        immediate: ['Sit down, breathe out long', 'Don\'t replay it in your head obsessively', 'Whatever you forgot to say, the audience didn\'t notice'],
+        same_day: ['Tell one person you did it', 'Treat yourself with a small reward'],
+        longer_term: ['The only cure for presentation anxiety is more presentations', 'Join a low-stakes speaking opportunity (book club, club meeting)']
+      },
+      peopleToCall: ['A friend who will validate it was hard', 'Parent', 'Teacher (afterwards, to ask for feedback)'],
+      selfTalk: 'My audience wants me to succeed. They are not enemies. Done is better than perfect.',
+      reminders: ['Nobody remembers my presentation as much as I do', 'Shaking voice is not visible to anyone', 'Presenting is a skill I can build, not a fixed trait'],
+      whenToEscalate: 'If you cannot complete presentations at all, or if you\'re vomiting before class, talk to a counselor about accommodations and possible social anxiety treatment.',
+      customization: 'For autistic students, ask if you can present to teacher 1:1 instead. For students who stutter, work with SLP on disclosure script.',
+      research: 'Public speaking is the #1 reported fear in the US; exposure + cognitive reframing reduces it most effectively.'
+    },
+    {
+      id: 'called_on_unprepared',
+      scenario: 'Teacher calls on you and you don\'t know the answer (Yellow → Red)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Mid-class discussion',
+      earlyWarnings: ['Heart races when teacher\'s eyes scan the room', 'Wishing you could disappear', 'Brain freeze, can\'t remember what was just said', 'Face heating up'],
+      preventionPlan: {
+        night_before: ['Skim the assigned reading even if you didn\'t finish it'],
+        morning_of: ['Glance at notes before class so something is fresh'],
+        just_before: ['Sit where you can see the board, not in the very back', 'If you\'re truly unprepared, tell the teacher before class quietly']
+      },
+      inMomentPlan: {
+        first_30sec: ['Pause. Silence is okay.', 'Take one breath', 'Tell the truth: "I\'m not sure, can you give me a hint?" or "I need a second to think"'],
+        next_2min: ['Use what you DO know: "I think it relates to..."', 'Ask a clarifying question to buy time', 'Offer a partial answer; partial is better than blank'],
+        if_still_activated: ['Honest fallback: "I don\'t know, but I\'d like to come back to it"', 'Listen carefully to next student\'s answer to learn it']
+      },
+      afterPlan: {
+        immediate: ['Don\'t spiral; one moment doesn\'t define the class', 'Re-engage; don\'t check out for the rest of class'],
+        same_day: ['Write down what you didn\'t know so you can study it'],
+        longer_term: ['If you freeze constantly, talk to teacher about a signal system (e.g. you raise hand twice if you need a different question)']
+      },
+      peopleToCall: ['Teacher after class to debrief', 'Parent if shame lingers', 'Counselor if classroom anxiety is constant'],
+      selfTalk: 'I don\'t have to know everything. Saying "I don\'t know" is honest, not weak.',
+      reminders: ['Not knowing one answer is not a character failure', 'Other students don\'t know either; they\'re just quiet', 'Asking for help is a strength'],
+      whenToEscalate: 'If being called on triggers panic attacks, ask for an accommodation (advance warning, opt-out signal).',
+      customization: 'For autistic students with processing time needs, request that teacher give you a 10-second warning before calling on you.',
+      research: 'Cold-calling can spike cortisol; warm-calling (advance warning) maintains rigor without trauma response.'
+    },
+    {
+      id: 'failing_class_despair',
+      scenario: 'Realizing you might fail a class (Blue despair zone with Red flashes)',
+      forBand: 'middle',
+      fromZone: 'blue',
+      toZone: 'yellow',
+      setting: 'After seeing your grade portal',
+      earlyWarnings: ['Wanting to delete the grade app', 'Feeling numb when you look at the screen', 'Self-talk like "I\'m a failure"', 'Avoiding telling anyone', 'Skipping the class to avoid the teacher'],
+      preventionPlan: {
+        night_before: ['Check grades weekly, not just at semester end', 'Track missing assignments in one place'],
+        morning_of: ['Plan to talk to teacher today, not "soon"'],
+        just_before: ['Write down what you want to ask before approaching teacher']
+      },
+      inMomentPlan: {
+        first_30sec: ['Close the grade portal', 'Breathe out slowly', 'Tell yourself: "This is fixable or it isn\'t, and either way I will survive"'],
+        next_2min: ['Make a list of every missing assignment', 'Identify the top 3 that would change the grade most', 'Decide on ONE next action (talk to teacher tomorrow morning)'],
+        if_still_activated: ['Tell a parent or counselor TODAY, not later', 'Resist the urge to spiral on social media or games to numb out']
+      },
+      afterPlan: {
+        immediate: ['Eat real food, hydrate, do not stay up all night catastrophizing'],
+        same_day: ['Email or talk to teacher: "I want to know what I can do"'],
+        longer_term: ['Set up weekly check-ins with teacher or parent', 'If chronic, ask about IEP/504 or tutoring', 'Address underlying issue: depression, ADHD, family stress, etc.']
+      },
+      peopleToCall: ['Trusted parent or guardian', 'School counselor', 'Tutor or peer mentor', '988 if despair tips toward self-harm thoughts'],
+      selfTalk: 'My grade in one class does not determine my future. I can take one action today.',
+      reminders: ['Failing a class is not failing as a person', 'Teachers want to help students who ask', 'Recovery is harder if I hide; easier if I tell someone', 'My value is not my GPA'],
+      whenToEscalate: 'If you\'re thinking "what\'s the point" about life, not just school, call 988 or text HOME to 741741.',
+      customization: 'For students with depression, treat the depression first; grades will follow. For students with learning disabilities, push for evaluation and accommodations.',
+      research: 'Academic failure shame is a major risk factor for adolescent depression; early intervention with both academic and mental health support is protective.'
+    },
+    {
+      id: 'adhd_executive_overwhelm',
+      scenario: 'ADHD overwhelm with executive function (Yellow → Red shutdown)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Bedroom or classroom looking at a big task',
+      earlyWarnings: ['Staring at the assignment without starting', 'Opening 17 tabs and reading none of them', 'Suddenly cleaning room instead of working', 'Wanting to cry but not knowing why', 'Brain feels like static'],
+      preventionPlan: {
+        night_before: ['Break every assignment into 3 tiny steps before bed', 'Set up workspace with everything you\'ll need'],
+        morning_of: ['Take ADHD meds at consistent time if prescribed', 'Eat protein breakfast (sugar crash worsens executive function)'],
+        just_before: ['Set a 10-minute timer; commit to ONLY 10 minutes', 'Put phone in another room or on Do Not Disturb']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "I\'m in overwhelm, this is ADHD, not laziness"', 'Stand up and walk 10 steps', 'Drink water'],
+        next_2min: ['Identify ONE next physical action (open the document, type your name)', 'Do ONLY that action', 'Body doubling: text a friend "I\'m working on X, are you working?"'],
+        if_still_activated: ['Switch to a different small task to build momentum', 'Movement break: 20 jumping jacks', 'If still stuck, do 10 minutes of a body activity and return']
+      },
+      afterPlan: {
+        immediate: ['Celebrate ANY progress, not just finishing', 'Don\'t shame yourself for the time it took'],
+        same_day: ['Note what helped so you can use it again'],
+        longer_term: ['Work with doctor on meds if needed', 'Build externalized systems: timers, body doubling, accountability', 'Consider ADHD coaching or therapy']
+      },
+      peopleToCall: ['ADHD friend who gets it', 'Parent', 'Therapist or ADHD coach', 'Study buddy for body doubling'],
+      selfTalk: 'My brain is not broken; it works differently. I need different tools, not more willpower.',
+      reminders: ['Done is better than perfect', 'Starting is the hardest part for my brain', 'Tiny steps count', 'My worth is not my productivity'],
+      whenToEscalate: 'If shutdown happens daily and is interfering with school or relationships, push for ADHD evaluation or medication review.',
+      customization: 'For undiagnosed students, advocate for evaluation. For students on meds, track timing carefully; afternoon crashes are common.',
+      research: 'ADHD is a disorder of doing what you know, not knowing what to do (Russell Barkley). External structure outperforms internal willpower.'
+    },
+    {
+      id: 'reading_aloud_anxiety',
+      scenario: 'Reading aloud anxiety in Yellow Zone (especially for dyslexic students)',
+      forBand: 'elementary',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Classroom round-robin reading',
+      earlyWarnings: ['Counting paragraphs to figure out which one will be yours', 'Heart racing as turn approaches', 'Sweating', 'Words on page blurring'],
+      preventionPlan: {
+        night_before: ['Practice reading aloud at home with a parent'],
+        morning_of: ['Look at the chapter so words aren\'t totally new'],
+        just_before: ['Ask teacher privately if you can read a paragraph you\'ve pre-read', 'Or ask for the option to pass']
+      },
+      inMomentPlan: {
+        first_30sec: ['Take one slow breath', 'Use your finger to track the line', 'Speak slower than you think; faster makes more mistakes'],
+        next_2min: ['It\'s okay to mispronounce; everyone does', 'Skip a word if stuck; nobody will stop the class to correct you', 'Look up briefly between sentences to breathe'],
+        if_still_activated: ['Quietly ask teacher to skip you today', 'It\'s okay to say "I\'d rather not today"']
+      },
+      afterPlan: {
+        immediate: ['You did it; reset for next class'],
+        same_day: ['Practice reading aloud to a pet or stuffed animal'],
+        longer_term: ['If dyslexia: get evaluation and accommodations', 'Audiobooks count as reading; use them to build comprehension']
+      },
+      peopleToCall: ['Teacher to ask for accommodation', 'Parent', 'Reading specialist'],
+      selfTalk: 'My brain reads in its own way. I can practice. Mistakes are not failure.',
+      reminders: ['Even adults mispronounce words', 'Slow reading is fine reading', 'I am brave to try'],
+      whenToEscalate: 'If reading struggles persist into upper grades, push for dyslexia evaluation.',
+      customization: 'For dyslexic students, advocate for opt-out of cold-call reading; offer to read pre-rehearsed passages instead.',
+      research: 'Cold-call oral reading can humiliate dyslexic students; choral or buddy reading builds skill without shame.'
+    },
+    {
+      id: 'group_work_unfair',
+      scenario: 'Group work where you\'re doing all the work (Yellow → Red frustration)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Class group project meeting',
+      earlyWarnings: ['Resentment building over text chains', 'Wanting to just do it all yourself', 'Considering doing a bad job on purpose', 'Snapping at family unrelated to school'],
+      preventionPlan: {
+        night_before: ['Use a shared doc so contributions are visible', 'Set internal deadlines earlier than the real deadline'],
+        morning_of: ['Plan a check-in time with the group'],
+        just_before: ['Decide your boundary: what will you NOT do for them?']
+      },
+      inMomentPlan: {
+        first_30sec: ['Pause before sending the angry text', 'Breathe out twice', 'Reframe: "I am responsible for my part, not their grade"'],
+        next_2min: ['Send a clear message: "I\'ll do X by Friday. Can you confirm what you\'re doing?"', 'Document who did what (shared doc, screenshots)', 'Do YOUR part well; let theirs speak for itself'],
+        if_still_activated: ['Talk to teacher: "I want to share what I contributed individually"', 'Don\'t do their work for them out of panic']
+      },
+      afterPlan: {
+        immediate: ['Don\'t rant on social media; document privately'],
+        same_day: ['Tell a parent or friend to vent safely'],
+        longer_term: ['Practice setting expectations early in group projects', 'Many teachers will adjust grades if you advocate with evidence']
+      },
+      peopleToCall: ['Parent for validation', 'Teacher to advocate', 'A friend not in the group'],
+      selfTalk: 'I cannot control them. I can control my own work and my own peace.',
+      reminders: ['Doing it all is not noble; it\'s burnout', 'My grade is not solely my responsibility in a group', 'Teachers usually can tell who did what'],
+      whenToEscalate: 'If group work is causing chronic resentment or panic, ask teacher for individual project alternative.',
+      customization: 'For perfectionist students, this is a chance to practice "good enough." For autistic students, scripts for group communication help.',
+      research: 'Social loafing is a documented group phenomenon; clear roles and visible contributions reduce it.'
+    },
+    {
+      id: 'substitute_teacher_yellow',
+      scenario: 'Substitute teacher day (Yellow for kids who need predictability)',
+      forBand: 'elementary',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Classroom walking in to see a substitute',
+      earlyWarnings: ['Stomach drop when you see the unfamiliar adult', 'Worried about routines being different', 'Wanting to call home and leave'],
+      preventionPlan: {
+        night_before: ['If you know in advance, talk through what might be different'],
+        morning_of: ['Bring a comfort item (small fidget, photo) if allowed'],
+        just_before: ['Find your usual seat; familiar location helps']
+      },
+      inMomentPlan: {
+        first_30sec: ['Take one deep breath', 'Tell yourself: "Today will be different and that is okay"', 'Look at a friend who is calm'],
+        next_2min: ['Quietly tell the sub one important thing about yourself if helpful ("I take quiet breaks at 10")', 'Stick to your normal routine where you can'],
+        if_still_activated: ['Ask to see your counselor or another familiar adult', 'Take a sensory break if your school allows']
+      },
+      afterPlan: {
+        immediate: ['Decompress when you get home; sub days are draining'],
+        same_day: ['Do something predictable at home'],
+        longer_term: ['Talk to teacher about a "sub day plan" written down so subs know your needs']
+      },
+      peopleToCall: ['Counselor', 'Parent', 'Trusted classroom aide if you have one'],
+      selfTalk: 'Different is not dangerous. I can adapt for one day.',
+      reminders: ['My usual teacher will be back', 'I have done sub days before', 'I can ask for help'],
+      whenToEscalate: 'If sub days cause complete shutdown, write a "sub day plan" into your IEP/504.',
+      customization: 'For autistic students, advance warning + written sub plan is essential. For anxious students, body doubling with a calm friend helps.',
+      research: 'Predictability is a core need; transition support reduces challenging behaviors and improves regulation.'
+    },
+    {
+      id: 'schedule_change_autistic',
+      scenario: 'Unexpected schedule change (especially for autistic students, Yellow)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Surprise assembly, fire drill, or class moved',
+      earlyWarnings: ['Sudden chest tightness', 'Wanting to refuse to move', 'Rigid thinking ("but it\'s supposed to be...")', 'Tears or anger surge'],
+      preventionPlan: {
+        night_before: ['Ask teacher about upcoming changes whenever possible'],
+        morning_of: ['Check schedule first thing'],
+        just_before: ['Prepare a script for unexpected changes: "Change is hard for me. Can I have 2 minutes?"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is a change. My brain needs a moment."', 'Squeeze fists then release', 'Look at your schedule card if you have one'],
+        next_2min: ['Ask one clarifying question: "What will happen next?"', 'Walk with a buddy if possible', 'Bring sensory items'],
+        if_still_activated: ['Quiet space request', 'Headphones if allowed', 'Tell adult you need 5 minutes']
+      },
+      afterPlan: {
+        immediate: ['Decompress; transitions are work for autistic brains'],
+        same_day: ['Quiet activity at home', 'Honor the energy cost'],
+        longer_term: ['Build a "change script" into IEP', 'Practice low-stakes changes at home to build flexibility']
+      },
+      peopleToCall: ['Case manager', 'Parent', 'Trusted teacher'],
+      selfTalk: 'Change is hard for my brain. That is not bad. I can navigate this.',
+      reminders: ['My need for predictability is valid', 'I can ask for accommodations', 'I have handled changes before'],
+      whenToEscalate: 'If schedule changes consistently cause meltdowns, formalize transition support in IEP.',
+      customization: 'Visual schedules, advance warnings, and transition objects all help. Honor that this is real cognitive work.',
+      research: 'Autistic brains use more cognitive resources for transitions; accommodations are not preferences, they are needs.'
+    },
+    {
+      id: 'after_school_exhaustion',
+      scenario: 'After-school exhaustion (Blue Zone after holding it together all day)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Walking in the door at home',
+      earlyWarnings: ['Wanting to lie on the floor', 'Snapping at family or pet', 'Brain feels empty', 'Tears for no reason', 'Can\'t answer "how was your day?"'],
+      preventionPlan: {
+        night_before: ['Plan a decompression window into your afternoon'],
+        morning_of: ['Pack a snack for the bus ride home'],
+        just_before: ['Tell your family: "I need 30 minutes alone before I can talk"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Drop the backpack', 'Drink water', 'No questions, no demands'],
+        next_2min: ['Snack + comfort activity (show, music, pet)', 'Phone off or DND'],
+        if_still_activated: ['Nap if you need to', 'Shower if sensory overload', 'Don\'t schedule anything until you\'ve eaten and rested']
+      },
+      afterPlan: {
+        immediate: ['Honor the cost of masking and performing all day'],
+        same_day: ['Light dinner, low-key evening', 'Bed earlier than usual if exhausted'],
+        longer_term: ['Notice patterns: is this normal afternoon dip, or chronic depletion?', 'Reduce after-school commitments if you\'re depleted']
+      },
+      peopleToCall: ['Parent (to negotiate decompression time)', 'A friend after you\'ve rested'],
+      selfTalk: 'I held it together all day. Now I get to be a soft animal.',
+      reminders: ['Exhaustion is data, not weakness', 'My nervous system needs recovery', 'Saying no to evening plans is sometimes survival'],
+      whenToEscalate: 'If you\'re crashing every afternoon and not bouncing back, talk to doctor about sleep, depression, or chronic illness.',
+      customization: 'Autistic and ADHD kids especially need decompression after masking all day. Build it into routine, not as a luxury.',
+      research: 'Autistic burnout from masking is documented (Raymaker 2020); decompression is treatment, not avoidance.'
+    },
+    {
+      id: 'sunday_scaries',
+      scenario: 'Sunday scaries before Monday (Blue → Yellow dread)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Sunday afternoon/evening',
+      earlyWarnings: ['Stomach knot starting after lunch', 'Avoiding looking at homework', 'Irritable with family', 'Doomscrolling to numb out', 'Can\'t enjoy Sunday activities'],
+      preventionPlan: {
+        night_before: ['Friday: finish homework so weekend is free', 'Saturday: live'],
+        morning_of: ['Don\'t check school portal Sunday morning'],
+        just_before: ['Sunday afternoon: 30 min of prep, then DONE']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "I have Sunday scaries. This is normal."', 'Breathe out long'],
+        next_2min: ['Pack bag now so morning is calm', 'Lay out clothes', 'Pick ONE thing to look forward to tomorrow'],
+        if_still_activated: ['Connect with a friend by text or call', 'Watch a comforting show, not new content', 'Avoid heavy or scary media tonight']
+      },
+      afterPlan: {
+        immediate: ['Warm bath, soft pajamas, early bed'],
+        same_day: ['Sleep matters more than one more episode'],
+        longer_term: ['If Sunday scaries are crushing, look at: is school the issue? Is anxiety the issue? Is sleep the issue?']
+      },
+      peopleToCall: ['A friend', 'Parent if dread is heavy', 'Counselor if it\'s every Sunday for months'],
+      selfTalk: 'Tomorrow is just one Monday. I will get through it like all the other Mondays.',
+      reminders: ['Anticipation is often worse than reality', 'Adults get Sunday scaries too', 'I can do hard things'],
+      whenToEscalate: 'If Sunday dread includes "I don\'t want to be alive tomorrow," call 988.',
+      customization: 'For school-avoidant students, treat as anxiety/depression signal not laziness. Talk to therapist.',
+      research: 'Anticipatory anxiety is common; behavioral activation Sunday evening (mild prep + connection) reduces it.'
+    },
+    {
+      id: 'after_bad_grade',
+      scenario: 'After bad grade hits (Blue → Red disappointment)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Just got a paper back or saw the grade online',
+      earlyWarnings: ['Stomach drop', 'Tears or anger surge', 'Self-talk: "I\'m stupid"', 'Wanting to hide it from parents'],
+      preventionPlan: {
+        night_before: ['Make peace with the possibility of a bad grade before checking'],
+        morning_of: ['Have a plan: "If I get a bad grade, my first step is X"'],
+        just_before: ['Take a breath before opening the portal']
+      },
+      inMomentPlan: {
+        first_30sec: ['Put the paper down', 'Breathe out long', 'Tell yourself: "One grade does not equal me"'],
+        next_2min: ['Don\'t look at others\' grades', 'Don\'t catastrophize', 'Acknowledge: "I am disappointed. That is fair."'],
+        if_still_activated: ['Walk outside if possible', 'Talk to ONE safe person', 'Avoid social media doom-scrolling']
+      },
+      afterPlan: {
+        immediate: ['Eat, hydrate, move'],
+        same_day: ['Tell parent calmly; hiding makes it worse', 'Look at the test to learn from mistakes'],
+        longer_term: ['Make a study adjustment for next time', 'Talk to teacher about extra help if pattern']
+      },
+      peopleToCall: ['Trusted parent', 'A friend who won\'t pile on', 'Teacher to debrief'],
+      selfTalk: 'I am not my grade. I can learn from this and move forward.',
+      reminders: ['One grade is one grade', 'Disappointment is okay; despair is optional', 'I can do something about this'],
+      whenToEscalate: 'If a single bad grade triggers self-harm thoughts, call 988. This is bigger than school.',
+      customization: 'For perfectionist students, focus on self-compassion. For students with learning differences, evaluate if accommodations are needed.',
+      research: 'Self-compassion after academic failure predicts better recovery than self-criticism (Neff 2011).'
+    },
+    {
+      id: 'standardized_testing_week',
+      scenario: 'Standardized testing season (chronic Yellow over weeks)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Multiple weeks of state or AP testing',
+      earlyWarnings: ['Trouble sleeping all week', 'Loss of appetite or stress eating', 'Snapping at family', 'Stomach aches every morning', 'Avoidance of friends'],
+      preventionPlan: {
+        night_before: ['Wind-down routine 1 hour before bed every night', 'No screens in bed during testing week', 'Pack everything the night before'],
+        morning_of: ['Protein breakfast every day', 'Same routine each day for predictability'],
+        just_before: ['Walk into school with a calming song playing']
+      },
+      inMomentPlan: {
+        first_30sec: ['Each morning: 3 deep breaths before getting up', 'Remind yourself: "This is a marathon, not a sprint"'],
+        next_2min: ['Use lunch as real break: get outside, eat real food', 'Don\'t debrief test questions with anxious friends'],
+        if_still_activated: ['Build in micro-breaks; bathroom walk between sections', 'Wrist cold water on breaks']
+      },
+      afterPlan: {
+        immediate: ['Honor the cost; you\'re running a marathon'],
+        same_day: ['Light evenings, early bed, comfort food', 'No new big tasks this week'],
+        longer_term: ['Plan something to look forward to after testing week ends']
+      },
+      peopleToCall: ['Parent for grounding', 'Friend going through it too', 'Counselor if overwhelm is constant'],
+      selfTalk: 'I am doing hard things every day. I can take this one section at a time.',
+      reminders: ['Standardized tests do not measure my worth', 'Sleep > one more hour of studying', 'I have done what I can'],
+      whenToEscalate: 'If testing week is causing panic attacks or shutdown, talk to counselor about accommodations.',
+      customization: 'For students with anxiety, request extended time or separate room accommodations.',
+      research: 'Chronic stress from extended testing requires recovery protocols built into the week, not just after.'
+    },
+
+    // ===== SOCIAL / PEER =====
+    {
+      id: 'friend_conflict',
+      scenario: 'Friend conflict (Yellow → Red)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'After a fight with a close friend',
+      earlyWarnings: ['Replaying the conversation on loop', 'Stomach knot when phone buzzes', 'Wanting to vent to everyone OR isolate completely', 'Drafting angry texts'],
+      preventionPlan: {
+        night_before: ['Talk about hard things in person when possible, not text'],
+        morning_of: ['Don\'t bring fights into school day if you can help it'],
+        just_before: ['If meeting to talk: 3 breaths, plan one thing to say']
+      },
+      inMomentPlan: {
+        first_30sec: ['Put the phone down', 'Don\'t send the draft you just wrote', 'Breathe out long'],
+        next_2min: ['Wait 24 hours before any big message', 'Vent to ONE neutral person, not group chat', 'Ask yourself: "What is the real hurt under the anger?"'],
+        if_still_activated: ['Walk', 'Cold water on face', 'Distraction not avoidance: do something with hands']
+      },
+      afterPlan: {
+        immediate: ['Eat, hydrate, rest'],
+        same_day: ['Decide: do I want to repair, or do I need space?', 'Honor your answer'],
+        longer_term: ['Reach out when you\'ve cooled down', 'Use "I felt" language not "you always"', 'Some friendships end; that is part of life']
+      },
+      peopleToCall: ['Neutral friend', 'Parent', 'Counselor if friendship loss is devastating'],
+      selfTalk: 'I can be hurt and still be okay. Conflict does not mean the friendship is over.',
+      reminders: ['Strong friendships survive hard conversations', 'I am allowed to set boundaries', 'I don\'t have to fix this right now'],
+      whenToEscalate: 'If friend conflict triggers self-harm thoughts or severe depression, talk to counselor or call 988.',
+      customization: 'For autistic students, scripts for repair conversations help. For perfectionist students, practice "good enough" apologies.',
+      research: 'Adolescent friendship conflict is a major stressor; repair skills are learnable and predict adult relationship health.'
+    },
+    {
+      id: 'being_left_out',
+      scenario: 'Being left out by friend group (Blue → Red sadness)',
+      forBand: 'middle',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Saw photos online of friends together without you',
+      earlyWarnings: ['Refresh-loop on social media', 'Tears welling up', 'Stomach drop', 'Self-talk: "Nobody actually likes me"'],
+      preventionPlan: {
+        night_before: ['Limit social media when feeling fragile'],
+        morning_of: ['Don\'t check social media first thing'],
+        just_before: ['Have backup plans you actually enjoy alone']
+      },
+      inMomentPlan: {
+        first_30sec: ['Close the app', 'Breathe out long', 'Name it: "I am hurt right now. That is fair."'],
+        next_2min: ['Don\'t post about it', 'Don\'t text anyone in the photo demanding explanation', 'Do ONE comforting thing'],
+        if_still_activated: ['Reach out to someone NOT in that group', 'Move your body', 'Cry if you need to']
+      },
+      afterPlan: {
+        immediate: ['Stay off the app for the night'],
+        same_day: ['Connect with a person who reliably cares about you'],
+        longer_term: ['Notice patterns: is this group consistently leaving you out?', 'It is okay to invest in friends who invest back']
+      },
+      peopleToCall: ['Family member or older sibling', 'Friend outside the group', 'Counselor if pattern'],
+      selfTalk: 'Being left out hurts. It does not mean I am unlovable.',
+      reminders: ['Photos don\'t show the full story', 'I have value beyond this group', 'Real friendships are reciprocal'],
+      whenToEscalate: 'If exclusion is constant and you have no friends to turn to, talk to counselor about support groups or new connections.',
+      customization: 'For neurodivergent kids who struggle socially, work on small, deep connections rather than chasing big groups.',
+      research: 'Social exclusion activates same brain regions as physical pain (Eisenberger 2003). It is real.'
+    },
+    {
+      id: 'bullying_in_moment',
+      scenario: 'Bullying in the moment (Red Zone, being targeted right now)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Hallway, classroom, lunchroom, online',
+      earlyWarnings: ['Recognizing the person/pattern approaching', 'Body tensing', 'Wanting to disappear', 'Heart racing'],
+      preventionPlan: {
+        night_before: ['Document past incidents'],
+        morning_of: ['Travel with a friend through hotspots'],
+        just_before: ['Have a script ready: "Stop." or "I don\'t want to talk to you."']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get to a safe adult or safe space FAST', 'Don\'t engage, don\'t escalate', 'Use a flat tone: "Stop."'],
+        next_2min: ['Walk away with purpose', 'Tell an adult immediately, not later', 'Screenshot if online'],
+        if_still_activated: ['Go to counselor\'s office or nurse', 'Call parent if needed', 'Do not retaliate (you will get in trouble too)']
+      },
+      afterPlan: {
+        immediate: ['Be with safe people', 'Document what happened in writing'],
+        same_day: ['Report to adult; ask for written follow-up', 'Tell parent'],
+        longer_term: ['Push for action: bullying policies require response', 'Therapy can help process the impact', 'You did nothing to deserve this']
+      },
+      peopleToCall: ['School counselor', 'Trusted teacher', 'Parent', 'School administrator', '988 if despair surges'],
+      selfTalk: 'I am not what they say. I am safe right now. I will tell someone.',
+      reminders: ['Bullying says everything about them, nothing about me', 'Telling is not snitching, it is self-protection', 'I deserve to feel safe at school'],
+      whenToEscalate: 'If school doesn\'t respond, escalate to district. If physical violence: call police. If suicidal: 988.',
+      customization: 'For LGBTQ+ or disabled students, identity-based bullying is a civil rights issue; involve advocacy organizations.',
+      research: 'Bullying is associated with long-term mental health impact; early adult intervention is protective (Olweus, Hymel).'
+    },
+    {
+      id: 'after_bullying_processing',
+      scenario: 'After bullying processing (Blue + Red waves)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Hours, days, weeks after a bullying incident',
+      earlyWarnings: ['Replaying the incident', 'Stomach ache when thinking about school', 'Sleep problems', 'Withdrawal from activities you loved', 'Hyperawareness in hallways'],
+      preventionPlan: {
+        night_before: ['Therapy or counseling support'],
+        morning_of: ['Routine matters; predictability heals'],
+        just_before: ['Plan safe people/places at school']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name the wave: "Red surge, Blue dip, this is processing"', 'Breathe out long'],
+        next_2min: ['Grounding: 5 things you see, 4 hear, 3 touch, 2 smell, 1 taste', 'Move to a safe space'],
+        if_still_activated: ['Call a trusted person', 'Cold water on wrists', 'Allow the feeling without fixing it']
+      },
+      afterPlan: {
+        immediate: ['Comfort, not productivity'],
+        same_day: ['Tell a trusted person each day', 'Limit social media triggers'],
+        longer_term: ['Trauma-informed therapy if symptoms persist', 'Build community of safe peers', 'Reclaim spaces gradually']
+      },
+      peopleToCall: ['Counselor', 'Therapist', 'Parent', 'Trusted friend', '988 if despair'],
+      selfTalk: 'What happened to me was not okay. I am healing. I am not alone.',
+      reminders: ['Healing is not linear', 'I am safe now', 'I will not always feel this way'],
+      whenToEscalate: 'If symptoms persist beyond a few weeks or worsen, request trauma therapy referral.',
+      customization: 'For severe cases, EMDR or trauma-focused CBT have strong evidence. RAINN 1-800-656-4673 for sexual content.',
+      research: 'Bullying can cause PTSD symptoms; trauma-informed support helps recovery.'
+    },
+    {
+      id: 'cyberbullying',
+      scenario: 'Cyberbullying / hate DM (Red)',
+      forBand: 'middle',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Phone in bedroom after seeing a hateful message',
+      earlyWarnings: ['Heart racing on phone', 'Wanting to retaliate', 'Wanting to delete everything', 'Shame and rage mixing'],
+      preventionPlan: {
+        night_before: ['Phone out of bedroom overnight', 'Privacy settings on accounts'],
+        morning_of: ['Don\'t check messages first thing'],
+        just_before: ['Block button is your friend']
+      },
+      inMomentPlan: {
+        first_30sec: ['STOP. Don\'t reply.', 'Screenshot for documentation', 'Put phone face down'],
+        next_2min: ['Tell a parent or trusted adult', 'Block the account', 'Report on platform'],
+        if_still_activated: ['Stay off phone for an hour', 'Move body, get outside', 'Be with safe people']
+      },
+      afterPlan: {
+        immediate: ['Don\'t scroll the comments', 'Don\'t read what other people are saying'],
+        same_day: ['Tell parent if you haven\'t', 'Document if needed for school report'],
+        longer_term: ['Cybertipline.org for serious threats', 'Therapy if impact is severe', 'Consider a social media break']
+      },
+      peopleToCall: ['Parent', 'School counselor', 'Police if threats', 'Crisis Text Line: text HOME to 741741'],
+      selfTalk: 'Their cruelty says nothing about me. I am not what they say I am.',
+      reminders: ['I do not have to respond', 'Block, report, screenshot', 'I am not alone'],
+      whenToEscalate: 'If threats of violence, doxxing, or non-consensual images: contact police, school, and Take It Down (takeitdown.ncmec.org).',
+      customization: 'For minors with non-consensual intimate images: NCMEC CyberTipline 1-800-843-5678.',
+      research: 'Cyberbullying is associated with increased depression and self-harm risk; adult intervention is essential.'
+    },
+    {
+      id: 'group_chat_exclusion',
+      scenario: 'Realizing you got removed from group chat (Blue)',
+      forBand: 'middle',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Phone, noticing the chat is gone or you can\'t send',
+      earlyWarnings: ['Stomach drop', 'Re-checking to make sure', 'Spiraling: "What did I do?"'],
+      preventionPlan: {
+        night_before: ['Build friendships outside one group'],
+        morning_of: ['Don\'t make group chats your main source of belonging'],
+        just_before: ['Have offline activities you love']
+      },
+      inMomentPlan: {
+        first_30sec: ['Close the app', 'Breathe out', 'Resist asking dramatically why'],
+        next_2min: ['Reach out to one trusted person', 'Don\'t post about it', 'Hold the sting without amplifying it'],
+        if_still_activated: ['Watch something comforting', 'Take a walk', 'Allow the sadness']
+      },
+      afterPlan: {
+        immediate: ['Don\'t make decisions about the friendship tonight'],
+        same_day: ['Ask one person privately if you really need to know'],
+        longer_term: ['Friendship circles shift; this may or may not last', 'Invest in people who invest in you']
+      },
+      peopleToCall: ['Outside-the-group friend', 'Parent', 'Older sibling'],
+      selfTalk: 'I am hurt and I am still worthy of connection.',
+      reminders: ['One group chat is not my whole life', 'I have people who care about me', 'I will be okay'],
+      whenToEscalate: 'If exclusion is part of broader social loss, talk to counselor about belonging support.',
+      customization: 'For neurodivergent students, work on building 1-2 deep friendships rather than chasing groups.',
+      research: 'Belonging is a core need; small consistent connections matter more than group size.'
+    },
+    {
+      id: 'romantic_breakup',
+      scenario: 'Romantic breakup (Red → Blue → Red waves)',
+      forBand: 'high',
+      fromZone: 'red',
+      toZone: 'green',
+      setting: 'Days/weeks after a breakup',
+      earlyWarnings: ['Constant urge to check their socials', 'Crying in waves', 'Insomnia', 'Loss of appetite or stress eating', 'Replaying the relationship'],
+      preventionPlan: {
+        night_before: ['Mute or unfollow during recovery (not forever)', 'Plan distractions in advance'],
+        morning_of: ['Don\'t look at their socials first thing'],
+        just_before: ['Hard moments: have a script for what to do (call X, walk, music)']
+      },
+      inMomentPlan: {
+        first_30sec: ['Don\'t text. Don\'t call. Don\'t drunk-text.', 'Put phone in another room if needed', 'Breathe out long'],
+        next_2min: ['Call a friend or family member', 'Move your body', 'Write the thing you want to say, but don\'t send it'],
+        if_still_activated: ['Cold shower', 'Cry; tears release stress hormones', 'Sleep is medicine']
+      },
+      afterPlan: {
+        immediate: ['Eat real food even if not hungry', 'Hydrate', 'Sleep'],
+        same_day: ['Connect with at least one person', 'Move your body in some way'],
+        longer_term: ['Healing takes weeks to months; do not rush', 'Therapy helps', 'Future love is real even when it feels impossible']
+      },
+      peopleToCall: ['Best friend', 'Parent or trusted family', 'Therapist', '988 if despair is heavy'],
+      selfTalk: 'Heartbreak is real. I will not always feel this way. I am loved by many people.',
+      reminders: ['Pain is not punishment', 'I am whole on my own', 'Time + care = healing'],
+      whenToEscalate: 'If breakup triggers suicidal thoughts, call 988 or 741741 immediately.',
+      customization: 'For LGBTQ+ youth where breakup may compound identity stress, Trevor Project: 1-866-488-7386.',
+      research: 'Adolescent breakups can trigger major depressive episodes; treat as significant loss, not "just" a breakup.'
+    },
+    {
+      id: 'crush_ignoring_you',
+      scenario: 'Crush ignoring you (Yellow → Blue)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'After they didn\'t reply or barely acknowledged you',
+      earlyWarnings: ['Refresh-checking phone', 'Reading old messages', 'Self-talk: "I\'m not good enough"', 'Withdrawing from friends'],
+      preventionPlan: {
+        night_before: ['Build a full life beyond this person'],
+        morning_of: ['Don\'t check their stories first thing'],
+        just_before: ['Get out of the house, do something']
+      },
+      inMomentPlan: {
+        first_30sec: ['Phone away', 'Breathe out long', 'Tell yourself: "Their behavior is information"'],
+        next_2min: ['Don\'t double-text', 'Don\'t analyze with three friends', 'Allow the sting'],
+        if_still_activated: ['Move body', 'Do something you\'re good at', 'Watch something you love']
+      },
+      afterPlan: {
+        immediate: ['Honor the bruise; rejection stings'],
+        same_day: ['Connect with friends who think you\'re great'],
+        longer_term: ['One person\'s disinterest does not define your worth', 'Their loss; truly']
+      },
+      peopleToCall: ['Friend who validates without piling on', 'Sibling', 'Parent if low'],
+      selfTalk: 'I am attractive and worthy. This person may not see it. That is information.',
+      reminders: ['Not everyone is my person', 'The right person will be interested', 'I am whole without them'],
+      whenToEscalate: 'If rejection sends you into deep depression, talk to counselor.',
+      customization: 'Reframe rejection as information, not verdict on worth.',
+      research: 'Adolescents are still building self-concept; rejection sensitivity is normal but manageable.'
+    },
+    {
+      id: 'crush_flirting_other',
+      scenario: 'Crush flirting with someone else (Yellow → Red)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Seeing it in person or on social media',
+      earlyWarnings: ['Heat in chest', 'Wanting to make a scene', 'Wanting to disappear', 'Comparing yourself to the other person'],
+      preventionPlan: {
+        night_before: ['Don\'t orbit their socials'],
+        morning_of: ['Have a full life'],
+        just_before: ['If you\'ll see them, know your exit strategy']
+      },
+      inMomentPlan: {
+        first_30sec: ['Don\'t react publicly', 'Breathe out long', 'Look away or walk away'],
+        next_2min: ['Reach out to a friend', 'Leave the room/event if needed', 'Resist comparison spiral'],
+        if_still_activated: ['Move your body', 'Get to a private space to feel it', 'Cry if you need to']
+      },
+      afterPlan: {
+        immediate: ['Don\'t post anything cryptic'],
+        same_day: ['Be with people who love you'],
+        longer_term: ['Reconsider how much energy they deserve', 'You are not their backup option']
+      },
+      peopleToCall: ['Best friend', 'Sibling', 'Parent'],
+      selfTalk: 'I am not in competition. My worth does not depend on their attention.',
+      reminders: ['Jealousy is information about my desire, not my value', 'I deserve someone who chooses me clearly', 'There are many people who will see me'],
+      whenToEscalate: 'If this triggers self-destructive behavior, talk to counselor.',
+      customization: 'Practice the difference between jealousy (real feeling) and acting on jealousy (creating harm).',
+      research: 'Jealousy is a normal emotion; how we act on it determines outcome.'
+    },
+    {
+      id: 'new_school_first_day',
+      scenario: 'New school first day (Yellow)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Walking into a school where you know nobody',
+      earlyWarnings: ['Stomach knot the night before', 'Hyperfocus on outfit', 'Wanting to fake sick', 'Spiraling about lunch'],
+      preventionPlan: {
+        night_before: ['Pack everything', 'Lay out outfit', 'Look at school map online'],
+        morning_of: ['Real breakfast', 'Arrive on time, not early or late'],
+        just_before: ['Three breaths at the door', 'Remind: "Everyone was new once"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Find your first class', 'Look up, not at floor', 'Smile at one person'],
+        next_2min: ['Sit near someone who looks friendly', 'Introduce yourself to one person', 'Ask one question if you need to'],
+        if_still_activated: ['Bathroom break to reset', 'Cold water on wrists', 'Counselor\'s office if needed']
+      },
+      afterPlan: {
+        immediate: ['Decompress at home; first day is exhausting'],
+        same_day: ['Write down one person\'s name to remember', 'Honor that you did a hard thing'],
+        longer_term: ['It takes weeks to feel settled; be patient with yourself']
+      },
+      peopleToCall: ['Parent', 'Counselor', 'Old friend from previous school'],
+      selfTalk: 'Everyone here was new once. I belong here as much as anyone.',
+      reminders: ['First day is the hardest', 'Friendships build over weeks not minutes', 'I am brave'],
+      whenToEscalate: 'If new school anxiety persists for weeks and you\'re isolating, talk to counselor.',
+      customization: 'For autistic students, request a tour before first day and a peer buddy.',
+      research: 'Transitions are stress events; sustained scaffolding for 4-6 weeks predicts better adjustment.'
+    },
+    {
+      id: 'party_dont_know_anyone',
+      scenario: 'Party where you don\'t know anyone (Yellow → potential Red)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Walking into a party as a friend-of-a-friend',
+      earlyWarnings: ['Wanting to leave immediately', 'Glued to phone', 'Standing alone feeling watched', 'Stomach knot'],
+      preventionPlan: {
+        night_before: ['Eat beforehand; don\'t arrive starving'],
+        morning_of: ['Plan an exit time and ride home in advance'],
+        just_before: ['Three breaths before walking in', 'Find the friend who invited you first']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get a drink (water counts) for something to hold', 'Find a wall or kitchen to anchor', 'Slow breathing through nose'],
+        next_2min: ['Approach someone who is also alone-looking', 'Ask one easy question: "How do you know X?"', 'Listen more than talk'],
+        if_still_activated: ['Bathroom break to reset', 'Step outside for air', 'Leave early if you need to; that is okay']
+      },
+      afterPlan: {
+        immediate: ['Decompress with quiet time'],
+        same_day: ['Honor that you went; it counts'],
+        longer_term: ['Parties get easier with reps', 'Or learn that big parties aren\'t your thing; small gatherings are valid']
+      },
+      peopleToCall: ['Friend who invited you', 'Ride home person', 'Parent if leaving early'],
+      selfTalk: 'I don\'t have to charm everyone. I am allowed to leave when I\'m done.',
+      reminders: ['Awkward is normal', 'Other people are also nervous', 'I always have permission to leave'],
+      whenToEscalate: 'If social events trigger panic attacks, consider therapy for social anxiety.',
+      customization: 'For sober students or non-drinkers, hold a water bottle and have a script: "I\'m driving" or "I\'m not drinking tonight."',
+      research: 'Social anxiety responds well to gradual exposure with support.'
+    },
+    {
+      id: 'sleepover_anxiety',
+      scenario: 'Sleepover anxiety (Yellow)',
+      forBand: 'elementary',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Friend\'s house overnight',
+      earlyWarnings: ['Missing parents already', 'Stomach hurts', 'Want to call home', 'Crying privately'],
+      preventionPlan: {
+        night_before: ['Pack a comfort item (stuffie, blanket)', 'Practice sleepovers with family/relatives first'],
+        morning_of: ['Plan check-in time with parent'],
+        just_before: ['Goodbye hug, then quick exit so it doesn\'t drag']
+      },
+      inMomentPlan: {
+        first_30sec: ['Take three breaths', 'Hold your comfort item', 'Tell yourself: "This is just one night"'],
+        next_2min: ['Engage in an activity to distract', 'It\'s okay to text parent at agreed time', 'It\'s okay to ask host parent for help'],
+        if_still_activated: ['It\'s okay to call home and go home', 'Sleepovers will get easier with practice']
+      },
+      afterPlan: {
+        immediate: ['Tell parent how it went'],
+        same_day: ['Honor the bravery'],
+        longer_term: ['Build up to longer sleepovers gradually']
+      },
+      peopleToCall: ['Parent', 'Host\'s parent'],
+      selfTalk: 'I am brave. Missing home is normal. I am safe.',
+      reminders: ['I can go home if I need to', 'My parents will come if I call', 'I have done hard things'],
+      whenToEscalate: 'If sleepover anxiety extends to all separations and interferes with life, talk to therapist about separation anxiety.',
+      customization: 'For anxious kids, start with shorter stays. For autistic kids, bring familiar bedding/snacks.',
+      research: 'Gradual exposure to separation builds tolerance; honor the child\'s pace.'
+    },
+    {
+      id: 'coming_out',
+      scenario: 'Coming out (Yellow → Red mixed)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'About to tell someone about your identity',
+      earlyWarnings: ['Heart racing thinking about it', 'Rehearsing the words', 'Wanting to back out', 'Tears welling'],
+      preventionPlan: {
+        night_before: ['Tell SAFE people first (chosen family) before risky family', 'Have a support system already in place'],
+        morning_of: ['Have Trevor Project number saved: 1-866-488-7386', 'Have a backup plan if it goes badly (place to go)'],
+        just_before: ['You don\'t owe this to anyone on their timeline; only yours', 'Three deep breaths']
+      },
+      inMomentPlan: {
+        first_30sec: ['Speak slowly', 'Use the words you choose', 'You can say "I need a moment" if overwhelmed'],
+        next_2min: ['Their first reaction may not be their final reaction', 'You don\'t have to debate or educate right now', 'You are allowed to end the conversation if needed'],
+        if_still_activated: ['Leave the room if needed', 'Call a chosen-family member', 'Trevor Project: 1-866-488-7386 or text START to 678-678']
+      },
+      afterPlan: {
+        immediate: ['Be with safe people', 'Eat, hydrate, rest'],
+        same_day: ['Tell chosen family how it went', 'Honor the courage'],
+        longer_term: ['Their adjustment takes time, but that is not your job to manage', 'Find community: GSA, online groups, LGBTQ+ centers']
+      },
+      peopleToCall: ['Chosen family / out friends', 'Trevor Project: 1-866-488-7386', 'School counselor if affirming', 'PFLAG for parents'],
+      selfTalk: 'I know who I am. Their reaction is theirs to manage, not mine.',
+      reminders: ['I am valid', 'I deserve to live truthfully', 'There is a whole community who has my back'],
+      whenToEscalate: 'If coming out leads to threats of harm or being kicked out: Trevor Project 1-866-488-7386, True Colors (homeless LGBTQ+ youth) 1-212-461-4401.',
+      customization: 'For trans students: trans lifeline 1-877-565-8860. For families: PFLAG resources.',
+      research: 'Family acceptance is a major protective factor; rejection significantly increases mental health risk (Ryan et al.).'
+    },
+    {
+      id: 'coming_out_positive',
+      scenario: 'After coming out, positive response (Yellow → Green relief wave)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'After someone responds well',
+      earlyWarnings: ['Tears of relief', 'Body shaking from adrenaline release', 'Disbelief'],
+      preventionPlan: {
+        night_before: ['Plan to celebrate yourself'],
+        morning_of: ['Have someone to share the good news with'],
+        just_before: ['Allow the joy']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Allow tears if they come', 'Receive the love'],
+        next_2min: ['Thank them simply', 'You don\'t have to perform okay-ness if you\'re overwhelmed'],
+        if_still_activated: ['Take a quiet moment', 'Call a chosen-family member to share']
+      },
+      afterPlan: {
+        immediate: ['Celebrate with people who love you'],
+        same_day: ['Rest; relief is exhausting'],
+        longer_term: ['This was a huge thing; honor it']
+      },
+      peopleToCall: ['Chosen family', 'Friends in community', 'Parent who knows'],
+      selfTalk: 'I am loved as I am. I deserved this all along.',
+      reminders: ['Acceptance is the baseline, not a gift', 'I get to be myself', 'I am brave'],
+      whenToEscalate: 'If post-acceptance you feel unexpected grief or rage, that is normal; therapy can help process.',
+      customization: 'Joy after long fear can be disorienting; allow the full wave.',
+      research: 'Affirming responses to coming out are strongly protective for mental health.'
+    },
+    {
+      id: 'coming_out_negative',
+      scenario: 'After coming out, negative response (Red → Blue, Trevor Project)',
+      forBand: 'high',
+      fromZone: 'red',
+      toZone: 'green',
+      setting: 'After family or friend reacted badly',
+      earlyWarnings: ['Numb shock', 'Tears or rage waves', 'Wanting to take it back', 'Feeling unsafe at home'],
+      preventionPlan: {
+        night_before: ['Have a safe place to go if needed'],
+        morning_of: ['Trevor Project saved in phone: 1-866-488-7386'],
+        just_before: ['Backup plan: where will you sleep tonight if needed?']
+      },
+      inMomentPlan: {
+        first_30sec: ['You are not what they say', 'Get to physical safety', 'Call a chosen-family member'],
+        next_2min: ['Trevor Project: 1-866-488-7386 or text START to 678-678', 'Do not argue or beg; protect your energy', 'If unsafe: leave to friend\'s, relative\'s, or shelter'],
+        if_still_activated: ['Crisis Text Line: HOME to 741741', '988 if despair is heavy', 'True Colors (LGBTQ+ youth shelter): 1-212-461-4401']
+      },
+      afterPlan: {
+        immediate: ['Be with people who love you', 'Basic needs first: food, sleep, safety'],
+        same_day: ['Connect with LGBTQ+ community/center', 'Tell trusted adult at school'],
+        longer_term: ['Chosen family is real family', 'Their bigotry is theirs to carry, not yours', 'Therapy with LGBTQ+-affirming therapist (find at Inclusive Therapists)']
+      },
+      peopleToCall: ['Trevor Project: 1-866-488-7386', 'Chosen family', 'School counselor', 'True Colors: 1-212-461-4401', '988 in crisis'],
+      selfTalk: 'I am whole and worthy. Their inability to see me is their loss, not my truth.',
+      reminders: ['I am loved by a chosen family', 'Their reaction may change; that\'s on them', 'I deserve to be myself'],
+      whenToEscalate: 'If kicked out, threatened, or in danger: True Colors 1-212-461-4401, Trevor Project, local LGBTQ+ center. If suicidal: 988.',
+      customization: 'For trans youth in unsupportive homes: Trans Lifeline 1-877-565-8860.',
+      research: 'Family rejection multiplies suicide risk for LGBTQ+ youth (Ryan 2009); chosen family is protective.'
+    },
+    {
+      id: 'identity_bullying',
+      scenario: 'Identity-based bullying (Red, includes resources)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Targeted for race, gender, sexuality, religion, disability',
+      earlyWarnings: ['Slurs or threats directed at you', 'Pattern of targeting', 'Body tensing in their presence'],
+      preventionPlan: {
+        night_before: ['Document every incident with dates, screenshots'],
+        morning_of: ['Travel with allies through hotspots'],
+        just_before: ['Know your escape routes']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get to safety first', 'Do not engage; do not retaliate', 'Tell an adult immediately'],
+        next_2min: ['Screenshot or document', 'Go to counselor\'s office', 'Call parent'],
+        if_still_activated: ['Stay with safe people', 'Cold water on face if overwhelmed', 'Allow yourself to feel; rage is fair']
+      },
+      afterPlan: {
+        immediate: ['Be with people who love you for who you are'],
+        same_day: ['Tell parent + report formally to school', 'Document everything'],
+        longer_term: ['Civil rights complaint if school doesn\'t respond', 'Connect with affinity groups for community', 'Therapy with culturally competent therapist']
+      },
+      peopleToCall: ['School counselor', 'Parent', 'Identity-based advocacy org', 'Police if threats', 'Crisis lines (988, 741741, Trevor Project)'],
+      selfTalk: 'Their hate is not the truth about me. My identity is beautiful. I am not alone.',
+      reminders: ['I belong here', 'My community is many millions strong', 'I deserve safety'],
+      whenToEscalate: 'For unresponsive schools: file with district, then state OCR (Office for Civil Rights).',
+      customization: 'Race-based: ADL, NAACP. LGBTQ+: GLSEN, Trevor. Disability: DREDF. Religion: ADL, CAIR, Sikh Coalition.',
+      research: 'Identity-based bullying causes deeper harm than general bullying; affinity support is protective.'
+    },
+    {
+      id: 'asking_someone_out',
+      scenario: 'Asking someone out (Yellow)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'About to ask',
+      earlyWarnings: ['Heart racing', 'Mouth dry', 'Drafting a million versions', 'Wanting to back out'],
+      preventionPlan: {
+        night_before: ['Decide what you want to say, simple'],
+        morning_of: ['Don\'t over-rehearse'],
+        just_before: ['Three breaths', 'Remind yourself: "Worst case = no, and I survive"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Eye contact', 'Speak slower than you feel', 'Say it simply: "Would you want to get coffee Saturday?"'],
+        next_2min: ['Accept their response with grace', 'If yes: "Cool, I\'ll text you"', 'If no: "No worries, see you in class"'],
+        if_still_activated: ['Walk away with dignity', 'Take a breath when alone', 'Honor the courage']
+      },
+      afterPlan: {
+        immediate: ['You did the brave thing'],
+        same_day: ['Tell a friend who is supportive'],
+        longer_term: ['Practice asking gets easier', 'Rejection is information, not verdict']
+      },
+      peopleToCall: ['Best friend', 'Sibling', 'Parent if you want'],
+      selfTalk: 'I am brave for asking. The answer does not change my worth.',
+      reminders: ['No is information', 'I deserve a clear yes', 'Asking is the win, regardless of answer'],
+      whenToEscalate: 'If rejection triggers severe depression, talk to counselor.',
+      customization: 'For shy students, written asks (note, text) are valid too.',
+      research: 'Building rejection tolerance is a developmental task; practice helps.'
+    },
+    {
+      id: 'being_rejected',
+      scenario: 'Being rejected (Blue → Red)',
+      forBand: 'high',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'After they said no',
+      earlyWarnings: ['Stomach drop', 'Wanting to argue or convince', 'Self-talk: "I knew it"', 'Wanting to delete them'],
+      preventionPlan: {
+        night_before: ['Have a full life beyond romance'],
+        morning_of: ['Friends and activities not centered on this person'],
+        just_before: ['Reminder: "A no does not erase my worth"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Don\'t argue', 'Brief response: "Thanks for telling me, no worries"', 'Walk away'],
+        next_2min: ['Privately, allow the sting', 'Don\'t spiral on social media', 'Call a friend'],
+        if_still_activated: ['Move your body', 'Cry if you need to', 'Don\'t make grand statements about love being dead']
+      },
+      afterPlan: {
+        immediate: ['Be with people who think you\'re great'],
+        same_day: ['Do something you\'re good at to remember your worth'],
+        longer_term: ['The right person will be enthusiastic, not requiring convincing', 'No\'s redirect us, they don\'t define us']
+      },
+      peopleToCall: ['Best friend', 'Sibling', 'Parent'],
+      selfTalk: 'One person\'s no does not mean I am unlovable. The right people will say yes clearly.',
+      reminders: ['My value is not assigned by their answer', 'I am still whole', 'There are many people who will appreciate me'],
+      whenToEscalate: 'If rejection triggers self-harm or suicidal thoughts, call 988.',
+      customization: 'For perfectionist students, separate "this didn\'t work" from "I am broken."',
+      research: 'Rejection sensitivity is heightened in adolescence; building tolerance is protective long-term.'
+    },
+    {
+      id: 'witnessing_peer_crisis',
+      scenario: 'Witnessing peer in crisis (Yellow)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Friend tells you they\'re thinking of suicide, self-harm, or in serious distress',
+      earlyWarnings: ['Heart racing', 'Wanting to fix or save them', 'Feeling overwhelmed by responsibility', 'Wanting to keep their secret'],
+      preventionPlan: {
+        night_before: ['Know: telling an adult is not betrayal; it is saving a life'],
+        morning_of: ['Have crisis numbers saved in your phone'],
+        just_before: ['Practice the script: "I am glad you told me. I have to tell an adult who can help."']
+      },
+      inMomentPlan: {
+        first_30sec: ['Listen. Don\'t panic. Don\'t fix.', 'Say: "I am here. I am glad you told me."', 'Breathe out long'],
+        next_2min: ['Ask: "Are you safe right now?"', 'Tell them: "I care about you too much to keep this a secret. I am telling [adult] so you can get help."', 'Stay with them if possible'],
+        if_still_activated: ['Get adult NOW: parent, counselor, teacher, call 988', 'Do not leave them alone if they are in active crisis', 'If immediate danger: call 911']
+      },
+      afterPlan: {
+        immediate: ['You are not responsible for their life; you are responsible for telling adults'],
+        same_day: ['Tell your own parent or trusted adult; you need support too'],
+        longer_term: ['Process with therapist or counselor; this is heavy', 'You did the right thing by telling']
+      },
+      peopleToCall: ['988', 'Parent', 'School counselor', 'Crisis Text Line: HOME to 741741', '911 if immediate danger'],
+      selfTalk: 'I am a caring friend. Telling an adult is loving them. I cannot carry this alone.',
+      reminders: ['Telling is not snitching when life is at stake', 'I am not their therapist', 'I need support too'],
+      whenToEscalate: 'Always tell an adult for any disclosure of suicide, self-harm, abuse. If acute danger: 911.',
+      customization: 'Process your own response with therapist; secondary trauma is real.',
+      research: 'Peer disclosure is common in adolescent crisis; trained adult intervention improves outcomes.'
+    },
+    {
+      id: 'standing_up_to_bully',
+      scenario: 'Standing up to a bully (Yellow → Red)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Witnessing bullying and deciding to intervene',
+      earlyWarnings: ['Heart racing', 'Wanting to look away', 'Knowing it\'s wrong', 'Stomach knot'],
+      preventionPlan: {
+        night_before: ['Practice scripts: "Hey, leave them alone"'],
+        morning_of: ['Buddy system; intervene with friends'],
+        just_before: ['Three breaths']
+      },
+      inMomentPlan: {
+        first_30sec: ['Speak up if safe: "That\'s not okay" or "Hey, let\'s go"', 'Help target leave the situation', 'Don\'t escalate to physical fight'],
+        next_2min: ['Move the target to safe adult', 'Get an adult', 'Sit with the target after'],
+        if_still_activated: ['Don\'t engage with bully further', 'Tell adult what happened', 'Check on yourself; intervening is hard']
+      },
+      afterPlan: {
+        immediate: ['Check on the target', 'Process your own response'],
+        same_day: ['Tell adult formally', 'Honor the courage'],
+        longer_term: ['Bystanders who intervene save lives', 'Talk to counselor if shaken']
+      },
+      peopleToCall: ['Adult at school', 'Parent', 'Counselor'],
+      selfTalk: 'I did the right thing. Speaking up is brave.',
+      reminders: ['I would want someone to stand up for me', 'Silence is consent to harm', 'I am the kind of person who helps'],
+      whenToEscalate: 'If bully retaliates against you, tell adults and document.',
+      customization: 'For physical danger situations, get adult instead of confronting; safety first.',
+      research: 'Bystander intervention is the single strongest predictor of bullying reduction (Salmivalli).'
+    },
+
+    // ===== FAMILY / HOME =====
+    {
+      id: 'parents_fighting',
+      scenario: 'Parents fighting (Yellow → Red anxious)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Hearing yelling from another room',
+      earlyWarnings: ['Voices rising', 'Bodies tensing', 'Wanting to intervene', 'Hyperalertness'],
+      preventionPlan: {
+        night_before: ['Identify a safe space in the house'],
+        morning_of: ['Headphones nearby'],
+        just_before: ['Remind: "Their fight is not my fault and not mine to fix"']
+      },
+      inMomentPlan: {
+        first_30sec: ['Go to your safe space', 'Headphones on with calming music or white noise', 'Breathe out long'],
+        next_2min: ['Text a friend or call a trusted adult', 'Comfort younger siblings if needed (but you are not the parent)', 'Don\'t intervene unless someone is in physical danger'],
+        if_still_activated: ['Leave the house if safe (walk, neighbor, friend)', 'Call grandparent or trusted adult', 'Childhelp: 1-800-422-4453 if you\'re scared']
+      },
+      afterPlan: {
+        immediate: ['Honor that this is hard; adult conflict is scary'],
+        same_day: ['Tell a trusted adult outside the home'],
+        longer_term: ['You did not cause this and cannot fix it', 'Therapy can help process', 'Build outside support system']
+      },
+      peopleToCall: ['Trusted relative', 'School counselor', 'Friend\'s parent', 'Childhelp: 1-800-422-4453 if afraid', '911 if violence'],
+      selfTalk: 'Their fight is not about me and not mine to fix. I am safe in my space.',
+      reminders: ['Adults fight; that is not my fault', 'I am not responsible for their relationship', 'I deserve a peaceful home and that is not on me to create'],
+      whenToEscalate: 'If fighting includes physical violence or threats: call 911. Long-term DV concerns: National DV Hotline 1-800-799-7233.',
+      customization: 'For chronic exposure, family therapy or individual therapy is important.',
+      research: 'Chronic parental conflict is a major risk factor for child mental health; outside support is protective.'
+    },
+    {
+      id: 'parental_divorce',
+      scenario: 'Parental divorce (chronic Yellow + Red waves)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Weeks/months around divorce',
+      earlyWarnings: ['Stomach aches', 'Loyalty conflicts', 'Wanting to fix it', 'Acting out at school'],
+      preventionPlan: {
+        night_before: ['Maintain routines as much as possible'],
+        morning_of: ['Know where you\'re sleeping'],
+        just_before: ['Permission to grieve while also adapting']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name the feeling without judging it'],
+        next_2min: ['Connect with trusted person not in the divorce', 'Honor your feelings; don\'t fix parents'],
+        if_still_activated: ['Time with friends or activities you love', 'Therapist or counselor', 'Move your body']
+      },
+      afterPlan: {
+        immediate: ['Maintain sleep, food, school'],
+        same_day: ['Daily contact with safe people'],
+        longer_term: ['Therapy is highly recommended', 'Divorce groups for kids', 'You will be okay even if not the same']
+      },
+      peopleToCall: ['School counselor', 'Therapist', 'Trusted relative', 'Friend\'s family'],
+      selfTalk: 'This is not my fault. I am allowed to love both parents. I will be okay.',
+      reminders: ['I did not cause this', 'I cannot fix this', 'I am still loved by both parents even when they don\'t love each other'],
+      whenToEscalate: 'If divorce involves abuse, custody battles drag you in, or you\'re severely depressed: therapy + counselor.',
+      customization: 'For kids being used as messengers, advocate to a counselor for boundary setting.',
+      research: 'Children adapt to divorce; conflict during/after divorce predicts outcomes more than the divorce itself.'
+    },
+    {
+      id: 'sibling_rivalry',
+      scenario: 'Sibling rivalry (Yellow)',
+      forBand: 'elementary',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Sibling annoying you',
+      earlyWarnings: ['Irritated quickly', 'Wanting to retaliate', 'Comparing fairness', 'Heat in chest'],
+      preventionPlan: {
+        night_before: ['Have your own space, your own things'],
+        morning_of: ['Build in alone time'],
+        just_before: ['Headphones available']
+      },
+      inMomentPlan: {
+        first_30sec: ['Walk to your own space', 'Breathe out long', 'Don\'t escalate'],
+        next_2min: ['Distract yourself with activity', 'Use parent if needed', 'Don\'t hit or insult'],
+        if_still_activated: ['Outside or other room', 'Talk to parent calmly later', 'Movement to release energy']
+      },
+      afterPlan: {
+        immediate: ['Cool down separately'],
+        same_day: ['Apologize if you escalated'],
+        longer_term: ['Sibling relationships are practice for life', 'You won\'t always feel this way']
+      },
+      peopleToCall: ['Parent', 'Older sibling or relative', 'Friend'],
+      selfTalk: 'My sibling is annoying right now. That doesn\'t mean I have to react.',
+      reminders: ['Conflict is normal', 'I can choose not to engage', 'We will be okay'],
+      whenToEscalate: 'If sibling conflict involves real harm (physical, emotional abuse), tell a parent or counselor.',
+      customization: 'For neurodivergent kids, sensory needs may make sibling presence harder; advocate for space.',
+      research: 'Sibling conflict is universal; resolution skills matter more than its presence.'
+    },
+    {
+      id: 'sibling_fight',
+      scenario: 'Sibling fight (Red)',
+      forBand: 'elementary',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Full-blown fight with sibling',
+      earlyWarnings: ['Yelling', 'Wanting to hit or be hit', 'Tears of rage'],
+      preventionPlan: {
+        night_before: ['Have a "stop" word agreed on'],
+        morning_of: ['Know your safe space'],
+        just_before: ['Walk away early when you feel heat']
+      },
+      inMomentPlan: {
+        first_30sec: ['STOP. Walk away.', 'Get to your safe space', 'Hands on cold surface'],
+        next_2min: ['Don\'t escalate by yelling back', 'Get a parent if it\'s dangerous', 'Cry if you need to'],
+        if_still_activated: ['Outside if possible', 'Talk to neutral adult', 'Movement to release']
+      },
+      afterPlan: {
+        immediate: ['Separate spaces until calm'],
+        same_day: ['Repair conversation with parent help', 'Apologize for your part'],
+        longer_term: ['Patterns can change; practice helps']
+      },
+      peopleToCall: ['Parent', 'Counselor if pattern', 'Therapist for family sessions'],
+      selfTalk: 'I am angry. I will not hurt. I will walk away.',
+      reminders: ['Walking away is winning', 'I can love and be furious at the same time', 'I will make repair when I am calm'],
+      whenToEscalate: 'If physical violence is severe or one-sided, talk to parent and counselor about safety.',
+      customization: 'For households with significant violence between siblings, family therapy is needed.',
+      research: 'Sibling violence is the most common form of family violence; intervention is appropriate.'
+    },
+    {
+      id: 'new_baby',
+      scenario: 'New baby or sibling (Yellow + Red surges)',
+      forBand: 'elementary',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'After new sibling arrives',
+      earlyWarnings: ['Wanting more attention', 'Acting younger than you are', 'Jealousy', 'Anger at parents'],
+      preventionPlan: {
+        night_before: ['Ask for one-on-one time'],
+        morning_of: ['Build in your own special routine'],
+        just_before: ['Honor that big feelings are normal']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "I feel jealous and that\'s okay"', 'Breathe out long'],
+        next_2min: ['Ask for what you need: "Can I have 10 minutes alone with you?"', 'Hug a parent', 'Quiet activity'],
+        if_still_activated: ['Talk to other adult', 'Move body', 'Cry if needed']
+      },
+      afterPlan: {
+        immediate: ['Honor the adjustment'],
+        same_day: ['Spend special time with parent'],
+        longer_term: ['Your place in the family is secure', 'You will love your sibling, but not always']
+      },
+      peopleToCall: ['Parent', 'Grandparent', 'Other relative'],
+      selfTalk: 'I am still loved. My place is not replaced. Jealousy is normal.',
+      reminders: ['I have a place in this family', 'I can love and resent at the same time', 'I am still important'],
+      whenToEscalate: 'If regression or anger persists, talk to family therapist.',
+      customization: 'For oldest children, build in special big-kid privileges that babies don\'t get.',
+      research: 'New sibling adjustment takes 6-12 months; parental one-on-one time is protective.'
+    },
+    {
+      id: 'pet_death',
+      scenario: 'Pet death (Blue → Red waves)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'After a beloved pet dies',
+      earlyWarnings: ['Crying in waves', 'Stomach knot', 'Avoiding their bed/toys', 'Numb shock'],
+      preventionPlan: {
+        night_before: ['Allow grief; this is real loss'],
+        morning_of: ['Tell teacher if needed'],
+        just_before: ['Permission to feel it all']
+      },
+      inMomentPlan: {
+        first_30sec: ['Let yourself cry', 'Hold something soft', 'Breathe out long'],
+        next_2min: ['Talk to family member', 'Look at photos if you want', 'Honor the relationship'],
+        if_still_activated: ['Walk', 'Be with another comforting pet if possible', 'Reach out to someone who knew them']
+      },
+      afterPlan: {
+        immediate: ['Eat, hydrate, sleep'],
+        same_day: ['Do something gentle', 'Connect with family'],
+        longer_term: ['Grief takes weeks to months', 'Memorial or ritual can help', 'New pet on your timeline, not anyone else\'s']
+      },
+      peopleToCall: ['Family member', 'Friend who has lost a pet', 'School counselor'],
+      selfTalk: 'My love for them was real. My grief is real. They mattered.',
+      reminders: ['Pet grief is real grief', 'The love does not end', 'They were loved well by me'],
+      whenToEscalate: 'If pet death triggers depression that doesn\'t lift in weeks, talk to therapist.',
+      customization: 'For only-child or isolated kids, pet loss can be devastating; honor accordingly.',
+      research: 'Pet bereavement is real grief; minimizing it is harmful.'
+    },
+    {
+      id: 'family_illness',
+      scenario: 'Family member illness (Yellow chronic)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Living with a sick family member',
+      earlyWarnings: ['Constant low-grade anxiety', 'Hyperalertness to symptoms', 'Guilt for normal kid activities', 'Difficulty concentrating'],
+      preventionPlan: {
+        night_before: ['Maintain your routines'],
+        morning_of: ['You can still have a normal day'],
+        just_before: ['Permission to be a kid even now']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Name it: "I am scared and that is fair"'],
+        next_2min: ['Talk to safe person', 'Stay in your role; you are a kid, not the doctor', 'Allow tears'],
+        if_still_activated: ['Move body', 'Get outside', 'Connect with friends']
+      },
+      afterPlan: {
+        immediate: ['Eat, hydrate, sleep'],
+        same_day: ['Connect with adults outside the illness'],
+        longer_term: ['Caregiver kid support groups exist', 'Therapy can help', 'You deserve a childhood even with this']
+      },
+      peopleToCall: ['School counselor', 'Trusted relative', 'Therapist', 'Friend\'s family'],
+      selfTalk: 'I love them and I am still a kid. Both are okay.',
+      reminders: ['I am not responsible for their health', 'I can still enjoy life', 'Asking for help is okay'],
+      whenToEscalate: 'If illness includes hospice or imminent death, advocate for child therapist support.',
+      customization: 'For kids who become caregivers, school counselor should know and support.',
+      research: 'Children of chronically ill parents are at risk for anxiety/depression; outside support is protective.'
+    },
+    {
+      id: 'family_death',
+      scenario: 'Family member death (Red → Blue waves)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'green',
+      setting: 'After death of a family member',
+      earlyWarnings: ['Tears in waves', 'Numb shock', 'Sleep disruption', 'Difficulty eating'],
+      preventionPlan: {
+        night_before: ['Allow grief; do not rush'],
+        morning_of: ['Tell teachers what happened'],
+        just_before: ['Permission to fall apart and rebuild']
+      },
+      inMomentPlan: {
+        first_30sec: ['Cry if you need to', 'Hold a comfort object', 'Breathe out long'],
+        next_2min: ['Be with safe people', 'Eat even if not hungry', 'Don\'t make big decisions'],
+        if_still_activated: ['Call a trusted adult', 'Move body gently', 'Allow waves']
+      },
+      afterPlan: {
+        immediate: ['Sleep, hydrate, eat'],
+        same_day: ['Connect with family who loved them too'],
+        longer_term: ['Grief is not a phase; it is a new shape of life', 'Therapy with grief specialist', 'Memorials and rituals matter']
+      },
+      peopleToCall: ['Family members', 'School counselor', 'Grief therapist', 'Friend\'s family', '988 if despair'],
+      selfTalk: 'My love for them is real. My grief is the size of my love. I will carry both.',
+      reminders: ['Grief is love with nowhere to go', 'I will be okay even if not the same', 'They are still part of me'],
+      whenToEscalate: 'If grief includes suicidal thoughts or lasts beyond 6 months without movement, talk to professional.',
+      customization: 'For traumatic deaths (suicide, violence, sudden), trauma-informed grief therapy.',
+      research: 'Grief is not pathology; complicated grief requires specialized support.'
+    },
+    {
+      id: 'moving_relocating',
+      scenario: 'Moving / relocating (Yellow chronic + Red surges)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Weeks before and after a move',
+      earlyWarnings: ['Anxiety about everything changing', 'Grief about leaving friends', 'Excitement mixed with dread', 'Sleep disruption'],
+      preventionPlan: {
+        night_before: ['Pack a comfort box of essentials'],
+        morning_of: ['Routine matters even in chaos'],
+        just_before: ['Permission for mixed feelings']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name the feeling', 'Breathe out long'],
+        next_2min: ['Connect with old friend by text', 'Plan one familiar thing in new home', 'Allow tears'],
+        if_still_activated: ['Talk to parent', 'Walk in old neighborhood (or new)', 'Comfort food']
+      },
+      afterPlan: {
+        immediate: ['Set up bedroom first; sanctuary matters'],
+        same_day: ['Keep old friend connections active', 'Explore new neighborhood'],
+        longer_term: ['6 months minimum to feel settled', 'New friendships take time', 'Old friendships can survive distance']
+      },
+      peopleToCall: ['Parent', 'Old friends', 'New school counselor when you arrive'],
+      selfTalk: 'I am allowed to grieve and to grow. Both can happen.',
+      reminders: ['Moving is hard for everyone', 'New does not erase old', 'I will find my place'],
+      whenToEscalate: 'If move triggers severe depression or refusal to attend school, therapy.',
+      customization: 'For autistic kids especially, transition plans and predictability are critical.',
+      research: 'Moving is a major stressor; 6-12 month adjustment is typical.'
+    },
+    {
+      id: 'parent_deployment',
+      scenario: 'Parent deployment (chronic Yellow)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Parent deployed for military service',
+      earlyWarnings: ['Constant low worry', 'Missing parent', 'Acting out at home', 'Difficulty focusing at school'],
+      preventionPlan: {
+        night_before: ['Connect with deployed parent on schedule when possible'],
+        morning_of: ['Photo or item of parent visible'],
+        just_before: ['Routine matters']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name the missing', 'Breathe out long'],
+        next_2min: ['Look at photo', 'Write a message (send or save)', 'Talk to home parent'],
+        if_still_activated: ['Connect with military family group', 'Move body', 'Cry if needed']
+      },
+      afterPlan: {
+        immediate: ['Honor the chronic load'],
+        same_day: ['Tell teacher about deployment for context'],
+        longer_term: ['Reunion has its own challenges; prepare', 'Military family support resources']
+      },
+      peopleToCall: ['Home parent', 'School counselor', 'Other military kids', 'Military OneSource: 1-800-342-9647'],
+      selfTalk: 'My family is doing a hard thing. I am proud and I miss them. Both are real.',
+      reminders: ['I am part of a community of military kids', 'My feelings are valid', 'I am strong'],
+      whenToEscalate: 'If deployment triggers severe anxiety or depression, military mental health resources.',
+      customization: 'For combat deployments, additional support during news cycles.',
+      research: 'Military children face unique stressors; community connection is protective.'
+    },
+    {
+      id: 'parents_job_loss',
+      scenario: 'Parent\'s job loss (Yellow chronic)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'After parent loses job',
+      earlyWarnings: ['Tension at home', 'Worry about money', 'Parents stressed', 'Wanting to fix it'],
+      preventionPlan: {
+        night_before: ['Routines still matter'],
+        morning_of: ['You are still a kid; not the provider'],
+        just_before: ['You don\'t have to fix this']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name the worry', 'Breathe out long'],
+        next_2min: ['Don\'t add demands; be helpful in small ways', 'Talk to safe outside adult', 'Be a kid still'],
+        if_still_activated: ['Connect with friends', 'Move body', 'Allow feelings']
+      },
+      afterPlan: {
+        immediate: ['Maintain school and basic routines'],
+        same_day: ['Don\'t take on adult financial worry'],
+        longer_term: ['Most families recover from job loss', 'School counselor knows resources']
+      },
+      peopleToCall: ['School counselor', 'Trusted relative', 'Friend'],
+      selfTalk: 'This is hard and not my responsibility. We will be okay.',
+      reminders: ['I am not the provider', 'My job is to be a kid', 'Families recover'],
+      whenToEscalate: 'If job loss leads to food/housing insecurity, school counselor knows resources (free meals, etc.).',
+      customization: 'For families needing food: school may have programs, plus local food banks.',
+      research: 'Parental unemployment affects child stress; sustaining routines is protective.'
+    },
+    {
+      id: 'new_stepparent',
+      scenario: 'New stepparent moving in (Yellow + Red)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Adjusting to new family structure',
+      earlyWarnings: ['Resentment', 'Loyalty conflict', 'Wanting old family back', 'Boundary tensions'],
+      preventionPlan: {
+        night_before: ['Keep one-on-one time with original parent'],
+        morning_of: ['Routine matters'],
+        just_before: ['Honor mixed feelings']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name the feeling', 'Breathe out long'],
+        next_2min: ['Don\'t suppress; don\'t lash out', 'Talk to safe person', 'Set kind limits where needed'],
+        if_still_activated: ['Time alone', 'Move body', 'Call other parent if appropriate']
+      },
+      afterPlan: {
+        immediate: ['Honor adjustment time'],
+        same_day: ['Connect with safe adult'],
+        longer_term: ['Adjustment takes years, not months', 'Family therapy can help', 'You can have a relationship without forcing love']
+      },
+      peopleToCall: ['Original parent', 'Other parent', 'Therapist', 'Trusted relative'],
+      selfTalk: 'I am not required to call them mom or dad. I can build a relationship over time.',
+      reminders: ['My loyalty to original parent is valid', 'New family takes time', 'My feelings are mine'],
+      whenToEscalate: 'If stepparent is abusive or boundary-violating, tell trusted adult.',
+      customization: 'For complex blended families, family therapy helps everyone.',
+      research: 'Stepfamily adjustment is multi-year; expecting quick bonding causes harm.'
+    },
+    {
+      id: 'religious_values_conflict',
+      scenario: 'Religious / values conflict with parents (Yellow chronic)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'When your beliefs diverge from family',
+      earlyWarnings: ['Dread of family conversations', 'Hiding parts of yourself', 'Guilt and anger', 'Wanting to move out'],
+      preventionPlan: {
+        night_before: ['Build outside community'],
+        morning_of: ['Know your safe topics'],
+        just_before: ['Permission to be selective about what you share']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Decide: do I engage or deflect?'],
+        next_2min: ['You don\'t owe debate', '"Let\'s talk about something else"', 'Walk away if escalates'],
+        if_still_activated: ['Time alone', 'Connect with chosen community', 'Allow grief if your family rejects part of you']
+      },
+      afterPlan: {
+        immediate: ['Decompress in your space'],
+        same_day: ['Connect with people who accept you'],
+        longer_term: ['You can love family while not sharing beliefs', 'Adulthood opens more options', 'Therapy helps process']
+      },
+      peopleToCall: ['Chosen community/family', 'School counselor', 'Therapist'],
+      selfTalk: 'My beliefs and identity are mine. I can love my family without erasing myself.',
+      reminders: ['I am whole even if they don\'t affirm', 'Chosen family is real', 'I will get to design my own adult life'],
+      whenToEscalate: 'If conflict includes threats of being kicked out (LGBTQ+ especially): Trevor Project, True Colors.',
+      customization: 'For high-control religion exits, recovering-from-religion resources exist.',
+      research: 'Family of origin conflict over values is common; finding chosen community is protective.'
+    },
+    {
+      id: 'restrictive_household',
+      scenario: 'Restrictive household (Yellow chronic)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Strict rules limit normal teen life',
+      earlyWarnings: ['Constant low frustration', 'Feeling isolated from peers', 'Lying to keep peace', 'Counting days to 18'],
+      preventionPlan: {
+        night_before: ['Pick battles wisely'],
+        morning_of: ['Honor what is yours: your inner life'],
+        just_before: ['Find joys within constraints']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Name the frustration without acting on it'],
+        next_2min: ['Get outside or to your room', 'Connect with friends who get it', 'Don\'t blow up over small things'],
+        if_still_activated: ['Time alone', 'Move body', 'Plan for the long game']
+      },
+      afterPlan: {
+        immediate: ['Maintain school as your investment in future'],
+        same_day: ['Connect with outside adults who see you'],
+        longer_term: ['Adulthood is coming', 'College/job is escape route', 'Therapy helps with the chronic strain']
+      },
+      peopleToCall: ['School counselor', 'Trusted teacher', 'Friend\'s family', 'Therapist'],
+      selfTalk: 'I am building a life I will design. This is temporary.',
+      reminders: ['Their rules are not the world', 'I am preparing for adulthood', 'My future is mine'],
+      whenToEscalate: 'If restriction includes abuse or control: Childhelp 1-800-422-4453.',
+      customization: 'For teens in oppressive homes, school becomes the lifeline; build connection there.',
+      research: 'Authoritarian parenting predicts adolescent depression; outside relationships are protective.'
+    },
+    {
+      id: 'lack_of_privacy',
+      scenario: 'Lack of privacy at home (Yellow chronic)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Parents read texts, search room, listen to calls',
+      earlyWarnings: ['Constant low tension', 'Hiding everything', 'Resentment building', 'Trust eroded'],
+      preventionPlan: {
+        night_before: ['Have spaces away from home (library, friend\'s)'],
+        morning_of: ['Maintain inner privacy at minimum'],
+        just_before: ['Pick battles']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Name the violation calmly to yourself'],
+        next_2min: ['Calm conversation if possible: "I need some privacy"', 'Don\'t blow up; that escalates', 'Honor your inner space'],
+        if_still_activated: ['Time alone', 'Connect outside home', 'Write in private location']
+      },
+      afterPlan: {
+        immediate: ['Decompress'],
+        same_day: ['Connect with safe people'],
+        longer_term: ['Family therapy might help', 'Adulthood opens privacy', 'Building trust is two-way']
+      },
+      peopleToCall: ['School counselor', 'Therapist', 'Trusted relative'],
+      selfTalk: 'My inner life is mine. They cannot take that.',
+      reminders: ['Privacy is a developmental need', 'I will have privacy as an adult', 'My self is mine'],
+      whenToEscalate: 'If privacy violation is part of broader control or abuse, counselor or DV/abuse resources.',
+      customization: 'For students whose searches reveal LGBTQ+ identity, Trevor Project for safety planning.',
+      research: 'Adolescent privacy is a developmental task; chronic violation predicts depression.'
+    },
+    {
+      id: 'family_financial_crisis',
+      scenario: 'Family financial crisis (Yellow chronic)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Money is tight; bills, food, housing stress',
+      earlyWarnings: ['Worry about basics', 'Parents stressed', 'Skipping things others do', 'Shame'],
+      preventionPlan: {
+        night_before: ['You are still allowed to be a kid'],
+        morning_of: ['School resources exist (free meals, fee waivers)'],
+        just_before: ['Money does not measure worth']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Name the worry without taking it on'],
+        next_2min: ['Talk to school counselor about resources', 'Don\'t take on adult financial role', 'Allow feelings'],
+        if_still_activated: ['Move body', 'Talk to safe friend', 'Maintain routines']
+      },
+      afterPlan: {
+        immediate: ['Eat at school if home food is short (no shame)'],
+        same_day: ['Counselor knows resources: food, clothes, supplies'],
+        longer_term: ['Most families recover', 'Your worth is not financial', 'Free college options exist (FAFSA, Pell, in-state)']
+      },
+      peopleToCall: ['School counselor', 'Free meal program', '211 (community resources)'],
+      selfTalk: 'My family\'s money is not my worth. I am still whole.',
+      reminders: ['I deserve resources', 'Schools have help; ask', 'I will build my own future'],
+      whenToEscalate: 'If facing eviction or housing loss: school counselor + 211 + community resources.',
+      customization: 'For homelessness: McKinney-Vento rights protect school stability.',
+      research: 'Economic stress affects whole family; school as stable anchor is protective.'
+    },
+    {
+      id: 'family_addiction_crisis',
+      scenario: 'Family addiction crisis (chronic Yellow + Red waves, SAMHSA)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Parent or sibling with active addiction',
+      earlyWarnings: ['Hyperalertness to mood', 'Walking on eggshells', 'Hiding from friends', 'Feeling responsible'],
+      preventionPlan: {
+        night_before: ['Have safe place to go'],
+        morning_of: ['Routine matters'],
+        just_before: ['You are not responsible']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get to physical safety', 'Breathe out long', 'Name it: "This is the addiction, not them"'],
+        next_2min: ['Call trusted adult', 'Don\'t try to fix or reason with intoxicated person', 'If unsafe, leave'],
+        if_still_activated: ['Friend\'s house', 'Other parent or relative', 'Call SAMHSA 1-800-662-4357 for resources']
+      },
+      afterPlan: {
+        immediate: ['Be with safe people'],
+        same_day: ['Talk to school counselor; you need support too'],
+        longer_term: ['Alateen (for teens) is free and helpful', 'Therapy helps', 'You did not cause, cannot control, cannot cure']
+      },
+      peopleToCall: ['Trusted relative', 'School counselor', 'Alateen', 'SAMHSA: 1-800-662-4357', '911 if unsafe'],
+      selfTalk: 'I did not cause this. I cannot fix this. I deserve support too.',
+      reminders: ['The 3 Cs: I didn\'t cause, can\'t control, can\'t cure', 'I am loved', 'I deserve a childhood'],
+      whenToEscalate: 'If immediate danger from intoxicated family: leave + call 911. SAMHSA for ongoing.',
+      customization: 'Alateen meetings are designed for kids in your situation; free and supportive.',
+      research: 'Children of addicted parents face elevated risk; outside support and education are protective (NACoA).'
+    },
+    {
+      id: 'domestic_violence_concern',
+      scenario: 'Domestic violence concern (Red, CRITICAL — Childhelp 1-800-422-4453, 911)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Violence or threats at home',
+      earlyWarnings: ['Yelling escalating', 'Threats of harm', 'Past pattern of violence', 'Fear for yourself or others'],
+      preventionPlan: {
+        night_before: ['Safety plan: where do I go?', 'Phone charged', 'Important numbers saved'],
+        morning_of: ['Know your exit routes'],
+        just_before: ['Trust your instincts']
+      },
+      inMomentPlan: {
+        first_30sec: ['GET TO SAFETY. Leave if you can.', 'CALL 911 if immediate violence', 'Get younger siblings out if possible'],
+        next_2min: ['Go to neighbor, friend\'s house, public place', 'Stay on phone with 911', 'Do not try to intervene physically'],
+        if_still_activated: ['Stay at safe location', 'Wait for police', 'Childhelp: 1-800-422-4453']
+      },
+      afterPlan: {
+        immediate: ['Stay safe; don\'t return until clear'],
+        same_day: ['Tell trusted adult: counselor, teacher, relative'],
+        longer_term: ['Therapy is critical', 'Court advocates can help', 'You deserve safety']
+      },
+      peopleToCall: ['911 for immediate danger', 'Childhelp: 1-800-422-4453', 'National DV Hotline: 1-800-799-7233', 'School counselor', 'Trusted relative'],
+      selfTalk: 'I deserve safety. Telling is brave. I am not responsible for their violence.',
+      reminders: ['Violence is never my fault', 'Safety first', 'Adults can help'],
+      whenToEscalate: 'If you witness violence, even once: tell trusted adult. If immediate: 911. This is reportable.',
+      customization: 'For shelters: National DV Hotline can connect. For kids: Childhelp.',
+      research: 'Witnessing DV affects children profoundly; early intervention is critical.'
+    },
+    {
+      id: 'caring_for_sibling_solo',
+      scenario: 'Caring for younger sibling solo (chronic Yellow)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'You are de facto parent due to family situation',
+      earlyWarnings: ['Exhaustion', 'Missing your own kid life', 'Resentment', 'Falling behind in school'],
+      preventionPlan: {
+        night_before: ['Honor that this is work'],
+        morning_of: ['You are still a kid'],
+        just_before: ['Permission to ask for help']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Name the load'],
+        next_2min: ['Ask for help: relative, school counselor', 'Take breaks where you can', 'Don\'t pretend you\'re fine'],
+        if_still_activated: ['Outside walk', 'Call friend', 'Tell someone the truth']
+      },
+      afterPlan: {
+        immediate: ['Eat, hydrate, sleep when possible'],
+        same_day: ['Connect with safe adult'],
+        longer_term: ['Family services may help', 'Therapy critical', 'You deserve childhood']
+      },
+      peopleToCall: ['School counselor', 'Trusted relative', '211 for resources', 'Therapist'],
+      selfTalk: 'I love them. And I am still a kid. Both are true.',
+      reminders: ['I deserve help', 'I am not a parent', 'Adults can do more than they say'],
+      whenToEscalate: 'If you\'re raising a sibling because no one else will, school counselor + DCF may be needed for support.',
+      customization: 'Caregiver kids need their own support; ask for it.',
+      research: 'Parentified children face long-term mental health risk; recognition and support help.'
+    },
+    {
+      id: 'after_holidays',
+      scenario: 'After holidays exhaustion (Blue + Yellow)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Returning to normal after intense holiday season',
+      earlyWarnings: ['Letdown', 'Exhaustion', 'Reluctance to return to school', 'Family hangover'],
+      preventionPlan: {
+        night_before: ['Build buffer days before return'],
+        morning_of: ['Easy breakfast, ease back in'],
+        just_before: ['Bring a small comfort item']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Acknowledge the dip'],
+        next_2min: ['Routine helps even when reluctant', 'Connect with one person', 'Don\'t pile on demands'],
+        if_still_activated: ['Quiet evening', 'Hot shower', 'Early bed']
+      },
+      afterPlan: {
+        immediate: ['Light week if possible'],
+        same_day: ['Connect with friends back at school'],
+        longer_term: ['Post-holiday letdown is normal', 'It passes within 1-2 weeks']
+      },
+      peopleToCall: ['Friend', 'Parent', 'Counselor if dip lingers'],
+      selfTalk: 'The dip is real and temporary. I will return to baseline.',
+      reminders: ['Letdown is normal', 'Routine restores', 'I am not broken'],
+      whenToEscalate: 'If post-holiday Blue lasts more than 2-3 weeks or includes despair, talk to counselor.',
+      customization: 'For SAD-vulnerable kids, light therapy + Vitamin D.',
+      research: 'Post-holiday adjustment is common; consistent routines help.'
+    },
+
+    // ===== INTERNAL / IDENTITY =====
+    {
+      id: 'anxiety_spiral',
+      scenario: 'Anxiety spiral (Yellow → Red)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Thoughts looping out of control',
+      earlyWarnings: ['Catastrophic thinking', '"What if" loops', 'Chest tightness', 'Racing heart'],
+      preventionPlan: {
+        night_before: ['Anti-anxiety hygiene: sleep, limit caffeine'],
+        morning_of: ['Morning routine to ground'],
+        just_before: ['Notice early signs and intervene']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is anxiety, not danger"', 'Box breathing: 4 in, 4 hold, 4 out, 4 hold', 'Feet on floor, hands on object'],
+        next_2min: ['5-4-3-2-1 grounding: 5 see, 4 hear, 3 touch, 2 smell, 1 taste', 'Cold water on wrists or face', 'Move body briefly'],
+        if_still_activated: ['Talk to safe person', 'Distract with engaging activity', 'Allow without fighting']
+      },
+      afterPlan: {
+        immediate: ['Eat, hydrate, rest'],
+        same_day: ['Reflect: what triggered it?', 'Be gentle with yourself'],
+        longer_term: ['CBT therapy is highly effective', 'Daily mindfulness reduces baseline', 'Talk to doctor if frequent']
+      },
+      peopleToCall: ['Therapist', 'Friend who is calm', 'Parent', '988 if it becomes panic'],
+      selfTalk: 'Anxiety is uncomfortable but not dangerous. It will pass. I am safe.',
+      reminders: ['Feelings are not facts', 'This too will pass', 'I have survived this before'],
+      whenToEscalate: 'If spirals happen daily and interfere with life, talk to doctor about therapy and possibly medication.',
+      customization: 'For chronic anxiety, treatment is often life-changing; do not suffer alone.',
+      research: 'CBT, mindfulness, and SSRIs are effective for anxiety; combination often best.'
+    },
+    {
+      id: 'panic_attack',
+      scenario: 'Panic attack (Red)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Sudden onset of intense fear with physical symptoms',
+      earlyWarnings: ['Sudden chest tightness', 'Hyperventilation', 'Feeling of doom', 'Dizziness', 'Numbness'],
+      preventionPlan: {
+        night_before: ['Sleep matters'],
+        morning_of: ['Limit caffeine'],
+        just_before: ['Know panic is not heart attack: it peaks in 10 min']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is a panic attack. I am not dying."', 'Breathe OUT longer than in (4 in, 8 out)', 'Cold water on face/wrists if possible'],
+        next_2min: ['Get to safe space if possible', 'Grounding: 5-4-3-2-1', 'Don\'t fight; it makes it worse'],
+        if_still_activated: ['Allow it to peak; it WILL pass in 10-20 min', 'Call trusted person', 'Sit or lie down if dizzy']
+      },
+      afterPlan: {
+        immediate: ['Rest; you just ran a marathon neurologically'],
+        same_day: ['Eat, hydrate, be gentle'],
+        longer_term: ['First panic attack: see doctor to rule out medical', 'Therapy for ongoing panic disorder', 'Highly treatable']
+      },
+      peopleToCall: ['Therapist', 'Trusted adult', '988 if persistent', 'ER if first time or symptoms persist'],
+      selfTalk: 'My body is sending false alarms. I am safe. This will pass.',
+      reminders: ['Panic peaks and falls', 'I have survived this', 'I am not dying'],
+      whenToEscalate: 'If first panic attack or persists beyond 30 min: ER to rule out medical. Recurrent: therapy.',
+      customization: 'For school-based panic, accommodation plan with counselor.',
+      research: 'Panic disorder responds excellently to CBT; medications can help.'
+    },
+    {
+      id: 'depression_episode',
+      scenario: 'Depression episode (Blue chronic)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Days/weeks of low mood, no energy, no interest',
+      earlyWarnings: ['Loss of pleasure in things you loved', 'Sleeping too much or too little', 'Appetite changes', 'Self-talk: "What\'s the point"'],
+      preventionPlan: {
+        night_before: ['Behavioral activation: do small things even unmotivated'],
+        morning_of: ['Get out of bed even if hard', 'Get sunlight'],
+        just_before: ['Move body in some way']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "I am depressed. This is not my truth, it is my illness."', 'Breathe out long'],
+        next_2min: ['One small action: water, shower, walk', 'Don\'t isolate fully', 'Connect with one person'],
+        if_still_activated: ['Outside if possible', 'Soft food', 'Call someone']
+      },
+      afterPlan: {
+        immediate: ['Honor that depression is illness, not laziness'],
+        same_day: ['Tell trusted adult; you need help'],
+        longer_term: ['Therapy is essential', 'Medication often helps', 'Exercise + sunlight + sleep all help']
+      },
+      peopleToCall: ['Therapist', 'Doctor', 'Trusted parent', '988 if despair includes suicide thoughts'],
+      selfTalk: 'This is depression, not me. I am ill and I can get help.',
+      reminders: ['Depression lies', 'I will not always feel this way', 'I deserve help'],
+      whenToEscalate: 'If suicidal thoughts emerge: 988. If depression lasts weeks: see doctor.',
+      customization: 'For teens, parental support + therapy + sometimes medication.',
+      research: 'Adolescent depression is highly treatable; untreated it predicts adult depression.'
+    },
+    {
+      id: 'autistic_meltdown',
+      scenario: 'Autistic meltdown (Red — NOT a tantrum)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'green',
+      setting: 'Sensory or processing overload',
+      earlyWarnings: ['Sensory overwhelm', 'Difficulty processing', 'Hands over ears', 'Tears or rage building'],
+      preventionPlan: {
+        night_before: ['Pace your day; downtime is essential'],
+        morning_of: ['Sensory accommodations: headphones, sunglasses'],
+        just_before: ['Notice early signs; remove triggers']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get to a quiet, low-light space', 'Headphones or earplugs', 'Reduce all sensory input'],
+        next_2min: ['Stim freely; it is regulation', 'Pressure or deep touch if helpful', 'No talking required'],
+        if_still_activated: ['Trusted adult can be present quietly', 'No demands; no questions', 'Allow to pass naturally']
+      },
+      afterPlan: {
+        immediate: ['Rest deeply; meltdown is exhausting'],
+        same_day: ['Quiet activities; no demands'],
+        longer_term: ['Reduce future triggers', 'Build pacing into life', 'Honor neurology']
+      },
+      peopleToCall: ['Parent who understands', 'Autistic adult mentor if available', 'OT'],
+      selfTalk: 'My brain is overwhelmed. This is not bad behavior. I need recovery.',
+      reminders: ['Meltdown is overload, not tantrum', 'I am not weak; my brain is doing a lot', 'Recovery is necessary'],
+      whenToEscalate: 'If meltdowns include self-harm, work with OT and therapist.',
+      customization: 'No talking-through during meltdown; that escalates. Recovery space + sensory regulation.',
+      research: 'Meltdowns are neurological, not behavioral; trying to "discipline" them harms (Welch).'
+    },
+    {
+      id: 'autistic_shutdown',
+      scenario: 'Autistic shutdown (Red as freeze)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'green',
+      setting: 'Overwhelm presenting as withdrawal, silence, non-responsiveness',
+      earlyWarnings: ['Can\'t speak', 'Going blank', 'Withdrawal', 'Body shutting down'],
+      preventionPlan: {
+        night_before: ['Honor pacing'],
+        morning_of: ['Build in low-input time'],
+        just_before: ['Notice signs early']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get to quiet space', 'Reduce demands to zero', 'Sit or lie down'],
+        next_2min: ['No talking required', 'No questions', 'Weighted blanket or comfort'],
+        if_still_activated: ['Allow recovery time without judgment', 'AAC or written communication if needed', 'No \"snap out of it\" pressure']
+      },
+      afterPlan: {
+        immediate: ['Deep rest'],
+        same_day: ['Honor the cost'],
+        longer_term: ['Pacing prevents shutdown', 'Reduce masking']
+      },
+      peopleToCall: ['Parent who knows', 'Autistic mentor', 'OT'],
+      selfTalk: 'My system is protecting me. This is recovery time.',
+      reminders: ['Shutdown is freeze response', 'I will come back', 'I am still here'],
+      whenToEscalate: 'If shutdowns are frequent and severe, evaluate sensory environment and demands.',
+      customization: 'Honor non-verbal communication; pressure to talk worsens shutdown.',
+      research: 'Shutdown is autonomic freeze; respect, don\'t override.'
+    },
+    {
+      id: 'sensory_overload',
+      scenario: 'Sensory overload (Yellow → Red)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Too much input: lights, sound, smell, touch',
+      earlyWarnings: ['Hands covering ears', 'Squinting', 'Pulling at clothes', 'Wanting to leave'],
+      preventionPlan: {
+        night_before: ['Sensory kit: headphones, sunglasses, fidget'],
+        morning_of: ['Plan low-input times'],
+        just_before: ['Identify exits before entering loud space']
+      },
+      inMomentPlan: {
+        first_30sec: ['Reduce input: headphones, sunglasses', 'Move to quieter space', 'Breathe out long'],
+        next_2min: ['Pressure or deep touch can help', 'Stim freely', 'Water'],
+        if_still_activated: ['Leave the environment', 'Recovery time', 'No demands']
+      },
+      afterPlan: {
+        immediate: ['Rest in low-input space'],
+        same_day: ['Honor cost'],
+        longer_term: ['Build sensory accommodations into life', 'OT can help']
+      },
+      peopleToCall: ['Parent', 'OT', 'Autistic friend'],
+      selfTalk: 'My sensory system is overwhelmed. This is real. I need quiet.',
+      reminders: ['I am not too sensitive; the world is too loud', 'My needs are valid', 'Accommodations help'],
+      whenToEscalate: 'If sensory issues interfere with school, request OT evaluation and accommodations.',
+      customization: 'Sensory profile varies; identify your specific triggers.',
+      research: 'Sensory processing differences are real; accommodations work (Dunn).'
+    },
+    {
+      id: 'trauma_flashback',
+      scenario: 'Trauma flashback (Red)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Sudden re-experiencing of past trauma',
+      earlyWarnings: ['Smell, sound, image triggers memory', 'Body feels like past', 'Time distorts', 'Panic'],
+      preventionPlan: {
+        night_before: ['Therapy with trauma specialist'],
+        morning_of: ['Grounding kit: textured object, mint, photo'],
+        just_before: ['Identify safe spaces and people']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is a flashback. I am safe now."', 'Cold water on face/wrists', 'Look around: "I see [present things]"'],
+        next_2min: ['Grounding: 5 things I see in present', 'Engage senses: peppermint, ice cube', 'Move body to remind it is now'],
+        if_still_activated: ['Call therapist or safe person', 'Trauma stabilization technique you\'ve learned', 'Allow it to pass; you will come back']
+      },
+      afterPlan: {
+        immediate: ['Rest; flashbacks are exhausting'],
+        same_day: ['Tell therapist or safe person'],
+        longer_term: ['Trauma therapy: EMDR, TF-CBT are evidence-based', 'You can heal']
+      },
+      peopleToCall: ['Therapist', 'Trusted adult', '988', 'RAINN: 1-800-656-4673 for sexual trauma'],
+      selfTalk: 'The trauma happened then. I am safe now. My body is just remembering.',
+      reminders: ['I survived', 'I am safe right now', 'Healing is possible'],
+      whenToEscalate: 'For flashbacks, trauma therapy is essential. EMDR + TF-CBT have strong evidence.',
+      customization: 'For sexual trauma: RAINN. For violence: trauma center.',
+      research: 'Trauma is treatable; specialized therapies are effective (van der Kolk).'
+    },
+    {
+      id: 'insomnia_spiral',
+      scenario: 'Insomnia spiral (Yellow → Blue cycle)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Can\'t sleep; anxiety about not sleeping makes it worse',
+      earlyWarnings: ['Checking clock', 'Racing thoughts', 'Worry about tomorrow', 'Tension'],
+      preventionPlan: {
+        night_before: ['Sleep hygiene: no screens 1hr before, cool dark room', 'No caffeine after noon'],
+        morning_of: ['Get sunlight first thing'],
+        just_before: ['Wind-down routine']
+      },
+      inMomentPlan: {
+        first_30sec: ['Stop watching the clock', 'Slow breathing', 'Tell yourself: "Resting counts even without sleep"'],
+        next_2min: ['Get out of bed if awake 20+ min', 'Boring activity in dim light', 'Return when sleepy'],
+        if_still_activated: ['Don\'t catastrophize about tomorrow', 'Body scan meditation', 'Accept what is']
+      },
+      afterPlan: {
+        immediate: ['Don\'t nap excessively next day'],
+        same_day: ['Normal bedtime tomorrow'],
+        longer_term: ['CBT-I for chronic insomnia', 'Talk to doctor if persistent']
+      },
+      peopleToCall: ['Doctor', 'Therapist'],
+      selfTalk: 'Rest is restoration too. I will sleep eventually.',
+      reminders: ['One bad night is survivable', 'Worrying about sleep prevents sleep', 'Body will sleep when it can'],
+      whenToEscalate: 'If insomnia persists 3+ weeks, see doctor.',
+      customization: 'For anxiety-driven insomnia, treat the anxiety.',
+      research: 'CBT-I outperforms sleep medications long-term.'
+    },
+    {
+      id: 'body_image_distress',
+      scenario: 'Body image distress (Blue → Red)',
+      forBand: 'middle',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Mirror, photos, comparison',
+      earlyWarnings: ['Mirror checking', 'Self-criticism loops', 'Comparison to others', 'Wanting to hide'],
+      preventionPlan: {
+        night_before: ['Limit triggering social media'],
+        morning_of: ['Get dressed quickly without overlong mirror'],
+        just_before: ['Affirmations or grounding']
+      },
+      inMomentPlan: {
+        first_30sec: ['Step away from mirror', 'Breathe out long', 'Tell yourself: "My body is mine"'],
+        next_2min: ['Focus on what body does, not how it looks', 'Engage in non-appearance activity', 'Reach out if needed'],
+        if_still_activated: ['Move body for joy not punishment', 'Distract with hobby', 'Allow feelings']
+      },
+      afterPlan: {
+        immediate: ['Comfort, kindness'],
+        same_day: ['Unfollow triggering accounts', 'Spend time with body-positive people'],
+        longer_term: ['Therapy if distress is severe', 'Body neutrality > body positivity for many']
+      },
+      peopleToCall: ['Trusted friend', 'Therapist', 'NEDA if disordered eating'],
+      selfTalk: 'My body deserves kindness. It carries me through life.',
+      reminders: ['Bodies change; my worth does not', 'Mirrors lie about who I am', 'I am more than this'],
+      whenToEscalate: 'If body image distress includes restricting food, purging, or excessive exercise: NEDA 1-800-931-2237.',
+      customization: 'For trans/non-binary: gender-affirming care matters.',
+      research: 'Body dissatisfaction is normalized in girls; intervention is appropriate.'
+    },
+    {
+      id: 'disordered_eating_thoughts',
+      scenario: 'Disordered eating thoughts (Red, NEDA 1-800-931-2237)',
+      forBand: 'high',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Urge to restrict, binge, purge, or obsess over food/body',
+      earlyWarnings: ['Counting calories obsessively', 'Skipping meals', 'Hiding food', 'Body checking constantly'],
+      preventionPlan: {
+        night_before: ['Eat regular meals; restriction triggers binge'],
+        morning_of: ['Breakfast matters'],
+        just_before: ['Notice early thoughts; intervene']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is the eating disorder, not me"', 'Reach out to safe person', 'Tell someone'],
+        next_2min: ['NEDA: 1-800-931-2237 or text NEDA to 741741', 'Distract with non-food activity', 'Don\'t isolate'],
+        if_still_activated: ['Get to therapist or doctor', 'Crisis Text Line: HOME to 741741', 'Tell parent']
+      },
+      afterPlan: {
+        immediate: ['Eat a regular meal'],
+        same_day: ['Tell trusted adult; you need help'],
+        longer_term: ['Specialized ED treatment: dietitian + therapist + doctor', 'Recovery is possible']
+      },
+      peopleToCall: ['NEDA: 1-800-931-2237', 'Parent', 'Doctor', 'Therapist', '988 if despair'],
+      selfTalk: 'The eating disorder is not me. I deserve nourishment and recovery.',
+      reminders: ['ED lies', 'My body deserves food', 'Recovery is possible'],
+      whenToEscalate: 'If restricting severely, purging, or having medical complications: ER + immediate professional help.',
+      customization: 'Treatment requires specialists; pediatrician alone is not enough.',
+      research: 'EDs have highest mortality of mental illnesses; early treatment is critical.'
+    },
+    {
+      id: 'substance_use_urge',
+      scenario: 'Substance use urge (Red, SAMHSA)',
+      forBand: 'high',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Craving to use to cope or numb',
+      earlyWarnings: ['Triggers: stress, certain people/places', 'Justifying use', 'Wanting to numb'],
+      preventionPlan: {
+        night_before: ['Avoid triggers when possible', 'Have alternatives planned'],
+        morning_of: ['Connect with sober support'],
+        just_before: ['Call someone before using']
+      },
+      inMomentPlan: {
+        first_30sec: ['STOP. Wait 15 minutes.', 'Call sponsor or trusted person', 'Move location away from trigger'],
+        next_2min: ['Distract: walk, music, hobby', 'Eat or hydrate', 'SAMHSA: 1-800-662-4357'],
+        if_still_activated: ['Get to safe place with safe people', 'Therapist or AA/NA meeting', 'Cravings pass; this one will too']
+      },
+      afterPlan: {
+        immediate: ['Honor the win of not using'],
+        same_day: ['Tell support person'],
+        longer_term: ['Treatment helps', 'Recovery is possible', 'You deserve support']
+      },
+      peopleToCall: ['Sponsor', 'SAMHSA: 1-800-662-4357', 'Therapist', 'Trusted adult'],
+      selfTalk: 'The urge will pass. Using is not the answer to my pain.',
+      reminders: ['Cravings peak and fall', 'I am not alone', 'Recovery is possible'],
+      whenToEscalate: 'For active addiction in adolescence, specialized treatment is needed. SAMHSA can connect.',
+      customization: 'For families: Al-Anon, NA, AA all have teen options.',
+      research: 'Adolescent SUD responds to family-involved treatment.'
+    },
+    {
+      id: 'self_harm_urge',
+      scenario: 'Self-harm urge (Red, 988 + Crisis Text Line)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Urge to hurt yourself to cope',
+      earlyWarnings: ['Overwhelm', 'Numbness wanting to feel', 'Self-hatred', 'Wanting to punish'],
+      preventionPlan: {
+        night_before: ['Remove or secure tools'],
+        morning_of: ['Connect with safe person daily'],
+        just_before: ['Have plan: who to call, what to do']
+      },
+      inMomentPlan: {
+        first_30sec: ['STOP. Tell someone NOW.', 'Move away from tools', 'Text HOME to 741741 or call 988'],
+        next_2min: ['Alternatives: ice cube on skin, intense exercise, red marker, snap rubber band', 'Call safe person', 'Get out of room if alone'],
+        if_still_activated: ['Get to ER if can\'t resist', 'Stay with safe person', 'Crisis line stays on with you']
+      },
+      afterPlan: {
+        immediate: ['Tell trusted adult'],
+        same_day: ['Therapist appointment'],
+        longer_term: ['DBT is highly effective for self-harm', 'Recovery is possible']
+      },
+      peopleToCall: ['988', 'Crisis Text Line: HOME to 741741', 'Parent', 'Therapist', 'ER if cannot resist'],
+      selfTalk: 'My pain is real. Hurting myself does not heal it. I deserve other options.',
+      reminders: ['Urges peak and fall', 'I am worth other coping', 'I am not alone'],
+      whenToEscalate: 'Always tell trusted adult. If severe injury occurred: ER. DBT is the gold standard treatment.',
+      customization: 'DBT skills (TIPP, distress tolerance) work for crisis moments.',
+      research: 'DBT (Linehan) significantly reduces self-harm and suicide attempts.'
+    },
+    {
+      id: 'suicidal_ideation',
+      scenario: 'Suicidal ideation (Red, 988 emphatically)',
+      forBand: 'all',
+      fromZone: 'red',
+      toZone: 'yellow',
+      setting: 'Thoughts of ending your life',
+      earlyWarnings: ['Hopelessness', 'Burden thinking ("better off without me")', 'Researching methods', 'Giving things away'],
+      preventionPlan: {
+        night_before: ['Safety plan made WITH a clinician'],
+        morning_of: ['Reduce access to lethal means'],
+        just_before: ['Have crisis numbers memorized']
+      },
+      inMomentPlan: {
+        first_30sec: ['CALL 988 NOW. Text 741741 if can\'t talk.', 'Tell someone immediately', 'Do not be alone'],
+        next_2min: ['Get to safe person or place', 'Remove access to means', 'ER if active plan'],
+        if_still_activated: ['Stay on phone with 988', 'Go to ER', 'Stay with someone']
+      },
+      afterPlan: {
+        immediate: ['Be with safe people'],
+        same_day: ['Mental health professional ASAP'],
+        longer_term: ['Treatment works', 'Many who recover say they are grateful they lived', 'You matter']
+      },
+      peopleToCall: ['988', 'Crisis Text Line: HOME to 741741', 'Trevor Project (LGBTQ+): 1-866-488-7386', 'Parent', 'ER', 'Therapist'],
+      selfTalk: 'My pain is real. Death is permanent and not the answer. I deserve help.',
+      reminders: ['Crisis passes', 'I am loved by people I don\'t even know yet', 'Treatment works'],
+      whenToEscalate: 'Suicidal ideation = immediate adult involvement. Active plan = ER. Always.',
+      customization: 'For LGBTQ+ youth: Trevor. For veterans family: 988 then 1. For Spanish: 988 then 2.',
+      research: 'Most suicidal crises are time-limited; lethal means restriction and safety planning save lives.'
+    },
+    {
+      id: 'spiritual_crisis',
+      scenario: 'Religious doubt / spiritual crisis (Yellow chronic + Red waves)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Questioning your religious upbringing',
+      earlyWarnings: ['Faith doubts', 'Guilt about doubting', 'Fear of family rejection', 'Identity confusion'],
+      preventionPlan: {
+        night_before: ['Permission to question; that is growth'],
+        morning_of: ['Hold space for uncertainty'],
+        just_before: ['You don\'t need to decide today']
+      },
+      inMomentPlan: {
+        first_30sec: ['Breathe out long', 'Name the feeling without resolving'],
+        next_2min: ['Read or listen to people who\'ve been here', 'Connect with safe person', 'Don\'t announce decisions yet'],
+        if_still_activated: ['Time alone with feelings', 'Move body', 'Allow grief if losing faith feels like loss']
+      },
+      afterPlan: {
+        immediate: ['Honor the work of questioning'],
+        same_day: ['Connect with people who can hold complexity'],
+        longer_term: ['Therapy with religious-trauma-informed therapist if needed', 'Many people redefine faith over time', 'Some leave, some stay, some land elsewhere']
+      },
+      peopleToCall: ['Trusted friend who has been here', 'Therapist (religious-trauma-informed)', 'Recovering From Religion: 1-844-368-2848'],
+      selfTalk: 'My questions are honest. I don\'t need to have answers today.',
+      reminders: ['Doubt is part of faith and part of leaving faith', 'I am still myself', 'I will figure this out over time'],
+      whenToEscalate: 'If religious trauma includes severe shame, OCD-like guilt, or self-harm: religious-trauma-informed therapist.',
+      customization: 'For high-control religion: Recovering From Religion Foundation resources.',
+      research: 'Religious deconstruction is increasingly common; specialized support helps.'
+    },
+
+    // ===== BODY / BIOLOGICAL =====
+    {
+      id: 'period_cramps_mood',
+      scenario: 'Period cramps + mood (Yellow + Red)',
+      forBand: 'middle',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Menstrual cycle physical and emotional symptoms',
+      earlyWarnings: ['Cramping', 'Mood swings', 'Fatigue', 'Sensitivity'],
+      preventionPlan: {
+        night_before: ['Track cycle to anticipate'],
+        morning_of: ['Heat pad ready, supplies stocked'],
+        just_before: ['Take NSAID early for cramps']
+      },
+      inMomentPlan: {
+        first_30sec: ['Heat on lower abdomen', 'NSAID per package', 'Slow breath'],
+        next_2min: ['Hydrate', 'Light movement helps', 'Rest if needed'],
+        if_still_activated: ['Lie down if possible', 'Talk to nurse if severe', 'Honor that this is real pain']
+      },
+      afterPlan: {
+        immediate: ['Continue heat and meds as needed'],
+        same_day: ['Sleep, water, comfort food'],
+        longer_term: ['If pain is debilitating, see doctor (rule out endometriosis)']
+      },
+      peopleToCall: ['Parent', 'Friend who gets it', 'Nurse'],
+      selfTalk: 'My body is doing intense work. I deserve care.',
+      reminders: ['Cramps are real, not weakness', 'Hormones are real', 'I can ask for accommodation'],
+      whenToEscalate: 'If pain is severe, blocking school: see doctor.',
+      customization: 'For trans/non-binary menstruators, language and dysphoria support matter.',
+      research: 'Period pain is undertreated; effective treatments exist.'
+    },
+    {
+      id: 'pms_pmdd',
+      scenario: 'PMS / PMDD (chronic Yellow)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Days before period',
+      earlyWarnings: ['Mood swings, depression', 'Irritability', 'Cravings', 'Tearfulness'],
+      preventionPlan: {
+        night_before: ['Track cycle'],
+        morning_of: ['Anticipate the week'],
+        just_before: ['Self-compassion preparation']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is hormonal, not who I am"', 'Breathe out long'],
+        next_2min: ['Don\'t make big decisions', 'Be gentle with self', 'Move body if can'],
+        if_still_activated: ['Avoid alcohol, caffeine', 'Connect with safe person', 'Rest']
+      },
+      afterPlan: {
+        immediate: ['Honor the dip'],
+        same_day: ['Lighter schedule if possible'],
+        longer_term: ['If PMDD: SSRIs and hormonal options work; see doctor']
+      },
+      peopleToCall: ['Parent', 'Doctor if severe', 'Therapist'],
+      selfTalk: 'My hormones are real. This week will pass. I am not broken.',
+      reminders: ['PMDD is treatable', 'Hormonal mood is real', 'I am still me'],
+      whenToEscalate: 'If pre-period mood includes suicidal thoughts: PMDD evaluation + treatment.',
+      customization: 'PMDD has effective treatments; do not normalize severe symptoms.',
+      research: 'PMDD affects 3-8% of menstruators; treatment is highly effective.'
+    },
+    {
+      id: 'migraine_onset',
+      scenario: 'Migraine onset (Yellow → Blue)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Early signs of migraine',
+      earlyWarnings: ['Aura', 'Light sensitivity', 'Head pressure', 'Nausea'],
+      preventionPlan: {
+        night_before: ['Sleep hygiene'],
+        morning_of: ['Hydrate, eat'],
+        just_before: ['Identify triggers']
+      },
+      inMomentPlan: {
+        first_30sec: ['Get to dark, quiet space', 'Take prescribed med early if you have one', 'Cold compress'],
+        next_2min: ['Water', 'No screens', 'Rest'],
+        if_still_activated: ['Get home if at school', 'Sleep if possible', 'Avoid triggers']
+      },
+      afterPlan: {
+        immediate: ['Slow re-entry to activity'],
+        same_day: ['Hydrate, light food'],
+        longer_term: ['Track triggers', 'Preventives exist; see neurologist if frequent']
+      },
+      peopleToCall: ['Parent', 'Doctor', 'School nurse'],
+      selfTalk: 'My body needs dark and quiet. I will recover.',
+      reminders: ['Migraines are real', 'Treatment exists', 'I am not weak'],
+      whenToEscalate: 'If migraines are frequent (4+/month), see neurologist.',
+      customization: 'For students: 504 plan can include migraine accommodations.',
+      research: 'Migraines are highly treatable; many sufferers are undertreated.'
+    },
+    {
+      id: 'illness_onset',
+      scenario: 'Illness onset (Blue)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Getting sick',
+      earlyWarnings: ['Sore throat', 'Body aches', 'Fatigue', 'Headache'],
+      preventionPlan: {
+        night_before: ['Sleep, hydrate normally'],
+        morning_of: ['Listen to body'],
+        just_before: ['Honor when you need to rest']
+      },
+      inMomentPlan: {
+        first_30sec: ['Hydrate', 'Rest', 'Tell trusted adult'],
+        next_2min: ['Soft food if can eat', 'Sleep', 'No demands'],
+        if_still_activated: ['Stay home from school if possible', 'See doctor if needed']
+      },
+      afterPlan: {
+        immediate: ['Sleep'],
+        same_day: ['Hydrate, soft food'],
+        longer_term: ['Take recovery time; don\'t rush back']
+      },
+      peopleToCall: ['Parent', 'Doctor if severe'],
+      selfTalk: 'My body needs rest. Healing is the priority.',
+      reminders: ['Rest is not laziness', 'Body knows what it needs', 'Healing takes time'],
+      whenToEscalate: 'For high fever, severe symptoms, breathing issues: doctor or ER.',
+      customization: 'For students who push through: practice rest.',
+      research: 'Adequate rest during illness predicts better recovery.'
+    },
+    {
+      id: 'long_covid_fatigue',
+      scenario: 'Long COVID fatigue (chronic Blue)',
+      forBand: 'all',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'Ongoing fatigue post-COVID',
+      earlyWarnings: ['Pacing crashes', 'Brain fog', 'Exertion intolerance', 'Sleep issues'],
+      preventionPlan: {
+        night_before: ['Pace activities'],
+        morning_of: ['Don\'t overdo'],
+        just_before: ['Honor energy envelope']
+      },
+      inMomentPlan: {
+        first_30sec: ['Rest BEFORE you crash, not after', 'Breathe out long'],
+        next_2min: ['Pace: small bursts with rest', 'Hydrate', 'No push-through'],
+        if_still_activated: ['Full rest', 'Avoid escalation']
+      },
+      afterPlan: {
+        immediate: ['Full rest day'],
+        same_day: ['Hydrate, eat well, sleep'],
+        longer_term: ['Long COVID clinics exist', 'Pacing is treatment', 'Accommodations at school']
+      },
+      peopleToCall: ['Parent', 'Doctor', 'Long COVID specialist'],
+      selfTalk: 'My body is recovering. Pushing through is harm. Pacing is medicine.',
+      reminders: ['Long COVID is real', 'I am not lazy', 'Pacing is the treatment'],
+      whenToEscalate: 'If symptoms persist 3+ months, request long COVID evaluation.',
+      customization: 'Post-exertional malaise is hallmark; pacing prevents crashes.',
+      research: 'Long COVID is recognized; pacing (not exercise) is evidence-based first-line.'
+    },
+    {
+      id: 'insomnia_chronic',
+      scenario: 'Chronic insomnia (chronic Yellow + Blue alternation)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Weeks of poor sleep',
+      earlyWarnings: ['Trouble falling asleep', 'Waking at 3am', 'Tired but wired'],
+      preventionPlan: {
+        night_before: ['Sleep hygiene: same time, cool dark room, no screens 1hr before'],
+        morning_of: ['Sunlight first thing'],
+        just_before: ['Wind down routine']
+      },
+      inMomentPlan: {
+        first_30sec: ['Don\'t watch clock', 'Slow breathing', 'Get up if awake 20+ min'],
+        next_2min: ['Boring activity in dim light', 'Return when sleepy', 'Don\'t catastrophize'],
+        if_still_activated: ['Accept what is', 'Rest counts even without sleep']
+      },
+      afterPlan: {
+        immediate: ['Don\'t over-nap'],
+        same_day: ['Maintain wake time'],
+        longer_term: ['CBT-I is gold standard', 'Doctor evaluation']
+      },
+      peopleToCall: ['Doctor', 'Sleep specialist'],
+      selfTalk: 'Rest is restoration. I will sleep when I can.',
+      reminders: ['Worrying about sleep prevents it', 'CBT-I works', 'Body will sleep'],
+      whenToEscalate: 'If insomnia 3+ weeks, see doctor for CBT-I referral.',
+      customization: 'Underlying anxiety often drives insomnia; treat the cause.',
+      research: 'CBT-I outperforms medications long-term.'
+    },
+    {
+      id: 'allergies',
+      scenario: 'Allergies acting up (Yellow chronic)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Pollen season or other allergens',
+      earlyWarnings: ['Sneezing', 'Itchy eyes', 'Fatigue from antihistamines'],
+      preventionPlan: {
+        night_before: ['Take meds as prescribed'],
+        morning_of: ['Shower after outdoor time'],
+        just_before: ['Plan ahead for outdoor events']
+      },
+      inMomentPlan: {
+        first_30sec: ['Take prescribed antihistamine if needed', 'Saline rinse', 'Hydrate'],
+        next_2min: ['Get to less-allergen space', 'Rest', 'Eye drops'],
+        if_still_activated: ['Doctor if severe', 'EpiPen if anaphylaxis']
+      },
+      afterPlan: {
+        immediate: ['Rest, hydrate'],
+        same_day: ['Shower, change clothes'],
+        longer_term: ['Allergy testing, immunotherapy can help']
+      },
+      peopleToCall: ['Parent', 'Allergist', '911 if anaphylaxis'],
+      selfTalk: 'My body is reacting. Treatment helps. I am not weak.',
+      reminders: ['Allergies are real', 'Meds help', 'Symptoms are temporary'],
+      whenToEscalate: 'For breathing difficulty, throat swelling: EpiPen + 911.',
+      customization: 'For food allergies: always carry EpiPen.',
+      research: 'Allergy treatments work; immunotherapy can be life-changing.'
+    },
+    {
+      id: 'chronic_pain_flare',
+      scenario: 'Chronic pain flare (Yellow → Red)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Existing chronic condition flares up',
+      earlyWarnings: ['Increased pain', 'Stiffness', 'Fatigue', 'Mood drop'],
+      preventionPlan: {
+        night_before: ['Pace activities'],
+        morning_of: ['Heat or cold ready, meds on schedule'],
+        just_before: ['Honor body signals']
+      },
+      inMomentPlan: {
+        first_30sec: ['Take rescue med if you have one', 'Heat or cold per condition', 'Breathe out long'],
+        next_2min: ['Rest position', 'Hydrate', 'Don\'t push through'],
+        if_still_activated: ['Call doctor if severe', 'Honor flare; rest']
+      },
+      afterPlan: {
+        immediate: ['Rest, gentle care'],
+        same_day: ['Communicate needs to school/family'],
+        longer_term: ['Track flares; identify triggers', 'Pain management team']
+      },
+      peopleToCall: ['Parent', 'Doctor', 'Pain management team'],
+      selfTalk: 'My pain is real. I deserve care. Flares pass.',
+      reminders: ['Chronic pain is real', 'Pacing is medicine', 'I am not weak'],
+      whenToEscalate: 'For new severe pain or pain different from usual: doctor.',
+      customization: 'For school: 504 plan with accommodations for flares.',
+      research: 'Pain is real even when invisible; validation matters.'
+    },
+    {
+      id: 'hangry',
+      scenario: 'Hunger anger / "hangry" (Yellow)',
+      forBand: 'all',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Low blood sugar irritability',
+      earlyWarnings: ['Irritability', 'Headache', 'Shakiness', 'Inability to focus'],
+      preventionPlan: {
+        night_before: ['Pack snacks'],
+        morning_of: ['Eat protein breakfast'],
+        just_before: ['Snack between meals']
+      },
+      inMomentPlan: {
+        first_30sec: ['EAT SOMETHING. Don\'t make decisions hungry.', 'Water'],
+        next_2min: ['Protein + carb is best', 'Sit down to eat', 'Don\'t engage in conflict'],
+        if_still_activated: ['Wait 15 min after eating to reassess']
+      },
+      afterPlan: {
+        immediate: ['Real meal soon'],
+        same_day: ['Better food planning'],
+        longer_term: ['Regular eating prevents hangry']
+      },
+      peopleToCall: ['Friend with food'],
+      selfTalk: 'My brain needs fuel. This is biology, not personality.',
+      reminders: ['Hangry is real', 'Don\'t decide hungry', 'Food first'],
+      whenToEscalate: 'If you faint or shake severely: check blood sugar, see doctor.',
+      customization: 'For diabetes: management is critical.',
+      research: 'Low blood sugar genuinely affects mood and judgment.'
+    },
+    {
+      id: 'sleep_debt',
+      scenario: 'Sleep debt build-up (chronic Yellow)',
+      forBand: 'high',
+      fromZone: 'yellow',
+      toZone: 'green',
+      setting: 'Weeks of insufficient sleep',
+      earlyWarnings: ['Emotional dysregulation', 'Falling asleep in class', 'Brain fog', 'Catching every cold'],
+      preventionPlan: {
+        night_before: ['Same bedtime nightly'],
+        morning_of: ['Wake at consistent time'],
+        just_before: ['No screens in bed']
+      },
+      inMomentPlan: {
+        first_30sec: ['Acknowledge debt is real', 'Don\'t white-knuckle'],
+        next_2min: ['Earlier bedtime tonight', 'Short nap if needed (20-30 min, not later than 3pm)', 'Reduce non-essentials'],
+        if_still_activated: ['Cancel optional commitments', 'Sleep restoration weekend']
+      },
+      afterPlan: {
+        immediate: ['Sleep tonight'],
+        same_day: ['Honor body needs'],
+        longer_term: ['9 hours teen baseline; 8 minimum', 'School start times matter']
+      },
+      peopleToCall: ['Parent', 'Doctor if persistent'],
+      selfTalk: 'My brain needs sleep. Productivity now costs more sleep later.',
+      reminders: ['Sleep debt is real', 'Body cannot run on empty forever', 'Sleep is non-negotiable'],
+      whenToEscalate: 'If you cannot sleep despite trying, see doctor.',
+      customization: 'For teens, biological sleep shift is real; advocate for later school start.',
+      research: 'Teen sleep need is 8-10 hours; chronic deprivation harms academic, emotional, immune function.'
+    },
+    {
+      id: 'medication_side_effects',
+      scenario: 'Adjusting to new psychiatric medication (Blue + Yellow mixed)',
+      forBand: 'high',
+      fromZone: 'blue',
+      toZone: 'green',
+      setting: 'First weeks on a new SSRI, ADHD med, or mood stabilizer',
+      earlyWarnings: ['Nausea or appetite shift', 'Sleep changes', 'Emotional flatness or activation', 'Headaches', 'Suicidality emergence (rare but real on SSRIs)'],
+      preventionPlan: {
+        night_before: ['Take meds at consistent time as prescribed', 'Keep a side-effect log'],
+        morning_of: ['Food with meds if instructed', 'Hydrate well'],
+        just_before: ['Know it takes 2-6 weeks for full effect; side effects often fade first']
+      },
+      inMomentPlan: {
+        first_30sec: ['Name it: "This is the medication adjusting"', 'Breathe out long'],
+        next_2min: ['Drink water, eat something gentle', 'Note the symptom in your log', 'Don\'t stop the med abruptly'],
+        if_still_activated: ['Call prescriber for guidance', 'For severe symptoms: ER', 'Stay with safe person']
+      },
+      afterPlan: {
+        immediate: ['Rest if drowsy; hydrate'],
+        same_day: ['Tell parent and prescriber about any new symptoms'],
+        longer_term: ['Med adjustments are normal', 'Right med + right dose can be life-changing', 'Trust the process with your prescriber']
+      },
+      peopleToCall: ['Prescriber', 'Parent', 'Therapist', '988 if suicidal thoughts emerge'],
+      selfTalk: 'My brain is adjusting. This is treatment, not failure. I deserve to feel better.',
+      reminders: ['Side effects often fade in 2 weeks', 'Right med takes trial and error', 'I am brave for trying'],
+      whenToEscalate: 'If new suicidal thoughts emerge on SSRI (black box warning is real for adolescents): tell prescriber AND parent immediately, 988 if acute.',
+      customization: 'Track side effects in writing; don\'t rely on memory. Bring log to appointments.',
+      research: 'SSRI emergence of suicidality is rare but real in adolescents; close monitoring first weeks is standard care (FDA).'
+    }
+  ];
+
+  // ── Visual Schedule Templates ──
+  // 30+ daily-rhythm schedule templates with zone-supportive routines
+  var ZONE_SCHEDULES = [
+    {
+      id: 'standard_school_day_k2',
+      name: 'Standard school day (K-2)',
+      forBand: 'elementary',
+      forContext: 'school-day',
+      blocks: [
+        { time: '6:30-7:30am wake', activity: 'Gentle wake, dressed, breakfast', zoneSupport: 'Calm start prevents Yellow before school' },
+        { time: '7:30-8:00am transit', activity: 'Bus or drop-off; one song or chat', zoneSupport: 'Connection before separation' },
+        { time: '8:00-8:30am arrival', activity: 'Morning meeting, share-time', zoneSupport: 'Predictable Green-zone entry' },
+        { time: '8:30-10:00am core', activity: 'Reading + writing block', zoneSupport: 'Brain-fresh for hard work' },
+        { time: '10:00-10:15am snack', activity: 'Snack + bathroom', zoneSupport: 'Body refuel prevents Yellow' },
+        { time: '10:15-11:30am core', activity: 'Math block + specials', zoneSupport: 'Mixed cognitive + body activity' },
+        { time: '11:30-12:15pm lunch+recess', activity: 'Eat, move, play', zoneSupport: 'Body reset midday' },
+        { time: '12:15-1:30pm afternoon', activity: 'Science/social studies', zoneSupport: 'Lower-stakes content for tired brains' },
+        { time: '1:30-2:00pm wind-down', activity: 'Story time, pack up', zoneSupport: 'Predictable end-of-day' },
+        { time: '2:00-3:00pm dismissal+transit', activity: 'Bus or pickup', zoneSupport: 'Transition support' },
+        { time: '3:00-4:00pm decompress', activity: 'Snack, free play, no demands', zoneSupport: 'Recover from masking' },
+        { time: '4:00-6:00pm activity', activity: 'Outdoor play, one activity', zoneSupport: 'Body movement = regulation' },
+        { time: '6:00-7:00pm dinner+family', activity: 'Family meal, talk about day', zoneSupport: 'Connection rebuilds Green' },
+        { time: '7:00-8:00pm wind-down', activity: 'Bath, story, quiet play', zoneSupport: 'Slow transition to sleep' },
+        { time: '8:00pm bed', activity: 'Same bedtime nightly', zoneSupport: 'Consistent sleep = next day Green' }
+      ],
+      zoneSupportPrinciple: 'Predictability + body needs (food, movement, rest) prevent most dysregulation in young kids.',
+      customization: 'For autistic kids: visual schedule on wall. For ADHD: more movement breaks. For anxious: predictable wind-down.',
+      research: 'Consistent routines are the foundation of self-regulation in early childhood (CDC, NAEYC).'
+    },
+    {
+      id: 'standard_school_day_35',
+      name: 'Standard school day (3-5)',
+      forBand: 'elementary',
+      forContext: 'school-day',
+      blocks: [
+        { time: '6:45-7:45am wake', activity: 'Wake, dress, breakfast', zoneSupport: 'Morning calm' },
+        { time: '7:45-8:15am transit', activity: 'Bus or drop-off', zoneSupport: 'Quiet music helps' },
+        { time: '8:15-8:30am arrival', activity: 'Morning routine, unpack', zoneSupport: 'Predictable entry' },
+        { time: '8:30-10:30am core', activity: 'Literacy block', zoneSupport: 'Most cognitive demand first' },
+        { time: '10:30-10:45am snack/recess', activity: 'Body break', zoneSupport: 'Reset mid-morning' },
+        { time: '10:45-12:00pm math', activity: 'Math block', zoneSupport: 'Hardest content while alert' },
+        { time: '12:00-12:45pm lunch+recess', activity: 'Eat + outdoor play', zoneSupport: 'Body needs met' },
+        { time: '12:45-2:00pm content', activity: 'Science/social studies', zoneSupport: 'Engaging content for afternoon' },
+        { time: '2:00-2:45pm specials', activity: 'Art/music/PE/library', zoneSupport: 'Different modality = re-engagement' },
+        { time: '2:45-3:00pm wrap', activity: 'Pack up, agenda', zoneSupport: 'Predictable end' },
+        { time: '3:00-4:00pm decompress', activity: 'Snack, screen or play break', zoneSupport: 'Recover from school masking' },
+        { time: '4:00-5:00pm homework', activity: '15-30 min focused', zoneSupport: 'Short, not exhausting' },
+        { time: '5:00-6:30pm activity', activity: 'Sport, club, free play', zoneSupport: 'Movement + interest' },
+        { time: '6:30-7:30pm dinner+family', activity: 'Family meal', zoneSupport: 'Connection' },
+        { time: '7:30-8:30pm wind-down', activity: 'Shower, read, quiet activity', zoneSupport: 'Prep for sleep' },
+        { time: '8:30-9:00pm bed', activity: 'Lights out, same time nightly', zoneSupport: 'Sleep is non-negotiable' }
+      ],
+      zoneSupportPrinciple: 'Hardest cognitive work earlier; mid-day body resets; evening protected for connection and sleep.',
+      customization: 'Adjust based on energy patterns; some kids peak afternoon. Honor homework limits.',
+      research: 'Cognitive load research supports demanding work earlier in day; circadian rhythms favor morning learning.'
+    },
+    {
+      id: 'standard_school_day_68',
+      name: 'Standard school day (6-8)',
+      forBand: 'middle',
+      forContext: 'school-day',
+      blocks: [
+        { time: '6:30-7:15am wake', activity: 'Wake, dress, breakfast', zoneSupport: 'Protein breakfast for stable mood' },
+        { time: '7:15-7:45am transit', activity: 'Walk, bus, drive', zoneSupport: 'Calming music helps' },
+        { time: '7:45-8:00am arrival', activity: 'Locker, social check-in', zoneSupport: 'Friend connection settles Green' },
+        { time: '8:00-9:30am classes', activity: '2 classes, 1 passing period', zoneSupport: 'Movement between classes resets' },
+        { time: '9:30-10:00am snack/passing', activity: 'Brain break, snack if school allows', zoneSupport: 'Fuel + reset' },
+        { time: '10:00-11:30am classes', activity: '2 more classes', zoneSupport: 'Sustained focus zone' },
+        { time: '11:30-12:15pm lunch', activity: 'Eat, socialize, brief outside', zoneSupport: 'Real break, not work break' },
+        { time: '12:15-1:45pm classes', activity: 'Afternoon block', zoneSupport: 'Engagement matters; movement helps' },
+        { time: '1:45-2:00pm passing', activity: 'Brief reset', zoneSupport: 'Body wakes up' },
+        { time: '2:00-3:00pm last class', activity: 'Final class, dismissal', zoneSupport: 'Push through last hour' },
+        { time: '3:00-3:30pm transit', activity: 'Home', zoneSupport: 'Walking helps decompress' },
+        { time: '3:30-4:30pm decompress', activity: 'Snack, NO demands', zoneSupport: 'CRITICAL for masking recovery' },
+        { time: '4:30-6:00pm activity', activity: 'Sport/club/social', zoneSupport: 'Identity beyond academics' },
+        { time: '6:00-7:00pm dinner+family', activity: 'Family meal', zoneSupport: 'Connection rebuilds Green' },
+        { time: '7:00-8:30pm homework', activity: 'Focused homework block', zoneSupport: 'Bounded; not all night' },
+        { time: '8:30-9:30pm wind-down', activity: 'Shower, read, low screen', zoneSupport: 'Prep for sleep' },
+        { time: '9:30pm bed', activity: 'Same time nightly, phone out of room', zoneSupport: 'Sleep > one more video' }
+      ],
+      zoneSupportPrinciple: 'Honor after-school decompression need; cap homework; protect sleep aggressively.',
+      customization: 'For ADHD: shorter homework blocks with movement. For anxious: predictable transitions.',
+      research: 'Middle school is sleep-vulnerable; adequate sleep predicts academic + emotional outcomes (Carskadon).'
+    },
+    {
+      id: 'standard_school_day_912',
+      name: 'Standard school day (9-12)',
+      forBand: 'high',
+      forContext: 'school-day',
+      blocks: [
+        { time: '6:00-6:45am wake', activity: 'Wake (early; biologically rough), shower, dress', zoneSupport: 'Sunlight helps; protein breakfast' },
+        { time: '6:45-7:15am transit', activity: 'Bus or drive', zoneSupport: 'Music or podcast for transition' },
+        { time: '7:15-7:30am arrival', activity: 'Locker, social', zoneSupport: 'Connection settles' },
+        { time: '7:30-9:00am classes', activity: 'First block', zoneSupport: 'Coffee/tea acceptable; eat second breakfast if needed' },
+        { time: '9:00-10:30am classes', activity: 'Second block', zoneSupport: 'Peak cognitive zone' },
+        { time: '10:30-11:00am break', activity: 'Snack, friends, movement', zoneSupport: 'Real break' },
+        { time: '11:00-12:30pm classes', activity: 'Third block', zoneSupport: 'Engagement matters' },
+        { time: '12:30-1:15pm lunch', activity: 'Real food, friends, outside', zoneSupport: 'Body and social reset' },
+        { time: '1:15-2:45pm classes', activity: 'Fourth block (post-lunch dip)', zoneSupport: 'Movement helps; teachers can support' },
+        { time: '2:45-3:00pm dismissal', activity: 'End of day', zoneSupport: 'Push through' },
+        { time: '3:00-4:00pm decompress OR activity', activity: 'CRITICAL break before more work', zoneSupport: 'Snack, movement, no demands' },
+        { time: '4:00-6:00pm activity/job', activity: 'Sport, club, work', zoneSupport: 'Identity, money, friendship' },
+        { time: '6:00-7:00pm dinner', activity: 'Real meal', zoneSupport: 'Reset for evening work' },
+        { time: '7:00-9:00pm homework', activity: 'Focused study (Pomodoro)', zoneSupport: 'Bounded blocks' },
+        { time: '9:00-10:00pm wind-down', activity: 'Shower, low screens, friends', zoneSupport: 'Transition to sleep' },
+        { time: '10:00pm bed (ideally)', activity: 'Phone out of room, lights out', zoneSupport: 'Teens need 9 hours' }
+      ],
+      zoneSupportPrinciple: 'High school overload is real; cap commitments, protect sleep, plan decompression.',
+      customization: 'AP-heavy students: cut commitments. Working students: communicate to teachers. Athletes: nutrition matters.',
+      research: 'AAP recommends school start no earlier than 8:30am for adolescents; sleep is critical.'
+    },
+    {
+      id: 'weekend_day',
+      name: 'Weekend day',
+      forBand: 'all',
+      forContext: 'weekend',
+      blocks: [
+        { time: '7-9am wake', activity: 'Wake naturally (not 11am+; circadian)', zoneSupport: 'Consistent sleep schedule even weekends' },
+        { time: '9-10am breakfast', activity: 'Real breakfast, no rush', zoneSupport: 'Pleasure-focused eating' },
+        { time: '10-12pm morning activity', activity: 'Outdoor, social, hobby', zoneSupport: 'Body movement + sunshine' },
+        { time: '12-1pm lunch', activity: 'Eat with someone', zoneSupport: 'Connection' },
+        { time: '1-3pm afternoon', activity: 'Activity or rest by need', zoneSupport: 'Listen to body' },
+        { time: '3-5pm social/play', activity: 'Friends, family, hobby', zoneSupport: 'Recharge people-time' },
+        { time: '5-6pm transition', activity: 'Wind down from social', zoneSupport: 'Decompress' },
+        { time: '6-7pm dinner', activity: 'Family meal ideally', zoneSupport: 'Connection' },
+        { time: '7-9pm evening', activity: 'Show, game, family time', zoneSupport: 'Pleasure' },
+        { time: '9-10pm wind-down', activity: 'Shower, read', zoneSupport: 'Prep for sleep' },
+        { time: '10pm bed', activity: 'Don\'t stay up super late; Monday awaits', zoneSupport: 'Consistent schedule' }
+      ],
+      zoneSupportPrinciple: 'Weekends are recovery + pleasure, not 14-hour video games or 16 hours of sleep.',
+      customization: 'Saturday can be looser; Sunday should taper to support Monday.',
+      research: 'Social jetlag (irregular sleep) on weekends predicts worse mood and academics.'
+    },
+    {
+      id: 'exam_week',
+      name: 'Exam week',
+      forBand: 'high',
+      forContext: 'exam-week',
+      blocks: [
+        { time: '6:30am wake', activity: 'Don\'t change wake time; stable circadian', zoneSupport: 'Consistency matters' },
+        { time: '6:30-7:15am breakfast', activity: 'Real breakfast, protein + carb', zoneSupport: 'Steady energy' },
+        { time: '7:15-7:45am light review', activity: '20 min review notes (NOT cramming)', zoneSupport: 'Confidence-build' },
+        { time: '7:45-8am transit', activity: 'Calming music', zoneSupport: 'Down-regulate' },
+        { time: '8am-3pm school', activity: 'Tests + classes', zoneSupport: 'Pace yourself through marathon' },
+        { time: '3-4pm decompress', activity: 'CRITICAL: walk, snack, no work', zoneSupport: 'Recover for evening study' },
+        { time: '4-6pm study', activity: 'Focused study, 25-min blocks', zoneSupport: 'Bounded; not all night' },
+        { time: '6-7pm dinner', activity: 'Real meal, family', zoneSupport: 'Reset' },
+        { time: '7-9pm study', activity: 'Targeted review (NOT new material)', zoneSupport: 'Strategic, not panic' },
+        { time: '9-10pm wind-down', activity: 'No screens, no studying', zoneSupport: 'Prep for sleep' },
+        { time: '10pm bed', activity: 'STRICT; sleep > one more hour', zoneSupport: 'Sleep IS studying' }
+      ],
+      zoneSupportPrinciple: 'Exam week is a marathon; protect sleep + decompression; pacing beats cramming.',
+      customization: 'No new material in last 24 hours. Review and rest. Eat real food.',
+      research: 'Sleep consolidates memory; cramming at expense of sleep reduces performance.'
+    },
+    {
+      id: 'after_conflict_recovery',
+      name: 'After-conflict recovery day',
+      forBand: 'all',
+      forContext: 'after-conflict',
+      blocks: [
+        { time: 'Wake', activity: 'Slow morning, don\'t rush', zoneSupport: 'Honor the cost of yesterday' },
+        { time: 'Morning', activity: 'Gentle movement (walk, stretch)', zoneSupport: 'Body shake-out' },
+        { time: 'Mid-morning', activity: 'Talk to safe person briefly about conflict', zoneSupport: 'Validation, not rehashing' },
+        { time: 'Noon', activity: 'Real meal', zoneSupport: 'Body needs fuel' },
+        { time: 'Afternoon', activity: 'Low-demand activity (familiar show, hobby)', zoneSupport: 'No new stress' },
+        { time: 'Late afternoon', activity: 'Outdoor walk if possible', zoneSupport: 'Sunlight + movement' },
+        { time: 'Evening', activity: 'Connect with people who feel safe', zoneSupport: 'Repair social tank' },
+        { time: 'Pre-bed', activity: 'Hot shower, soft pajamas', zoneSupport: 'Body comfort' },
+        { time: 'Bed', activity: 'Earlier than usual; sleep is medicine', zoneSupport: 'Recovery requires rest' }
+      ],
+      zoneSupportPrinciple: 'Conflict is body-stress; recovery day is restoration, not productivity.',
+      customization: 'Resist the urge to "make up" missed work; you cannot regulate from depleted.',
+      research: 'Recovery from acute stress requires intentional downtime; pushing through worsens outcomes.'
+    },
+    {
+      id: 'grief_week',
+      name: 'Grief week',
+      forBand: 'all',
+      forContext: 'grief',
+      blocks: [
+        { time: 'Wake (whenever)', activity: 'Let yourself wake; don\'t force', zoneSupport: 'Grief disrupts sleep; honor' },
+        { time: 'Morning', activity: 'Breakfast even if not hungry', zoneSupport: 'Body needs food in grief' },
+        { time: 'Mid-morning', activity: 'Gentle activity (walk, look at photos)', zoneSupport: 'Allow waves' },
+        { time: 'Noon', activity: 'Lunch with someone if possible', zoneSupport: 'Connection' },
+        { time: 'Afternoon', activity: 'Rest or quiet activity', zoneSupport: 'Energy is low; honor it' },
+        { time: 'Late afternoon', activity: 'Tears or laughter; both are okay', zoneSupport: 'Grief is non-linear' },
+        { time: 'Evening', activity: 'Family meal or comfort food', zoneSupport: 'Body care' },
+        { time: 'Pre-bed', activity: 'Gentle wind-down', zoneSupport: 'No demands' },
+        { time: 'Bed', activity: 'Sleep when you can; comfort object', zoneSupport: 'Rest is healing' }
+      ],
+      zoneSupportPrinciple: 'Grief is exhausting; honor the cost; lower expectations on yourself.',
+      customization: 'Tell school what happened; allow accommodations. Grief support groups help.',
+      research: 'Grief involves body and mind; rest, food, and connection are core (Worden).'
+    },
+    {
+      id: 'summer_break_rhythm',
+      name: 'Summer break daily rhythm',
+      forBand: 'all',
+      forContext: 'summer',
+      blocks: [
+        { time: '8-9am wake', activity: 'Wake within 1-2 hr of school time; don\'t reverse fully', zoneSupport: 'Avoid social jetlag' },
+        { time: '9-10am breakfast', activity: 'Real breakfast, no rush', zoneSupport: 'Body fuel' },
+        { time: '10am-12pm morning activity', activity: 'Outdoor, hobby, project', zoneSupport: 'Engagement matters' },
+        { time: '12-1pm lunch', activity: 'Eat with someone', zoneSupport: 'Connection' },
+        { time: '1-3pm rest/quiet', activity: 'Reading, art, screen with limits', zoneSupport: 'Pace yourself' },
+        { time: '3-5pm social/active', activity: 'Friends, sport, swim, camp', zoneSupport: 'People + body' },
+        { time: '5-6pm transition', activity: 'Wind down from activity', zoneSupport: 'Decompress' },
+        { time: '6-7pm dinner', activity: 'Family meal', zoneSupport: 'Connection' },
+        { time: '7-9pm evening', activity: 'Family time, hobby, show', zoneSupport: 'Pleasure' },
+        { time: '9-10pm wind-down', activity: 'Shower, read', zoneSupport: 'Sleep prep' },
+        { time: '10-11pm bed', activity: 'Stay within 1 hour of school bedtime', zoneSupport: 'Maintain rhythm' }
+      ],
+      zoneSupportPrinciple: 'Summer freedom + structure; avoid total schedule collapse that wrecks back-to-school.',
+      customization: 'Allow some looseness; cap screens; build in something to look forward to weekly.',
+      research: 'Total schedule loss in summer worsens adjustment to school; gentle structure protects.'
+    },
+    {
+      id: 'holiday_break_rhythm',
+      name: 'Holiday break daily rhythm',
+      forBand: 'all',
+      forContext: 'holiday',
+      blocks: [
+        { time: 'Late wake', activity: 'Sleep in within reason', zoneSupport: 'Recover sleep debt' },
+        { time: 'Brunch', activity: 'Family meal', zoneSupport: 'Connection' },
+        { time: 'Late morning', activity: 'Active or hobby time', zoneSupport: 'Avoid all-day screens' },
+        { time: 'Afternoon', activity: 'Family activity OR alone time (rotate)', zoneSupport: 'Both needs matter' },
+        { time: 'Pre-dinner', activity: 'Help with prep or rest', zoneSupport: 'Contribute when you can' },
+        { time: 'Dinner', activity: 'Family meal', zoneSupport: 'Holiday connection' },
+        { time: 'Evening', activity: 'Movie, game, or quiet', zoneSupport: 'Pleasure' },
+        { time: 'Pre-bed', activity: 'Wind down', zoneSupport: 'Sleep matters' },
+        { time: 'Bed', activity: 'Don\'t go all-nighter even if tempting', zoneSupport: 'Holidays are restoration' }
+      ],
+      zoneSupportPrinciple: 'Holidays balance family time with personal recharge; both are needed.',
+      customization: 'For introverts: honor alone time. For overwhelming family: have escape plan.',
+      research: 'Family togetherness + autonomy together predict positive holiday experience.'
+    },
+    {
+      id: 'sick_day_rhythm',
+      name: 'Sick day rhythm',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Sleep in', activity: 'Body needs rest', zoneSupport: 'Healing requires sleep' },
+        { time: 'Morning meds/fluid', activity: 'Take meds, hydrate', zoneSupport: 'Care basics' },
+        { time: 'Light breakfast', activity: 'Easy food (toast, broth, fruit)', zoneSupport: 'Gentle fuel' },
+        { time: 'Rest', activity: 'Bed, couch, no demands', zoneSupport: 'Recovery' },
+        { time: 'Light activity', activity: 'Show, audiobook, low-effort', zoneSupport: 'Comfort, not work' },
+        { time: 'Hydrate often', activity: 'Water, electrolytes, tea', zoneSupport: 'Body needs fluids' },
+        { time: 'Light lunch', activity: 'Soft easy food', zoneSupport: 'Nutrition' },
+        { time: 'Nap if needed', activity: 'Sleep is medicine', zoneSupport: 'Honor body' },
+        { time: 'Light dinner', activity: 'Soup, simple food', zoneSupport: 'Easy on system' },
+        { time: 'Early bed', activity: 'More sleep', zoneSupport: 'Recovery' }
+      ],
+      zoneSupportPrinciple: 'Sickness needs rest; productivity guilt prolongs illness.',
+      customization: 'Stay home until 24 hours fever-free; don\'t infect classmates.',
+      research: 'Pushing through illness extends recovery and spreads disease.'
+    },
+    {
+      id: 'travel_day_rhythm',
+      name: 'Travel day rhythm',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake earlier than usual', activity: 'Pack final items', zoneSupport: 'Reduce stress with prep' },
+        { time: 'Breakfast', activity: 'Real food at home before going', zoneSupport: 'Airport food is harder' },
+        { time: 'Transit to airport/station', activity: 'Calming music, breaks', zoneSupport: 'Travel is stressful' },
+        { time: 'Security/check-in', activity: 'Slow breaths, patience', zoneSupport: 'Avoid escalation' },
+        { time: 'Wait time', activity: 'Walk, hydrate, snack', zoneSupport: 'Body care' },
+        { time: 'Boarding/travel', activity: 'Music, book, podcast', zoneSupport: 'Self-soothe' },
+        { time: 'Arrival', activity: 'Hydrate, walk, find food', zoneSupport: 'Reset' },
+        { time: 'Evening at destination', activity: 'Light dinner, settle in', zoneSupport: 'Decompress' },
+        { time: 'Earlier bed than usual', activity: 'Travel is exhausting', zoneSupport: 'Sleep restores' }
+      ],
+      zoneSupportPrinciple: 'Travel is sensory + logistical overload; pacing prevents meltdown.',
+      customization: 'For autistic travelers: headphones, sunglasses, snacks, comfort item.',
+      research: 'Travel disrupts circadian, eating, sleep; intentional support reduces impact.'
+    },
+    {
+      id: 'first_day_new_school',
+      name: 'First day of new school',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Night before', activity: 'Pack everything, lay out outfit', zoneSupport: 'Reduce morning chaos' },
+        { time: 'Wake early', activity: 'Time for full breakfast', zoneSupport: 'Steady energy' },
+        { time: 'Real breakfast', activity: 'Protein + carb', zoneSupport: 'Stable mood' },
+        { time: 'Arrive on time', activity: 'Not super early or late', zoneSupport: 'Reduce social spotlight' },
+        { time: 'First classes', activity: 'Smile at one person each class', zoneSupport: 'Small connections matter' },
+        { time: 'Lunch', activity: 'Find ONE table; doesn\'t have to be perfect', zoneSupport: 'Anywhere is fine day 1' },
+        { time: 'Afternoon classes', activity: 'Push through; almost done', zoneSupport: 'Pacing' },
+        { time: 'After school decompression', activity: 'CRITICAL alone time', zoneSupport: 'First day is exhausting' },
+        { time: 'Honor what you did', activity: 'Tell parent: "I did the brave thing"', zoneSupport: 'Self-recognition' },
+        { time: 'Early bed', activity: 'You need sleep', zoneSupport: 'Tomorrow is another day' }
+      ],
+      zoneSupportPrinciple: 'First day is highest-stress day; lower other demands, plan recovery.',
+      customization: 'For autistic students: school tour beforehand. For anxious: parent on standby.',
+      research: 'Transition support in first weeks predicts year-long adjustment.'
+    },
+    {
+      id: 'iep_aligned_day',
+      name: 'IEP-aligned day (with breaks built in)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Predictable morning routine', zoneSupport: 'Visual schedule helps' },
+        { time: 'Breakfast', activity: 'Same foods help for autistic kids', zoneSupport: 'Sensory predictability' },
+        { time: 'School arrival', activity: 'Check in with case manager or counselor', zoneSupport: 'Adult anchor' },
+        { time: 'Morning classes', activity: 'Built-in 5-min break after 30 min', zoneSupport: 'Pacing prevents overload' },
+        { time: 'Mid-morning sensory break', activity: 'Quiet room or fidget time', zoneSupport: 'Regulation built in' },
+        { time: 'Lunch', activity: 'Quieter eating space option', zoneSupport: 'Cafeteria is overwhelming' },
+        { time: 'Afternoon classes', activity: 'Modified expectations, breaks', zoneSupport: 'Honor stamina' },
+        { time: 'End-of-day check-in', activity: 'Counselor or case manager', zoneSupport: 'Process the day' },
+        { time: 'Transit home', activity: 'Headphones for sensory', zoneSupport: 'Decompress' },
+        { time: 'Decompression', activity: 'NO immediate questions/demands', zoneSupport: 'Recover from masking' },
+        { time: 'Homework (modified)', activity: 'Shorter or alternative', zoneSupport: 'Per IEP' },
+        { time: 'Evening', activity: 'Predictable routine', zoneSupport: 'Sensory comfort' },
+        { time: 'Bed', activity: 'Same time, comfort objects', zoneSupport: 'Sleep restoration' }
+      ],
+      zoneSupportPrinciple: 'IEP is the floor of accommodation, not ceiling; build in regulation explicitly.',
+      customization: 'IEP should specify breaks, sensory tools, modifications; advocate if not in place.',
+      research: 'Proactive accommodations prevent crisis; reactive responses cost more.'
+    },
+    {
+      id: 'adhd_aligned_day',
+      name: 'ADHD-aligned day (with movement breaks)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Med if prescribed, breakfast (protein)', zoneSupport: 'Steady neurochemistry' },
+        { time: 'Morning movement', activity: '10-min walk or stretch before school', zoneSupport: 'Body prep' },
+        { time: 'School morning', activity: 'Hardest classes first if med-peak', zoneSupport: 'Use the window' },
+        { time: 'Movement break', activity: 'Walking to next class, fidget allowed', zoneSupport: 'Body needs motion' },
+        { time: 'Mid-morning', activity: 'Snack to bridge to lunch', zoneSupport: 'Avoid blood sugar dip' },
+        { time: 'Lunch', activity: 'Real food, outside if possible', zoneSupport: 'Movement + fuel' },
+        { time: 'Afternoon', activity: 'Med may wear off; expect harder focus', zoneSupport: 'Plan accordingly' },
+        { time: 'End of day', activity: 'Body break before homework', zoneSupport: 'Reset' },
+        { time: 'Homework with timers', activity: '25 min on, 5 min move', zoneSupport: 'Pomodoro' },
+        { time: 'Body movement evening', activity: 'Sport, walk, dance', zoneSupport: 'Release energy' },
+        { time: 'Dinner', activity: 'Real meal, family if good', zoneSupport: 'Connection' },
+        { time: 'Wind-down', activity: 'Boring activity for sleep', zoneSupport: 'ADHD brains need ramp-down' },
+        { time: 'Bed', activity: 'Same time, no late screens', zoneSupport: 'Sleep is med' }
+      ],
+      zoneSupportPrinciple: 'ADHD brains need movement, structure, and snack breaks; meds + behavior together.',
+      customization: 'Work with prescriber on timing. Build externalized systems.',
+      research: 'Multimodal ADHD treatment (med + behavior + accommodations) outperforms any alone.'
+    },
+    {
+      id: 'autistic_aligned_day',
+      name: 'Autistic-aligned day (with predictability + decompression)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Same time, same routine', zoneSupport: 'Predictability is medicine' },
+        { time: 'Breakfast', activity: 'Preferred foods, no surprises', zoneSupport: 'Sensory comfort' },
+        { time: 'Sensory check', activity: 'Headphones, sunglasses, fidget packed', zoneSupport: 'Prep for input' },
+        { time: 'School arrival', activity: 'Quiet entry route if possible', zoneSupport: 'Avoid loud hallways' },
+        { time: 'Classes', activity: 'Visual schedule, predictable structure', zoneSupport: 'Reduce uncertainty' },
+        { time: 'Sensory break', activity: 'Quiet room, headphones, alone', zoneSupport: 'Recovery built in' },
+        { time: 'Lunch', activity: 'Quieter space, preferred food', zoneSupport: 'Cafeteria can be unbearable' },
+        { time: 'Afternoon', activity: 'Predictable routine, advance warning of changes', zoneSupport: 'Honor transitions' },
+        { time: 'End of school', activity: 'Quiet end, not abrupt', zoneSupport: 'Transition support' },
+        { time: 'Decompression', activity: 'CRITICAL hours of NO demands, NO talking required', zoneSupport: 'Recover from masking' },
+        { time: 'Special interest time', activity: 'Engage with passion', zoneSupport: 'Joy + regulation' },
+        { time: 'Dinner', activity: 'Same time, predictable foods', zoneSupport: 'Sensory + routine' },
+        { time: 'Wind-down', activity: 'Quiet activity, sensory comfort', zoneSupport: 'Body needs slow gear-down' },
+        { time: 'Bed', activity: 'Same time, comfort objects, sensory bedding', zoneSupport: 'Sleep needs consistent' }
+      ],
+      zoneSupportPrinciple: 'Autistic brains need predictability, sensory care, and decompression; masking costs energy.',
+      customization: 'Build special interest time as non-negotiable; reduce social demands; honor stims.',
+      research: 'Autistic burnout from chronic masking is documented; decompression is treatment.'
+    },
+    {
+      id: 'anxious_kid_day',
+      name: 'Anxious-kid day (with regulation built in)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Slow start, breath practice', zoneSupport: 'Settle nervous system' },
+        { time: 'Breakfast', activity: 'Real food, no caffeine if it spikes anxiety', zoneSupport: 'Stable mood' },
+        { time: 'Morning check-in', activity: 'Name one worry, one strength', zoneSupport: 'Cognitive grounding' },
+        { time: 'School entry', activity: 'Find friendly face first', zoneSupport: 'Connection over alarm' },
+        { time: 'Morning classes', activity: 'Use breath between classes', zoneSupport: 'Mini-resets' },
+        { time: 'Mid-morning grounding', activity: '5-4-3-2-1 grounding in bathroom if needed', zoneSupport: 'Reset' },
+        { time: 'Lunch', activity: 'Eat with friends, body break', zoneSupport: 'Co-regulation' },
+        { time: 'Afternoon', activity: 'Pace yourself; ask for breaks', zoneSupport: 'Permission to need' },
+        { time: 'After school', activity: 'Movement to discharge', zoneSupport: 'Body releases stress' },
+        { time: 'Decompression', activity: 'Comfort, low demands', zoneSupport: 'Recover' },
+        { time: 'Connection', activity: 'Time with safe person', zoneSupport: 'Co-regulation' },
+        { time: 'Dinner', activity: 'Family meal', zoneSupport: 'Belonging' },
+        { time: 'Wind-down', activity: 'Bath, story, low screen', zoneSupport: 'Reduce arousal' },
+        { time: 'Bed', activity: 'Worry dump on paper, then close', zoneSupport: 'Park worries for sleep' }
+      ],
+      zoneSupportPrinciple: 'Anxious nervous systems need explicit regulation; build in tools throughout day.',
+      customization: 'CBT skills daily; therapy if persistent; medication if needed.',
+      research: 'Daily regulation tools (breath, grounding, movement) reduce baseline anxiety.'
+    },
+    {
+      id: 'depressed_kid_day',
+      name: 'Depressed-kid day (with gentle activation)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake (set alarm)', activity: 'Get up even if hard; depression lies', zoneSupport: 'Action precedes motivation' },
+        { time: 'Sunlight', activity: 'Open curtains, step outside briefly', zoneSupport: 'Circadian + mood' },
+        { time: 'Breakfast', activity: 'Eat something even if not hungry', zoneSupport: 'Body needs fuel' },
+        { time: 'Movement', activity: '5-10 min walk or stretch', zoneSupport: 'Behavioral activation' },
+        { time: 'School', activity: 'Show up even if reduced', zoneSupport: 'Connection prevents spiral' },
+        { time: 'Connect with one person', activity: 'One conversation, one text', zoneSupport: 'Connection lifts mood' },
+        { time: 'Lunch', activity: 'Eat with someone', zoneSupport: 'Co-regulation' },
+        { time: 'Afternoon', activity: 'Push through; almost done', zoneSupport: 'Pacing' },
+        { time: 'After school', activity: 'ONE pleasant activity (small)', zoneSupport: 'Pleasure scheduling' },
+        { time: 'Movement', activity: 'Walk, swim, ride', zoneSupport: 'Body releases mood lifters' },
+        { time: 'Dinner', activity: 'Eat with family', zoneSupport: 'Connection + fuel' },
+        { time: 'Light evening', activity: 'Show, hobby, conversation', zoneSupport: 'Distraction from rumination' },
+        { time: 'Wind-down', activity: 'Bath, soft music', zoneSupport: 'Body comfort' },
+        { time: 'Bed', activity: 'Same time; sleep but not over-sleep', zoneSupport: 'Regulate circadian' }
+      ],
+      zoneSupportPrinciple: 'Depression lies that you have no energy; small actions create energy; sleep + sunlight + movement + connection are medicine.',
+      customization: 'Therapy is essential; medication often helps; daily structure protects.',
+      research: 'Behavioral activation has strong evidence for depression in adolescents.'
+    },
+    {
+      id: 'post_trauma_stabilization',
+      name: 'Post-trauma stabilization day',
+      forBand: 'all',
+      forContext: 'after-conflict',
+      blocks: [
+        { time: 'Wake gently', activity: 'No alarm if possible; soft start', zoneSupport: 'Nervous system reset' },
+        { time: 'Grounding practice', activity: '5-4-3-2-1 senses', zoneSupport: 'Anchor in present' },
+        { time: 'Breakfast', activity: 'Easy food, water', zoneSupport: 'Body care' },
+        { time: 'Safe person check-in', activity: 'Brief connection', zoneSupport: 'Co-regulation' },
+        { time: 'Low-demand activity', activity: 'Familiar show, hobby, art', zoneSupport: 'No new stress' },
+        { time: 'Hydrate often', activity: 'Water throughout', zoneSupport: 'Body care' },
+        { time: 'Light lunch', activity: 'Soft food, with someone if possible', zoneSupport: 'Connection + fuel' },
+        { time: 'Therapy or call therapist', activity: 'Process with professional', zoneSupport: 'Skilled support' },
+        { time: 'Afternoon rest', activity: 'Nap or quiet', zoneSupport: 'Recovery' },
+        { time: 'Gentle movement', activity: 'Walk if safe', zoneSupport: 'Body release' },
+        { time: 'Dinner', activity: 'With safe person', zoneSupport: 'Connection' },
+        { time: 'Wind-down', activity: 'Bath, soft pajamas, comfort', zoneSupport: 'Body comfort' },
+        { time: 'Bed', activity: 'Sleep medicine if prescribed; weighted blanket', zoneSupport: 'Rest is healing' }
+      ],
+      zoneSupportPrinciple: 'Trauma needs stabilization before processing; safety + connection + body care.',
+      customization: 'Trauma therapy is essential; RAINN 1-800-656-4673 for sexual trauma.',
+      research: 'Stabilization phase precedes processing in trauma treatment (Herman, van der Kolk).'
+    },
+    {
+      id: 'therapy_day',
+      name: 'Therapy day (extra decompression)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Morning', activity: 'Normal routine; lighter if possible', zoneSupport: 'Save energy for session' },
+        { time: 'Before session', activity: 'Light meal, water, brief notes', zoneSupport: 'Prep' },
+        { time: 'Session', activity: '45-60 min therapy', zoneSupport: 'Hard work' },
+        { time: 'After session', activity: 'No demands for 30 min; sit in car, walk', zoneSupport: 'Process' },
+        { time: 'Snack or meal', activity: 'Body fuel', zoneSupport: 'Therapy is work' },
+        { time: 'Light afternoon', activity: 'Reduced demands', zoneSupport: 'Recovery' },
+        { time: 'Movement', activity: 'Walk, gentle exercise', zoneSupport: 'Body processing' },
+        { time: 'Dinner', activity: 'Real meal', zoneSupport: 'Care' },
+        { time: 'Evening', activity: 'Comfort activities', zoneSupport: 'Decompress' },
+        { time: 'Wind-down', activity: 'Bath, journaling', zoneSupport: 'Process' },
+        { time: 'Bed', activity: 'Earlier if possible; therapy exhausts', zoneSupport: 'Rest' }
+      ],
+      zoneSupportPrinciple: 'Therapy is real work; honor cognitive and emotional cost.',
+      customization: 'Schedule less on therapy days; many clients feel raw after.',
+      research: 'Post-session integration is part of therapy; protected time helps.'
+    },
+    {
+      id: 'doctor_appointment_day',
+      name: 'Doctor appointment day',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Morning', activity: 'Normal routine, eat if appointment allows', zoneSupport: 'Stable start' },
+        { time: 'Before appt', activity: 'Write down questions, symptoms', zoneSupport: 'Reduce anxiety' },
+        { time: 'Transit', activity: 'Music, deep breaths', zoneSupport: 'Down-regulate' },
+        { time: 'Waiting room', activity: 'Book, podcast, fidget', zoneSupport: 'Distraction' },
+        { time: 'Appointment', activity: 'Ask questions, take notes, advocate', zoneSupport: 'Be your own advocate' },
+        { time: 'After', activity: 'Brief break, hydrate, process', zoneSupport: 'Settle' },
+        { time: 'Snack or meal', activity: 'Body care', zoneSupport: 'Fuel' },
+        { time: 'Light afternoon', activity: 'No major demands if possible', zoneSupport: 'Recovery from clinical stress' },
+        { time: 'Talk to safe person', activity: 'Process what you learned', zoneSupport: 'Validation' },
+        { time: 'Dinner + family', activity: 'Connection', zoneSupport: 'Reset' },
+        { time: 'Evening', activity: 'Comfort, low-key', zoneSupport: 'Decompress' },
+        { time: 'Bed', activity: 'Normal time', zoneSupport: 'Rest' }
+      ],
+      zoneSupportPrinciple: 'Medical appointments are stress events; advocate, then recover.',
+      customization: 'For chronic conditions: appointments are routine but still drain.',
+      research: 'White-coat anxiety is common; prep and post-recovery help.'
+    },
+    {
+      id: 'family_stress_day',
+      name: 'Family stress day',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Identify safe spaces in house', zoneSupport: 'Plan ahead' },
+        { time: 'Breakfast', activity: 'In your room if needed', zoneSupport: 'Avoid escalation' },
+        { time: 'Out of house if possible', activity: 'School, library, friend\'s', zoneSupport: 'Physical distance helps' },
+        { time: 'Connect with non-family safe person', activity: 'Friend, counselor, teacher', zoneSupport: 'Outside support' },
+        { time: 'Lunch', activity: 'At school or out', zoneSupport: 'Get out of home if possible' },
+        { time: 'Stay out longer if safe', activity: 'Library, friend, activity', zoneSupport: 'Space helps' },
+        { time: 'Return home if must', activity: 'Headphones, room, low engagement', zoneSupport: 'Self-protect' },
+        { time: 'Dinner separately if possible', activity: 'In room or with one safe family member', zoneSupport: 'Minimize conflict' },
+        { time: 'Quiet evening', activity: 'Music, hobby, screen', zoneSupport: 'Distract from tension' },
+        { time: 'Wind-down', activity: 'Bath, journaling', zoneSupport: 'Process' },
+        { time: 'Bed', activity: 'Headphones for sleep if loud', zoneSupport: 'Sleep is sacred' }
+      ],
+      zoneSupportPrinciple: 'Family conflict is exhausting; outside support and physical space help.',
+      customization: 'For severe conflict: counselor, relative, family therapy.',
+      research: 'External support is protective for children in high-conflict homes.'
+    },
+    {
+      id: 'performance_day',
+      name: 'Performance day (game, recital)',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake earlier', activity: 'Light stretch, calm morning', zoneSupport: 'Set tone' },
+        { time: 'Breakfast', activity: 'Easy digestible food', zoneSupport: 'Fuel without heaviness' },
+        { time: 'Light review/warm-up', activity: '15-30 min, not exhaustive', zoneSupport: 'Confidence' },
+        { time: 'School/morning', activity: 'Normal but conserve energy', zoneSupport: 'Save for later' },
+        { time: 'Pre-performance meal', activity: 'Light, familiar food', zoneSupport: 'Don\'t experiment' },
+        { time: 'Performance prep', activity: 'Warm-up, breathing, music', zoneSupport: 'Activate body' },
+        { time: 'Performance', activity: 'Trust training, do your best', zoneSupport: 'Show up fully' },
+        { time: 'After', activity: 'Hydrate, snack, decompress', zoneSupport: 'Adrenaline crash' },
+        { time: 'Celebration or reflection', activity: 'With teammates/family', zoneSupport: 'Process together' },
+        { time: 'Dinner', activity: 'Real food', zoneSupport: 'Refuel' },
+        { time: 'Evening', activity: 'Quiet wind-down', zoneSupport: 'Exhausted' },
+        { time: 'Bed', activity: 'Earlier than usual; recovery', zoneSupport: 'Sleep' }
+      ],
+      zoneSupportPrinciple: 'Performance is peak demand; conserve before, recover after.',
+      customization: 'Each performer has rituals; honor what works for you.',
+      research: 'Pre-performance routines reduce anxiety and improve outcomes (Hanin, IZOF).'
+    },
+    {
+      id: 'social_event_day',
+      name: 'Social event day (party, prom)',
+      forBand: 'high',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake normally', activity: 'Don\'t front-load anxiety', zoneSupport: 'Normal day' },
+        { time: 'Light morning activity', activity: 'Don\'t exhaust yourself', zoneSupport: 'Save energy' },
+        { time: 'Light lunch', activity: 'Real food, not skipping', zoneSupport: 'Fuel' },
+        { time: 'Afternoon rest/nap', activity: 'Conserve energy', zoneSupport: 'You\'ll need it' },
+        { time: 'Get ready slowly', activity: 'Shower, outfit, music', zoneSupport: 'Calm prep' },
+        { time: 'Light pre-event food', activity: 'Don\'t arrive hungry', zoneSupport: 'Stable mood' },
+        { time: 'Arrive at event', activity: 'Find anchor person', zoneSupport: 'Belonging' },
+        { time: 'Pace yourself', activity: 'Breaks, water, food', zoneSupport: 'Avoid burnout' },
+        { time: 'Know your exit', activity: 'Leave when YOU need to', zoneSupport: 'Permission' },
+        { time: 'Post-event decompression', activity: 'Quiet time, snack', zoneSupport: 'Recover' },
+        { time: 'Bed', activity: 'Even if late, get sleep', zoneSupport: 'Recovery' }
+      ],
+      zoneSupportPrinciple: 'Social events are big energy; pace, build in exit, recover after.',
+      customization: 'For introverts: shorter is fine. For neurodivergent: sensory plan.',
+      research: 'Social events drain; intentional pacing prevents burnout.'
+    },
+    {
+      id: 'big_test_day',
+      name: 'Big test day',
+      forBand: 'all',
+      forContext: 'exam-week',
+      blocks: [
+        { time: 'Wake', activity: 'Normal time, not earlier (panic)', zoneSupport: 'Stable circadian' },
+        { time: 'Breakfast', activity: 'Protein + carb, no extra caffeine', zoneSupport: 'Steady energy' },
+        { time: 'Light review', activity: '15-20 min if helpful, NOT new material', zoneSupport: 'Confidence' },
+        { time: 'Calming transit', activity: 'Music, breath', zoneSupport: 'Down-regulate' },
+        { time: 'Arrive 10 min early', activity: 'Not 30; reduces spiraling time', zoneSupport: 'Less waiting' },
+        { time: 'Bathroom + water', activity: 'Body care', zoneSupport: 'Comfort' },
+        { time: 'Test', activity: 'Use strategies; pace yourself', zoneSupport: 'Trust prep' },
+        { time: 'After test', activity: 'Don\'t debrief with anxious classmates', zoneSupport: 'Protect peace' },
+        { time: 'Light lunch', activity: 'Real food', zoneSupport: 'Fuel for rest of day' },
+        { time: 'Decompression', activity: 'Walk, music, no work', zoneSupport: 'Recover' },
+        { time: 'Reward activity', activity: 'Something you enjoy', zoneSupport: 'Celebrate finishing' },
+        { time: 'Dinner', activity: 'Real meal', zoneSupport: 'Reset' },
+        { time: 'Light evening', activity: 'No heavy work', zoneSupport: 'Rest' },
+        { time: 'Bed', activity: 'Normal time', zoneSupport: 'Sleep' }
+      ],
+      zoneSupportPrinciple: 'Test day is performance day; prep + execute + recover.',
+      customization: 'For test anxiety: accommodations + relaxation training.',
+      research: 'Pre-test rituals reduce anxiety and improve scores.'
+    },
+    {
+      id: 'public_speaking_day',
+      name: 'Public speaking day',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Normal time', zoneSupport: 'Stable' },
+        { time: 'Breakfast', activity: 'Light, not heavy', zoneSupport: 'Don\'t feel sluggish' },
+        { time: 'Practice once aloud', activity: 'Not 10 times; trust prep', zoneSupport: 'Confidence' },
+        { time: 'Power pose privately', activity: 'Hands on hips, chest open, 60 sec', zoneSupport: 'Body confidence' },
+        { time: 'Calming transit', activity: 'Music, breath', zoneSupport: 'Down-regulate' },
+        { time: 'Bathroom + water', activity: 'Body care', zoneSupport: 'Reduce distraction' },
+        { time: 'Speech', activity: 'Slow down; speak to one friendly face', zoneSupport: 'Anchor' },
+        { time: 'After', activity: 'Sit, breathe out long, don\'t replay', zoneSupport: 'Done is done' },
+        { time: 'Snack + hydrate', activity: 'Adrenaline crash care', zoneSupport: 'Body care' },
+        { time: 'Reward', activity: 'Something fun', zoneSupport: 'Reinforce courage' },
+        { time: 'Light evening', activity: 'Comfort', zoneSupport: 'Recover' },
+        { time: 'Bed', activity: 'Normal time', zoneSupport: 'Sleep' }
+      ],
+      zoneSupportPrinciple: 'Public speaking is acute spike; prep is done, execute and recover.',
+      customization: 'Reps over time reduce anxiety; toastmasters etc.',
+      research: 'Practice + cognitive reframing reduces speaking anxiety effectively.'
+    },
+    {
+      id: 'field_trip_day',
+      name: 'Field trip day',
+      forBand: 'elementary',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Night before', activity: 'Pack permission slip, snacks, water', zoneSupport: 'Reduce morning stress' },
+        { time: 'Wake earlier', activity: 'No rush', zoneSupport: 'Calm start' },
+        { time: 'Real breakfast', activity: 'Steady fuel', zoneSupport: 'Long day ahead' },
+        { time: 'Transit to school', activity: 'Calming', zoneSupport: 'Settle' },
+        { time: 'Bus ride', activity: 'Sit with friend, music if allowed', zoneSupport: 'Sensory care' },
+        { time: 'Arrive at venue', activity: 'Find your group, stay close', zoneSupport: 'Belonging' },
+        { time: 'Activities', activity: 'Pace yourself, hydrate', zoneSupport: 'Stamina' },
+        { time: 'Lunch', activity: 'Eat with group', zoneSupport: 'Connection + fuel' },
+        { time: 'Afternoon', activity: 'May be tired; honor it', zoneSupport: 'Self-pace' },
+        { time: 'Bus back', activity: 'Quiet ride, may sleep', zoneSupport: 'Recovery starts' },
+        { time: 'Arrive home', activity: 'Decompress, snack', zoneSupport: 'Recover' },
+        { time: 'Dinner', activity: 'Easy meal', zoneSupport: 'Fuel' },
+        { time: 'Early bed', activity: 'Exhausted; sleep matters', zoneSupport: 'Recovery' }
+      ],
+      zoneSupportPrinciple: 'Field trips are huge sensory + stamina events; pacing + recovery.',
+      customization: 'For autistic kids: advance prep (photos of venue), buddy assigned, sensory tools.',
+      research: 'Novel environments increase cognitive load; prep reduces meltdowns.'
+    },
+    {
+      id: 'substitute_teacher_day',
+      name: 'Substitute teacher day',
+      forBand: 'elementary',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Wake', activity: 'Normal routine', zoneSupport: 'Stable start' },
+        { time: 'Breakfast', activity: 'Real food', zoneSupport: 'Steady mood' },
+        { time: 'Transit', activity: 'Calming music', zoneSupport: 'Down-regulate' },
+        { time: 'See sub at school', activity: 'Pause, breathe, sit in normal seat', zoneSupport: 'Anchor in routine' },
+        { time: 'Tell sub one thing', activity: '"I take a quiet break at 10"', zoneSupport: 'Self-advocacy' },
+        { time: 'Classes', activity: 'Stick to your normal routine', zoneSupport: 'Predictability you create' },
+        { time: 'Sensory break if needed', activity: 'Counselor or trusted aide', zoneSupport: 'Anchor person' },
+        { time: 'Lunch', activity: 'Eat with friends', zoneSupport: 'Familiar' },
+        { time: 'Afternoon', activity: 'Push through', zoneSupport: 'Almost done' },
+        { time: 'Home', activity: 'Decompress; sub day is draining', zoneSupport: 'Recover' },
+        { time: 'Quiet evening', activity: 'Comfort', zoneSupport: 'Reset' },
+        { time: 'Bed', activity: 'Earlier if exhausted', zoneSupport: 'Recovery' }
+      ],
+      zoneSupportPrinciple: 'Sub days disrupt predictability; bring your own routines.',
+      customization: 'For autistic kids: written "sub day plan" for sub to read.',
+      research: 'Predictability supports regulation; sub days require scaffolding.'
+    },
+    {
+      id: 'lockdown_drill_day',
+      name: 'Lockdown drill day',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Morning prep', activity: 'Know it\'s coming if announced', zoneSupport: 'Reduces shock' },
+        { time: 'Normal classes', activity: 'Stay regulated', zoneSupport: 'Routine' },
+        { time: 'Drill announcement', activity: 'Follow teacher quietly', zoneSupport: 'Trust adults' },
+        { time: 'During drill', activity: 'Slow breath, focus on teacher', zoneSupport: 'Co-regulate' },
+        { time: 'After drill', activity: 'Talk about it briefly', zoneSupport: 'Process' },
+        { time: 'Rest of school day', activity: 'May be activated; honor', zoneSupport: 'Slower pace' },
+        { time: 'After school', activity: 'EXTRA decompression', zoneSupport: 'Drills are trauma-adjacent' },
+        { time: 'Movement', activity: 'Walk, run, dance', zoneSupport: 'Discharge stress' },
+        { time: 'Talk with safe person', activity: 'Process fears', zoneSupport: 'Co-regulate' },
+        { time: 'Dinner', activity: 'Comfort food', zoneSupport: 'Care' },
+        { time: 'Light evening', activity: 'No scary media', zoneSupport: 'No additional input' },
+        { time: 'Bed', activity: 'Comfort objects, normal time', zoneSupport: 'Sleep heals' }
+      ],
+      zoneSupportPrinciple: 'Drills activate threat response; recovery is real work.',
+      customization: 'For trauma history: opt out if possible, or modified participation.',
+      research: 'Active shooter drills increase anxiety; trauma-informed alternatives exist.'
+    },
+    {
+      id: 'back_to_school_long_absence',
+      name: 'Back-to-school after long absence',
+      forBand: 'all',
+      forContext: 'chronic-stress',
+      blocks: [
+        { time: 'Night before', activity: 'Pack everything, plan outfit', zoneSupport: 'Reduce morning chaos' },
+        { time: 'Wake earlier', activity: 'Time to ease in', zoneSupport: 'Calm start' },
+        { time: 'Real breakfast', activity: 'Protein, no rush', zoneSupport: 'Steady energy' },
+        { time: 'Check in with parent', activity: '"I am nervous and I will try"', zoneSupport: 'Validation' },
+        { time: 'Arrive on time', activity: 'Not super early or late', zoneSupport: 'Reduce spotlight' },
+        { time: 'First class', activity: 'Quiet entry, sit normal seat', zoneSupport: 'Anchor' },
+        { time: 'Catch up', activity: 'Ask teacher quietly what you missed', zoneSupport: 'Information' },
+        { time: 'Lunch', activity: 'Find one friend; doesn\'t have to be perfect', zoneSupport: 'Connection' },
+        { time: 'Afternoon', activity: 'Push through; almost done', zoneSupport: 'Pacing' },
+        { time: 'After school', activity: 'CRITICAL decompression', zoneSupport: 'Recovery' },
+        { time: 'Honor what you did', activity: 'You returned; that\'s brave', zoneSupport: 'Self-recognition' },
+        { time: 'Light evening', activity: 'No demands', zoneSupport: 'Reset' },
+        { time: 'Early bed', activity: 'Exhausted; sleep', zoneSupport: 'Recovery' }
+      ],
+      zoneSupportPrinciple: 'Return from absence is high-stress; lower other demands, plan recovery.',
+      customization: 'For illness return: medical accommodations. For mental health: counselor support.',
+      research: 'School re-entry after extended absence benefits from gradual return + check-ins.'
+    }
+  ];
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
