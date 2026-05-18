@@ -772,5 +772,105 @@
     "error_read_file": "读取文本文件失败。",
     "search_failed": "搜索失败。",
     "found_resources": "找到 {count} 个资源"
+  },
+  "codenames": {
+    "adjectives": ["高山","北极","大胆","勇敢","明亮","平静","聪明","酷","宇宙","敢于","渴望","史诗","公平","快速","凶猛","温柔","盛大","快乐","英勇","超凡","欢乐","善良","活泼","幸运","魔法","强大","霓虹","高贵","骄傲","迅速","急速","王者","沉默","机敏","太阳","音速","稳定","超级","敏捷","坚韧","涡轮","独特","鲜明","狂野","睿智","热忱"],
+    "animals": ["獾","熊","河狸","野牛","猫","眼镜蛇","美洲狮","鹤","乌鸦","鹿","澳洲野犬","海豚","龙","鹰","麋鹿","隼","白鼬","狐狸","壁虎","山羊","鹰","苍鹭","马","哈士奇","羱","美洲豹","考拉","狐猴","豹","狮","蜥蜴","猞猁","驼鹿","水獭","猫头鹰","熊猫","黑豹","鹦鹉","企鹅","美洲狮","兔","渡鸦","魟","犀牛","海豹","鲨鱼","树懒","蛇","蜘蛛","天鹅","老虎","海龟","蝰蛇","狼"],
+    "pick_adjective": "选一个形容词",
+    "pick_animal": "选一只动物"
+  },
+  "fab": {
+    "visual_supports": "视觉支持"
+  },
+  "tools": {
+    "source": "原始材料",
+    "glossary": "词汇表与语言选择",
+    "simplified": "文本改编与参与",
+    "outline": "可视化组织器",
+    "quiz": "退场票",
+    "adventure": "冒险模式"
+  },
+  "actions": {
+    "rename": "重命名",
+    "move_up": "上移",
+    "move_down": "下移",
+    "remove": "移除"
+  },
+  "large_file": {
+    "modal_title": "导入大型音频文件",
+    "modal_subtitle": "转录超过 20MB 的文件",
+    "title": "检测到大型音频文件",
+    "title_video": "检测到大型视频文件",
+    "description": "此文件超过了直接转录的 20MB 限制。它将被拆分成较小的片段分别转录,然后合并。",
+    "description_video": "将从此视频中提取音频,拆分成较小的片段进行转录,然后合并。",
+    "select_prompt": "点击选择音频文件",
+    "select_audio_label": "选择音频文件",
+    "supported_formats": "MP3、WAV、OGG、M4A、AAC、FLAC",
+    "transcribe_btn": "转录",
+    "cancel_transcription": "取消转录",
+    "chunk_info": "音频拆分成 5 分钟的片段进行处理",
+    "chunk_progress": "第 {current} 段 / 共 {total} 段",
+    "audio_only_error": "目前仅支持音频文件(MP3、WAV 等)进行分段转录。"
+  },
+  "formatting": {
+    "bold": "粗体 (**文本**)",
+    "italic": "斜体 (*文本*)",
+    "highlight": "高亮 (==文本==)",
+    "h1": "一级标题",
+    "h2": "二级标题",
+    "list": "项目符号列表"
+  },
+  "audio_player": {
+    "resume": "继续音频",
+    "pause": "暂停音频",
+    "speed": "播放速度",
+    "stop": "停止音频并重置"
+  },
+  "a11y": {
+    "anim_enable": "启用动画",
+    "anim_disable": "禁用动画",
+    "anim_toggle": "切换动画",
+    "theme_toggle": "切换配色主题",
+    "overlay_toggle": "切换颜色叠加",
+    "skip_content": "跳到内容",
+    "toggle_ruler": "切换阅读尺",
+    "task_timer": "任务计时器",
+    "toggle_focus": "切换专注模式",
+    "toggle_line_focus": "切换行专注"
+  },
+  "read_this_page": {
+    "panel_aria": "朗读此页面板",
+    "title": "朗读此页",
+    "read_all_button": "全部朗读",
+    "stop_button": "停止",
+    "focus_narration_label": "键盘焦点朗读",
+    "focus_narration_on_hint": "按 Tab 听控件"
+  },
+  "roles": {
+    "title": "欢迎使用 AlloFlow",
+    "subtitle": "你今天会怎样使用这个应用?",
+    "student": "学生",
+    "teacher": "教师",
+    "parent": "家长",
+    "independent": "独立学习者",
+    "mic_setup": "可选设置",
+    "mic_ready": "麦克风就绪",
+    "mic_denied": "访问被拒绝(请检查浏览器设置)",
+    "mic_requesting": "正在请求访问...",
+    "mic_enable": "启用麦克风访问",
+    "mic_tip": "建议:点击上方以避免稍后被打断。",
+    "voice_not_supported": "此浏览器不支持语音功能。"
+  },
+  "guided": {
+    "indicator_title": "引导模式",
+    "step_of": "第 {current} 步 / 共 {total} 步",
+    "back": "← 返回",
+    "skip": "下一步 →",
+    "all_done": "🎉 全部完成!查看所有工具",
+    "about": "关于",
+    "source_prompt": "粘贴或输入原文以开始",
+    "history_hint": "💡 你生成的资源保存在历史记录选项卡中 — 你可以随时回看和导出!",
+    "about_prefix": "📖",
+    "exit": "退出"
   }
 }
