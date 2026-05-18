@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "generated": "2026-05-18T18:42:26.257Z",
+  "generated": "2026-05-18T18:44:35.486Z",
   "count": 4,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "french",
       "display": "French",
-      "keys": 375,
-      "bytes": 21556,
+      "keys": 450,
+      "bytes": 24857,
       "updated": "2026-05-18"
     },
     {
