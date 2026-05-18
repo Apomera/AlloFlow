@@ -2028,6 +2028,11 @@
       "apply_edit": "应用自定义 Nano Banana 编辑",
       "generate_icon": "为此术语生成视觉图标"
     },
+    "edit_definition": "编辑定义",
+    "edit_term": "编辑术语",
+    "edit_translation": "编辑翻译",
+    "pronounce_term": "朗读术语",
+    "pronounce_term_title": "听发音",
     "auto_remove": "自动从图片中移除单词",
     "remove_words_btn": "移除单词",
     "auto_remove_tooltip": "自动从图片中移除文字",
@@ -9379,5 +9384,15 @@
       "standard_scenario": "标准场景",
       "standard_desc": "典型的基线-干预数据集。"
     }
-  }
+  },
+  "organizer": {
+    "labels": {
+      "cause": "原因",
+      "effect": "结果",
+      "end": "结束",
+      "problem_label": "问题",
+      "solutions": "解决方案"
+    }
+  },
+  "_version": "2026-03-29T1774812000"
 }
