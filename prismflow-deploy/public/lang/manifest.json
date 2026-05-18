@@ -1,21 +1,21 @@
 {
   "version": 2,
-  "generated": "2026-05-18T22:55:44.951Z",
+  "generated": "2026-05-18T23:00:44.415Z",
   "count": 7,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "arabic",
       "display": "Arabic",
-      "keys": 7042,
-      "bytes": 512341,
+      "keys": 7953,
+      "bytes": 581284,
       "updated": "2026-05-18"
     },
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
-      "keys": 8625,
-      "bytes": 530344,
+      "keys": 8725,
+      "bytes": 573430,
       "updated": "2026-05-18"
     },
     {
@@ -35,8 +35,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 8321,
-      "bytes": 912245,
+      "keys": 8419,
+      "bytes": 980934,
       "updated": "2026-05-18"
     },
     {
