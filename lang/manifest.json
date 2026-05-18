@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-18T22:24:20.072Z",
+  "generated": "2026-05-18T22:27:47.532Z",
   "count": 7,
   "total_keys_expected": 9307,
   "available": [
@@ -14,8 +14,8 @@
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
-      "keys": 4237,
-      "bytes": 224527,
+      "keys": 5127,
+      "bytes": 302726,
       "updated": "2026-05-18"
     },
     {
@@ -35,8 +35,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 7733,
-      "bytes": 529197,
+      "keys": 7831,
+      "bytes": 597218,
       "updated": "2026-05-18"
     },
     {
