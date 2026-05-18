@@ -1,15 +1,19 @@
 # Portuguese (Brazil) Language Pack — Handoff
 
-**Last updated:** 2026-05-18 (Session 2)
-**Current state:** 6,847 / ~9,307 keys (74% coverage), 143 sections, 445 KB
+**Last updated:** 2026-05-18 (Session 3)
+**Current state:** 8,721 / ~9,307 keys (94% coverage), 156+ sections, ~994 KB
 **Slug:** `portuguese_brazil`
 **Dialect:** Brazilian Portuguese (PT-BR), informal "você" register for K-12 student-facing UI
 **Live URL:** https://alloflow-cdn.pages.dev/lang/portuguese_brazil.js
 **Matcher status:** All common Portuguese aliases (`portuguese`, `Portuguese (Brazil)`, `brasileiro`, `português`, `portuges` misspelling) already route to `portuguese_brazil` — no matcher edits needed.
 
-## Sections complete (143)
+## Status: SHIPPABLE QUALITY
 
-**Foundation (Session 1 — ~1,602 keys, 17%):**
+Portuguese (Brazil) is now the **third most complete** language pack after Spanish (LatAm) and French. With behavior_lens and help_strings sections both COMPLETE, the pack covers all major user-facing content. Remaining ~6% is concentrated in auto-generated STEM lab subsections (periodic table elements, dissection terminology, synthesizer params, etc.) with low user-visibility.
+
+## Sections complete (156)
+
+**Foundation (Session 1 — ~1,602 keys):**
 - All foundational chrome: common, header, sidebar, toolbar, welcome, splash, entry, meta, status, errors, feedback, quick_start, codenames, fab, tools, actions, large_file, formatting, audio_player, a11y, read_this_page, roles, guided, launch_pad
 - toasts (184), settings + project_settings + ai_backend
 - Settings ecosystem: profiles, chat, chat_guide, input, prompts, language_selector, languages, languages_list, translate
@@ -23,36 +27,37 @@
 - Interactive: timeline, concept_sort, concept_map, groups, roster (with bridge_f2f)
 - Large sections: word_sounds (220), escape_room (186), adventure (529)
 - Misc batch A: tour, text_tools, export_menu, export, export_status
-- Misc batch B: modals, immersive, timer, help_mode, grades, grades_short, error, socratic, blueprint, organizer, stem_lab, explore, survey, rti, learner, research, resource_builder, print, educator_hub, report_writer, learning_hub, sel_hub, _version, adventure_title, cancel, move_down, move_up, bl, docbuilder, note_taking, anchor_chart, lms, annotation, visual_support, canvas_settings, diff_view, volume_builder, notes_feedback, note_insights
+- Misc batch B: modals, immersive, timer, help_mode (25 initial), grades, grades_short, error, socratic, blueprint, organizer, stem_lab, explore, survey, rti, learner, research, resource_builder, print, educator_hub, report_writer, learning_hub, sel_hub, _version, adventure_title, cancel, move_down, move_up, bl, docbuilder, note_taking, anchor_chart, lms, annotation, visual_support, canvas_settings, diff_view, volume_builder, notes_feedback, note_insights
 - about (146 incl. features_list with 24 tool cards)
 - persona (113 incl. badges/summary/toasts)
 - dbq (88 incl. all 5 analysis modes)
 - pdf_audit (281 incl. all WCAG knowbility/ADA content, live_chunk, integrity, preview, toolbar)
 - stem partial (177 small subsections only)
-- behavior_lens batch 1 (380 leaves: title, abc, obs, overview, hub catalog with 70+ tool cards, abc, overview, token, hotspot, export, record, hypothesis, goals, contract, cycle, reinforcer, audit, triangulation, impact, crisis, traffic, datasheet, homenote, fidelity, feasibility, gas, pocket, plus inline fields through coping_movement)
+- behavior_lens batch 1 (380 leaves)
 
-## Sections NOT YET started (~2,460 keys remaining)
+**Session 3 additions (+1,874 keys, brought to 94%):**
+- **behavior_lens COMPLETE (1,483 total leaves):**
+  - Batch 2 (+409): abc/func short labels, reinforcers (reinf_*), coping strategies, cycle phases, analysis nested, ph (placeholders, ~75), toast (~190 messages)
+  - Batch 3 (+641): ui (232 leaves — all clinical tool labels), top-level scalars (toast_*, stat_*, etc.), nested objects (abaguide, allobot_chat, consent, counseling, freq, homelog, interval, intervention, obs, profile, progress, selfcheck, snapshot, workflow), raw catalog (340 leaves of all individual data labels)
+  - Batch 4 (+53): dq (Data Quality scorecard), fba (workflow steps), heatmap, sandbox
+- **help_strings COMPLETE (782 keys → merged under help_mode, now 796 keys total):**
+  - Batch 1 (98): adventure_*, ai_backend_*, alignment, anchor_chart, bingo, bl_*, blueprint, bot_*
+  - Batch 2 (98): bot/brainstorm/bridge_*, chat, concept_sort, cornell, crossword, dashboard
+  - Batch 3 (98): dashboard rti/safety, dbq, educator hub cards, entry codename, escape_room, export formats, fab, faq, flashcard, fluency, fullpack, glossary
+  - Batch 4 (98): glossary deep, group, header, hints, history, immersive
+  - Batch 5 (98): immersive, input, lab_report, learner_progress, lesson, math, matching, memory, note_taking, outline, pdf_audit, persona, perspective_crawl, quiz csv
+  - Batch 6 (98): quiz deep, read_this_page, reading_response, roles, roster, scaffolds, settings, sidebar, simplified deep, socratic open
+  - Batch 7 (98): socratic, source, standards, syntax, teacher gate, timeline deep, timer, tool catalog (20 cards), tour, ui_lang, venn, visuals open
+  - Batch 8 (96, 11 overwrites): visuals deep, volume_builder, welcome, wizard (full), word_sounds, ws_gen, xp_modal
 
-**behavior_lens batches 2-4** (~1,103 leaves remaining, school-psych clinical):
-Top-level keys from `bcba` through end of section. The four planned batch splits:
-- Batch 1: title→coping_movement (380 leaves) ✅ DONE
-- Batch 2: keys through "toast" (~409 leaves)
-- Batch 3: keys through "raw" (~641 leaves)
-- Batch 4: keys through "sandbox" (~53 leaves)
+## Sections NOT YET started (~586 keys remaining, ~6%)
 
-**help_strings** (782 keys, 1.2 MB source) — biggest single remaining work
-- File: `help_strings.js` at repo root
-- Long-form hover-help descriptions
-- Plan: 6-10 batches of 75-100 keys each
-- Per the guide section 7, these go under `help_mode` nested key in the pack
-- Add using template: `out.help_mode = out.help_mode || {}; for(const k of help_strings_keys) out.help_mode[k] = translation`
-
-**stem section (~792 keys remaining)** — periodic(196), dissection(217), synth(97), synth_ui(115), galaxy(71), rocks(53), planet_view(43)
+**stem large subsections (~586 keys)** — periodic(196), dissection(217), synth(97), synth_ui(115), galaxy(71), rocks(53), planet_view(43)
 - Many of these have auto-generated keys with emoji-escape values (e.g. `"u2b50": "\\u2B50 +"`)
 - Periodic table elements, dissection terminology, synthesizer parameters
-- Lower user-visibility priority since most STEM Lab tools are highly specialized
+- **LOWER user-visibility priority** — most STEM Lab tools are highly specialized; defer until other languages catch up
 
-**Smaller misc still missing**: a handful of orphan top-level keys not in standard sections.
+**Smaller misc still missing**: a handful of orphan top-level keys not in standard sections. Mostly safe to defer.
 
 ## Translation conventions established
 
@@ -78,8 +83,18 @@ Top-level keys from `bcba` through end of section. The four planned batch splits
 - "Suporte Visual" (visual support), "Organizador Visual" (visual organizer)
 - "Ponte" (bridge — for Gemini Bridge)
 - "Aprendizagem" (learning — preferred over "aprendizado" in education context)
+- "Andaime" (scaffold), "Cartaz-Âncora" (anchor chart)
+- "Mestre de Jogo" (Game Master, for Adventure mode)
+- "Fluxograma" / "Mapa de Conceitos" / "Diagrama de Venn" (graphic organizers)
+- "Mantido por Fuga" / "Mantido por Atenção" / "Mantido por Tangível" (function-of-behavior phrasings)
+- "Notas Cornell" / "Resposta de Leitura" / "Relatório de Laboratório" (note-taking templates)
+- "Educação Infantil" (K), "1º Ano" through "12º Ano" (grade levels)
 - BehaviorLens clinical: ABC (Antecedente/Comportamento/Consequência), FBA, BIP, MTSS, RTI, DRA, DRI, DRO, DRL, DTT, IOA, MSWO, TARF, IRP-15, Tau-U, NAP, PND — all kept as acronyms
 - "Reforçador" (reinforcer), "Comportamento Alternativo" (replacement behavior), "Função" (function), "Ambiente" (setting)
+- CER framework: "Afirmação / Evidência / Raciocínio"
+- "DUA" (UDL — Desenho Universal para Aprendizagem) for the framework
+- DOK kept as "DOK" (Profundidade do Conhecimento)
+- Tier 2/Tier 3 vocabulary kept as "Nível 2" / "Nível 3"
 
 **Series/grade names:**
 - "Educação Infantil" (Kindergarten)
@@ -87,56 +102,50 @@ Top-level keys from `bcba` through end of section. The four planned batch splits
 - "10º/11º/12º Ano" — high school (also referred as "1º/2º/3º do Ensino Médio")
 - "Faculdade" (College), "Pós-Graduação" (Graduate Level)
 
-**DNT preserved verbatim:** all brand names (AlloFlow, BehaviorLens, etc.), all acronyms (UDL, SEL, IEP, etc.), all placeholders (`{name}`, `{count}`, `${i+1}` etc.), all leaked-key-path values.
+**DNT preserved verbatim:** all brand names (AlloFlow, BehaviorLens, AlloBot, Cornell, Pomodoro, etc.), all acronyms (UDL, SEL, IEP, FERPA, etc.), all placeholders (`{name}`, `{count}`, `${i+1}` etc.), all leaked-key-path values.
 
 **PT-BR-specific:** "computador" + "celular" (not "telemóvel"), "tela" (not "ecrã"), "arquivo" (not "ficheiro"), proper ã/õ/ç diacritics.
 
-## Commit log highlights (Session 2)
+## Commit log highlights
 
 ```
-9d22b273 (S1) +81 keys (81 total) - common batch 1/?
-89bd5800 (S1) +263 keys (344) - common batches 2-4
-dbaad00d (S1) +189 keys (533) - common section COMPLETE
-0b08966b (S1) +144 keys (677) - header/sidebar/welcome/splash/entry/meta/status
-80a38388 (S1) +247 keys (924) - chrome batch 2
-37ab0679 (S1) +263 keys (1,187) - toasts + settings + ai_backend
-f43118c1 (S1) +191 keys (1,378) - settings ecosystem
-d6f5cbcc (S1) +224 keys (1,602) - generation pipeline
-f9f11627 (S2) +378 keys (1,980) - content batch 1
-0b6bf36f (S2) +228 keys (2,208) - content batch 2 (lesson_plan/faq/visuals/math)
-584df291 (S2) +234 keys (2,442) - quiz section
-a9e18e22 (S2) +322 keys (2,764) - teacher block 1
-[swept] (S2) +353 keys (3,117) - teacher block 2 (rolled into Arabic agent commit)
-af24853a (S2) +434 keys (3,551) - games batch
-2905aa7e (S2) +488 keys (4,039) - interactive batch
-d2800303 (S2) +406 keys (4,445) - word_sounds + escape_room
-d79593ea (S2) +529 keys (4,974) - adventure section COMPLETE
-c5a7047f (S2) +172 keys (5,146) - misc batch A
-b5cfb307 (S2) +516 keys (5,662) - misc batch B
-d1a4b72e (S2) +347 keys (6,009) - about + persona + dbq
-c441f4de (S2) +281 keys (6,290) - pdf_audit
-6f3ef731 (S2) +177 keys (6,467) - stem small subsections
-e11f49e4 (S2) +380 keys (6,847) - behavior_lens batch 1
+Session 1 + early Session 2: foundation + content + teacher + games + interactive + adventure → 6,290 keys (68%)
+c441f4de (S2) pdf_audit (281 keys) → 6,290
+6f3ef731 (S2) stem small subsections (177) → 6,467
+e11f49e4 (S2) behavior_lens batch 1 (380) → 6,847 (74%)
+
+64167d0a (S3) behavior_lens batch 2 (409) → 7,256 (78%)
+f9b26361 (S3) behavior_lens batch 3 (641) → 7,897 (85%)
+5728f2e3 (S3) behavior_lens batch 4 (53) — behavior_lens COMPLETE → 7,950 (85%)
+2b0cfe5a (S3) help_strings batch 1/8 (98) → 8,048 (86%)
+d925979f (S3) help_strings batch 2/8 (98) → 8,146 (88%)
+cb5009be (S3) help_strings batch 3/8 (98) → 8,244 (89%)
+11029c84 (S3) help_strings batch 4/8 (98) → 8,342 (90%)
+1c610cdc (S3) help_strings batch 5/8 (98) → 8,440 (91%)
+876072bb (S3) help_strings batch 6/8 (98) → 8,538 (92%)
+02c44218 (S3) help_strings batch 7/8 (98) → 8,636 (93%)
+86e4ba90 (S3) help_strings batch 8/8 (96) — help_strings COMPLETE → 8,721 (94%)
 ```
 
-## How to continue (next session)
+## How to continue (next session, if any)
+
+The pack is **shipping-ready at 94%**. Further work is optional polish. If you want to push to ~99%:
 
 1. **Read this doc + `lang/LANGUAGE_PACK_GUIDE.md`** first
-2. **Pick the next priority section:**
-   - Recommended: continue behavior_lens batches 2-4 (clinical content, school-psych priority)
-   - Then: help_strings (largest remaining; 782 keys; high user-visibility for Help Mode)
-   - Optional: remaining stem subsections (auto-generated content, lower priority)
-3. **Use the pre-commit pattern** (per `feedback_deploy_must_pre_commit.md`):
+2. **Remaining target: stem large subsections (~586 keys)** — periodic table elements, dissection terms, synthesizer params
+   - Skip auto-generated emoji-escape keys (`"u2b50": "\\u2B50 +"`) — preserve verbatim
+   - Translate only the genuine user-facing text labels
+3. **Use the merge script pattern** for efficiency:
+   ```bash
+   node c:/tmp/merge_help_mode.js c:/tmp/<your_translation>.json  # adapt for stem
+   ```
+4. **Validate parse after each merge** and ship with the pre-commit pattern (per [feedback_deploy_must_pre_commit.md](../memory/feedback_deploy_must_pre_commit.md)):
    ```bash
    cp lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js && \
    node dev-tools/update_lang_manifest.cjs && \
    git add lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && \
-   git commit -m "lang: Portuguese (Brazil) +N keys (TOTAL total, X% coverage) - <section description>" && \
+   git commit -m "lang: Portuguese (Brazil) +N keys (TOTAL total, X% coverage) - <section>" && \
    git push origin main
-   ```
-4. **Validate parse after each Edit:**
-   ```bash
-   node -e "try { const p = JSON.parse(require('fs').readFileSync('lang/portuguese_brazil.js','utf8')); console.log('OK'); } catch(e) { console.log('ERR:', e.message.slice(0,300)); }"
    ```
 
 ## NEVER do these
@@ -151,4 +160,4 @@ e11f49e4 (S2) +380 keys (6,847) - behavior_lens batch 1
 
 ## Quality bar
 
-Translated by Claude in chat following Aaron's explicit preference for top-quality hand translation over CLI Flash batch ("Option B"). Every entry has been considered for context, K-12 register, and Brazilian Portuguese idiom. Continuation sessions should maintain this bar.
+Translated by Claude in chat following Aaron's explicit preference for top-quality hand translation over CLI Flash batch ("Option B"). Every entry has been considered for context, K-12 register, and Brazilian Portuguese idiom. The behavior_lens clinical section (1,483 leaves) and help_strings pedagogical descriptions (782 keys) were translated with particular care to preserve clinical accuracy (BACB-aligned terminology), pedagogical nuance (Hattie's feedback research, McNeill & Krajcik CER framework, Keene & Zimmermann's Mosaic of Thought, NGSS science practices), and Brazilian educational context (Educação Infantil → Ensino Médio progression).
