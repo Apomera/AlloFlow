@@ -7020,5 +7020,242 @@
       "insert_table_aria": "Inserir tabela",
       "insert_table_title": "Inserir tabela acessível"
     }
+  },
+  "stem": {
+    "common": {
+      "u2b50": "\\u2B50 +",
+      "explore": "Explorar",
+      "operation": "Operação",
+      "difficulty": "Dificuldade",
+      "volume": "Volume",
+      "surface_area": "Área de Superfície",
+      "enter_volume": "Digite o volume..."
+    },
+    "fluency": {
+      "fluency_drill_started": "Treino de fluência iniciado! ",
+      "stem_assessment_saved_to_resources": "Avaliação STEM salva nos recursos (",
+      "stem_assessment": "Avaliação STEM: "
+    },
+    "calculus": {
+      "left": "Esquerda",
+      "midpoint": "Ponto Médio",
+      "right": "Direita",
+      "trapezoid": "Trapézio",
+      "simpson": "Simpson",
+      "rectangles_n": "Retângulos (n)",
+      "coeff_a": "Coef. a"
+    },
+    "wave": {
+      "u26a0_audio_not_supported_in": "\\u26A0 Áudio não suportado neste navegador",
+      "ud83cudfaf_match_the_yellow_dashed": "\\uD83C\\uDFAF Combine com a onda tracejada amarela!"
+    },
+    "func_graph": {
+      "cell_sim": "Sim. de Célula"
+    },
+    "func_grapher": {
+      "ud83dudcc8": "\\uD83D\\uDCC8 ",
+      "correct_it": "? Correto! Ele\\",
+      "that": "? Isso\\",
+      "linear": "Linear",
+      "quadratic": "Quadrática",
+      "cubic": "Cúbica",
+      "trig": "Trig.",
+      "exponential": "Exponencial",
+      "absolute": "Absoluto"
+    },
+    "physics": {
+      "angle_u00b0": "Ângulo (\\u00B0)",
+      "velocity_ms": "Velocidade (m/s)",
+      "gravity_msu00b2": "Gravidade (m/s\\u00B2)"
+    },
+    "chem_balance": {
+      "ud83cudfb2_random": "\\uD83C\\uDFB2 Aleatório: ",
+      "water": "Água",
+      "table_salt": "Sal de Cozinha",
+      "magnesium_oxide": "Óxido de Magnésio",
+      "iron_oxide": "Óxido de Ferro",
+      "combustion": "Combustão",
+      "photosynthesis": "Fotossíntese",
+      "acid_base": "Ácido + Base",
+      "ammonia": "Amônia",
+      "thermite": "Termite",
+      "ethanol_combustion": "Combustão do Etanol",
+      "calcium_carbonate": "Carbonato de Cálcio",
+      "glucose_combustion": "Combustão da Glicose"
+    },
+    "punnett": {
+      "ud83euddec": "\\uD83E\\uDDEC ",
+      "complete_dominance": "Dominância Completa",
+      "incomplete_dominance": "Dominância Incompleta",
+      "codominance": "Codominância",
+      "sexlinked_xlinked": "Ligada ao Sexo (Ligada ao X)"
+    },
+    "circuit": {
+      "u2705_challenge_complete_you_hit": "\\u2705 Desafio completo! Você atingiu ",
+      "ud83cudfaf_target": "\\uD83C\\uDFAF Alvo: ",
+      "mode": "Modo",
+      "resistance": "Resistência",
+      "current": "Corrente",
+      "power": "Potência",
+      "get_2a_current": "Obtenha corrente de 2A",
+      "get_05a_current": "Obtenha corrente de 0,5A",
+      "total_r_200u03a9": "R total = 200\\u03A9",
+      "power_24w": "Potência = 24W",
+      "total_r_50u03a9": "R total = 50\\u03A9"
+    },
+    "data_plot": {
+      "correct": "? Correto! ",
+      "it": "? Ele\\"
+    },
+    "inequality": {
+      "type_your_answer": "Digite sua resposta..."
+    },
+    "ecosystem": {
+      "prey_birth": "Nascimento da Presa",
+      "pred_death": "Morte do Predador"
+    },
+    "fractions": {
+      "correct": "✅ Correto! ",
+      "fraction_a": "Fração A",
+      "fraction_b": "Fração B"
+    },
+    "decomposer": {
+      "correct": "✅ Correto!",
+      "the_answer_is": "❌ A resposta é ",
+      "sugar_sucrose": "Açúcar (Sacarose)",
+      "a_pungent_compound_essential_for": "Um composto de cheiro forte, essencial para fertilizantes e aminoácidos.",
+      "found_in_chalk_limestone_marble": "Encontrado em giz, calcário, mármore, conchas e cascas de ovo.",
+      "the_simplest_hydrocarbon_natural_gas": "O hidrocarboneto mais simples. O gás natural é basicamente metano."
+    },
+    "converter": {
+      "u2705_saved_to_history": "\\u2705 Salvo no histórico!",
+      "your_answer": "Sua resposta..."
+    },
+    "probability": {
+      "expected": "Esperado: "
+    },
+    "area": {
+      "volume": "Volume..."
+    },
+    "mult_table": {
+      "value": "Valor...",
+      "label_optional": "Rótulo (opcional)"
+    },
+    "cell": {
+      "amoeba": "Ameba",
+      "paramecium": "Paramécio",
+      "euglena": "Euglena",
+      "white_blood_cell": "Glóbulo Branco",
+      "bacterium": "Bactéria",
+      "plant_cell": "Célula Vegetal",
+      "diatom": "Diatomácea",
+      "volvox": "Volvox",
+      "stentor": "Stentor",
+      "tardigrade": "Tardígrado",
+      "microscopic": "Microscópico ",
+      "spirillum": "Espirilo"
+    },
+    "solar_sys": {
+      "venus": "Vênus",
+      "earth": "Terra",
+      "mars": "Marte",
+      "jupiter": "Júpiter",
+      "saturn": "Saturno",
+      "uranus": "Urano",
+      "neptune": "Netuno",
+      "pluto": "Plutão"
+    },
+    "rock_cycle": {
+      "weathering_erosion": "Intemperismo e Erosão",
+      "heat_pressure": "Calor e Pressão",
+      "melting_cooling": "Fusão e Resfriamento"
+    },
+    "ai": {
+      "get_hint": "Receber uma dica"
+    },
+    "layers_slider": "Camadas",
+    "surface_area": "Área de superfície",
+    "volume": "Volume",
+    "water_cycle": {
+      "evaporation": "Evaporação",
+      "condensation": "Condensação",
+      "precipitation": "Precipitação",
+      "collection": "Coleta",
+      "transpiration": "Transpiração",
+      "infiltration": "Infiltração"
+    },
+    "planet_quiz": {
+      "u2705_correct": "\\u2705 Correto! ",
+      "u274c_the_answer_is": "\\u274C A resposta é ",
+      "discoveries": "Descobertas",
+      "xp_earned": "XP Ganhos",
+      "wasd": "WASD"
+    },
+    "universe": {
+      "the_big_bang": "O Big Bang",
+      "recombination": "Recombinação",
+      "the_dark_ages": "A Idade das Trevas",
+      "first_stars_cosmic_dawn": "Primeiras Estrelas (Amanhecer Cósmico)",
+      "our_sun_is_born": "Nosso Sol Nasce",
+      "present_day": "Dias Atuais",
+      "the_far_future": "O Futuro Distante",
+      "universe": "Universo: "
+    },
+    "solver": {
+      "total_stem_lab_xp_earned": "Total de XP do STEM Lab ganhos em todas as atividades",
+      "generate_assess": "Gerar e avaliar",
+      "manipulatives": "Manipuláveis",
+      "stepbystep": "Passo a Passo",
+      "conceptual": "Conceitual",
+      "realworld": "Mundo Real"
+    },
+    "assessment": {
+      "volume_explorer": "Explorador de Volume",
+      "number_line": "Reta Numérica",
+      "area_model": "Modelo de Área",
+      "fraction_lab": "Laboratório de Frações",
+      "directive_eg": "Diretriz (ex.: "
+    },
+    "tools_menu": {
+      "math_fundamentals": "Fundamentos de Matemática",
+      "base10_blocks": "Blocos Base 10",
+      "coordinate_grid": "Grade Coordenada",
+      "plot_points_draw_lines_and": "Marque pontos, desenhe linhas e explore o plano cartesiano.",
+      "angle_explorer": "Explorador de Ângulos",
+      "multiplication_table": "Tabuada",
+      "advanced_math": "Matemática Avançada",
+      "function_grapher": "Plotador de Funções",
+      "inequality_grapher": "Plotador de Inequações",
+      "graph_inequalities_on_number_lines": "Plote inequações em retas numéricas e no plano cartesiano.",
+      "calculus_visualizer": "Visualizador de Cálculo",
+      "probability": "Probabilidade",
+      "fractions": "Frações",
+      "unit_converter": "Conversor de Unidades",
+      "life_earth_science": "Ciências da Vida e da Terra",
+      "cell_simulator": "Simulador de Célula",
+      "galaxy_explorer": "Explorador de Galáxias",
+      "universe_timelapse": "Linha do Tempo do Universo",
+      "rocks_minerals": "Rochas e Minerais",
+      "interactive_rock_cycle_mineral_properties": "Ciclo das rochas interativo, propriedades minerais e geologia",
+      "water_cycle": "Ciclo da Água",
+      "rock_cycle": "Ciclo das Rochas",
+      "decomposer": "Decompositor",
+      "break_materials_into_elements": "Quebre materiais em elementos",
+      "human_anatomy": "Anatomia Humana",
+      "brain_atlas": "Atlas do Cérebro",
+      "molecule_builder": "Construtor de Moléculas",
+      "physics_chemistry": "Física e Química",
+      "wave_simulator": "Simulador de Ondas",
+      "circuit_builder": "Construtor de Circuitos",
+      "equation_balancer": "Balanceador de Equações",
+      "balance_chemical_equations_with_visual": "Balanceie equações químicas com contagem visual de átomos.",
+      "punnett_square": "Quadro de Punnett",
+      "physics_simulator": "Simulador de Física",
+      "data_plotter": "Plotador de Dados",
+      "plot_data_points_fit_trend": "Plote pontos de dados, ajuste linhas de tendência, calcule correlação.",
+      "arts_music": "Artes e Música",
+      "music_synthesizer": "Sintetizador Musical",
+      "art_design_studio": "Estúdio de Arte e Design"
+    }
   }
 }
