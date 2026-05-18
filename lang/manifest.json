@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "generated": "2026-05-18T22:20:39.914Z",
+  "generated": "2026-05-18T22:24:20.072Z",
   "count": 7,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "arabic",
       "display": "Arabic",
-      "keys": 3453,
-      "bytes": 241983,
+      "keys": 3941,
+      "bytes": 276451,
       "updated": "2026-05-18"
     },
     {
