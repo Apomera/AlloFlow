@@ -6631,5 +6631,394 @@
     "custom_essay_aria": "Pergunta de foco da redação personalizada",
     "need_source_hint": "⬆️ Cole um texto-fonte acima primeiro — o DBQ será construído a partir dele.",
     "generate_aria": "Gerar DBQ"
+  },
+  "pdf_audit": {
+    "view_last_audit": "Ver Última Auditoria",
+    "start_new_audit": "Iniciar Nova Auditoria",
+    "apply_and_export": "Aplicar e Exportar",
+    "applying_remarkup": "Reaplicando marcação acessível ao seu texto aprovado…",
+    "rejected_count": "{n} rejeitados",
+    "undo_all_rejections": "desfazer tudo",
+    "granularity_warning": "Mudar a granularidade vai apagar suas rejeições. Continuar?",
+    "remarkup_failed": "Não foi possível reaplicar a marcação completa — exportados parágrafos simples. Tente de novo depois, se preciso.",
+    "reject_selection": "Rejeitar seleção",
+    "keep_selection": "Manter seleção",
+    "edits_applied": "Edições aplicadas. HTML acessível atualizado.",
+    "start_new_confirm": "Iniciar uma nova auditoria? Sua auditoria atual será apagada — certifique-se de ter baixado o HTML remediado se precisar dele.",
+    "modal_aria": "Auditoria de Acessibilidade de PDF",
+    "close_modal_aria": "Fechar modal de auditoria",
+    "close_wait_title": "Aguarde a remediação terminar ou clique em Parar primeiro",
+    "close_esc_title": "Fechar (Esc)",
+    "web": {
+      "heading": "🌐 Acessibilidade de Site e HTML",
+      "subheading": "Audite uma URL de site ou cole HTML para auditoria + remediação WCAG 2.1 AA completa",
+      "url_label": "URL do Site",
+      "url_aria": "URL do site para auditar",
+      "fetch_aria": "Buscar HTML do site",
+      "or_paste_hint": "Ou cole o código-fonte HTML diretamente abaixo",
+      "html_label": "Código-Fonte HTML",
+      "html_placeholder": "Cole o código-fonte HTML aqui, ou use Buscar acima...",
+      "html_aria": "Código-fonte HTML para auditar"
+    },
+    "batch": {
+      "drop_text": "Arraste e solte PDFs aqui",
+      "browse_files": "Procurar Arquivos",
+      "clear_all": "Limpar Tudo",
+      "progress_aria": "Progresso da remediação em lote",
+      "stop_aria": "Parar remediação em lote",
+      "avg_improvement": "Melhoria Média",
+      "scored_90_plus": "Pontuaram 90+",
+      "new_batch": "Novo Lote"
+    },
+    "choose_how": "Escolha como processar este PDF:",
+    "settings": {
+      "audit_passes_aria": "Número de passagens de auditoria",
+      "target_score_aria": "Pontuação-alvo de acessibilidade",
+      "max_fix_passes_aria": "Quantidade máxima de passagens de correção",
+      "auto_continue_aria": "Continuar a remediação automaticamente até atingir a pontuação-alvo",
+      "polish_passes_aria": "Quantidade de passagens de polimento"
+    },
+    "brand": {
+      "heading": "Cores da Marca",
+      "where_from": "De onde vêm as cores?",
+      "match_original": "🎨 Combinar com o Original",
+      "match_original_desc": "Extraia as cores deste PDF",
+      "upload_guide": "📎 Enviar Manual de Marca",
+      "upload_guide_desc": "Use outro documento/logotipo",
+      "no_branding": "⬜ Sem Identidade Visual",
+      "no_branding_desc": "Use a paleta padrão",
+      "tip": "Dica: se você escolher uma Semente de Estilo específica abaixo (não \"Combinar com o Original\"), as cores dessa semente substituem sua escolha de marca. Para usar as cores da sua marca, combine-as com a semente Combinar com o Original."
+    },
+    "style": {
+      "heading": "Semente de Estilo",
+      "subtext": "Que estilo de design a IA deve aplicar? A conformidade com WCAG é garantida pelo sanitizador determinístico.",
+      "your_custom": "Seus Estilos Personalizados",
+      "name_label": "Nome do Estilo",
+      "name_placeholder": "Meu Estilo",
+      "name_aria": "Nome do estilo personalizado",
+      "font_aria": "Família da fonte",
+      "font_inter": "Inter (Limpa)",
+      "font_georgia": "Georgia (Serifa)",
+      "font_atkinson": "Atkinson (Acessibilidade)",
+      "font_lexend": "Lexend (Legível)",
+      "font_comic": "Comic Sans (Divertida)",
+      "font_times": "Times (Clássica)",
+      "heading_color_label": "Cor dos Títulos",
+      "heading_color_aria": "Cor dos títulos",
+      "accent_color_label": "Cor de Destaque",
+      "accent_color_aria": "Cor de destaque",
+      "bg_color_aria": "Cor do fundo"
+    },
+    "triage": {
+      "source_type": "Tipo de fonte",
+      "issues_to_fix": "Problemas para corrigir:",
+      "estimated_time": "Tempo estimado de remediação:"
+    },
+    "post_fix": {
+      "label": "Modo pós-correção",
+      "aria": "Modo pós-correção"
+    },
+    "quick_downloads": {
+      "heading": "Downloads rápidos (sem necessidade de remediação)",
+      "tagged_pdf_title": "Baixe um PDF com tags com base no original. Para tags mais ricas — títulos extraídos, tabelas com escopo correto, texto alternativo — execute Corrigir e Verificar primeiro e baixe a versão com tags depois."
+    },
+    "loading": {
+      "title": "Auditando a Acessibilidade do PDF...",
+      "subtitle": "Executando 5 auditorias WCAG 2.1 AA paralelas com triangulação. Isso pode levar 15-30 segundos.",
+      "progress_aria": "Auditoria em andamento"
+    },
+    "knowbility": {
+      "partner_badge": "Parceiro de Acessibilidade",
+      "mission_lead": "Criando um mundo digital inclusivo para pessoas com deficiência",
+      "ada_title": "Lei dos Americanos com Deficiência (ADA) Título II",
+      "wcag_label": "WCAG 2.1 Nível AA",
+      "deadline_range": "Abril de 2026 a Abril de 2027",
+      "broader_reach_desc": "Conteúdo acessível funciona em qualquer dispositivo, qualquer banda, qualquer tecnologia assistiva — alcançando mais usuários",
+      "seo_desc": "Títulos estruturados, texto alternativo e HTML semântico melhoram o ranking de busca e a descoberta de conteúdo",
+      "cognitive_desc": "Navegação clara, layouts consistentes e linguagem simples ajudam todos os usuários — especialmente em contextos de alta carga cognitiva",
+      "future_desc": "Conteúdo compatível com WCAG se adapta a novos dispositivos, leitores de IA e tecnologias assistivas emergentes",
+      "italic_callout": "WCAG 2.1 AA não é apenas evitar processos — é construir documentos perceptíveis, operáveis, compreensíveis e robustos para todos os seres humanos.",
+      "audit_service_desc": "Auditorias WCAG especialistas e remediação de documentos por profissionais certificados",
+      "usability_service_desc": "Testes de usabilidade no mundo real com pessoas que usam tecnologia assistiva diariamente",
+      "docrem_service_desc": "Equipe especialista em PDFs e documentos do MS Office — usabilidade completa com tecnologia assistiva",
+      "training_service_desc": "Conferência anual e cursos sob demanda — habilidades de acessibilidade do iniciante ao avançado",
+      "mission_strong": "Missão: criar um mundo digital inclusivo para pessoas com deficiência.",
+      "testing_desc": "Auditorias WCAG manuais que produzem relatórios acionáveis e caminhos de remediação para sites, aplicativos e documentos",
+      "docrem_full_desc": "Equipe especialista em PDFs e documentos do MS Office — garantindo usabilidade total com tecnologia assistiva",
+      "accessworks_desc": "Testes de usabilidade no mundo real com pessoas com deficiência que usam tecnologia assistiva diariamente",
+      "training_full_desc": "Conferência anual e cursos sob demanda — do iniciante ao avançado em habilidades de acessibilidade"
+    },
+    "unavailable": {
+      "title": "Auditoria Indisponível",
+      "body": "A auditoria de acessibilidade por IA não pôde ser concluída. Isso geralmente é causado por um problema temporário de API, limitação de taxa ou um PDF muito grande/complexo.",
+      "proceed_hint": "Você ainda pode prosseguir — Corrigir e Verificar vai transformar o documento e rodar uma auditoria completa depois."
+    },
+    "tabs": {
+      "aria": "Visualização da auditoria",
+      "remediation_results": "Resultados da Remediação",
+      "original_audit": "Auditoria Original"
+    },
+    "doc_props": {
+      "aria": "Propriedades do documento",
+      "contains_images": "Contém Imagens",
+      "contains_tables": "Contém Tabelas",
+      "contains_forms": "Contém Formulários"
+    },
+    "reliability": {
+      "std_dev": "Desvio Padrão",
+      "icc_title": "Índice customizado 1−(DP/50); não é o ICC do livro-texto",
+      "icc_label": "Consistência entre Auditores (estilo ICC)",
+      "cronbach": "α de Cronbach"
+    },
+    "score": {
+      "total_checks": "Total de verificações realizadas",
+      "issues_found": "Problemas encontrados",
+      "ai_rubric_label": "Rubrica de IA",
+      "starts_at_100": "Começa em 100, deduz por tipo de problema",
+      "how_ai_scores": "Como a IA pontua",
+      "ai_critical_rule": "Crítico: -15 cada (idioma, título, alt, marco, contraste)",
+      "ai_major_rule": "Maior: -10 cada (cabeçalhos, tabelas, formulários)",
+      "ai_minor_rule": "Menor: -5 cada (pular navegação, marcos, links, listas)",
+      "ai_passes_rule": "Aprovações reduzem proporcionalmente as deduções totais",
+      "axe_desc": "Verificador automático Deque WCAG 2.1 AA",
+      "how_axe_scores": "Como o axe-core pontua",
+      "no_violations": "Nenhuma violação detectada",
+      "average_both": "Média dos dois mecanismos (peso igual)"
+    },
+    "multi_session": {
+      "no_pdf_attached": "O PDF original não está anexado a esta sessão — você será solicitado a selecioná-lo do disco novamente ao iniciar a correção. (Arquivos de projeto não incluem os bytes do PDF para se manterem pequenos.)",
+      "autosave_aria": "Salvar o arquivo do projeto automaticamente após cada intervalo concluído",
+      "autosave_label": "Salvar o arquivo do projeto automaticamente após cada intervalo"
+    },
+    "page_range": {
+      "start_aria": "Página inicial",
+      "end_aria": "Página final",
+      "clear_aria": "Limpar intervalo de páginas e remediar o documento inteiro"
+    },
+    "fix_pass": {
+      "additional_sweep": "Varredura Adicional",
+      "progress_aria": "Progresso de correção e verificação"
+    },
+    "pipeline": {
+      "tracker_aria": "Rastreador de progresso do pipeline",
+      "why_matters": "Por que isso importa:"
+    },
+    "boring_palette": {
+      "prompt": "Você quer manter a aparência original ou aplicar um tema?"
+    },
+    "live_chunk": {
+      "review_aria": "Revisão de remediação ao vivo",
+      "heading_short": "Remediação ao Vivo",
+      "no_fixes_title": "Esta seção já atende aos padrões de acessibilidade WCAG — o pipeline não fez mudanças porque nenhuma era necessária.",
+      "retried_title": "A IA precisou tentar novamente esta seção uma vez depois que a primeira tentativa falhou nas verificações de integridade ou preservação de tokens.",
+      "content_verified_title": "Verificação de preservação de conteúdo pela IA aprovada — o conteúdo textual da seção foi preservado na reescrita.",
+      "ai_skipped_long_title": "A reescrita pela IA falhou ou foi rejeitada para esta seção — apenas correções determinísticas (baseadas em regras) foram aplicadas. A seção ainda está mais acessível que a original, só menos do que seções corrigidas com sucesso pela IA.",
+      "ai_skipped_rule_only": "IA pulada · apenas baseado em regras",
+      "review_heading": "Revisão de Remediação ao Vivo",
+      "review_subhead": "Acompanhe cada seção sendo corrigida em tempo real — rejeite ou refaça qualquer coisa que pareça errada",
+      "progress_aria": "Progresso da remediação ao vivo",
+      "rule_based_title": "Correções por regex baseadas em regras (determinísticas) aplicadas — sempre seguras, sem envolvimento de IA",
+      "targeted_title": "Microcorreções direcionadas diagnosticadas pela IA aplicadas via ferramentas determinísticas (preservando conteúdo)",
+      "ai_skipped_short_title": "A reescrita pela IA falhou ou foi rejeitada para esta seção — apenas correções baseadas em regras foram aplicadas. Ainda mais acessível que a original.",
+      "ai_skipped_short": "IA pulada",
+      "verified_title": "Conteúdo verificado e preservado pela IA",
+      "integrity_title": "Verificação de integridade por sobreposição de palavras aprovada",
+      "before": "Antes (original)",
+      "after": "Depois (corrigido)",
+      "integrity_note": "Nota de integridade:",
+      "violations_targeted": "Violações alvo nesta passagem",
+      "clear_history_aria": "Limpar histórico de revisão ao vivo"
+    },
+    "why_matters": {
+      "heading": "Por que Documentos Acessíveis Importam",
+      "udl_part1": "Materiais acessíveis apoiam o Desenho Universal para a Aprendizagem (UDL) — beneficiando",
+      "all": "todos",
+      "udl_part2": "os aprendizes, independentemente de habilidade, idioma ou estilo de aprendizagem",
+      "ux_part1": "Títulos claros, estrutura lógica e contraste suficiente tornam os documentos mais fáceis de ler para",
+      "ux_part2": "os usuários — inclusive em dispositivos móveis e ao sol forte",
+      "seo_desc": "HTML semântico, texto alternativo e títulos adequados ajudam os mecanismos de busca a indexar conteúdo — aumentando descoberta e alcance orgânico",
+      "innovation_desc": "Reconhecimento de voz, legendas e leitores de tela começaram como recursos de acessibilidade — depois viraram ferramentas essenciais usadas por milhões"
+    },
+    "ada": {
+      "heading": "ADA Título II e WCAG 2.1 AA",
+      "deadline_badge": "Prazo: 24 de abril de 2026",
+      "title_strong": "Título II da Lei dos Americanos com Deficiência (ADA)",
+      "wcag_strong": "WCAG 2.1 Nível AA",
+      "deadline_50k": "24 de abril de 2026",
+      "deadline_small": "26 de abril de 2027",
+      "covered_desc": "Sites de acesso público, aplicativos móveis, documentos digitais (PDFs, Word, Excel, PowerPoint) e redes sociais publicados por entidades governamentais",
+      "who_desc": "Todas as entidades governamentais estaduais e locais — incluindo escolas públicas, universidades, tribunais, bibliotecas, agências de transporte e serviços municipais",
+      "matters_desc": "Além da conformidade legal: documentos acessíveis garantem que pessoas com deficiência possam acessar igualmente educação, serviços públicos, emprego e participação cívica",
+      "standard_callout": "O padrão que o AlloFlow busca — WCAG 2.1 Nível AA — é exatamente o padrão exigido por esta regra federal."
+    },
+    "doc_details": {
+      "heading": "Detalhes do Documento"
+    },
+    "images": {
+      "review_heading": "Revisar Descrições de Imagens",
+      "download_all_title": "Baixe todas as imagens extraídas — útil como fallback manual se a reinserção pela IA colocar errado ou pular alguma.",
+      "edit_alt_hint": "Edite o texto alternativo abaixo — as mudanças se aplicam ao documento final",
+      "download_one_title": "Baixar esta imagem",
+      "ai_generated_badge": "Gerado por IA",
+      "alt_placeholder": "Descreva esta imagem para usuários de leitor de tela...",
+      "regen_title": "Regenerar esta imagem por IA usando a descrição armazenada",
+      "dropped_by_ai": "Descartada por passagem da IA",
+      "regen_hint": "Clique em Regenerar para recriar uma imagem por IA usando a descrição armazenada, ou use Enviar/Substituir dentro da figura na prévia."
+    },
+    "integrity": {
+      "verifying": "Verificando integridade do conteúdo…",
+      "diff_open_verifying_aria": "Abrir visualização de diferenças (verificação ainda rodando em segundo plano)",
+      "diff_open_verifying_title": "Abrir a visualização de diferenças no nível das palavras. A verificação de integridade ainda está rodando em segundo plano, mas o diff em si já está pronto.",
+      "unverified": "Integridade do conteúdo não verificada",
+      "diff_open_aria": "Abrir visualização de diferenças entre o texto do PDF-fonte e o HTML final",
+      "diff_open_title": "Diferenças lado a lado no nível das palavras: veja cada inserção, exclusão e paráfrase entre o PDF-fonte e o HTML remediado.",
+      "recheck_aria": "Reexecutar verificação de integridade do conteúdo pelo pdf.js",
+      "recheck_title": "Reexecutar a escada de recuperação de fidelidade (Etapas A-D) contra o HTML remediado atual."
+    },
+    "verification": {
+      "details_heading": "Detalhes da verificação",
+      "char_coverage": "Cobertura de caracteres",
+      "word_coverage": "Cobertura de palavras",
+      "source_words": "Palavras-fonte",
+      "recovery_stages": "Etapas de recuperação aplicadas",
+      "ai_retry": "Nova tentativa da IA",
+      "ground_truth": "Verdade de campo:",
+      "open_diff_title": "Abrir a visualização de diferenças no nível das palavras"
+    },
+    "fidelity": {
+      "heading": "Verificar Fidelidade do Texto",
+      "run_title": "Compare o documento remediado com o texto-fonte — sinaliza qualquer palavra que apareça na fonte, mas não na saída remediada atual.",
+      "run_aria": "Executar verificação de fidelidade do texto contra o OCR-fonte",
+      "restore_title": "Insira de volta as palavras faltantes no documento remediado usando correspondência por âncora de contexto difusa. Palavras que não couberem vão para um apêndice de Recuperação de Conteúdo, para que nada se perca.",
+      "restore_aria": "Restaurar palavras faltantes no documento remediado",
+      "not_ready": "Remediação não pronta."
+    },
+    "report": {
+      "download_title": "Baixar relatório da auditoria",
+      "text_extract_title": "Extrair texto para geração de conteúdo"
+    },
+    "resume": {
+      "heading": "Progresso Salvo Encontrado"
+    },
+    "start_new_title": "Apagar este resultado de auditoria e começar do zero com um novo PDF",
+    "results": {
+      "verified_accessible": "Acessibilidade Verificada",
+      "zero_violations": "Zero violações WCAG detectadas"
+    },
+    "wcag_report": {
+      "coverage_note": "A cobertura pode estar incompleta — esta visualização agrega regras do axe-core por critério WCAG (SC). Ainda é necessária revisão manual para alguns critérios (ex.: significado semântico, ordem de leitura, formulários complexos)."
+    },
+    "auto_fix": {
+      "stop_aria": "Parar remediação com continuação automática",
+      "progress_aria": "Progresso da correção automática"
+    },
+    "section_map": {
+      "heading": "Mapa de Seções do Documento",
+      "rule_based_title": "Correções baseadas em regras (determinísticas) aplicadas",
+      "targeted_title": "Microcorreções direcionadas diagnosticadas pela IA",
+      "ai_skipped_title": "Reescrita pela IA foi rejeitada — apenas correções baseadas em regras aplicadas",
+      "ai_skipped": "IA pulada"
+    },
+    "expert_referral": {
+      "heading": "Este Documento Precisa de Remediação de Acessibilidade Especializada"
+    },
+    "diff": {
+      "button_aria": "Abrir visualização de diferenças no nível das palavras entre o PDF-fonte e o HTML remediado",
+      "button_title": "Abrir o modal de diferenças no nível das palavras — veja cada inserção, exclusão e paráfrase entre o texto do PDF-fonte e o HTML remediado, com clicar para rejeitar e Aplicar e Exportar."
+    },
+    "pdf_from_html": {
+      "title": "Regere um PDF a partir do HTML remediado. O layout se reorganiza — quebras de página, fontes e paginação podem diferir do original. Funciona bem para documentos simples de texto corrido."
+    },
+    "tagged_pdf": {
+      "title": "Preserve o layout visual original do PDF byte por byte e injete tags de acessibilidade na árvore de estrutura. Melhor para livros didáticos, documentos com várias colunas e PDFs com identidade visual onde a fidelidade visual importa."
+    },
+    "alt_formats": {
+      "intro": "Baixe o documento remediado em formatos alternativos acessíveis"
+    },
+    "expert": {
+      "command_aria": "Comando de remediação especialista",
+      "log_aria": "Registro de atividade do agente"
+    },
+    "translate": {
+      "lang_aria": "Idioma de tradução — digite qualquer idioma ou escolha entre as sugestões",
+      "lang_placeholder": "🌐 Digite o idioma (ex.: espanhol, tagalo, dari...)"
+    },
+    "simplify": {
+      "level_aria": "Nível de série da simplificação"
+    },
+    "plain_summary": {
+      "intro": "Gere uma versão de leitura fácil para pais, responsáveis ou membros da comunidade.",
+      "lang_aria": "Idioma de tradução"
+    },
+    "close_confirm": {
+      "title": "Fechar sem salvar?",
+      "save_close": "Salvar e fechar"
+    },
+    "preview": {
+      "modal_aria": "Prévia e editor de documento acessível",
+      "close_aria": "Fechar prévia",
+      "edit_hint": "Clique em qualquer lugar da prévia para editar o texto diretamente. Use os controles abaixo para personalizar a aparência.",
+      "wcag_guaranteed": "Conformidade com WCAG garantida — o sanitizador roda a cada mudança de estilo.",
+      "ai_restyle_hint": "Restilização por IA com um clique. Estas substituem o tema acima.",
+      "body_font_aria": "Fonte do corpo",
+      "font_system": "Sistema (Padrão)",
+      "font_georgia": "Georgia (Serifa)",
+      "font_times_new": "Times New Roman",
+      "font_atkinson_hyper": "Atkinson Hyperlegible",
+      "font_comic_short": "Comic Sans",
+      "font_courier": "Courier (Mono)",
+      "font_size_aria": "Tamanho da fonte",
+      "live_preview": "Prévia ao Vivo",
+      "iframe_title": "Prévia de documento acessível"
+    },
+    "wordart": {
+      "text_placeholder": "Seu texto de arte de palavras...",
+      "text_aria": "Texto de arte de palavras"
+    },
+    "a11y_inspect": {
+      "headings": "Títulos (H1-H6)",
+      "images": "Imagens + texto alt",
+      "tables": "Tabelas + cabeçalhos",
+      "figures": "Figuras + legendas",
+      "main_landmark": "Marco principal",
+      "aria_roles": "Papéis ARIA"
+    },
+    "ai_image": {
+      "prompt_placeholder": "Descreva uma imagem para gerar...",
+      "prompt_aria": "Prompt de geração de imagem",
+      "select_hint": "Clique numa imagem na prévia para selecioná-la, depois:"
+    },
+    "layout": {
+      "insert_blocks": "Inserir Blocos",
+      "header_branding": "Cabeçalho / Identidade Visual"
+    },
+    "templates": {
+      "aria": "Modelo de documento",
+      "apply_placeholder": "Aplicar modelo...",
+      "saved_heading": "Modelos Acessíveis Salvos"
+    },
+    "version_stamp": {
+      "heading": "Carimbo de Versão"
+    },
+    "extracted_images": {
+      "drag_hint": "Arraste uma miniatura para qualquer espaço de imagem na prévia para inseri-la, ou clique em \"📷 Enviar\" dentro de um espaço e escolha \"Usar imagem extraída\"."
+    },
+    "toolbar": {
+      "aria": "Formatação de texto",
+      "bullet_list": "Lista com marcadores",
+      "numbered_list": "Lista numerada",
+      "align_left": "Alinhar à esquerda",
+      "align_center": "Alinhar ao centro",
+      "align_center_title": "Centralizar",
+      "insert_link": "Inserir link",
+      "remove_link": "Remover link",
+      "clear_formatting": "Limpar formatação",
+      "undo": "Desfazer",
+      "redo": "Refazer",
+      "text_color": "Cor do texto",
+      "highlight_color": "Cor do destaque",
+      "insert_table_aria": "Inserir tabela",
+      "insert_table_title": "Inserir tabela acessível"
+    }
   }
 }
