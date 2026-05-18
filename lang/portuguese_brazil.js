@@ -8772,6 +8772,67 @@
       "whole_interval": "Intervalo inteiro",
       "workspace_sharing": "Compartilhamento de espaço de trabalho",
       "your_response": "Sua resposta"
+    },
+    "dq": {
+      "completeness": "Completude",
+      "dataset_grade": "Nota do conjunto de dados",
+      "diversity": "Diversidade",
+      "recency": "Atualidade",
+      "scorecard_title": "Cartão de Pontuação de Qualidade dos Dados",
+      "temporal_spread": "Dispersão temporal",
+      "tip_add_entries": "Adicione mais registros para fortalecer esta pontuação.",
+      "tip_all_complete": "Todos os registros têm os campos obrigatórios preenchidos.",
+      "tip_antecedent_types": "Boa variedade de tipos de antecedentes observados.",
+      "tip_data_current": "Os dados são atuais e refletem o comportamento recente.",
+      "tip_good_coverage": "Boa cobertura ao longo dos dias.",
+      "tip_good_diversity": "Boa diversidade entre antecedentes.",
+      "tip_great_volume": "Excelente volume de registros para análise.",
+      "tip_last_entry_ago": "O último registro foi feito há algum tempo.",
+      "tip_missing_fields": "Alguns registros estão sem campos obrigatórios.",
+      "tip_spread_days": "Os registros estão bem distribuídos ao longo dos dias.",
+      "volume": "Volume"
+    },
+    "fba": {
+      "open_tool": "Abrir ferramenta",
+      "progress_pct": "Progresso",
+      "step_ai_analysis": "Análise por IA",
+      "step_ai_analysis_desc": "Use IA para identificar padrões e a função hipotetizada.",
+      "step_collect_more": "Coletar Mais Dados",
+      "step_collect_more_desc": "Adicione mais sessões de observação para fortalecer o conjunto de dados.",
+      "step_hypothesis": "Hipótese",
+      "step_hypothesis_desc": "Elabore uma hipótese de trabalho sobre a função do comportamento.",
+      "step_record_abc": "Registrar Dados ABC",
+      "step_record_abc_desc": "Documente antecedentes, comportamentos e consequências.",
+      "step_report": "Relatório",
+      "step_report_desc": "Gere o relatório da FBA para a equipe.",
+      "step_select_student": "Selecionar Aluno",
+      "step_select_student_desc": "Escolha para qual aluno é esta FBA.",
+      "step_sessions": "Sessões",
+      "step_sessions_desc": "Realize sessões de observação em diferentes ambientes e horários."
+    },
+    "goal": "Meta",
+    "heatmap": {
+      "less": "Menos",
+      "more": "Mais",
+      "subtitle": "Frequência do comportamento por dia e horário",
+      "title": "Mapa de Calor do Comportamento"
+    },
+    "sandbox": {
+      "add_phase_data": "Adicionar dados de fase",
+      "add_phase_desc": "Adicione uma nova fase com pontos de dados personalizados.",
+      "complex_scenario": "Cenário complexo",
+      "complex_desc": "Dados multifase com tendências mistas.",
+      "entries_loaded": "Registros carregados",
+      "expected_pattern": "Padrão esperado",
+      "generate_custom": "Gerar personalizado",
+      "generating": "Gerando…",
+      "generation_preview": "Pré-visualização da geração",
+      "intervention_desc_label": "Descrição da intervenção",
+      "new_entries": "Novos registros",
+      "phase_duration": "Duração da fase",
+      "phase_label": "Fase",
+      "standard_scenario": "Cenário padrão",
+      "standard_desc": "Um conjunto típico de dados de linha de base e intervenção."
     }
   }
 }
