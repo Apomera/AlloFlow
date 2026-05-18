@@ -5619,5 +5619,657 @@
     "target_group": "Kooxda Bartilmaameedka",
     "target_language": "Luqadda Bartilmaameedka",
     "reading_level": "Heerka Akhrinta"
+  },
+  "pdf_audit": {
+    "view_last_audit": "Eeg Hubinta Ugu Dambeysay",
+    "start_new_audit": "Bilow Hubin Cusub",
+    "apply_and_export": "Codso & Dhoofi",
+    "applying_remarkup": "Markup-ka la heli karo waxaa loo dabaqayaa qoraalkaaga la ansixiyay…",
+    "rejected_count": "{n} la diiday",
+    "undo_all_rejections": "dib u celi dhammaan",
+    "granularity_warning": "Beddelka heerka faahfaahinta wuxuu dib u dejin doonaa diidmadaada. Sii wad?",
+    "remarkup_failed": "Lama dabaqi karin markup buuxa — waxaa la dhoofiyay cutub caadi ah. Mar dambe isku day haddii loo baahdo.",
+    "reject_selection": "Diid doorashada",
+    "keep_selection": "Hayso doorashada",
+    "edits_applied": "Tafatirka waa la dabaqay. HTML-ka la heli karo waa la cusbooneysiiyay.",
+    "start_new_confirm": "Bilow hubin cusub? Hubintaada hadda jirta waa la tirtiri doonaa — hubi inaad soo dejisay HTML-ka la dayactiray haddii aad u baahato.",
+    "modal_aria": "Hubinta Helitaanka PDF",
+    "close_modal_aria": "Xidh sanduuqa hubinta",
+    "close_wait_title": "Sug dayactirka inuu dhammaado ama riix Jooji marka hore",
+    "close_esc_title": "Xidh (Esc)",
+    "web": {
+      "heading": "🌐 Helitaanka Websaydhka & HTML",
+      "subheading": "Hubi URL websaydh ama dheji HTML hubinta WCAG 2.1 AA dhameystiran + dayactirka",
+      "url_label": "URL Websaydhka",
+      "url_aria": "URL Websaydhka oo la hubinayo",
+      "fetch_aria": "Soo qaad HTML websaydhka",
+      "or_paste_hint": "Ama hoos dheji koodka isha HTML si toos ah",
+      "html_label": "Isha HTML",
+      "html_placeholder": "Halkan ku dheji koodka isha HTML, ama isticmaal Soo Qaad kor...",
+      "html_aria": "Koodka isha HTML oo la hubinayo"
+    },
+    "batch": {
+      "drop_text": "Jiid & tuur PDF-yada halkan",
+      "browse_files": "Eeg Faylasha",
+      "clear_all": "Tirtir Dhammaan",
+      "progress_aria": "Horumarka dayactirka xirmada",
+      "stop_aria": "Jooji dayactirka xirmada",
+      "avg_improvement": "Celceliska Hagaajinta",
+      "scored_90_plus": "Buundo 90+",
+      "new_batch": "Xirmo Cusub"
+    },
+    "choose_how": "Dooro sida loo qabto PDF-kan:",
+    "settings": {
+      "audit_passes_aria": "Tirada tallaabooyinka hubinta",
+      "target_score_aria": "Buundada bartilmaameedka helitaanka",
+      "max_fix_passes_aria": "Tirada ugu badan ee tallaabooyinka hagaajinta",
+      "auto_continue_aria": "Si toos ah u sii wad dayactirka illaa buundada bartilmaameedka",
+      "polish_passes_aria": "Tirada tallaabooyinka sifaynta"
+    },
+    "brand": {
+      "heading": "Midabada Brand-ka",
+      "where_from": "Halkee ka yimaadeen midabada?",
+      "match_original": "🎨 La mid asalka",
+      "match_original_desc": "Ka soo saar midabada PDF-kan",
+      "upload_guide": "📎 Soo Geli Hagaha Brand-ka",
+      "upload_guide_desc": "Isticmaal doc/calaamad kale",
+      "no_branding": "⬜ Ma jiro Branding",
+      "no_branding_desc": "Isticmaal palette caadi ah",
+      "tip": "Tilmaan: Haddii aad doorato Style Seed gaar ah hoose (maaha \"La mid asalka\"), midabada seed-kani waxay ka beddelaan doorashada brand-kaaga. Si aad u isticmaasho midabada brand-kaaga, ku xidh Match Original seed."
+    },
+    "style": {
+      "heading": "Style Seed",
+      "subtext": "Qaab naqshadeed kee AI dabaqi doonaa? Habsamida WCAG waxaa hubinaya nadiifiye go'aamin leh.",
+      "your_custom": "Qaababka Gaarka ah",
+      "name_label": "Magaca Qaabka",
+      "name_placeholder": "Qaabkayga",
+      "name_aria": "Magaca qaabka gaarka ah",
+      "font_aria": "Qoyska qaabka qoraalka",
+      "font_inter": "Inter (Nadiif)",
+      "font_georgia": "Georgia (Serif)",
+      "font_atkinson": "Atkinson (A11y)",
+      "font_lexend": "Lexend (Akhri-fudud)",
+      "font_comic": "Comic Sans (Madadaalo)",
+      "font_times": "Times (Caadi)",
+      "heading_color_label": "Midabka Cinwaanka",
+      "heading_color_aria": "Midabka cinwaanka",
+      "accent_color_label": "Midabka Diirada",
+      "accent_color_aria": "Midabka diirada",
+      "bg_color_aria": "Midabka asalka"
+    },
+    "triage": {
+      "source_type": "Nooca isha",
+      "issues_to_fix": "Arrimaha la hagaajin lahaa:",
+      "estimated_time": "Waqtiga qiyaasta ah ee dayactirka:"
+    },
+    "post_fix": {
+      "label": "Habka kadib-hagaajinta",
+      "aria": "Habka kadib-hagaajinta"
+    },
+    "quick_downloads": {
+      "heading": "Soo dejin degdeg ah (dayactir looma baahna)",
+      "tagged_pdf_title": "Soo dejii PDF Tagged ah oo ku saleysan asalka. Si aad u hesho tagging hodan — cinwaanada la soo saaray, jaantusyo si sax ah loo soocay, qoraal alt — orodsii Hagaaji & Xaqiiji marka hore oo soo dejii noocii tagged-ka ah kadib."
+    },
+    "loading": {
+      "title": "Hubinta Helitaanka PDF...",
+      "subtitle": "Waxaa la wadayaa 5 hubin WCAG 2.1 AA isla mar oo leh saddex-geesle. Tani waxay qaadan kartaa 15-30 sek.",
+      "progress_aria": "Hubinta waa socotaa"
+    },
+    "knowbility": {
+      "partner_badge": "La-shaqeeyaha Helitaanka",
+      "mission_lead": "Abuurista dunida dijital ah oo aan ka go'in dadka naafada ah",
+      "ada_title": "Sharciga Americans with Disabilities Act (ADA) Cutubka II",
+      "wcag_label": "WCAG 2.1 Heer AA",
+      "deadline_range": "April 2026 illaa April 2027",
+      "broader_reach_desc": "Nuxurka la heli karo wuxuu ku shaqeeyaa aalad kasta, bandwidth kasta, tikniyoolajiyad caawimaad kasta — wuxuu gaadhaa isticmaaleyaal badan",
+      "seo_desc": "Cinwaanada qaab-dhismeed leh, qoraalka alt, iyo HTML semantic wuxuu kor u qaadayaa raadinta iyo helitaanka nuxurka",
+      "cognitive_desc": "Marin-habayn nadiif ah, qaab-dhismeed joogto ah, iyo luqad fudud waxay caawiyaan dhammaan isticmaaleyaasha — gaar ahaan macnaha culus ee maskaxda",
+      "future_desc": "Nuxurka la WCAG-jaan-qaadayo wuxuu la jaan-qaadaa aaladaha cusub, akhriyaal AI, iyo tikniyoolajiyada caawimaada ee soo baxaysa",
+      "italic_callout": "WCAG 2.1 AA ma aha kaliya ka fogaanta dacwadaha — waxay ku saabsan tahay dhisitaanka dukumeentiyo la dareemi karo, la maamuli karo, la fahmi karo, oo adag dadka oo dhan.",
+      "audit_service_desc": "Hubinta WCAG xirfadlayaal iyo dayactirka dukumeentiga oo ay sameeyaan xirfadlayaal shahaadooyin leh",
+      "usability_service_desc": "Tijaabinta isticmaalka dunida dhabta ah oo ay sameeyaan dad isticmaala tikniyoolajiyad caawimaad ah maalin walba",
+      "docrem_service_desc": "Koox xirfadle ah oo PDF iyo dukumeentiyada MS Office — isticmaal buuxa oo tikniyoolajiyad caawimaad",
+      "training_service_desc": "Shir sannadle ah iyo koorsooyin la heli karo — laga bilaabo bilow illaa xirfadaha sare ee helitaanka",
+      "mission_strong": "Misiyaan: Abuur dunida dijital ah oo aan ka go'in dadka naafada ah.",
+      "testing_desc": "Hubinta WCAG ee gacanta ah oo soo saaraysa warbixino la qaadi karo iyo waddooyinka dayactirka websaydhada, codsiyada, iyo dukumeentiga",
+      "docrem_full_desc": "Koox xirfadle ah oo PDF iyo MS Office — hubinta isticmaal buuxa oo tikniyoolajiyad caawimaad",
+      "accessworks_desc": "Tijaabinta isticmaal dunida dhabta ah oo ay sameeyaan dad naafada ah oo isticmaala tikniyoolajiyad caawimaad maalin walba",
+      "training_full_desc": "Shir sannadle ah iyo koorsooyin la heli karo — laga bilaabo bilow illaa xirfadaha sare"
+    },
+    "unavailable": {
+      "title": "Hubintu Lama Heli Karo",
+      "body": "Hubinta helitaanka AI lama dhameystiri karin. Tani waxaa caadi ahaan keena dhibaato API ku-meel-gaar ah, xadidaad heerka, ama PDF aad u weyn/adag.",
+      "proceed_hint": "Wali waad sii waddi kartaa — Hagaaji & Xaqiiji wuxuu beddeli doonaa dukumeentiga oo wuxuu orodsiin doonaa hubin buuxa kadib."
+    },
+    "tabs": {
+      "aria": "Aragga hubinta",
+      "remediation_results": "Natiijooyinka Dayactirka",
+      "original_audit": "Hubinta Asalka"
+    },
+    "doc_props": {
+      "aria": "Sifooyinka dukumeentiga",
+      "contains_images": "Wuxuu ka kooban yahay Sawiro",
+      "contains_tables": "Wuxuu ka kooban yahay Jaantusyo",
+      "contains_forms": "Wuxuu ka kooban yahay Foomamo"
+    },
+    "reliability": {
+      "std_dev": "Kala-fogaanshaha Heerka",
+      "icc_title": "Tilmaame 1−(SD/50) gaar ah; maaha ICC buugga-cilmiga",
+      "icc_label": "Joogtaynta Hubiyaha (ICC-la mid ah)",
+      "cronbach": "Cronbach's α"
+    },
+    "score": {
+      "total_checks": "Wadarta hubinada la sameeyay",
+      "issues_found": "Arrimaha la helay",
+      "ai_rubric_label": "Rubric AI",
+      "starts_at_100": "Wuxuu ka bilowdaa 100, wuxuu yarayn doonaa nooc kasta oo arrin",
+      "how_ai_scores": "Sida AI uu u qiimeeyo",
+      "ai_critical_rule": "Halis: -15 kasta (luqad, cinwaan, alt, landmark, contrast)",
+      "ai_major_rule": "Weyn: -10 kasta (cinwaanada, jaantusyada, foomamo)",
+      "ai_minor_rule": "Yar: -5 kasta (skip-nav, landmark, link, liis)",
+      "ai_passes_rule": "Tallaabooyinka waxay yaraynayaan yaraynta wadarta",
+      "axe_desc": "Hubiyaha tooska ah ee WCAG 2.1 AA ee Deque",
+      "how_axe_scores": "Sida axe-core u qiimeeyo",
+      "no_violations": "Lama ogaan jebin",
+      "average_both": "Celceliska labada mashiin (cabbir isle'eg)"
+    },
+    "multi_session": {
+      "no_pdf_attached": "PDF-kii asalka ahaa kuma ag yaalo fadhigan — waxaa lagu farayn doonaa inaad mar kale ka doorato disk-ka markaad bilowdo hagaajinta. (Faylasha mashruucu kuma jiraan byte-yada PDF si yar u sii ahaan).",
+      "autosave_aria": "Si toos ah u kaydi faylka mashruuca tirinta kasta oo dhameystiran",
+      "autosave_label": "Si toos ah u kaydi faylka mashruuca xadka kasta kadib"
+    },
+    "page_range": {
+      "start_aria": "Bog bilow",
+      "end_aria": "Bog dhamaad",
+      "clear_aria": "Tirtir xadka bogga oo dayactir dukumeentiga oo dhan"
+    },
+    "fix_pass": {
+      "additional_sweep": "Sweep Dheeraad ah",
+      "progress_aria": "Horumarka hagaajinta iyo xaqiijinta"
+    },
+    "pipeline": {
+      "tracker_aria": "Raadyaha horumarka pipeline-ka",
+      "why_matters": "Sababta tani u muhiim u tahay:"
+    },
+    "boring_palette": {
+      "prompt": "Ma rabtaa inaad hayso muuqaalka asalka ah ama aad dabaqdo mawduuc?"
+    },
+    "live_chunk": {
+      "review_aria": "Dib-u-eegista dayactirka qaybta tooska ah",
+      "heading_short": "Dayactir Toos ah",
+      "no_fixes_title": "Qaybtani hore ayay u buuxisay heerarka helitaanka WCAG — pipeline-ku ma sameyn isbeddel sababtoo ah midkoodna looma baahnayn.",
+      "retried_title": "AI wuxuu mar kale isku dayay qaybtan kadib hubinta hore ee fashilantay daacadnimada ama hubinta ilaalinta token-ka.",
+      "content_verified_title": "Hubinta ilaalinta nuxurka AI way habboon tahay — qoraalka qaybta waa la ilaaliyay dib-u-qorista.",
+      "ai_skipped_long_title": "AI dib-u-qor ayaa fashilmay ama la diiday qaybtan — kaliya hagaajinta go'aamin leh (xeer ku saleysan) ayaa la dabaqay. Qaybtu wali way ka heli karaan asalka.",
+      "ai_skipped_rule_only": "AI waa la booday · xeer-kaliya",
+      "review_heading": "Dib-u-eegista Dayactir Toos ah",
+      "review_subhead": "Daawee qayb kasta oo la hagaajinayo wakhti dhab ah — diid ama dib u hagaaji wax kasta oo qaldan",
+      "progress_aria": "Horumarka dayactir tooska ah",
+      "rule_based_title": "Xeer ku saleysan (go'aamin leh) regex hagaajin — had iyo jeer nabad, AI ma laha",
+      "targeted_title": "Hagaajimo micro AI-gu ogaaday oo la dabaqay aalado go'aamin leh (nuxur-ilaaliyaha)",
+      "ai_skipped_short_title": "AI dib-u-qor ayaa fashilmay ama la diiday qaybtan — kaliya hagaajimo xeer ku saleysan ayaa la dabaqay.",
+      "ai_skipped_short": "AI waa la booday",
+      "verified_title": "AI nuxurka la xaqiijiyay",
+      "integrity_title": "Hubinta daacadnimada eraygu way habboon tahay",
+      "before": "Hore (asalka)",
+      "after": "Kadib (la hagaajiyay)",
+      "integrity_note": "Qoraalka daacadnimada:",
+      "violations_targeted": "Jebin lala kulmay tallaabadan",
+      "clear_history_aria": "Tirtir taariikhda dib-u-eegista tooska ah"
+    },
+    "why_matters": {
+      "heading": "Sababta Dukumeentiyada la heli karo u Muhiim u Yihiin",
+      "udl_part1": "Qalabka la heli karo wuxuu taageeraa Universal Design for Learning (UDL) — wuxuu faa'iido u leeyahay",
+      "all": "dhammaan",
+      "udl_part2": "bartayaasha iyada oo aan loo eegin awood, luqad, ama qaabka waxbarashada",
+      "ux_part1": "Cinwaanada cad, qaab-dhismeed caqli ah, iyo isbarbardhig ku filan waxay dukumeentiyada u sahlayaan",
+      "ux_part2": "isticmaaleyaal — oo ay ku jiraan mobile iyo cadceedda dhalaalka",
+      "seo_desc": "HTML semantic, qoraalka alt, iyo cinwaanada saxda ah waxay ka caawiyaan search engines indeksinta nuxurka — wuxuu kor u qaadayaa helitaanka iyo gaadhista",
+      "innovation_desc": "Aqoonsiga codka, qoraalka faallooyinka xidhan, iyo akhriyaal shaashadda dhammaantood waxay u bilaabmeen sida sifooyin helitaan — ka dibna waxay noqdeen aalado lama-huraan ah oo ay isticmaalaan malaayiin"
+    },
+    "ada": {
+      "heading": "ADA Cutubka II & WCAG 2.1 AA",
+      "deadline_badge": "Wakhtiga kama dambeysta: April 24, 2026",
+      "title_strong": "Cutubka II ee Americans with Disabilities Act (ADA)",
+      "wcag_strong": "WCAG 2.1 Heer AA",
+      "deadline_50k": "April 24, 2026",
+      "deadline_small": "April 26, 2027",
+      "covered_desc": "Websaydhada, codsiyada mobile, dukumeentiyada dijital ah (PDF, Word, Excel, PowerPoint), iyo baraha bulshada ee ay daabacaan dawladaha",
+      "who_desc": "Dhammaan ururada dawladaha gobolka iyo deegaanka — oo ay ku jiraan dugsiyada dadweynaha, jaamacadaha, maxkamadaha, maktabadaha, hay'adaha gaadiidka, iyo adeegyada degmada",
+      "matters_desc": "Ka sokow hubinta sharciga: dukumeentiyada la heli karo waxay hubiyaan in dadka naafada ahi si siman u helaan waxbarashada, adeegyada dadweynaha, shaqada, iyo ka-qaybgalka madaniga",
+      "standard_callout": "Heerka AlloFlow ay bartilmaameedsato — WCAG 2.1 Heer AA — waa heerka saxda ah ee uu sharcigan federaalku rabaa."
+    },
+    "doc_details": {
+      "heading": "Faahfaahinta Dukumeentiga"
+    },
+    "images": {
+      "review_heading": "Dib u Eeg Sharaxaadda Sawirka",
+      "download_all_title": "Soo dejii sawir kasta oo la soo saaray — faa'iido u ah sida beddel gacanteed haddii soo gelinta AI ay khalad meeleyso ama booddo mid.",
+      "edit_alt_hint": "Tafatir qoraalka alt hoose — beddelada waxay dabaqaan dukumeentiga ugu dambeeya",
+      "download_one_title": "Soo dejii sawirkan",
+      "ai_generated_badge": "AI ayaa Sameeyay",
+      "alt_placeholder": "Sharax sawirkan dadka isticmaala akhriyaal shaashadda...",
+      "regen_title": "Dib u samee sawirkan AI iyada oo la isticmaalayo sharaxaadda la kaydiyay",
+      "dropped_by_ai": "Waxaa tuuray tallaabada AI",
+      "regen_hint": "Riix Dib-u-samee si aad u soo abuurto sawir AI iyada oo la isticmaalayo sharaxaaddiisa la kaydiyay, ama isticmaal Soo Geli/Beddel gudaha figure horu-eegista."
+    },
+    "integrity": {
+      "verifying": "Daacadnimada nuxurka waa la xaqiijinayaa…",
+      "diff_open_verifying_aria": "Fur aragga diff (xaqiijintu wali waa ka socotaa gadaal-joog)",
+      "diff_open_verifying_title": "Fur aragga diff erayga heerka. Xaqiijinta daacadnimadu wali way ka socotaa gadaal-joog, laakiin diff-ka laftiisu hadda diyaar buu yahay.",
+      "unverified": "Daacadnimada nuxurka lama xaqiijin",
+      "diff_open_aria": "Fur aragga diff ee qoraalka PDF isha iyo HTML ugu dambeeya",
+      "diff_open_title": "Diff erayga heerka dhinac-ku-dhinac: arag soo gelin, tirtir, iyo paraphrase kasta inta u dhaxaysa PDF-ka isha iyo HTML-ka la dayactiray.",
+      "recheck_aria": "Mar kale orodsii hubinta daacadnimada nuxurka pdf.js",
+      "recheck_title": "Mar kale orodsii sallaanka soo celinta saxnaanta (Marxaladaha A-D) HTML-ka hadda la dayactiray."
+    },
+    "verification": {
+      "details_heading": "Faahfaahinta xaqiijinta",
+      "char_coverage": "Daboolka xarafka",
+      "word_coverage": "Daboolka erayga",
+      "source_words": "Erayada isha",
+      "recovery_stages": "Marxaladaha soo celinta la dabaqay",
+      "ai_retry": "Isku-day AI",
+      "ground_truth": "Xaqiiqada aasaasiga ah:",
+      "open_diff_title": "Fur aragga diff erayga heerka"
+    },
+    "fidelity": {
+      "heading": "Xaqiiji Saxnaanta Qoraalka",
+      "run_title": "Isbarbardhig dukumeentiga la dayactiray qoraalka isha — calaamadeeya erayada ka muuqda isha laakiin aan ka muuqan wax-soo-saarka hadda la dayactiray.",
+      "run_aria": "Orodsii hubinta saxnaanta qoraalka OCR isha",
+      "restore_title": "Ku dar erayada maqan dukumeentiga la dayactiray iyada oo la isticmaalayo barroosin macno fuzzy. Erayada aan la dhejin karin waxay tagaan lifaaq Soo-celinta Nuxurka si wax la'aaneed loo lumiyo.",
+      "restore_aria": "Soo celi erayada maqan dukumeentiga la dayactiray",
+      "not_ready": "Dayactirku ma diyaarsana."
+    },
+    "report": {
+      "download_title": "Soo dejii warbixinta hubinta",
+      "text_extract_title": "Soo saar qoraal samaynta nuxurka"
+    },
+    "resume": {
+      "heading": "Horumarka la Kaydiyay waa la Helay"
+    },
+    "start_new_title": "Tirtir natiijada hubintan oo dib u bilow PDF cusub",
+    "results": {
+      "verified_accessible": "La Xaqiijiyay Helitaanka",
+      "zero_violations": "Lama ogaan jebin WCAG"
+    },
+    "wcag_report": {
+      "coverage_note": "Daboolku waa noqon karaa mid aan dhameystirnayn — aragtidan waxay isku darayaa xeerarka axe-core ee SC WCAG. Dib-u-eegista gacanta ah weli waa loo baahan yahay shuruudaha qaarkood (tusaale macnaha semantic, nidaamka akhrinta, foomamo adag)."
+    },
+    "auto_fix": {
+      "stop_aria": "Jooji dayactirka tooska ah ee sii socoshada",
+      "progress_aria": "Horumarka hagaajinta tooska ah"
+    },
+    "section_map": {
+      "heading": "Khariidadda Qaybta Dukumeentiga",
+      "rule_based_title": "Xeer ku saleysan (go'aamin leh) hagaajimo la dabaqay",
+      "targeted_title": "Hagaajimo micro AI-gu ogaaday",
+      "ai_skipped_title": "AI dib-u-qor ayaa la diiday — kaliya hagaajimo xeer ku saleysan ayaa la dabaqay",
+      "ai_skipped": "AI waa la booday"
+    },
+    "expert_referral": {
+      "heading": "Dukumeentigan Wuxuu U Baahan Yahay Dayactir Helitaan Xirfadle ah"
+    },
+    "diff": {
+      "button_aria": "Fur aragga diff erayga heerka inta u dhaxaysa PDF isha iyo HTML la dayactiray",
+      "button_title": "Fur sanduuqa diff erayga heerka — arag soo gelin, tirtir, iyo paraphrase kasta inta u dhaxaysa qoraalka PDF isha iyo HTML la dayactiray, leh riix-diidmo iyo Codso & Dhoofi."
+    },
+    "pdf_from_html": {
+      "title": "Dib u samee PDF HTML la dayactiray. Qaab-dhismeedku wuu socdaa — jebinta bogga, qaababka qoraalka, iyo pagination way ka duwanaan karaan asalka. Si fiican ayuu ula shaqeeyaa dukumeenti caadi ah."
+    },
+    "tagged_pdf": {
+      "title": "Ilaali qaab-dhismeedka muuqaal ee PDF-ka asalka ah byte-isku-mid ah oo ku ilaaji tag-yo helitaan oo qaab-dhismeedkiisa. Si fiican u ah buugaagta, dukumeentiyada tiir-badan, iyo PDF brand leh."
+    },
+    "alt_formats": {
+      "intro": "Soo dejii dukumeentiga la dayactiray qaabab beddel ah oo la heli karo"
+    },
+    "expert": {
+      "command_aria": "Amarka dayactirka xirfadlaha",
+      "log_aria": "Diiwaanka hawsha agent-ka"
+    },
+    "translate": {
+      "lang_aria": "Luqadda tarjumaadda — qor luqad kasta ama ka dooro talooyinka",
+      "lang_placeholder": "🌐 Qor luqad (tusaale Isbaanish, Tagalog, Dari...)"
+    },
+    "simplify": {
+      "level_aria": "Heerka fasalka fududaynta"
+    },
+    "plain_summary": {
+      "intro": "Samee nooc akhrin-fudud oo waalidiinta, ilaaliyaha, ama xubnaha bulshada.",
+      "lang_aria": "Luqadda tarjumaadda"
+    },
+    "close_confirm": {
+      "title": "Xidh iyada oo aan la kaydin?",
+      "save_close": "Kaydi & xidh"
+    },
+    "preview": {
+      "modal_aria": "Horu-eegista dukumeentiga la heli karo iyo tafatiraha",
+      "close_aria": "Xidh horu-eegista",
+      "edit_hint": "Riix meel kasta horu-eegista si aad u tafatirto qoraalka si toos ah. Isticmaal kontoroolka hoose si aad u habboonayso muuqaalka.",
+      "wcag_guaranteed": "Habsamida WCAG waa la xaqiijiyay — nadiifiyaha wuxuu ku ordayaa isbeddel kasta oo qaab ah.",
+      "ai_restyle_hint": "Hal-riix AI restyle. Kuwaan waxay ka beddelaan mawduuca kor.",
+      "body_font_aria": "Qaabka qoraalka jirka",
+      "font_system": "Nidaamka (Asaaska)",
+      "font_georgia": "Georgia (Serif)",
+      "font_times_new": "Times New Roman",
+      "font_atkinson_hyper": "Atkinson Hyperlegible",
+      "font_comic_short": "Comic Sans",
+      "font_courier": "Courier (Mono)",
+      "font_size_aria": "Cabbirka qoraalka",
+      "live_preview": "Horu-eegista Toos ah",
+      "iframe_title": "Horu-eegista dukumeentiga la heli karo"
+    },
+    "wordart": {
+      "text_placeholder": "Qoraalka farshaxan eraygaaga...",
+      "text_aria": "Qoraalka farshaxan erayga"
+    },
+    "a11y_inspect": {
+      "headings": "Cinwaanada (H1-H6)",
+      "images": "Sawirada + qoraal alt",
+      "tables": "Jaantusyada + cinwaanada",
+      "figures": "Figures + faallooyinka",
+      "main_landmark": "Landmark aasaasiga ah",
+      "aria_roles": "ARIA roles"
+    },
+    "ai_image": {
+      "prompt_placeholder": "Sharax sawir si aad u samayso...",
+      "prompt_aria": "Su'aasha samaynta sawirka",
+      "select_hint": "Riix sawir horu-eegista si aad u doorato, ka dibna:"
+    },
+    "layout": {
+      "insert_blocks": "Ku Geli Blocks",
+      "header_branding": "Madaxa / Branding"
+    },
+    "templates": {
+      "aria": "Qaabka dukumeentiga",
+      "apply_placeholder": "Codso qaab...",
+      "saved_heading": "Qaababka la Heli Karo ee la Kaydiyay"
+    },
+    "version_stamp": {
+      "heading": "Calaamadda Nooca"
+    },
+    "extracted_images": {
+      "drag_hint": "Jiid thumbnail meel kasta oo sawir gala horu-eegista si aad u soo geliso, ama riix \"📷 Soo Geli\" gudaha goob oo dooro \"Isticmaal sawir la soo saaray\"."
+    },
+    "toolbar": {
+      "aria": "Qaab-qoraalka",
+      "bullet_list": "Liis bullet",
+      "numbered_list": "Liis tirinta leh",
+      "align_left": "Toosin bidix",
+      "align_center": "Toosin dhexe",
+      "align_center_title": "Dhexe",
+      "insert_link": "Ku geli link",
+      "remove_link": "Saar linkga",
+      "clear_formatting": "Tirtir qaab-qoraalka",
+      "undo": "Dib u celi",
+      "redo": "Dib u sameey",
+      "text_color": "Midabka qoraalka",
+      "highlight_color": "Midabka iftiiminta",
+      "insert_table_aria": "Ku geli jaantus",
+      "insert_table_title": "Ku geli jaantus la heli karo"
+    }
+  },
+  "about": {
+    "title": "Ku saabsan AlloFlow v1.0",
+    "tab_about": "Ku saabsan UDL",
+    "tab_features": "Hagaha Sifooyinka",
+    "approach_header": "Habka AlloFlow",
+    "allo_acronym_label": "ALLO:",
+    "allo_acronym_def": "Adaptive Levels, Layers, & Outputs",
+    "flow_acronym_label": "FLOW:",
+    "flow_acronym_def": "Flexible Learning Options for Whole-Student Education",
+    "what_is_udl": "Maxay tahay UDL?",
+    "udl_definition": "Universal Design for Learning (UDL) waa qaab-dhismeed lagu hagaajiyo waxbarashada dhammaan dadka iyada oo lagu saleynayo aragtiyada cilmiyeed ee sida bani-aadmiga uu wax u barto.",
+    "how_help_header": "Sidee aaladdani uga caawisaa?",
+    "how_help_desc": "Aaladdani waxay isticmaashaa AI si si toos ah u samayso meelo-galid kala duwan oo manhajkaaga, hubinta inaad daboolisid saddexda mabaadi' aasaasiga ah ee UDL:",
+    "rep_title": "Matalaad:",
+    "rep_desc": "Soo bandhigida macluumaadka siyaabo kala duwan (tusaale, Qoraal la Heeraysiiyay, Taageero Muuqaal, Liiska Erayada).",
+    "action_title": "Ficil & Muujin:",
+    "action_desc": "Bixinta doorashooyin si ardaydu u muujiyaan waxay yaqaaniin (tusaale, Tageerooyin, Quiz-yo).",
+    "engage_title": "Ka-qaybgal:",
+    "engage_desc": "Isticmaalka xiisaha si loo qabsado oo loo dhiirrigeliyo (tusaale, isbarbardhig xiiso ku saleysan).",
+    "ai_guide_tip": "Isticmaal badhanka \"AI UDL & Hagaha Habsamida\" galbeedka si aad ula hadasho bot xirfadle waxbarasho oo gaar ah.",
+    "cast_link_text": "Eeg Hagaha UDL oo Dhameystiran (CAST.org)",
+    "reset_wizard": "Dib u Dejii Bilowga Degdega ah",
+    "support_kofi": "Taageer Ko-fi",
+    "features_list": {
+      "categories": {
+        "creation": "Qorshee & Samee",
+        "activities": "Qabso & Ciyaar",
+        "assessment": "Qiimee & Taageer",
+        "platform": "Maamul & La qabso"
+      },
+      "items": [
+        { "title": "Falanqee Isha", "icon": "Search", "desc": "Ka soo saar heerarka akhrinta, fikradaha muhiimka ah, iyo hubinta saxnaanta qoraal kasta oo isha ah.", "category": "creation", "color": "blue" },
+        { "title": "Qoraal la Heeraysiiyay", "icon": "BookOpen", "desc": "Habboone adkaanta qoraalka heer kasta K-12. Wuxuu ka kooban yahay aragtiyo labo-luqadood dhinac-ku-dhinac.", "category": "creation", "color": "indigo" },
+        { "title": "Qorshaha Casharka", "icon": "ClipboardList", "desc": "Isku dar dhammaan khayraadyada qorshe cashar oo heerar la jaan-qaadayo ama hage barasho.", "category": "creation", "color": "violet" },
+        { "title": "Habayn Muuqaal", "icon": "Layout", "desc": "Samee Jaantusyo Socod, Jaantusyo Venn, iyo qaab-dhismeedyo habaysan.", "category": "creation", "color": "cyan" },
+        { "title": "Sahaminta", "icon": "Lightbulb", "desc": "Samee fikrado hawl gacanta ah iyo xidhiidho dunida dhabta ah.", "category": "creation", "color": "yellow" },
+        { "title": "Sameeyaha FAQ", "icon": "FileQuestion", "desc": "Filsii khaladaadka ardayda liisyada Q&A si toos ah loo sameeyay.", "category": "creation", "color": "teal" },
+        { "title": "Habka Wareysiga", "icon": "History", "desc": "La wadahadal shaqsiyaadka taariikhiga ah, jilayaasha sheekooyinka, ama xirfadleyaal. Ogow asraarta qarsoon.", "category": "activities", "color": "amber" },
+        { "title": "Habka Halganka", "icon": "MapIcon", "desc": "Ku-celcelis 'Dooro-Halgankaaga' is-dhexgal ah iyo xaaladaha rolaynta.", "category": "activities", "color": "purple" },
+        { "title": "Arcade Ciyaareed", "icon": "Gamepad2", "desc": "Si toos ah u samee BINGO, Match Xusuus, Raadinta Erayga, iyo Crossword.", "category": "activities", "color": "pink" },
+        { "title": "Dhise Taxan", "icon": "ListOrdered", "desc": "Hawsha jadwalka waqtiga jiid-iyo-tuur ee dhacdooyinka taariikhda ama tallaabooyinka.", "category": "activities", "color": "rose" },
+        { "title": "Habayn Fikradeed", "icon": "Filter", "desc": "Qaybi erayada iyo fikradaha baaldiyo. Si fiican kala saaridda fikrado isku mid ah.", "category": "activities", "color": "orange" },
+        { "title": "Macallin Socratic", "icon": "MessageCircleQuestion", "desc": "Hage AI oo weydiiya su'aalo hagid ah halkii uu bixin lahaa jawaabaha.", "category": "activities", "color": "fuchsia" },
+        { "title": "Tikidh Bixinta", "icon": "CheckSquare", "desc": "Samee quiz. Bilow habka 'Quiz Tooska ah' natiijooyinka fasalka wakhti-dhab ah.", "category": "assessment", "color": "emerald" },
+        { "title": "Tageerooyinka Qoraalka", "icon": "Quote", "desc": "Bilooyinka jumlada iyo qaababka cutubka oo leh rubrics gudaha la dhisay.", "category": "assessment", "color": "orange" },
+        { "title": "Taageero Muuqaal", "icon": "ImageIcon", "desc": "Jaantusyada AI iyo sawiraado. Isticmaal 'Nano Banana' si aad u sifeyso ama u saarto qoraalka.", "category": "assessment", "color": "purple" },
+        { "title": "Xisaab & STEM", "icon": "Calculator", "desc": "Xal-saaraha tallaabo-tallaabo, samaynta garaaf, iyo dhibaatooyin la mid ah oo tababar.", "category": "assessment", "color": "blue" },
+        { "title": "Hubinta Heerka", "icon": "ShieldCheck", "desc": "Xaqiiji isbarbardhigga heerarka waxbarasho gaarka ah oo aqoonso marin-habooyin adkaan.", "category": "assessment", "color": "slate" },
+        { "title": "Akhrinta Afka", "icon": "Mic", "desc": "Dhageyso ardayda akhrinaya si kor leh oo xisaabi WCPM iyo saxnaanta.", "category": "assessment", "color": "rose" },
+        { "title": "Dashboard-ka Macallinka", "icon": "Layout", "desc": "Raac horumarka ardayda, eeg falanqaynta, oo dhoofi buugaagta qiimaynta.", "category": "platform", "color": "indigo" },
+        { "title": "Fadhiyada Tooska ah", "icon": "Wifi", "desc": "Marti gali fasalada isku-dhafan, orodsii codbixinta Habka Dimuqraadiyada, oo maamul quiz-yada tooska ah.", "category": "platform", "color": "rose" },
+        { "title": "Astaamaha Ardayda", "icon": "Users", "desc": "Kaydi dejinta kala-duwanaanta (Luqad, Xiiso) kooxo kala duwan.", "category": "platform", "color": "cyan" },
+        { "title": "Helitaan", "icon": "Ear", "desc": "Akhriyaha Daboolaalka, Diiradda Sadarka, Qorista jeexa, iyo aaladaha Qoraal-ku-cisbi.", "category": "platform", "color": "teal" },
+        { "title": "Xirmada Dhoofinta", "icon": "Download", "desc": "U dhoofi PDF, PowerPoint, Canvas QTI, ama Xirmooyin HTML.", "category": "platform", "color": "blue" },
+        { "title": "Gemini Bridge", "icon": "Terminal", "desc": "Samee su'aalo si aad u dhisid codsiyo gaar ah oo is-dhexgal ah Gemini Canvas.", "category": "platform", "color": "slate" }
+      ]
+    }
+  },
+  "learner": {
+    "total_xp": "Wadarta XP",
+    "current_run": "Wareegga Hadda",
+    "daily_streak": "Taxanaha Maalinlaha",
+    "ws_accuracy": "Saxnaanta Codadka Erayada",
+    "coming_up": "Soo Socda",
+    "xp_earned": "XP la Kasbaday",
+    "words_today": "Erayada Maanta",
+    "xp_this_week": "XP Toddobaadkan",
+    "activities_week": "Hawlaha",
+    "words_this_week": "Erayada Toddobaadkan",
+    "words_correct": "Erayada Sax ah",
+    "phonemes_touched": "Codadka Furaha la Taabtay",
+    "sessions": "Fadhiyada",
+    "label_challenges": "Tartanada Calaamadda",
+    "recent_activity": "Hawsha Dhowaan",
+    "progress_report": "Warbixinta Horumarka Waxbarashada",
+    "my_learning_journey": "Safarkayga Waxbarashada",
+    "sessions_tracked": "fadhiyo la raacayay",
+    "level": "Heer",
+    "activities": "Hawlaha",
+    "quiz_avg": "Celceliska Quiz-ka",
+    "word_accuracy": "Saxnaanta Erayga",
+    "my_badges": "Badges-kayga",
+    "my_strengths": "Awoodahayga",
+    "my_growth_journey": "Safarkayga Kobaca",
+    "session_history": "Taariikhda Fadhiga",
+    "word_sounds": "Codadka Erayada",
+    "download_progress_report": "Soo dejii Warbixinta Horumarkayga",
+    "report_downloaded": "Warbixinta horumarkaaga waa la soo dejiyay!",
+    "leave_empty_all_sessions": "U dhaaf banaan si aad ugu darto dhammaan fadhiyada"
+  },
+  "research": {
+    "construct": "Qaab-dhismeed",
+    "perceived_usefulness": "Faa'iidada La Dareemay",
+    "perceived_ease": "Sahlanaanta Isticmaalka La Dareemay",
+    "behavioral_intention": "Niyada Dabeecada",
+    "measure": "Cabbir",
+    "metric": "Tilmaame",
+    "total_students": "Wadarta Ardayda",
+    "total_sessions": "Wadarta Fadhiyada",
+    "avg_sessions": "Celceliska Fadhiyada Arday kasta",
+    "fidelity_records": "Diiwaanada Daacadnimada",
+    "total_probes": "Wadarta Imtixaanada la Maamulay",
+    "sessions_completed": "Fadhiyada la Dhameystiray",
+    "quiz_responses": "Jawaabaha Quiz-ka",
+    "probes_administered": "Imtixaanada la Maamulay",
+    "survey_responses": "Jawaabaha Sahanka",
+    "explore_challenges": "Sahmi Tartanada",
+    "intervention_logs": "Diiwaanada Faragelinta",
+    "recent_probe_results": "Natiijooyinka Imtixaanka Dhowaan",
+    "external_cbm_scores": "Buundooyinka CBM ee Dibadda",
+    "export_apa_title": "Dhoofi Warbixinta Cilmi-baarista (Qaab APA-ah)",
+    "scale": "Cabbir",
+    "value": "Qiime"
+  },
+  "explore": {
+    "challenge_number_line": "Tartanka Xariiqda Tirooyinka",
+    "challenge_multiplication": "Tartanka Isku-dhufashada",
+    "challenge_fraction": "Tartanka Jajabka",
+    "generate_challenge": "Samee Tartan",
+    "next_challenge": "Tartanka Xiga",
+    "your_answer": "Jawaabtaada...",
+    "check": "Hubi",
+    "product_placeholder": "Wax-soo-saar...",
+    "answer_placeholder": "Jawaab...",
+    "correct": "Sax!",
+    "answer_was": "Jawaab: {answer}",
+    "try_again_count": "Mar kale isku day. Tiri afar-geesle!",
+    "nl_identify": "Fallaadh ayaa u tilmaamaysa goob xariiqda tirada. Tiradee aha?",
+    "nl_between": "Magacaab tiro dhammaystiran inta u dhaxaysa {a} iyo {b}.",
+    "nl_skip_count": "Tiri {step}s laga bilaabo {start}. Maxay tahay tirada {n}-aad?",
+    "nl_estimate": "Qiyaas qiimaha fallaadhda (inta u dhaxaysa {a} iyo {b}).",
+    "nl_distance": "Maxay tahay masaafada u dhaxaysa {a} iyo {b}?",
+    "nl_midpoint": "Maxay tahay barta dhexe ee {a} iyo {b}?",
+    "area_question": "Maxay tahay {a} • {b}? Isticmaal grid-ka si ay kuu caawiso!",
+    "area_correct": "Sax! {a} • {b} = {product}",
+    "frac_identify": "Imisa qaybood ayaa la midabeeyay? (lambariga sare)",
+    "frac_equivalent": "{n}/{d} = ?/{target} (hel lambariga sare ee maqan)",
+    "frac_compare": "Midkee weyn: {n1}/{d1} ama {n2}/{d2}? (Qor lambariga sare ee kii weyn)",
+    "fluency_started": "Tababarka fasaaxda waa la bilaabay!"
+  },
+  "educator_hub": {
+    "title": "Aaladaha Macallimiinta",
+    "subtitle": "Aalado xirfadle ah oo macallimiinta iyo daryeel-bixiyaha",
+    "behavior_lens_title": "BehaviorLens",
+    "behavior_lens_desc": "Indha-indheynta dabeecadda FBA/BIP, ururinta xogta ABC, iyo 60+ aalado daryeel-bixin",
+    "report_writer_title": "Report Writer",
+    "report_writer_desc": "Samaynta warbixinta daryeel-bixinta AI oo leh xog-jajabeenno, hubinta saxnaanta, iyo qaababka horumarinta",
+    "dialog_aria": "Aaladaha Macallimiinta",
+    "close_aria": "Xidh aaladaha macallimiinta",
+    "symbol_studio_title": "Symbol Studio",
+    "symbol_studio_desc": "Astaamo AI-gu sameeyay oo qaab PCS-ah loogu talagalay taageero muuqaal, sabuurada AAC, iyo jadwallada — waxaa awood u siiya tafatirka sawir-illaa-sawir",
+    "document_hub_title": "Document Hub",
+    "document_hub_desc": "Dhise dukumeenti leh mawduucyo, tafatir WYSIWYG, hubinta helitaanka, iyo dhoofinta qaab-badan (PDF, HTML, xaashida shaqada, slides)",
+    "pdf_accessibility_title": "Helitaanka PDF",
+    "pdf_accessibility_desc": "Soo geli PDF-yo si loo hubiyo helitaanka WCAG & dayactirka oo lagu xaqiijiyo axe-core",
+    "view_last_audit_tooltip": "Dib u fur hubintii PDF ee ugu dambeysay — eeg diff-ka, xaqiijinta, iyo HTML-ka la dayactiray adigoon mar kale orodsiinin pipeline-ka",
+    "books_emoji_aria": "buugaag",
+    "community_catalog_title": "Katalookga Bulshada",
+    "community_catalog_desc": "Eeg casharo shati-furan ah oo bulshada AlloFlow, ama soo gudbi kuwaaga si loo eego",
+    "magnifying_glass_emoji_aria": "muraayadda weyneynta",
+    "accessibility_lab_title": "Lab Helitaanka",
+    "accessibility_lab_desc": "Xaqiiji khibrada ardayga: horu-eeg sida arday, booqasho keyboard-kaliya, hubinta WCAG tooska ah (axe-core) oo jebinta lagu qaab-dhismeeyo saamaynta ardayga, horu-eegista ogeysiiska akhriyaha shaashadda, iyo simulators-ka naafada (aragtida hoose, indho-la'aanta midabka, dyslexia, gaabis dhaqdhaqaaq)."
+  },
+  "learning_hub": {
+    "title": "Aaladaha Waxbarashada",
+    "subtitle": "Dooro aalad si aad u sahmiso",
+    "stem_title": "STEM Lab",
+    "stem_desc": "40+ sahmin xisaab iyo sayniska is-dhexgal ah",
+    "storyforge_title": "StoryForge",
+    "storyforge_desc": "Samee sheekooyin sawiran adigoo isticmaalaya aaladaha qoraalka AI",
+    "sel_title": "SEL Hub",
+    "sel_desc": "Waxbarashada bulsho-shucureed ee is-aqoonsiga & kobaca",
+    "close_aria": "Xidh hub-ka waxbarashada",
+    "litlab_title": "LitLab",
+    "litlab_desc": "Soo noolee sheekooyinka codad jilaa & falanqaynta suugaaneed",
+    "poettree_title": "PoetTree",
+    "poettree_desc": "Qor maansooyin leh tageero qaabeed, falanqayn tixraac & mawjad, jawaab AI"
+  },
+  "notes_feedback": {
+    "title": "Jawaabta qoraallada xusuustaada",
+    "dismiss_aria": "Saar jawaabta",
+    "strength_label": "Waxa aad si fiican u sameysay",
+    "growth_label": "Hal arrin oo aad mar kale isku daydo",
+    "source_label": "Qoraalka isha",
+    "no_xp_hint": "Hore ayaad u kasbatay XP gelitaankan. Sii wad — hagaajimo cusub waxay kasban doonaan XP dheeraad ah.",
+    "no_ai": "Jawaabta AI hadda lama heli karo.",
+    "cornell_needs_notes": "Ku dar ugu yaraan 2 saf oo qoraal ka hor inta aanad codsan jawaab.",
+    "lab_needs_substance": "Buuxi faraqsoorka, falanqaynta, ama soo-gabagabada ka hor inta aanad codsan jawaab.",
+    "reading_needs_thinking": "Qor ugu yaraan fekerkaaga ama xidhiidhka ka hor inta aanad codsan jawaab.",
+    "empty": "Buuxi qaybtii qaabka ka hor inta aanad codsan jawaab.",
+    "thinking": "Qoraalladaada waa la akhrinayaa...",
+    "error": "Hadda lama samayn karno jawaab. Mar kale isku day daqiiqad kadib.",
+    "loading": "Qoraalladaada waa la akhrinayaa...",
+    "button": "Hel Jawaab AI",
+    "xp_earned": "+{xp} XP"
+  },
+  "note_insights": {
+    "title": "Qaababka qorista xusuustaada",
+    "subtitle": "Indho-indheyn diiraddu saaran tahay kobaca oo gelitaanada la kaydiyay. Maaha qiimayn — waa muraayad.",
+    "close_aria": "Xidh aragtiyada",
+    "loading": "Buugga xusuustaada waa la eegayaa...",
+    "loading_hint": "Tani waxay qaadan kartaa dhowr sek — qaababka waxay u baahan yihiin akhrin taxaddar leh.",
+    "no_data": "Weli ma jiraan aragtiyo.",
+    "overview_label": "Aragtida guud",
+    "try_next_label": "Isku day xiga:",
+    "celebration_label": "Sii wad tan",
+    "footer": "Indho-indheynyadani waa muraayad, maaha qiimayn. Isticmaal waxa faa'iido leh, dhinac dhig waxa aan ahayn.",
+    "no_ai": "AI hadda lama heli karo.",
+    "need_more_entries": "Kaydi ugu yaraan 2 gelin qaab-qoraal xusuus ka hor inta aanad samayn aragtiyada.",
+    "error": "Hadda lama samayn karno aragtiyo. Mar kale isku day daqiiqad kadib.",
+    "button_aria": "Samee aragtiyo qaab-qoraalka xusuusta dhammaan gelitaanada la kaydiyay",
+    "need_more_entries_short": "Kaydi 2+ gelin si aad u furto",
+    "button_tooltip": "AI wuxuu raadiyaa qaababka qoraallada oo wuxuu bixiyaa talooyin kobaca",
+    "button": "Aragtiyo"
+  },
+  "bl": {
+    "abc_entries": "Galitaanada ABC",
+    "antecedent": "Hor-galin",
+    "avg_intensity": "Celceliska Xoogga",
+    "behavior": "Dabeecad",
+    "common_antecedents": "Hor-galinaha caadiga ah",
+    "common_consequences": "Cawaaqibyada caadiga ah",
+    "confidence_level": "Heerka kalsoonida",
+    "consent_options": "Doorashooyinka ogolaanshaha",
+    "consequence": "Cawaaqib",
+    "count": "Tirin",
+    "daily_count": "Tirin maalinle ah",
+    "days_observed": "Maalmaha la indha-indheeyay",
+    "duration": "Muddo",
+    "frequency": "Tirinta",
+    "hypothesized_function": "Shaqo la qiyaasay",
+    "identified_patterns": "Qaababka la aqoonsaday",
+    "interval": "Inta u dhaxaysa",
+    "method": "Hab",
+    "no_chart_data": "Ma jiro xog jaantus",
+    "observations": "Indha-indheyn",
+    "overall_trend": "Isbeddelka guud",
+    "parent_guardian_name": "Magaca waalidka/ilaaliyaha",
+    "parent_guardian_signature": "Saxiixa waalidka/ilaaliyaha",
+    "progress_documentation": "Dukumeentinta horumarka",
+    "result": "Natiijo",
+    "setting": "Bay'ad",
+    "settings_label": "Dejinta",
+    "target_behaviors_frequency": "Tirinta dabeecada bartilmaameedka",
+    "total_sessions": "Wadarta fadhiyada"
+  },
+  "diff_view": {
+    "title": "PDF Isha ↔ HTML la Dayactiray · Diff",
+    "subtitle": "Riix span midab leh kasta si aad u diido isbeddelka. Jiid-dooro spans-yada si aad u diido xirmada. Lammaane Del→Add paraphrase ayaa wadajirka bedelaya.",
+    "close_aria": "Xidh aragga diff",
+    "undo_all_tooltip": "Dib u celi diidmo kasta oo aragga",
+    "undo_all_button": "dib u celi dhammaan",
+    "computing": "Diff waa la xisaabinayaa…",
+    "computing_stale_hint": "Haddii ay sii socoto, qoraalka isha iyo HTML-ka la dayactiray waxay isku xidhiidhsoonayn isku-xidhid (ama caache-ka diff-ku waa qarsoon).",
+    "rebuild_tooltip": "Tirtir caache-ka diff oo mar kale xisaabi qaybaha isha hadda ↔ la dayactiray.",
+    "rebuild_button": "Dib u dhis diff",
+    "reject_selection": "Diid doorashada",
+    "keep_selection": "Hayso doorashada",
+    "dismiss_toolbar_aria": "Saar aaladaha",
+    "footer_help": "Riix spans-yada ama jiid-dooro si aad u tafatirto. Lammaanaha wadajirka bedelaya.",
+    "revert_tooltip": "Soo celi HTML-ka la heli karo xaalada ka hor Codsigaaga Ugu Dambeeyay & Dhoofinta",
+    "apply_export_tooltip": "Codso diidmo iyada oo loo marayo qoraal qalliin (wuxuu ilaaliyaa dhammaan markup, deg-deg, ma jiro wac Gemini). Wuxuu u dhacaa Gemini round-trip oo kaliya haddii qalliinka aan khariidayn karin qaarkood."
   }
 }
