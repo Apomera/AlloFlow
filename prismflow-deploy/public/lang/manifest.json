@@ -1,21 +1,21 @@
 {
   "version": 2,
-  "generated": "2026-05-18T21:23:26.211Z",
+  "generated": "2026-05-18T21:26:29.519Z",
   "count": 6,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "arabic",
       "display": "Arabic",
-      "keys": 574,
-      "bytes": 35599,
+      "keys": 713,
+      "bytes": 44501,
       "updated": "2026-05-18"
     },
     {
       "slug": "french",
       "display": "French",
-      "keys": 8606,
-      "bytes": 638372,
+      "keys": 8600,
+      "bytes": 638545,
       "updated": "2026-05-18"
     },
     {
@@ -28,8 +28,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 2666,
-      "bytes": 155808,
+      "keys": 3019,
+      "bytes": 178274,
       "updated": "2026-05-18"
     },
     {
@@ -42,8 +42,8 @@
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
-      "keys": 8223,
-      "bytes": 1049933,
+      "keys": 8326,
+      "bytes": 1055633,
       "updated": "2026-05-18"
     }
   ]
