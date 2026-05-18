@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-18T19:44:08.357Z",
+  "generated": "2026-05-18T19:48:40.219Z",
   "count": 4,
   "total_keys_expected": 9307,
   "available": [
@@ -21,8 +21,8 @@
     {
       "slug": "somali",
       "display": "Somali",
-      "keys": 4347,
-      "bytes": 253968,
+      "keys": 5019,
+      "bytes": 292126,
       "updated": "2026-05-18"
     },
     {
