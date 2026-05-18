@@ -1,8 +1,8 @@
 # French (Parisian/Metropolitan) Translation Handoff
 
 **For:** Claude (next session) continuing the French pack translation
-**As of:** 2026-05-18, commit `028fbc7e` on `main` branch
-**Status:** 5,164 / ~9,500 keys (~55% coverage). 30+ commits pushed to Cloudflare across two sessions.
+**As of:** 2026-05-18, commit `03773062` on `main` branch
+**Status:** 8,748 / ~9,500 keys (~92% coverage). All 143 ui_strings sections COMPLETE. Only help_strings.js (782 hover-help keys) remain.
 
 ## The job in one sentence
 
