@@ -1,8 +1,8 @@
 # French (Parisian/Metropolitan) Translation Handoff
 
 **For:** Claude (next session) continuing the French pack translation
-**As of:** 2026-05-18, commit `33c63545` on `main` branch
-**Status:** 1,203 / ~9,500 keys (~13% coverage). 12 commits pushed to Cloudflare this session.
+**As of:** 2026-05-18, commit `028fbc7e` on `main` branch
+**Status:** 5,164 / ~9,500 keys (~55% coverage). 30+ commits pushed to Cloudflare across two sessions.
 
 ## The job in one sentence
 
@@ -10,7 +10,13 @@ Translate the remaining ~7,500 entries of `ui_strings.js` + 782 of `help_strings
 
 ## What's DONE
 
-19 sections (1,203 keys) are 100% complete and live on Cloudflare:
+37 sections (5,164 keys) are 100% complete and live on Cloudflare. Highlights:
+- All foundation sections (common, header, sidebar, wizard, toasts, tour, etc.)
+- Word Sounds Studio, Adventure Mode (432 keys), BehaviorLens (~1100 leaves), Escape Room
+- Quiz, Persona, DBQ, Glossary, Simplified Text, Lesson Plan, Concept Sort
+- Roster, Class Analytics, Fluency, Groups, PDF Audit (massive section), Export, Session
+
+Earlier session details preserved below for reference:
 
 | Section | Keys | Notes |
 |---|---|---|
