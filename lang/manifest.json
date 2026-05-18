@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "generated": "2026-05-18T20:12:52.636Z",
+  "generated": "2026-05-18T20:13:50.091Z",
   "count": 4,
   "total_keys_expected": 9307,
   "available": [
     {
       "slug": "french",
       "display": "French",
-      "keys": 2374,
-      "bytes": 209923,
+      "keys": 2449,
+      "bytes": 214152,
       "updated": "2026-05-18"
     },
     {
@@ -21,8 +21,8 @@
     {
       "slug": "somali",
       "display": "Somali",
-      "keys": 5514,
-      "bytes": 332558,
+      "keys": 6043,
+      "bytes": 374459,
       "updated": "2026-05-18"
     },
     {
