@@ -1,91 +1,64 @@
 # Portuguese (Brazil) Language Pack — Handoff
 
-**Last updated:** 2026-05-18
-**Current state:** 1,602 / ~9,307 keys (17% coverage), 43 sections, 86 KB
+**Last updated:** 2026-05-18 (Session 2)
+**Current state:** 6,847 / ~9,307 keys (74% coverage), 143 sections, 445 KB
 **Slug:** `portuguese_brazil`
 **Dialect:** Brazilian Portuguese (PT-BR), informal "você" register for K-12 student-facing UI
 **Live URL:** https://alloflow-cdn.pages.dev/lang/portuguese_brazil.js
 **Matcher status:** All common Portuguese aliases (`portuguese`, `Portuguese (Brazil)`, `brasileiro`, `português`, `portuges` misspelling) already route to `portuguese_brazil` — no matcher edits needed.
 
-## Why Brazil?
+## Sections complete (143)
 
-Per the guide ([lang/LANGUAGE_PACK_GUIDE.md:94](LANGUAGE_PACK_GUIDE.md#L94)): Portuguese (Brazil) is the default for US schools. Portugal + Angola variants exist as separate slugs (`portuguese_portugal`, `portuguese_angola`) and require their own packs if needed. The fuzzy matcher routes a bare "Portuguese" input to `portuguese_brazil`.
+**Foundation (Session 1 — ~1,602 keys, 17%):**
+- All foundational chrome: common, header, sidebar, toolbar, welcome, splash, entry, meta, status, errors, feedback, quick_start, codenames, fab, tools, actions, large_file, formatting, audio_player, a11y, read_this_page, roles, guided, launch_pad
+- toasts (184), settings + project_settings + ai_backend
+- Settings ecosystem: profiles, chat, chat_guide, input, prompts, language_selector, languages, languages_list, translate
+- Generation pipeline: wizard, process, status_steps, progression, output, fullpack
 
-## Sections complete (43)
+**Session 2 additions (+5,245 keys, brought to 74%):**
+- Content output types: analysis, simplified, outline, scaffolds, brainstorm, glossary, glossary_health, udl_advice, lesson_plan, lesson_headers, faq, visuals, visual_director, math
+- quiz (96 + nested tour/help/quick_start/boss/teams/status)
+- Teacher block: alignment, standards, dashboard (172 incl. class_notebook/bulk/comments), session, live_polling, student, student_dashboard, teacher, tips, bot, bot_events, hints, bridge, history, class_analytics, mastery, fluency, fluency_maze, probes
+- Games batch: games (135 incl. all *_sort variants), bingo, memory, matching, review_game, baking (167 incl. leavening/emulsion/scaler/oven/diagnosis/gluten/browning), pictionary, flashcards
+- Interactive: timeline, concept_sort, concept_map, groups, roster (with bridge_f2f)
+- Large sections: word_sounds (220), escape_room (186), adventure (529)
+- Misc batch A: tour, text_tools, export_menu, export, export_status
+- Misc batch B: modals, immersive, timer, help_mode, grades, grades_short, error, socratic, blueprint, organizer, stem_lab, explore, survey, rti, learner, research, resource_builder, print, educator_hub, report_writer, learning_hub, sel_hub, _version, adventure_title, cancel, move_down, move_up, bl, docbuilder, note_taking, anchor_chart, lms, annotation, visual_support, canvas_settings, diff_view, volume_builder, notes_feedback, note_insights
+- about (146 incl. features_list with 24 tool cards)
+- persona (113 incl. badges/summary/toasts)
+- dbq (88 incl. all 5 analysis modes)
+- pdf_audit (281 incl. all WCAG knowbility/ADA content, live_chunk, integrity, preview, toolbar)
+- stem partial (177 small subsections only)
+- behavior_lens batch 1 (380 leaves: title, abc, obs, overview, hub catalog with 70+ tool cards, abc, overview, token, hotspot, export, record, hypothesis, goals, contract, cycle, reinforcer, audit, triangulation, impact, crisis, traffic, datasheet, homenote, fidelity, feasibility, gas, pocket, plus inline fields through coping_movement)
 
-**Core chrome (foundation — every UI surface uses these):**
-- `common` (533/533) ✅
-- `header` (41/41) ✅
-- `sidebar` (39/39) ✅
-- `welcome` (4/4) ✅
-- `splash` (8/8) ✅
-- `entry` (4/4) ✅
-- `meta` (21/21) ✅
-- `status` (27/27) ✅
-- `toolbar` (16/16) ✅
-- `launch_pad` (20/20) ✅
-- `errors` (23/23) ✅
-- `feedback` (4/4) ✅
-- `quick_start` (8/8) ✅
-- `codenames` (102/102) ✅ — includes 46 PT adjectives + 54 PT animals + 4 strings
-- `fab` (1/1) ✅
-- `tools` (6/6) ✅
-- `actions` (4/4) ✅
-- `large_file` (14/14) ✅
-- `formatting` (6/6) ✅
-- `audio_player` (4/4) ✅
-- `a11y` (10/10) ✅
-- `read_this_page` (6/6) ✅
-- `roles` (13/13) ✅
-- `guided` (10/10) ✅
-- `toasts` (184/184) ✅
-- `settings` (~25/25 incl nested) ✅
-- `project_settings` (21/21) ✅
-- `ai_backend` (27/27) ✅
-- `profiles` (17/17) ✅
-- `chat` (5/5) ✅
-- `chat_guide` (~74/74 incl nested flow/blueprint/pack) ✅
-- `input` (~47/47 incl nested tone_options/level_options/actions) ✅
-- `prompts` (4/4) ✅
-- `language_selector` (19/19) ✅
-- `languages` (3/3) ✅
-- `languages_list` (18/18) ✅
-- `translate` (4/4) ✅
-- `wizard` (~111/111 incl nested tones/lengths/dok_levels) ✅
-- `process` (23/23) ✅
-- `status_steps` (30/30) ✅
-- `progression` (10/10) ✅
-- `output` (36/36) ✅
-- `fullpack` (14/14) ✅
+## Sections NOT YET started (~2,460 keys remaining)
 
-## Sections NOT YET started (priority for next session)
+**behavior_lens batches 2-4** (~1,103 leaves remaining, school-psych clinical):
+Top-level keys from `bcba` through end of section. The four planned batch splits:
+- Batch 1: title→coping_movement (380 leaves) ✅ DONE
+- Batch 2: keys through "toast" (~409 leaves)
+- Batch 3: keys through "raw" (~641 leaves)
+- Batch 4: keys through "sandbox" (~53 leaves)
 
-Following the priority order in [LANGUAGE_PACK_GUIDE.md:152](LANGUAGE_PACK_GUIDE.md#L152), in order of remaining importance:
+**help_strings** (782 keys, 1.2 MB source) — biggest single remaining work
+- File: `help_strings.js` at repo root
+- Long-form hover-help descriptions
+- Plan: 6-10 batches of 75-100 keys each
+- Per the guide section 7, these go under `help_mode` nested key in the pack
+- Add using template: `out.help_mode = out.help_mode || {}; for(const k of help_strings_keys) out.help_mode[k] = translation`
 
-**Content output types (~530 keys):**
-- `analysis`, `simplified`, `outline`, `scaffolds`, `brainstorm`, `glossary`, `glossary_health`, `udl_advice`, `lesson_plan`, `lesson_headers`, `faq`, `quiz`, `visuals`, `visual_director`, `math`
+**stem section (~792 keys remaining)** — periodic(196), dissection(217), synth(97), synth_ui(115), galaxy(71), rocks(53), planet_view(43)
+- Many of these have auto-generated keys with emoji-escape values (e.g. `"u2b50": "\\u2B50 +"`)
+- Periodic table elements, dissection terminology, synthesizer parameters
+- Lower user-visibility priority since most STEM Lab tools are highly specialized
 
-**Teacher block (~975 keys):**
-- `alignment`, `standards`, `dashboard`, `session`, `live_polling`, `student`, `student_dashboard`, `teacher`, `tips`, `bot`, `bot_events`, `hints`, `bridge`, `history`, `class_analytics`, `mastery`, `fluency`, `fluency_maze`, `probes`, `games`, `bingo`, `memory`, `matching`, `review_game`, `baking`, `pictionary`, `flashcards`
+**Smaller misc still missing**: a handful of orphan top-level keys not in standard sections.
 
-**Interactive activities (~490 keys):**
-- `timeline`, `concept_sort`, `concept_map`, `groups`, `roster`
-
-**Large individual sections:**
-- `word_sounds` (220)
-- `escape_room` (186)
-- `behavior_lens` (~1,100 leaf keys — school-psych clinical, biggest single section)
-- `adventure` (432 — biggest student-facing game)
-- `help_strings` (782 — last and largest by character count)
-
-**Smaller sections + remaining ~600 keys:**
-- `dbq`, `pdf_audit`, `persona`, `immersive`, `tour`, `about`, etc.
-
-## Translation conventions established for this pack
+## Translation conventions established
 
 **Register:** Informal `você` form throughout (student-facing K-12). Avoid `vós`/Portugal-formal constructs.
 
-**Vocabulary choices (consistency reference for next session):**
+**Vocabulary choices (consistency reference):**
 - "Aluno/a" (student), "Professor/a" (teacher), "Pai/Mãe ou Responsável" (parent)
 - "Salvar" (save), "Cancelar" (cancel), "Excluir" (delete), "Editar" (edit)
 - "Configurações" (settings), "Padrão" (default + standard — context-dependent)
@@ -94,7 +67,7 @@ Following the priority order in [LANGUAGE_PACK_GUIDE.md:152](LANGUAGE_PACK_GUIDE
 - "Aba" (browser tab), "Cartão" (flashcard), "Cartela" (bingo card)
 - "Série" (grade level), "Nível" (level/tier)
 - "Recurso" (resource), "Pacote" (pack), "Ficha" (worksheet)
-- "Suportes" (scaffolds), "Diferenciação" (differentiation), "Reforço" (reinforcement — context-aware)
+- "Suportes" (scaffolds), "Diferenciação" (differentiation), "Reforço" (reinforcement)
 - "Texto-Fonte" (source text), "Material-Fonte" (source material)
 - "Glossário" (glossary), "Vocabulário-Chave" (key vocabulary)
 - "Plano de Aula" (lesson plan), "Padrões" (educational standards)
@@ -105,58 +78,55 @@ Following the priority order in [LANGUAGE_PACK_GUIDE.md:152](LANGUAGE_PACK_GUIDE
 - "Suporte Visual" (visual support), "Organizador Visual" (visual organizer)
 - "Ponte" (bridge — for Gemini Bridge)
 - "Aprendizagem" (learning — preferred over "aprendizado" in education context)
+- BehaviorLens clinical: ABC (Antecedente/Comportamento/Consequência), FBA, BIP, MTSS, RTI, DRA, DRI, DRO, DRL, DTT, IOA, MSWO, TARF, IRP-15, Tau-U, NAP, PND — all kept as acronyms
+- "Reforçador" (reinforcer), "Comportamento Alternativo" (replacement behavior), "Função" (function), "Ambiente" (setting)
 
 **Series/grade names:**
 - "Educação Infantil" (Kindergarten)
-- "1º Ano" through "9º Ano" — elementary + middle school
-- "1º/2º/3º do Ensino Médio" — high school (alongside g10, g11, g12 keys)
+- "1º Ano" through "9º Ano" — elementary + middle
+- "10º/11º/12º Ano" — high school (also referred as "1º/2º/3º do Ensino Médio")
 - "Faculdade" (College), "Pós-Graduação" (Graduate Level)
 
-**DNT preserved verbatim (per universal guide):**
-- All brand names: AlloFlow, AlloBot, AlloHaven, StoryForge, LitLab, PoetTree, SEL Hub, STEM Lab, Word Sounds Studio, BehaviorLens, Report Writer, Symbol Studio, Nano Banana, Gemini, Imagen, Kokoro, BINGO
-- All acronyms: UDL, SEL, RTI, IEP, FERPA, FAPE, LRE, MTSS, ELL, ASD, ADHD, CASEL, CCSS, NGSS, TEKS, DBQ, DOK, WCAG, ADA, BCBA, BIP, FBA, ABA, IOA, DTT, MSWO, CBM, QTI, IMS, CDN, OCR, TTS, WCPM, DCPM, LMS, RSVP, XP, FAQ
-- IPA does NOT become AFI in this pack (per Portuguese, IPA = AFI in Spanish/French/Italian only; Portuguese uses IPA as-is)
-- All placeholders: `{name}`, `{count}`, `{grade}`, `{lang}`, `{level}`, `{ext}`, `{type}`, `{score}`, `{label}`, `{current}/{total}`, `${i + 1}` etc — preserved exactly
-- Leaked-key-path values like `common.url_placeholder`, `escape_room.enter_answer`, `glossary.style_placeholder`, `modals.save_project.placeholder`, `session.default_placeholder`, `standards.region_framework_placeholder`, `standards.region_optional`, `timeline.revise_placeholder`, `visuals.refiner_placeholder`, `glossary.custom_edit_placeholder`, `groups.new_group_placeholder`, `adventure.social_story_focus_placeholder`, `common.placeholder_*` — preserved as-is per guide section 8
+**DNT preserved verbatim:** all brand names (AlloFlow, BehaviorLens, etc.), all acronyms (UDL, SEL, IEP, etc.), all placeholders (`{name}`, `{count}`, `${i+1}` etc.), all leaked-key-path values.
 
-**PT-BR-specific notes:**
-- "computador" + "celular" (NOT Portugal's "computador" + "telemóvel")
-- "tela" (screen, not "ecrã")
-- "arquivo" (file, not "ficheiro")
-- "endereço" (address), "URL" stays English
-- "marca-texto" (highlighter), "régua" (ruler)
-- "atalho" (shortcut)
-- Sentence-case for buttons + tabs; Title Case for section headers + major labels
-- ã/õ/é/ê/á/à/í/ó/ô/ú/ç diacritics preserved throughout
+**PT-BR-specific:** "computador" + "celular" (not "telemóvel"), "tela" (not "ecrã"), "arquivo" (not "ficheiro"), proper ã/õ/ç diacritics.
 
-## Commit log (Portuguese pack)
+## Commit log highlights (Session 2)
 
 ```
-9d22b273 lang: Portuguese (Brazil) +81 keys (81 total, 1% coverage) - common batch 1/?
-89bd5800 lang: Portuguese (Brazil) +263 keys (344 total, 4% coverage) - common batches 2-4
-dbaad00d (Somali commit that swept my common-COMPLETE work) +189 keys (533 total, 6% coverage) - common section COMPLETE
-0b08966b lang: Portuguese (Brazil) +144 keys (677 total, 7% coverage) - header/sidebar/welcome/splash/entry/meta/status
-80a38388 lang: Portuguese (Brazil) +247 keys (924 total, 10% coverage) - chrome batch 2
-37ab0679 lang: Portuguese (Brazil) +263 keys (1,187 total, 13% coverage) - toasts + settings + project_settings + ai_backend
-f43118c1 lang: Portuguese (Brazil) +191 keys (1,378 total, 15% coverage) - settings ecosystem (profiles/chat/chat_guide/input/prompts/language_selector/languages/translate)
-d6f5cbcc lang: Portuguese (Brazil) +224 keys (1,602 total, 17% coverage) - generation pipeline (wizard/process/status_steps/progression/output/fullpack)
+9d22b273 (S1) +81 keys (81 total) - common batch 1/?
+89bd5800 (S1) +263 keys (344) - common batches 2-4
+dbaad00d (S1) +189 keys (533) - common section COMPLETE
+0b08966b (S1) +144 keys (677) - header/sidebar/welcome/splash/entry/meta/status
+80a38388 (S1) +247 keys (924) - chrome batch 2
+37ab0679 (S1) +263 keys (1,187) - toasts + settings + ai_backend
+f43118c1 (S1) +191 keys (1,378) - settings ecosystem
+d6f5cbcc (S1) +224 keys (1,602) - generation pipeline
+f9f11627 (S2) +378 keys (1,980) - content batch 1
+0b6bf36f (S2) +228 keys (2,208) - content batch 2 (lesson_plan/faq/visuals/math)
+584df291 (S2) +234 keys (2,442) - quiz section
+a9e18e22 (S2) +322 keys (2,764) - teacher block 1
+[swept] (S2) +353 keys (3,117) - teacher block 2 (rolled into Arabic agent commit)
+af24853a (S2) +434 keys (3,551) - games batch
+2905aa7e (S2) +488 keys (4,039) - interactive batch
+d2800303 (S2) +406 keys (4,445) - word_sounds + escape_room
+d79593ea (S2) +529 keys (4,974) - adventure section COMPLETE
+c5a7047f (S2) +172 keys (5,146) - misc batch A
+b5cfb307 (S2) +516 keys (5,662) - misc batch B
+d1a4b72e (S2) +347 keys (6,009) - about + persona + dbq
+c441f4de (S2) +281 keys (6,290) - pdf_audit
+6f3ef731 (S2) +177 keys (6,467) - stem small subsections
+e11f49e4 (S2) +380 keys (6,847) - behavior_lens batch 1
 ```
 
-## How to continue (for next Claude session)
+## How to continue (next session)
 
-1. **Read this doc first** + `lang/LANGUAGE_PACK_GUIDE.md`
-2. **Pick the next priority section** from the list above (suggested: content output types — `analysis` first)
-3. **Dump the source:**
-   ```bash
-   node -e "const fs=require('fs'); const u=new Function('return '+fs.readFileSync('ui_strings.js','utf8').replace(/^\s*\/\/.*$/gm,'').trim())(); fs.writeFileSync('c:/tmp/lang_src/SECTION.json', JSON.stringify(u.SECTION, null, 2)); console.log('keys:', Object.keys(u.SECTION).length);"
-   ```
-4. **Translate one section per Edit**, using the vocabulary conventions above for consistency
-5. **Use the anchor pattern:** find the last key of the previous section's closing `}` followed by a unique identifier, replace with `},` + new section
-6. **Validate parse after each Edit:**
-   ```bash
-   node -e "try { const p = JSON.parse(require('fs').readFileSync('lang/portuguese_brazil.js','utf8')); console.log('OK'); } catch(e) { console.log('ERR:', e.message.slice(0,300)); }"
-   ```
-7. **Pre-commit before pushing** (per [feedback_deploy_must_pre_commit.md](../memory/feedback_deploy_must_pre_commit.md)):
+1. **Read this doc + `lang/LANGUAGE_PACK_GUIDE.md`** first
+2. **Pick the next priority section:**
+   - Recommended: continue behavior_lens batches 2-4 (clinical content, school-psych priority)
+   - Then: help_strings (largest remaining; 782 keys; high user-visibility for Help Mode)
+   - Optional: remaining stem subsections (auto-generated content, lower priority)
+3. **Use the pre-commit pattern** (per `feedback_deploy_must_pre_commit.md`):
    ```bash
    cp lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js && \
    node dev-tools/update_lang_manifest.cjs && \
@@ -164,9 +134,9 @@ d6f5cbcc lang: Portuguese (Brazil) +224 keys (1,602 total, 17% coverage) - gener
    git commit -m "lang: Portuguese (Brazil) +N keys (TOTAL total, X% coverage) - <section description>" && \
    git push origin main
    ```
-8. **Verify Cloudflare** after each push (15-30 sec lag normal):
+4. **Validate parse after each Edit:**
    ```bash
-   curl -sI "https://alloflow-cdn.pages.dev/lang/portuguese_brazil.js" | head -3
+   node -e "try { const p = JSON.parse(require('fs').readFileSync('lang/portuguese_brazil.js','utf8')); console.log('OK'); } catch(e) { console.log('ERR:', e.message.slice(0,300)); }"
    ```
 
 ## NEVER do these
@@ -177,7 +147,8 @@ d6f5cbcc lang: Portuguese (Brazil) +224 keys (1,602 total, 17% coverage) - gener
 4. **Don't translate DNT terms** — breaks brand recognition, placeholder substitution, and SpEd legal terminology.
 5. **Don't mix Portugal/Angola vocabulary** — keep PT-BR consistent (no "telemóvel", "ecrã", "ficheiro", "rato", "comboio", etc.)
 6. **Don't translate leaked-key-path values** — patterns like `common.url_placeholder`, `adventure.social_story_focus_placeholder` are source bugs; preserve verbatim.
+7. **Don't translate auto-generated stem keys** with "u2b50"-style escape values — preserve the escape sequences in values verbatim.
 
 ## Quality bar
 
-This pack is being translated by Claude in chat, following Aaron's explicit preference for top-quality hand translation over CLI Flash batch ("Option B"). Every entry has been considered for context, K-12 register, and Brazilian Portuguese idiom. Continuation sessions should maintain this bar.
+Translated by Claude in chat following Aaron's explicit preference for top-quality hand translation over CLI Flash batch ("Option B"). Every entry has been considered for context, K-12 register, and Brazilian Portuguese idiom. Continuation sessions should maintain this bar.
