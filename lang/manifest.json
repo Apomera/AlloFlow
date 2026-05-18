@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-18T21:29:35.011Z",
+  "generated": "2026-05-18T21:30:06.862Z",
   "count": 6,
   "total_keys_expected": 9307,
   "available": [
@@ -28,8 +28,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 3019,
-      "bytes": 178274,
+      "keys": 3453,
+      "bytes": 201363,
       "updated": "2026-05-18"
     },
     {
@@ -42,8 +42,8 @@
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
-      "keys": 8326,
-      "bytes": 1055633,
+      "keys": 9295,
+      "bytes": 1100191,
       "updated": "2026-05-18"
     }
   ]
