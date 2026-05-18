@@ -31184,6 +31184,4048 @@ window.SelHub = window.SelHub || {
       research: 'School re-entry after extended absence benefits from gradual return + check-ins.'
     }
   ];
+  // ── Zone Scenarios Library ──
+  // 120+ scenarios for "which zone is this person in?" practice
+  var ZONE_SCENARIOS = [
+    {
+      id: 'blue_lunch_alone_staring',
+      scenario: 'Friend sitting alone at lunch staring at table',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Maya usually sits with you at lunch, but today she is at the end of the table by herself. Her tray is barely touched and she is just looking down at the wood.',
+        middle: 'Maya, who normally sits with your group, is at the far end of the cafeteria alone. Her food is mostly untouched and she is staring at the table, not even on her phone.',
+        high: 'You spot Maya at lunch sitting by herself at the end of the long table. She is staring at the wood grain, sandwich half-eaten, headphones off, not scrolling, not really anywhere.'
+      },
+      observableCues: [
+        'Sitting away from her usual group',
+        'Food barely touched',
+        'Eyes down, unfocused gaze',
+        'Slow or no movement',
+        'Not on phone or doing anything to fill the time',
+        'Shoulders slumped, low body energy'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Maya looks slowed down and sad. Low energy and pulling away from people are blue zone signs.',
+        middle: 'She is showing classic low-arousal signs: withdrawn, slow, flat. That is the blue zone, often connected to sadness, tiredness, or something heavy on her mind.',
+        high: 'Low arousal plus withdrawal plus a flat affect reads blue. It does not have to mean depression, but it does mean her energy and engagement are running low and something is taking up bandwidth.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Some people genuinely like solo lunch and may just want a quiet break. If this is her norm, it could be a regulated solo recharge.' },
+        { zone: 'red', why: 'If she is dissociating after something acute (a fight, a loss, a panic), the flatness can be a freeze/shutdown that is closer to red than to ordinary blue.' }
+      ],
+      whatTheyMightNeed: 'Quiet company more than conversation. A sit-next-to without pressure to explain, and an opening if she wants one.',
+      empathyHint: 'You do not need to fix anything. Sitting down and saying "I am here if you want company" is enough. Let her lead.',
+      whatNotToDo: 'Do not say "cheer up" or "smile" or ask "what is wrong" five times in a row. Do not announce to the table that she looks sad.',
+      pairsWithStrategies: ['gentle_company', 'name_it_to_tame_it', 'low_demand_check_in'],
+      research: 'Withdrawal + flat affect are core blue-zone markers (Kuypers, 2011); peer presence without demand reduces shame (Porges, polyvagal/social engagement).'
+    },
+    {
+      id: 'blue_classmate_silent_all_day',
+      scenario: 'Classmate has not spoken all day',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Devon usually answers questions and jokes around. Today he has not said a single word, not even when called on. He just shrugged.',
+        middle: 'Devon usually has something to say in every class. Today he has been silent through three periods, only nodding or shrugging when teachers ask him things.',
+        high: 'Devon, normally a steady contributor, has gone the entire school day without speaking. He responds to direct questions with a shrug or a head tilt and otherwise just sits.'
+      },
+      observableCues: [
+        'No verbal output for hours',
+        'Only nonverbal responses (shrugs, nods)',
+        'Reduced facial expression',
+        'Slow movement between classes',
+        'Not engaging with usual friends',
+        'Marked change from baseline'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Going quiet and slow when you are usually loud and quick is a blue zone sign. Something is using up his words.',
+        middle: 'A sharp drop from baseline talkativeness, paired with low movement and flat face, points to blue. Whatever is happening, his system is conserving energy.',
+        high: 'When verbal output drops to near zero against a chatty baseline, and body language slows with it, that is a low-arousal blue presentation. Could be sadness, exhaustion, a hard night, processing something.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Selective mutism or shutdown after a trigger (a fight at home, a panic earlier) can present as silence and would be closer to red.' },
+        { zone: 'yellow', why: 'For some, going quiet is a way to manage internal anxiety — the inside is yellow even if the outside reads blue.' }
+      ],
+      whatTheyMightNeed: 'Low-pressure check-in. An offer to talk later, not now. Permission to be quiet without being labeled rude.',
+      empathyHint: 'A quiet "I noticed you are quiet today — no pressure, I am around if you want" respects his pace.',
+      whatNotToDo: 'Do not interrogate him in front of others. Do not joke "cat got your tongue." Do not assume he is being defiant.',
+      pairsWithStrategies: ['low_demand_check_in', 'written_note_option', 'gentle_company'],
+      research: 'Sudden drop in verbal output is a significant behavioral change worth flagging (CDC ACEs guidance); pressure to perform deepens shutdown (polyvagal model).'
+    },
+    {
+      id: 'blue_sibling_wont_come_out',
+      scenario: 'Sibling who used to play will not come out of room',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother used to ask you to play LEGOs every day. For two weeks he just stays in his room with the lights off and the door shut.',
+        middle: 'Your younger sister used to be all over you to hang out. The last few weeks she stays in her room with the door closed, lights off, blanket up, not even scrolling that you can see.',
+        high: 'Your sibling, who was always around, has been holed up in their room for weeks. Door closed, blackout curtains, no music, leaves only for bathroom and food (sometimes).'
+      },
+      observableCues: [
+        'Self-isolation in a dim room',
+        'Loss of previously enjoyed activities',
+        'Reduced exit from room',
+        'Quiet — no music, calls, or sound',
+        'Possible appetite or sleep changes',
+        'Lasts more than a couple weeks'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When someone stops doing things they used to love, that is a big blue zone sign. Something is making it hard to want to come out.',
+        middle: 'Loss of interest plus social withdrawal plus reduced energy over multiple weeks is a classic blue picture. This is the kind of blue that adults should know about.',
+        high: 'Anhedonia (loss of pleasure in things), withdrawal, low movement, and duration are the markers that move this from "off day" blue to "worth telling a parent or counselor" blue.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the isolation followed a specific traumatic event (assault, breakup, bullying) it may be a freeze/shutdown closer to red.' },
+        { zone: 'yellow', why: 'Some teens isolate to manage overwhelming anxiety; the room becomes a regulation strategy that looks blue but feels yellow inside.' }
+      ],
+      whatTheyMightNeed: 'A trusted adult looped in. Multi-week withdrawal warrants more than a sibling check-in.',
+      empathyHint: 'Knock gently. Offer presence without demands ("I am going to sit out here for a bit if you want company"). Bring a snack and leave it.',
+      whatNotToDo: 'Do not yell "stop being lazy" through the door. Do not force them to "snap out of it." Do not promise to keep it secret from a parent if you are worried.',
+      pairsWithStrategies: ['loop_in_trusted_adult', 'gentle_company', 'low_demand_check_in'],
+      research: 'Anhedonia + duration >2 weeks aligns with depression screening criteria (PHQ-A); early adult involvement improves outcomes (NIMH adolescent depression).'
+    },
+    {
+      id: 'blue_teacher_tired',
+      scenario: 'Teacher who seems tired and uninvolved',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your teacher usually makes class fun. This week she has been sitting at her desk a lot, talking quietly, and not doing the silly voices for read-aloud.',
+        middle: 'Your teacher who normally walks around and jokes has been sitting at her desk all week, voice flat, eyes a little glassy. The lessons are still happening, but the spark is gone.',
+        high: 'Your teacher, usually animated, has been operating on autopilot for the last week. Sitting more, speaking lower, eyes tired, not engaging with the side conversations she normally would.'
+      },
+      observableCues: [
+        'Lower physical energy than baseline',
+        'Flat or quiet voice',
+        'Sitting more than standing',
+        'Less spontaneous interaction',
+        'Tired eyes',
+        'Lessons happen but feel "phoned in"'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Even grown-ups have blue zone days. She is still doing her job but her energy is low.',
+        middle: 'Teachers are people. A noticeable drop in energy and engagement reads blue — could be exhaustion, illness, grief, or burnout.',
+        high: 'This is a low-arousal presentation in an adult who normally runs high-arousal. Important reminder: zones are about humans, not just kids. You are not responsible for fixing it, but noticing is kind.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Some teachers deliberately dial back during heavy testing weeks; what looks blue may be intentional pacing.' },
+        { zone: 'yellow', why: 'If she is grieving or anxious about something, the outside flatness may mask an inside-yellow.' }
+      ],
+      whatTheyMightNeed: 'Respect, patience, and not making her day harder. A small kindness costs nothing.',
+      empathyHint: 'A simple "thanks for class today" or holding a door is enough. Adults appreciate being seen.',
+      whatNotToDo: 'Do not joke about her being grumpy or "old." Do not pry into her personal life. Do not pile on with extra behavior issues.',
+      pairsWithStrategies: ['gentle_company', 'small_kindness', 'patience_practice'],
+      research: 'Teacher burnout is well-documented (Maslach Burnout Inventory); student awareness reduces escalation cycles (Pianta, teacher-student relationships).'
+    },
+    {
+      id: 'blue_friend_canceling_plans',
+      scenario: 'Friend who keeps canceling plans',
+      forBand: 'all',
+      setting: 'peer',
+      story: {
+        elementary: 'You have asked Sam to come over three times in a row. Each time he says yes, then texts later that he cannot. He used to come every weekend.',
+        middle: 'Sam has bailed on every hangout for a month. Always says yes first, then cancels day-of with a "sorry, not feeling it" or "something came up." Used to be the one organizing things.',
+        high: 'Sam has canceled every plan for about six weeks. Pattern is consistent: enthusiastic yes, day-of cancel, vague reason. Stopped initiating altogether.'
+      },
+      observableCues: [
+        'Repeated late cancellations',
+        'Stopped initiating contact',
+        'Vague or shifting reasons',
+        'Wants to want to come but does not',
+        'Pattern across multiple plans',
+        'Change from prior reliability'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When friends keep saying no to fun things they used to love, it usually means their inside feels too tired or sad to go.',
+        middle: 'Pattern cancellation is a quiet blue-zone signal. The "yes then no" often means he wants to want to come but does not have the energy when the time arrives.',
+        high: 'Repeated day-of cancellations track with low motivation, social withdrawal, and possibly depression. He is not flaking on you — he is running out of bandwidth.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Social anxiety can cause the same pattern: yes when distant, panic-cancel when it gets real.' },
+        { zone: 'red', why: 'If something acute happened (loss, trauma) the avoidance may be a freeze/shutdown rather than a slow blue.' }
+      ],
+      whatTheyMightNeed: 'Lower-stakes invitations. "I will be at the park at 4, come if you want" is easier than "be at my house at 6."',
+      empathyHint: 'Tell him you noticed and you are not mad. "Hey, no pressure. I miss you. Whenever you are up for it."',
+      whatNotToDo: 'Do not guilt-trip ("you always bail"). Do not ghost him back. Do not announce it to the friend group.',
+      pairsWithStrategies: ['low_stakes_invite', 'name_pattern_kindly', 'loop_in_trusted_adult'],
+      research: 'Behavioral activation (small low-demand engagements) is first-line for depression in adolescents (Dimidjian; CBT-A research).'
+    },
+    {
+      id: 'blue_kid_head_down',
+      scenario: 'Kid in class with head down on desk',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Riley has her head down on her arms during morning meeting. She is not sleeping, just lying there with her eyes open looking at the desk.',
+        middle: 'Riley has had her head down on the desk for most of second period. Not sleeping, not on her phone underneath, just resting her face on her arm and staring sideways.',
+        high: 'Riley puts her head down for the full block, eyes open but unfocused. Teacher walks by, she does not move. Not asleep, not on phone, just absent.'
+      },
+      observableCues: [
+        'Head down on desk',
+        'Eyes open but unfocused',
+        'No participation',
+        'Not asleep',
+        'Slow or no response to teacher',
+        'Posture says "I am done"'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Head down often means low energy or feeling sad. Her body is asking for rest.',
+        middle: 'A long head-down with open eyes and no engagement is a blue picture — the system has dropped below the threshold for participation.',
+        high: 'Sustained head-down with disengagement reads blue. Could be sleep debt, depression, sickness, grief, or simply a hard day she is conserving energy for.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'A dissociative shutdown after an in-class trigger (a comment, a memory, a panic) can present exactly the same way and would be closer to red.' },
+        { zone: 'yellow', why: 'Hiding to manage anxiety (a panic about being called on) can also produce head-down behavior.' }
+      ],
+      whatTheyMightNeed: 'A quiet check-in from the teacher, not a public callout. A pass to the bathroom or counselor if needed.',
+      empathyHint: 'A teacher kneeling next to the desk and quietly asking "doing okay?" honors the privacy of a hard moment.',
+      whatNotToDo: 'Do not say "head up!" in front of the class. Do not assume she is being disrespectful. Do not snap fingers near her face.',
+      pairsWithStrategies: ['quiet_check_in', 'movement_break_option', 'counselor_pass'],
+      research: 'Behavioral disengagement is a red flag for depression and ACEs; public callouts increase shame and disengagement (Brackett, RULER).'
+    },
+    {
+      id: 'blue_grades_dropping',
+      scenario: 'Student with grades dropping who used to be engaged',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Jordan used to be the first one to finish his work and raise his hand. Now he turns things in late and does not raise his hand at all.',
+        middle: 'Jordan was an A/B student in the fall. By spring, missing assignments and Cs are the norm. He used to talk in class; now he barely does.',
+        high: 'Jordan, a strong student through sophomore year, has watched his GPA slide a full point this semester. Missing work, low effort, no engagement — a marked shift from his prior pattern.'
+      },
+      observableCues: [
+        'Measurable drop in academic performance',
+        'Reduced participation',
+        'Late or missing assignments',
+        'Lower visible effort',
+        'Change from baseline',
+        'Not paired with a specific learning disability flare'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When schoolwork starts feeling too heavy and a kid just gives up, that is a blue zone signal.',
+        middle: 'A sustained academic drop combined with disengagement often signals a blue-zone undercurrent: depression, family stress, sleep loss, grief, or motivation loss.',
+        high: 'Sliding grades in a previously-strong student is one of the most reliable early signals of teen depression and is worth a counselor referral, not just a "try harder" talk.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Chronic anxiety can also tank grades — avoidance of feared tasks looks identical from the outside.' },
+        { zone: 'red', why: 'Substance use, trauma, or acute home crisis can drive the same drop and would be closer to red.' }
+      ],
+      whatTheyMightNeed: 'Adult attention from a counselor or trusted teacher, not a punishment-based response. A welfare check on what is happening outside the gradebook.',
+      empathyHint: 'If you are his friend, ask "is everything okay?" once and mean it. If you are his teacher, loop in the counselor.',
+      whatNotToDo: 'Do not call him lazy. Do not threaten with grades. Do not announce the slide in front of peers.',
+      pairsWithStrategies: ['counselor_referral', 'reduce_demands_temporarily', 'name_pattern_kindly'],
+      research: 'Academic decline is a documented adolescent depression marker (NIMH); punitive responses worsen outcomes (Marzano, classroom management research).'
+    },
+    {
+      id: 'blue_one_word_texts',
+      scenario: 'Friend who replies only in one-word texts',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'You text Riley about a fun show and she just says "k." You ask if she is okay, she says "ya." She used to send paragraphs.',
+        middle: 'Riley used to send essay-length texts about her day. For the past two weeks every reply is "k" or "lol" or "sure," and sometimes no reply at all until hours later.',
+        high: 'Riley\'s text style has flatlined. Used to be voice memos and paragraphs; now "k" or read-without-reply for hours. Pattern has held for weeks.'
+      },
+      observableCues: [
+        'One-word or very short replies',
+        'Long response delays',
+        'No initiation of conversation',
+        'No more memes or shares',
+        'Change from prior style',
+        'Not just busy — a sustained pattern'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When a chatty friend goes quiet for a while, even on text, that is a small blue signal.',
+        middle: 'Reduced verbal output applies to digital communication too. A long shift in texting style often mirrors what is happening internally.',
+        high: 'When the same person whose Snap streak was a 200-day novel can only manage "k," that is a digital fingerprint of low energy or low mood.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Social anxiety, friendship strain, or being mad can produce the same brevity — worth checking before assuming sadness.' },
+        { zone: 'green', why: 'Some people are simply trying to cut back on phone time and the short replies are a deliberate boundary.' }
+      ],
+      whatTheyMightNeed: 'A non-text check-in. A short call, a passing hallway hello, or showing up in person.',
+      empathyHint: 'Try a voice memo or a real-world hello. "Saw your text style change — I am not mad, just checking on you."',
+      whatNotToDo: 'Do not subtweet or vague-post. Do not test her by sending fake-emergency texts. Do not assume she is mad at you.',
+      pairsWithStrategies: ['non_text_check_in', 'name_pattern_kindly', 'gentle_company'],
+      research: 'Digital communication mirrors offline affect (Pew Research adolescent communication studies); voice-channel contact has higher relational warmth than text (Kross social media research).'
+    },
+    {
+      id: 'blue_sibling_after_divorce',
+      scenario: 'Sibling who isolates after parents\' divorce',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Since mom and dad split up, your little sister has been very quiet. She goes to her room right after school and does not come out for dinner sometimes.',
+        middle: 'Since the divorce announcement, your sister has gone underground. Room, headphones, blankets, minimal eye contact, eating in her room when she eats.',
+        high: 'Three months into your parents\' divorce, your sister has shrunk her world to her bedroom. Therapy once a week, school somehow, then back to the cave.'
+      },
+      observableCues: [
+        'Withdrawal following a specific life event',
+        'Isolated to one space',
+        'Reduced family interaction',
+        'Possible appetite/sleep changes',
+        'Avoidance of family meals or rituals',
+        'Sustained for weeks to months'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Big family changes hurt. Pulling away and going quiet is a normal blue zone response to a big loss.',
+        middle: 'Grief over divorce is grief, full stop. Withdrawal is a typical short-term blue-zone response, and the timeline matters: weeks is normal, months without movement deserves more support.',
+        high: 'Divorce ranks high on adolescent stress scales. Withdrawal is an expected response. The question is whether she has support and whether the withdrawal is slowly easing or deepening.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she had a panic, a self-harm episode, or expressed suicidal thoughts, the situation is closer to red and needs immediate professional support (988 if any safety concern).' },
+        { zone: 'yellow', why: 'Anger and resentment often coexist with grief; the inside can be a yellow rage even when the outside reads blue.' }
+      ],
+      whatTheyMightNeed: 'Steady presence, a therapist, a parent who can absorb the anger and the silence without taking it personally. Time.',
+      empathyHint: 'You do not need to fix her parents\' marriage. Showing up consistently, a snack outside the door, a quiet "I love you" through the wall — all of these land.',
+      whatNotToDo: 'Do not pick sides between parents in front of her. Do not say "you will be fine." Do not make her be the emotional anchor of the family.',
+      pairsWithStrategies: ['therapist_referral', 'consistent_presence', 'loop_in_trusted_adult'],
+      research: 'Parental divorce is a top-10 ACE; therapy support buffers long-term outcomes (Wallerstein, divorce research; Felitti ACEs).'
+    },
+    {
+      id: 'blue_athlete_lost_big_game',
+      scenario: 'Athlete who lost a big game and is withdrawn',
+      forBand: 'middle',
+      setting: 'sports',
+      story: {
+        elementary: 'Your friend missed the winning shot in the basketball game and now will not talk about it. He has been quiet for two days.',
+        middle: 'Your teammate took the loss hard — he missed the last free throw. Since the game he has barely spoken at practice, sits alone in the locker room, leaves quickly.',
+        high: 'Your teammate has been a ghost since the regional loss. Mechanical at practice, no banter, no eye contact in the locker room. He is grinding the moment over and over.'
+      },
+      observableCues: [
+        'Withdrawal after specific loss',
+        'Less talking, less joking',
+        'Mechanical going-through-the-motions',
+        'Avoids the topic of the game',
+        'Short-term (days to a couple weeks)',
+        'Still showing up, just emptied out'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Losing something big hurts a lot. Being quiet for a few days afterward is normal blue zone.',
+        middle: 'Short-term blue after a big loss is a normal grief response. The body and mind are processing disappointment.',
+        high: 'Loss-related withdrawal is normal for days to a couple weeks. The flag goes up if it stretches past that or if self-talk turns into "I am worthless" territory.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If he is talking about hurting himself or quitting everything, the situation is closer to red and needs adult/clinical support.' },
+        { zone: 'yellow', why: 'Some athletes channel post-loss energy into hyper-training or rage at teammates; the inside-yellow shows up as overdrive.' }
+      ],
+      whatTheyMightNeed: 'Time, normal teammate presence, and a coach who can name the loss without piling on. Not a pep talk.',
+      empathyHint: 'A "that game sucked, you are still our guy" lands more than "you will get them next time." Sit next to him on the bus.',
+      whatNotToDo: 'Do not replay the missed shot to him. Do not joke about it. Do not say "it is just a game" when to him it really is not.',
+      pairsWithStrategies: ['name_the_loss', 'teammate_presence', 'coach_check_in'],
+      research: 'Athletic identity threat is a significant adolescent stressor (Brewer, athletic identity scale); empathic coaching predicts mental health outcomes (Cote, ICCE).'
+    },
+    {
+      id: 'blue_pet_died',
+      scenario: 'Friend whose pet died last week',
+      forBand: 'all',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend\'s dog Buddy died last week. She has been very quiet at school and her eyes look red. She does not want to talk about it.',
+        middle: 'Your friend\'s cat had to be put down last week. She has been low-energy at school, eyes puffy on and off, declining most invitations.',
+        high: 'Your friend\'s dog of twelve years died last week. She is functioning at school but the spark is gone. Cries randomly. Stays home most nights.'
+      },
+      observableCues: [
+        'Recent significant loss',
+        'Tearful or red-eyed at times',
+        'Lower energy than baseline',
+        'Withdrawal from usual activities',
+        'May avoid the topic or want to talk about it suddenly',
+        'Grief-typical waves'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When a pet who was family dies, it hurts a lot. Being sad and quiet is exactly what blue zone is for. It is the right zone for grief.',
+        middle: 'Pet loss is real loss. Blue is the appropriate zone. Grief comes in waves, so she may seem fine an hour and then very blue the next.',
+        high: 'Pet bereavement is increasingly recognized as significant grief. Blue is the healthy zone for it; the work is to stay with it, not push through.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the pet death is layered on top of other recent losses or trauma, the grief can spike into red overwhelm and needs more support.' },
+        { zone: 'green', why: 'Some moments she may be okay and laugh and that is also fine — grief is not a steady state.' }
+      ],
+      whatTheyMightNeed: 'Acknowledgment of the loss by name. Patience with the wave structure of grief. Permission to talk or not talk.',
+      empathyHint: 'Say the pet\'s name. "I am so sorry about Buddy. He was such a good dog." That alone is huge.',
+      whatNotToDo: 'Do not say "it was just a pet." Do not say "you can get another one." Do not avoid the subject like it never happened.',
+      pairsWithStrategies: ['name_the_loss', 'grief_permission', 'low_demand_check_in'],
+      research: 'Pet bereavement is clinically significant (Packman, pet loss research); naming the deceased aids grief processing (Worden, four tasks of mourning).'
+    },
+    {
+      id: 'blue_winter_flat',
+      scenario: 'Classmate during winter who seems flat',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate seems sleepy and quiet every day in January and February. In the spring she is back to normal.',
+        middle: 'Your classmate has been low-energy and quiet since November. She mentions being tired all the time. Last winter she was similar; spring she was fine.',
+        high: 'Your classmate runs flat every winter — lower energy, sleeping more, less social. By April she is back to her summer self. The pattern repeats annually.'
+      },
+      observableCues: [
+        'Seasonal pattern (worse in low-light months)',
+        'Increased sleep',
+        'Low motivation',
+        'Carb cravings or appetite shift',
+        'Reduced social engagement',
+        'Improves with longer daylight'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Some people feel slower and sadder when there is less sunlight. It is a real thing and it is a blue zone feeling.',
+        middle: 'Seasonal mood drops are a real medical pattern — sometimes called seasonal affective disorder. A blue zone that returns every winter deserves attention, not "toughen up."',
+        high: 'Seasonal Affective Disorder (SAD) is well-documented. The presentation is blue, and there are real interventions: light therapy, vitamin D check, sleep regulation, sometimes medication.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Some people are simply wired to be quieter in winter — their baseline shifts but their wellbeing is intact.' },
+        { zone: 'yellow', why: 'Winter holidays can also trigger anxiety, and the inside-yellow can hide behind a flat exterior.' }
+      ],
+      whatTheyMightNeed: 'A doctor visit to talk about SAD. Possibly a light box, vitamin D check, and conscious sunlight exposure.',
+      empathyHint: 'A "winter is hard for me too — want to walk to lunch in the sun?" can be quietly powerful.',
+      whatNotToDo: 'Do not tell her to "snap out of it." Do not dismiss SAD as fake. Do not pile on winter activities she clearly cannot manage.',
+      pairsWithStrategies: ['sunlight_exposure', 'doctor_referral', 'consistent_presence'],
+      research: 'Seasonal Affective Disorder is a recognized DSM-5 specifier; bright light therapy has strong evidence base (Rosenthal, NIMH).'
+    },
+    {
+      id: 'blue_recovering_illness',
+      scenario: 'Friend recovering from illness',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your friend just got over the flu. He is back at school but very quiet and tired and does not want to run around at recess.',
+        middle: 'Your friend had mono for three weeks. He is back at school but moving slow, declining most plans, head down a lot.',
+        high: 'Your friend had a bad concussion two months ago. He is medically cleared but still moving slow, low affect, declining social events, naps a lot.'
+      },
+      observableCues: [
+        'Recent medical event',
+        'Physical fatigue obvious',
+        'Reduced activity tolerance',
+        'Quiet, conserving energy',
+        'Wants to be normal but cannot match prior pace',
+        'Body still healing'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Getting better from being sick takes a long time. His body is in the blue zone while it heals.',
+        middle: 'Recovery is its own phase. Blue zone is appropriate — it means his body is doing the work of healing rather than performing for the world.',
+        high: 'Post-illness or post-concussion fatigue is real and clinically valid. Blue is the right zone for it. The work is honoring the recovery, not pushing through.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If post-illness includes panic attacks or PTSD-like symptoms (medical trauma is real), the blue may be hiding a red beneath.' },
+        { zone: 'green', why: 'Some days of recovery are calm and content — healing-blue and rested-green can overlap.' }
+      ],
+      whatTheyMightNeed: 'Permission to move slowly. Friends who include him without demanding the old energy level.',
+      empathyHint: 'Adjust your invitations: "Want to watch a movie at my house?" beats "let us go play three hours of basketball."',
+      whatNotToDo: 'Do not say "you look better, why are you still tired?" Do not push him into intense activity. Do not joke that he is faking.',
+      pairsWithStrategies: ['adjust_demand_level', 'consistent_presence', 'patience_practice'],
+      research: 'Post-viral and post-concussive fatigue are documented (CDC long COVID guidance; concussion management literature).'
+    },
+    {
+      id: 'blue_team_rejection',
+      scenario: 'Kid who got rejected from team and will not talk about it',
+      forBand: 'middle',
+      setting: 'sports',
+      story: {
+        elementary: 'Your friend tried out for the soccer team and did not make it. Now she will not talk about soccer or tryouts and she is sad at recess.',
+        middle: 'Your friend got cut from varsity. She has not mentioned it once. She is quiet, skips her usual sports talk, eats lunch alone.',
+        high: 'Your friend got cut from the team she had built her identity around for three years. Silent on the topic, but her whole vibe has dropped two notches.'
+      },
+      observableCues: [
+        'Recent rejection from a desired group',
+        'Avoiding the topic entirely',
+        'Withdrawal from related friends or activities',
+        'Drop in baseline mood',
+        'Possible identity-level hit',
+        'Grief without the language for it'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Not making a team hurts a lot. Going quiet and sad is a normal blue zone response.',
+        middle: 'Being cut is a loss — of belonging, of identity, of plans. Blue makes sense. Silence often means it is too painful to put into words yet.',
+        high: 'Identity-related loss (being cut, not getting in, getting dumped) hits hard. Blue is the right zone, and the avoidance of the topic often signals how big the wound is.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she is talking about "what is the point" or hurting herself, the situation is closer to red and needs adult/clinical support.' },
+        { zone: 'yellow', why: 'Some kids channel cut-from-team energy into rage and competitive bitterness — the inside is yellow even if the outside reads blue.' }
+      ],
+      whatTheyMightNeed: 'Acknowledgment without forcing the topic. A friend who keeps showing up.',
+      empathyHint: 'You can name it without forcing a talk: "I know it sucked. I am here whenever, no pressure." Then keep being normal.',
+      whatNotToDo: 'Do not say "you can try again next year." Do not list reasons she might have been cut. Do not tell her you made the team in front of her.',
+      pairsWithStrategies: ['name_the_loss_briefly', 'consistent_presence', 'low_demand_check_in'],
+      research: 'Identity loss in adolescence has unique salience (Erikson, identity vs role confusion); silence is a common grief response (Bonanno, resilience research).'
+    },
+    {
+      id: 'blue_dad_lost_job',
+      scenario: 'Friend whose dad lost his job',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your friend\'s dad lost his job and the family is moving to a smaller house. He has been very quiet at school and skipped two birthday parties.',
+        middle: 'Your friend\'s dad got laid off three months ago. There is talk about moving. He has been low-energy and saying "no" to everything that costs money.',
+        high: 'Your friend\'s dad was laid off six months ago and they are now actively house-hunting in a cheaper district. He is tired, anxious-but-flat, and pulling away socially.'
+      },
+      observableCues: [
+        'Recent family financial stress',
+        'Declining social events that cost money',
+        'Quiet, withdrawn affect',
+        'Possible worry about moving or schools',
+        'Family stress visible on the kid\'s face',
+        'Sometimes shame about the situation'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Big family worries make kids tired and sad. He is in the blue zone because his family is going through something hard.',
+        middle: 'Financial stress hits kids too. Blue zone is a reasonable response to the weight of family worry, especially when shame is layered on top.',
+        high: 'Family financial loss can be a stealth ACE — it brings instability, possible moves, parental stress, and often shame. Blue makes sense; isolation deepens it.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the family stress is paired with substance use, violence, or housing insecurity, the kid is closer to red and may need a school counselor or social worker.' },
+        { zone: 'yellow', why: 'Some kids respond to family financial stress with hypervigilance and anxiety — yellow on the inside, blue on the outside.' }
+      ],
+      whatTheyMightNeed: 'Friends who include him in free things. A counselor who can connect the family to resources without shame.',
+      empathyHint: 'Invite him to free or low-cost things. "Want to come over and play video games at my house?" is more accessible than "let us go to the trampoline park."',
+      whatNotToDo: 'Do not bring up money in front of him. Do not invite him to expensive things and then make a big deal of "do not worry, I got you." Do not gossip.',
+      pairsWithStrategies: ['accessible_invitations', 'counselor_referral', 'discreet_kindness'],
+      research: 'Family financial stress is a well-documented adolescent risk factor (Conger, family stress model); peer inclusion buffers shame (Twenge, social belonging research).'
+    },
+    {
+      id: 'blue_depression_episode',
+      scenario: 'Student during depression episode',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate has been very sad and slow for a long time. She told you she does not enjoy anything anymore. She talks to a counselor at school.',
+        middle: 'Your classmate has been in a depression episode for two months. Lower energy, lost interest in clubs she loved, sleeping a lot. She is in therapy.',
+        high: 'Your classmate is in the middle of a depressive episode. Lost interest in her sport, sleeping 11 hours, eating little, on a medication trial. Functioning, barely.'
+      },
+      observableCues: [
+        'Pervasive low mood for weeks+',
+        'Anhedonia (loss of pleasure)',
+        'Sleep and appetite changes',
+        'Reduced movement and engagement',
+        'Often in treatment or being referred',
+        'Functioning is reduced but possible'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Depression is a real sickness that makes someone\'s feelings stay in the blue zone for a long time. It is not their fault and it needs grown-up help.',
+        middle: 'Clinical depression is a sustained blue-zone state. It is not laziness or attitude. Treatment helps but takes time.',
+        high: 'A depressive episode is the medical version of blue — sustained, neurochemically real, requiring intervention. Peer support is meaningful but does not replace clinical care.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Depression with suicidal ideation moves the situation toward red. Any mention of suicide should be taken seriously — 988 is the lifeline (call or text).' },
+        { zone: 'yellow', why: 'Agitated depression (depression with high anxiety) can include restlessness and irritability that look yellow.' }
+      ],
+      whatTheyMightNeed: 'Ongoing clinical care. Friends who stay even when she is hard to be around. A daily reason to show up.',
+      empathyHint: 'Consistency beats intensity. A daily "hi" is worth more than one big rescue attempt.',
+      whatNotToDo: 'Do not say "have you tried being happy." Do not push positivity ("just think positive!"). Do not disappear when it is hard.',
+      pairsWithStrategies: ['consistent_presence', 'clinical_care_support', 'name_pattern_kindly'],
+      research: 'Adolescent depression treatment is most effective with combined therapy + sometimes meds (TADS study); peer support has small-to-moderate effects (Mead, peer support research).'
+    },
+    {
+      id: 'blue_breakup_bed',
+      scenario: 'Friend going through breakup who cannot get out of bed',
+      forBand: 'high',
+      setting: 'home',
+      story: {
+        elementary: 'Your older sibling is sad about a breakup and is staying in bed all weekend, just on her phone.',
+        middle: 'Your friend got dumped a week ago and has barely left her room since. Phone in hand, blinds closed, food untouched.',
+        high: 'Your friend\'s relationship of two years ended a week ago. She has been horizontal in bed for most of it, scrolling, crying, sleeping in 30-minute chunks.'
+      },
+      observableCues: [
+        'In bed for extended periods after specific event',
+        'Reduced food intake',
+        'Crying and scrolling cycles',
+        'Disrupted sleep',
+        'Withdrawal from friends',
+        'Short-term, acute response'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Breakups make people sad and tired. Resting and crying is part of how the heart heals.',
+        middle: 'Acute breakup grief is intense. A week of low function is normal. The flag goes up if it stretches into weeks of total shutdown.',
+        high: 'Romantic loss activates the same neural circuits as physical pain (Eisenberger). A week of bed-grief is a normal blue-zone response.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she is talking about self-harm or suicide, the situation is red. 988 (call or text). Trevor Project for LGBTQ+ youth (1-866-488-7386).' },
+        { zone: 'yellow', why: 'Some breakups produce rage and revenge-fantasy energy — yellow on the inside even when blue is showing.' }
+      ],
+      whatTheyMightNeed: 'A friend to bring food and just be there. A reason to shower. Eventual gentle pressure to move.',
+      empathyHint: 'Bring snacks. Sit next to her in bed. Suggest a walk in three days. Do not rush her timeline.',
+      whatNotToDo: 'Do not say "you can do better" on day one. Do not show her his/her social media. Do not stage an intervention on day three.',
+      pairsWithStrategies: ['bring_food', 'gentle_company', 'movement_reintroduction'],
+      research: 'Romantic loss activates pain neural circuits (Eisenberger, social pain research); behavioral activation aids recovery (CBT for grief).'
+    },
+    {
+      id: 'blue_sunday_scaries',
+      scenario: 'Kid on Sunday before Monday school',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Every Sunday night your friend gets quiet and sad. He says his tummy hurts and does not want to talk.',
+        middle: 'Every Sunday afternoon your friend\'s mood drops. He goes quiet, says school is "fine" but you can tell he is dreading Monday.',
+        high: 'Your friend has Sunday scaries every week. By 3 pm he is flat, by 8 pm he is in bed scrolling, not asleep but not present.'
+      },
+      observableCues: [
+        'Predictable weekly low at end of weekend',
+        'Anticipatory dread',
+        'Quiet, withdrawn affect',
+        'May report physical symptoms',
+        'Often resolves by Monday afternoon',
+        'Pattern repeats weekly'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Sunday sadness is super common. School can feel heavy and Sunday is when his brain starts thinking about it.',
+        middle: 'Anticipatory low mood on Sundays is widespread. Blue zone is a reasonable read — the system is bracing for the week.',
+        high: 'Sunday scaries are a real thing. Whether it is workload, social anxiety, bullying, or just overload, weekly anticipatory blue is worth taking seriously.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'For many people, Sunday is actually a yellow-zone anxiety spike rather than a blue-zone sadness — racing thoughts about the week.' },
+        { zone: 'red', why: 'If Sunday includes panic attacks, refusal, or significant school avoidance, the situation moves toward red and may need intervention.' }
+      ],
+      whatTheyMightNeed: 'A predictable Sunday-night routine that is gentle. Permission to talk about what is hard about Monday.',
+      empathyHint: 'A Sunday-night text "I get the Sundays too — we got Monday tomorrow" can be quietly powerful.',
+      whatNotToDo: 'Do not say "it is just school." Do not load Sunday with chores. Do not gaslight the dread.',
+      pairsWithStrategies: ['sunday_routine', 'name_the_dread', 'low_demand_check_in'],
+      research: 'Anticipatory mood drops are well-documented (Csikszentmihalyi, experience sampling); transition rituals reduce dread (van Gennep, transitional research).'
+    },
+    {
+      id: 'blue_failed_test_gave_up',
+      scenario: 'Friend who failed a test and gave up',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend failed her spelling test and now says she is dumb and is not going to try anymore. She is quiet and sad.',
+        middle: 'Your friend bombed the unit test. She is not crying or angry, just flat, saying "I am stupid, what is the point" and zoned out.',
+        high: 'Your friend bombed the midterm she studied hard for. She is in flat-mode, talking about dropping the class, lost in "what is the point" loops.'
+      },
+      observableCues: [
+        'Recent academic failure',
+        'Self-deprecating language',
+        '"What is the point" framing',
+        'Withdrawal from the subject',
+        'Low energy, not high agitation',
+        'Hopelessness rather than rage'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Failing something you tried hard at hurts and can make you feel small. That sadness is the blue zone.',
+        middle: 'Failure-to-give-up is a blue-zone trajectory: hope drops, energy drops, withdrawal sets in. Different from yellow-zone "I am furious about this grade."',
+        high: 'When the response to failure is flatness and surrender (rather than agitation), it is a blue-zone signal. Worth watching that "what is the point" does not generalize beyond the test.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If "what is the point" escalates to hopelessness about life or suicidal language, the situation is red and 988 should be on the table.' },
+        { zone: 'yellow', why: 'Some students rage at the teacher or test — same trigger, yellow expression.' }
+      ],
+      whatTheyMightNeed: 'A reframe later (not now). A reminder that one test is not her identity. Sometimes a teacher who will sit with her about what happened.',
+      empathyHint: 'Skip the pep talk for now. Sit next to her and say "that sucked. I am sorry." Save advice for tomorrow.',
+      whatNotToDo: 'Do not say "it is just one test." Do not tell her your score. Do not lecture about study habits.',
+      pairsWithStrategies: ['validate_first', 'reframe_later', 'counselor_referral_if_persists'],
+      research: 'Learned helplessness after failure is a documented blue-zone pattern (Seligman); validate-first responses preserve relationship (Linehan, DBT validation).'
+    },
+    {
+      id: 'blue_after_family_fight',
+      scenario: 'Sibling after a family fight',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'There was a big fight at home last night. Your little sister is very quiet today and her eyes look puffy.',
+        middle: 'Your parents had a huge fight last night. Your sister has been silent all morning, eyes red, in her room with the door closed.',
+        high: 'Big blowup at home last night between your parents. Your sister, who often absorbs the household tension, is operating in slow-motion blue today.'
+      },
+      observableCues: [
+        'Recent family conflict',
+        'Puffy or red eyes',
+        'Withdrawal and silence',
+        'Low energy after the storm',
+        'Sometimes hypervigilance underneath',
+        'Short-term acute response'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When grown-ups fight loudly it scares kids. Being quiet and sad afterward is normal blue zone.',
+        middle: 'Post-conflict shutdown is common, especially for kids who absorb household tension. Blue is the appropriate zone for the come-down.',
+        high: 'The morning-after of a household blowup often presents as flat, withdrawn, low-energy. The body is recovering from the activation of the night before.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the fight involved violence, threats, or substance use, the shutdown may be a trauma freeze and the family needs outside support.' },
+        { zone: 'yellow', why: 'Some siblings stay hypervigilant the day after a fight — yellow inside, blue outside.' }
+      ],
+      whatTheyMightNeed: 'Quiet, predictable activities. A trusted non-family adult to talk to if home is unsafe.',
+      empathyHint: 'A simple "last night sucked. I love you. Want to watch something?" honors the moment.',
+      whatNotToDo: 'Do not relitigate the fight. Do not pick sides. Do not pretend nothing happened.',
+      pairsWithStrategies: ['quiet_routine', 'loop_in_trusted_adult', 'consistent_presence'],
+      research: 'Inter-parental conflict is a documented child stressor (Cummings & Davies); naming without piling on supports regulation (Siegel, parenting research).'
+    },
+    {
+      id: 'blue_best_friend_moved',
+      scenario: 'Friend whose best friend moved away',
+      forBand: 'all',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend\'s best friend moved to another state last month. She has been very quiet at lunch and recess and looks sad.',
+        middle: 'Your friend\'s best friend moved across the country. She is FaceTiming a lot but at school she is quiet, eats alone, declines invites.',
+        high: 'Your friend\'s best-since-3rd-grade moved this summer. Two months in, she is still in the grief tunnel — quiet, low-energy, not connecting with new friends yet.'
+      },
+      observableCues: [
+        'Recent loss of close peer',
+        'Withdrawal from social settings',
+        'Quiet, low energy',
+        'Possible eat-alone behavior',
+        'Slow to form new connections',
+        'Grief without a funeral'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Losing a best friend who moved is a real loss. Being sad and quiet is the right blue zone response.',
+        middle: 'Friendship loss often goes unrecognized. Blue is appropriate. The work is grieving the move and slowly opening to new connections.',
+        high: 'Geographic loss of a close friend is a stealth grief that adults often miss because no one died. Blue zone is right; long blue without connection rebuilding is a flag.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Some kids respond to friend-loss with social anxiety about making new friends — yellow inside, blue outside.' },
+        { zone: 'red', why: 'If the loss compounds other losses (a death, a move, a divorce) it can spike into red overwhelm.' }
+      ],
+      whatTheyMightNeed: 'An invitation in. A friend who notices and sits with her without trying to replace the friend who left.',
+      empathyHint: 'Try "I know I am not Maya, but I would like to sit with you at lunch if you want." Honest, not pushy.',
+      whatNotToDo: 'Do not say "you can make new friends." Do not be jealous of the friend who moved. Do not pressure her to "get over it."',
+      pairsWithStrategies: ['honest_invite', 'name_the_loss', 'consistent_presence'],
+      research: 'Friendship loss is significant adolescent grief (Hartup, friendship research); peer reinclusion buffers depression (Twenge, social belonging).'
+    },
+    {
+      id: 'blue_new_student_no_friends',
+      scenario: 'New student who has not made friends in 6 weeks',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'A new kid joined your class six weeks ago. He sits alone at lunch every day and does not talk much.',
+        middle: 'The new kid has been at school six weeks and is still solo at lunch. He brings a book or stares at his phone. Quiet in class.',
+        high: 'The new transfer student has not connected with anyone six weeks in. Solo lunch, no club involvement, head down between classes.'
+      },
+      observableCues: [
+        'Recent transfer/move',
+        'No visible friend group after several weeks',
+        'Solo lunch and transitions',
+        'Quiet, withdrawn affect',
+        'May avoid eye contact',
+        'Loneliness compounding'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Being new is hard. When you do not have friends yet you can feel really sad and small — that is blue zone.',
+        middle: 'Sustained loneliness produces a blue-zone state. Six weeks alone in a new environment is enough to start a downward mood spiral.',
+        high: 'Loneliness has measurable mood effects (Cacioppo). Six weeks of unsupported new-kid status is a real blue-zone trajectory that warrants peer or adult intervention.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Some new students are deliberately taking time to observe before connecting — their internal state may be more green than blue.' },
+        { zone: 'yellow', why: 'Some are socially anxious and hide it with stoicism — yellow inside, blue outside.' }
+      ],
+      whatTheyMightNeed: 'An invitation in from someone who is willing to be the bridge.',
+      empathyHint: 'Sit next to him. "Hey, mind if I sit here? I am [name]." That is the whole move.',
+      whatNotToDo: 'Do not pity-invite in a way that humiliates. Do not introduce him as "the new kid" to the whole group. Do not ghost after one lunch.',
+      pairsWithStrategies: ['honest_invite', 'consistent_presence', 'peer_buddy_system'],
+      research: 'Loneliness has measurable health and mood effects (Cacioppo, loneliness research); peer buddy programs improve transfer student outcomes (Schwartz, mentorship research).'
+    },
+    {
+      id: 'blue_stopped_trying_reading',
+      scenario: 'Kid struggling with reading who has stopped trying',
+      forBand: 'elementary',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend used to try really hard with reading but now he just puts his head down when it is reading time. He says he is bad at it.',
+        middle: 'Your classmate has reading struggles (likely dyslexia). After years of trying, he has shifted to "I do not care" mode — head down, quiet, no effort.',
+        high: 'Your classmate has documented dyslexia. After elementary years of trying and falling behind, he has gone into learned-helplessness mode in any reading-heavy class.'
+      },
+      observableCues: [
+        'History of reading difficulty',
+        'Head down or disengagement during reading tasks',
+        'Self-deprecating language',
+        '"I do not care" as protection',
+        'Sometimes paired with diagnosed LD',
+        'Blue zone over time'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When something keeps being hard no matter how hard you try, it makes you feel sad and want to stop. That is the blue zone.',
+        middle: 'Learned helplessness after years of struggle is a blue-zone state, often masked as "not caring." It is protective armor on top of real sadness.',
+        high: 'Chronic academic struggle, especially with undiagnosed or under-supported LD, produces a real blue-zone undertow. The "I do not care" is grief in disguise.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Some students respond to reading struggle with disruption and acting-out — yellow expression of the same hurt.' },
+        { zone: 'red', why: 'If the academic frustration is paired with shame, bullying, or hopelessness, it can edge into red.' }
+      ],
+      whatTheyMightNeed: 'Proper LD assessment if not done. Accommodations. A teacher who separates effort from outcome.',
+      empathyHint: 'Tell him you see him trying. "Reading is hard for you, and you still show up. That counts." Mean it.',
+      whatNotToDo: 'Do not say "just try harder." Do not read aloud what he cannot. Do not let the class hear his struggles.',
+      pairsWithStrategies: ['ld_assessment_referral', 'effort_recognition', 'accommodation_advocacy'],
+      research: 'Learned helplessness develops after repeated uncontrollable failure (Seligman); appropriate LD identification dramatically improves outcomes (IDA, dyslexia research).'
+    },
+    {
+      id: 'blue_grieving_grandparent',
+      scenario: 'Friend who is grieving a grandparent',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your friend\'s grandma died last week. He has been quiet at school and his eyes are red sometimes.',
+        middle: 'Your friend\'s grandfather, who was a huge part of his life, died last week. He is at school but slow, sad, eats alone some days.',
+        high: 'Your friend\'s grandmother, who raised him for several years, died ten days ago. He is functioning but flat, occasional tears, withdrawn from his group.'
+      },
+      observableCues: [
+        'Recent death of close family member',
+        'Tearful at times',
+        'Low energy',
+        'Withdrawal from usual social patterns',
+        'Sometimes wants to talk, sometimes not',
+        'Grief waves'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When someone you love dies, sadness is the right feeling. Blue zone is where grief lives.',
+        middle: 'Grief is a normal, healthy blue-zone state. It is supposed to be uncomfortable. The work is being with it, not fixing it.',
+        high: 'Bereavement is blue. Acute grief lasts weeks; integrated grief lasts a lifetime. The first weeks are when peer presence matters most.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If grief is paired with prior trauma, suicidal language, or complete inability to function, it can intensify toward red.' },
+        { zone: 'yellow', why: 'Some grievers feel rage at the universe, the doctors, the deceased — yellow inside, blue outside.' }
+      ],
+      whatTheyMightNeed: 'Patience, presence, naming the person who died.',
+      empathyHint: 'Say the grandparent\'s name. "I am so sorry about your grandma. I remember when you told me about her cookies." That is huge.',
+      whatNotToDo: 'Do not say "they are in a better place" (unless you know the family\'s beliefs). Do not avoid the topic. Do not compare to your own losses.',
+      pairsWithStrategies: ['name_the_loss', 'gentle_company', 'patience_practice'],
+      research: 'Naming the deceased aids grief processing (Worden, tasks of mourning); peer presence reduces complicated grief (Stroebe, dual process model).'
+    },
+    {
+      id: 'blue_depressive_shutdown',
+      scenario: 'Student during a depressive shutdown',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend has been very sad and very still for a long time. She does not talk much, does not eat much, and sleeps a lot. A grown-up should know.',
+        middle: 'Your friend has been in a deep shutdown for weeks — barely talking, barely eating, sleeping 14 hours, school attendance dropping. She needs more help than friends can give.',
+        high: 'Your friend is in a severe depressive shutdown. Minimal speech, minimal food, hypersomnia, school avoidance, no pleasure in anything. This is medical territory.'
+      },
+      observableCues: [
+        'Severe withdrawal across days/weeks',
+        'Reduced eating',
+        'Hypersomnia or insomnia',
+        'School avoidance',
+        'Loss of all pleasure',
+        'May include passive death wishes'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'When sadness gets this big and lasts this long, a kid needs more than friends can give. Time to tell a grown-up.',
+        middle: 'A deep depressive shutdown is still blue — the deepest end of blue. It needs clinical care, not pep talks.',
+        high: 'A severe depressive episode lives at the bottom of the blue spectrum. Treatment is essential. Friends matter, but cannot substitute for care.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she is talking about suicide, self-harm, or has stopped eating completely, this is red-zone urgent. 988 (call/text) or 911 for immediate safety.' },
+        { zone: 'yellow', why: 'Agitated depression (depression with anxiety/restlessness) can include yellow features alongside the blue.' }
+      ],
+      whatTheyMightNeed: 'Professional care immediately. A trusted adult who can act. 988 if any safety concern (call or text). Crisis Text Line: HOME to 741741.',
+      empathyHint: 'Tell her you care, tell her you are getting help, tell her you are not going anywhere. Then tell an adult.',
+      whatNotToDo: 'Do not keep it a secret because she asked. Do not try to be her only support. Do not minimize ("everyone feels this way sometimes").',
+      pairsWithStrategies: ['call_988_if_unsafe', 'tell_trusted_adult', 'do_not_keep_safety_secret'],
+      research: 'Severe MDE requires clinical intervention (NIMH); peer-disclosed safety concerns must be escalated (NASP suicide prevention guidelines); 988 launched 2022 as 24/7 lifeline.'
+    },
+    {
+      id: 'green_class_discussion',
+      scenario: 'Student engaged in a class discussion',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Maria is sitting up, hand in the air, eyes on the teacher. She just asked a great question about the book and is listening to the answer.',
+        middle: 'Maria is leaning forward in the discussion, building on a peer\'s comment, taking notes, eyes bright. She is in it.',
+        high: 'Maria is fully engaged in the Socratic seminar. Listening, then contributing thoughtfully, building on classmates, eye contact warm, body forward.'
+      },
+      observableCues: [
+        'Upright, forward posture',
+        'Eye contact with speakers',
+        'Verbal participation appropriate to flow',
+        'Active listening signals',
+        'Calm but energized expression',
+        'On-task body'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Maria is in the green zone — calm, focused, and ready to learn.',
+        middle: 'Engaged participation with calm body and active listening is textbook green: alert, regulated, ready.',
+        high: 'Green is not just "calm" — it is the optimal zone for learning, where arousal is high enough to engage and low enough to think clearly.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'For students with anxious overachievement, what looks like engagement may be anxiety-driven performance — yellow inside, green outside.' },
+        { zone: 'blue', why: 'Some students appear engaged out of compliance while internally checked-out — blue inside, green-looking outside.' }
+      ],
+      whatTheyMightNeed: 'Nothing acute. This is the zone we are aiming for.',
+      empathyHint: 'Notice it without making a big deal. "Great discussion today" lands.',
+      whatNotToDo: 'Do not single her out as the "good example" in front of peers — it can backfire socially.',
+      pairsWithStrategies: ['name_the_state_briefly', 'preserve_conditions_that_made_it'],
+      research: 'Optimal learning happens in the green-zone arousal window (Yerkes-Dodson, inverted U); active participation predicts learning (Hattie, visible learning).'
+    },
+    {
+      id: 'green_lunch_laughing',
+      scenario: 'Friend laughing with a group at lunch',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Liam is at lunch with three friends, laughing about something funny that happened in PE. He is eating and talking and having fun.',
+        middle: 'Liam is at lunch with his group, in the middle of a story, everyone laughing including him. Eating between sentences, easy body language.',
+        high: 'Liam is mid-lunch, telling a story to his table. Laughter, easy energy, eating in between. Group is locked in but not chaotic.'
+      },
+      observableCues: [
+        'Easy laughter (not anxious-pitched)',
+        'Mutual engagement with peers',
+        'Eating normally',
+        'Open body posture',
+        'Energy is warm, not frantic',
+        'Conversation flows'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Laughing and eating and being with friends is one of the most green zone things in the world.',
+        middle: 'Social connection with mutual energy is a signature green state. The body is calm enough to enjoy and alert enough to engage.',
+        high: 'Green can be quietly content or warmly active. Group laughter with easy body language is green at its most social.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the laughter is too loud or frantic and the body is tight, it may be yellow-edged anxious performance instead.' },
+        { zone: 'red', why: 'Manic-edge disinhibition can also look like loud lunch laughter, especially in someone with bipolar features.' }
+      ],
+      whatTheyMightNeed: 'Nothing. Let them have it.',
+      empathyHint: 'Join if invited. Do not be the one who breaks the energy.',
+      whatNotToDo: 'Do not interrupt to make it about you. Do not assume he is being too loud and shush him.',
+      pairsWithStrategies: ['let_it_be', 'join_if_invited'],
+      research: 'Group laughter has documented co-regulation effects (Provine, laughter research); social connection is a primary well-being driver (Harvard Study of Adult Development).'
+    },
+    {
+      id: 'green_helping_homework',
+      scenario: 'Sibling helping a younger one with homework',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your big brother is helping you with your math. He is calm, he is showing you with the blocks, he is not getting frustrated.',
+        middle: 'Your older sibling is at the table walking your younger sibling through pre-algebra, patient, breaking it down, smiling at the wins.',
+        high: 'Your older sibling is tutoring your youngest through algebra. Calm voice, real patience, celebrating small wins, not rushing.'
+      },
+      observableCues: [
+        'Calm voice and pace',
+        'Patient with mistakes',
+        'Eye contact with the learner',
+        'Adjusts explanation to the kid',
+        'No frustration leak',
+        'Mutual engagement'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'When you are calm enough to help someone else, that is a green zone superpower.',
+        middle: 'Sustained patience requires green-zone regulation. Helping is hard to do well from any other zone.',
+        high: 'Green is the only zone from which you can really teach. Patience, attunement, and pacing all require regulated arousal.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the tutor is masking irritation, the underlying state may be yellow even if the surface is green.' }
+      ],
+      whatTheyMightNeed: 'Nothing acute. Maybe acknowledgment from a parent.',
+      empathyHint: 'A parent saying "thanks for helping your brother" goes a long way.',
+      whatNotToDo: 'Do not interrupt the moment with chores or new demands.',
+      pairsWithStrategies: ['acknowledge_helping', 'preserve_calm_conditions'],
+      research: 'Sibling tutoring has well-documented learning and bonding effects (Cicirelli, sibling research); helper benefits (the "helper-therapy principle") apply (Riessman).'
+    },
+    {
+      id: 'green_flow_state_project',
+      scenario: 'Kid in flow state with a project',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is building a LEGO castle and has not looked up for an hour. He is focused, calm, and humming.',
+        middle: 'Your friend has been working on his coding project for two hours, headphones on, deeply absorbed, occasionally muttering "yes!" when something works.',
+        high: 'Your friend has been in his sketchbook for three hours, fully absorbed, lost track of time, calm focused energy.'
+      },
+      observableCues: [
+        'Deep focus for extended period',
+        'Lost track of time',
+        'Calm body, engaged hands',
+        'Quiet or soft sounds of satisfaction',
+        'Minimal external awareness',
+        'Effortless concentration'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'When you are so into something you forget about everything else and your body feels calm — that is flow, and flow lives in the green zone.',
+        middle: 'Flow state is the gold-standard green: focused, calm, intrinsically motivated, hours-can-feel-like-minutes.',
+        high: 'Csikszentmihalyi\'s flow is a quintessential green-zone state — challenge matched to skill, full engagement, deep satisfaction.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Hyperfocus driven by anxiety (procrastinated work, panic-coding) can look like flow but feels different inside.' }
+      ],
+      whatTheyMightNeed: 'Protected time. Do not interrupt.',
+      empathyHint: 'Walk past, do not break the spell. Bring snacks to the table quietly.',
+      whatNotToDo: 'Do not interrupt to ask "are you almost done?" Do not assign chores in the middle.',
+      pairsWithStrategies: ['protect_flow_time', 'silent_snack_drop'],
+      research: 'Flow state research (Csikszentmihalyi) defines optimal experience; interruption costs are documented (Mark, attention research).'
+    },
+    {
+      id: 'green_listening_attentively',
+      scenario: 'Student listening attentively in class',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate is sitting still, eyes on the teacher, nodding along during the lesson. She is taking it in.',
+        middle: 'Your classmate is locked in on the lecture, taking quiet notes, eyes tracking the teacher, body relaxed and forward.',
+        high: 'Your classmate is in deep listening mode, eye contact steady, notes flowing, occasional small nods.'
+      },
+      observableCues: [
+        'Eyes tracking the speaker',
+        'Open, forward body posture',
+        'Occasional notes or nods',
+        'Not fidgeting anxiously',
+        'Calm-alert energy',
+        'Present but not performative'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Quiet, calm, paying attention — that is green zone learning.',
+        middle: 'Attentive listening is a green zone marker. The body is calm enough to receive and alert enough to process.',
+        high: 'Receptive learning lives in green. Note that this is different from anxious over-attention or compliant zoning-out, which look similar but are not.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Hyper-attentive freeze from social anxiety can look like attentive listening from the outside.' },
+        { zone: 'blue', why: 'Compliant zoning-out can also look like calm attention while nothing is going in.' }
+      ],
+      whatTheyMightNeed: 'Nothing acute. Maybe a quiet "thanks for your focus today" later.',
+      empathyHint: 'Notice it. Do not publicly perform-thank her in a way that backfires.',
+      whatNotToDo: 'Do not call her out as "the example." Do not assume quiet equals comprehension — ask later.',
+      pairsWithStrategies: ['quiet_acknowledgment', 'check_comprehension_privately'],
+      research: 'Active listening behaviors predict engagement and retention (Hattie, visible learning).'
+    },
+    {
+      id: 'green_solved_tough_problem',
+      scenario: 'Friend who solved a tough problem and is happy',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend just figured out a hard math problem and is smiling. She is calm and proud.',
+        middle: 'Your friend just cracked the proof that has been stumping her for two days. Quiet "yes" under her breath, calm but lit up.',
+        high: 'Your friend solved the calc problem that has been haunting her. Calm pride, quiet smile, leaning back in her chair satisfied.'
+      },
+      observableCues: [
+        'Just completed something challenging',
+        'Calm satisfaction',
+        'Mild verbal celebration',
+        'Body relaxes',
+        'Sustained accomplishment energy',
+        'Not over-the-top'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Calm pride after working hard is a green zone happy feeling.',
+        middle: 'Mastery satisfaction is green-zone reward. Regulated, sustainable, not the dopamine spike of yellow excitement.',
+        high: 'Intrinsic accomplishment lives in green. It is the "satisfied" of competence, different from the "thrilled" of external reward.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the celebration is loud and frantic, it may be yellow-edged excitement layered on top of relief.' }
+      ],
+      whatTheyMightNeed: 'A small acknowledgment. "That is awesome" lands.',
+      empathyHint: 'A genuine "you crushed it" from a peer matters.',
+      whatNotToDo: 'Do not minimize ("it was not that hard"). Do not compare to your own work.',
+      pairsWithStrategies: ['celebrate_briefly', 'mastery_recognition'],
+      research: 'Intrinsic motivation produces sustainable engagement (Deci & Ryan, SDT); mastery experiences build self-efficacy (Bandura).'
+    },
+    {
+      id: 'green_teacher_great_lesson',
+      scenario: 'Teacher who just delivered a great lesson',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your teacher just finished a really fun science lesson and she looks happy and energized.',
+        middle: 'Your teacher just nailed the lesson on Romeo and Juliet — students were locked in, she was alive in front of the class, and now she is smiling and chatting with stragglers.',
+        high: 'Your teacher just delivered a lesson that landed. The classroom hum was on, students were tracking, she is now warmly answering questions, energy buoyant.'
+      },
+      observableCues: [
+        'Energized but calm',
+        'Warm engagement with students',
+        'Genuine smile',
+        'Open body language',
+        'Not frantic',
+        'Post-flow afterglow'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Even teachers feel green zone good when class goes well.',
+        middle: 'Mastery + connection = green. A lesson that lands gives the teacher the same flow afterglow her students get.',
+        high: 'Teaching from flow is a regulated, alert, engaged state. Green for the teacher cascades into a green classroom.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the high energy is amped-up adrenaline, it may be yellow-edged. Watch for the come-down.' }
+      ],
+      whatTheyMightNeed: 'A "that was a great class" comment from a student is a perfect close.',
+      empathyHint: 'Tell her. "That lesson was awesome" is one of the rarest and most welcome things a teacher hears.',
+      whatNotToDo: 'Do not be the one who immediately asks a needling question that pops the moment.',
+      pairsWithStrategies: ['name_what_worked', 'small_kindness'],
+      research: 'Teacher self-efficacy is built from successful lesson experiences (Bandura); student feedback reinforces engagement (Pianta).'
+    },
+    {
+      id: 'green_kid_playing_creatively',
+      scenario: 'Kid playing creatively',
+      forBand: 'elementary',
+      setting: 'home',
+      story: {
+        elementary: 'Your little cousin is making up a story with her stuffed animals, talking to herself, totally happy and calm.',
+        middle: 'Your little cousin is in her room with a big imaginary world going on — voices, costumes, calm absorbed focus.',
+        high: 'Your little sister is building an elaborate Sims story or playing pretend with dolls, totally absorbed, calm and content.'
+      },
+      observableCues: [
+        'Imaginative absorption',
+        'Self-directed play',
+        'Calm body',
+        'Soft narration or sound effects',
+        'Time disappears',
+        'Joy without overexcitement'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Pretend play that is calm and happy is some of the best green zone time.',
+        middle: 'Imaginative play is green-zone gold: regulated arousal, intrinsic motivation, creativity flowing.',
+        high: 'Creative absorption is a flow state for kids. Green at its most generative.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the play is frantic or driven by anxiety (re-enacting a scary event), the surface play may be processing something yellow.' }
+      ],
+      whatTheyMightNeed: 'Protected time. Do not interrupt.',
+      empathyHint: 'Watch from a distance and smile. Do not narrate her play back to her.',
+      whatNotToDo: 'Do not interrupt to film it. Do not say "what are you doing?" if she has not invited you in.',
+      pairsWithStrategies: ['protect_play_time', 'quiet_observation'],
+      research: 'Pretend play supports executive function and emotional regulation (Singer, pretend play research; Vygotsky, ZPD).'
+    },
+    {
+      id: 'green_completed_hard_task',
+      scenario: 'Student who completed a hard task on time',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend finished her big project and turned it in on time. She is calm and feels good about it.',
+        middle: 'Your friend finished her research paper, edited it, turned it in. She is at lunch with her usual group, relaxed and content.',
+        high: 'Your friend submitted her college app essay after weeks of work. Visible relief and calm satisfaction. Out for coffee with friends, fully present.'
+      },
+      observableCues: [
+        'Just completed challenging multi-step task',
+        'Visible relief',
+        'Calm satisfaction',
+        'Re-engaged with social and recreational life',
+        'Not crashed-flat (which would be blue)',
+        'Sustained, settled feeling'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Finishing something hard feels really good in a calm way. That is green zone.',
+        middle: 'Completion + relief + integration = green. The task is done, the body has settled, life resumes.',
+        high: 'Post-completion green is one of life\'s underrated states. Not the high of celebration, but the deep settled-ness of done.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'A post-deadline crash can present as fatigue/flatness that looks blue, especially after weeks of overdrive.' }
+      ],
+      whatTheyMightNeed: 'Rest, a small celebration, no immediate new big demand.',
+      empathyHint: 'A quiet "you did the thing" is enough. Let her rest.',
+      whatNotToDo: 'Do not immediately pile on the next big project. Do not ask "did you do well?" before grades come back.',
+      pairsWithStrategies: ['protect_rest_window', 'small_celebration'],
+      research: 'Completion produces measurable relief response (Baumeister, Zeigarnik effect); rest after sustained effort is critical (Walker, sleep research).'
+    },
+    {
+      id: 'green_great_conversation',
+      scenario: 'Friend who just had a great conversation',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend just had a long talk with her grandma on the phone and she is smiling and calm.',
+        middle: 'Your friend just had one of those long, real conversations with her cousin and she is sitting there glowing a little.',
+        high: 'Your friend just had a two-hour deep conversation with her best friend about real stuff. She is sitting on the couch, calm, alive, integrated.'
+      },
+      observableCues: [
+        'Post-connection glow',
+        'Calm and warm energy',
+        'Reflective posture',
+        'Soft smile',
+        'Open body',
+        'Conversational satisfaction lingering'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'A really good talk with someone you love leaves you feeling green — warm and calm.',
+        middle: 'Deep connection produces a regulated, warm green-zone afterglow. It is one of the most regulated states humans have.',
+        high: 'Co-regulation through meaningful conversation produces a sustained green state via vagal/oxytocin pathways. Why we crave good talks.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the conversation was about scary stuff, the surface can be green-glow while the underneath is still processing.' }
+      ],
+      whatTheyMightNeed: 'Space to sit with it. Not immediate distraction.',
+      empathyHint: 'Notice the glow. "You look good" is fine.',
+      whatNotToDo: 'Do not interrogate "what did you talk about?" if she has not offered.',
+      pairsWithStrategies: ['protect_afterglow', 'quiet_acknowledgment'],
+      research: 'Deep conversation has measurable wellbeing effects (Mehl, "eavesdropping on happiness" research); co-regulation activates social engagement (Porges).'
+    },
+    {
+      id: 'green_athlete_in_zone',
+      scenario: 'Athlete in the zone during practice',
+      forBand: 'all',
+      setting: 'sports',
+      story: {
+        elementary: 'Your teammate is making every shot in practice today, calm and smooth.',
+        middle: 'Your teammate is in the zone at practice — every pass on target, every read clean, calm body, present mind.',
+        high: 'Your teammate is locked in at practice. Movement is fluid, reads are correct, no overthinking, full presence. Athletic flow.'
+      },
+      observableCues: [
+        'Fluid technical execution',
+        'Calm focus',
+        'Confident body language',
+        'Present-moment awareness',
+        'Not over-arousal jitter',
+        'Effortless effort'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'When an athlete is "in the zone" — calm and focused and just doing it — that is athletic green.',
+        middle: '"The zone" in sports is green: optimal arousal where the body knows what to do and the mind gets out of the way.',
+        high: 'The athletic flow state lives in green. High activation, low anxiety, full presence. Yerkes-Dodson optimal in motion.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the great practice is pre-competition adrenaline, it may be yellow-edged — watch for the crash.' }
+      ],
+      whatTheyMightNeed: 'Coach to not over-coach. Let it happen.',
+      empathyHint: 'Be a good teammate, do not interrupt the rhythm.',
+      whatNotToDo: 'Do not start technical critique mid-flow. Do not announce it in a way that breaks it.',
+      pairsWithStrategies: ['preserve_flow', 'minimal_coaching_during_flow'],
+      research: 'Athletic flow state research (Jackson & Csikszentmihalyi); over-coaching disrupts skilled performance (Wulf, attentional focus).'
+    },
+    {
+      id: 'green_art_focused',
+      scenario: 'Kid making art with focus',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your friend has been drawing for an hour, calm and focused, humming a little.',
+        middle: 'Your friend has been painting for two hours, AirPods in, totally absorbed and calm.',
+        high: 'Your friend is in the middle of a multi-day art piece, calm focused energy, lost in it but not stressed.'
+      },
+      observableCues: [
+        'Sustained creative absorption',
+        'Calm body and breath',
+        'Quiet satisfaction',
+        'Time disappears',
+        'Materials handled with care',
+        'Not anxious-driven'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Drawing or making things calmly is a perfect green zone activity.',
+        middle: 'Creative absorption is green flow. Body calm, mind engaged, intrinsic motivation steady.',
+        high: 'Sustained creative work is green-zone gold. It builds and reinforces regulation as it happens.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the art is being made under deadline pressure or as anxiety management, the surface flow may have yellow underneath.' }
+      ],
+      whatTheyMightNeed: 'Time, materials, no interruptions.',
+      empathyHint: 'Walk past, smile, do not narrate.',
+      whatNotToDo: 'Do not photograph in-progress without asking. Do not critique unsolicited.',
+      pairsWithStrategies: ['protect_creative_time', 'silent_appreciation'],
+      research: 'Art-making has documented regulation effects (Kaimal, art therapy research); flow in creative work is regulating (Csikszentmihalyi).'
+    },
+    {
+      id: 'green_curious_new_topic',
+      scenario: 'Student curious about a new topic',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is asking the teacher lots of questions about volcanoes today. He is interested and excited and calm.',
+        middle: 'Your friend is leaning into the new unit on World War 2, asking thoughtful questions, taking notes, eyes lit up.',
+        high: 'Your friend just discovered something in the new unit that lit him up. Asking questions, taking notes, looking up extra reading.'
+      },
+      observableCues: [
+        'Genuine interest in a topic',
+        'Asks questions',
+        'Sustained focus',
+        'Energy is curious, not frantic',
+        'Body forward, present',
+        'Wants more, not less'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'When you are curious and excited but calm, that is green zone learning at its best.',
+        middle: 'Curiosity is a green-zone signature. Energized but regulated, seeking more, taking it in.',
+        high: 'Intrinsic curiosity is a hallmark of green-zone learning. It is what we are trying to cultivate in school.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Hyperfixation driven by anxiety (ADHD spike, hyperfocus) can look similar but feels different inside.' }
+      ],
+      whatTheyMightNeed: 'A teacher who feeds the curiosity with extra resources.',
+      empathyHint: 'Match the energy. "I love that you are into this. Here is another article."',
+      whatNotToDo: 'Do not shut down the questions for being "off-topic." Do not over-credit it as "good student behavior" in front of peers.',
+      pairsWithStrategies: ['feed_curiosity', 'extension_resources'],
+      research: 'Curiosity predicts learning and retention (Gruber, curiosity research); intrinsic motivation is most durable (Deci & Ryan).'
+    },
+    {
+      id: 'green_thoughtful_answer',
+      scenario: 'Friend giving a thoughtful answer',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend just answered the teacher\'s question with a really thoughtful answer. He took a second to think first.',
+        middle: 'Your friend just gave a thoughtful answer in discussion, building on what others said, calm and considered.',
+        high: 'Your friend just contributed a nuanced take in seminar — paused, considered, spoke with weight.'
+      },
+      observableCues: [
+        'Pauses before answering',
+        'Builds on others\' ideas',
+        'Calm verbal pace',
+        'Considered tone',
+        'Eye contact warm',
+        'Confident not performative'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Thinking before answering is a green zone skill.',
+        middle: 'Considered speech requires regulated arousal. Green is where reflection lives.',
+        high: 'Slow thinking (Kahneman System 2) requires green-zone regulation. Quick reactivity lives in yellow or red.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'For anxious students, taking time can be freeze-paralysis rather than considered thought — yellow inside, green outside.' }
+      ],
+      whatTheyMightNeed: 'Wait time. Teachers who do not call only on the first hand up.',
+      empathyHint: 'Notice the quality, not just the quantity, of his contributions.',
+      whatNotToDo: 'Do not interrupt his thinking with "well?" Do not over-praise in a way that becomes pressure.',
+      pairsWithStrategies: ['protect_wait_time', 'value_quality_over_quantity'],
+      research: 'Wait time improves response quality (Rowe, wait time research); System 2 thinking requires regulation (Kahneman).'
+    },
+    {
+      id: 'green_sibling_chores',
+      scenario: 'Sibling helping with chores willingly',
+      forBand: 'middle',
+      setting: 'home',
+      story: {
+        elementary: 'Your big sister is doing the dishes without being asked and she is humming a song.',
+        middle: 'Your sister is putting away the dishes without being asked, calm and chatting about her day.',
+        high: 'Your sister jumped in to clean up after dinner without being prompted, easy energy, friendly chat while she works.'
+      },
+      observableCues: [
+        'Voluntary helping behavior',
+        'Calm or upbeat',
+        'No resentment leak',
+        'Maintains friendly contact',
+        'Steady pace',
+        'Not performative or transactional'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Helping out without being asked, with a happy calm feeling, is green zone.',
+        middle: 'Prosocial behavior + calm = green. It is one of the most reliable markers of regulated state.',
+        high: 'Voluntary helping requires sufficient regulation to look beyond your own needs. Green-zone signature.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If she is over-helping out of anxiety (parentified child, conflict-avoidant), it can be yellow-driven prosocial behavior.' }
+      ],
+      whatTheyMightNeed: 'Acknowledgment. Not a big deal, just a thanks.',
+      empathyHint: '"Thanks, sis" goes a long way.',
+      whatNotToDo: 'Do not make a big production. Do not assume it is now her job forever.',
+      pairsWithStrategies: ['simple_thanks', 'do_not_exploit_helpfulness'],
+      research: 'Prosocial behavior is correlated with emotion regulation (Eisenberg, prosocial development); acknowledgment without overpraise sustains it.'
+    },
+    {
+      id: 'green_recess_fun',
+      scenario: 'Kid having fun at recess',
+      forBand: 'elementary',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is playing tag at recess, laughing, running, having a great time.',
+        middle: 'Your friend is shooting hoops at lunch recess, easy fun, laughing with the group.',
+        high: 'Your friend is mid-pickup-game at lunch, laughing and running, present and easy.'
+      },
+      observableCues: [
+        'Easy laughter',
+        'Engaged body movement',
+        'Reciprocal play',
+        'Calm-active arousal',
+        'Joy in the moment',
+        'Not over-the-top'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Active fun play that feels good is right in the green zone.',
+        middle: 'Embodied play is green-zone fuel. Calm-active arousal with joy and connection.',
+        high: 'Recreational movement with peers is one of the most consistent green-zone producers across the lifespan.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the play is escalating toward over-arousal (too fast, too loud, conflict edge), it may be sliding into yellow.' }
+      ],
+      whatTheyMightNeed: 'More of this. Protected recess time.',
+      empathyHint: 'Be a good play partner.',
+      whatNotToDo: 'Do not interrupt with rules or shutdowns unless safety is at stake.',
+      pairsWithStrategies: ['protect_recess_time', 'be_a_play_partner'],
+      research: 'Recess supports cognitive and emotional regulation (American Academy of Pediatrics recess statement); play is regulating (Panksepp, affective neuroscience).'
+    },
+    {
+      id: 'green_thoughtful_question',
+      scenario: 'Student asking a thoughtful question',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate just asked a really good question about the book that made everyone think.',
+        middle: 'Your classmate just asked the teacher a question that pulled the whole discussion deeper, calm and curious.',
+        high: 'Your classmate just asked a question in seminar that reframed the entire conversation, calm energy, intellectually present.'
+      },
+      observableCues: [
+        'Considered question',
+        'Calm presentation',
+        'Genuine curiosity',
+        'Listens to the answer',
+        'Open body',
+        'Not showing off'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Asking a good question calmly is a green zone learning move.',
+        middle: 'Genuine question-asking from a place of curiosity is green-zone learning at its sharpest.',
+        high: 'High-quality questions emerge from regulated curiosity. Green is the only zone they reliably come from.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'For some students, questions are anxiety-management (need to clarify, control). Surface looks green, underneath is yellow.' }
+      ],
+      whatTheyMightNeed: 'A teacher who actually engages the question.',
+      empathyHint: 'A genuine "great question" beats a performative one.',
+      whatNotToDo: 'Do not say "we will come back to that" and never come back. Do not weaponize the question against another student.',
+      pairsWithStrategies: ['engage_the_question', 'honor_curiosity'],
+      research: 'Question-asking predicts deep learning (Graesser, question generation research); teacher response shapes future question behavior (Hattie).'
+    },
+    {
+      id: 'green_showing_up_for_someone',
+      scenario: 'Friend showing up for someone in need',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend noticed Maria was sad at lunch and sat with her quietly. Maria felt better.',
+        middle: 'Your friend noticed a peer was crying in the bathroom, sat with her, did not try to fix it, just stayed.',
+        high: 'Your friend noticed a classmate having a hard day, walked over, sat next to him, made small talk, did not perform empathy.'
+      },
+      observableCues: [
+        'Notices someone in distress',
+        'Approaches calmly',
+        'Offers presence not solutions',
+        'Reads the situation',
+        'Stays as long as needed',
+        'Regulated co-presence'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Being there for someone calmly is green zone helping at its best.',
+        middle: 'Co-regulating with a distressed peer requires being in green yourself. You cannot pour from an empty cup.',
+        high: 'Calm presence with a distressed person is co-regulation — one of the most generous green-zone acts. It requires regulation you are giving away.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the helping is driven by anxiety (cannot stand to see others upset, must fix), surface looks green but underneath is yellow.' }
+      ],
+      whatTheyMightNeed: 'Quiet acknowledgment from a trusted adult.',
+      empathyHint: 'Notice and name privately. "I saw how you helped earlier. That was kind." Do not make a public thing.',
+      whatNotToDo: 'Do not call it out in front of the distressed person. Do not turn helping into a brag.',
+      pairsWithStrategies: ['private_acknowledgment', 'co_regulation_modeling'],
+      research: 'Co-regulation requires regulator stability (Siegel, interpersonal neurobiology); helping has well-documented helper benefits (Riessman).'
+    },
+    {
+      id: 'green_after_meditation',
+      scenario: 'Kid present and grounded after meditation',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate just finished a calm breathing exercise and looks peaceful.',
+        middle: 'Your classmate just did a guided meditation in advisory and looks settled, calm-alert, ready for the next class.',
+        high: 'Your classmate just finished a meditation session and is in that grounded-present state — clear eyes, calm body, alert mind.'
+      },
+      observableCues: [
+        'Just completed regulation practice',
+        'Calm body and breath',
+        'Clear eyes',
+        'Present-moment awareness',
+        'Soft alert quality',
+        'Not over-relaxed (which would be blue)'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'After calming our body down, we feel green — calm and ready.',
+        middle: 'Post-meditation green is the classic regulated state — settled but alert, present without effort.',
+        high: 'Post-practice green is what mindfulness training is trying to build the capacity for: calm-alert as a default rather than rare achievement.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'If meditation slid into sleep or dissociation, the result can be blue-flat rather than green-alert.' }
+      ],
+      whatTheyMightNeed: 'A smooth transition to the next activity. Do not jolt.',
+      empathyHint: 'Match the energy. Speak softly into the transition.',
+      whatNotToDo: 'Do not immediately yell "okay take out your books!" — it wastes the regulation.',
+      pairsWithStrategies: ['smooth_transitions', 'protect_post_practice_state'],
+      research: 'Mindfulness training improves emotion regulation (Tang, Kabat-Zinn); transition handling preserves regulated state (Pianta).'
+    },
+    {
+      id: 'green_confident_presentation',
+      scenario: 'Student giving a confident presentation',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate is presenting her project in front of class. She is calm, smiling, and explaining her work clearly.',
+        middle: 'Your classmate is giving her history presentation, calm voice, clear eye contact, slides flowing, in control.',
+        high: 'Your classmate is mid-presentation, calm and articulate, fielding questions easily, in command of the material and the room.'
+      },
+      observableCues: [
+        'Calm voice and pace',
+        'Eye contact with audience',
+        'Steady body language',
+        'Handles questions well',
+        'Not over-amped',
+        'Confidence not arrogance'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Presenting without panic, with calm and clear words, is a great green zone skill.',
+        middle: 'A presentation delivered from green is what every speaker is aiming for — alert enough to engage, calm enough to think.',
+        high: 'Green-zone presenting requires preparation that has displaced anxiety. Mastery + regulation = confidence without arrogance.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Adrenaline-driven performance can look confident but is yellow underneath — watch for the crash after.' }
+      ],
+      whatTheyMightNeed: 'Calm acknowledgment from the teacher.',
+      empathyHint: 'A real "well done" with eye contact lands.',
+      whatNotToDo: 'Do not over-praise in a way that creates next-time pressure.',
+      pairsWithStrategies: ['genuine_acknowledgment', 'preserve_calm_confidence'],
+      research: 'Mastery experiences build self-efficacy (Bandura); calm public speaking is a learnable green-zone skill (Toastmasters research).'
+    },
+    {
+      id: 'green_reading_book_loves',
+      scenario: 'Friend reading a book they love',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your friend is curled up with a book on the couch, calm and absorbed.',
+        middle: 'Your friend is in the middle of a book she loves, on the couch with tea, totally absorbed.',
+        high: 'Your friend is deep in a novel, calm body, occasional smile or eyebrow lift, lost in the story.'
+      },
+      observableCues: [
+        'Sustained reading',
+        'Calm body and breath',
+        'Soft facial responses to content',
+        'Absorbed but not anxious',
+        'Time disappears',
+        'Quiet pleasure'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Reading a book you love is a calm happy green zone activity.',
+        middle: 'Deep reading is a green-zone flow state — sustained attention, intrinsic engagement, calm body.',
+        high: 'Reading deeply is one of the most regulated states the human nervous system reliably produces. Green-zone gold.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Escapist reading after a hard day can be blue-flavored — calming but with an avoidant undertone.' }
+      ],
+      whatTheyMightNeed: 'Protected reading time. Do not interrupt.',
+      empathyHint: 'Read next to her.',
+      whatNotToDo: 'Do not ask "what is it about?" mid-paragraph. Do not snatch the book to look at the cover.',
+      pairsWithStrategies: ['protect_reading_time', 'parallel_play'],
+      research: 'Deep reading produces sustained attention and regulation (Wolf, reading research); leisure reading is consistently linked to wellbeing.'
+    },
+    {
+      id: 'green_kid_helping_classmate',
+      scenario: 'Kid helping a classmate without being asked',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend noticed a classmate dropped her papers and helped pick them up. Calm and kind.',
+        middle: 'Your friend noticed a peer was lost in the hallway and walked them to class without being asked.',
+        high: 'Your friend noticed a new student struggling with the textbook code and walked over to help, easy and calm.'
+      },
+      observableCues: [
+        'Spontaneous prosocial behavior',
+        'Notices without being prompted',
+        'Calm helping energy',
+        'Does not announce it',
+        'Reads the moment',
+        'No expectation of reward'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Helping without being told to is a green zone thing. It means you have enough calm to notice someone else.',
+        middle: 'Spontaneous prosocial behavior signals green-zone capacity — enough regulation to see beyond self.',
+        high: 'Unprompted helping is one of the cleaner markers of green: you are regulated enough to notice and respond to others\' needs.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Anxious-helper patterns (must fix to feel okay) can look identical — yellow inside, green outside.' }
+      ],
+      whatTheyMightNeed: 'Private acknowledgment, not public spectacle.',
+      empathyHint: 'Notice and name privately. "I saw that. Thanks."',
+      whatNotToDo: 'Do not make a public award of it. Do not weaponize the example against other students.',
+      pairsWithStrategies: ['private_acknowledgment', 'model_quietly'],
+      research: 'Prosocial behavior in classrooms predicts community climate (CASEL); private recognition preserves intrinsic motivation.'
+    },
+    {
+      id: 'green_journal_calm',
+      scenario: 'Student writing in journal calmly',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate is writing in her journal during quiet time, calm and focused.',
+        middle: 'Your classmate is journaling during reflection time, calm body, thoughtful pace.',
+        high: 'Your classmate is in her journal, calm and absorbed, processing her week.'
+      },
+      observableCues: [
+        'Sustained writing',
+        'Calm body',
+        'Reflective pace',
+        'No tension',
+        'Inner focus',
+        'Quiet processing'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Writing in a journal calmly is a green zone way to know your own feelings.',
+        middle: 'Journaling is a green-zone regulation practice. Slow processing of thoughts and feelings on the page.',
+        high: 'Expressive writing has well-documented regulatory effects (Pennebaker). A green-zone tool.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Rapid stress-journaling (venting at high speed) can be yellow even when surface looks contemplative.' }
+      ],
+      whatTheyMightNeed: 'Privacy. Do not read over her shoulder.',
+      empathyHint: 'Respect the practice. Do not interrupt.',
+      whatNotToDo: 'Do not ask "what are you writing?" Do not read it without permission.',
+      pairsWithStrategies: ['respect_privacy', 'protect_reflection_time'],
+      research: 'Expressive writing has documented regulation and immune effects (Pennebaker, expressive writing research).'
+    },
+    {
+      id: 'green_calm_game',
+      scenario: 'Friend playing a calm game',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your friend is playing a calm building game on her tablet, focused and content.',
+        middle: 'Your friend is playing Stardew Valley, calm focused energy, no stress, just farming and fishing.',
+        high: 'Your friend is playing a chill game (Animal Crossing, Stardew, Minecraft creative), calm absorbed flow.'
+      },
+      observableCues: [
+        'Calm body posture',
+        'Steady controller/touch movements',
+        'Soft facial expression',
+        'Sustained absorption',
+        'No anger or frustration leak',
+        'Calm-active arousal'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Calm games that you enjoy can be a green zone activity.',
+        middle: 'Low-stress games can be regulating green-zone activities. Not all gaming is yellow.',
+        high: 'Cozy gaming is a documented regulation strategy (Granic, video game research). Green-zone valid.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Escapist gaming after a hard day can be blue-flavored — calming but avoidant.' },
+        { zone: 'yellow', why: 'Competitive or high-stakes gaming can push into yellow even when surface looks calm.' }
+      ],
+      whatTheyMightNeed: 'Recognition that not all gaming is the same.',
+      empathyHint: 'If you want to connect, join the game without taking it over.',
+      whatNotToDo: 'Do not assume all screen time is bad. Do not interrupt without checking save state.',
+      pairsWithStrategies: ['parallel_play', 'check_save_before_interrupt'],
+      research: 'Cozy gaming has documented regulation effects (Granic et al., video game psychology); not all screen time is equal.'
+    },
+    {
+      id: 'green_eye_contact_conversation',
+      scenario: 'Kid making eye contact during conversation',
+      forBand: 'all',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is making eye contact and listening to you tell a story.',
+        middle: 'Your friend is having a real conversation with you, eye contact warm, fully present.',
+        high: 'Your friend is fully present in conversation with you — eye contact warm, body open, listening.'
+      },
+      observableCues: [
+        'Sustained eye contact (where culturally appropriate)',
+        'Open body posture',
+        'Active listening',
+        'Reciprocal exchange',
+        'Calm energy',
+        'Present-moment focus'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Looking at someone calmly when they talk is a green zone friendship skill.',
+        middle: 'Calm conversational presence is a green-zone capacity. Note that for autistic peers, eye contact may be regulated through different markers.',
+        high: 'Sustained social engagement requires green. For neurotypical conversation, eye contact is one marker; for autistic conversation, other markers matter more.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Reminder: autistic peers in green may not make typical eye contact — look for other engagement markers like body orientation, verbal responsiveness, or facial responsiveness.' }
+      ],
+      whatTheyMightNeed: 'Recognition that eye contact looks different across people.',
+      empathyHint: 'For neurotypical conversation, return the eye contact. For an autistic friend, do not force it on them.',
+      whatNotToDo: 'Do not demand eye contact from someone for whom it is overwhelming. Do not assume lack of eye contact means lack of engagement.',
+      pairsWithStrategies: ['respect_communication_styles', 'engagement_markers_beyond_eye_contact'],
+      research: 'Eye contact in autism is often regulating-overwhelming, not avoidant-rude (Hadjikhani; autistic-led research advocates for moving beyond eye contact as engagement proxy).'
+    },
+    {
+      id: 'yellow_bouncing_leg_test',
+      scenario: 'Student bouncing leg, looking at clock during test',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is taking a test. His leg is bouncing fast and he keeps looking at the clock.',
+        middle: 'Your friend is taking the math test. Leg jackhammering under the desk, eyes flicking to the clock every 30 seconds, breath shallow.',
+        high: 'Your friend is in the middle of the AP exam. Leg bouncing nonstop, clock-checking every minute, jaw tight, breathing shallow.'
+      },
+      observableCues: [
+        'Leg bouncing or other repetitive motion',
+        'Clock-checking',
+        'Shallow breathing',
+        'Tight jaw or shoulders',
+        'Restless eyes',
+        'Time-pressure visible'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Worried and wiggly during a test is the yellow zone — too much energy from being nervous.',
+        middle: 'Anticipatory anxiety with restless movement is a classic yellow presentation. Body is mobilized but the task is sit-still.',
+        high: 'Test anxiety with motor restlessness reads yellow — sympathetic nervous system activated, mobilization with no outlet.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the anxiety crosses into panic (hyperventilation, dissociation, cannot continue), it has crossed into red.' },
+        { zone: 'green', why: 'Some students bounce leg as a regulating stim — for them, the bouncing IS the regulation strategy keeping them in green.' }
+      ],
+      whatTheyMightNeed: 'A brief reset — feet on floor, three slow breaths, shoulders down. Sometimes a quiet pass to the bathroom.',
+      empathyHint: 'After the test: "that was rough — you got through it" lands more than "you got this!" before.',
+      whatNotToDo: 'Do not snap "stop bouncing your leg." Do not stare at him from across the room.',
+      pairsWithStrategies: ['breathing_4_4_4_4', 'feet_on_floor_grounding', 'extended_time_request'],
+      research: 'Test anxiety is widespread and impacts performance (Cassady & Johnson); brief regulation interventions during tests improve outcomes (Beilock).'
+    },
+    {
+      id: 'yellow_talking_fast_worry',
+      scenario: 'Friend talking very fast about a worry',
+      forBand: 'all',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is talking really fast about how she is worried about her dog and the words are coming out in a big rush.',
+        middle: 'Your friend is talking a mile a minute about a worry — the words are tumbling, breath catching, eyes wide.',
+        high: 'Your friend is in a verbal spiral about a worry — fast speech, jumping topics, breath shallow, can\'t seem to land.'
+      },
+      observableCues: [
+        'Rapid speech',
+        'Pressured talking',
+        'Topic-jumping',
+        'Shallow breath',
+        'Eyes wide or darting',
+        'Body energy up'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Talking really fast when you are worried is a yellow zone sign.',
+        middle: 'Pressured speech is a classic yellow marker — the nervous system is on, words come fast as a way to discharge the activation.',
+        high: 'Verbal pressure under anxiety reads yellow. The talking itself is regulation attempt; the question is whether it is working or escalating.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the speech tips into incoherence, panic, or hyperventilation, it has crossed into red.' },
+        { zone: 'green', why: 'Some people just talk fast — if this is baseline, not yellow.' }
+      ],
+      whatTheyMightNeed: 'Someone to slow the room down. A breath together. A brief silence.',
+      empathyHint: 'Slow your own voice. Suggest "let us take a breath together" without commanding.',
+      whatNotToDo: 'Do not say "calm down" or "slow down." Do not interrupt to fix the worry.',
+      pairsWithStrategies: ['co_regulation_slow_breath', 'reflective_listening', 'name_the_feeling'],
+      research: 'Pressured speech is a sympathetic nervous system marker (Porges); co-regulation through slow breathing supports return to green.'
+    },
+    {
+      id: 'yellow_interrupting_group_work',
+      scenario: 'Kid who keeps interrupting during group work',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend keeps cutting in when other kids are talking in your group. He is excited but it is making people frustrated.',
+        middle: 'Your friend is interrupting everyone in group work — talking over, jumping in, restless body. The group is getting annoyed.',
+        high: 'Your friend cannot stop interrupting in group work. Cutting people off, restless, energy high, possibly unaware of the impact.'
+      },
+      observableCues: [
+        'Frequent interruption',
+        'Restless body',
+        'High verbal energy',
+        'Difficulty waiting turn',
+        'May be unaware of impact',
+        'Group dynamic tension building'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Hard to wait your turn when you have too much energy is a yellow zone thing.',
+        middle: 'Interruption and motor restlessness together read yellow — over-arousal expressing as social impulsivity.',
+        high: 'Impulse-control breakdown under arousal reads yellow. For students with ADHD, this is a chronic regulation challenge requiring strategy, not just willpower.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'For some students (especially with ADHD), high verbal energy IS their baseline green — the question is whether the group is harmed or just paced differently.' },
+        { zone: 'red', why: 'If the interrupting becomes aggressive or escalates conflict, it has tipped into red.' }
+      ],
+      whatTheyMightNeed: 'A clear turn-taking structure. A physical anchor (token, talking stick). Sometimes a brief movement break.',
+      empathyHint: 'Private: "I noticed it is hard to wait today. Want a strategy?" not in front of the group.',
+      whatNotToDo: 'Do not shame him in front of the group. Do not assume malice. Do not punish without offering structure.',
+      pairsWithStrategies: ['talking_stick_structure', 'movement_break', 'private_strategy_offer'],
+      research: 'ADHD-related interruption is well-documented (Barkley); structured turn-taking reduces interruption without shaming.'
+    },
+    {
+      id: 'yellow_sibling_pacing',
+      scenario: 'Sibling pacing while waiting for news',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your sister is walking back and forth in the living room waiting to hear if she made the team. She cannot sit still.',
+        middle: 'Your sister is pacing the kitchen waiting to hear about the audition results. Can\'t sit, keeps checking her phone, biting her nails.',
+        high: 'Your sister is pacing the apartment waiting for college decisions to come out at 5pm. Phone in hand, restless, hours of this.'
+      },
+      observableCues: [
+        'Sustained pacing',
+        'Phone-checking',
+        'Nail-biting or other self-soothing motor activity',
+        'Cannot settle',
+        'Awaiting specific news',
+        'High arousal without resolution'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Waiting for important news with too much energy is yellow zone.',
+        middle: 'Anticipatory anxiety with motor outlet (pacing) is a classic yellow presentation. Body is mobilized, no place to go.',
+        high: 'Pre-result anxiety is a quintessential yellow state — sympathetic activation in service of an outcome you cannot influence.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the anxiety spikes into panic or dissociation, it has crossed into red.' },
+        { zone: 'green', why: 'Some people pace as their thinking strategy and remain regulated — for them, pacing is green.' }
+      ],
+      whatTheyMightNeed: 'A distracting activity. Movement that has a direction (walk around the block). Co-regulation from a calm person.',
+      empathyHint: 'Offer to walk with her. "Want to take a loop around the block?" Movement helps.',
+      whatNotToDo: 'Do not say "stop pacing." Do not keep refreshing the page out loud. Do not predict the outcome either way.',
+      pairsWithStrategies: ['purposeful_movement', 'co_regulation_walking', 'distraction_with_consent'],
+      research: 'Anticipatory anxiety benefits from purposeful movement (Ratey, exercise + anxiety); co-regulation reduces sympathetic activation (Porges).'
+    },
+    {
+      id: 'yellow_snapped_at_friend',
+      scenario: 'Student who snapped at a friend over small thing',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend just snapped at you for borrowing her pencil. She does not usually do that.',
+        middle: 'Your friend just snapped at you for asking if she finished the homework. Sharp tone, totally out of proportion.',
+        high: 'Your friend just bit your head off for asking a simple question. Way more reaction than the situation warranted.'
+      },
+      observableCues: [
+        'Disproportionate reaction',
+        'Sharp tone',
+        'Possibly immediate regret',
+        'Tight body language',
+        'May be carrying something else',
+        'Out of character for relationship'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Snapping at someone over a small thing usually means there is something bigger making you yellow.',
+        middle: 'Disproportionate irritability is a yellow marker — there is more arousal in the system than the situation calls for.',
+        high: 'Snap reactions over small triggers signal yellow-zone arousal — something else is loading the system. The trigger is not the cause.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the snap escalates into ongoing rage or a physical reaction, it has tipped into red.' },
+        { zone: 'blue', why: 'Sometimes irritability is a sign of depression rather than anxiety — agitated blue can look like yellow.' }
+      ],
+      whatTheyMightNeed: 'Space and a non-defensive re-entry later. "You seemed off — anything going on?" hours later, not seconds.',
+      empathyHint: 'Do not take it personally on the spot. Give space, check in later with curiosity not blame.',
+      whatNotToDo: 'Do not match the snap with anger. Do not demand apology in the moment. Do not announce it to the group.',
+      pairsWithStrategies: ['give_space_first', 'curious_re_entry', 'do_not_take_personally'],
+      research: 'Affect spillover is well-documented (Bolger, daily stress research); curious re-entry preserves relationship better than confrontation.'
+    },
+    {
+      id: 'yellow_cannot_sit_still',
+      scenario: 'Friend who cannot sit still',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is wiggling and squirming in his seat. He keeps standing up and sitting back down.',
+        middle: 'Your friend cannot sit through class today. Squirming, leg bouncing, standing up to "throw something away" three times.',
+        high: 'Your friend cannot stay in his seat. Standing, sitting, walking to sharpen a pencil, drinking water, anything for movement.'
+      },
+      observableCues: [
+        'Constant motor activity',
+        'Difficulty staying seated',
+        'Multiple "excuse" trips',
+        'Restless rather than productive movement',
+        'Energy without direction',
+        'Possibly today only or chronic'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Too much wiggly energy that you cannot use is yellow zone.',
+        middle: 'Motor restlessness without outlet is a yellow presentation. The body wants to move and the chair will not let it.',
+        high: 'Restlessness reads yellow when it is felt as discomfort rather than productive energy. ADHD students may need scheduled movement to stay regulated.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'For some kids, allowed movement (standing desk, fidget) IS their green. The restlessness is the system asking for the regulation it needs.' },
+        { zone: 'red', why: 'If the restlessness escalates into running out of the room or escalating behavior, it has crossed into red.' }
+      ],
+      whatTheyMightNeed: 'A legitimate movement break. Standing desk. Walk to the office. Fidget tool.',
+      empathyHint: 'Offer a job that involves movement. "Can you run this to the office?" is regulation in disguise.',
+      whatNotToDo: 'Do not say "sit still!" Do not take away recess as punishment for restlessness.',
+      pairsWithStrategies: ['movement_break', 'standing_desk', 'fidget_tool'],
+      research: 'Movement supports regulation and learning (Ratey, "Spark"); recess removal worsens behavior (American Academy of Pediatrics).'
+    },
+    {
+      id: 'yellow_refreshing_phone',
+      scenario: 'Kid who keeps refreshing phone for a message',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend keeps checking her phone over and over waiting for a text from her mom.',
+        middle: 'Your friend has refreshed her phone 40 times in the last hour waiting for a reply from her crush.',
+        high: 'Your friend is in a refresh loop on her phone, waiting for the text that has not come. Eyes flicking back every minute.'
+      },
+      observableCues: [
+        'Compulsive phone-checking',
+        'Visible disappointment each check',
+        'Cannot focus on other things',
+        'Anticipation visible in body',
+        'Loop of hope-and-check',
+        'Sustained for an extended period'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Waiting for an important message and checking and checking is yellow zone.',
+        middle: 'Compulsive checking is a yellow marker — the system is mobilized and cannot stop scanning for the resolution.',
+        high: 'Intermittent reinforcement loops (checking for a message that might come any time) produce some of the most reliable yellow-zone activation.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the message is about something life-changing (medical results, safety) and the checking is panic-driven, it can edge into red.' },
+        { zone: 'green', why: 'A few checks throughout the day is normal — the question is whether it is intruding on functioning.' }
+      ],
+      whatTheyMightNeed: 'A grounding activity that does not allow the phone in hand. A friend who can co-distract.',
+      empathyHint: '"Want to go for a walk and leave your phone here? I will check it for you in 20." (If she agrees.)',
+      whatNotToDo: 'Do not say "stop checking your phone." Do not joke about her obsession. Do not refresh it for her either.',
+      pairsWithStrategies: ['phone_break_with_consent', 'co_distraction', 'name_the_loop_kindly'],
+      research: 'Intermittent reinforcement drives compulsive checking (Skinner; modern social media research, Alter "Irresistible").'
+    },
+    {
+      id: 'yellow_before_presentation',
+      scenario: 'Student before a big presentation',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is about to present her project. She is fidgeting and her face looks worried.',
+        middle: 'Your friend is up to present in five minutes. Pacing the back, breath shallow, going over note cards over and over.',
+        high: 'Your friend is in the on-deck position for her presentation. Hands shaking slightly, breath shallow, reciting opening line under breath.'
+      },
+      observableCues: [
+        'Pre-event anticipation',
+        'Shallow breathing',
+        'Restless body or pacing',
+        'Note-reviewing on loop',
+        'Possible tremor',
+        'High arousal pre-event'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Nervous before presenting is super normal yellow zone.',
+        middle: 'Pre-performance nerves are textbook yellow — sympathetic activation in service of the upcoming demand.',
+        high: 'Pre-presentation arousal is yellow and is also the same arousal that fuels good performance — the trick is to harness, not eliminate.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the nerves cross into panic or freeze that prevents performing, it has tipped into red.' },
+        { zone: 'green', why: 'For experienced performers, the same physiology can be reframed as excitement-green rather than anxiety-yellow.' }
+      ],
+      whatTheyMightNeed: 'A grounding breath. A reminder that some adrenaline is fuel. A peer to give a thumbs up.',
+      empathyHint: 'A quiet "you got this" with eye contact lands. Or sit with her quietly.',
+      whatNotToDo: 'Do not say "are you nervous?" right before. Do not stress-test her on content. Do not stare.',
+      pairsWithStrategies: ['box_breathing', 'reframe_as_excitement', 'peer_thumbs_up'],
+      research: 'Reframing anxiety as excitement improves performance (Brooks, "Get excited"); pre-performance routines reduce yellow spike.'
+    },
+    {
+      id: 'yellow_complaining_repeatedly',
+      scenario: 'Friend complaining repeatedly about minor issue',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend keeps talking about the same small thing over and over and cannot let it go.',
+        middle: 'Your friend has been venting about her seat in math class for 30 minutes — same loop, same words, cannot put it down.',
+        high: 'Your friend has been in a rumination loop for an hour about a small slight. Same details, same anger, no movement.'
+      },
+      observableCues: [
+        'Repetitive verbal looping',
+        'Same details on each pass',
+        'No progress toward resolution',
+        'Tension building rather than releasing',
+        'Body stays activated',
+        'Disproportionate to the trigger'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Talking about the same small worry over and over is a yellow zone loop.',
+        middle: 'Rumination is a yellow-zone trap — the body stays activated because the mind keeps re-living the trigger.',
+        high: 'Repetitive negative thinking is a documented yellow-zone pattern that often deepens anxiety rather than resolving it.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the rumination tips into rage planning or self-harm thoughts, it has crossed into red.' },
+        { zone: 'blue', why: 'Rumination is also a depression marker — depressive rumination is more passive and can look blue.' }
+      ],
+      whatTheyMightNeed: 'A gentle redirect. "We have been on this for a while — want to do something else for 20?" Not a lecture.',
+      empathyHint: 'Validate the feeling once. Then offer movement or change of scene. "That is really frustrating. Walk?"',
+      whatNotToDo: 'Do not say "you are obsessing." Do not roll your eyes. Do not pile on with your own complaints.',
+      pairsWithStrategies: ['validate_then_redirect', 'change_of_scene', 'gentle_naming_of_loop'],
+      research: 'Rumination predicts anxiety and depression (Nolen-Hoeksema); behavioral redirection breaks loops more effectively than reasoning.'
+    },
+    {
+      id: 'yellow_angry_note',
+      scenario: 'Kid who left an angry note about an unfair grade',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend wrote a mad note on her test and gave it to the teacher because she thinks the grade was unfair.',
+        middle: 'Your friend wrote a sharp note to the teacher about how unfair the grade was and slammed it on the desk.',
+        high: 'Your friend sent a heated email to the teacher last night about a grade. She is still fuming this morning.'
+      },
+      observableCues: [
+        'Activated by perceived unfairness',
+        'Took action while still hot',
+        'Tone exceeds usual',
+        'Body still mobilized',
+        'Conviction in being wronged',
+        'Possible regret incoming'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Acting on big mad feelings before they cool down is a yellow zone choice.',
+        middle: 'Hot communication is a yellow signature — the system is activated, words come out sharper than intended.',
+        high: 'Acting from yellow often produces communication you regret in green. The note/email is the artifact of the activation, not the considered position.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the note included threats or escalating language, it has crossed into red.' },
+        { zone: 'green', why: 'A calm written advocacy note from a regulated student is green — the question is whether this one is calm or hot.' }
+      ],
+      whatTheyMightNeed: 'A friend who can listen to the underlying point. Maybe later, a chance to redo the communication from green.',
+      empathyHint: 'Validate the feeling, name the activation. "I get why you are mad. Want to look at it once you have cooled down?"',
+      whatNotToDo: 'Do not say "you should not have done that" yet. Do not amplify the outrage. Do not predict the teacher\'s reaction with disaster scenarios.',
+      pairsWithStrategies: ['name_the_activation', 'redo_from_green_later', 'underlying_point_listening'],
+      research: 'Hot communication damages relationships and rarely changes outcomes (Gottman, communication research); 24-hour rule on heated messages.'
+    },
+    {
+      id: 'yellow_sibling_bouncing',
+      scenario: 'Sibling bouncing off walls',
+      forBand: 'elementary',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother is running around the house, jumping on furniture, laughing too loud, cannot calm down.',
+        middle: 'Your little brother is wired tonight — running between rooms, jumping on the couch, can\'t settle for dinner.',
+        high: 'Your little brother is dysregulated tonight — laps around the house, jumping, high pitched laugh, after a sugary day.'
+      },
+      observableCues: [
+        'Constant motor activity',
+        'High pitched voice or laugh',
+        'Cannot transition to calm activities',
+        'Possible recent trigger (sugar, screens, missed nap)',
+        'Energy crossing into chaotic',
+        'Approaching over-arousal'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'When a kid has way too much zoomy energy and cannot settle, that is yellow zone.',
+        middle: 'Over-arousal in young children is classic yellow. The system is amped past comfortable and headed toward dysregulation.',
+        high: 'Hyperactivity in over-aroused kids reads yellow on the way to red. Without intervention it often tips into meltdown.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Some kids have higher baseline activity and this is their green — the question is whether they can transition when needed.' },
+        { zone: 'red', why: 'If the bouncing tips into a meltdown or aggression, it has crossed into red.' }
+      ],
+      whatTheyMightNeed: 'Heavy work (carrying laundry, pushing a chair). Outdoor running time. Slow co-regulating activities.',
+      empathyHint: 'Co-regulate with proprioceptive input. "Want to help me carry the laundry?" Movement with weight calms.',
+      whatNotToDo: 'Do not yell "calm down." Do not punish the energy. Do not skip the dinner-time wind-down because of irritation.',
+      pairsWithStrategies: ['heavy_work', 'outdoor_movement', 'co_regulating_routine'],
+      research: 'Proprioceptive input regulates over-aroused children (Ayres, sensory integration); rough-and-tumble play is regulating (Panksepp).'
+    },
+    {
+      id: 'yellow_anxious_call_on',
+      scenario: 'Student in class who looks anxious about being called on',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate is looking down and trying to be invisible because she does not want the teacher to call on her.',
+        middle: 'Your classmate is hiding behind her textbook hoping not to be called on. Shallow breath, eyes down.',
+        high: 'Your classmate is in low-profile mode, hoping the teacher does not call. Body tucked, eyes down, breath shallow.'
+      },
+      observableCues: [
+        'Avoidant body language',
+        'Eyes down to avoid contact',
+        'Shallow breathing',
+        'Hiding behind objects',
+        'Tense waiting state',
+        'Sustained throughout discussion'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Worrying about being called on and trying to hide is a yellow zone feeling.',
+        middle: 'Anticipatory social anxiety in class is a yellow-zone presentation. The body is bracing for possible exposure.',
+        high: 'The avoidance crouch under classroom discussion is yellow — sustained sympathetic activation in service of not being noticed.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If selective mutism kicks in or panic begins, it has tipped into red.' },
+        { zone: 'blue', why: 'Some students appear to be hiding because they are actually disengaged-blue, not anxious-yellow. Hard to tell from outside.' }
+      ],
+      whatTheyMightNeed: 'A teacher who uses warm cold-call (heads-up first, lets her opt in) rather than ambush questions.',
+      empathyHint: 'If you are a peer, do not call her out. If you are a teacher, give her warning and choice.',
+      whatNotToDo: 'Do not call on her to "get her engaged." Do not announce "you have been quiet today — what do you think?"',
+      pairsWithStrategies: ['warm_cold_call', 'private_check_in', 'opt_in_participation'],
+      research: 'Cold-calling without warning increases anxiety in already-anxious students (Brackett, RULER); warm cold-call preserves participation without spike.'
+    },
+    {
+      id: 'yellow_what_if_questions',
+      scenario: 'Friend repeatedly asking "what if..." questions',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend keeps asking "what if it does not work?" and "what if I get in trouble?" over and over.',
+        middle: 'Your friend is in a what-if spiral about the trip. "What if I get sick? What if I forget my charger? What if no one talks to me?"',
+        high: 'Your friend is in a worst-case-scenario loop. Every reassurance generates the next "but what if..."'
+      },
+      observableCues: [
+        'Repetitive worst-case questions',
+        'Each reassurance triggers next worry',
+        'Cannot land on okayness',
+        'Body activated',
+        'Mind racing ahead',
+        'Anticipatory rumination'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'When you keep asking "what if" about scary things over and over, that is yellow zone worry.',
+        middle: 'Anticipatory rumination via what-if questions is a textbook yellow pattern. The mind generates worry to control uncertainty.',
+        high: 'Intolerance of uncertainty fuels what-if loops. Reassurance-seeking is the surface behavior; the underlying mechanism is yellow.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the what-ifs escalate to panic about safety or harm, it has crossed into red.' },
+        { zone: 'green', why: 'Some planning questions are productive green — the question is whether they are leading to action or recycling.' }
+      ],
+      whatTheyMightNeed: 'A gentle limit on reassurance ("I will answer 3 what-ifs and then we are doing something else"). A grounding activity.',
+      empathyHint: 'Validate that uncertainty is hard. "You are worried because you care. Let us also do something with our hands."',
+      whatNotToDo: 'Do not answer every what-if forever (it feeds the loop). Do not say "you worry too much." Do not promise impossible certainty.',
+      pairsWithStrategies: ['reassurance_limit', 'grounding_activity', 'tolerate_uncertainty_practice'],
+      research: 'Reassurance-seeking maintains anxiety (Salkovskis, CBT for anxiety); intolerance of uncertainty is a core anxiety mechanism (Dugas).'
+    },
+    {
+      id: 'yellow_before_tryout',
+      scenario: 'Kid before a tryout or audition',
+      forBand: 'middle',
+      setting: 'sports',
+      story: {
+        elementary: 'Your friend is about to try out for the soccer team. He is jumpy and keeps tying his shoes.',
+        middle: 'Your friend is at the audition for the school play. Pacing, mouthing lines, tense shoulders.',
+        high: 'Your friend is at the basketball tryout. Bouncing in place, shaking out hands, breath shallow, jaw tight.'
+      },
+      observableCues: [
+        'Pre-event physical activation',
+        'Repetitive motor patterns',
+        'Tense musculature',
+        'Shallow breathing',
+        'Last-minute review',
+        'High arousal pre-performance'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Nervous before a tryout is normal yellow zone.',
+        middle: 'Pre-tryout anxiety is yellow — the activation that will fuel the performance if it stays usable.',
+        high: 'Performance pre-arousal is yellow on the way to optimal green. The trick is to land in the sweet spot, not over-arouse into red.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'For experienced athletes, the same physiology is reframed as readiness-green. Same body, different label.' },
+        { zone: 'red', why: 'If the nerves prevent performing or trigger panic, it has crossed into red.' }
+      ],
+      whatTheyMightNeed: 'A pre-performance routine. A short physical release (push-ups, jumping jacks). A grounding cue word.',
+      empathyHint: 'Match his energy briefly, then bring it down. "You are ready. Breathe. Go." Short, confident.',
+      whatNotToDo: 'Do not say "are you nervous?" right before. Do not list everyone he is competing against.',
+      pairsWithStrategies: ['pre_performance_routine', 'short_physical_release', 'cue_word_grounding'],
+      research: 'Pre-performance routines reduce yellow spike (Cohn, sports psychology); short physical release converts anxiety to readiness.'
+    },
+    {
+      id: 'yellow_fight_or_flight_class',
+      scenario: 'Student with fight-or-flight body cues mid-class',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate suddenly started breathing fast and looking around like she wanted to leave the room.',
+        middle: 'Your classmate is mid-class with full activation — flushed, shallow breathing, eyes scanning exits, body tense.',
+        high: 'Your classmate just hit a fight-or-flight wave in class — flushed, shallow breath, scanning exits, gripping desk.'
+      },
+      observableCues: [
+        'Sudden physiological activation',
+        'Flushed or pale',
+        'Shallow rapid breathing',
+        'Exit-scanning eyes',
+        'Tense grip',
+        'Acute onset'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Feeling like you want to run away is the yellow zone with a lot of energy.',
+        middle: 'Acute sympathetic activation in class is high-end yellow. The body is mobilizing for flight (or fight) without obvious threat.',
+        high: 'Mid-class fight-or-flight reads yellow on the verge of red. Trauma triggers and panic attacks can both produce this picture.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If it escalates to full panic, dissociation, or running out, it has crossed into red.' },
+        { zone: 'blue', why: 'Sometimes what looks like fight-or-flight is actually a freeze response (functional shutdown) — closer to red shutdown.' }
+      ],
+      whatTheyMightNeed: 'Permission to leave the room calmly. A trusted adult to walk her to a safe space. Grounding (5-4-3-2-1, ice on wrists).',
+      empathyHint: 'Quietly offer the bathroom pass or counselor pass without making it a scene. Whisper level.',
+      whatNotToDo: 'Do not call out "are you okay?" loudly. Do not block her exit. Do not interrogate after.',
+      pairsWithStrategies: ['quiet_exit_pass', 'grounding_5_4_3_2_1', 'counselor_pass'],
+      research: 'Panic attacks are common in adolescents (NIMH); discrete exit options reduce panic intensity (Craske, panic research).'
+    },
+    {
+      id: 'yellow_social_anxiety_party',
+      scenario: 'Friend with social anxiety at party',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is at a birthday party but is standing in the corner not talking to anyone, looking nervous.',
+        middle: 'Your friend came to the party but is locked into the wall, phone in hand, will not engage with the room.',
+        high: 'Your friend is at the party but in survival mode — wall-clinging, phone-shielded, calculated bathroom trips, drink in hand as prop.'
+      },
+      observableCues: [
+        'Social withdrawal in social setting',
+        'Phone or drink as social shield',
+        'Wall-clinging or perimeter behavior',
+        'Tense body language',
+        'Avoidant eye contact',
+        'High inner activation, low outer expression'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Feeling really nervous at a party and wanting to hide is yellow zone.',
+        middle: 'Social anxiety in a party is yellow — high inner arousal driving outward withdrawal. The opposite of green-zone party energy.',
+        high: 'Social anxiety produces yellow under green-looking circumstances. The party invites green; her system delivers yellow.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the social anxiety tips into panic or freeze, it has crossed into red.' },
+        { zone: 'blue', why: 'Some quiet at parties is just introvert recovery and is closer to green-introvert than yellow-anxious.' }
+      ],
+      whatTheyMightNeed: 'A buddy. A clear early-exit plan. A specific task (hand out food, take photos) that gives a role.',
+      empathyHint: 'Stay close without making a thing of it. "Want to help me grab drinks?" gives her a reason to move.',
+      whatNotToDo: 'Do not announce "she is shy" to the group. Do not abandon her with strangers. Do not pressure her to mingle.',
+      pairsWithStrategies: ['buddy_system', 'specific_task_role', 'pre_planned_exit'],
+      research: 'Social anxiety is highly prevalent in adolescence (Kessler, NCS); behavioral approach with role/task reduces avoidance (CBT-SAD).'
+    },
+    {
+      id: 'yellow_loud_restaurant',
+      scenario: 'Kid wanting to leave a loud restaurant',
+      forBand: 'all',
+      setting: 'sensory',
+      story: {
+        elementary: 'Your little sister is at a loud restaurant and keeps covering her ears and asking when we can leave.',
+        middle: 'Your sister is at a loud restaurant, hands over ears, tense, asking "can we go" every five minutes.',
+        high: 'Your sister is at a loud crowded restaurant, sensory load past her threshold, asking to leave, headphones in.'
+      },
+      observableCues: [
+        'Sensory overload markers',
+        'Ear-covering',
+        'Requests to leave',
+        'Tense body',
+        'Reduced verbal engagement',
+        'Specific sensory trigger present'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'When a place is too loud and your body wants to leave, that is yellow zone.',
+        middle: 'Sensory overload is yellow on the way to red. The system is registering more input than it can process.',
+        high: 'Sensory dysregulation — common in autistic, ADHD, and sensory-sensitive folks — produces yellow that can quickly tip to red without accommodation.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she goes into meltdown or shutdown, it has crossed into red. Sensory overload meltdown is not a tantrum.' },
+        { zone: 'green', why: 'With headphones and pre-planning, the same restaurant can be green — the issue is the input-to-coping ratio.' }
+      ],
+      whatTheyMightNeed: 'Headphones/earplugs immediately. A quieter table. Permission to step outside. Sometimes leaving early.',
+      empathyHint: 'Take the ear-covering seriously. "Let us step outside for five" is regulation, not indulgence.',
+      whatNotToDo: 'Do not say "you are fine, just deal with it." Do not force her to "tough out" sensory overload — it does not work.',
+      pairsWithStrategies: ['headphones_earplugs', 'sensory_break_outside', 'leave_early_if_needed'],
+      research: 'Sensory processing differences are well-documented in autism and ADHD (Dunn, sensory profile); forcing tolerance worsens outcomes (autistic-led research).'
+    },
+    {
+      id: 'yellow_fire_drill',
+      scenario: 'Student during fire drill',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate covered her ears and looked scared when the fire drill alarm went off.',
+        middle: 'Your classmate hit the fire alarm and froze, hands over ears, body tense, eyes wide.',
+        high: 'Your classmate is in fire-drill yellow — covering ears, tight shoulders, fight-or-flight visible.'
+      },
+      observableCues: [
+        'Acute response to alarm',
+        'Ear-covering',
+        'Tense body',
+        'Fight-or-flight signals',
+        'Difficulty processing instructions',
+        'Acute sensory + danger trigger'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Loud alarms can make our bodies go to yellow zone really fast.',
+        middle: 'Alarms hijack the nervous system. Yellow is a normal response, especially for sensitive nervous systems.',
+        high: 'Fire alarms produce predictable yellow-zone responses. For sensory-sensitive or trauma-history students, they can produce red.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'For students with trauma histories or significant sensory sensitivity, the alarm produces full red (panic, freeze, meltdown).' },
+        { zone: 'green', why: 'Some students treat drills as routine and stay green — depends on history and sensitivity.' }
+      ],
+      whatTheyMightNeed: 'Hands-over-ears acceptance. A peer or adult buddy. Pre-warning when possible.',
+      empathyHint: 'Stand near. Speak softly. "We are going outside, I am right here."',
+      whatNotToDo: 'Do not say "it is just a drill." Do not pull her hands off her ears. Do not announce her struggle.',
+      pairsWithStrategies: ['ear_protection_normalized', 'buddy_during_drill', 'pre_warning_when_possible'],
+      research: 'Fire drills can re-traumatize trauma-history students (NCTSN trauma-informed school resources); accommodations are warranted.'
+    },
+    {
+      id: 'yellow_obsessive_text_check',
+      scenario: 'Friend obsessively checking for a text reply',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend keeps looking at her phone over and over waiting for her friend to text back.',
+        middle: 'Your friend has checked her phone 60 times in an hour waiting for a reply that has not come.',
+        high: 'Your friend is in an obsessive checking loop, refreshing every text app, reading the previous messages, calculating timing.'
+      },
+      observableCues: [
+        'Compulsive phone-checking',
+        'Re-reading past messages',
+        'Calculating reply timing',
+        'Cannot focus on other things',
+        'Catastrophizing the silence',
+        'Sustained yellow loop'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Checking your phone again and again because you are worried is yellow zone.',
+        middle: 'Compulsive text-checking is yellow — sustained sympathetic activation around an uncertain social outcome.',
+        high: 'Text-anxiety loops are textbook yellow. The intermittent reinforcement of the inbox keeps the system primed.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the spiraling involves self-harm thoughts or relationship-ending threats, it has crossed into red.' },
+        { zone: 'blue', why: 'Sometimes the loop tips into depression-flavored despair ("nobody loves me") which edges to blue.' }
+      ],
+      whatTheyMightNeed: 'A phone break with consent. A grounding distraction. Perspective on text timing (the absence is not the answer).',
+      empathyHint: 'Validate the feeling, then redirect. "Waiting is the worst. Want to do something with our hands while you wait?"',
+      whatNotToDo: 'Do not say "stop checking your phone." Do not predict the friend\'s motives. Do not refresh it for her.',
+      pairsWithStrategies: ['phone_break_with_consent', 'grounding_activity', 'reality_check_on_text_timing'],
+      research: 'Variable reinforcement schedules drive compulsive checking; phone breaks reduce anxiety in adolescents (Twenge).'
+    },
+    {
+      id: 'yellow_criticized_fuming',
+      scenario: 'Kid who got criticized and is fuming',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend got in trouble from the teacher and now is mad and quiet at her desk.',
+        middle: 'Your friend got publicly corrected by the teacher and is fuming silently, jaw tight, eyes hard.',
+        high: 'Your friend just got dressed down by the teacher in front of the class. Fuming silently, knuckles white, breath shallow.'
+      },
+      observableCues: [
+        'Tight jaw or fists',
+        'Silent but visible anger',
+        'Shallow breath',
+        'Hard eyes',
+        'Recent trigger (criticism)',
+        'Energy bottled, not released'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Being really mad but quiet is a yellow zone feeling.',
+        middle: 'Bottled anger is yellow — the activation is there, not yet expressed, possibly building toward red.',
+        high: 'Silent fuming is yellow at high arousal. The pressure is mounting and needs a healthy release route.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the fume tips into yelling back, walking out, or physical action, it has crossed into red.' },
+        { zone: 'blue', why: 'If the anger collapses into despair ("I am a bad student"), it can flip toward blue.' }
+      ],
+      whatTheyMightNeed: 'Space and a chance to talk about it later. A physical outlet (walk, exercise). Validation of the underlying point.',
+      empathyHint: 'Quietly: "That was rough. Talk later?" Do not pile on or argue the teacher\'s side right now.',
+      whatNotToDo: 'Do not say "the teacher was right." Do not laugh. Do not bring it up again immediately.',
+      pairsWithStrategies: ['physical_outlet', 'validate_then_decompress', 'talk_later_not_now'],
+      research: 'Public criticism produces shame-anger responses (Brackett); recovery requires acknowledgment and a recovery window.'
+    },
+    {
+      id: 'yellow_sibling_lost_object',
+      scenario: 'Sibling who lost a small object and is panicking',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother cannot find his favorite stuffed animal and is running around the house panicking.',
+        middle: 'Your sister cannot find her AirPods before school. Tearing through her room, breath fast, voice rising.',
+        high: 'Your sister cannot find her ID before her shift. Panic mode, throwing things, snapping at anyone trying to help.'
+      },
+      observableCues: [
+        'Frantic searching',
+        'Voice rising',
+        'Snapping at helpers',
+        'Time pressure',
+        'Tunnel vision',
+        'Yellow tipping toward red'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Panicking about losing something is a high yellow zone moment.',
+        middle: 'Lost-object panic with time pressure is high yellow. The system is mobilized and narrowing in on the threat.',
+        high: 'Acute lost-object panic with snapping at helpers shows yellow approaching red. The amygdala has taken over executive function.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the panic tips into full meltdown or aggression, it has crossed into red.' },
+        { zone: 'green', why: 'A regulated search ("let me retrace my steps") is green. The question is whether arousal is helping or hijacking.' }
+      ],
+      whatTheyMightNeed: 'Co-regulation. Slowing down ("take a breath, where did you last have it?"). Permission to be late if needed.',
+      empathyHint: 'Stay calm. Help systematically. "Let us breathe and start with your backpack." Do not match the panic.',
+      whatNotToDo: 'Do not say "you are always losing things." Do not yell. Do not abandon her to the panic.',
+      pairsWithStrategies: ['co_regulation_calm', 'systematic_search', 'permission_to_be_late'],
+      research: 'Co-regulation calms over-aroused others (Porges); systematic search outperforms frantic search (Klein, naturalistic decision-making).'
+    },
+    {
+      id: 'yellow_oral_exam',
+      scenario: 'Student before an oral exam',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend has to do an oral presentation and is pacing in the hallway, lips moving as he practices.',
+        middle: 'Your friend is on deck for his Spanish oral exam, pacing, muttering verb conjugations, breath shallow.',
+        high: 'Your friend is waiting outside the oral exam room, pacing, going over notes one last time, breath shallow.'
+      },
+      observableCues: [
+        'Pre-exam pacing',
+        'Self-talk or last-minute review',
+        'Shallow breath',
+        'Tense posture',
+        'Focused but anxious',
+        'High pre-event arousal'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Pacing and practicing before a big test is yellow zone — too much energy from nerves.',
+        middle: 'Pre-exam pacing is classic yellow. The system mobilizes more than the task needs, and the body looks for outlet.',
+        high: 'Pre-performance yellow can fuel good performance or tip into red. The pacing is the body finding regulation.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'For experienced students with good test routines, the same physiology stays in green readiness rather than yellow anxiety.' },
+        { zone: 'red', why: 'If the nerves cross into panic or freeze, it has tipped into red.' }
+      ],
+      whatTheyMightNeed: 'A grounding breath. A pre-exam cue word. A quick visualization of success.',
+      empathyHint: 'A confident "you got this" and a thumbs up. Then leave him alone.',
+      whatNotToDo: 'Do not quiz him on content. Do not predict the questions. Do not say "are you nervous?"',
+      pairsWithStrategies: ['box_breathing', 'cue_word', 'visualization'],
+      research: 'Pre-performance routines reduce yellow spike (Cohn); brief visualization improves performance (Driskell).'
+    },
+    {
+      id: 'yellow_anxiety_spiral_starting',
+      scenario: 'Friend whose anxiety spiral is starting',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend keeps saying "I do not feel right" and her breathing is getting faster.',
+        middle: 'Your friend is at the start of a spiral — fast breath, repeating the same worry, feeling "weird," eyes wide.',
+        high: 'Your friend is feeling an anxiety wave start — shallow breath, chest tight, repeating "I do not know what is wrong," eyes scanning.'
+      },
+      observableCues: [
+        'Self-reports of "not right" feeling',
+        'Breath getting faster',
+        'Chest tightness',
+        'Repetitive verbalizing',
+        'Eyes scanning or unfocused',
+        'Early-spiral catch-window'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'When a friend\'s body is starting to get really worried, you can help by being calm.',
+        middle: 'Early anxiety spiral is the catch-window for yellow. Intervention now can prevent a tip to red.',
+        high: 'Recognizing the spiral early is critical — yellow with skilled support stays yellow; without support, it tips to red.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If hyperventilation, dissociation, or panic peak hits, it has crossed into red.' },
+        { zone: 'green', why: 'A learned recovery skill applied early can return her to green within minutes.' }
+      ],
+      whatTheyMightNeed: 'Co-regulating breath. Grounding (5-4-3-2-1). Naming the feeling ("this is a panic wave, it will pass").',
+      empathyHint: 'Breathe with her. "We are gonna breathe together. In for 4, out for 6." Slow your own breath first.',
+      whatNotToDo: 'Do not say "you are fine." Do not freak out yourself. Do not interrogate the cause in the moment.',
+      pairsWithStrategies: ['co_regulating_breath', 'grounding_5_4_3_2_1', 'name_the_wave'],
+      research: 'Early intervention in panic spirals prevents full panic attack (Craske); co-regulating breath is most effective approach (Brown & Gerbarg).'
+    },
+    {
+      id: 'yellow_teased_escalating',
+      scenario: 'Kid being teased who is starting to escalate',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Some kids are teasing your friend at recess and he is starting to clench his fists and yell back.',
+        middle: 'A group is teasing your friend at lunch and he is starting to push back — louder voice, clenched hands, body tightening.',
+        high: 'Your friend is being teased in the hallway and is at the edge — voice rising, hands tight, threats starting to come out.'
+      },
+      observableCues: [
+        'Recent or ongoing teasing trigger',
+        'Voice volume rising',
+        'Clenched fists',
+        'Body tightening',
+        'Verbal escalation starting',
+        'Yellow approaching red'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Being teased and getting really mad about to fight is high yellow zone.',
+        middle: 'Pre-fight escalation is high yellow, with red imminent if no intervention happens.',
+        high: 'Conflict escalation in yellow has a small window before red. Bystander intervention here can prevent escalation.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If a punch is thrown or full rage takes over, it has crossed into red.' },
+        { zone: 'blue', why: 'Some teasing victims collapse into despair instead of escalating — yellow-into-blue rather than yellow-into-red.' }
+      ],
+      whatTheyMightNeed: 'A friend who pulls him out. An adult who intervenes with the teasers. Distance from the trigger.',
+      empathyHint: 'Get him out. "Come with me" — direct, calm. Do not engage the teasers in the moment.',
+      whatNotToDo: 'Do not say "ignore them." Do not record it. Do not match the energy and escalate with him.',
+      pairsWithStrategies: ['extract_from_situation', 'tell_adult_about_teasing', 'do_not_match_energy'],
+      research: 'Bystander intervention reduces bullying outcomes (Olweus); de-escalation requires distance from trigger (CPI training).'
+    },
+    {
+      id: 'yellow_running_out_of_time',
+      scenario: 'Student running out of time on assignment',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is racing to finish her worksheet before the bell. She is writing fast and looking up at the clock.',
+        middle: 'Your friend has 10 minutes left on a test and 15 questions to go. Writing fast, breath shallow, frustrated.',
+        high: 'Your friend has 5 minutes left on the exam and a whole essay to write. Writing frantically, breath shallow, jaw tight.'
+      },
+      observableCues: [
+        'Time pressure visible',
+        'Accelerated writing/work pace',
+        'Frequent clock-checks',
+        'Shallow breath',
+        'Frustration markers',
+        'Yellow under acute deadline'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Running out of time on something important makes us feel yellow zone.',
+        middle: 'Acute deadline pressure produces predictable yellow. The mobilization is functional in moderate doses.',
+        high: 'Time-pressure yellow can fuel productive sprint or tip into freeze. The trick is to channel without choking.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she gives up and crumples paper or freezes entirely, it has tipped into red shutdown.' },
+        { zone: 'green', why: 'Some students sprint productively from green, with regulated arousal channeled into output.' }
+      ],
+      whatTheyMightNeed: 'A teacher who can offer extended time when warranted. A brief breath reset. Permission to do partial.',
+      empathyHint: 'After: "That was a sprint. You got through it." Empathy after the deadline, not during.',
+      whatNotToDo: 'Do not say "you should have started earlier." Do not stand over the desk during the sprint.',
+      pairsWithStrategies: ['extended_time_when_warranted', 'partial_credit_permission', 'reset_breath'],
+      research: 'Time pressure activates yellow-zone arousal that may help or hinder (Yerkes-Dodson); extended time accommodations are evidence-based for many learners (Lovett, accommodations research).'
+    },
+    {
+      id: 'yellow_before_test_return',
+      scenario: 'Friend before getting test back',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is waiting for the teacher to hand back the spelling test. She is tapping her pencil really fast.',
+        middle: 'Your friend is waiting for the math test return. Pencil-tapping, leg bouncing, breath shallow.',
+        high: 'Your friend is waiting for the test to come back. Pencil-tapping, leg bouncing, watching the teacher\'s stack.'
+      },
+      observableCues: [
+        'Anticipatory anxiety pre-result',
+        'Motor outlets (tapping, bouncing)',
+        'Watching for the result',
+        'Shallow breath',
+        'High arousal',
+        'No way to influence outcome'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Waiting to find out how you did on a test is yellow zone.',
+        middle: 'Pre-result yellow is unavoidable when the outcome matters. Motor outlets are the body finding regulation.',
+        high: 'Anticipatory yellow before grade return is normal. The intensity scales with how much weight the grade carries.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the wait triggers a panic spiral or self-harm thoughts, it has crossed into red.' },
+        { zone: 'green', why: 'For students who have detached from grade outcomes, the same wait is green.' }
+      ],
+      whatTheyMightNeed: 'Patience. No commentary. A reminder that one grade is not her identity.',
+      empathyHint: 'A quiet thumbs up across the room. No words needed.',
+      whatNotToDo: 'Do not ask "what do you think you got?" Do not predict her grade. Do not loudly celebrate your own.',
+      pairsWithStrategies: ['quiet_solidarity', 'identity_separate_from_grade', 'patience'],
+      research: 'Outcome uncertainty produces predictable yellow (Carleton, intolerance of uncertainty); peer co-presence buffers (Cohen, social support).'
+    },
+    {
+      id: 'yellow_adhd_settling',
+      scenario: 'Kid with ADHD finding it hard to settle',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend with ADHD is wiggling and humming and cannot sit still during quiet reading.',
+        middle: 'Your friend with ADHD is having a hard time settling into quiet study — leg bouncing, drumming, looking around.',
+        high: 'Your friend with ADHD is fighting to settle into the silent study period — fidgeting, drumming, mind racing visibly.'
+      },
+      observableCues: [
+        'Multiple simultaneous motor activities',
+        'Difficulty with quiet/still tasks',
+        'Mind racing visible',
+        'Not malicious — neurological',
+        'Trying but struggling',
+        'Yellow energy with no green outlet'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'When your brain has lots of energy and the room is quiet, that mismatch is a yellow zone challenge.',
+        middle: 'ADHD restlessness in still environments is a yellow-zone reality, not a behavior problem. It needs accommodation, not punishment.',
+        high: 'ADHD-related arousal regulation lives in yellow when the environment demands stillness. Fidget tools, standing desks, and movement breaks are accommodations, not perks.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'With proper accommodation (standing desk, fidget tool), the same student can be in green doing the same task.' },
+        { zone: 'red', why: 'If the unmet need tips into outburst or shutdown, it has crossed into red.' }
+      ],
+      whatTheyMightNeed: 'A fidget tool. A standing desk option. Brief movement breaks. Permission to chew gum.',
+      empathyHint: 'Normalize the accommodations. Make them available to everyone, not just to him.',
+      whatNotToDo: 'Do not say "sit still!" Do not take away the fidget. Do not single him out as the problem.',
+      pairsWithStrategies: ['fidget_tool', 'standing_desk', 'movement_break'],
+      research: 'Fidgeting supports cognitive function in ADHD (Sarver, fidget research); accommodations improve outcomes (DuPaul, ADHD school interventions).'
+    },
+    {
+      id: 'yellow_transitions',
+      scenario: 'Student during transition between activities',
+      forBand: 'elementary',
+      setting: 'school',
+      story: {
+        elementary: 'When the teacher says it is time to move from reading to math, your friend gets wiggly and frustrated.',
+        middle: 'Your classmate has a hard time with the transition from one class to the next — gets jumpy, irritable, distracted.',
+        high: 'Your classmate gets dysregulated at every transition — passing periods, schedule changes, going from one activity to another.'
+      },
+      observableCues: [
+        'Difficulty leaving current activity',
+        'Frustration or wiggle at transition',
+        'Slow to engage in next activity',
+        'May resist or protest',
+        'Common in autism, ADHD, anxiety',
+        'Transition is the trigger'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Changing what you are doing can be hard. Getting wiggly during a switch is a yellow zone reaction.',
+        middle: 'Transition difficulty is a recognized yellow-zone pattern, especially common in autism, ADHD, and anxiety.',
+        high: 'Transitions are a documented arousal challenge — the nervous system has to disengage from one frame and engage another, with predictable yellow spikes.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If transition difficulty tips into refusal, meltdown, or shutdown, it has crossed into red.' },
+        { zone: 'green', why: 'With predictable warnings and transition rituals, the same student can stay in green through transitions.' }
+      ],
+      whatTheyMightNeed: 'Advance warning ("5 minutes until math"). Visual schedules. Transition objects or rituals.',
+      empathyHint: 'Give the warning. Hold space for the wiggle. Do not rush.',
+      whatNotToDo: 'Do not surprise-transition. Do not punish the wiggle. Do not say "you should be used to this by now."',
+      pairsWithStrategies: ['advance_warning', 'visual_schedule', 'transition_ritual'],
+      research: 'Transition warnings reduce behavioral incidents (Mesibov, structured teaching/TEACCH); visual schedules support autistic learners.'
+    },
+    {
+      id: 'yellow_irritated_after_conflict',
+      scenario: 'Friend after small conflict who is irritated',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend had a small argument with another friend and now is grumpy and snippy with you.',
+        middle: 'Your friend just had a small fight with her sister and is now irritable with everyone for the next hour.',
+        high: 'Your friend just had a tense exchange with her mom and is now snappy with you about everything.'
+      },
+      observableCues: [
+        'Recent conflict trigger',
+        'Sustained irritability',
+        'Snippy tone',
+        'Tense body',
+        'Affect spillover to unrelated people',
+        'Yellow lasting beyond the trigger'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'After a fight, our bodies stay yellow for a while even if the fight is over.',
+        middle: 'Affect spillover from conflict is yellow that lingers. The body takes longer to come down than the situation suggests.',
+        high: 'Post-conflict yellow can last 30-90 minutes. The amygdala stays primed; bystanders catch the spillover.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the irritation triggers a new bigger conflict, it has tipped into red.' },
+        { zone: 'blue', why: 'Some people collapse into withdrawn quiet after conflict — yellow flips to blue.' }
+      ],
+      whatTheyMightNeed: 'Patience and space. Not taking it personally. A quiet co-presence option.',
+      empathyHint: '"I can tell you are having a hard time. I am here if you want company, no pressure to talk." Then back off.',
+      whatNotToDo: 'Do not say "why are you taking it out on me?" (true but not helpful in the moment). Do not lecture about the original conflict.',
+      pairsWithStrategies: ['do_not_take_personally', 'patience_window', 'optional_company'],
+      research: 'Affect spillover is well-documented (Bolger, daily diary research); recovery windows vary by individual and context.'
+    },
+    {
+      id: 'yellow_sibling_annoyed_by_younger',
+      scenario: 'Sibling with younger sibling annoying them',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother keeps poking you while you are trying to read and you are getting really annoyed.',
+        middle: 'Your little brother keeps interrupting your homework, and you can feel your patience running out.',
+        high: 'Your little brother has been all over you for an hour and you are at the end of your patience.'
+      },
+      observableCues: [
+        'Sustained low-grade annoyance',
+        'Voice tightening',
+        'Reduced patience markers',
+        'Building rather than releasing',
+        'May snap soon',
+        'Yellow with accumulation'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Getting annoyed at a little sibling who will not stop is normal yellow zone.',
+        middle: 'Accumulated micro-irritation is yellow that builds toward a snap. Naming it early prevents the blowup.',
+        high: 'Slow-burn yellow from sustained annoyance is the kind that you can intervene on before red. Recognize the buildup.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If you snap or get aggressive, it has tipped into red. The yellow is the warning.' },
+        { zone: 'green', why: 'With strategy (door closed, headphones, parent help), the same situation can stay green.' }
+      ],
+      whatTheyMightNeed: 'A break from the sibling. A parent to redirect the little one. Headphones.',
+      empathyHint: 'Name the buildup to yourself or a parent. "I need 30 minutes alone or I am going to lose it."',
+      whatNotToDo: 'Do not yell at the little sibling once you have snapped. Do not blame yourself for the natural irritation — strategize instead.',
+      pairsWithStrategies: ['ask_for_space', 'parent_redirect', 'headphones_or_door'],
+      research: 'Sibling conflict is normative (Dunn, sibling research); explicit space requests prevent escalation.'
+    },
+    {
+      id: 'red_panic_attack_hallway',
+      scenario: 'Student having a panic attack in the hallway',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend is breathing really fast in the hallway. She is shaking and says she feels like she is dying.',
+        middle: 'Your friend is in the hallway hyperventilating, shaking, hand on chest, eyes wide, saying she cannot breathe.',
+        high: 'Your friend is mid-panic attack in the hallway — hyperventilating, shaking, on the floor, saying she is dying or going to pass out.'
+      },
+      observableCues: [
+        'Hyperventilation',
+        'Shaking or trembling',
+        'Chest tightness or pain',
+        '"I am dying" or "I cannot breathe" statements',
+        'Sometimes derealization',
+        'Acute peak arousal'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'A panic attack is a really big yellow that crashes into red. It feels scary but it passes.',
+        middle: 'A panic attack is full red — the nervous system is in full alarm. Co-regulation and grounding can shorten it.',
+        high: 'Panic attack is acute peak red. The amygdala has hijacked everything. The episode peaks in 10 minutes and resolves within 30, usually.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Sometimes what looks like panic is asthma, cardiac, or hypoglycemia — if unsure, call for the nurse/911.' }
+      ],
+      whatTheyMightNeed: 'Co-regulating breath. Grounding (ice on wrists, 5-4-3-2-1). A trusted adult. Sometimes nurse for medical clearance.',
+      empathyHint: 'Stay calm. "I am here. You are having a panic attack. It will pass. Breathe with me." Slow your breath first.',
+      whatNotToDo: 'Do not say "just calm down" — it never works. Do not crowd her with onlookers. Do not assume it is fake.',
+      pairsWithStrategies: ['co_regulating_breath', 'grounding_ice_wrists', 'get_trusted_adult', 'call_988_if_persistent'],
+      research: 'Panic attacks peak around 10 minutes and resolve (Craske, panic research); co-regulation and grounding shorten episodes; 988 (call/text) for crisis support.'
+    },
+    {
+      id: 'red_rage_unfair',
+      scenario: 'Friend in a rage about something unfair',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is yelling and stomping because she got blamed for something she did not do.',
+        middle: 'Your friend is in a rage about a wrongful accusation — yelling, slamming things, red face.',
+        high: 'Your friend is in full rage mode about an unfair situation — yelling, throwing things, body completely activated.'
+      },
+      observableCues: [
+        'Full-volume vocal output',
+        'Aggressive physical actions',
+        'Red face, dilated pupils',
+        'Loss of impulse control',
+        'Often legitimate trigger',
+        'Acute peak red'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Big yelling rage about unfairness is the red zone. The feeling makes sense even if the behavior is too big.',
+        middle: 'Rage is full red. The trigger is often legitimate; the expression is the dysregulation. Validate the trigger, address the expression separately.',
+        high: 'Acute rage is red — amygdala-driven, impulse control offline, full sympathetic activation. The behavior is the symptom; the underlying grievance may be valid.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Rage can also signal trauma reactivation rather than current grievance — same red, different cause.' }
+      ],
+      whatTheyMightNeed: 'Space and safety first. Co-regulation when she is ready. Validation of the grievance separately from the behavior.',
+      empathyHint: 'Keep yourself and others safe. Do not engage during peak. Once she is coming down: "That was a lot. I get why you were furious."',
+      whatNotToDo: 'Do not say "calm down." Do not match the rage. Do not punish the feeling — separate behavior from emotion when addressing.',
+      pairsWithStrategies: ['safety_first', 'space_during_peak', 'validate_grievance_later'],
+      research: 'Rage requires de-escalation, not engagement (CPI training); validating the underlying grievance preserves relationship (Linehan, DBT).'
+    },
+    {
+      id: 'red_autistic_meltdown_sensory',
+      scenario: 'Kid in autistic meltdown after sensory overload',
+      forBand: 'all',
+      setting: 'sensory',
+      story: {
+        elementary: 'Your autistic friend got too much noise and lights at the assembly and is now crying loudly and rocking and cannot stop.',
+        middle: 'Your autistic peer is in meltdown — sensory overload pushed past threshold, now sobbing, rocking, hands over ears, cannot self-soothe.',
+        high: 'Your autistic peer is in autistic meltdown after sensory overload — sobbing, rocking, hands over ears, possibly hitting self, completely past coping.'
+      },
+      observableCues: [
+        'Identified autistic person',
+        'Recent sensory or change trigger',
+        'Crying or screaming',
+        'Rocking, stimming, hand-flapping intensified',
+        'May hit self or surroundings',
+        'CANNOT self-soothe — meltdown is past that point'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'An autistic meltdown is NOT a tantrum — it is the body unable to handle too much. It is red zone and it is real.',
+        middle: 'Autistic meltdown is full red — sensory or cognitive overload has overwhelmed the system. Meltdowns are NOT tantrums and NOT manipulation.',
+        high: 'Autistic meltdown is a neurological overflow state, not a behavior choice. Reducing sensory input, allowing stims, and removing demands are core supports.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Some autistic overload presents as shutdown rather than meltdown — same red-zone overload, opposite behavioral expression (going quiet, not responding).' }
+      ],
+      whatTheyMightNeed: 'Sensory reduction (quiet, dim, fewer people). Allow stims. Remove demands. Time. Sometimes weighted blanket or pressure.',
+      empathyHint: 'Stay calm and quiet. Reduce input. Speak minimally. Do not touch unless invited. Let it run its course.',
+      whatNotToDo: 'Do not call it a tantrum. Do not punish. Do not block stims. Do not pile on demands. Do not crowd with onlookers.',
+      pairsWithStrategies: ['sensory_reduction', 'allow_stims', 'remove_demands', 'quiet_co_presence'],
+      research: 'Autistic meltdowns are well-documented as neurological, not behavioral (autistic-led research; Lawson); punishment-based responses worsen outcomes (NEST collaborative).'
+    },
+    {
+      id: 'red_sibling_tantrum',
+      scenario: 'Sibling having a full-volume tantrum',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother is on the floor screaming because he cannot have a cookie before dinner.',
+        middle: 'Your little sister is having a full meltdown about screen time being over — screaming, kicking the wall.',
+        high: 'Your little sibling is in a full tantrum about a "no" — on the floor, screaming, hitting the ground.'
+      },
+      observableCues: [
+        'Young child (typically under 10)',
+        'Full vocal volume',
+        'Body on floor or kicking',
+        'Recent denial of want',
+        'Loss of regulation',
+        'Acute red episode'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When a little kid is screaming on the floor about not getting their way, that is red zone. Their brain is still learning to handle big feelings.',
+        middle: 'Young child tantrums are full red — developing brains have less regulation capacity. Holding the limit while staying calm helps them learn over time.',
+        high: 'Tantrums in young children are developmentally normal red episodes — prefrontal cortex is still developing. Holding limits with calm co-regulation models the skill.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Important distinction: tantrum (young child, often about denial of want, may stop if audience leaves) vs autistic meltdown (sensory/cognitive overload, will not stop with audience change). Different supports.' }
+      ],
+      whatTheyMightNeed: 'Calm presence, held limit, sometimes a quiet space, ride it out without rescuing or escalating.',
+      empathyHint: 'Stay calm. Sit nearby. "I am here when you are ready. The answer is still no, and I love you."',
+      whatNotToDo: 'Do not give in just to stop the noise (teaches that tantrums work). Do not yell back. Do not shame.',
+      pairsWithStrategies: ['hold_limit_calmly', 'co_presence', 'do_not_reward_tantrum'],
+      research: 'Tantrums are normal developmental red (Potegal, tantrum research); calm limit-holding builds long-term regulation (Greene, "Explosive Child").'
+    },
+    {
+      id: 'red_dissociating_flashback',
+      scenario: 'Student dissociating after a flashback',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend went totally still and stopped talking and her eyes look far away. Get a grown-up.',
+        middle: 'Your peer just went vacant — eyes unfocused, not responding to voice, body still. Trauma flashback may be happening.',
+        high: 'Your peer is dissociating — eyes vacant, not present, may have been triggered. Trauma response, full red shutdown.'
+      },
+      observableCues: [
+        'Sudden vacant eyes',
+        'Unresponsive to voice',
+        'May have trauma history',
+        'Body still',
+        'Possibly identifiable trigger',
+        'Freeze/shutdown red presentation'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When a friend goes very still and far-away, their body is in red even though it does not look loud.',
+        middle: 'Dissociation is freeze-state red — the nervous system has gone offline as a protective response. Grounding helps; force does not.',
+        high: 'Dissociation is a red-zone freeze response, often trauma-related. The body has chosen offline over fight-or-flight. Trauma-informed grounding is essential.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Surface looks like blue (still, quiet) but is functionally red (system overwhelm, not low energy).' }
+      ],
+      whatTheyMightNeed: 'A trauma-informed adult. Grounding (ice, strong scent, name 5 things you see). Time and quiet.',
+      empathyHint: 'Speak softly, use her name, name the room ("you are at school, you are safe, today is Monday"). Get adult help.',
+      whatNotToDo: 'Do not shake or grab her. Do not crowd. Do not say "snap out of it." Do not interrogate about the trigger.',
+      pairsWithStrategies: ['orient_to_room', 'grounding_sensory', 'trauma_informed_adult'],
+      research: 'Dissociation is a well-documented trauma response (van der Kolk, "The Body Keeps the Score"); grounding interventions return presence (NCTSN trauma resources).'
+    },
+    {
+      id: 'red_dumped_publicly',
+      scenario: 'Friend who got dumped publicly and is sobbing',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend\'s boyfriend broke up with her in front of everyone and she is crying really hard in the bathroom.',
+        middle: 'Your friend just got publicly dumped in the cafeteria and is sobbing in the bathroom, inconsolable.',
+        high: 'Your friend just got publicly dumped in front of half the school. She is in the bathroom sobbing, hyperventilating, devastated.'
+      },
+      observableCues: [
+        'Acute public humiliation',
+        'Uncontrolled sobbing',
+        'Hyperventilation',
+        'Recent specific trigger',
+        'Beyond comfort-able',
+        'Acute red emotional crisis'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Getting dumped in front of people hurts so much it feels like red zone. Big tears are okay.',
+        middle: 'Public romantic loss layered with humiliation is acute red — emotional crisis with social trauma layer.',
+        high: 'Acute heartbreak + public humiliation produces full red — both grief activation and shame activation in one event.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she escalates to self-harm thoughts, suicidal language, or running away, the red has reached safety-concern level. 988 (call/text).' }
+      ],
+      whatTheyMightNeed: 'Privacy from onlookers. A friend who stays. Sometimes a parent pickup. Sometimes a counselor.',
+      empathyHint: 'Close the bathroom door. Sit on the floor next to her. Hand her tissues. Do not talk much.',
+      whatNotToDo: 'Do not film. Do not let others in. Do not say "he was a jerk anyway" yet. Do not minimize.',
+      pairsWithStrategies: ['privacy_protection', 'presence_not_words', 'parent_pickup_option'],
+      research: 'Public humiliation is uniquely damaging (Klein, social pain research); romantic loss activates pain neural circuits (Eisenberger).'
+    },
+    {
+      id: 'red_running_out_of_class',
+      scenario: 'Kid running out of class and out the door',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend just ran out of the classroom and out the school door. The teacher is calling for help.',
+        middle: 'Your peer just bolted from class, ran down the hall, and out the door. Some kind of overwhelm pushed past threshold.',
+        high: 'Your peer just stood up in class, walked fast out, and is in the parking lot or further. Elopement, red-zone overwhelm.'
+      },
+      observableCues: [
+        'Sudden flight from setting',
+        'Likely overwhelm or panic trigger',
+        'May not respond to voice',
+        'Safety risk depending on location',
+        'Red-zone flight response',
+        'Adult intervention needed immediately'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Running away from class because of big feelings is a red zone thing. Adults need to know right away to keep the kid safe.',
+        middle: 'Elopement is full red — flight response. Safety is the first priority. Trauma-informed response after.',
+        high: 'Elopement is acute red. Get adults involved immediately. Do not chase aggressively (may escalate); follow at distance, alert adults.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Different drivers (autism flight, panic flight, trauma flight) all produce same red flight pattern — supports differ but safety response is similar.' }
+      ],
+      whatTheyMightNeed: 'Safety first. Adult intervention. After: investigation of what triggered, with trauma-informed lens.',
+      empathyHint: 'If you are a peer: tell an adult immediately. If you are an adult: prioritize physical safety, follow at distance, do not chase aggressively.',
+      whatNotToDo: 'Do not tackle. Do not yell threats ("you are in so much trouble"). Do not punish the flight without understanding the trigger.',
+      pairsWithStrategies: ['safety_first', 'adult_intervention', 'trauma_informed_followup'],
+      research: 'Elopement is a documented behavior in autism and trauma populations (Anderson, autism elopement); chasing escalates flight (CPI training).'
+    },
+    {
+      id: 'red_threatening_student',
+      scenario: 'Student threatening another student',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Two kids are about to fight at recess. One is yelling threats and the other is scared.',
+        middle: 'Two students are face to face in the hall, one threatening the other, body activated, voices rising.',
+        high: 'A student is making escalating verbal threats to another, body activated, fists clenched, scene close to physical.'
+      },
+      observableCues: [
+        'Verbal threats',
+        'Activated body',
+        'Imminent physical risk',
+        'Possibly a victim of bullying retaliating',
+        'Red zone with safety risk',
+        'Adult intervention essential'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Threatening to hurt someone is red zone and needs an adult right now.',
+        middle: 'Verbal threats with body activation are red — adult de-escalation needed immediately to prevent physical incident.',
+        high: 'Threats with body activation are red and require trained adult intervention. De-escalation principles apply.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Important to remember: threatening student may be in red because they are being bullied. The threat is the symptom, not the whole story. Address safety and root cause.' }
+      ],
+      whatTheyMightNeed: 'Trained de-escalation. Physical separation. Both students assessed for what brought them here.',
+      empathyHint: 'If you are a peer: get help. If you are staff: calm voice, low body, give space, do not corner. CPI principles.',
+      whatNotToDo: 'Do not get in between physically if untrained. Do not match the energy. Do not assume the threatener is the only one who needs help.',
+      pairsWithStrategies: ['adult_intervention', 'physical_separation', 'cpi_de_escalation'],
+      research: 'Verbal aggression often precedes physical (PREPaRE crisis model); trauma-informed de-escalation reduces incident severity (CPI; NASP).'
+    },
+    {
+      id: 'red_hyperventilating_exam',
+      scenario: 'Friend hyperventilating before exam',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is breathing really really fast before the big test and looks like she might faint.',
+        middle: 'Your friend is hyperventilating outside the exam room, hand on chest, dizzy, cannot calm her breath.',
+        high: 'Your friend is in pre-exam hyperventilation — chest heaving, hands tingling, dizzy, panic peak.'
+      },
+      observableCues: [
+        'Hyperventilation (very rapid shallow breathing)',
+        'Dizziness',
+        'Tingling hands or face',
+        'Cannot self-regulate breath',
+        'Pre-exam trigger',
+        'Acute red panic'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Breathing too fast and feeling like you might pass out before a test is red zone panic.',
+        middle: 'Hyperventilation is full panic — red zone. The breath itself has become the problem.',
+        high: 'Hyperventilation drives further panic via respiratory alkalosis. Breaking the breath pattern is the intervention.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If she faints, is asthmatic, or has chest pain, get medical/nurse help — not just psychological.' }
+      ],
+      whatTheyMightNeed: 'Co-regulating breath, ideally with extended exhale. Sometimes a paper bag (no, actually — disputed; just slow breath is safer). Adult support. Possible postponement of exam.',
+      empathyHint: 'Stay calm. "Breathe with me. In for 4, out for 8." Slow your breath first. Maintain eye contact softly.',
+      whatNotToDo: 'Do not say "calm down." Do not give a paper bag (myth — can worsen). Do not force her into the exam.',
+      pairsWithStrategies: ['co_regulating_breath_long_exhale', 'extended_time_or_postpone', 'nurse_check'],
+      research: 'Hyperventilation drives panic spirals (Craske); extended exhale activates parasympathetic recovery (Brown & Gerbarg); paper bag method has been deprecated.'
+    },
+    {
+      id: 'red_fight_mode_pushed',
+      scenario: 'Kid in fight-mode after being pushed',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Someone pushed your friend in the hallway and now he is ready to fight back.',
+        middle: 'Your friend just got shoved by another student and is now in fight mode — fists up, ready to swing.',
+        high: 'Your friend got shoved hard and is now mid-fight-response — fists up, body forward, ready to retaliate.'
+      },
+      observableCues: [
+        'Recent physical provocation',
+        'Fight stance',
+        'Hyperarousal',
+        'Tunnel vision on opponent',
+        'Imminent physical incident',
+        'Acute red fight response'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Wanting to fight back after being pushed is red zone. Adults need to help so nobody gets hurt.',
+        middle: 'Fight response to physical provocation is full red. Intervention needed to prevent escalation.',
+        high: 'Fight-mode after provocation is amygdala-driven red. The trigger is legitimate; the response needs de-escalation, not lecture.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Self-defense is sometimes the appropriate response — context matters. But red-zone retaliation in school is rarely the best path.' }
+      ],
+      whatTheyMightNeed: 'Physical distance from the trigger. A friend to pull him out. Adult to address the shover.',
+      empathyHint: 'If you are a peer: "Come with me, let us go." If you are staff: calm voice, low body, give space, separate.',
+      whatNotToDo: 'Do not say "do not let him get to you" mid-rage. Do not punish only him (he was shoved first). Do not crowd.',
+      pairsWithStrategies: ['extract_from_situation', 'address_both_parties', 'de_escalation'],
+      research: 'Provoked fight response is amygdala-driven (LeDoux); de-escalation requires space first, lecture later (CPI training).'
+    },
+    {
+      id: 'red_shutdown_freeze_trigger',
+      scenario: 'Student in shutdown or freeze after trigger',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend went completely still and quiet after something scared her. She is not answering.',
+        middle: 'Your friend hit a trigger and went into freeze — silent, unresponsive, body still, eyes blank.',
+        high: 'Your friend is in trauma shutdown — completely still, not responsive, eyes blank, dorsal-vagal freeze state.'
+      },
+      observableCues: [
+        'Sudden non-responsiveness',
+        'Body completely still',
+        'Blank eyes',
+        'May have trauma history',
+        'Recent identifiable trigger',
+        'Freeze-state red'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When a friend gets quiet and very still after something scary, that is the red zone freeze.',
+        middle: 'Shutdown/freeze is a dorsal-vagal red response. Body has gone offline as protection.',
+        high: 'Shutdown is parasympathetic-dorsal red — when fight/flight is not available, the system goes offline. Trauma-informed grounding helps; force does not.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Surface looks blue (still, quiet) but is functionally red (system overwhelm freeze, not low energy).' }
+      ],
+      whatTheyMightNeed: 'Trauma-informed adult. Soft voice. Orientation to room. Sensory grounding (ice, scent). Time.',
+      empathyHint: 'Soft voice. Use her name. Name the room. "You are at school, you are safe, today is [day]." Get adult help.',
+      whatNotToDo: 'Do not shake. Do not yell. Do not crowd. Do not interrogate about the trigger. Do not "snap her out of it."',
+      pairsWithStrategies: ['trauma_informed_adult', 'orient_to_room', 'sensory_grounding'],
+      research: 'Dorsal-vagal shutdown is a documented trauma response (Porges, polyvagal theory; van der Kolk).'
+    },
+    {
+      id: 'red_acute_grief_wave',
+      scenario: 'Friend after a parent\'s death (acute grief wave)',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend\'s dad died last week and right now she is sobbing and cannot stop.',
+        middle: 'Your friend\'s mom died and right now she is hit by a grief wave — sobbing, gasping, inconsolable.',
+        high: 'Your friend\'s parent died recently and a grief wave just hit — sobbing, gasping, knees buckling, beyond words.'
+      },
+      observableCues: [
+        'Recent significant death',
+        'Uncontrolled sobbing',
+        'Gasping or hyperventilation',
+        'Acute grief wave (not steady state)',
+        'Beyond comfort capacity in moment',
+        'Acute red emotional crisis'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When a parent dies, the sadness comes in giant waves. The biggest waves feel like red zone, and that is normal.',
+        middle: 'Acute grief waves can produce full red — emotional crisis without pathology. Just human grief at its peak.',
+        high: 'Acute grief is one of the cleanest red presentations there is — appropriate response to enormous loss, even though it is full red activation.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If grief includes suicidal language ("I want to be with him") it has reached safety-concern level. Take seriously. 988.' }
+      ],
+      whatTheyMightNeed: 'Presence. No words. Tissues. A parent or trusted adult to take over from peers. Time.',
+      empathyHint: 'Sit with her. Hold her hand if welcome. Do not try to fix. "I am here. I am so sorry." Stay.',
+      whatNotToDo: 'Do not say "they are in a better place" (unless you know her beliefs). Do not say "be strong." Do not film.',
+      pairsWithStrategies: ['silent_presence', 'physical_comfort_if_welcome', 'pass_to_adult'],
+      research: 'Acute grief is normal and requires presence not intervention (Bonanno; Worden); strong support relationships predict adjustment.'
+    },
+    {
+      id: 'red_active_emotional_crisis',
+      scenario: 'Kid in an active emotional crisis',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend is crying really hard and saying things that sound scary. You need to get a grown-up right now.',
+        middle: 'Your friend is in active crisis — uncontrollable crying, frightening language, possible safety concern. Adult immediately.',
+        high: 'Your friend is in acute emotional crisis. Concerning statements, dysregulated body, possible safety risk. 988 / adult / 911 if needed.'
+      },
+      observableCues: [
+        'Acute distress',
+        'Concerning statements (about safety, self, future)',
+        'Dysregulated body',
+        'Outside coping capacity',
+        'Possible safety concern',
+        'Red zone with safety risk'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When a kid is in a really big crisis, we get adult help right away. 988 is a free phone or text line that can help.',
+        middle: 'Active crisis is full red. 988 (call/text) connects to trained counselors 24/7. Trusted adult immediately.',
+        high: 'Active emotional crisis is red requiring escalation. 988 Suicide & Crisis Lifeline (call or text 988). Crisis Text Line: text HOME to 741741. Trusted adult. 911 if imminent safety risk.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Always escalate active crisis. Better to over-respond than under-respond. The Trevor Project (1-866-488-7386) for LGBTQ+ youth.' }
+      ],
+      whatTheyMightNeed: 'Trained crisis support. 988 (call/text). Trusted adult. Sometimes 911. Do not navigate alone.',
+      empathyHint: 'Stay. "I am not going anywhere. We are getting help." Then get help. Make the call together if she allows.',
+      whatNotToDo: 'Do not promise to keep it a secret. Do not handle it alone. Do not delay getting adult help.',
+      pairsWithStrategies: ['call_988', 'tell_trusted_adult', 'do_not_keep_safety_secret', 'stay_with_person'],
+      research: '988 Lifeline launched 2022 as 24/7 crisis support (988lifeline.org); never keep suicide-related secrets (NASP).'
+    },
+    {
+      id: 'red_self_harm_disclosure',
+      scenario: 'Student who self-harmed and tells you',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend showed you marks on her arm. She says she did it. You need to tell a grown-up right away to help her.',
+        middle: 'Your friend disclosed she has been self-harming. This is a moment to be present, validate, and tell a trusted adult — even if she asked you not to.',
+        high: 'Your friend just disclosed self-harm. This is red zone. Trusted adult immediately. 988 and Crisis Text Line are real resources. Do not keep this secret.'
+      },
+      observableCues: [
+        'Disclosure of self-harm',
+        'Visible marks or scars',
+        'Acute or ongoing',
+        'High trust risk in the moment',
+        'Safety concern',
+        'Always red zone response'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Self-harm means a grown-up MUST know to help. It is a really big thing and not something to keep secret, even if your friend asks.',
+        middle: 'Self-harm disclosure is red. The friend who told you trusts you. The most loving thing is to loop in an adult, even against her wishes. 988 (call/text), Crisis Text Line HOME to 741741.',
+        high: 'Self-harm disclosure is always escalated to a trusted adult. The disclosure itself is often a help-seeking behavior. 988, Crisis Text Line, school counselor, parent. Do not keep this secret.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Always red, even if she "seems fine now." Self-harm is a safety concern that warrants professional assessment.' }
+      ],
+      whatTheyMightNeed: 'Trusted adult immediately. Clinical support. 988 (call/text). Crisis Text Line (HOME to 741741). Possibly a safety plan.',
+      empathyHint: '"Thank you for telling me. I love you and I am scared and I am going to get help because I want you to be safe. I am going with you."',
+      whatNotToDo: 'Do not promise secrecy. Do not lecture. Do not show shock that increases shame. Do not handle alone.',
+      pairsWithStrategies: ['tell_trusted_adult', 'call_988', 'crisis_text_line', 'do_not_keep_safety_secret'],
+      research: 'Self-harm requires clinical assessment (NAMI; AFSP); disclosure is help-seeking behavior; secrecy worsens outcomes (NASP suicide prevention).'
+    },
+    {
+      id: 'red_suicidal_ideation_disclosure',
+      scenario: 'Friend with suicidal ideation telling you',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend told you she wants to die or hurt herself. You need to get a grown-up right now. This is the most important thing.',
+        middle: 'Your friend disclosed suicidal thoughts. Stay calm. Stay with her. Tell a trusted adult. 988 (call or text). LGBTQ+ youth: Trevor Project 1-866-488-7386.',
+        high: 'Your friend just disclosed suicidal ideation. Red zone, full stop. 988 (call or text 24/7). Crisis Text Line HOME to 741741. Trevor Project for LGBTQ+ youth: 1-866-488-7386 or text START to 678678. Trusted adult NOW.'
+      },
+      observableCues: [
+        'Disclosure of suicidal thoughts',
+        'May or may not have plan',
+        'Always red response',
+        'Help-seeking behavior',
+        'Trust given to you',
+        'Safety concern primary'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Suicidal thoughts always mean we get a grown-up right away. 988 is a free number that helps. Telling someone might save your friend.',
+        middle: 'Suicidal ideation disclosure is the highest-priority red zone. Stay calm, stay present, get adult help immediately. 988 connects to trained counselors 24/7.',
+        high: 'Suicidal ideation requires immediate escalation. 988 Suicide & Crisis Lifeline (call/text). Crisis Text Line (HOME to 741741). Trevor Project for LGBTQ+ youth (1-866-488-7386 or text START to 678678). Trusted adult. 911 if imminent risk.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Always red. Never minimize, never delay. The disclosure is a sign of trust — honor it by getting help, not by keeping silent.' }
+      ],
+      whatTheyMightNeed: 'Adult support immediately. Crisis line connection. Safety plan. Clinical care. Removal of means access if applicable.',
+      empathyHint: '"I am so glad you told me. I love you. I am not leaving you. We are getting help together right now." Stay. Call 988 with her.',
+      whatNotToDo: 'NEVER promise to keep it secret. Do not say "do not think like that." Do not handle alone. Do not delay.',
+      pairsWithStrategies: ['call_988', 'crisis_text_line', 'trevor_project_for_lgbtq', 'tell_trusted_adult', 'stay_with_person'],
+      research: '988 launched 2022 (988lifeline.org); Crisis Text Line: text HOME to 741741 (crisistextline.org); Trevor Project: 1-866-488-7386, text START to 678678 (thetrevorproject.org); peer disclosure must be escalated (NASP, AFSP).'
+    },
+    {
+      id: 'red_manic_elated_outburst',
+      scenario: 'Kid during a manic-edge elated outburst',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend is super super happy and talking really fast and not making sense.',
+        middle: 'Your friend is in an unusually elated state — talking very fast, jumping topics, grandiose ideas, not sleeping, energy way past normal.',
+        high: 'Your friend is showing manic-edge symptoms — pressured speech, grandiose plans, decreased need for sleep, hyper-elation past normal happy. Possible bipolar episode.'
+      },
+      observableCues: [
+        'Elevated mood beyond normal',
+        'Pressured rapid speech',
+        'Decreased need for sleep',
+        'Grandiose ideas or plans',
+        'Possibly risky decisions',
+        'Red on the manic side (less recognized)'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When happy feelings get so big they do not stop, a grown-up should know. It can be a red zone thing.',
+        middle: 'Manic-edge presentations are red even though they look "happy." Pressured speech, no sleep, grandiose plans signal possible bipolar episode.',
+        high: 'Manic and hypomanic episodes are red — they feel great inside but can drive risky decisions and may signal bipolar disorder needing clinical care.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Genuine excitement looks different from mania — has off-switch, makes sense, does not require less sleep. The clinician judges the distinction, not peers.' }
+      ],
+      whatTheyMightNeed: 'Clinical assessment. Trusted adult. Sleep regulation. Sometimes urgent psychiatric care.',
+      empathyHint: '"I am glad you are happy. I am also a little worried because [no sleep / risky idea]. Let us talk to a counselor together."',
+      whatNotToDo: 'Do not say "you are crazy." Do not enable risky decisions. Do not dismiss as just being happy if other markers are there.',
+      pairsWithStrategies: ['clinical_assessment_referral', 'tell_trusted_adult', 'sleep_concern_flag'],
+      research: 'Bipolar disorder in adolescents often presents first as manic episode (NIMH, child bipolar research); early intervention improves long-term outcomes.'
+    },
+    {
+      id: 'red_violent_tantrum_young',
+      scenario: 'Sibling in violent tantrum (younger child)',
+      forBand: 'all',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother is hitting things and trying to hit you in a really big tantrum. Stay safe and get a grown-up.',
+        middle: 'Your little sibling is in a violent tantrum — hitting, throwing things, kicking. Safety first.',
+        high: 'Your little sibling is in a destructive tantrum — hitting, throwing things, possible self or other harm. Adult intervention needed.'
+      },
+      observableCues: [
+        'Young child',
+        'Hitting, throwing, or kicking',
+        'Safety risk to self or others',
+        'Beyond verbal de-escalation',
+        'Red with safety concern',
+        'Adult intervention essential'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'A tantrum that hurts is red zone and needs an adult. Stay safe yourself first.',
+        middle: 'Violent tantrum is red with safety risk. Adult intervention immediately. Hold child if trained and safe.',
+        high: 'Violent tantrum in young children requires adult intervention with safety holds if trained (CPI), removing dangerous objects, protecting siblings.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'In autistic children, what looks like violent tantrum may be meltdown with self-injurious behavior — sensory accommodations differ from tantrum response.' }
+      ],
+      whatTheyMightNeed: 'Adult, safety, sensory reduction, sometimes professional support if recurring.',
+      empathyHint: 'If you are a sibling: get to a safe space, tell a parent. If you are a parent: calm voice, remove dangers, hold limit.',
+      whatNotToDo: 'Do not hit back. Do not match the rage. Do not handle alone if recurring violence — get professional support.',
+      pairsWithStrategies: ['safety_first', 'adult_intervention', 'professional_support_if_recurring'],
+      research: 'Violent tantrums beyond developmental norm warrant assessment (Greene, "Explosive Child"); sensory differences may underlie what looks like behavior.'
+    },
+    {
+      id: 'red_ptsd_flashback_school',
+      scenario: 'Student in PTSD flashback at school',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Something at school reminded your friend of a scary time and now she is acting like she is back there. Get a grown-up.',
+        middle: 'Your friend hit a trauma trigger and is in flashback — reacting to a past event as if it is happening now. Trauma-informed adult.',
+        high: 'Your friend is in PTSD flashback — re-experiencing past trauma, not oriented to present, body activated as if trigger is current.'
+      },
+      observableCues: [
+        'Acute reactivity to current trigger',
+        'Not oriented to present',
+        'May call out names or react to non-present people',
+        'Body fully activated',
+        'Known or suspected trauma history',
+        'Red trauma response'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'A flashback means a bad memory is making the body feel like the scary thing is happening again. Adults help bring the person back to now.',
+        middle: 'Flashbacks are full red — the past has hijacked the present. Grounding to the current moment is the intervention.',
+        high: 'PTSD flashbacks are red. Grounding to present (orient to room, name day, sensory anchors) interrupts re-experiencing. Trauma-informed adult essential.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Different trauma presentations (flashback, dissociation, freeze) are all red but supports vary slightly. Trauma-informed staff is essential.' }
+      ],
+      whatTheyMightNeed: 'Trauma-informed adult. Orientation to room. Sensory grounding (ice, scent). Calm voice. Time.',
+      empathyHint: 'Soft voice. Use her name. "You are at school, you are safe, today is [day]. You are with me. Look at this [object]."',
+      whatNotToDo: 'Do not grab or shake. Do not yell to "snap out of it." Do not interrogate trauma details. Do not crowd.',
+      pairsWithStrategies: ['orient_to_room', 'sensory_grounding', 'trauma_informed_adult'],
+      research: 'Flashbacks are documented PTSD symptom (DSM-5; van der Kolk); grounding interventions return present-time orientation (NCTSN trauma resources).'
+    },
+    {
+      id: 'red_finals_incapacitation',
+      scenario: 'Friend overwhelmed during finals to incapacitation',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is so worried about her tests she cannot do anything. She just sits and cries.',
+        middle: 'Your friend is so overwhelmed by finals she cannot study, cannot sleep, cannot eat. Just sits and cries or stares.',
+        high: 'Your friend is incapacitated by finals overwhelm — cannot study, cannot eat, cannot sleep, immobilized. Acute stress reaction.'
+      },
+      observableCues: [
+        'Acute multi-day stress',
+        'Functional impairment',
+        'Cannot perform basic self-care',
+        'Crying or staring',
+        'Cumulative red overwhelm',
+        'Help needed'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When stress gets so big you cannot do anything, it is red zone and you need help.',
+        middle: 'Acute stress reaction with functional shutdown is red. Adult support needed. Sometimes academic accommodations are appropriate.',
+        high: 'Stress-induced functional impairment is red. Counselor referral, academic accommodation request, parent loop-in, sometimes clinical assessment.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If finals overwhelm tips into suicidal ideation, it has reached the highest level of red and needs 988 / clinical care.' }
+      ],
+      whatTheyMightNeed: 'Counselor. Possibly extended finals. Sleep. Food. A parent who knows. Sometimes a break from school.',
+      empathyHint: '"This is too much for one person. I am getting you to the counselor. You are not failing — you need support."',
+      whatNotToDo: 'Do not say "just push through." Do not minimize. Do not let her handle it alone.',
+      pairsWithStrategies: ['counselor_referral', 'accommodation_request', 'parent_loop_in'],
+      research: 'Acute stress reaction is a recognized clinical state (DSM-5); accommodations for severe stress are within reasonable supports (Section 504).'
+    },
+    {
+      id: 'red_strong_dissociation',
+      scenario: 'Kid lost in a strong dissociation state',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend has been staring at nothing for a long time and is not responding when you talk. Get a grown-up.',
+        middle: 'Your friend is in deep dissociation — not responding, eyes blank, lost time, possibly hours. Trauma response. Adult immediately.',
+        high: 'Your friend is in deep dissociation — depersonalization, derealization, possible lost time. Trauma red shutdown.'
+      },
+      observableCues: [
+        'Prolonged unresponsiveness',
+        'Blank eyes',
+        'May report feeling unreal or detached',
+        'Possible lost time',
+        'Trauma history likely',
+        'Sustained red shutdown'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When a kid is "gone" inside her own head and cannot come back easily, adults must help.',
+        middle: 'Strong dissociation is red — the system has gone offline. Grounding, trauma-informed adult, sometimes clinical referral.',
+        high: 'Sustained dissociation warrants clinical assessment. Grounding may help in the moment; the pattern needs trauma-informed therapy.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Always red. Dissociation is a serious protective response that warrants professional support.' }
+      ],
+      whatTheyMightNeed: 'Trauma-informed adult. Grounding (cold water, ice, strong scent, body sensation). Sometimes urgent psych referral.',
+      empathyHint: 'Soft voice, use her name, orient to room. Offer ice to hold or strong scent (essential oil) if available.',
+      whatNotToDo: 'Do not shake. Do not crowd. Do not show alarm that worsens it. Do not interrogate trigger.',
+      pairsWithStrategies: ['trauma_informed_adult', 'sensory_grounding_cold_or_scent', 'clinical_referral'],
+      research: 'Dissociation requires trauma-informed care (van der Kolk; ISSTD guidelines); grounding interventions are first-line (NCTSN).'
+    },
+    {
+      id: 'red_broke_down_presentation',
+      scenario: 'Student who broke down crying in middle of presentation',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate started crying really hard in the middle of giving her project and could not finish.',
+        middle: 'Your classmate broke down mid-presentation — sobbing, frozen, cannot continue.',
+        high: 'Your classmate broke down crying mid-presentation, unable to continue, public emotional crisis.'
+      },
+      observableCues: [
+        'Public emotional collapse',
+        'Cannot continue task',
+        'Sobbing',
+        'Public exposure layer',
+        'Acute red with shame layer',
+        'Adult intervention needed'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Crying so hard you cannot finish in front of class is a red zone moment.',
+        middle: 'Public emotional collapse is red — the exposure compounds the underlying overwhelm.',
+        high: 'Mid-presentation breakdown is acute red layered with public shame. Teacher response sets tone for recovery and future trust.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'May be a trauma response if presentation content was personally activating. Either way, red.' }
+      ],
+      whatTheyMightNeed: 'Permission to step out. A counselor or trusted adult. Privacy. A re-do option later.',
+      empathyHint: 'Teacher: "Take a moment. Let us pause. We can come back to this later." Class: do not stare. Friend: walk out with her.',
+      whatNotToDo: 'Do not say "finish anyway." Do not let the class laugh. Do not require explanation in front of class.',
+      pairsWithStrategies: ['pause_immediately', 'privacy_protection', 'redo_option_later'],
+      research: 'Public failure activates shame circuits (Brackett, RULER); teacher response in shame moments shapes long-term safety in classroom.'
+    },
+    {
+      id: 'red_full_panic_loud_venue',
+      scenario: 'Friend in full panic at a loud venue (sensory + anxiety)',
+      forBand: 'high',
+      setting: 'sensory',
+      story: {
+        elementary: 'Your friend is at a really loud concert and is now crying and shaking and wants to leave right now.',
+        middle: 'Your friend is at a loud crowded event and just hit full panic — hyperventilating, shaking, sensory overload pushing into panic attack.',
+        high: 'Your friend is at a concert/event and just hit full panic — sensory overload combined with anxiety triggered red zone. Need to leave now.'
+      },
+      observableCues: [
+        'Loud crowded environment',
+        'Hyperventilation',
+        'Shaking',
+        'Acute panic peak',
+        'Sensory + anxiety convergence',
+        'Must leave for recovery'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When the loudness and the worry get too big, the body goes to red. The fix is to leave.',
+        middle: 'Sensory overload + panic attack convergence is red. The intervention is environmental change — leave the venue.',
+        high: 'Sensory + anxiety convergence drives red faster than either alone. Immediate environment change is the primary intervention.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Always red. The environment is the trigger and the environment must change.' }
+      ],
+      whatTheyMightNeed: 'Leave immediately. Quiet space. Outdoor air. Co-regulating breath. Headphones for transit out.',
+      empathyHint: '"We are leaving right now. Stay with me. Hold my hand." Walk her out. Outside. Quiet. Breathe together.',
+      whatNotToDo: 'Do not try to ride it out in the venue. Do not say "this is your favorite band." Do not let her drive alone home.',
+      pairsWithStrategies: ['leave_immediately', 'outdoor_quiet_recovery', 'co_regulating_breath'],
+      research: 'Sensory + panic convergence escalates faster than either alone; environment change is primary intervention (autism + anxiety research).'
+    },
+    {
+      id: 'red_nightmare_wake',
+      scenario: 'Kid in nightmare wake-up',
+      forBand: 'elementary',
+      setting: 'home',
+      story: {
+        elementary: 'Your little brother woke up from a nightmare crying and screaming. He is still scared even though he is awake.',
+        middle: 'Your little sibling just woke from a nightmare — screaming, sobbing, confused between dream and reality.',
+        high: 'A nightmare just woke a young sibling — acute fear response still active after waking, disoriented and inconsolable for several minutes.'
+      },
+      observableCues: [
+        'Just woken from sleep',
+        'Acute fear response active',
+        'Sobbing or screaming',
+        'May be disoriented dream-vs-real',
+        'Young child usually',
+        'Acute red but typically short'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Waking up from a nightmare scared is red zone. A grown-up\'s hug helps the body know it is safe now.',
+        middle: 'Post-nightmare fear is red and brief. Co-regulating presence helps the body re-orient to safety.',
+        high: 'Post-nightmare arousal is acute red that resolves quickly with co-regulating adult presence and gentle re-orientation.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Night terrors (different from nightmares) involve being not-quite-awake — child may not recognize you. Stay calm and present until it passes.' }
+      ],
+      whatTheyMightNeed: 'Adult presence, hug if welcome, soft light, gentle reorientation to safety.',
+      empathyHint: '"You are safe. I am here. That was a scary dream and it is over now." Soft voice, body close.',
+      whatNotToDo: 'Do not tell him to "be a big kid." Do not insist on details of the dream. Do not turn on bright lights.',
+      pairsWithStrategies: ['adult_presence', 'gentle_reorientation', 'soft_light'],
+      research: 'Nightmares are normal developmentally; co-regulation predicts return to sleep (Mindell, pediatric sleep research).'
+    },
+    {
+      id: 'red_after_parent_fight_activated',
+      scenario: 'Student after parent fight at home, still activated next day',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend\'s parents had a really big fight last night and today she keeps jumping at any loud noise.',
+        middle: 'Your friend\'s home blew up last night and today she is hypervigilant — startled by noises, on edge, exhausted.',
+        high: 'Your friend\'s home conflict last night left her still in red — hypervigilant, jumpy, exhausted, low capacity for school today.'
+      },
+      observableCues: [
+        'Recent acute home conflict',
+        'Hypervigilance',
+        'Startle response',
+        'Exhaustion + activation',
+        'Sustained sympathetic activation',
+        'Trauma-relevant red carryover'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'When something scary happens at night, your body can still be in the red zone the next day.',
+        middle: 'Sustained activation from acute home conflict is red carryover. Trauma-informed support helps the body come down.',
+        high: 'Acute stress sympathetic carryover is red. Trauma-informed adult, reduced academic demand, sensory grounding, and connection to outside support help.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If the home conflict involved violence or substance use, this is potentially CPS territory — trusted school adult must assess.' }
+      ],
+      whatTheyMightNeed: 'A reduced-demand day. A counselor check-in. Trusted adult who knows. Sometimes outside resources for family.',
+      empathyHint: 'A teacher who knows: "Looks like you are running on empty today. Take it easy. Counselor is here if you want."',
+      whatNotToDo: 'Do not demand peak academic performance. Do not press for home details in front of peers. Do not assume she is being lazy.',
+      pairsWithStrategies: ['reduced_demand_day', 'counselor_pass', 'trauma_informed_response'],
+      research: 'Domestic conflict is an ACE (Felitti); sympathetic activation can persist 24+ hours (van der Kolk); school accommodations during acute family stress improve outcomes.'
+    },
+    {
+      id: 'red_overdose_risk',
+      scenario: 'Friend during overdose risk (call 988 and 911)',
+      forBand: 'high',
+      setting: 'crisis',
+      story: {
+        elementary: 'Your friend says she took too many pills. Call 911 right now. Tell a grown-up.',
+        middle: 'Your friend disclosed she took too many pills or substances. CALL 911. Then 988. Then a parent/adult. Stay with her.',
+        high: 'Your friend disclosed a possible overdose or substance overuse. CALL 911 IMMEDIATELY. 988 for crisis support. Stay with her. Tell adults.'
+      },
+      observableCues: [
+        'Disclosure of overdose or near-overdose',
+        'Medical emergency',
+        'Possibly altered consciousness',
+        'Acute safety risk',
+        '911 + adult + 988',
+        'Highest red'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'This is a medical emergency. Call 911. Tell a grown-up. Do not leave her alone.',
+        middle: 'Overdose risk is a medical emergency. Call 911 first. Then 988 for crisis support. Then trusted adult. Stay with her. Do not give food or water. Note what was taken.',
+        high: 'Suspected overdose: CALL 911. Provide what was taken if known. Do not induce vomiting. Stay with her. Maintain airway. 988 / Crisis Text Line in parallel for emotional crisis dimension.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'No alternative read. This is medical emergency red. Act immediately.' }
+      ],
+      whatTheyMightNeed: '911 EMS. Hospital evaluation. Mental health follow-up. Family or adult support.',
+      empathyHint: '"I love you. I am calling 911. I am not leaving you. You did the right thing telling me." Make the call.',
+      whatNotToDo: 'Do not delay calling 911. Do not promise secrecy. Do not try to handle alone. Do not induce vomiting (sometimes harmful).',
+      pairsWithStrategies: ['call_911_first', 'call_988_for_crisis', 'tell_trusted_adult', 'stay_with_person'],
+      research: 'Overdose is a leading cause of preventable death in youth (CDC); rapid 911 response saves lives; combine medical + mental health response (SAMHSA crisis guidelines).'
+    },
+    {
+      id: 'ambig_quiet_student',
+      scenario: 'Quiet student who is not responding',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate has not said anything all morning and is just sitting quietly. It is hard to tell why.',
+        middle: 'Your classmate has been silent and still for most of the morning. Hard to read what is going on inside.',
+        high: 'Your classmate is silent and still, eyes down, not engaging. Could be many things — none obvious from outside.'
+      },
+      observableCues: [
+        'Reduced verbal output',
+        'Still body',
+        'Hard to read affect',
+        'No obvious distress markers',
+        'Pattern may or may not be baseline',
+        'Ambiguous from outside'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Going quiet usually means blue zone, but not always. Could be lots of things.',
+        middle: 'Default read is blue (withdrawal/low energy) but quiet has many causes. Context matters.',
+        high: 'Quiet defaults to blue read but legitimately could be red shutdown, yellow social anxiety, or green introversion. Knowing the person and context is essential.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Could be a red shutdown — trauma freeze that looks identical to blue from outside.' },
+        { zone: 'yellow', why: 'Could be social anxiety hiding in silence — yellow inside, blue outside.' },
+        { zone: 'green', why: 'Could be a regulated introvert recharging. Quiet does not equal distressed.' }
+      ],
+      whatTheyMightNeed: 'A low-demand check-in to learn more. Not a diagnosis from outside.',
+      empathyHint: 'Quiet "you seem quiet today — anything you want to share?" gives her the option without forcing.',
+      whatNotToDo: 'Do not assume the worst. Do not assume the best. Do not project your zone onto her.',
+      pairsWithStrategies: ['low_demand_check_in', 'do_not_assume', 'ask_with_options'],
+      research: 'Behavioral signs are ambiguous (Ekman, facial expression research); asking is more reliable than inferring.'
+    },
+    {
+      id: 'ambig_hyperactive_kid',
+      scenario: 'Hyper-active kid bouncing — yellow? red? green?',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is super bouncy and excited today. Hard to tell if it is fun-energy or worried-energy.',
+        middle: 'Your friend is bouncing today — high energy, fast talking, hyper. Could be excitement, anxiety, or sensory overstim.',
+        high: 'Your friend is in high-energy mode — hyperactive, fast speech, bouncing. Hard to read from outside whether yellow, red, or green.'
+      },
+      observableCues: [
+        'High motor activity',
+        'Fast speech',
+        'Energetic affect',
+        'Could be many drivers',
+        'Context matters',
+        'Ambiguous from outside'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'Lots of bouncy energy is often yellow zone but not always.',
+        middle: 'Default read is yellow but high energy has multiple drivers. Knowing baseline and triggers matters.',
+        high: 'High activity is yellow by default but legitimately could be green excitement, red overstim, or ADHD baseline.'
+      },
+      alternativeReads: [
+        { zone: 'green', why: 'Could be genuine excitement-flow if calm enough to be sustainable.' },
+        { zone: 'red', why: 'Could be over-stim heading toward meltdown — yellow tipping to red.' },
+        { zone: 'green', why: 'For some ADHD students, this IS their baseline green when not over-aroused.' }
+      ],
+      whatTheyMightNeed: 'Check in to learn what is driving it. Offer regulation tools just in case.',
+      empathyHint: 'Quiet "you got big energy today — feeling good?" invites him to tell you which it is.',
+      whatNotToDo: 'Do not assume he needs to be calmed if his energy is functional. Do not assume he is fine if you see distress markers.',
+      pairsWithStrategies: ['check_in_with_curiosity', 'offer_options_not_prescriptions'],
+      research: 'Activity level has multiple drivers (Kagan, temperament research); context-sensitive response is more effective than rule-based.'
+    },
+    {
+      id: 'ambig_crying_friend',
+      scenario: 'Crying friend — blue grief? red overwhelm? green release?',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is crying but you do not know why yet. It could be sad tears, scared tears, or even happy tears.',
+        middle: 'Your friend is crying. Without context, hard to read — could be blue grief, red overwhelm, or even green release.',
+        high: 'Your friend is crying. Tears alone do not tell the zone — could be sad, overwhelmed, relieved, or even happy. Context matters.'
+      },
+      observableCues: [
+        'Crying',
+        'Other markers needed to read accurately',
+        'Body posture is a clue',
+        'Verbal report most reliable',
+        'Recent context matters',
+        'Tears alone are ambiguous'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Crying is usually blue but not always.',
+        middle: 'Default read is blue (sadness) but crying happens across zones.',
+        high: 'Crying is the most multi-zone behavior there is. Tears at a wedding, after a fight, during panic, after relief — all different zones.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Sobbing-cannot-stop with full activation is red overwhelm.' },
+        { zone: 'green', why: 'Tears of relief after a hard thing is green-zone release. Cathartic crying can be regulating.' },
+        { zone: 'yellow', why: 'Anxious tears during build-up to a feared event are yellow.' }
+      ],
+      whatTheyMightNeed: 'Presence first, questions second. Read the body, not just the tears.',
+      empathyHint: 'Sit with her. "I am here. Tell me when you can." Tears find their words in their own time.',
+      whatNotToDo: 'Do not assume sad. Do not say "do not cry." Do not interrogate the cause.',
+      pairsWithStrategies: ['presence_first', 'read_full_body', 'do_not_assume_cause'],
+      research: 'Crying serves multiple functions (Vingerhoets, crying research); presence is more universally helpful than specific intervention.'
+    },
+    {
+      id: 'ambig_late_disheveled',
+      scenario: 'Student showing up late + disheveled — blue? red? life-circumstance?',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend came to school late, wearing yesterday\'s clothes, looking tired. Could be lots of reasons.',
+        middle: 'Your friend showed up late in yesterday\'s clothes, hair undone, eyes tired. Could be depression, life chaos, or just one bad morning.',
+        high: 'Your friend arrived late, disheveled, exhausted. Could be many things — depression-blue, post-crisis-red, family-chaos, or one rough night.'
+      },
+      observableCues: [
+        'Late arrival',
+        'Disheveled appearance',
+        'Possible exhaustion',
+        'Multiple possible causes',
+        'Pattern over time most informative',
+        'Ambiguous from one incident'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Coming to school looking really tired and messy could be blue zone, but it depends.',
+        middle: 'Default read is blue (low function from depression or overwhelm) but lots of life events produce the same picture.',
+        high: 'Disheveled-late patterns can be depression, family instability, post-crisis recovery, sleep disorder, or one rough night. Pattern over time matters more than one incident.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'After acute crisis (overdose recovery, hospital visit, trauma), the next day can look disheveled — red carryover.' },
+        { zone: 'yellow', why: 'Family chaos at home can show as disheveled with high anxiety underneath — yellow inside, blue outside.' },
+        { zone: 'green', why: 'Could be one rough night and otherwise fine — green at slightly reduced grooming.' }
+      ],
+      whatTheyMightNeed: 'A non-judgmental adult check-in. Pattern monitoring rather than one-day judgment.',
+      empathyHint: 'A counselor: "I noticed you have looked tired this week. Anything you want to share? No pressure."',
+      whatNotToDo: 'Do not comment on appearance publicly. Do not assume the worst. Do not assume the best either.',
+      pairsWithStrategies: ['non_judgmental_check_in', 'pattern_monitoring', 'private_conversation'],
+      research: 'Single-day appearance changes are weak signals; sustained patterns warrant follow-up (NASP early warning indicators).'
+    },
+    {
+      id: 'ambig_avoiding_eye_contact',
+      scenario: 'Student avoiding eye contact — blue? red? autism? cultural norm?',
+      forBand: 'all',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate does not look you in the eyes when you talk. Could be lots of reasons.',
+        middle: 'Your classmate avoids eye contact during conversation. Could be blue withdrawal, red shame, autistic comfort preference, or cultural norm.',
+        high: 'Your classmate consistently avoids eye contact. Many possibilities — none reducible to one zone without more info.'
+      },
+      observableCues: [
+        'Reduced eye contact',
+        'Multiple possible causes',
+        'Cultural variation significant',
+        'Neurodivergence relevant',
+        'Mood state relevant',
+        'One marker is not enough'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Not looking at someone\'s eyes does not always mean blue zone — sometimes it means the person is autistic, or it is normal in their culture.',
+        middle: 'Default read in distressed context is blue (withdrawal). But for autistic peers, lack of eye contact is often regulating, not avoidant. For some cultures, sustained eye contact is disrespectful.',
+        high: 'Eye contact is a multi-meaning behavior. Autistic individuals often find eye contact overwhelming. East Asian, Indigenous, and many other cultures consider sustained eye contact disrespectful. Do not read it as universally negative.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Could be shame-avoidance after a transgression — yellow-red.' },
+        { zone: 'green', why: 'For autistic peers, lack of eye contact may be their regulated baseline — green with different markers.' },
+        { zone: 'green', why: 'Cultural norm — green presentation that looks "off" to dominant-culture observer.' }
+      ],
+      whatTheyMightNeed: 'Respect for communication style. Other engagement markers (verbal response, body orientation, content of speech).',
+      empathyHint: 'For autistic peer: do not force eye contact. For unknown reason: look for other engagement markers before assuming.',
+      whatNotToDo: 'Do not demand "look at me when I am talking." Do not assume it means dishonesty or disrespect. Do not assume it means blue.',
+      pairsWithStrategies: ['respect_communication_styles', 'multi_marker_read', 'do_not_demand_eye_contact'],
+      research: 'Autistic-led research consistently advocates moving beyond eye contact as engagement proxy (Bottema-Beutel; Crompton); cultural variation in eye contact is well-documented (Hofstede).'
+    },
+    {
+      id: 'ambig_loud_laughing_kid',
+      scenario: 'Loud laughing kid — green joy? yellow anxious-edge? red disinhibition?',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is laughing really loud about everything today. Hard to tell if it is happy or nervous.',
+        middle: 'Your friend has been loud-laughing all afternoon. Could be genuine joy, anxious nervousness, or something more concerning.',
+        high: 'Your friend is laughing loud and often today. Could be green joy, yellow nervous-edge, or red manic-disinhibition. Look at other markers.'
+      },
+      observableCues: [
+        'Loud frequent laughter',
+        'Multiple possible drivers',
+        'Body tension is a clue',
+        'Sustained vs reactive matters',
+        'Other risk markers matter',
+        'Ambiguous alone'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Loud laughing is usually green zone happy but can sometimes be other things.',
+        middle: 'Default green if body is calm. Yellow if body is tight. Red if combined with grandiosity or no sleep.',
+        high: 'Loud laughter is green-by-default but read other markers: tight body = yellow anxious deflection; grandiose plans + no sleep = red manic-edge.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Anxious laughter has a higher pitch and the body is often tight. Yellow inside, green-looking outside.' },
+        { zone: 'red', why: 'Disinhibition (manic edge, intoxication, dissociation) can produce inappropriate loud laughter.' }
+      ],
+      whatTheyMightNeed: 'Read the full body, not just the sound.',
+      empathyHint: 'A quiet "you sound happy — what is up?" invites him to confirm or correct your read.',
+      whatNotToDo: 'Do not shush him for being too loud without reading him. Do not assume manic or intoxicated based on one moment.',
+      pairsWithStrategies: ['full_body_read', 'check_in_with_curiosity'],
+      research: 'Laughter has multiple causes (Provine); anxious laughter has distinct acoustic features (Bryant, laughter research).'
+    },
+    {
+      id: 'ambig_refusing_participate',
+      scenario: 'Kid refusing to participate — blue depression? red overwhelm? PDA?',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your classmate is saying no to everything today. Hard to tell why.',
+        middle: 'Your classmate is refusing all participation. Could be depression-blue, red overwhelm, or pathological demand avoidance.',
+        high: 'Your classmate is refusing all demands today. Possible blue depression, red overwhelm, or PDA (pathological demand avoidance, often co-occurring with autism).'
+      },
+      observableCues: [
+        'Active refusal',
+        'Multiple possible drivers',
+        'PDA is a distinct profile',
+        'Depression looks similar',
+        'Red overwhelm looks similar',
+        'Context essential'
+      ],
+      bestAnswer: 'blue',
+      explanation: {
+        elementary: 'Saying no to everything could be blue zone tired, or red zone overwhelmed, or sometimes it is the way some kids handle demands.',
+        middle: 'Default read is blue (low motivation) but red overwhelm (cannot handle demands) and PDA (autonomy-driven refusal) look similar. Approach differs.',
+        high: 'Refusal has at least three distinct profiles: blue depression (cannot motivate), red overwhelm (cannot handle), and PDA (autonomy must be preserved). Each needs different supports.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'Red overwhelm refusal often comes with body activation and feels different — needs reduced demands and recovery, not pep talk.' },
+        { zone: 'red', why: 'PDA (autistic profile) responds badly to direct demands — needs collaborative, choice-based approach.' }
+      ],
+      whatTheyMightNeed: 'A curiosity-based approach: "What is happening?" before "you need to do this."',
+      empathyHint: 'Quiet: "Looks like today is rough. What do you need?" — opens the door without demanding compliance.',
+      whatNotToDo: 'Do not double down on demand. Do not call it laziness. Do not punish without understanding.',
+      pairsWithStrategies: ['curiosity_first', 'reduce_demands_temporarily', 'collaborative_problem_solving'],
+      research: 'Refusal has multiple profiles requiring different responses (Greene, Collaborative Problem Solving; PDA Society research on autism profile).'
+    },
+    {
+      id: 'ambig_snapped_curt',
+      scenario: 'Student snapping a curt response — yellow irritation? red threshold? boundary?',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend just answered you really short and sharp. Could be different things.',
+        middle: 'Your friend just gave a curt, sharp response. Could be yellow irritability, red over-threshold, or a legitimate boundary.',
+        high: 'Your friend snapped a curt response. Could be yellow building, red past-threshold, or boundary-setting (which is green!).'
+      },
+      observableCues: [
+        'Short, sharp response',
+        'Multiple possible meanings',
+        'Body language matters',
+        'Pattern matters',
+        'Sometimes a healthy "no"',
+        'Ambiguous alone'
+      ],
+      bestAnswer: 'yellow',
+      explanation: {
+        elementary: 'A short, sharp answer is often yellow zone, but it might also be a calm "no" from a regulated person.',
+        middle: 'Default read is yellow but green boundary-setting can sound similar in tone.',
+        high: 'A curt "no" can be yellow irritation, red dysregulated lashing out, OR a healthy green boundary delivered firmly. Body language and context differentiate.'
+      },
+      alternativeReads: [
+        { zone: 'red', why: 'If body is activated and the snap is over a minor trigger, more likely red past-threshold.' },
+        { zone: 'green', why: 'A firm "no" from a calm body in response to an unreasonable demand is a regulated green boundary.' }
+      ],
+      whatTheyMightNeed: 'Respect for the response first. Curiosity second.',
+      empathyHint: 'Match the firmness without escalating. "Got it. Let me know if you change your mind."',
+      whatNotToDo: 'Do not assume rudeness. Do not push back. Do not demand explanation for boundary-setting.',
+      pairsWithStrategies: ['respect_the_no', 'curiosity_not_pressure', 'distinguish_boundary_from_dysregulation'],
+      research: 'Healthy boundary-setting is a regulation skill (Linehan, DBT); not every "no" is hostility.'
+    },
+    {
+      id: 'ambig_going_silent_mid_conversation',
+      scenario: 'Friend going silent mid-conversation — blue? green? red?',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend just got quiet in the middle of talking. You are not sure why.',
+        middle: 'Your friend went silent mid-conversation. Could be blue dissociation, green deep thought, or red shutdown.',
+        high: 'Your friend just went silent mid-conversation. Could be many things — needs more info to read.'
+      },
+      observableCues: [
+        'Sudden silence',
+        'Multiple possible drivers',
+        'Eyes are a clue (vacant vs thoughtful)',
+        'Body posture matters',
+        'Context matters',
+        'Ambiguous alone'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Going quiet sometimes means thinking deeply — that is green. Other times it means something is wrong.',
+        middle: 'Default read depends on eyes: thoughtful-engaged = green deep thought; vacant-unfocused = blue or red.',
+        high: 'Sudden silence is multi-zone: green deep processing (eyes engaged), blue dissociation (vacant), red shutdown (vacant + body still + recent trigger).'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Could be sliding into low-energy withdrawal during conversation.' },
+        { zone: 'red', why: 'Could be a trigger hit something and she has shut down.' }
+      ],
+      whatTheyMightNeed: 'A moment of patience. A check-in if the silence stretches.',
+      empathyHint: 'Give her 5-10 seconds. If still silent: "You okay? Need a moment?"',
+      whatNotToDo: 'Do not immediately fill the silence. Do not assume she is being weird.',
+      pairsWithStrategies: ['patience_window', 'check_in_kindly', 'read_eyes_and_body'],
+      research: 'Conversational pauses serve many functions (Tannen, conversation analysis); reading nonverbal cues differentiates causes.'
+    },
+    {
+      id: 'ambig_bouncing_leg_smiling',
+      scenario: 'Student bouncing leg + smiling — green excited? yellow anxious-edge?',
+      forBand: 'middle',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is bouncing his leg fast and smiling. Hard to tell if he is happy-excited or worried-excited.',
+        middle: 'Your friend is bouncing leg + smiling. Could be excited green or anxious-edge yellow.',
+        high: 'Your friend is leg-bouncing while smiling. Same physiology, different labels — green excitement or yellow anxiety.'
+      },
+      observableCues: [
+        'Motor activity (leg bouncing)',
+        'Smiling',
+        'Could be excited or anxious',
+        'Verbal report most reliable',
+        'Eyes are a clue',
+        'Same body, different interior'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Bouncy excited can be green if it feels good inside, or yellow if it feels nervous.',
+        middle: 'Same physiology, different label: excitement is reframed anxiety. Body cannot tell the difference; mind labels it.',
+        high: 'Excitement and anxiety share physiology. The reframe ("I am excited") improves outcomes vs the suppression ("I should not be anxious") — Brooks research.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If the smile is forced or the eyes are wide-anxious, more likely yellow under green surface.' }
+      ],
+      whatTheyMightNeed: 'A reframe-toward-excitement may help if performance is upcoming.',
+      empathyHint: '"You look excited" gives him language. "You look nervous" can install anxiety.',
+      whatNotToDo: 'Do not tell him to "calm down." Do not point out the leg bouncing as a problem.',
+      pairsWithStrategies: ['reframe_as_excitement', 'language_choices_matter'],
+      research: 'Excitement reframe improves performance (Brooks, "Get excited"); language shapes physiological interpretation (Lupien).'
+    },
+    {
+      id: 'ambig_talkative_scattered',
+      scenario: 'Friend who is talkative + scattered — yellow ADHD? green excited? red hypomanic?',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is talking a lot and jumping between topics today. Could be different things.',
+        middle: 'Your friend is talkative and scattered today — jumping topics, energetic. ADHD baseline, excitement, or something more.',
+        high: 'Your friend is talkative + scattered + high-energy. Could be ADHD baseline (green for her), genuine excitement, or hypomanic-edge concern.'
+      },
+      observableCues: [
+        'High verbal output',
+        'Topic-jumping',
+        'High energy',
+        'Multiple possible drivers',
+        'Sleep + other markers matter',
+        'Context essential'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Talking a lot and jumping topics is normal for some people. It is usually green or yellow.',
+        middle: 'For many ADHD folks, this is green baseline. For others, it is yellow over-arousal. Hypomanic edge needs additional markers (sleep loss, grandiosity).',
+        high: 'Talkative + scattered is green for many ADHD individuals at baseline. Yellow if uncharacteristic. Red hypomanic concern only with additional markers: decreased sleep need, grandiose plans, impulsive risk-taking.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'If uncharacteristic and accompanied by stress markers, more likely yellow over-arousal.' },
+        { zone: 'red', why: 'Hypomanic edge requires: decreased need for sleep + grandiose plans + impulsive risk + change from baseline. Not just talkativeness.' }
+      ],
+      whatTheyMightNeed: 'A friend who knows her baseline and can notice if it is shifting.',
+      empathyHint: 'For ADHD baseline: enjoy the energy. For change-from-baseline with concerning markers: gentle "how are you sleeping?" check.',
+      whatNotToDo: 'Do not pathologize ADHD baseline. Do not miss actual hypomanic signs by writing off as "just ADHD."',
+      pairsWithStrategies: ['know_the_baseline', 'multi_marker_assessment', 'sleep_check_in'],
+      research: 'ADHD includes high baseline activity (Barkley); bipolar/hypomania has distinct markers (NIMH); distinguishing requires multi-marker assessment.'
+    },
+    {
+      id: 'ambig_jokes_serious_moment',
+      scenario: 'Kid making jokes during serious moment — green coping? yellow deflection? red avoidance?',
+      forBand: 'middle',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend keeps making jokes during a serious sad time. Could be different reasons.',
+        middle: 'Your friend is cracking jokes during a sad/serious moment. Could be healthy coping humor, anxious deflection, or pain avoidance.',
+        high: 'Your friend keeps making jokes during a serious moment. Coping-humor (green), nervous-deflection (yellow), or pain-avoidance (red-flavored).'
+      },
+      observableCues: [
+        'Humor during serious content',
+        'Multiple possible drivers',
+        'Body language helps differentiate',
+        'Family/cultural style matters',
+        'Pattern over time matters',
+        'Ambiguous in moment'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Some people use jokes to feel better during hard times. That can be okay.',
+        middle: 'Humor can be a green coping skill (helps everyone breathe), a yellow deflection (managing anxiety), or red avoidance (cannot face the pain).',
+        high: 'Humor at serious moments serves multiple functions. Healthy if it acknowledges + lightens. Concerning if it prevents engagement with the reality.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Anxious deflection: jokes prevent the depth of the moment, manage discomfort. Yellow.' },
+        { zone: 'red', why: 'Pain avoidance: humor that totally bypasses grief, prevents processing — eventually maladaptive.' }
+      ],
+      whatTheyMightNeed: 'Permission for both — the humor AND the underneath. "Glad you can make us laugh. Also if you need to be sad, you can."',
+      empathyHint: 'Laugh with him at his joke. Then leave room for the real thing if it shows up. "I am here for both."',
+      whatNotToDo: 'Do not shame the humor. Do not demand he be sad on schedule. Do not assume avoidance — many cultures grieve with humor.',
+      pairsWithStrategies: ['permission_for_both', 'humor_plus_space', 'cultural_humility_about_grief'],
+      research: 'Humor is a documented coping resource (Vaillant, adult development study); used as avoidance can become maladaptive (Martin, humor styles).'
+    },
+    {
+      id: 'ambig_physically_still_quiet',
+      scenario: 'Student physically still + quiet — green present? blue shutdown? red freeze?',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is very still and quiet. Could be peaceful, sad, or scared.',
+        middle: 'Your friend is physically still and quiet. Could be green present, blue shutdown, or red freeze.',
+        high: 'Your friend is physically still + quiet. Same posture, three possible zones — eyes and context tell the difference.'
+      },
+      observableCues: [
+        'Stillness + quiet',
+        'Three possible zones',
+        'Eyes are key (present vs vacant)',
+        'Recent trigger matters',
+        'Baseline matters',
+        'Cannot read from posture alone'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Sitting still and quiet can be calm-good (green), sad-low (blue), or scared-frozen (red). The eyes tell.',
+        middle: 'Posture alone is ambiguous. Eyes (engaged vs vacant), breath (steady vs shallow), and recent context differentiate.',
+        high: 'Still + quiet is a multi-zone presentation. Green present has soft engaged eyes and steady breath. Blue shutdown has flat eyes, slow breath. Red freeze has vacant or wide eyes, possible shallow breath, recent trigger.'
+      },
+      alternativeReads: [
+        { zone: 'blue', why: 'Withdrawn shutdown — flat eyes, slow breath.' },
+        { zone: 'red', why: 'Trauma freeze — vacant eyes, possible shallow breath, recent trigger.' }
+      ],
+      whatTheyMightNeed: 'A read of the full picture before responding.',
+      empathyHint: 'Read eyes. Sit nearby. "Just hanging out — you okay?" if uncertain.',
+      whatNotToDo: 'Do not assume calm. Do not assume distress. Do not interpret posture alone.',
+      pairsWithStrategies: ['full_body_read', 'read_eyes', 'check_in_with_curiosity'],
+      research: 'Postural interpretation requires multi-channel reading (Ekman, nonverbal communication); single-channel reads are unreliable.'
+    },
+    {
+      id: 'ambig_calm_rage',
+      scenario: 'Friend in a calm rage — quiet but intense',
+      forBand: 'high',
+      setting: 'peer',
+      story: {
+        elementary: 'Your friend is very still and quiet but you can feel she is really mad. It is a different kind of mad than yelling.',
+        middle: 'Your friend is silent but you can feel the rage. Tight body, hard eyes, controlled voice. Not yelling but intensely angry.',
+        high: 'Your friend is in cold rage — quiet, controlled, intense. Not yelling but the air is electric. Yellow approaching red beneath calm exterior.'
+      },
+      observableCues: [
+        'Quiet but intense',
+        'Tight body',
+        'Hard eyes',
+        'Controlled voice',
+        'Air feels electric',
+        'High arousal with controlled surface'
+      ],
+      bestAnswer: 'red',
+      explanation: {
+        elementary: 'Sometimes the quietest mad is the biggest mad. It is still red zone.',
+        middle: 'Cold rage is high yellow / low red — the activation is fully there, the expression is suppressed. Often the most concerning because it can come out in damaging ways.',
+        high: 'Cold rage / contempt is a high-activation, controlled-expression red state. Gottman identifies contempt as the most damaging relational emotion. Address with care.'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Could be high yellow that has not yet tipped to red — same energy, different label.' }
+      ],
+      whatTheyMightNeed: 'Acknowledgment of the underlying grievance. Space to come down. Sometimes a third party.',
+      empathyHint: '"I can tell you are really angry. Tell me when you can." Do not pretend the air is normal.',
+      whatNotToDo: 'Do not say "you do not look angry." Do not match the icy energy. Do not press for explanation in the moment.',
+      pairsWithStrategies: ['name_the_temperature', 'space_with_acknowledgment', 'third_party_if_needed'],
+      research: 'Contempt is the most damaging relational emotion (Gottman, marriage research); cold rage requires acknowledgment + space.'
+    },
+    {
+      id: 'ambig_performing_well_happy',
+      scenario: 'Person performing well + happy — green flow? yellow over-performing? red masking?',
+      forBand: 'high',
+      setting: 'school',
+      story: {
+        elementary: 'Your friend is doing great at everything and smiling. Could be really happy or could be hiding something.',
+        middle: 'Your friend is performing well + appears happy. Could be green flow, yellow anxious over-performing, or red masking.',
+        high: 'Your friend is high-performing and visibly happy. Could be green flow (sustainable), yellow over-performing (anxious-driven), or red masking (hiding something serious).'
+      },
+      observableCues: [
+        'High performance',
+        'Apparent happiness',
+        'Multiple possible drivers',
+        'Sustainability is the key',
+        'Body tension a clue',
+        'Sleep + private moments matter'
+      ],
+      bestAnswer: 'green',
+      explanation: {
+        elementary: 'Doing well and feeling good is usually green zone. But sometimes a happy face hides hard feelings.',
+        middle: 'Default read is green flow but high performance can be anxiety-driven yellow or even mask serious red. Look at sustainability and private moments.',
+        high: 'High-functioning depression and anxiety are real — sometimes the highest performers are masking the most. Default green but check in periodically with people who seem "fine."'
+      },
+      alternativeReads: [
+        { zone: 'yellow', why: 'Anxiety-driven over-performance: cannot stop, perfectionism, fears failure — yellow underneath.' },
+        { zone: 'red', why: 'Masking depression: high function publicly, collapse privately. The "she had it all together" cases.' }
+      ],
+      whatTheyMightNeed: 'Friends who check in beyond surface achievement. Permission to not be okay.',
+      empathyHint: 'A real "how are you actually?" lands differently than "how are you?" Pause for the real answer.',
+      whatNotToDo: 'Do not assume high performers are fine. Do not envy without curiosity. Do not let her perform for you without offering an exit.',
+      pairsWithStrategies: ['real_check_in', 'permission_to_not_be_okay', 'go_beyond_surface'],
+      research: 'High-functioning depression is well-documented (Fleming, clinical); masking is recognized in autism and anxiety populations.'
+    }
+];
+
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
