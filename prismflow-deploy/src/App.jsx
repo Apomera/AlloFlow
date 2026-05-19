@@ -5888,7 +5888,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
-  const [dyslexicFont, setDyslexicFont] = useState(false);
   const [fontTheme, setFontTheme] = useState('Default');
   const [selectedFont, setSelectedFont] = useState('default');
   const [focusMode, setFocusMode] = useState(false);
@@ -25069,7 +25068,7 @@ ${_toolList}
             </div>
             );
         })()}
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowPoetTree={setShowPoetTree} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         {showReportWriter && (() => {
             if (window.AlloModules && window.AlloModules.ReportWriter) {
@@ -25242,7 +25241,18 @@ ${_toolList}
                             callGemini: callGemini,
                             addToast,
                             t,
-                            studentNickname: studentNickname || ''
+                            studentNickname: studentNickname || '',
+                            // Recent Math Fluency CBM probes from main history; DA Phase V intake
+                            // can optionally pull these into the existing-assessment-data field.
+                            // Most-recent-first, capped at 5.
+                            mathFluencyProbes: Array.isArray(history)
+                                ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
+                                : [],
+                            // Output language for all AI-generated DA content (items, scaffolds,
+                            // IEP goals, accommodations, family letter, teacher handoff, monitoring
+                            // plan). Sourced from the text-adaptation left-panel's leveledTextLanguage.
+                            // The clinician can override per-session inside DA itself.
+                            outputLanguage: leveledTextLanguage || 'English'
                         })}
                     </div>
                 </div>
@@ -25289,8 +25299,13 @@ ${_toolList}
                     addToast,
                     history,
                     callTTS,
-                    callGemini,
                     t,
+                    readingTheme, setReadingTheme,
+                    baseFontSize, setBaseFontSize,
+                    lineHeight, setLineHeight,
+                    letterSpacing, setLetterSpacing,
+                    selectedFont, setSelectedFont,
+                    colorOverlay, setColorOverlay,
                 });
             }
             return (
