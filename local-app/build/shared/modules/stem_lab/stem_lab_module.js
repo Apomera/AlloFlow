@@ -224,6 +224,7 @@
         labToolData,
         setLabToolData,
         gradeLevel,
+        sourceTopic,
         callGemini,
         callTTS,
         callImagen,
@@ -265,6 +266,18 @@
       var [_xpPopupTick, _setXpPopupTick] = React.useState(0);
       // XP badge pulse state
       var [_xpBadgePulse, _setXpBadgePulse] = React.useState(false);
+      // Plugin-load progress tick — bumped by the allo-plugins-changed event the
+      // lazy-loader fires after each stem_tool_*.js script finishes registering.
+      // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      var [_pluginProgressTick, _setPluginProgressTick] = React.useState(0);
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e && e.detail && e.detail.label !== 'Stem') return;
+          _setPluginProgressTick(function(t) { return t + 1; });
+        };
+        window.addEventListener('allo-plugins-changed', handler);
+        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+      }, []);
 
       // Life Skills Lab Global State
       var [stemState, setStemState] = React.useState({});
@@ -2793,6 +2806,7 @@
               },
               {
                 id: 'fractionViz',
+                aliases: ['fractions'],
                 icon: '🍕',
                 label: t('stem.assessment.fraction_lab'),
                 desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
@@ -2945,6 +2959,11 @@
               {
                 id: 'climateExplorer', icon: '\uD83C\uDF0D', label: 'Climate Explorer',
                 desc: 'Carbon calculator, renewables impact simulator, climate justice map, and solutions spotlight. Understand your footprint, design clean energy futures, and discover real-world innovations.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Maine Stewardship Campaigns',
+                desc: 'Cross-campaign launcher: pick from five environmental stewardship sims (Cultural Mosaic, Conservation Manager, Outbreak Response, Watershed Steward, Climate Policy Pathways) and track mastery across all five.',
                 color: 'emerald', ready: true
               },
               {
@@ -4366,7 +4385,11 @@
         // have inline render code above. Bridges hub-scope variables into
         // the plugin's ctx object format.
         // ════════════════════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool && window.StemLab && window.StemLab.isRegistered(stemLabTool) && (function _pluginFallback() {
+        // Outer guard previously required isRegistered(stemLabTool), which made
+        // the inner "plugin not yet loaded" skeleton (below) dead code. With
+        // lazy-loaded plugin scripts (May 11 2026), a user can click a tile
+        // before its plugin has registered; the skeleton handles that window.
+        stemLabTab === 'explore' && stemLabTool && window.StemLab && (function _pluginFallback() {
           // Only render if no inline IIFE already handled this tool.
           // We detect this by checking a known marker: inline tools set state
           // immediately via their IIFE returns. If the tool is in the registry
@@ -4516,24 +4539,57 @@
             setToolSnapshots: _safeSetToolSnapshots,
             // Wrap addToast so every plugin toast also announces to screen readers.
             // This gives all 57 STEM tools SR announcements without modifying each plugin.
-            addToast: function(msg, type) {
+            // _deferSafe wrap: addToast + the inner announceToSR both touch parent
+            // React state (toast list + a11y live-region useState). Plugins that
+            // toast during their initial render (e.g. funcgrapher canvasNarrate
+            // chain) trigger "Cannot update component while rendering" without it.
+            addToast: _deferSafe(function(msg, type) {
               if (addToast) addToast(msg, type);
               // Strip emoji from message for cleaner SR output
               if (typeof announceToSR === 'function' && msg) {
                 var srMsg = msg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim();
                 if (srMsg) announceToSR(srMsg);
               }
-            },
-            awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
+            }),
+            // _deferSafe wrap: awardStemXP calls setStemXP (parent useState).
+            awardXP: typeof awardStemXP === 'function' ? _deferSafe(awardStemXP) : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
-            announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
-            canvasNarrate: typeof canvasNarrate === 'function' ? canvasNarrate : function() {},
+            // _deferSafe wrap: announceToSR calls setA11yAnnouncement (parent useState)
+            // and canvasNarrate calls announceToSR. Without these wraps, plugins
+            // that call canvasNarrate('init', ...) during their first render \u2014 like
+            // funcgrapher at stem_tool_funcgrapher.js:123 \u2014 produce the React
+            // "Cannot update component while rendering" warning every modal open.
+            announceToSR: typeof announceToSR === 'function' ? _deferSafe(announceToSR) : function() {},
+            canvasNarrate: typeof canvasNarrate === 'function' ? _deferSafe(canvasNarrate) : function() {},
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
-            celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
+            celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            // Callback-style AI helper. cyberdefense's AI coach was written to a
+            // callback API before the host standardized on promise-based callGemini.
+            // Adapter keeps both surfaces working.
+            aiChat: typeof callGemini === 'function' ? function(prompt, cb) {
+              try {
+                callGemini(prompt).then(function(resp) { try { cb && cb(resp); } catch(_) {} })
+                  .catch(function() { try { cb && cb(null); } catch(_) {} });
+              } catch (_) { try { cb && cb(null); } catch(_) {} }
+            } : null,
             sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
             inputText: typeof inputText === 'string' ? inputText : '',
+            sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
             gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
+            // Coarse-grained grade banding for tools that target tiers rather than
+            // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
+            gradeBand: (function() {
+              var g = (typeof gradeLevel === 'string' ? gradeLevel : '').toLowerCase();
+              if (g.indexOf('kindergarten') === 0 || /\b(1st|2nd)\b/.test(g)) return 'k2';
+              if (/\b(3rd|4th|5th)\b/.test(g)) return 'g35';
+              if (/\b(6th|7th|8th)\b/.test(g)) return 'g68';
+              if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1 || g.indexOf('graduate') !== -1) return 'g912';
+              return 'g68';
+            })(),
+            // Coordinate grid range (passed from host useState — defaults to ±10).
+            gridRange: typeof gridRange !== 'undefined' && gridRange ? gridRange : { min: -10, max: 10 },
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,

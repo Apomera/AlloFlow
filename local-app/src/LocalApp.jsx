@@ -1,7 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  AlloFlow — Local App                                               ║
 // ║  Auto-assembled by local_build.js — DO NOT EDIT MANUALLY            ║
-// ║  Built: 2026-04-29T18:27:26.930Z
+// ║  Built: 2026-05-14T19:20:57.732Z
 // ╚══════════════════════════════════════════════════════════════════════╝
 // @mode react
 
@@ -16983,10 +16983,10 @@ const parseTaggedContent = (text) => {
   };
   const ai = AIProvider ? new AIProvider(_aiConfig) : _aiConfig;
 
-  // True when the server-side proxy holds credentials (gemini/copilot mode)
+  // True when the server-side proxy holds credentials (gemini/copilot/nvidia mode)
   const _isLocalProxyProvider = () => {
     const p = window.__alloLocalConfig?.aiProvider;
-    return p === 'gemini' || p === 'copilot' || p === 'openai';
+    return p === 'gemini' || p === 'copilot' || p === 'openai' || p === 'nvidia';
   };
 
   // ─── Cloud model defaults (used when GEMINI_MODELS values are 'local' placeholder) ───
@@ -17000,7 +17000,7 @@ const parseTaggedContent = (text) => {
   const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null) => {
     // ─── In local mode: delegate to AIProvider (proper architecture) ─────────────
     const _aiProv = window.__alloLocalConfig?.aiProvider;
-    if (!_aiProv || _aiProv === 'lmstudio' || _aiProv === 'localai') {
+    if (!_aiProv || _aiProv === 'lmstudio' || _aiProv === 'localai' || _aiProv === 'llm-engine') {
       // Local LM Studio mode — use AIProvider.generateText (OpenAI format)
       if (ai && typeof ai.generateText === 'function') {
         try {
@@ -17033,7 +17033,7 @@ const parseTaggedContent = (text) => {
         const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
         const _nvPayload = {
           messages: [{ role: 'user', content: prompt }],
-          max_tokens: 8192,
+          max_tokens: 4096,
           ...(temperature !== null ? { temperature } : {}),
           ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
         };
@@ -18083,7 +18083,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   }, [fetchTTSBytes, leveledTextLanguage, currentUiLanguage]);
   const callTTSDirect = useCallback(async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
       if (isGlobalMuted()) return null;
-      // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
+      if (!text) return null; // Nothing to speak — skip TTS entirely
       if (_isCanvasEnv) {
           // Try Gemini TTS first
           if (Date.now() >= globalTtsRateLimitedUntil) {

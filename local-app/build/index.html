@@ -109,7 +109,7 @@
       // Admin-injected config.aiProvider always takes precedence over localStorage
       const _localAiConfig = (() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}'); } catch { return {}; } })();
       const _aiBackend = config.aiProvider || _localAiConfig.backend || 'lmstudio';
-      const _isCloudProvider = (_aiBackend === 'gemini' || _aiBackend === 'copilot' || _aiBackend === 'openai');
+      const _isCloudProvider = (_aiBackend === 'gemini' || _aiBackend === 'copilot' || _aiBackend === 'openai' || _aiBackend === 'nvidia');
       if (!_isCloudProvider) {
         try {
           const llmUrl = config.llmEngineUrl || config.ollamaUrl || 'http://localhost:1234';
@@ -154,6 +154,28 @@
 
     // Run after a short delay to let services initialize
     setTimeout(checkServices, 2000);
+
+    // Poll for AI config changes — if the config file is updated (e.g. user changes
+    // provider in Setup Wizard), reload the page so the new config is injected.
+    let _configVersion = null;
+    async function pollConfigVersion() {
+      try {
+        const res = await fetch('/api/config/version');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (_configVersion === null) {
+          _configVersion = data.version; // baseline on first check
+        } else if (data.version !== _configVersion) {
+          console.log('[AlloFlow] AI config changed — reloading to apply new settings...');
+          window.location.reload();
+        }
+      } catch { /* server may not support this endpoint yet */ }
+    }
+    // Start polling 5 seconds after load so initialization is complete
+    setTimeout(() => {
+      pollConfigVersion();
+      setInterval(pollConfigVersion, 5000);
+    }, 5000);
   </script>
 </body>
 </html>

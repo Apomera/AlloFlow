@@ -186,6 +186,25 @@ export default function SetupWizard({ onComplete }) {
       setError(null);
       console.log('[SetupWizard] Starting deployment...');
 
+      // Auto-save the selected AI provider + API key so the config is always
+      // written even if the user skipped the explicit "Save API Key" button.
+      if (window.alloAPI?.writeAIConfig) {
+        const aiSave = { aiProvider: selectedAiProvider };
+        if (selectedAiProvider === 'nvidia' && nvidiaApiKey.trim()) {
+          aiSave.nvidiaApiKey = nvidiaApiKey.trim();
+          aiSave.nvidiaModel = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+          aiSave.nvidiaReasoningMode = true;
+        }
+        if (geminiApiKey.trim()) {
+          aiSave.geminiApiKey = geminiApiKey.trim();
+          aiSave.geminiModel = geminiModel || 'gemini-2.0-flash';
+          if (selectedAiProvider === 'gemini') aiSave.imageProvider = 'gemini';
+        }
+        await window.alloAPI.writeAIConfig(aiSave).catch(e =>
+          console.warn('[SetupWizard] Could not auto-save AI config:', e.message)
+        );
+      }
+
       const deployment = DEPLOYMENT_TYPES.find(d => d.id === selectedType);
       
       // Validate required fields

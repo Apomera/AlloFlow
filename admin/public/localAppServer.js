@@ -614,12 +614,21 @@ async function handleNvidiaProxy(req, res, body) {
     const assetRefs = req.headers['nvcf-input-asset-references'];
     if (assetRefs) nvidiaHeaders['NVCF-INPUT-ASSET-REFERENCES'] = assetRefs;
 
+    console.log(`[nvidia-proxy] Request received — model: ${effectiveModel}, bodyLen: ${JSON.stringify(nvidiaBody).length}`);
     try {
-        const upstream = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-            method: 'POST',
-            headers: nvidiaHeaders,
-            body: JSON.stringify(nvidiaBody),
-        });
+        const nvidiaAbort = new AbortController();
+        const nvidiaTimeout = setTimeout(() => nvidiaAbort.abort(), 300_000); // 5-minute hard cap
+        let upstream;
+        try {
+            upstream = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+                method: 'POST',
+                headers: nvidiaHeaders,
+                body: JSON.stringify(nvidiaBody),
+                signal: nvidiaAbort.signal,
+            });
+        } finally {
+            clearTimeout(nvidiaTimeout);
+        }
 
         // Handle 202 async — NVIDIA may queue long multimodal requests
         if (upstream.status === 202) {
@@ -893,6 +902,21 @@ function startLocalAppServer(port, isPackaged) {
                     }
                 });
                 return;
+            }
+
+            // Config version — returns mtime of ai_config.json so the local app
+            // can detect provider changes and auto-reload its injected config.
+            if (urlPath === '/api/config/version' && req.method === 'GET') {
+                try {
+                    const mtime = fs.existsSync(AI_CONFIG_FILE)
+                        ? fs.statSync(AI_CONFIG_FILE).mtimeMs
+                        : 0;
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    return res.end(JSON.stringify({ version: mtime }));
+                } catch (err) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    return res.end(JSON.stringify({ version: 0 }));
+                }
             }
 
             // ── Static file serving ───────────────────────────────────────────

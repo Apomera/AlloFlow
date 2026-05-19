@@ -77,22 +77,40 @@
             if (!prompt) return json ? '{}' : '';
 
             const url = `${this.baseUrl}/v1/chat/completions`;
-            const payload = {
-                model: this.model,
-                messages: [{ role: 'user', content: prompt }],
-                stream: false,
-                max_tokens: maxTokens,
-                ...(temperature !== null ? { temperature } : {}),
-                ...(json ? { response_format: { type: 'json_object' } } : {}),
+
+            const makePayload = (useResponseFormat, tokensLimit = maxTokens) => {
+                const userContent = json && !useResponseFormat
+                    ? `${prompt}\n\nIMPORTANT: Respond with valid JSON only. No explanation, preamble, or markdown.`
+                    : prompt;
+                return {
+                    model: this.model,
+                    messages: [{ role: 'user', content: userContent }],
+                    stream: false,
+                    max_tokens: tokensLimit,
+                    ...(temperature !== null ? { temperature } : {}),
+                    ...(json && useResponseFormat ? { response_format: { type: 'json_object' } } : {}),
+                };
             };
 
             this._debugLog(`[LocalAI] generateText: model=${this.model}, json=${json}`);
 
-            const resp = await fetch(url, {
+            let resp = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(makePayload(true)),
             });
+
+            // Retry on 400: some models reject response_format or large max_tokens.
+            // Retry without response_format and with a reduced token budget (3072)
+            // which fits safely inside small-context LM Studio configurations.
+            if (!resp.ok && resp.status === 400) {
+                this._warnLog('[LocalAI] HTTP 400 on first attempt — retrying without response_format, max_tokens=3072');
+                resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(makePayload(false, 3072)),
+                });
+            }
 
             if (!resp.ok) {
                 throw new Error(`LLM error: HTTP ${resp.status} — is LM Studio running at ${this.baseUrl}?`);

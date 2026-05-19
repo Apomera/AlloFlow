@@ -1033,6 +1033,7 @@ async function startDeployment(setupData, onProgress) {
 
     // Always persist aiProvider to ai_config.json so localAppServer can inject it into the page
     try {
+      if (!fs.existsSync(ALLOFLOW_DIR)) fs.mkdirSync(ALLOFLOW_DIR, { recursive: true });
       const existingAi = fs.existsSync(AI_CONFIG_FILE)
         ? JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'))
         : {};
@@ -1473,7 +1474,15 @@ ipcMain.handle('config:read-ai', async (event) => {
 ipcMain.handle('config:write-ai', async (event, config) => {
   try {
     if (!fs.existsSync(ALLOFLOW_DIR)) fs.mkdirSync(ALLOFLOW_DIR, { recursive: true });
-    fs.writeFileSync(AI_CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8');
+    // Merge with existing config so saving one provider doesn't erase another
+    let existing = {};
+    if (fs.existsSync(AI_CONFIG_FILE)) {
+      try { existing = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf8')); } catch {}
+    }
+    // Drop undefined values from the incoming payload before merging
+    const incoming = Object.fromEntries(Object.entries(config).filter(([, v]) => v !== undefined));
+    const merged = { ...existing, ...incoming };
+    fs.writeFileSync(AI_CONFIG_FILE, JSON.stringify(merged, null, 2), 'utf8');
     console.log('[ipc:config:write-ai] AI config saved');
     return { success: true };
   } catch (err) {
