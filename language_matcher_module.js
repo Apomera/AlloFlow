@@ -511,5 +511,7 @@
     _normalize: _normalize,
     _lev: _lev
   };
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.LanguageMatcher = window.AlloLangMatcher;
   console.log('[AlloFlow] Language matcher ready (' + Object.keys(ALIASES).length + ' aliases)');
 })();
