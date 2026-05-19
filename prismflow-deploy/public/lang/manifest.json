@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-19T19:58:40.524Z",
+  "generated": "2026-05-19T20:06:08.483Z",
   "count": 9,
   "total_keys_expected": 9307,
   "available": [
@@ -63,8 +63,8 @@
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
-      "keys": 6051,
-      "bytes": 468968,
+      "keys": 7020,
+      "bytes": 515814,
       "updated": "2026-05-19"
     }
   ]
