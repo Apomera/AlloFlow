@@ -579,7 +579,7 @@ const parseTaggedContent = (text) => {
         const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
         const _nvPayload = {
           messages: [{ role: 'user', content: prompt }],
-          max_tokens: 4096,
+          max_tokens: 16384, // reasoning models consume tokens for <think> phase; 4096 causes finish=length on long outputs
           ...(temperature !== null ? { temperature } : {}),
           ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
         };

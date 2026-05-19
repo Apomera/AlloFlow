@@ -20,6 +20,7 @@ const os   = require('os');
 let _server     = null;
 let _serverPort = 3730;
 
+const LOG_DIR            = path.join(os.homedir(), '.alloflow', 'logs');
 const LOCAL_CONFIG_FILE  = path.join(os.homedir(), '.alloflow', 'local_config.json');
 const AI_CONFIG_FILE     = path.join(os.homedir(), '.alloflow', 'ai_config.json');
 const GEMINI_TOKEN_FILE  = path.join(os.homedir(), '.alloflow', 'gemini_token.json');
@@ -590,6 +591,26 @@ async function handleGeminiNativeProxy(req, res, model, body) {
 }
 
 /**
+/**
+ * Append a NVIDIA request+response record to ~/.alloflow/logs/nvidia_responses.log.
+ */
+function logNvidiaToFile(prompt, responseData, ms) {
+    try {
+        if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+        const logFile = path.join(LOG_DIR, 'nvidia_responses.log');
+        const ts = new Date().toISOString();
+        const choice = responseData?.choices?.[0];
+        const entry = [
+            `--- [${ts}] (${ms}ms) finish=${choice?.finish_reason || 'unknown'} ---`,
+            `PROMPT (last user msg): ${String(prompt).slice(0, 500)}${String(prompt).length > 500 ? '…' : ''}`,
+            `RESPONSE (raw): ${String(choice?.message?.content ?? JSON.stringify(responseData)).slice(0, 4000)}`,
+            '',
+        ].join('\n');
+        fs.appendFileSync(logFile, entry, 'utf8');
+    } catch (_) { /* never crash the proxy over logging */ }
+}
+
+/**
  * Handle POST /api/nvidia/proxy — forward OpenAI-format requests to NVIDIA NIM API.
  * Handles 202 async polling for long-running inference.
  * API key is injected server-side; never exposed to client.
@@ -686,6 +707,9 @@ async function handleNvidiaProxy(req, res, body) {
         }
 
         logAIProxy('/api/nvidia/proxy', 'nvidia', upstream.status, Date.now() - t0);
+        // Log full response to file for review
+        const _promptMsg = (body.messages || []).filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+        logNvidiaToFile(_promptMsg, data, Date.now() - t0);
         res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(data));
     } catch (err) {
