@@ -59,7 +59,7 @@ AlloFlowANTI.txt / App.jsx          ← Container (~24K lines, all state)
 
 This codebase has been progressively refactored from a ~60K-line monolith
 (April 2026) to the current ~24K-line container. The shape evolved through
-four overlapping phases:
+five overlapping phases:
 
 1. **Helper extraction** (early): isolate pure utility code into modules
    like `pure_helpers_module.js`, `math_helpers_module.js`, etc. Tested in
@@ -68,14 +68,24 @@ four overlapping phases:
    (e.g., `generate_dispatcher_module.js`, `phase_k_helpers_module.js`).
    Monolith handlers became 4-line delegation shims.
 3. **View extraction** (recent): lift JSX render blocks to per-module
-   `view_*_module.js` files. ~30 view modules now exist. The monolith
+   `view_*_module.js` files. ~50 view modules now exist. The monolith
    shim is typically a single line that invokes `<ViewModule {...props} />`
    if the CDN module loaded, else returns null.
-4. **State centralization → context migration** (current): the 190+
+4. **State centralization → context migration** (ongoing): the 190+
    `useState` hooks in `AlloFlowContent` are migrating toward typed
    contexts. As of May 10 2026, four contexts and three reducers are in
    place. Phase 2 (per-module context consumption) is starting with
    HeaderBar as the proof.
+5. **Build-source consolidation** (2026-05-19): the early view extractions
+   (rounds 1-3) used a build pipeline that read JSX bodies from `c:/tmp/`
+   text files on the maintainer's machine. This was a footgun: running an
+   out-of-date build could silently overwrite the deployed module with
+   stale content. All 21 such legacy build scripts have been migrated to
+   read from in-repo `view_*_source.jsx` files. For 9 of them, the
+   deployed module had drifted from any reproducible source, so the JSX
+   was reverse-compiled from the deployed `React.createElement(...)`
+   chains. Reverse-compile tooling is documented in the
+   [Extraction Toolchain](#extraction-toolchain) section.
 
 ## Core Container
 
@@ -190,9 +200,18 @@ Every view module has three files at the repo root:
 
 | File | Purpose | Author |
 |---|---|---|
-| `view_X_source.jsx` | JSX source with a `function X(props) { return ( /* JSX */ ); }` declaration. Imports nothing. Reads icons from `window.X` globals. | Human |
-| `_build_view_X_module.js` | Esbuild compile script. Runs `npx esbuild` with `--jsx=transform`, wraps the output in an IIFE, registers on `window.AlloModules.X` | Generated, ~50 lines |
+| `view_X_source.jsx` | JSX source. Either a `function X(props) { return ( /* JSX */ ); }` declaration (legacy-style) or a full component including helpers + icon vars + the function (modern-style). Imports nothing. Reads icons from `window.X` globals. | Human |
+| `_build_view_X_module.js` (modern) or `build_view_X.js` (legacy-style) | Compile script. Modern variant uses esbuild + reads the full source; legacy variant uses `@babel/core` + wraps a JSX body in a prop-destructure template. Both write the IIFE-wrapped module. | Generated, ~50-100 lines |
 | `view_X_module.js` | Compiled CDN module. ~30-200 lines depending on the source size. **Never edit by hand**. | Auto-generated |
+
+**Two coexisting build-script variants.** As of 2026-05-19, ~13 modules
+(launch_pad, brainstorm, image, project_settings, outline, math, lesson_plan,
+sentence_frames, persona_chat, adventure, spotlight, word_sounds, dbq) still
+use the legacy-style `build_view_X.js` that wraps a JSX body fragment with a
+prop-destructure template. The rest use the modern `_build_view_X_module.js`
+pattern that reads a complete component file. Both read from in-repo
+`view_X_source.jsx`. Consolidating to one pattern is on the Maintainability
+Roadmap but isn't urgent — both produce correct output.
 
 ### Module IIFE template
 
@@ -345,14 +364,17 @@ section covers the plugin *pattern* only.
 
 ## Extraction Toolchain
 
-The view extraction work is supported by three Node scripts at the repo
-root. Each reads the monolith without modifying it.
+The view extraction and migration work is supported by five Node scripts at
+the repo root. The first three read the monolith without modifying it; the
+last two operate on already-compiled view modules.
 
 | Script | Purpose | Output |
 |---|---|---|
 | `_jsx_render_tree.cjs` | Parses `AlloFlowContent`'s return statement via `@babel/parser`, emits a structural map with line ranges. Used to pick extraction seams. | Tree of JSX elements with line ranges, eg. `[20675-21492] (818 lines) <header>` |
 | `_jsx_dep_enumerator.cjs` | For a given line range, classifies every referenced identifier as STATE / SETTER / HANDLER / REF / HELPER / IMPORT / UNKNOWN. | Categorized deps list + a ready-to-paste destructure block |
 | `_jsx_phantom_ref_check.cjs` | Verifies every JSX-referenced identifier in a range resolves to a definition somewhere in the source. Exits 1 on any phantom. | Pass / fail report. Catches latent ReferenceErrors before extraction. |
+| `_reverse_compile.cjs` | Reverse-compiles a deployed `view_X_module.js` back to JSX. Walks the AST, replaces `React.createElement(tag, props, ...children)` calls with JSXElement nodes. Strips all comments globally (line comments in JSX text positions would render as literal text). Wraps any string attribute containing `"`, `{`, `}`, or `\` as a JSXExpressionContainer to dodge JSX's lack of backslash escapes in attribute strings. Handles Fragment, MemberExpression tags, spread props, dashed attribute names. | A JSX file equivalent to the compiled source |
+| `_reverse_migrate.cjs <stem>` | Full per-module pipeline: invokes `_reverse_compile.cjs`, extracts the inner content (helpers + icon vars + component function) by slicing between `var Fragment = React.Fragment;` and `window.AlloModules = ...`, writes `view_X_source.jsx`, generates a modern `_build_view_X_module.js` using `@babel/core` with `generatorOpts: { jsescOption: { minimal: true } }` (preserves literal UTF-8 instead of escaping). Used to migrate 9 modules whose deployed code had drifted from any reproducible source (2026-05-19). | view_X_source.jsx + _build_view_X_module.js, plus a regenerated view_X_module.js that is semantically equivalent (same AST modulo comments and formatting) to the previously deployed file. |
 
 ### What the toolchain has surfaced
 
@@ -380,17 +402,21 @@ would only reveal under unusual clicks.
 
 ## Test + Verify Infrastructure
 
-### Unit tests (`tests/`)
+### Unit tests (`tests/*.test.js`)
 
-Five vitest files cover the most-used helper modules:
+Nine vitest files cover the most-used helper modules (~205 tests total):
 
 | File | Module under test | Tests |
 |---|---|---|
-| `tests/glossary_helpers.test.js` | `glossary_helpers_module.js` | ~22 |
-| `tests/math_helpers.test.js` | `math_helpers_module.js` | ~18 |
-| `tests/pure_helpers.test.js` | `pure_helpers_module.js` | ~30 |
-| `tests/text_pipeline_helpers.test.js` | `text_pipeline_helpers_module.js` | ~28 |
-| `tests/utils_pure.test.js` | `utils_pure_module.js` | ~28 |
+| `tests/anchor_charts.test.js` | `anchor_charts_module.js` | 23 |
+| `tests/concept_pictionary.test.js` | `concept_pictionary_module.js` | 14 |
+| `tests/glossary_helpers.test.js` | `glossary_helpers_module.js` | 20 |
+| `tests/math_helpers.test.js` | `math_helpers_module.js` | 14 |
+| `tests/note_taking_templates.test.js` | `note_taking_templates_module.js` | 20 |
+| `tests/pure_helpers.test.js` | `pure_helpers_module.js` | 29 |
+| `tests/text_pipeline_helpers.test.js` | `text_pipeline_helpers_module.js` | 29 |
+| `tests/translation_pipeline.test.js` | translation flow | 22 |
+| `tests/utils_pure.test.js` | `utils_pure_module.js` | 34 |
 
 Configuration: `vitest.config.js` uses jsdom. Each test loads the target
 module's IIFE against a shared `window` via `tests/setup.js`'s
@@ -398,9 +424,50 @@ module's IIFE against a shared `window` via `tests/setup.js`'s
 
 Run with `npm test` (or `npm run test:watch` for watch mode).
 
+### Clinical logic tests (`tests/clinical_tests.js`)
+
+A custom Node test runner with 117 tests organized into three clinical
+priority tiers, asserting against logic extracted into
+`tests/extracted_logic/clinical_logic.js`:
+
+- **Tier 1** (affects real student services): score classification, PII
+  scrubbing, RTI tier assignment.
+- **Tier 2** (affects learning tracking): familiarity calculations, growth
+  levels, anonymized codenames, correlation analysis.
+- **Tier 3** (affects reports & data quality): doc pipeline integrity, math
+  benchmark validation, output formatting.
+
+Covers logic for BehaviorLens, Report Writer, and Symbol Studio in
+isolation from UI. Run with `node tests/clinical_tests.js`.
+
+### End-to-end tests (`tests/e2e/`)
+
+Fourteen Playwright spec files (~65 tests) run against the deployed
+Firebase mirror (`https://prismflow-911fe.web.app` by default, overridable
+via `PW_BASE_URL`):
+
+| Spec | Scope |
+|---|---|
+| `01-app-boot.spec.ts` | App boot + initial state |
+| `02-launch-pad.spec.ts` | Launch Pad mode picker |
+| `03-cdn-modules.spec.ts` | CDN module loading |
+| `04-learning-hub.spec.ts` | Learning Hub modal |
+| `05-sidebar-controls.spec.ts` | Sidebar + global UI controls |
+| `06-stem-lab-modal.spec.ts` | STEM Lab modal lifecycle |
+| `07-sel-hub-modal.spec.ts` | SEL Hub modal lifecycle |
+| `08-sidebar-tool-categories.spec.ts` | Tool category navigation |
+| `09-a11y-baseline.spec.ts` | Accessibility manual checks |
+| `10-public-pages.spec.ts` | Public-facing pages |
+| `11-stem-tools-load.spec.ts` | STEM tool catalog loads |
+| `12-sel-tools-load.spec.ts` | SEL tool catalog loads |
+| `13-stem-tools-all-cdn.spec.ts` | Every STEM tool's CDN module loads |
+| `14-flagship-tool-render.spec.ts` | Flagship tool renders end-to-end |
+
+Run with `npx playwright test`.
+
 ### Static + structural checks (`dev-tools/`)
 
-Fourteen verifier scripts orchestrated by `dev-tools/verify_all.cjs`:
+Forty-plus verifier and audit scripts orchestrated by `dev-tools/verify_all.cjs`:
 
 - `verify_module_registry.cjs` — every `window.AlloModules.X` consumer
   has a matching producer
@@ -662,16 +729,46 @@ between.
 - Adventure climax state is nested inside `adventureState` and may benefit
   from sub-reducer composition
 
+### Build-script unification
+
+Of the ~50 view modules, ~13 still use the legacy-style `build_view_X.js`
+(JSX-body wrapper template, compiled with `@babel/core`) while the rest use
+the modern `_build_view_X_module.js` (full-file source, compiled with
+esbuild or babel). Both produce correct output; the difference is cosmetic
+inconsistency. Each legacy-style module can be promoted with a few minutes
+of work: write a new `_build_view_X_module.js` modeled on
+`_build_view_header_module.js`, point it at the existing source.jsx,
+verify byte-equivalent output, delete the legacy script. Not urgent.
+
 ### Test coverage gaps
 
-The 126 existing vitest assertions cover helper module logic. Not covered:
-- React state propagation across context boundaries
-- View module rendering against jsdom
-- The build pipeline itself (verify_all.cjs checks structure, not behavior)
+The ~205 vitest assertions cover helper module logic; ~117 clinical logic
+tests cover BehaviorLens, Report Writer, and Symbol Studio at the extracted
+logic layer; ~65 Playwright tests cover app boot, modal lifecycles, tool
+catalogs, and a11y baselines. Not covered:
 
-A future direction: a small set of jsdom + react-testing-library tests
-that mount the Context Providers and verify a representative CDN view
-module renders correctly.
+- **Clinical UI flows end-to-end.** The clinical logic tests assert against
+  extracted logic, but no Playwright spec drives through a full FBA→BIP
+  flow or Report Writer wizard. A regression in the UI wiring between form
+  fields and the (well-tested) clinical logic wouldn't be caught.
+- **SEL Safety Layer triangulation under crisis input.** Logic likely
+  covered in clinical_tests.js; no E2E test that types crisis keywords and
+  verifies the safety panel renders correctly.
+- **Language switching E2E.** `translation_pipeline.test.js` covers the
+  loader; no Playwright spec switches language and confirms UI text
+  actually updates (would catch manifest/pack-load issues).
+- **RTL rendering.** Arabic/Hebrew packs exist and `dir="rtl"` is wired,
+  but no test confirms it propagates and `ms-*`/`me-*` classes behave.
+- **PDF pipeline output validation.** `check_pdf_pipeline.cjs` static check
+  exists; no test generates a PDF and asserts non-empty/non-corrupt output.
+- **React state propagation across Context boundaries** (jsdom unit-level).
+- **CDN fallback chain.** Cloudflare → GitHub raw fallback path is not
+  exercised under failure conditions.
+
+Highest-leverage next additions: clinical UI flows (BehaviorLens, Report
+Writer) and SEL Safety Layer crisis-input E2E. Both protect against
+regressions in the UI→logic wiring layer that has the most real-world
+clinical impact.
 
 ## Appendix: Repo Layout
 
@@ -681,10 +778,13 @@ module renders correctly.
 ├── architecture.md               ← This file
 ├── build.js                      ← Source → App.jsx compiler
 ├── deploy.sh                     ← Turbo-all deploy
-├── _build_*_module.js            ← Per-module esbuild scripts (~30)
+├── _build_*_module.js            ← Per-module esbuild/babel build scripts (~40)
+├── build_view_*.js               ← Legacy-style build scripts (~13, read in-repo source.jsx)
 ├── _jsx_render_tree.cjs          ← Extraction toolchain
 ├── _jsx_dep_enumerator.cjs       ← Extraction toolchain
 ├── _jsx_phantom_ref_check.cjs    ← Extraction toolchain
+├── _reverse_compile.cjs          ← Reverse-compile (createElement → JSX) toolchain
+├── _reverse_migrate.cjs          ← Reverse-compile migration orchestrator
 ├── view_*_source.jsx             ← View module sources (~30 files)
 ├── view_*_module.js              ← Compiled view modules (~30 files)
 ├── *_module.js                   ← Other CDN modules (~50 files)

@@ -211,12 +211,12 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>WORDS</span>
                         <input aria-label={t('immersive.words_per_chunk_aria') || 'Words per chunk'} type="range" min="1" max="6" value={chunkSize} onChange={e => setChunkSize(parseInt(e.target.value))} className="w-16 accent-indigo-600" />
-                        <span className="font-mono w-4 text-right">{chunkSize}</span>
+                        <span className="font-mono w-4 text-end">{chunkSize}</span>
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>SPEED</span>
                         <input aria-label={safeT(t, 'common.speed', 'Words per minute')} type="range" min="100" max="900" step="25" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-28 accent-indigo-600" />
-                        <span className="font-mono w-16 text-right">{wpm} wpm</span>
+                        <span className="font-mono w-16 text-end">{wpm} wpm</span>
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>THEME</span>
@@ -403,7 +403,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                 activeColor="bg-sky-500 text-white"
                 data-help-key="immersive_focus_mode"
               >
-                <Zap size={14} className="mr-1 inline"/> {safeT(t, 'immersive.focus_mode', 'Focus Mode')}
+                <Zap size={14} className="me-1 inline"/> {safeT(t, 'immersive.focus_mode', 'Focus Mode')}
               </ToggleButton>
             )}
             <ToggleButton
@@ -413,7 +413,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               activeColor="bg-emerald-700 text-white"
               data-help-key="immersive_chunk_reader"
             >
-              <List size={14} className="mr-1 inline"/> {safeT(t, 'immersive.chunk_read', 'Chunk Read')}
+              <List size={14} className="me-1 inline"/> {safeT(t, 'immersive.chunk_read', 'Chunk Read')}
             </ToggleButton>
             {onToggleCrawlReader && (
               <ToggleButton
@@ -423,7 +423,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                 activeColor="bg-amber-500 text-slate-900"
                 data-help-key="immersive_perspective_crawl"
               >
-                <Zap size={14} className="mr-1 inline"/> {safeT(t, 'immersive.cinematic_crawl', 'Crawl')}
+                <Zap size={14} className="me-1 inline"/> {safeT(t, 'immersive.cinematic_crawl', 'Crawl')}
               </ToggleButton>
             )}
             {onToggleKaraokeOverlay && (
@@ -435,7 +435,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                 data-help-key="immersive_karaoke_overlay"
                 aria-pressed={!!isKaraokeOverlayActive}
               >
-                <Volume2 size={14} className="mr-1 inline"/> {safeT(t, 'immersive.focus_reader', 'Focus Reader')}
+                <Volume2 size={14} className="me-1 inline"/> {safeT(t, 'immersive.focus_reader', 'Focus Reader')}
               </ToggleButton>
             )}
         </div>
@@ -627,7 +627,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       <button aria-label={t('common.close_word_wall')}
         onClick={onClose}
         title={t('immersive.close')}
-        className="ml-4 shrink-0 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-colors"
+        className="ms-4 shrink-0 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-colors"
       >
         <X size={18} />
       </button>
@@ -839,7 +839,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>SPEED</span>
                         <input data-help-key="perspective_crawl_speed_control" aria-label={t('immersive.crawl_speed_aria') || 'Crawl speed'} type="range" min="10" max="140" value={speedPxPerSec} onChange={e => setSpeedPxPerSec(parseInt(e.target.value))} className="w-24 accent-yellow-400" />
-                        <span className="font-mono w-14 text-right">{speedPxPerSec}px/s</span>
+                        <span className="font-mono w-14 text-end">{speedPxPerSec}px/s</span>
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>PALETTE</span>

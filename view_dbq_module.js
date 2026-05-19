@@ -83,10 +83,6 @@
     cursor: 'pointer',
     color: dbqTab === id ? '#4338ca' : '#64748b',
     background: dbqTab === id ? '#eef2ff' : 'transparent',
-    // Use the four per-side longhand properties instead of the `border` shorthand.
-    // React warns when shorthand (`border: 'none'`) and longhand (`borderBottom`)
-    // are mixed on the same element because rerender diffing has to drop the
-    // shorthand to apply a new longhand value, which can cause visual glitches.
     borderTop: 'none',
     borderRight: 'none',
     borderLeft: 'none',
@@ -127,7 +123,7 @@
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words"
-  }, "\uD83D\uDCDC ", dbqData.title || 'Document-Based Question'), dbqData.historicalContext && /*#__PURE__*/React.createElement("p", {
+  }, "📜 ", dbqData.title || 'Document-Based Question'), dbqData.historicalContext && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100"
   }, /*#__PURE__*/React.createElement("strong", null, "Historical Context:"), " ", dbqData.historicalContext)), /*#__PURE__*/React.createElement("div", {
     className: "text-right shrink-0"
@@ -259,7 +255,7 @@
       }
     },
     className: "px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200"
-  }, "\uD83D\uDDA8\uFE0F Print DBQ Packet"), (() => {
+  }, "🖨️ Print DBQ Packet"), (() => {
     const timerActive = r._dbqTimerEnd && Date.now() < r._dbqTimerEnd;
     const timerDone = r._dbqTimerEnd && Date.now() >= r._dbqTimerEnd;
     const remaining = timerActive ? Math.max(0, Math.ceil((r._dbqTimerEnd - Date.now()) / 1000)) : 0;
@@ -280,7 +276,7 @@
       onClick: () => setDbq('_dbqTimerEnd', Date.now() + m * 60 * 1000),
       className: "px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-400",
       "aria-label": `Start ${m} minute timer`
-    }, "\u23F1\uFE0F ", m, "m"))), timerActive && /*#__PURE__*/React.createElement("div", {
+    }, "⏱️ ", m, "m"))), timerActive && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: `font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ${remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'}`,
@@ -295,11 +291,11 @@
       },
       className: "text-[11px] text-slate-600 hover:text-red-600",
       "aria-label": "Cancel timer"
-    }, "\u2715")), timerDone && /*#__PURE__*/React.createElement("div", {
+    }, "✕")), timerDone && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse"
-    }, "\u23F0 Time's up!"), /*#__PURE__*/React.createElement("button", {
+    }, "⏰ Time's up!"), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setDbq('_dbqTimerEnd', null);
       },
@@ -413,7 +409,7 @@
       className: "flex items-center justify-between gap-1"
     }, /*#__PURE__*/React.createElement("span", null, "Doc ", doc.id), docDone && /*#__PURE__*/React.createElement("span", {
       className: "text-green-500"
-    }, "\u2713")), /*#__PURE__*/React.createElement("div", {
+    }, "✓")), /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-normal mt-0.5 truncate opacity-70 hidden sm:block"
     }, doc.title?.replace(`Document ${doc.id}: `, '') || ''));
   })), activeDoc && /*#__PURE__*/React.createElement("div", {
@@ -432,14 +428,14 @@
       color: '#7c3aed',
       marginLeft: '4px'
     }
-  }, "\u2694\uFE0F ", activeDoc.perspective)), activeDoc.source && /*#__PURE__*/React.createElement("p", {
+  }, "⚔️ ", activeDoc.perspective)), activeDoc.source && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 italic -mt-2 mb-3"
   }, "Source: ", activeDoc.source), activeDoc.sourceUrl && /*#__PURE__*/React.createElement("a", {
     href: activeDoc.sourceUrl,
     target: "_blank",
     rel: "noopener noreferrer",
     className: "inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline"
-  }, "\uD83D\uDD17 View Original Source", /*#__PURE__*/React.createElement("span", {
+  }, "🔗 View Original Source", /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-normal text-indigo-400 max-w-[200px] truncate"
   }, (() => {
     try {
@@ -470,7 +466,7 @@
       }
     },
     className: "text-[11px] font-bold bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded-full"
-  }, "\uD83D\uDD8D\uFE0F Highlight"), /*#__PURE__*/React.createElement("button", {
+  }, "🖍️ Highlight"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       const text = activeDoc.excerpt || '';
       if (!text) return;
@@ -540,11 +536,11 @@
     className: "text-purple-700"
   }, v.word), " ", /*#__PURE__*/React.createElement("span", {
     className: "text-purple-500"
-  }, "\u2014 ", v.definition)))), activeDoc.excerpt), (annotations[activeDoc.id] || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "— ", v.definition)))), activeDoc.excerpt), (annotations[activeDoc.id] || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-yellow-50 border border-yellow-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-yellow-700 mb-2"
-  }, "\uD83D\uDCCC Your Annotations"), (annotations[activeDoc.id] || []).map((ann, ai) => /*#__PURE__*/React.createElement("div", {
+  }, "📌 Your Annotations"), (annotations[activeDoc.id] || []).map((ann, ai) => /*#__PURE__*/React.createElement("div", {
     key: ann.id || ai,
     className: "flex items-start gap-2 mb-2 bg-white rounded-lg p-2 border border-yellow-100"
   }, /*#__PURE__*/React.createElement("span", {
@@ -576,11 +572,11 @@
     },
     className: "text-red-600 hover:text-red-600 text-xs shrink-0",
     "aria-label": "Remove annotation"
-  }, "\u2715")))), /*#__PURE__*/React.createElement("div", {
+  }, "✕")))), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-black text-indigo-800 mb-3 flex items-center gap-2"
-  }, "\uD83D\uDD0D HAPP Source Analysis"), /*#__PURE__*/React.createElement("div", {
+  }, "🔍 HAPP Source Analysis"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, [{
     key: 'historical',
@@ -626,7 +622,7 @@
     className: "bg-purple-50 border border-purple-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-purple-800 mb-3"
-  }, "\uD83D\uDD0E Sourcing Questions"), activeDoc.sourcingQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
+  }, "🔎 Sourcing Questions"), activeDoc.sourcingQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
     key: qi,
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("p", {
@@ -644,7 +640,7 @@
     className: "bg-blue-50 border border-blue-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-blue-800 mb-3"
-  }, "\uD83E\uDDE0 Analysis Questions"), activeDoc.analysisQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
+  }, "🧠 Analysis Questions"), activeDoc.analysisQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
     key: qi,
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("p", {
@@ -660,7 +656,7 @@
     className: "bg-rose-50 border border-rose-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-rose-800 mb-1 flex items-center gap-2"
-  }, "\uD83D\uDD0E Source Reliability Check"), /*#__PURE__*/React.createElement("p", {
+  }, "🔎 Source Reliability Check"), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-rose-500 mb-3"
   }, "Think critically: Is this source trustworthy? Why or why not?"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3"
@@ -668,7 +664,7 @@
     className: "bg-white rounded-lg p-3 border border-rose-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-700 mb-1"
-  }, "\uD83C\uDFAF Reliability Rating"), /*#__PURE__*/React.createElement("div", {
+  }, "🎯 Reliability Rating"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1"
   }, ['Very Reliable', 'Somewhat Reliable', 'Questionable', 'Unreliable'].map(rating => /*#__PURE__*/React.createElement("button", {
     key: rating,
@@ -682,7 +678,7 @@
     className: "bg-white rounded-lg p-3 border border-rose-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-700 mb-1"
-  }, "\u26A0\uFE0F Potential Bias"), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ Potential Bias"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, ['None detected', 'Political', 'Cultural', 'Economic', 'Personal', 'Other'].map(bias => /*#__PURE__*/React.createElement("button", {
     key: bias,
@@ -736,9 +732,9 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
     },
     className: "mt-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1.5",
     "aria-label": "Compare my assessment with AI analysis"
-  }, "\uD83D\uDD0D Compare My Assessment with AI Analysis"), r[`_reliabilityAI_${activeDoc.id}`] === 'loading' && /*#__PURE__*/React.createElement("p", {
+  }, "🔍 Compare My Assessment with AI Analysis"), r[`_reliabilityAI_${activeDoc.id}`] === 'loading' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-rose-500 italic mt-2"
-  }, "\u23F3 Analyzing source reliability..."), r[`_reliabilityAI_${activeDoc.id}`] && typeof r[`_reliabilityAI_${activeDoc.id}`] === 'object' && !r[`_reliabilityAI_${activeDoc.id}`].error && (() => {
+  }, "⏳ Analyzing source reliability..."), r[`_reliabilityAI_${activeDoc.id}`] && typeof r[`_reliabilityAI_${activeDoc.id}`] === 'object' && !r[`_reliabilityAI_${activeDoc.id}`].error && (() => {
     const ai = r[`_reliabilityAI_${activeDoc.id}`];
     return /*#__PURE__*/React.createElement("div", {
       className: "mt-3 bg-white border-2 border-rose-200 rounded-xl p-4 space-y-2"
@@ -746,7 +742,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
       className: "flex items-center justify-between"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-black text-rose-800"
-    }, "\uD83E\uDD16 AI Reliability Analysis"), /*#__PURE__*/React.createElement("span", {
+    }, "🤖 AI Reliability Analysis"), /*#__PURE__*/React.createElement("span", {
       className: `text-[11px] font-bold px-2 py-0.5 rounded-full ${ai.reliabilityRating === 'very reliable' ? 'bg-green-100 text-green-800' : ai.reliabilityRating === 'somewhat reliable' ? 'bg-blue-100 text-blue-800' : ai.reliabilityRating === 'questionable' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`
     }, ai.reliabilityRating)), ai.biasTypes?.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-1 flex-wrap"
@@ -765,15 +761,15 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
       className: "bg-amber-50 rounded-lg p-3 border border-amber-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-amber-700 mb-0.5"
-    }, "\u26A0\uFE0F FACTUAL CONCERNS"), /*#__PURE__*/React.createElement("ul", {
+    }, "⚠️ FACTUAL CONCERNS"), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, ai.factualConcerns.map((c, ci) => /*#__PURE__*/React.createElement("li", {
       key: ci
-    }, "\u2022 ", c)))), ai.keyQuestion && /*#__PURE__*/React.createElement("div", {
+    }, "• ", c)))), ai.keyQuestion && /*#__PURE__*/React.createElement("div", {
       className: "bg-rose-50 rounded-lg p-2 border border-rose-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-rose-600"
-    }, "\uD83E\uDD14 THINK ABOUT THIS:"), /*#__PURE__*/React.createElement("p", {
+    }, "🤔 THINK ABOUT THIS:"), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-rose-800 italic"
     }, ai.keyQuestion)));
   })(), r[`_reliabilityAI_${activeDoc.id}`]?.error && /*#__PURE__*/React.createElement("p", {
@@ -865,7 +861,7 @@ Rules:
       className: "flex items-center justify-between"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-black text-emerald-800"
-    }, "\uD83D\uDCDD Analysis Feedback"), /*#__PURE__*/React.createElement("span", {
+    }, "📝 Analysis Feedback"), /*#__PURE__*/React.createElement("span", {
       className: `text-xs font-black px-3 py-1 rounded-full ${docFeedback.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : docFeedback.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`
     }, docFeedback.overallRating === 'exemplary' ? '⭐ Exemplary' : docFeedback.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing')), docFeedback.happFeedback && /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
@@ -890,27 +886,27 @@ Rules:
       className: "text-xs text-slate-700"
     }, docFeedback.analysisFeedback)), docFeedback.strengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-green-700 mb-1"
-    }, "\uD83D\uDCAA Strengths"), /*#__PURE__*/React.createElement("ul", {
+    }, "💪 Strengths"), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-green-800 space-y-1"
     }, docFeedback.strengths.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-green-500 mt-0.5"
-    }, "\u2713"), s)))), docFeedback.nudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    }, "✓"), s)))), docFeedback.nudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-amber-700 mb-1"
-    }, "\uD83E\uDD14 Think Deeper"), /*#__PURE__*/React.createElement("ul", {
+    }, "🤔 Think Deeper"), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, docFeedback.nudges.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-amber-500 mt-0.5"
-    }, "\u2192"), s)))), docFeedback.modelResponse && /*#__PURE__*/React.createElement("div", {
+    }, "→"), s)))), docFeedback.modelResponse && /*#__PURE__*/React.createElement("div", {
       className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-indigo-700 mb-0.5"
-    }, "\uD83D\uDCA1 EXAMPLE RESPONSE"), /*#__PURE__*/React.createElement("p", {
+    }, "💡 EXAMPLE RESPONSE"), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-indigo-800 italic"
     }, docFeedback.modelResponse))), docFeedback?.error && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-red-600"
@@ -921,7 +917,7 @@ Rules:
     className: "bg-purple-50 border-2 border-purple-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-purple-800 mb-3"
-  }, "\u2694\uFE0F Competing Perspectives"), /*#__PURE__*/React.createElement("div", {
+  }, "⚔️ Competing Perspectives"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, dbqData.perspectives.map((pov, pi) => /*#__PURE__*/React.createElement("div", {
     key: pi,
@@ -950,7 +946,7 @@ Rules:
     className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-emerald-800 mb-1"
-  }, "\uD83D\uDD17 Corroboration Matrix"), /*#__PURE__*/React.createElement("p", {
+  }, "🔗 Corroboration Matrix"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-emerald-600 mb-4"
   }, "Compare how documents agree or disagree on key claims."), claims.length > 0 ? claims.map((claim, ci) => /*#__PURE__*/React.createElement("div", {
     key: ci,
@@ -965,7 +961,7 @@ Rules:
     className: "flex-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-green-700 uppercase mb-1"
-  }, "\u2705 Supporting"), /*#__PURE__*/React.createElement("div", {
+  }, "✅ Supporting"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, (claim.supportingDocs || []).map(id => /*#__PURE__*/React.createElement("span", {
     key: id,
@@ -974,7 +970,7 @@ Rules:
     className: "flex-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-red-700 uppercase mb-1"
-  }, "\u274C Challenging"), /*#__PURE__*/React.createElement("div", {
+  }, "❌ Challenging"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, (claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => /*#__PURE__*/React.createElement("span", {
     key: id,
@@ -1096,27 +1092,27 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       className: "flex items-center justify-between"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-black text-emerald-800"
-    }, "\uD83D\uDD17 Corroboration Feedback"), /*#__PURE__*/React.createElement("span", {
+    }, "🔗 Corroboration Feedback"), /*#__PURE__*/React.createElement("span", {
       className: `text-xs font-black px-3 py-1 rounded-full ${corrobFb.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : corrobFb.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`
     }, corrobFb.overallRating === 'exemplary' ? '⭐ Exemplary' : corrobFb.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing')), corrobFb.corrobStrengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-green-700 mb-1"
-    }, "\uD83D\uDCAA Strengths"), /*#__PURE__*/React.createElement("ul", {
+    }, "💪 Strengths"), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-green-800 space-y-1"
     }, corrobFb.corrobStrengths.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-green-500 mt-0.5"
-    }, "\u2713"), s)))), corrobFb.corrobNudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    }, "✓"), s)))), corrobFb.corrobNudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-amber-700 mb-1"
-    }, "\uD83E\uDD14 Think Deeper"), /*#__PURE__*/React.createElement("ul", {
+    }, "🤔 Think Deeper"), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, corrobFb.corrobNudges.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-amber-500 mt-0.5"
-    }, "\u2192"), s)))), corrobFb.perspectiveFeedback && corrobFb.perspectiveFeedback !== 'null' && /*#__PURE__*/React.createElement("div", {
+    }, "→"), s)))), corrobFb.perspectiveFeedback && corrobFb.perspectiveFeedback !== 'null' && /*#__PURE__*/React.createElement("div", {
       className: "bg-white/60 rounded-lg p-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-purple-600 mb-0.5"
@@ -1126,7 +1122,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-indigo-700 mb-0.5"
-    }, "\uD83D\uDCA1 EXAMPLE"), /*#__PURE__*/React.createElement("p", {
+    }, "💡 EXAMPLE"), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-indigo-800 italic"
     }, corrobFb.modelCorroboration))), corrobFb?.error && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-red-600"
@@ -1137,7 +1133,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-5"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-indigo-800 mb-2"
-  }, "\uD83D\uDCDD Synthesis Essay Prompt"), /*#__PURE__*/React.createElement("p", {
+  }, "📝 Synthesis Essay Prompt"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700 leading-relaxed"
   }, dbqData.synthesisPrompt), dbqData.thesisStarter && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 bg-white/70 rounded-lg p-3 border border-indigo-100"
@@ -1149,7 +1145,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-slate-50 rounded-xl border border-slate-400 p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase mb-2"
-  }, "\uD83D\uDCCE Evidence Tracker"), /*#__PURE__*/React.createElement("div", {
+  }, "📎 Evidence Tracker"), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 flex-wrap"
   }, docs.map(doc => {
     const cited = essayText.toLowerCase().includes(`document ${doc.id.toLowerCase()}`) || essayText.toLowerCase().includes(`doc ${doc.id.toLowerCase()}`);
@@ -1204,7 +1200,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       }
     },
     className: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 shrink-0"
-  }, "\u2728 Get AI Feedback"), aiFeedback && typeof aiFeedback === 'string' && /*#__PURE__*/React.createElement("p", {
+  }, "✨ Get AI Feedback"), aiFeedback && typeof aiFeedback === 'string' && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic flex-1"
   }, aiFeedback)), aiFeedback && typeof aiFeedback === 'object' && !aiFeedback.error && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"
@@ -1212,27 +1208,27 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-black text-emerald-800"
-  }, "\uD83D\uDCDD AI Writing Feedback"), /*#__PURE__*/React.createElement("div", {
+  }, "📝 AI Writing Feedback"), /*#__PURE__*/React.createElement("div", {
     className: "bg-emerald-700 text-white text-lg font-black px-4 py-1 rounded-full"
   }, aiFeedback.overallScore, "/4")), aiFeedback.strengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-green-700 mb-1"
-  }, "\uD83D\uDCAA Strengths"), /*#__PURE__*/React.createElement("ul", {
+  }, "💪 Strengths"), /*#__PURE__*/React.createElement("ul", {
     className: "text-sm text-green-800 space-y-1"
   }, aiFeedback.strengths.map((s, i) => /*#__PURE__*/React.createElement("li", {
     key: i,
     className: "flex items-start gap-1.5"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-green-500 mt-0.5"
-  }, "\u2713"), s)))), aiFeedback.improvements?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "✓"), s)))), aiFeedback.improvements?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-amber-700 mb-1"
-  }, "\uD83D\uDCC8 Areas to Improve"), /*#__PURE__*/React.createElement("ul", {
+  }, "📈 Areas to Improve"), /*#__PURE__*/React.createElement("ul", {
     className: "text-sm text-amber-800 space-y-1"
   }, aiFeedback.improvements.map((s, i) => /*#__PURE__*/React.createElement("li", {
     key: i,
     className: "flex items-start gap-1.5"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-amber-500 mt-0.5"
-  }, "\u2192"), s)))), aiFeedback.thesisFeedback && /*#__PURE__*/React.createElement("div", {
+  }, "→"), s)))), aiFeedback.thesisFeedback && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/60 rounded-lg p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-600 mb-0.5"
@@ -1246,7 +1242,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "text-xs text-slate-700"
   }, aiFeedback.evidenceFeedback)), aiFeedback.missingDocs?.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-red-600 font-bold"
-  }, "\u26A0\uFE0F Documents not cited: ", aiFeedback.missingDocs.map(d => `Doc ${d}`).join(', ')), aiFeedback.nextSteps && /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ Documents not cited: ", aiFeedback.missingDocs.map(d => `Doc ${d}`).join(', ')), aiFeedback.nextSteps && /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 rounded-lg p-3 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-700 mb-0.5"
@@ -1260,7 +1256,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-orange-50 border-2 border-orange-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-orange-800 mb-1"
-  }, "\uD83D\uDCCA DBQ Rubric"), /*#__PURE__*/React.createElement("p", {
+  }, "📊 DBQ Rubric"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-orange-600 mb-4"
   }, "Review scoring criteria, then self-assess your work below."), rubric.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "overflow-x-auto"
@@ -1272,16 +1268,16 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
   }, "Criteria"), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-red-50 text-center font-bold text-red-700 w-1/5",
     scope: "col"
-  }, "1 \u2014 Beginning"), /*#__PURE__*/React.createElement("th", {
+  }, "1 — Beginning"), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-yellow-50 text-center font-bold text-yellow-700 w-1/5",
     scope: "col"
-  }, "2 \u2014 Developing"), /*#__PURE__*/React.createElement("th", {
+  }, "2 — Developing"), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-green-50 text-center font-bold text-green-700 w-1/5",
     scope: "col"
-  }, "3 \u2014 Proficient"), /*#__PURE__*/React.createElement("th", {
+  }, "3 — Proficient"), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-blue-50 text-center font-bold text-blue-700 w-1/5",
     scope: "col"
-  }, "4 \u2014 Advanced"))), /*#__PURE__*/React.createElement("tbody", null, rubric.map((row, ri) => /*#__PURE__*/React.createElement("tr", {
+  }, "4 — Advanced"))), /*#__PURE__*/React.createElement("tbody", null, rubric.map((row, ri) => /*#__PURE__*/React.createElement("tr", {
     key: ri
   }, /*#__PURE__*/React.createElement("td", {
     className: "border border-orange-200 p-3 font-bold text-slate-800"
@@ -1306,7 +1302,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     }
   }, selfScores[row.criteria] === level && /*#__PURE__*/React.createElement("span", {
     className: "block text-indigo-600 text-lg mb-1"
-  }, "\u25CF"), row[level] || ''))))))), Object.keys(selfScores).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "●"), row[level] || ''))))))), Object.keys(selfScores).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-xl border border-orange-200 p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase mb-2"
@@ -1329,12 +1325,12 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-purple-50 border border-purple-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-purple-700 uppercase mb-1"
-  }, "\uD83C\uDF4E Teacher Notes"), /*#__PURE__*/React.createElement("p", {
+  }, "🍎 Teacher Notes"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-purple-800"
   }, dbqData.teacherNotes)))));
 }
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.DbqView = DbqView;
-  window.AlloModules.ViewDbqModule = true;  // breadcrumb for build.js MODULES detection
+  window.AlloModules.ViewDbqModule = true;
 })();

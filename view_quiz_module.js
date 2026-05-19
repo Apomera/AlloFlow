@@ -19,1858 +19,2082 @@
   var Fragment = React.Fragment;
 
   var _lazyIcon = function (name) {
-    return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
-      return I ? React.createElement(I, props) : null;
-    };
+  return function (props) {
+    var I = window.AlloIcons && window.AlloIcons[name];
+    return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
-  var Wifi = _lazyIcon('Wifi');
-  var Users = _lazyIcon('Users');
-  var Lock = _lazyIcon('Lock');
-  var Unlock = _lazyIcon('Unlock');
-  var CheckCircle = _lazyIcon('CheckCircle');
-  var MonitorPlay = _lazyIcon('MonitorPlay');
-  var XCircle = _lazyIcon('XCircle');
-  var Gamepad2 = _lazyIcon('Gamepad2');
-  var DoorOpen = _lazyIcon('DoorOpen');
-  var FolderDown = _lazyIcon('FolderDown');
-  var Pencil = _lazyIcon('Pencil');
-  var CheckCircle2 = _lazyIcon('CheckCircle2');
-  var CheckSquare = _lazyIcon('CheckSquare');
-  var Volume2 = _lazyIcon('Volume2');
-  var MicOff = _lazyIcon('MicOff');
-  var RefreshCw = _lazyIcon('RefreshCw');
-  var Plus = _lazyIcon('Plus');
-  var Brain = _lazyIcon('Brain');
-  var Languages = _lazyIcon('Languages');
-  var Search = _lazyIcon('Search');
-  var X = _lazyIcon('X');
-  var Sparkles = _lazyIcon('Sparkles');
-  var ChevronUp = _lazyIcon('ChevronUp');
-  var Info = _lazyIcon('Info');
-  var Eye = _lazyIcon('Eye');
-  var MousePointerClick = _lazyIcon('MousePointerClick');
-  var MessageSquare = _lazyIcon('MessageSquare');
-  var PenTool = _lazyIcon('PenTool');
-  var ShieldCheck = _lazyIcon('ShieldCheck');
-
-  // ─── Plan S Slice 4: shuffle helper ───────────────────────────────────
-  // Fisher-Yates shuffle. Used for sequencing (shuffle the items so students
-  // can't read the correct order off the array) and matching (shuffle the
-  // right column).
-  function _quizShuffleCopy(arr) {
-    var copy = (arr || []).slice();
-    for (var i = copy.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
-    }
-    return copy;
+};
+var Wifi = _lazyIcon('Wifi');
+var Users = _lazyIcon('Users');
+var Lock = _lazyIcon('Lock');
+var Unlock = _lazyIcon('Unlock');
+var CheckCircle = _lazyIcon('CheckCircle');
+var MonitorPlay = _lazyIcon('MonitorPlay');
+var XCircle = _lazyIcon('XCircle');
+var Gamepad2 = _lazyIcon('Gamepad2');
+var DoorOpen = _lazyIcon('DoorOpen');
+var FolderDown = _lazyIcon('FolderDown');
+var Pencil = _lazyIcon('Pencil');
+var CheckCircle2 = _lazyIcon('CheckCircle2');
+var CheckSquare = _lazyIcon('CheckSquare');
+var Volume2 = _lazyIcon('Volume2');
+var MicOff = _lazyIcon('MicOff');
+var RefreshCw = _lazyIcon('RefreshCw');
+var Plus = _lazyIcon('Plus');
+var Brain = _lazyIcon('Brain');
+var Languages = _lazyIcon('Languages');
+var Search = _lazyIcon('Search');
+var X = _lazyIcon('X');
+var Sparkles = _lazyIcon('Sparkles');
+var ChevronUp = _lazyIcon('ChevronUp');
+var Info = _lazyIcon('Info');
+var Eye = _lazyIcon('Eye');
+var MousePointerClick = _lazyIcon('MousePointerClick');
+var MessageSquare = _lazyIcon('MessageSquare');
+var PenTool = _lazyIcon('PenTool');
+var ShieldCheck = _lazyIcon('ShieldCheck');
+function _quizShuffleCopy(arr) {
+  var copy = (arr || []).slice();
+  for (var i = copy.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copy[i];
+    copy[i] = copy[j];
+    copy[j] = tmp;
   }
-
-  // ─── SequenceSenseCard (Plan S Slice 5) ───────────────────────────────
-  // 3-step diagnostic that probes verification + diagnosis + metacognitive
-  // reasoning about WHY ordering matters. Genuinely distinct from Timeline
-  // (which produces an order); this verifies, diagnoses, AND identifies
-  // the underlying principle. Deterministic grade.
-  function SequenceSenseCard(p) {
-    var q = p.q;
-    var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
-    var intentionallyWrongIndex = (typeof q.intentionallyWrongIndex === 'number') ? q.intentionallyWrongIndex : null;
-    var orderingPrinciple = q.orderingPrinciple || 'chronological';
-    var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2
-      ? q.principleOptions
-      : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
-    // Plan T v3+ Chunk 3: explainer + IDK parity with MCQ / freeform.
-    var modeStrat = p.modeStrategy || null;
-    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
-    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
-    var explainer = explainerState[0]; var setExplainer = explainerState[1];
-    function requestExplainer() {
-      if (typeof p.callGemini !== 'function') {
-        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable.' });
-        return;
-      }
-      setExplainer({ open: true, loading: true, text: '', error: '' });
-      var grade = p.gradeLevel || 'middle school';
-      var conceptHint = (q.question || '') + ' — Items in canonical order: ' + canonicalItems.join(', ') + '. Ordering principle: ' + orderingPrinciple + '.';
-      var prompt = 'You are a patient teacher. A ' + grade + ' student is working a sequencing item and needs help. ' + conceptHint + '\n\nGive a 60-90 word explanation in plain language: name the ordering principle, walk through one or two items as a concrete example, and end with a sentence checking understanding. Plain text only — no headings, no bullet points.';
-      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
-        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
-      }).catch(function (err) {
-        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
+  return copy;
+}
+function SequenceSenseCard(p) {
+  var q = p.q;
+  var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
+  var intentionallyWrongIndex = typeof q.intentionallyWrongIndex === 'number' ? q.intentionallyWrongIndex : null;
+  var orderingPrinciple = q.orderingPrinciple || 'chronological';
+  var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2 ? q.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+  var modeStrat = p.modeStrategy || null;
+  var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+  var explainerState = React.useState({
+    open: false,
+    loading: false,
+    text: '',
+    error: ''
+  });
+  var explainer = explainerState[0];
+  var setExplainer = explainerState[1];
+  function requestExplainer() {
+    if (typeof p.callGemini !== 'function') {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: 'Explainer unavailable.'
       });
+      return;
     }
-    function markIDK() {
-      // Skip remaining steps; record IDK in live session; auto-open explainer.
-      setStep('done');
-      setGrade({ step1Correct: false, step2Correct: false, step3Correct: false, status: 'idk', score: 0 });
-      if (aiExplainerEnabled) requestExplainer();
-      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
-        try {
-          p.onSubmitLiveAnswer({
-            questionIdx: p.questionIdx,
-            itemType: 'sequence-sense',
-            conceptLabel: (q && q.conceptLabel) || '',
-            answer: { idk: true },
-            timestamp: Date.now(),
-          });
-        } catch (e) { /* swallow */ }
-      }
-    }
-
-    // Derive presentedOrder: use q.presentedOrder if provided, else shuffle once on first render.
-    var presentedOrderState = React.useState(function () {
-      if (Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonicalItems.length) {
-        return q.presentedOrder.slice();
-      }
-      // Fallback: shuffle indices
-      var indices = canonicalItems.map(function (_, i) { return i; });
-      for (var i = indices.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
-      }
-      return indices;
+    setExplainer({
+      open: true,
+      loading: true,
+      text: '',
+      error: ''
     });
-    var presentedOrder = presentedOrderState[0];
-
-    var stepState = React.useState(1);  // 1 = verify, 2 = click misplaced, 3 = principle, 'done'
-    var step = stepState[0]; var setStep = stepState[1];
-    var verifyState = React.useState(null);  // 'yes' | 'no'
-    var verifyAnswer = verifyState[0]; var setVerifyAnswer = verifyState[1];
-    var clickedState = React.useState(null);  // index in presentedOrder of which item student thought was misplaced
-    var clickedIdx = clickedState[0]; var setClickedIdx = clickedState[1];
-    var principleState = React.useState(null);
-    var principleAnswer = principleState[0]; var setPrincipleAnswer = principleState[1];
-    var gradeState = React.useState(null);  // {step1Correct, step2Correct, step3Correct, status, score}
-    var grade = gradeState[0]; var setGrade = gradeState[1];
-
-    function answerVerify(ans) {
-      setVerifyAnswer(ans);
-      // If user says "No", they need to identify the misplaced item; if "Yes", skip to principle.
-      setStep(ans === 'no' ? 2 : 3);
-    }
-
-    function answerMisplaced(idx) {
-      setClickedIdx(idx);
-      setStep(3);
-    }
-
-    function answerPrinciple(p2) {
-      setPrincipleAnswer(p2);
-      // Compute composite grade
-      var actualOrderIsCorrect = (intentionallyWrongIndex === null);
-      var step1Correct = (verifyAnswer === 'yes') ? actualOrderIsCorrect : !actualOrderIsCorrect;
-      var step2Correct;
-      if (verifyAnswer === 'yes') {
-        // User skipped step 2 — give credit if their step 1 was right (the order really was correct)
-        step2Correct = step1Correct;
-      } else {
-        step2Correct = (clickedIdx === intentionallyWrongIndex);
-      }
-      var step3Correct = (p2 === orderingPrinciple);
-      var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
-      var status = score === 3 ? 'correct' : score === 2 ? 'partially-correct' : 'incorrect';
-      setGrade({ step1Correct: step1Correct, step2Correct: step2Correct, step3Correct: step3Correct, status: status, score: score });
-      setStep('done');
-      // Plan T Slice Ta: live session response capture for sequence-sense
-      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
-        try {
-          p.onSubmitLiveAnswer({
-            questionIdx: p.questionIdx,
-            itemType: 'sequence-sense',
-            conceptLabel: (q && q.conceptLabel) || '',
-            answer: {
-              verifyAnswer: verifyAnswer,
-              clickedIdx: clickedIdx,
-              principleAnswer: p2,
-              score: score,
-              status: status,
-            },
-            timestamp: Date.now(),
-          });
-        } catch (e) { /* swallow */ }
-      }
-    }
-
-    function reset() {
-      setStep(1);
-      setVerifyAnswer(null);
-      setClickedIdx(null);
-      setPrincipleAnswer(null);
-      setGrade(null);
-    }
-
-    if (canonicalItems.length === 0) return null;
-
-    var statusColor = grade && grade.status === 'correct' ? 'emerald' :
-                      grade && grade.status === 'partially-correct' ? 'amber' :
-                      grade ? 'rose' : 'slate';
-
-    return React.createElement('div', {
-      className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
-    },
-      React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
-        React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
-        React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, 'Sequence Sense'),
-          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || 'Below is a sequence. Verify and explain.')
-        )
-      ),
-      // Items list — clickable in step 2, otherwise read-only
-      React.createElement('ol', { className: 'space-y-1.5 mb-3' },
-        presentedOrder.map(function (canonicalIdx, displayIdx) {
-          var item = canonicalItems[canonicalIdx];
-          var isClickable = step === 2;
-          var isClicked = clickedIdx === displayIdx;
-          var showCorrectness = grade !== null;
-          var thisIsActuallyMisplaced = (intentionallyWrongIndex === displayIdx);
-          var rowClass;
-          if (showCorrectness) {
-            if (thisIsActuallyMisplaced) rowClass = 'bg-amber-50 border-amber-400';
-            else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';
-            else rowClass = 'bg-slate-50 border-slate-300';
-          } else if (isClicked) {
-            rowClass = 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300';
-          } else {
-            rowClass = 'bg-slate-50 border-slate-300' + (isClickable ? ' hover:bg-slate-100 cursor-pointer' : '');
-          }
-          return React.createElement('li', {
-            key: displayIdx,
-            onClick: isClickable ? function () { answerMisplaced(displayIdx); } : null,
-            className: 'flex items-center gap-2 px-3 py-2 rounded-lg border ' + rowClass,
-            role: isClickable ? 'button' : undefined,
-            tabIndex: isClickable ? 0 : undefined,
-            onKeyDown: isClickable ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); answerMisplaced(displayIdx); } } : undefined,
-          },
-            React.createElement('span', { className: 'flex-shrink-0 text-xs font-bold text-slate-600 w-6' }, (displayIdx + 1) + '.'),
-            React.createElement('span', { className: 'flex-1 text-sm text-slate-800' }, item),
-            showCorrectness && thisIsActuallyMisplaced && React.createElement('span', { className: 'text-xs font-bold text-amber-700' }, '↔ misplaced'),
-            showCorrectness && isClicked && !thisIsActuallyMisplaced && React.createElement('span', { className: 'text-xs font-bold text-rose-700' }, '✗')
-          );
-        })
-      ),
-      // Step 1: verify
-      step === 1 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
-        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' }, 'Step 1 of 3 — Is this order correct?'),
-        React.createElement('div', { className: 'flex gap-2 flex-wrap' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { answerVerify('yes'); },
-            className: 'flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors',
-          }, '✓ Yes, correct'),
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { answerVerify('no'); },
-            className: 'flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors',
-          }, '✗ No, something is off'),
-          allowIDK && React.createElement('button', {
-            type: 'button',
-            onClick: markIDK,
-            className: 'px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
-            'aria-label': 'I don\'t know — skip without penalty',
-            title: 'Skip — no penalty. The AI will explain.',
-          }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know')
-        )
-      ),
-      // Step 2: click the misplaced
-      step === 2 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
-        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900' }, 'Step 2 of 3 — Click the item that\'s out of place above.')
-      ),
-      // Step 3: pick the principle
-      step === 3 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
-        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' }, 'Step 3 of 3 — What\'s the ordering principle?'),
-        React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2' },
-          principleOptions.map(function (opt) {
-            return React.createElement('button', {
-              key: opt,
-              type: 'button',
-              onClick: function () { answerPrinciple(opt); },
-              className: 'px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors',
-            }, opt);
-          })
-        )
-      ),
-      // Grade panel (after step 'done')
-      grade && React.createElement('div', {
-        className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
-        role: 'status',
-        'aria-live': 'polite',
-      },
-        React.createElement('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
-          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' },
-            grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 3 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
-        ),
-        grade.status !== 'idk' && React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
-          React.createElement('li', null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (intentionallyWrongIndex === null ? 'order was correct' : 'order had one misplaced item') + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')),
-          verifyAnswer === 'no' && React.createElement('li', null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found the misplaced item' : 'the misplaced item was item #' + ((intentionallyWrongIndex || 0) + 1))),
-          React.createElement('li', null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))
-        ),
-        React.createElement('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: reset,
-            className: 'px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
-          }, 'Try again'),
-          aiExplainerEnabled && !explainer.open && React.createElement('button', {
-            type: 'button',
-            onClick: requestExplainer,
-            className: 'px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold',
-          }, '🤖 Explain this concept')
-        )
-      ),
-      // Inline explainer panel
-      explainer.open && React.createElement('div', { className: 'mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
-        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
-        explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
-        explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
-        explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
-        explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
-          type: 'button',
-          onClick: function () { try { p.callTTS(explainer.text); } catch (e) { /* noop */ } },
-          className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-          'aria-label': 'Read aloud',
-        }, '🔊 Read aloud')
-      )
-    );
+    var grade = p.gradeLevel || 'middle school';
+    var conceptHint = (q.question || '') + ' — Items in canonical order: ' + canonicalItems.join(', ') + '. Ordering principle: ' + orderingPrinciple + '.';
+    var prompt = 'You are a patient teacher. A ' + grade + ' student is working a sequencing item and needs help. ' + conceptHint + '\n\nGive a 60-90 word explanation in plain language: name the ordering principle, walk through one or two items as a concrete example, and end with a sentence checking understanding. Plain text only — no headings, no bullet points.';
+    Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+      var txt = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
+      setExplainer({
+        open: true,
+        loading: false,
+        text: txt.trim(),
+        error: ''
+      });
+    }).catch(function (err) {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: err && err.message ? err.message : 'Explainer failed.'
+      });
+    });
   }
-
-  // ─── RelationMismatchCard (Plan S Slice 5) ────────────────────────────
-  // 2-step diagnostic: find the wrong pair, then pick the correct partner.
-  // Distinct from Glossary's matching/memory game (which tests recall of all
-  // pairs). This tests pair-error recognition + corrective reasoning.
-  // Deterministic grade.
-  function RelationMismatchCard(p) {
-    var q = p.q;
-    var pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) { return pr && pr.left && pr.right; }) : [];
-    var wrongPairIndex = (typeof q.wrongPairIndex === 'number') ? q.wrongPairIndex : 0;
-    var correctPartnerForWrong = q.correctPartnerForWrong || '';
-    var candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
-
-    var stepState = React.useState(1);
-    var step = stepState[0]; var setStep = stepState[1];
-    var clickedPairState = React.useState(null);
-    var clickedPairIdx = clickedPairState[0]; var setClickedPairIdx = clickedPairState[1];
-    var partnerAnswerState = React.useState(null);
-    var partnerAnswer = partnerAnswerState[0]; var setPartnerAnswer = partnerAnswerState[1];
-    var gradeState = React.useState(null);
-    var grade = gradeState[0]; var setGrade = gradeState[1];
-    // Plan T v3+ Chunk 3: explainer + IDK parity with MCQ / freeform.
-    var modeStrat = p.modeStrategy || null;
-    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
-    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
-    var explainer = explainerState[0]; var setExplainer = explainerState[1];
-    function requestExplainer() {
-      if (typeof p.callGemini !== 'function') {
-        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable.' });
-        return;
-      }
-      setExplainer({ open: true, loading: true, text: '', error: '' });
-      var grade = p.gradeLevel || 'middle school';
-      var leftSide = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
-      var conceptHint = (q.question || '') + ' — The correct relationship is "' + leftSide + '" ↔ "' + correctPartnerForWrong + '".';
-      var prompt = 'You are a patient teacher. A ' + grade + ' student is working a relation-mismatch item and needs help. ' + conceptHint + '\n\nGive a 60-90 word explanation in plain language: name what makes this relationship correct, and contrast it with the wrong pair the student saw. End with a sentence checking understanding. Plain text only — no headings, no bullet points.';
-      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
-        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
-      }).catch(function (err) {
-        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
-      });
-    }
-    function markIDK() {
-      // Skip remaining steps; record IDK in live session; auto-open explainer.
-      setStep('done');
-      setGrade({ step1Correct: false, step2Correct: false, status: 'idk', score: 0 });
-      if (aiExplainerEnabled) requestExplainer();
-      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
-        try {
-          p.onSubmitLiveAnswer({
-            questionIdx: p.questionIdx,
-            itemType: 'relation-mismatch',
-            conceptLabel: (q && q.conceptLabel) || '',
-            answer: { idk: true },
-            timestamp: Date.now(),
-          });
-        } catch (e) { /* swallow */ }
-      }
-    }
-
-    function answerWhichWrong(idx) {
-      setClickedPairIdx(idx);
-      setStep(2);
-    }
-
-    function answerPartner(ans) {
-      setPartnerAnswer(ans);
-      var step1Correct = (clickedPairIdx === wrongPairIndex);
-      var step2Correct = (ans === correctPartnerForWrong);
-      var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0);
-      var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
-      setGrade({ step1Correct: step1Correct, step2Correct: step2Correct, status: status, score: score });
-      setStep('done');
-      // Plan T Slice Ta: live session response capture for relation-mismatch
-      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
-        try {
-          p.onSubmitLiveAnswer({
-            questionIdx: p.questionIdx,
-            itemType: 'relation-mismatch',
-            conceptLabel: (q && q.conceptLabel) || '',
-            answer: {
-              clickedPairIdx: clickedPairIdx,
-              partnerAnswer: ans,
-              score: score,
-              status: status,
-            },
-            timestamp: Date.now(),
-          });
-        } catch (e) { /* swallow */ }
-      }
-    }
-
-    function reset() {
-      setStep(1);
-      setClickedPairIdx(null);
-      setPartnerAnswer(null);
-      setGrade(null);
-    }
-
-    if (pairs.length === 0) return null;
-
-    var statusColor = grade && grade.status === 'correct' ? 'emerald' :
-                      grade && grade.status === 'partially-correct' ? 'amber' :
-                      grade ? 'rose' : 'slate';
-
-    var wrongPairLeft = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
-
-    return React.createElement('div', {
-      className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
-    },
-      React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
-        React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
-        React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, 'Relation Mismatch'),
-          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || 'One of these pairs is wrong. Find it and fix it.')
-        )
-      ),
-      // Step 1: pairs list (clickable to identify the wrong one)
-      React.createElement('div', { className: 'space-y-1.5 mb-3' },
-        pairs.map(function (pair, idx) {
-          var isClickable = step === 1;
-          var isClicked = clickedPairIdx === idx;
-          var thisIsActuallyWrong = (idx === wrongPairIndex);
-          var showCorrectness = grade !== null;
-          var rowClass;
-          if (showCorrectness) {
-            if (thisIsActuallyWrong) rowClass = 'bg-amber-50 border-amber-400';
-            else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';
-            else rowClass = 'bg-slate-50 border-slate-300';
-          } else if (isClicked) {
-            rowClass = 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300';
-          } else {
-            rowClass = 'bg-slate-50 border-slate-300' + (isClickable ? ' hover:bg-slate-100 cursor-pointer' : '');
-          }
-          return React.createElement('div', {
-            key: idx,
-            onClick: isClickable ? function () { answerWhichWrong(idx); } : null,
-            className: 'grid grid-cols-2 gap-3 px-3 py-2 rounded-lg border ' + rowClass,
-            role: isClickable ? 'button' : undefined,
-            tabIndex: isClickable ? 0 : undefined,
-            onKeyDown: isClickable ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); answerWhichWrong(idx); } } : undefined,
-          },
-            React.createElement('span', { className: 'text-sm font-semibold text-slate-800' }, pair.left),
-            React.createElement('span', { className: 'text-sm text-slate-700 flex items-center justify-between gap-2' },
-              React.createElement('span', null, '↔ ' + pair.right),
-              showCorrectness && thisIsActuallyWrong && React.createElement('span', { className: 'text-xs font-bold text-amber-700 flex-shrink-0' }, 'wrong'),
-              showCorrectness && isClicked && !thisIsActuallyWrong && React.createElement('span', { className: 'text-xs font-bold text-rose-700 flex-shrink-0' }, '✗')
-            )
-          );
-        })
-      ),
-      // Step 1 prompt
-      step === 1 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
-        React.createElement('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
-          React.createElement('div', { className: 'text-sm font-semibold text-indigo-900' }, 'Step 1 of 2 — Click the pair that\'s wrong above.'),
-          allowIDK && React.createElement('button', {
-            type: 'button',
-            onClick: markIDK,
-            className: 'px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
-            'aria-label': 'I don\'t know — skip without penalty',
-            title: 'Skip — no penalty. The AI will explain.',
-          }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know')
-        )
-      ),
-      // Step 2: pick the correct partner
-      step === 2 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
-        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' },
-          'Step 2 of 2 — Which item should "' + (clickedPairIdx !== null && pairs[clickedPairIdx] ? pairs[clickedPairIdx].left : wrongPairLeft) + '" have been paired with?'),
-        React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-          (candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong]).map(function (cand) {
-            return React.createElement('button', {
-              key: cand,
-              type: 'button',
-              onClick: function () { answerPartner(cand); },
-              className: 'px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors',
-            }, cand);
-          })
-        )
-      ),
-      // Grade panel
-      grade && React.createElement('div', {
-        className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
-        role: 'status',
-        'aria-live': 'polite',
-      },
-        React.createElement('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
-          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' },
-            grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
-        ),
-        grade.status !== 'idk' && React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
-          React.createElement('li', null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Find: ' + (grade.step1Correct ? 'you spotted the wrong pair' : 'the wrong pair was "' + wrongPairLeft + ' ↔ ' + (pairs[wrongPairIndex] ? pairs[wrongPairIndex].right : '') + '"')),
-          React.createElement('li', null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Fix: ' + (grade.step2Correct ? 'correct partner — "' + correctPartnerForWrong + '"' : 'correct partner was "' + correctPartnerForWrong + '" (you picked "' + partnerAnswer + '")'))
-        ),
-        React.createElement('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: reset,
-            className: 'px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
-          }, 'Try again'),
-          aiExplainerEnabled && !explainer.open && React.createElement('button', {
-            type: 'button',
-            onClick: requestExplainer,
-            className: 'px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold',
-          }, '🤖 Explain this concept')
-        )
-      ),
-      // Inline explainer panel
-      explainer.open && React.createElement('div', { className: 'mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
-        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
-        explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
-        explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
-        explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
-        explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
-          type: 'button',
-          onClick: function () { try { p.callTTS(explainer.text); } catch (e) { /* noop */ } },
-          className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-          'aria-label': 'Read aloud',
-        }, '🔊 Read aloud')
-      )
-    );
-  }
-
-  // ─── McqEnhancements (Plan S Slice 5+) ────────────────────────────────
-  // Self-contained per-MCQ controls: inline AI Explain button, "I don't
-  // know" non-penalized button, confidence rating. Each instance manages
-  // its own state via useState so we don't have to thread per-question
-  // state through QuizView. Mode-aware: only renders the controls the
-  // current mode strategy enables.
-  //
-  // Injected into the existing MCQ render path at the end of each
-  // question card. Mode-agnostic about whether the student answered
-  // correctly — we don't track radio-button selection in standalone
-  // (non-presentation) view, so Explain is always available rather than
-  // gated on "got it wrong."
-  function McqEnhancements(p) {
-    var modeStrat = p.modeStrategy || null;
-    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-    var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
-    if (!allowIDK && !allowConfidence && !aiExplainerEnabled) return null;
-
-    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
-    var explainer = explainerState[0]; var setExplainer = explainerState[1];
-    var idkState = React.useState(false);
-    var idkMarked = idkState[0]; var setIdkMarked = idkState[1];
-    // Plan T v3+ Chunk 1B: confidence is owned by the parent (so QuizView can
-    // re-emit the live-session payload with the new value). Parent passes
-    // currentConfidence + onSetConfidence; fall back to local state if missing.
-    var localConfidenceState = React.useState(null);
-    var hasParentConfidence = (typeof p.onSetConfidence === 'function');
-    var confidence = hasParentConfidence ? p.currentConfidence : localConfidenceState[0];
-    var setConfidence = hasParentConfidence ? p.onSetConfidence : localConfidenceState[1];
-
-    function requestExplainer() {
-      if (typeof p.callGemini !== 'function') {
-        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable.' });
-        return;
-      }
-      setExplainer({ open: true, loading: true, text: '', error: '' });
-      var grade = p.gradeLevel || 'middle school';
-      var conceptHint = (p.q && (p.q.question || p.q.correctAnswer)) || '';
-      var prompt = 'You are a patient teacher. A ' + grade + ' student needs a quick refresher on this concept. Question or concept: "' + conceptHint + '". Give a 60-90 word explanation in plain language. Use a concrete example or analogy. End with one sentence checking understanding. Plain text only — no headings, no bullet points.';
-      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
-        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
-      }).catch(function (err) {
-        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
-      });
-    }
-
-    function markIDK() {
-      setIdkMarked(true);
-      requestExplainer();
-      // Plan T Slice Ta: write IDK signal to live session if active
-      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
-        try {
-          p.onSubmitLiveAnswer({
-            questionIdx: p.questionIdx,
-            itemType: 'mcq',
-            conceptLabel: (p.q && p.q.conceptLabel) || '',
-            answer: { idk: true },
-            timestamp: Date.now(),
-          });
-        } catch (e) { /* swallow */ }
-      }
-    }
-
-    return React.createElement('div', { className: 'mt-3 ml-9 space-y-2' },
-      // Action row: Explain / IDK
-      (aiExplainerEnabled || allowIDK) && React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
-        aiExplainerEnabled && !explainer.open && React.createElement('button', {
-          type: 'button',
-          onClick: requestExplainer,
-          className: 'text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors',
-          'aria-label': 'Explain this concept',
-          title: 'Get a quick AI explanation of this concept',
-        }, React.createElement('span', { 'aria-hidden': 'true' }, '🤖 '), 'Explain this concept'),
-        allowIDK && !idkMarked && React.createElement('button', {
-          type: 'button',
-          onClick: markIDK,
-          className: 'text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors',
-          'aria-label': 'I don\'t know — skip without penalty',
-          title: 'Skip — no penalty. The AI will explain the concept.',
-        }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know'),
-        idkMarked && React.createElement('span', { className: 'text-xs uppercase font-bold px-2 py-0.5 rounded bg-sky-200 text-sky-900' }, 'Marked "I don\'t know"')
-      ),
-      // Inline explainer panel
-      explainer.open && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
-        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
-        explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
-        explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
-        explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
-        explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
-          type: 'button',
-          onClick: function () { p.callTTS(explainer.text); },
-          className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-          'aria-label': 'Read aloud',
-        }, '🔊 Read aloud')
-      ),
-      // Confidence rating
-      allowConfidence && React.createElement('div', { className: 'flex items-center gap-2 flex-wrap text-xs' },
-        React.createElement('span', { className: 'text-slate-600 font-semibold' }, 'How sure were you?'),
-        ['knew', 'guessed', 'no-idea'].map(function (lvl) {
-          var labels = { knew: 'I knew this', guessed: 'I guessed', 'no-idea': 'No idea' };
-          var active = confidence === lvl;
-          return React.createElement('button', {
-            key: lvl,
-            type: 'button',
-            onClick: function () { setConfidence(lvl); },
-            className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'),
-          }, labels[lvl]);
-        })
-      )
-    );
-  }
-
-  // ─── LiveResultsDashboard (Plan T Slice Tb) ───────────────────────────
-  // Teacher-only, live-session-only. Reads sessionData.quizState.allResponses
-  // (populated by Slice Ta) + roster, routes to a mode-specific aggregator
-  // via QuizLiveAggregators.aggregateForMode, and renders one of three
-  // visualizations:
-  //
-  //   gradebook       (exit-ticket): per-student score table
-  //   preLessonGap    (pre-check):   concept cards sorted by % missing
-  //   liveHeatmap     (formative + review fallback): per-question correct % bars
-  //
-  // Renders ABOVE the existing TeacherLiveQuizControls (which keeps doing
-  // its presentation-mode option-distribution chart). Additive — no
-  // disturbance to the legacy dashboard.
-  function LiveResultsDashboard(p) {
-    var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
-    if (!aggsMod) return null;
-    var sessionData = p.sessionData || {};
-    var quizState = sessionData.quizState || {};
-    var generatedContent = p.generatedContent;
-    var roster = sessionData.roster || {};
-    var mode = (generatedContent && generatedContent.data && generatedContent.data.mode) || 'exit-ticket';
-    var modeLabel = (generatedContent && generatedContent.data && generatedContent.data.modeLabel) || 'Exit Ticket';
-    var modeIcon = (generatedContent && generatedContent.data && generatedContent.data.modeIcon) || '📝';
-    var appId = p.appId;
-
-    // Plan T v3: for review mode, fetch concept-mastery docs for each student
-    // in roster so the retention aggregator has cross-session data. Refetches
-    // when roster key set changes. Uses __alloFirebase exposed at host.
-    var conceptMasteryState = React.useState(null);
-    var conceptMasteryByUid = conceptMasteryState[0]; var setConceptMasteryByUid = conceptMasteryState[1];
-    var rosterKeysSig = Object.keys(roster).sort().join(',');
-    React.useEffect(function () {
-      if (mode !== 'review') { setConceptMasteryByUid(null); return; }
-      var fb = window.__alloFirebase;
-      if (!fb || !fb.doc || !fb.getDoc || !appId) { setConceptMasteryByUid({}); return; }
-      var uids = Object.keys(roster);
-      if (uids.length === 0) { setConceptMasteryByUid({}); return; }
-      var cancelled = false;
-      Promise.all(uids.map(function (uid) {
-        try {
-          var ref = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'conceptMastery', uid);
-          return fb.getDoc(ref).then(function (snap) {
-            return [uid, snap.exists() ? snap.data() : null];
-          }).catch(function () { return [uid, null]; });
-        } catch (e) { return Promise.resolve([uid, null]); }
-      })).then(function (results) {
-        if (cancelled) return;
-        var map = {};
-        results.forEach(function (entry) {
-          if (entry && entry[1]) map[entry[0]] = entry[1];
-        });
-        setConceptMasteryByUid(map);
-      }).catch(function () {
-        if (!cancelled) setConceptMasteryByUid({});
-      });
-      return function () { cancelled = true; };
-    }, [mode, rosterKeysSig, appId]);
-
-    // Plan T v3+: async LLM grading for freeform responses (short-answer +
-    // self-explanation). Walks responses, finds ungraded freeform text, calls
-    // QuizAIHelpers.gradeFreeformAnswer in parallel, caches by '<uid>:<qIdx>'.
-    // The cache is passed to the aggregator, which overrides 'submitted' →
-    // 'correct'/'incorrect' so freeform items contribute to gradebook scores.
-    var aiGradedState = React.useState({});
-    var aiGradedCache = aiGradedState[0]; var setAiGradedCache = aiGradedState[1];
-    var aiGradedInFlightRef = React.useRef({});
-    var allResponsesSig = React.useMemo(function () {
-      try { return JSON.stringify(quizState.allResponses || {}); } catch (e) { return ''; }
-    }, [quizState.allResponses]);
-    React.useEffect(function () {
-      var aiHelpers = window.AlloModules && window.AlloModules.QuizAIHelpers;
-      if (!aiHelpers || typeof p.callGemini !== 'function') return;
-      var allResponses = quizState.allResponses || {};
-      var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-      var pending = [];
-      Object.keys(allResponses).forEach(function (uid) {
-        var perStudent = allResponses[uid] || {};
-        Object.keys(perStudent).forEach(function (qKey) {
-          var qIdx = parseInt(qKey, 10);
-          if (isNaN(qIdx) || !questions[qIdx]) return;
-          var response = perStudent[qKey];
-          if (!response || !response.answer || response.answer.idk) return;
-          var q = questions[qIdx];
-          var t = response.itemType || (q && q.type);
-          if (t !== 'short-answer' && t !== 'self-explanation') return;
-          var text = (response.answer && response.answer.text) || '';
-          if (!text || !text.trim()) return;
-          var key = uid + ':' + qIdx;
-          if (aiGradedCache[key] || aiGradedInFlightRef.current[key]) return;
-          pending.push({ key: key, q: q, text: text });
-        });
-      });
-      if (pending.length === 0) return;
-      pending.forEach(function (item) { aiGradedInFlightRef.current[item.key] = true; });
-      Promise.all(pending.map(function (item) {
-        return aiHelpers.gradeFreeformAnswer({
-          question: item.q.question || item.q.contextSentence || '',
-          expectedAnswer: item.q.expectedAnswer || item.q.exemplarAnswer || item.q.expectedFill || '',
-          studentResponse: item.text,
-          gradeLevel: p.gradeLevel,
-          callGemini: p.callGemini,
-        }).then(function (result) {
-          return { key: item.key, result: result };
-        }).catch(function (err) {
-          return { key: item.key, result: { status: 'error', feedback: (err && err.message) || 'Grader failed.' } };
-        });
-      })).then(function (results) {
-        setAiGradedCache(function (prev) {
-          var next = Object.assign({}, prev);
-          results.forEach(function (r) {
-            next[r.key] = r.result;
-            delete aiGradedInFlightRef.current[r.key];
-          });
-          return next;
-        });
-      }).catch(function () {
-        // On unexpected failure, clear in-flight markers so they can retry next render
-        pending.forEach(function (item) { delete aiGradedInFlightRef.current[item.key]; });
-      });
-    }, [allResponsesSig, generatedContent && generatedContent.id]);
-
-    // Count in-flight grades for the header badge
-    var inFlightCount = Object.keys(aiGradedInFlightRef.current || {}).length;
-
-    // Plan T v3+: gradebook drill-down — track which student rows are expanded
-    // so teacher can see per-question student responses (incl. AI feedback for
-    // freeform answers). Only used by the gradebook variant; safe no-op for others.
-    var expandedRowsState = React.useState({});
-    var expandedRows = expandedRowsState[0]; var setExpandedRows = expandedRowsState[1];
-    function toggleRowExpanded(uid) {
-      setExpandedRows(function (prev) {
-        var next = Object.assign({}, prev);
-        if (next[uid]) delete next[uid]; else next[uid] = true;
-        return next;
-      });
-    }
-
-    // Plan T v3+: heatmap drill-down — expand a per-question bar to see
-    // per-student status. Click a bar with responses to toggle.
-    var expandedBarsState = React.useState({});
-    var expandedBars = expandedBarsState[0]; var setExpandedBars = expandedBarsState[1];
-    function toggleBarExpanded(qIdx) {
-      setExpandedBars(function (prev) {
-        var next = Object.assign({}, prev);
-        if (next[qIdx]) delete next[qIdx]; else next[qIdx] = true;
-        return next;
-      });
-    }
-
-    // Plan T v3+ Chunk 1B: confidence chip — diagnostic color logic crosses
-    // confidence × correctness. Returns null when confidence wasn't rated.
-    //   knew + correct        → slate (expected)
-    //   guessed + correct     → amber (lucky right)
-    //   no-idea + correct     → rose (concerning right — gaming?)
-    //   knew + incorrect      → rose (overconfident — flag for follow-up)
-    //   guessed + incorrect   → slate (honest gap)
-    //   no-idea + incorrect   → sky (productive admission of not knowing)
-    function confidenceChip(confidence, status) {
-      if (!confidence) return null;
-      var labels = { knew: 'knew', guessed: 'guessed', 'no-idea': 'no idea' };
-      var color = 'slate';
-      var note = '';
-      if (status === 'correct') {
-        if (confidence === 'guessed') { color = 'amber'; note = ' (lucky)'; }
-        else if (confidence === 'no-idea') { color = 'rose'; note = ' (?)'; }
-      } else if (status === 'incorrect' || status === 'partially-correct') {
-        if (confidence === 'knew') { color = 'rose'; note = ' (overconfident)'; }
-        else if (confidence === 'no-idea') { color = 'sky'; note = ''; }
-      }
-      var bgClass = color === 'amber' ? 'bg-amber-100 text-amber-800' :
-                    color === 'rose' ? 'bg-rose-100 text-rose-800' :
-                    color === 'sky' ? 'bg-sky-100 text-sky-800' :
-                    'bg-slate-100 text-slate-700';
-      return React.createElement('span', {
-        className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ' + bgClass,
-        title: 'Student rated: ' + labels[confidence] + note,
-      }, '🎯 ' + labels[confidence]);
-    }
-
-    // Plan T v3+: "Explain to class" — when a Pre-Check gap surfaces a concept
-    // most students missed, teacher can click 🎓 to generate a 60-90 word
-    // age-appropriate explainer they can immediately read aloud. Modal shows
-    // the explainer with regen / copy / play-aloud (TTS) / close. Pure
-    // teacher-side; no push to student screens in this slice.
-    var explainerModalState = React.useState({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
-    var explainerModal = explainerModalState[0]; var setExplainerModal = explainerModalState[1];
-    // Plan T v3+ Chunk 12: refs for modal Escape-key + focus-return WCAG
-    // remediation. prevFocusRef captures the trigger button when the modal
-    // opens so we can restore focus on close. closeBtnRef receives focus
-    // when the modal opens so screen readers announce the dialog name.
-    var prevFocusRef = React.useRef(null);
-    var explainerCloseBtnRef = React.useRef(null);
-    function openExplainer(conceptIdx, conceptText) {
-      try { prevFocusRef.current = document.activeElement; } catch (e) { /* noop */ }
-      setExplainerModal({ open: true, conceptIdx: conceptIdx, conceptText: conceptText, loading: true, text: '', error: '' });
-      runExplainerCall(conceptText);
-    }
-    function runExplainerCall(conceptText) {
-      if (typeof p.callGemini !== 'function') {
-        setExplainerModal(function (prev) { return Object.assign({}, prev, { loading: false, error: 'Explainer unavailable: callGemini not provided.' }); });
-        return;
-      }
-      var grade = p.gradeLevel || 'middle school';
-      var prompt = 'You are explaining a concept to ' + grade + ' students who do not yet understand it. They just took a pre-check and got it wrong as a class. Write a 60-90 word explainer that: (1) names the concept clearly, (2) gives ONE concrete relatable example, (3) avoids jargon, (4) reads aloud naturally. Plain text only. No markdown, no fences, no headers.\n\nCONCEPT (from the pre-check question that the class missed):\n"' + String(conceptText || '').slice(0, 400) + '"\n\nReturn ONLY the explainer text.';
-      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
-        var txt = (typeof raw === 'object' && raw && raw.text) ? raw.text : String(raw || '');
-        txt = txt.replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        setExplainerModal(function (prev) { return Object.assign({}, prev, { loading: false, text: txt, error: '' }); });
-      }).catch(function (err) {
-        setExplainerModal(function (prev) { return Object.assign({}, prev, { loading: false, error: (err && err.message) || 'Explainer call failed.' }); });
-      });
-    }
-    function closeExplainer() {
-      setExplainerModal({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
-      setPushState({ pushing: false, pushed: false, error: '' });
-      // Plan T v3+ Chunk 12: restore focus to the trigger button so the
-      // teacher's keyboard position is preserved.
-      try {
-        if (prevFocusRef.current && typeof prevFocusRef.current.focus === 'function') {
-          prevFocusRef.current.focus();
-        }
-      } catch (e) { /* noop */ }
-    }
-    // Plan T v3+ Chunk 12: Escape-key listener + auto-focus on the modal's
-    // Close button when it opens. Runs only while the modal is open.
-    React.useEffect(function () {
-      if (!explainerModal.open) return;
-      function onKey(e) { if (e.key === 'Escape') closeExplainer(); }
-      document.addEventListener('keydown', onKey);
-      // Auto-focus close button after render. RAF gives React time to mount
-      // the modal DOM node before we read the ref.
-      var raf = (typeof requestAnimationFrame === 'function')
-        ? requestAnimationFrame(function () {
-            try { explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus(); } catch (e) { /* noop */ }
-          })
-        : setTimeout(function () {
-            try { explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus(); } catch (e) { /* noop */ }
-          }, 0);
-      return function () {
-        document.removeEventListener('keydown', onKey);
-        if (typeof cancelAnimationFrame === 'function' && raf) {
-          try { cancelAnimationFrame(raf); } catch (e) { /* noop */ }
-        }
-      };
-    }, [explainerModal.open]);
-    function copyExplainer() {
-      if (!explainerModal.text) return;
-      try { navigator.clipboard.writeText(explainerModal.text); } catch (e) { /* noop */ }
-    }
-    function playExplainer() {
-      if (!explainerModal.text || typeof p.callTTS !== 'function') return;
-      try { p.callTTS(explainerModal.text); } catch (e) { /* noop */ }
-    }
-    // Plan T v3+ Chunk 2: push the generated explainer to all students in the
-    // active session. Writes to quizState.classExplainer; students subscribe
-    // and render a banner. Only one explainer at a time — newer push replaces.
-    var pushStateState = React.useState({ pushing: false, pushed: false, error: '' });
-    var pushState = pushStateState[0]; var setPushState = pushStateState[1];
-    function pushExplainerToStudents() {
-      if (!explainerModal.text || pushState.pushing) return;
-      var fb = window.__alloFirebase;
-      if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !appId || !p.activeSessionCode) {
-        setPushState({ pushing: false, pushed: false, error: 'Push unavailable: live session not active.' });
-        return;
-      }
-      setPushState({ pushing: true, pushed: false, error: '' });
-      try {
-        var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
-        Promise.resolve(fb.updateDoc(sessionRef, {
-          'quizState.classExplainer': {
-            conceptIdx: explainerModal.conceptIdx,
-            conceptText: explainerModal.conceptText,
-            text: explainerModal.text,
-            ts: Date.now(),
-          },
-        })).then(function () {
-          setPushState({ pushing: false, pushed: true, error: '' });
-        }).catch(function (err) {
-          setPushState({ pushing: false, pushed: false, error: (err && err.message) || 'Push failed.' });
-        });
-      } catch (e) {
-        setPushState({ pushing: false, pushed: false, error: (e && e.message) || 'Push failed.' });
-      }
-    }
-
-    // Plan T v3+ Chunk 6: teacher overrides — beats AI cache + deterministic.
-    // Read from sessionData; write directly via __alloFirebase (same pattern
-    // as Chunk 2's class explainer push). Schema:
-    //   quizState.teacherOverrides[uid][qIdx] = { status, ts, teacherUid? }
-    var teacherOverrides = (quizState && quizState.teacherOverrides) || {};
-    function setTeacherOverride(uid, qIdx, newStatus) {
-      var fb = window.__alloFirebase;
-      if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !fb.deleteField || !appId || !p.activeSessionCode) return;
-      var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
-      var path = 'quizState.teacherOverrides.' + uid + '.' + qIdx;
-      var update = {};
-      if (newStatus == null) {
-        // Undo: remove the override
-        update[path] = fb.deleteField();
-      } else {
-        update[path] = { status: newStatus, ts: Date.now() };
-      }
-      try { fb.updateDoc(sessionRef, update); } catch (e) { /* swallow */ }
-    }
-
-    var aggResult;
-    try {
-      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides);
-    } catch (e) {
-      console.warn('[LiveResultsDashboard] aggregator failed:', e);
-      return null;
-    }
-    if (!aggResult || !aggResult.data) return null;
-    var data = aggResult.data;
-    var variant = aggResult.variant;
-
-    // Header (shared across variants). When freeform responses are still being
-    // graded by the LLM, surface a small spinner-style badge so the teacher
-    // knows the gradebook numbers will rise as grading completes.
-    var header = React.createElement('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
-      React.createElement('span', { className: 'text-2xl', 'aria-hidden': 'true' }, modeIcon),
-      React.createElement('h3', { className: 'font-black text-lg text-slate-800' }, 'Live Results — ' + modeLabel),
-      React.createElement('span', { className: 'text-xs text-slate-600' },
-        data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')),
-      inFlightCount > 0 && React.createElement('span', {
-        className: 'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse',
-        role: 'status',
-        'aria-live': 'polite',
-        'aria-label': 'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's'),
-        title: inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI',
-      }, React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),
-         'AI grading ' + inFlightCount + '…')
-    );
-
-    // Empty state (no responses yet)
-    var hasAnyResponses = false;
-    if (variant === 'gradebook') {
-      hasAnyResponses = data.studentRows.some(function (r) { return r.totalAnswered > 0; });
-    } else if (variant === 'preLessonGap') {
-      hasAnyResponses = data.conceptCards.some(function (c) { return c.totalAnswered > 0; });
-    } else if (variant === 'retentionCurve') {
-      hasAnyResponses = Array.isArray(data.conceptRows) && data.conceptRows.some(function (row) {
-        return row.students.some(function (s) { return s.seen; });
-      });
-    } else {
-      hasAnyResponses = data.bars.some(function (b) { return b.total > 0; });
-    }
-
-    if (!hasAnyResponses) {
-      return React.createElement('div', {
-        className: 'p-5 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 mb-4',
-      },
-        header,
-        React.createElement('p', { className: 'text-sm text-slate-600 italic' },
-          'Waiting for student responses. Results will appear here as students submit answers in this live session.')
-      );
-    }
-
-    // Render mode-specific body
-    var body;
-    if (variant === 'gradebook') {
-      // Plan T v3+ Chunk 4: CSV export of gradebook. Wide format — one row
-      // per student, header includes summary cols + per-question detail
-      // (status / answer / confidence / AI feedback). RFC-4180-ish escaping:
-      // wrap any cell containing comma/newline/double-quote in "" with
-      // internal " escaped as "". UTF-8 BOM included so Excel auto-detects.
-      var csvEscape = function (v) {
-        var s = (v == null) ? '' : String(v);
-        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
-        return s;
-      };
-      var buildGradebookCsv = function () {
-        var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-        var header = ['Student', 'Answered', 'Correct', 'IDK', 'Score %'];
-        questions.forEach(function (_, idx) {
-          header.push('Q' + (idx + 1) + ' Status', 'Q' + (idx + 1) + ' Answer', 'Q' + (idx + 1) + ' Confidence', 'Q' + (idx + 1) + ' AI Feedback');
-        });
-        var lines = [header.map(csvEscape).join(',')];
-        data.studentRows.forEach(function (row) {
-          var pct = row.totalAnswered > 0 ? Math.round((row.totalCorrect / row.totalAnswered) * 100) : 0;
-          var line = [row.displayName, row.totalAnswered, row.totalCorrect, row.totalIdk, pct + '%'];
-          for (var i = 0; i < questions.length; i++) {
-            var cell = row.byQuestion[i];
-            if (!cell) {
-              line.push('', '', '', '');
-            } else {
-              line.push(cell.status || '', cell.answerSummary || '', cell.confidence || '', cell.aiFeedback || '');
-            }
-          }
-          lines.push(line.map(csvEscape).join(','));
-        });
-        return '﻿' + lines.join('\r\n');
-      };
-      var exportCsv = function () {
-        try {
-          var csv = buildGradebookCsv();
-          var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          var d = new Date();
-          var stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-          a.href = url;
-          a.download = 'quiz-gradebook-' + stamp + '-' + (mode || 'exit-ticket') + '.csv';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          setTimeout(function () { URL.revokeObjectURL(url); }, 100);
-        } catch (e) { /* swallow */ }
-      };
-      // Per-student table with expand-to-drill-down per row
-      var statusBadge = function (cell) {
-        if (!cell) return React.createElement('span', { className: 'text-slate-600', title: 'No response' }, '—');
-        if (cell.status === 'correct') return React.createElement('span', { className: 'text-emerald-600', title: cell.aiGraded ? 'AI-graded correct' : 'Correct' }, '✓');
-        if (cell.status === 'incorrect') return React.createElement('span', { className: 'text-rose-600', title: cell.aiGraded ? 'AI-graded incorrect' : 'Incorrect' }, '✗');
-        if (cell.status === 'idk') return React.createElement('span', { className: 'text-sky-600', title: 'Marked I don\'t know' }, '🤔');
-        if (cell.status === 'partially-correct') return React.createElement('span', { className: 'text-amber-600', title: 'Partially correct' }, '◐');
-        return React.createElement('span', { className: 'text-slate-600', title: 'Submitted (ungraded)' }, '·');
-      };
-      body = React.createElement('div', null,
-        // Toolbar above the table — CSV export
-        React.createElement('div', { className: 'flex items-center justify-end mb-2' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: exportCsv,
-            className: 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors',
-            'aria-label': 'Export gradebook as CSV',
-            'data-help-key': 'quiz_csv_export_btn',
-            title: 'Download gradebook as CSV — opens in Excel / Google Sheets / Numbers',
-          }, React.createElement('span', { 'aria-hidden': 'true' }, '📥 '), 'Export CSV')
-        ),
-        React.createElement('div', { className: 'overflow-x-auto' },
-        React.createElement('table', { className: 'w-full text-sm border-collapse' },
-          React.createElement('thead', null,
-            React.createElement('tr', { className: 'bg-slate-100' },
-              React.createElement('th', { className: 'w-7 px-1 py-1.5', 'aria-label': 'Expand row' }),
-              React.createElement('th', { className: 'text-left px-2 py-1.5 font-bold text-slate-700' }, 'Student'),
-              React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'Answered'),
-              React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'Correct'),
-              React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'IDK')
-            )
-          ),
-          React.createElement('tbody', null,
-            data.studentRows.map(function (row) {
-              var pct = row.totalAnswered > 0 ? Math.round((row.totalCorrect / row.totalAnswered) * 100) : 0;
-              var isExpanded = !!expandedRows[row.uid];
-              var canExpand = row.totalAnswered > 0;
-              var summaryRow = React.createElement('tr', {
-                key: row.uid + ':summary',
-                className: 'border-t border-slate-200 ' + (canExpand ? 'cursor-pointer hover:bg-indigo-50/40' : ''),
-                onClick: canExpand ? function () { toggleRowExpanded(row.uid); } : undefined,
-              },
-                React.createElement('td', { className: 'text-center px-1 py-1.5' },
-                  canExpand
-                    ? React.createElement('button', {
-                        type: 'button',
-                        'aria-expanded': isExpanded,
-                        'aria-label': (isExpanded ? 'Collapse' : 'Expand') + ' ' + row.displayName + ' details',
-                        className: 'text-slate-600 hover:text-indigo-600 transition-colors text-xs font-mono',
-                        onClick: function (e) { e.stopPropagation(); toggleRowExpanded(row.uid); },
-                      }, isExpanded ? '▼' : '▶')
-                    : React.createElement('span', { className: 'text-slate-600 text-xs' }, '·')
-                ),
-                React.createElement('td', { className: 'px-2 py-1.5 text-slate-800' }, row.displayName),
-                React.createElement('td', { className: 'text-center px-2 py-1.5' },
-                  React.createElement('span', { className: 'text-xs font-mono text-slate-600' }, row.totalAnswered + ' / ' + data.totalQuestions)
-                ),
-                React.createElement('td', { className: 'text-center px-2 py-1.5' },
-                  row.totalAnswered > 0
-                    ? React.createElement('span', {
-                        className: 'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'),
-                      }, row.totalCorrect + ' (' + pct + '%)')
-                    : React.createElement('span', { className: 'text-xs text-slate-600' }, '—')
-                ),
-                React.createElement('td', { className: 'text-center px-2 py-1.5' },
-                  row.totalIdk > 0
-                    ? React.createElement('span', { className: 'text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800' }, row.totalIdk)
-                    : React.createElement('span', { className: 'text-xs text-slate-600' }, '0')
-                )
-              );
-              if (!isExpanded) return summaryRow;
-              // Detail row: per-question card grid
-              var detailRow = React.createElement('tr', {
-                key: row.uid + ':detail',
-                className: 'border-t border-slate-100 bg-indigo-50/30',
-              },
-                React.createElement('td', { colSpan: 5, className: 'px-3 py-3' },
-                  React.createElement('div', { className: 'space-y-2' },
-                    row.byQuestion.map(function (cell, qIdx) {
-                      var qNum = qIdx + 1;
-                      var qSnippet = cell && cell.questionText ? cell.questionText.slice(0, 90) + (cell.questionText.length > 90 ? '…' : '') : 'Question ' + qNum;
-                      var border = !cell ? 'border-slate-200 bg-white' :
-                                   cell.status === 'correct' ? 'border-emerald-200 bg-emerald-50/50' :
-                                   cell.status === 'incorrect' ? 'border-rose-200 bg-rose-50/50' :
-                                   cell.status === 'idk' ? 'border-sky-200 bg-sky-50/50' :
-                                   'border-slate-200 bg-white';
-                      return React.createElement('div', {
-                        key: qIdx,
-                        className: 'p-2 rounded border ' + border,
-                      },
-                        React.createElement('div', { className: 'flex items-start gap-2 mb-1' },
-                          React.createElement('span', { className: 'text-base mt-0.5 leading-none' }, statusBadge(cell)),
-                          React.createElement('div', { className: 'flex-grow min-w-0' },
-                            React.createElement('p', { className: 'text-xs font-semibold text-slate-700 mb-0.5' }, 'Q' + qNum + '. ' + qSnippet),
-                            cell && cell.answerSummary
-                              ? React.createElement('p', { className: 'text-xs text-slate-800 break-words' },
-                                  React.createElement('span', { className: 'text-slate-600' }, 'Answered: '),
-                                  cell.answerSummary)
-                              : !cell && React.createElement('p', { className: 'text-xs italic text-slate-600' }, 'No response yet')
-                          ),
-                          cell && cell.aiGraded && React.createElement('span', {
-                            className: 'flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
-                            'aria-label': 'Graded by AI as ' + cell.aiStatus,
-                            title: 'Graded by AI (' + cell.aiStatus + ')',
-                          }, React.createElement('span', { 'aria-hidden': 'true' }, '✨ '), 'AI'),
-                          cell && cell.teacherOverridden && React.createElement('span', {
-                            className: 'flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800',
-                            'aria-label': 'Teacher override applied, was previously ' + (cell.priorStatus || 'unknown'),
-                            title: 'Teacher override (was: ' + (cell.priorStatus || '?') + ')',
-                          }, React.createElement('span', { 'aria-hidden': 'true' }, '🖊 '), 'Teacher'),
-                          cell && confidenceChip(cell.confidence, cell.status)
-                        ),
-                        cell && cell.aiFeedback && React.createElement('p', {
-                          className: 'text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1',
-                        }, '"', cell.aiFeedback, '"'),
-                        // Plan T v3+ Chunk 6: teacher override toggles. Visible to teachers
-                        // for any cell that has a response. Click a status to set override;
-                        // ↺ removes the override. Active button highlighted.
-                        cell && p.activeSessionCode && React.createElement('div', {
-                          className: 'mt-1 flex items-center gap-1 flex-wrap',
-                          'data-help-key': 'quiz_teacher_override_row',
-                        },
-                          React.createElement('span', { className: 'text-xs text-slate-700 font-semibold mr-1' }, 'Override:'),
-                          [
-                            { s: 'correct', icon: '✓', color: 'emerald', label: 'correct' },
-                            { s: 'incorrect', icon: '✗', color: 'rose', label: 'incorrect' },
-                            { s: 'partially-correct', icon: '◐', color: 'amber', label: 'partially correct' },
-                          ].map(function (opt) {
-                            var isActive = cell.teacherOverridden && cell.status === opt.s;
-                            return React.createElement('button', {
-                              key: opt.s,
-                              type: 'button',
-                              onClick: function (e) { e.stopPropagation(); setTeacherOverride(row.uid, qIdx, isActive ? null : opt.s); },
-                              className: 'text-xs font-bold w-6 h-6 rounded transition-colors ' + (isActive
-                                ? ('bg-' + opt.color + '-600 text-white border border-' + opt.color + '-700')
-                                : ('bg-white text-slate-700 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300')),
-                              'aria-label': 'Override status to ' + opt.label + (isActive ? ' (currently set, click to undo)' : ''),
-                              'aria-pressed': isActive,
-                              title: 'Set status to ' + opt.s + (isActive ? ' (click again to undo)' : ''),
-                            }, React.createElement('span', { 'aria-hidden': 'true' }, opt.icon));
-                          }),
-                          cell.teacherOverridden && React.createElement('button', {
-                            type: 'button',
-                            onClick: function (e) { e.stopPropagation(); setTeacherOverride(row.uid, qIdx, null); },
-                            className: 'text-xs font-bold px-2 h-6 rounded bg-white text-slate-700 border border-slate-300 hover:bg-slate-100',
-                            'aria-label': 'Remove teacher override and revert to AI or deterministic grade',
-                            title: 'Remove teacher override (revert to AI / deterministic grade)',
-                          }, React.createElement('span', { 'aria-hidden': 'true' }, '↺ '), 'undo')
-                        )
-                      );
-                    })
-                  )
-                )
-              );
-              return [summaryRow, detailRow];
-            })
-          )
-        )
-        )  // close React.createElement('div', { className: 'overflow-x-auto' }, ...)
-      );    // close outer React.createElement('div', null, toolbar, tableDiv)
-    } else if (variant === 'preLessonGap') {
-      // Concept gap cards — lowest % first. Cards where the class is below
-      // 80% correct get an "Explain to class" button that opens the AI
-      // explainer modal.
-      body = React.createElement('div', { className: 'space-y-2' },
-        data.conceptCards.map(function (card) {
-          var color = card.totalAnswered === 0 ? 'slate' :
-                      card.percentCorrect >= 80 ? 'emerald' :
-                      card.percentCorrect >= 50 ? 'amber' : 'rose';
-          var urgency = card.totalAnswered === 0 ? 'no responses' :
-                        card.percentCorrect < 50 ? '⚠ Needs pre-teaching' :
-                        card.percentCorrect < 80 ? 'Review with class' :
-                        'Class is ready';
-          var showExplainBtn = card.totalAnswered > 0 && card.percentCorrect < 80 && typeof p.callGemini === 'function';
-          return React.createElement('div', {
-            key: card.questionIdx,
-            className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200',
-          },
-            React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-1' },
-              React.createElement('span', { className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800' }, urgency),
-              card.totalAnswered > 0 && React.createElement('span', {
-                className: 'text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-200 text-' + color + '-900',
-              }, card.percentCorrect + '% correct')
-            ),
-            React.createElement('p', { className: 'text-sm text-slate-800 mb-2' }, card.conceptText),
-            React.createElement('div', { className: 'flex items-center gap-3 text-xs text-' + color + '-900' },
-              React.createElement('span', null, card.correctCount + ' ✓'),
-              React.createElement('span', null, card.incorrectCount + ' ✗'),
-              card.idkCount > 0 && React.createElement('span', { className: 'text-sky-700' }, card.idkCount + ' 🤔'),
-              React.createElement('span', { className: 'text-slate-600' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'),
-              showExplainBtn && React.createElement('button', {
-                type: 'button',
-                onClick: function () { openExplainer(card.questionIdx, card.conceptText); },
-                className: 'ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors',
-                'aria-label': 'Explain this concept to the class',
-                'data-help-key': 'quiz_explain_to_class_btn',
-                title: 'Generate a 60-90 word concept explainer for the class',
-              }, React.createElement('span', { 'aria-hidden': 'true' }, '🎓 '), 'Explain to class')
-            )
-          );
-        })
-      );
-    } else if (variant === 'retentionCurve') {
-      // retentionCurve — per-concept rows with cross-session mastery sparklines
-      body = React.createElement('div', { className: 'space-y-3' },
-        React.createElement('p', { className: 'text-xs text-slate-600 italic mb-1' },
-          'Cross-session retention. Concepts with longer time-since-last-attempt or unseen students surface first. Recent attempts shown as colored dots (green=correct, red=miss, sky=IDK).'),
-        data.conceptRows.map(function (row) {
-          // Sort students by urgency (unseen first, then longest days)
-          var sortedStudents = row.students.slice().sort(function (a, b) {
-            if (!a.seen && b.seen) return -1;
-            if (a.seen && !b.seen) return 1;
-            if (!a.seen && !b.seen) return 0;
-            return (b.daysSinceLast || 0) - (a.daysSinceLast || 0);
-          });
-          var color = row.unseenCount > 0 ? 'rose' :
-                      row.maxDaysSinceLast >= 14 ? 'rose' :
-                      row.maxDaysSinceLast >= 7 ? 'amber' :
-                      'emerald';
-          return React.createElement('div', {
-            key: row.conceptId,
-            className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200',
-          },
-            React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-              React.createElement('span', { className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800' }, row.label),
-              React.createElement('span', { className: 'ml-auto text-[10px] text-' + color + '-700' },
-                row.unseenCount > 0
-                  ? row.unseenCount + ' unseen · '
-                  : '',
-                'max ' + row.maxDaysSinceLast + 'd since seen'
-              )
-            ),
-            React.createElement('div', { className: 'space-y-1' },
-              sortedStudents.map(function (s) {
-                var dayBadgeColor = !s.seen ? 'rose' :
-                                    s.daysSinceLast >= 14 ? 'rose' :
-                                    s.daysSinceLast >= 7 ? 'amber' :
-                                    'emerald';
-                return React.createElement('div', {
-                  key: s.uid,
-                  className: 'flex items-center gap-2 text-xs',
-                },
-                  React.createElement('span', { className: 'flex-shrink-0 text-slate-700 font-semibold w-32 truncate' }, s.displayName),
-                  !s.seen
-                    ? React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, 'never seen')
-                    : React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + dayBadgeColor + '-100 text-' + dayBadgeColor + '-800' }, s.daysSinceLast + 'd ago'),
-                  s.seen && React.createElement('span', { className: 'flex items-center gap-0.5' },
-                    s.recent.map(function (att, attIdx) {
-                      var dotColor = att.status === 'correct' ? '#10b981' :
-                                     att.status === 'incorrect' ? '#ef4444' :
-                                     att.status === 'idk' ? '#0ea5e9' :
-                                     '#94a3b8';
-                      return React.createElement('span', {
-                        key: attIdx,
-                        className: 'inline-block rounded-full',
-                        style: { width: '8px', height: '8px', backgroundColor: dotColor },
-                        title: att.status + ' on ' + new Date(att.ts).toLocaleDateString(),
-                      });
-                    })
-                  ),
-                  s.seen && typeof s.successRate === 'number' && React.createElement('span', { className: 'text-slate-600 ml-auto' },
-                    s.correctAttempts + '/' + s.totalAttempts + ' (' + s.successRate + '%)')
-                );
-              })
-            )
-          );
-        })
-      );
-    } else {
-      // liveHeatmap — per-question bars; click to expand and see per-student status
-      var statusColor = function (s) {
-        if (s === 'correct') return { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: '✓' };
-        if (s === 'incorrect') return { bg: 'bg-rose-100', text: 'text-rose-800', icon: '✗' };
-        if (s === 'idk') return { bg: 'bg-sky-100', text: 'text-sky-800', icon: '🤔' };
-        if (s === 'partially-correct') return { bg: 'bg-amber-100', text: 'text-amber-800', icon: '◐' };
-        return { bg: 'bg-slate-100', text: 'text-slate-700', icon: '·' };
-      };
-      body = React.createElement('div', { className: 'space-y-2' },
-        data.bars.map(function (bar) {
-          var color = bar.total === 0 ? 'slate' :
-                      bar.percentCorrect >= 80 ? 'emerald' :
-                      bar.percentCorrect >= 50 ? 'amber' : 'rose';
-          var pctCorrect = bar.total > 0 ? (bar.correct / bar.total) * 100 : 0;
-          var pctIncorrect = bar.total > 0 ? (bar.incorrect / bar.total) * 100 : 0;
-          var pctIdk = bar.total > 0 ? (bar.idk / bar.total) * 100 : 0;
-          var pctSubmitted = bar.total > 0 ? (bar.submitted / bar.total) * 100 : 0;
-          var qLabel = bar.questionText ? bar.questionText.slice(0, 70) + (bar.questionText.length > 70 ? '…' : '') : ('Question ' + (bar.questionIdx + 1));
-          var canExpand = bar.total > 0;
-          var isExpanded = !!expandedBars[bar.questionIdx];
-          return React.createElement('div', {
-            key: bar.questionIdx,
-            className: 'p-2 rounded bg-white border border-slate-200',
-          },
-            React.createElement('div', {
-              className: 'flex items-start gap-2 mb-1' + (canExpand ? ' cursor-pointer' : ''),
-              onClick: canExpand ? function () { toggleBarExpanded(bar.questionIdx); } : undefined,
-              role: canExpand ? 'button' : undefined,
-              tabIndex: canExpand ? 0 : undefined,
-              'aria-expanded': canExpand ? isExpanded : undefined,
-              'aria-label': canExpand ? ((isExpanded ? 'Collapse' : 'Expand') + ' question ' + (bar.questionIdx + 1) + ' student detail') : undefined,
-              onKeyDown: canExpand ? function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBarExpanded(bar.questionIdx); } } : undefined,
-            },
-              canExpand && React.createElement('span', { className: 'text-slate-600 hover:text-indigo-600 text-[10px] font-mono mt-0.5' }, isExpanded ? '▼' : '▶'),
-              React.createElement('span', { className: 'text-xs text-slate-700 flex-1 min-w-0' }, (bar.questionIdx + 1) + '. ' + qLabel),
-              bar.total > 0 && React.createElement('span', {
-                className: 'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800',
-              }, bar.percentCorrect + '%')
-            ),
-            // Stacked bar
-            bar.total > 0 ? React.createElement('div', { className: 'flex h-3 rounded overflow-hidden border border-slate-200' },
-              pctCorrect > 0 && React.createElement('div', { style: { width: pctCorrect + '%', backgroundColor: '#10b981' }, title: bar.correct + ' correct' }),
-              pctIncorrect > 0 && React.createElement('div', { style: { width: pctIncorrect + '%', backgroundColor: '#ef4444' }, title: bar.incorrect + ' incorrect' }),
-              pctIdk > 0 && React.createElement('div', { style: { width: pctIdk + '%', backgroundColor: '#0ea5e9' }, title: bar.idk + ' IDK' }),
-              pctSubmitted > 0 && React.createElement('div', { style: { width: pctSubmitted + '%', backgroundColor: '#94a3b8' }, title: bar.submitted + ' submitted (ungraded)' })
-            ) : React.createElement('div', { className: 'h-3 rounded bg-slate-100 border border-slate-200' }),
-            React.createElement('div', { className: 'flex items-center gap-3 mt-1 text-[10px] text-slate-600' },
-              React.createElement('span', null, bar.correct + ' ✓'),
-              React.createElement('span', null, bar.incorrect + ' ✗'),
-              bar.idk > 0 && React.createElement('span', { className: 'text-sky-700' }, bar.idk + ' 🤔'),
-              bar.submitted > 0 && React.createElement('span', { className: 'text-slate-600' }, bar.submitted + ' submitted'),
-              React.createElement('span', { className: 'ml-auto text-slate-600' }, bar.total + ' / ' + data.totalStudents)
-            ),
-            // Per-student detail when expanded
-            isExpanded && Array.isArray(bar.byStudent) && bar.byStudent.length > 0 && React.createElement('div', {
-              className: 'mt-2 pt-2 border-t border-slate-100 space-y-1',
-            }, bar.byStudent.map(function (s) {
-              var sc = statusColor(s.status);
-              return React.createElement('div', {
-                key: s.uid,
-                className: 'flex items-start gap-2 text-xs',
-              },
-                React.createElement('span', { className: 'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ' + sc.bg + ' ' + sc.text }, sc.icon),
-                React.createElement('span', { className: 'flex-shrink-0 font-semibold text-slate-700 w-32 truncate' }, s.displayName),
-                React.createElement('span', { className: 'flex-grow min-w-0 break-words text-slate-700' }, s.answerSummary || React.createElement('em', { className: 'text-slate-600' }, '(no text)')),
-                s.aiGraded && React.createElement('span', {
-                  className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800',
-                  title: 'AI-graded',
-                }, '✨'),
-                confidenceChip(s.confidence, s.status),
-                s.aiFeedback && React.createElement('span', {
-                  className: 'flex-shrink-0 italic text-[10px] text-indigo-800 truncate max-w-[12rem]',
-                  title: s.aiFeedback,
-                }, '"' + s.aiFeedback.slice(0, 50) + (s.aiFeedback.length > 50 ? '…' : '') + '"')
-              );
-            }))
-          );
-        })
-      );
-    }
-
-    // Concept explainer modal (preLessonGap "Explain to class" button)
-    var explainerModalEl = explainerModal.open ? React.createElement('div', {
-      className: 'fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4',
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-label': 'Concept explainer',
-      onClick: function (e) { if (e.target === e.currentTarget) closeExplainer(); },
-    },
-      React.createElement('div', {
-        className: 'bg-white rounded-xl shadow-2xl max-w-lg w-full p-5 border-2 border-indigo-300',
-      },
-        React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-3' },
-          React.createElement('div', null,
-            React.createElement('h4', { className: 'font-black text-base text-slate-800' },
-              React.createElement('span', { 'aria-hidden': 'true' }, '🎓 '), 'Explain to class'),
-            React.createElement('p', { className: 'text-xs text-slate-600 mt-0.5' }, 'Concept the class missed:'),
-            React.createElement('p', { className: 'text-xs italic text-slate-700 mt-0.5' }, '"' + (explainerModal.conceptText || '') + '"')
-          ),
-          React.createElement('button', {
-            type: 'button',
-            ref: explainerCloseBtnRef,
-            onClick: closeExplainer,
-            'aria-label': 'Close concept explainer',
-            className: 'flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded',
-          }, '×')
-        ),
-        explainerModal.loading
-          ? React.createElement('div', { className: 'p-4 text-center text-sm text-slate-600' },
-              React.createElement('span', { className: 'inline-block animate-pulse' }, '✨ Generating explainer…'))
-          : explainerModal.error
-            ? React.createElement('div', { className: 'p-3 rounded bg-rose-50 border border-rose-200 text-sm text-rose-800' }, explainerModal.error)
-            : React.createElement('div', { className: 'p-3 rounded bg-indigo-50 border border-indigo-200 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap' }, explainerModal.text),
-        React.createElement('div', { className: 'flex items-center gap-2 mt-4 flex-wrap' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { runExplainerCall(explainerModal.conceptText); },
-            disabled: explainerModal.loading,
-            className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50',
-          }, '↻ Regenerate'),
-          !explainerModal.loading && !explainerModal.error && React.createElement('button', {
-            type: 'button',
-            onClick: copyExplainer,
-            className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100',
-          }, '📋 Copy'),
-          !explainerModal.loading && !explainerModal.error && typeof p.callTTS === 'function' && React.createElement('button', {
-            type: 'button',
-            onClick: playExplainer,
-            className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100',
-            title: 'Play explainer aloud',
-          }, '🔊 Play aloud'),
-          // Plan T v3+ Chunk 2: push to all students in the live session
-          !explainerModal.loading && !explainerModal.error && p.activeSessionCode && React.createElement('button', {
-            type: 'button',
-            onClick: pushExplainerToStudents,
-            disabled: pushState.pushing,
-            className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed
-              ? 'bg-emerald-600 text-white'
-              : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
-            'aria-label': pushState.pushed ? 'Explainer pushed to all students' : 'Push this explainer to every student\'s screen',
-            'data-help-key': 'quiz_push_to_students_btn',
-            title: 'Send this explainer to every student\'s screen now',
-          }, pushState.pushing
-              ? 'Pushing…'
-              : pushState.pushed
-                ? React.createElement(React.Fragment, null, React.createElement('span', { 'aria-hidden': 'true' }, '✓ '), 'Pushed to students')
-                : React.createElement(React.Fragment, null, React.createElement('span', { 'aria-hidden': 'true' }, '📡 '), 'Push to all students')),
-          pushState.error && React.createElement('span', {
-            className: 'text-[10px] text-rose-700 italic',
-            role: 'alert',
-          }, pushState.error),
-          React.createElement('button', {
-            type: 'button',
-            onClick: closeExplainer,
-            className: 'ml-auto text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700',
-          }, 'Close')
-        )
-      )
-    ) : null;
-
-    // Plan T v3+ Chunk 1A: Reflections section. Shown below the main aggregator
-    // when the quiz has reflection prompts AND at least one student submitted.
-    var reflectionsData = null;
-    try {
-      reflectionsData = aggsMod.aggregateReflections && aggsMod.aggregateReflections(quizState, generatedContent, roster);
-    } catch (e) { reflectionsData = null; }
-    var reflectionsExpandedState = React.useState(true);
-    var reflectionsExpanded = reflectionsExpandedState[0]; var setReflectionsExpanded = reflectionsExpandedState[1];
-    var reflectionsEl = reflectionsData ? React.createElement('div', {
-      className: 'mt-4 pt-4 border-t-2 border-indigo-100',
-    },
-      React.createElement('button', {
-        type: 'button',
-        onClick: function () { setReflectionsExpanded(!reflectionsExpanded); },
-        'aria-expanded': reflectionsExpanded,
-        className: 'flex items-center gap-2 text-sm font-bold text-indigo-800 hover:text-indigo-900',
-      },
-        React.createElement('span', { className: 'text-xs font-mono' }, reflectionsExpanded ? '▼' : '▶'),
-        React.createElement('span', null, '✏️ Reflections (' + reflectionsData.totalReflections + ')')
-      ),
-      reflectionsExpanded && React.createElement('div', { className: 'mt-3 space-y-3' },
-        reflectionsData.buckets.map(function (bucket) {
-          return React.createElement('div', {
-            key: bucket.reflectionIdx,
-            className: 'p-3 rounded-lg bg-indigo-50/50 border border-indigo-100',
-          },
-            React.createElement('p', { className: 'text-xs font-semibold uppercase tracking-wider text-indigo-700 mb-1' }, 'Prompt ' + (bucket.reflectionIdx + 1)),
-            React.createElement('p', { className: 'text-sm italic text-slate-700 mb-2' }, bucket.promptText),
-            bucket.responses.length === 0
-              ? React.createElement('p', { className: 'text-xs italic text-slate-600' }, 'No responses yet.')
-              : React.createElement('div', { className: 'space-y-2' },
-                  bucket.responses.map(function (r) {
-                    return React.createElement('div', {
-                      key: r.uid,
-                      className: 'p-2 rounded bg-white border border-indigo-100',
-                    },
-                      React.createElement('p', { className: 'text-xs font-bold text-slate-700 mb-0.5' }, r.displayName),
-                      React.createElement('p', { className: 'text-sm text-slate-800 whitespace-pre-wrap break-words' }, r.text)
-                    );
-                  })
-                )
-          );
-        })
-      )
-    ) : null;
-
-    return React.createElement('div', {
-      className: 'p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm',
-      role: 'region',
-      'aria-label': 'Live Results Dashboard',
-    }, header, body, reflectionsEl, explainerModalEl);
-  }
-
-  // ─── FreeformItemsBlock (Plan S Slice 2) ──────────────────────────────
-  // Renders fill-blank and short-answer items below the MCQ list. Each item
-  // is a self-contained card with its own state (response, grading status,
-  // feedback). Calls QuizAIHelpers.gradeFreeformAnswer / gradeFillBlank.
-  function FreeformItemsBlock(p) {
-    var allQuestions = Array.isArray(p.questions) ? p.questions : [];
-    var freeform = allQuestions
-      .map(function (q, idx) { return { q: q, idx: idx }; })
-      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch'); });
-    if (freeform.length === 0) return null;
-    return React.createElement('div', { className: 'space-y-4 mt-6' },
-      React.createElement('h4', { className: 'font-bold text-slate-700 flex items-center gap-2 text-base' },
-        React.createElement('span', { 'aria-hidden': 'true' }, '✏️'),
-        ' Open-Response Items'),
-      React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
-        'Type your answer and click "Grade my answer" — an AI will give you immediate feedback.'),
-      freeform.map(function (entry) {
-        if (entry.q.type === 'sequence-sense') {
-          return React.createElement(SequenceSenseCard, {
-            key: entry.idx,
-            q: entry.q,
-            itemNumber: entry.idx + 1,
-            questionIdx: entry.idx,
-            onSubmitLiveAnswer: p.onSubmitLiveAnswer,
-            modeStrategy: p.modeStrategy,
-            callGemini: p.callGemini,
-            callTTS: p.callTTS,
-            gradeLevel: p.gradeLevel,
-          });
-        }
-        if (entry.q.type === 'relation-mismatch') {
-          return React.createElement(RelationMismatchCard, {
-            key: entry.idx,
-            q: entry.q,
-            itemNumber: entry.idx + 1,
-            questionIdx: entry.idx,
-            onSubmitLiveAnswer: p.onSubmitLiveAnswer,
-            modeStrategy: p.modeStrategy,
-            callGemini: p.callGemini,
-            callTTS: p.callTTS,
-            gradeLevel: p.gradeLevel,
-          });
-        }
-        return React.createElement(FreeformItemCard, {
-          key: entry.idx,
-          q: entry.q,
-          itemNumber: entry.idx + 1,
-          questionIdx: entry.idx,
-          callGemini: p.callGemini,
-          callTTS: p.callTTS,
-          gradeLevel: p.gradeLevel,
-          QuizAIHelpers: p.QuizAIHelpers,
-          modeStrategy: p.modeStrategy,
-          onSubmitLiveAnswer: p.onSubmitLiveAnswer,
-        });
-      })
-    );
-  }
-
-  function FreeformItemCard(p) {
-    var q = p.q;
-    var modeStrat = p.modeStrategy || null;
-    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-    var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
-    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
-
-    var responseState = React.useState('');
-    var response = responseState[0]; var setResponse = responseState[1];
-    var gradeState = React.useState({ status: null, feedback: '', loading: false });
-    var grade = gradeState[0]; var setGrade = gradeState[1];
-    var confidenceState = React.useState(null); // 'knew' | 'guessed' | 'no-idea' | null
-    var confidence = confidenceState[0]; var setConfidence = confidenceState[1];
-    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
-    var explainer = explainerState[0]; var setExplainer = explainerState[1];
-
-    function emitLiveAnswer(extraConfidence) {
-      // Plan T Slice Ta + Chunk 1B: live-session write w/ optional confidence.
-      // Used both at initial submit and when student updates confidence later.
-      if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
+  function markIDK() {
+    setStep('done');
+    setGrade({
+      step1Correct: false,
+      step2Correct: false,
+      step3Correct: false,
+      status: 'idk',
+      score: 0
+    });
+    if (aiExplainerEnabled) requestExplainer();
+    if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
       try {
         p.onSubmitLiveAnswer({
           questionIdx: p.questionIdx,
-          itemType: q.type || 'short-answer',
-          conceptLabel: (q && q.conceptLabel) || '',
-          answer: { text: response },
-          confidence: typeof extraConfidence !== 'undefined' ? extraConfidence : (confidence || null),
-          timestamp: Date.now(),
+          itemType: 'sequence-sense',
+          conceptLabel: q && q.conceptLabel || '',
+          answer: {
+            idk: true
+          },
+          timestamp: Date.now()
         });
-      } catch (e) { /* swallow — local grading still proceeds */ }
+      } catch (e) {}
     }
-    function submitGrade() {
-      if (!response || !response.trim()) return;
-      emitLiveAnswer();
-      if (!p.QuizAIHelpers) {
-        setGrade({ status: 'error', feedback: 'Grader unavailable: QuizAIHelpers not loaded.', loading: false });
-        return;
-      }
-      setGrade({ status: null, feedback: '', loading: true });
-      var graderArgs = {
-        callGemini: p.callGemini,
-        gradeLevel: p.gradeLevel,
-      };
-      var promise;
-      if (q.type === 'fill-blank') {
-        graderArgs.contextSentence = q.question;
-        graderArgs.expectedFill = q.expectedFill || '';
-        graderArgs.acceptableAlternatives = q.acceptableAlternatives || [];
-        graderArgs.studentFill = response;
-        promise = p.QuizAIHelpers.gradeFillBlank(graderArgs);
-      } else if (q.type === 'self-explanation') {
-        // Self-explanation grader: rubric-style. Reuses gradeFreeformAnswer with
-        // a synthesized "expectedAnswer" that prompts the LLM to grade for
-        // demonstration of understanding rather than match against a key.
-        graderArgs.question = 'EXPLAIN IN YOUR OWN WORDS: ' + (q.question || '');
-        graderArgs.expectedAnswer = q.rubric || q.expectedAnswer || 'Student demonstrates understanding of the concept in their own words, including key terms and relationships. Avoid grading on memorization of specific phrasing — reward genuine understanding.';
-        graderArgs.studentResponse = response;
-        promise = p.QuizAIHelpers.gradeFreeformAnswer(graderArgs);
-      } else {
-        graderArgs.question = q.question;
-        graderArgs.expectedAnswer = q.expectedAnswer || '';
-        graderArgs.studentResponse = response;
-        promise = p.QuizAIHelpers.gradeFreeformAnswer(graderArgs);
-      }
-      Promise.resolve(promise).then(function (result) {
-        setGrade({ status: result.status || 'unclear', feedback: result.feedback || '', loading: false });
-      }).catch(function (err) {
-        setGrade({ status: 'error', feedback: (err && err.message) ? err.message : 'Grader failed.', loading: false });
-      });
-    }
-
-    function markIDK() {
-      // Non-penalized: status = 'idk', auto-open the explainer for just-in-time remediation
-      setGrade({ status: 'idk', feedback: 'No worries — here\'s a quick explanation.', loading: false });
-      requestExplainer();
-    }
-
-    function requestExplainer() {
-      if (typeof p.callGemini !== 'function') {
-        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable: callGemini not provided.' });
-        return;
-      }
-      setExplainer({ open: true, loading: true, text: '', error: '' });
-      var grade = p.gradeLevel || 'middle school';
-      // For self-explanation: explain the underlying concept the student was asked about.
-      // For fill-blank: explain the missing term in context.
-      // For short-answer: explain the question's core concept.
-      var conceptHint = q.type === 'fill-blank' ? (q.expectedFill || q.question || '') :
-                        q.type === 'self-explanation' ? (q.question || '') :
-                        (q.question || '');
-      var prompt = 'You are a patient teacher. A ' + grade + ' student needs a quick refresher on this concept so they can answer the question. Concept or question: "' + conceptHint + '". Give a 60-90 word explanation in plain language. Use a concrete example or analogy. End with one sentence checking understanding. Plain text only — no headings, no bullet points.';
-      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
-        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
-      }).catch(function (err) {
-        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
-      });
-    }
-
-    var statusColor = grade.status === 'correct' ? 'emerald' :
-                      grade.status === 'partially-correct' ? 'amber' :
-                      grade.status === 'incorrect' ? 'rose' :
-                      grade.status === 'error' ? 'rose' :
-                      grade.status === 'idk' ? 'sky' :
-                      'slate';
-    var statusLabel = grade.status === 'correct' ? '✓ Correct' :
-                      grade.status === 'partially-correct' ? '~ Close' :
-                      grade.status === 'incorrect' ? '✗ Not yet' :
-                      grade.status === 'unclear' ? '? Unclear' :
-                      grade.status === 'error' ? '! Error' :
-                      grade.status === 'idk' ? '🤔 Marked "I don\'t know"' :
-                      '';
-    var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' :
-                    q.type === 'self-explanation' ? 'Self-explanation' :
-                    'Short answer';
-
-    return React.createElement('div', {
-      className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
-    },
-      React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
-        React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
-        React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, typeLabel),
-          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || '')
-        )
-      ),
-      // Input area
-      q.type === 'fill-blank' ?
-        React.createElement('input', {
-          type: 'text',
-          value: response,
-          onChange: function (ev) { setResponse(ev.target.value); },
-          onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); submitGrade(); } },
-          placeholder: 'Type the missing word or phrase...',
-          disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
-          className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50',
-          'aria-label': 'Fill in the blank',
-        })
-      :
-        React.createElement('textarea', {
-          value: response,
-          onChange: function (ev) { setResponse(ev.target.value); },
-          placeholder: q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...',
-          disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
-          rows: q.type === 'self-explanation' ? 5 : 3,
-          className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y',
-          'aria-label': typeLabel + ' response',
-        }),
-      // Submit button + IDK + retry
-      React.createElement('div', { className: 'flex items-center justify-between gap-2 mt-2 flex-wrap' },
-        React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: submitGrade,
-            disabled: !response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk',
-            className: 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-          }, grade.loading ? 'Grading…' : (grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : 'Grade my answer')),
-          allowIDK && !grade.status && React.createElement('button', {
-            type: 'button',
-            onClick: markIDK,
-            className: 'px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
-            'aria-label': 'I don\'t know — skip without penalty',
-            title: 'Skip — no penalty. The AI will explain the concept.',
-          }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know')
-        ),
-        grade.status && grade.status !== 'correct' && grade.status !== 'idk' && React.createElement('button', {
-          type: 'button',
-          onClick: function () { setGrade({ status: null, feedback: '', loading: false }); setResponse(''); setExplainer({ open: false, loading: false, text: '', error: '' }); },
-          className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors',
-        }, 'Try again')
-      ),
-      // Feedback panel
-      grade.status && React.createElement('div', {
-        className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
-        role: 'status',
-        'aria-live': 'polite',
-      },
-        React.createElement('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
-          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' }, statusLabel),
-          // Inline Explain button: shown when student got it wrong (or unclear), and mode allows it
-          aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && React.createElement('button', {
-            type: 'button',
-            onClick: requestExplainer,
-            className: 'ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors',
-            title: 'Get a quick AI explanation of this concept',
-          }, '🤖 Explain this')
-        ),
-        grade.feedback && React.createElement('p', { className: 'text-sm text-' + statusColor + '-900 mb-2' }, grade.feedback),
-        // Inline explainer panel (collapses below feedback)
-        explainer.open && React.createElement('div', { className: 'mt-2 p-3 bg-white border border-indigo-200 rounded-lg' },
-          React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
-          explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
-          explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
-          explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
-          explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
-            type: 'button',
-            onClick: function () { p.callTTS(explainer.text); },
-            className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-            'aria-label': 'Read aloud',
-          }, '🔊 Read aloud')
-        )
-      ),
-      // Confidence rating: optional, shown after a grade lands and when mode allows
-      allowConfidence && grade.status && grade.status !== 'idk' && React.createElement('div', { className: 'mt-2 flex items-center gap-2 flex-wrap text-xs' },
-        React.createElement('span', { className: 'text-slate-600 font-semibold' }, 'How sure were you?'),
-        ['knew', 'guessed', 'no-idea'].map(function (lvl) {
-          var labels = { knew: 'I knew this', guessed: 'I guessed', 'no-idea': 'No idea' };
-          var active = confidence === lvl;
-          return React.createElement('button', {
-            key: lvl,
-            type: 'button',
-            onClick: function () {
-              setConfidence(lvl);
-              // Plan T v3+ Chunk 1B: re-emit live-session payload with new confidence
-              emitLiveAnswer(lvl);
-            },
-            className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'),
-          }, labels[lvl]);
-        })
-      )
-    );
   }
-
-  function QuizView(props) {
-  // State reads
+  var presentedOrderState = React.useState(function () {
+    if (Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonicalItems.length) {
+      return q.presentedOrder.slice();
+    }
+    var indices = canonicalItems.map(function (_, i) {
+      return i;
+    });
+    for (var i = indices.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = indices[i];
+      indices[i] = indices[j];
+      indices[j] = tmp;
+    }
+    return indices;
+  });
+  var presentedOrder = presentedOrderState[0];
+  var stepState = React.useState(1);
+  var step = stepState[0];
+  var setStep = stepState[1];
+  var verifyState = React.useState(null);
+  var verifyAnswer = verifyState[0];
+  var setVerifyAnswer = verifyState[1];
+  var clickedState = React.useState(null);
+  var clickedIdx = clickedState[0];
+  var setClickedIdx = clickedState[1];
+  var principleState = React.useState(null);
+  var principleAnswer = principleState[0];
+  var setPrincipleAnswer = principleState[1];
+  var gradeState = React.useState(null);
+  var grade = gradeState[0];
+  var setGrade = gradeState[1];
+  function answerVerify(ans) {
+    setVerifyAnswer(ans);
+    setStep(ans === 'no' ? 2 : 3);
+  }
+  function answerMisplaced(idx) {
+    setClickedIdx(idx);
+    setStep(3);
+  }
+  function answerPrinciple(p2) {
+    setPrincipleAnswer(p2);
+    var actualOrderIsCorrect = intentionallyWrongIndex === null;
+    var step1Correct = verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
+    var step2Correct;
+    if (verifyAnswer === 'yes') {
+      step2Correct = step1Correct;
+    } else {
+      step2Correct = clickedIdx === intentionallyWrongIndex;
+    }
+    var step3Correct = p2 === orderingPrinciple;
+    var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+    var status = score === 3 ? 'correct' : score === 2 ? 'partially-correct' : 'incorrect';
+    setGrade({
+      step1Correct: step1Correct,
+      step2Correct: step2Correct,
+      step3Correct: step3Correct,
+      status: status,
+      score: score
+    });
+    setStep('done');
+    if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+      try {
+        p.onSubmitLiveAnswer({
+          questionIdx: p.questionIdx,
+          itemType: 'sequence-sense',
+          conceptLabel: q && q.conceptLabel || '',
+          answer: {
+            verifyAnswer: verifyAnswer,
+            clickedIdx: clickedIdx,
+            principleAnswer: p2,
+            score: score,
+            status: status
+          },
+          timestamp: Date.now()
+        });
+      } catch (e) {}
+    }
+  }
+  function reset() {
+    setStep(1);
+    setVerifyAnswer(null);
+    setClickedIdx(null);
+    setPrincipleAnswer(null);
+    setGrade(null);
+  }
+  if (canonicalItems.length === 0) return null;
+  var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5"
+  }, p.itemNumber), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
+  }, "Sequence Sense"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, q.question || 'Below is a sequence. Verify and explain.'))), /*#__PURE__*/React.createElement("ol", {
+    className: "space-y-1.5 mb-3"
+  }, presentedOrder.map(function (canonicalIdx, displayIdx) {
+    var item = canonicalItems[canonicalIdx];
+    var isClickable = step === 2;
+    var isClicked = clickedIdx === displayIdx;
+    var showCorrectness = grade !== null;
+    var thisIsActuallyMisplaced = intentionallyWrongIndex === displayIdx;
+    var rowClass;
+    if (showCorrectness) {
+      if (thisIsActuallyMisplaced) rowClass = 'bg-amber-50 border-amber-400';else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';else rowClass = 'bg-slate-50 border-slate-300';
+    } else if (isClicked) {
+      rowClass = 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300';
+    } else {
+      rowClass = 'bg-slate-50 border-slate-300' + (isClickable ? ' hover:bg-slate-100 cursor-pointer' : '');
+    }
+    return /*#__PURE__*/React.createElement("li", {
+      key: displayIdx,
+      onClick: isClickable ? function () {
+        answerMisplaced(displayIdx);
+      } : null,
+      className: 'flex items-center gap-2 px-3 py-2 rounded-lg border ' + rowClass,
+      role: isClickable ? 'button' : undefined,
+      tabIndex: isClickable ? 0 : undefined,
+      onKeyDown: isClickable ? function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          answerMisplaced(displayIdx);
+        }
+      } : undefined
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "flex-shrink-0 text-xs font-bold text-slate-600 w-6"
+    }, displayIdx + 1 + '.'), /*#__PURE__*/React.createElement("span", {
+      className: "flex-1 text-sm text-slate-800"
+    }, item), showCorrectness && thisIsActuallyMisplaced && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-amber-700"
+    }, "↔ misplaced"), showCorrectness && isClicked && !thisIsActuallyMisplaced && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-rose-700"
+    }, "✗"));
+  })), step === 1 && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-semibold text-indigo-900 mb-2"
+  }, "Step 1 of 3 — Is this order correct?"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      answerVerify('yes');
+    },
+    className: "flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
+  }, "✓ Yes, correct"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      answerVerify('no');
+    },
+    className: "flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors"
+  }, "✗ No, something is off"), allowIDK && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: markIDK,
+    className: "px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
+    "aria-label": "I don't know — skip without penalty",
+    title: "Skip — no penalty. The AI will explain."
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🤔 "), "I don't know"))), step === 2 && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-semibold text-indigo-900"
+  }, "Step 2 of 3 — Click the item that's out of place above.")), step === 3 && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-semibold text-indigo-900 mb-2"
+  }, "Step 3 of 3 — What's the ordering principle?"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 md:grid-cols-3 gap-2"
+  }, principleOptions.map(function (opt) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: opt,
+      type: "button",
+      onClick: function () {
+        answerPrinciple(opt);
+      },
+      className: "px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors"
+    }, opt);
+  }))), grade && /*#__PURE__*/React.createElement("div", {
+    className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
+  }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 3 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
+    className: 'space-y-1 text-sm text-' + statusColor + '-900'
+  }, /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (intentionallyWrongIndex === null ? 'order was correct' : 'order had one misplaced item') + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')), verifyAnswer === 'no' && /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found the misplaced item' : 'the misplaced item was item #' + ((intentionallyWrongIndex || 0) + 1))), /*#__PURE__*/React.createElement("li", null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex items-center gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: reset,
+    className: "px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300"
+  }, "Try again"), aiExplainerEnabled && !explainer.open && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: requestExplainer,
+    className: "px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
+  }, "🤖 Explain this concept"))), explainer.open && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+  }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-indigo-700 italic"
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-rose-700"
+  }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      try {
+        p.callTTS(explainer.text);
+      } catch (e) {}
+    },
+    className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
+    "aria-label": "Read aloud"
+  }, "🔊 Read aloud")));
+}
+function RelationMismatchCard(p) {
+  var q = p.q;
+  var pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) {
+    return pr && pr.left && pr.right;
+  }) : [];
+  var wrongPairIndex = typeof q.wrongPairIndex === 'number' ? q.wrongPairIndex : 0;
+  var correctPartnerForWrong = q.correctPartnerForWrong || '';
+  var candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+  var stepState = React.useState(1);
+  var step = stepState[0];
+  var setStep = stepState[1];
+  var clickedPairState = React.useState(null);
+  var clickedPairIdx = clickedPairState[0];
+  var setClickedPairIdx = clickedPairState[1];
+  var partnerAnswerState = React.useState(null);
+  var partnerAnswer = partnerAnswerState[0];
+  var setPartnerAnswer = partnerAnswerState[1];
+  var gradeState = React.useState(null);
+  var grade = gradeState[0];
+  var setGrade = gradeState[1];
+  var modeStrat = p.modeStrategy || null;
+  var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+  var explainerState = React.useState({
+    open: false,
+    loading: false,
+    text: '',
+    error: ''
+  });
+  var explainer = explainerState[0];
+  var setExplainer = explainerState[1];
+  function requestExplainer() {
+    if (typeof p.callGemini !== 'function') {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: 'Explainer unavailable.'
+      });
+      return;
+    }
+    setExplainer({
+      open: true,
+      loading: true,
+      text: '',
+      error: ''
+    });
+    var grade = p.gradeLevel || 'middle school';
+    var leftSide = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
+    var conceptHint = (q.question || '') + ' — The correct relationship is "' + leftSide + '" ↔ "' + correctPartnerForWrong + '".';
+    var prompt = 'You are a patient teacher. A ' + grade + ' student is working a relation-mismatch item and needs help. ' + conceptHint + '\n\nGive a 60-90 word explanation in plain language: name what makes this relationship correct, and contrast it with the wrong pair the student saw. End with a sentence checking understanding. Plain text only — no headings, no bullet points.';
+    Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+      var txt = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
+      setExplainer({
+        open: true,
+        loading: false,
+        text: txt.trim(),
+        error: ''
+      });
+    }).catch(function (err) {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: err && err.message ? err.message : 'Explainer failed.'
+      });
+    });
+  }
+  function markIDK() {
+    setStep('done');
+    setGrade({
+      step1Correct: false,
+      step2Correct: false,
+      status: 'idk',
+      score: 0
+    });
+    if (aiExplainerEnabled) requestExplainer();
+    if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+      try {
+        p.onSubmitLiveAnswer({
+          questionIdx: p.questionIdx,
+          itemType: 'relation-mismatch',
+          conceptLabel: q && q.conceptLabel || '',
+          answer: {
+            idk: true
+          },
+          timestamp: Date.now()
+        });
+      } catch (e) {}
+    }
+  }
+  function answerWhichWrong(idx) {
+    setClickedPairIdx(idx);
+    setStep(2);
+  }
+  function answerPartner(ans) {
+    setPartnerAnswer(ans);
+    var step1Correct = clickedPairIdx === wrongPairIndex;
+    var step2Correct = ans === correctPartnerForWrong;
+    var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0);
+    var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
+    setGrade({
+      step1Correct: step1Correct,
+      step2Correct: step2Correct,
+      status: status,
+      score: score
+    });
+    setStep('done');
+    if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+      try {
+        p.onSubmitLiveAnswer({
+          questionIdx: p.questionIdx,
+          itemType: 'relation-mismatch',
+          conceptLabel: q && q.conceptLabel || '',
+          answer: {
+            clickedPairIdx: clickedPairIdx,
+            partnerAnswer: ans,
+            score: score,
+            status: status
+          },
+          timestamp: Date.now()
+        });
+      } catch (e) {}
+    }
+  }
+  function reset() {
+    setStep(1);
+    setClickedPairIdx(null);
+    setPartnerAnswer(null);
+    setGrade(null);
+  }
+  if (pairs.length === 0) return null;
+  var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
+  var wrongPairLeft = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5"
+  }, p.itemNumber), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
+  }, "Relation Mismatch"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, q.question || 'One of these pairs is wrong. Find it and fix it.'))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-1.5 mb-3"
+  }, pairs.map(function (pair, idx) {
+    var isClickable = step === 1;
+    var isClicked = clickedPairIdx === idx;
+    var thisIsActuallyWrong = idx === wrongPairIndex;
+    var showCorrectness = grade !== null;
+    var rowClass;
+    if (showCorrectness) {
+      if (thisIsActuallyWrong) rowClass = 'bg-amber-50 border-amber-400';else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';else rowClass = 'bg-slate-50 border-slate-300';
+    } else if (isClicked) {
+      rowClass = 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300';
+    } else {
+      rowClass = 'bg-slate-50 border-slate-300' + (isClickable ? ' hover:bg-slate-100 cursor-pointer' : '');
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      onClick: isClickable ? function () {
+        answerWhichWrong(idx);
+      } : null,
+      className: 'grid grid-cols-2 gap-3 px-3 py-2 rounded-lg border ' + rowClass,
+      role: isClickable ? 'button' : undefined,
+      tabIndex: isClickable ? 0 : undefined,
+      onKeyDown: isClickable ? function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          answerWhichWrong(idx);
+        }
+      } : undefined
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-sm font-semibold text-slate-800"
+    }, pair.left), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-slate-700 flex items-center justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("span", null, '↔ ' + pair.right), showCorrectness && thisIsActuallyWrong && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-amber-700 flex-shrink-0"
+    }, "wrong"), showCorrectness && isClicked && !thisIsActuallyWrong && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-rose-700 flex-shrink-0"
+    }, "✗")));
+  })), step === 1 && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-semibold text-indigo-900"
+  }, "Step 1 of 2 — Click the pair that's wrong above."), allowIDK && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: markIDK,
+    className: "px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
+    "aria-label": "I don't know — skip without penalty",
+    title: "Skip — no penalty. The AI will explain."
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🤔 "), "I don't know"))), step === 2 && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-semibold text-indigo-900 mb-2"
+  }, 'Step 2 of 2 — Which item should "' + (clickedPairIdx !== null && pairs[clickedPairIdx] ? pairs[clickedPairIdx].left : wrongPairLeft) + '" have been paired with?'), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-2"
+  }, (candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong]).map(function (cand) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: cand,
+      type: "button",
+      onClick: function () {
+        answerPartner(cand);
+      },
+      className: "px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors"
+    }, cand);
+  }))), grade && /*#__PURE__*/React.createElement("div", {
+    className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
+  }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
+    className: 'space-y-1 text-sm text-' + statusColor + '-900'
+  }, /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Find: ' + (grade.step1Correct ? 'you spotted the wrong pair' : 'the wrong pair was "' + wrongPairLeft + ' ↔ ' + (pairs[wrongPairIndex] ? pairs[wrongPairIndex].right : '') + '"')), /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Fix: ' + (grade.step2Correct ? 'correct partner — "' + correctPartnerForWrong + '"' : 'correct partner was "' + correctPartnerForWrong + '" (you picked "' + partnerAnswer + '")'))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex items-center gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: reset,
+    className: "px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300"
+  }, "Try again"), aiExplainerEnabled && !explainer.open && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: requestExplainer,
+    className: "px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
+  }, "🤖 Explain this concept"))), explainer.open && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+  }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-indigo-700 italic"
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-rose-700"
+  }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      try {
+        p.callTTS(explainer.text);
+      } catch (e) {}
+    },
+    className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
+    "aria-label": "Read aloud"
+  }, "🔊 Read aloud")));
+}
+function McqEnhancements(p) {
+  var modeStrat = p.modeStrategy || null;
+  var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+  var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+  if (!allowIDK && !allowConfidence && !aiExplainerEnabled) return null;
+  var explainerState = React.useState({
+    open: false,
+    loading: false,
+    text: '',
+    error: ''
+  });
+  var explainer = explainerState[0];
+  var setExplainer = explainerState[1];
+  var idkState = React.useState(false);
+  var idkMarked = idkState[0];
+  var setIdkMarked = idkState[1];
+  var localConfidenceState = React.useState(null);
+  var hasParentConfidence = typeof p.onSetConfidence === 'function';
+  var confidence = hasParentConfidence ? p.currentConfidence : localConfidenceState[0];
+  var setConfidence = hasParentConfidence ? p.onSetConfidence : localConfidenceState[1];
+  function requestExplainer() {
+    if (typeof p.callGemini !== 'function') {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: 'Explainer unavailable.'
+      });
+      return;
+    }
+    setExplainer({
+      open: true,
+      loading: true,
+      text: '',
+      error: ''
+    });
+    var grade = p.gradeLevel || 'middle school';
+    var conceptHint = p.q && (p.q.question || p.q.correctAnswer) || '';
+    var prompt = 'You are a patient teacher. A ' + grade + ' student needs a quick refresher on this concept. Question or concept: "' + conceptHint + '". Give a 60-90 word explanation in plain language. Use a concrete example or analogy. End with one sentence checking understanding. Plain text only — no headings, no bullet points.';
+    Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+      var txt = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
+      setExplainer({
+        open: true,
+        loading: false,
+        text: txt.trim(),
+        error: ''
+      });
+    }).catch(function (err) {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: err && err.message ? err.message : 'Explainer failed.'
+      });
+    });
+  }
+  function markIDK() {
+    setIdkMarked(true);
+    requestExplainer();
+    if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+      try {
+        p.onSubmitLiveAnswer({
+          questionIdx: p.questionIdx,
+          itemType: 'mcq',
+          conceptLabel: p.q && p.q.conceptLabel || '',
+          answer: {
+            idk: true
+          },
+          timestamp: Date.now()
+        });
+      } catch (e) {}
+    }
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 ml-9 space-y-2"
+  }, (aiExplainerEnabled || allowIDK) && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 flex-wrap"
+  }, aiExplainerEnabled && !explainer.open && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: requestExplainer,
+    className: "text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
+    "aria-label": "Explain this concept",
+    title: "Get a quick AI explanation of this concept"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🤖 "), "Explain this concept"), allowIDK && !idkMarked && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: markIDK,
+    className: "text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors",
+    "aria-label": "I don't know — skip without penalty",
+    title: "Skip — no penalty. The AI will explain the concept."
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🤔 "), "I don't know"), idkMarked && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs uppercase font-bold px-2 py-0.5 rounded bg-sky-200 text-sky-900"
+  }, "Marked \"I don't know\"")), explainer.open && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 bg-indigo-50 border border-indigo-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+  }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-indigo-700 italic"
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-rose-700"
+  }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      p.callTTS(explainer.text);
+    },
+    className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
+    "aria-label": "Read aloud"
+  }, "🔊 Read aloud")), allowConfidence && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 flex-wrap text-xs"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-600 font-semibold"
+  }, "How sure were you?"), ['knew', 'guessed', 'no-idea'].map(function (lvl) {
+    var labels = {
+      knew: 'I knew this',
+      guessed: 'I guessed',
+      'no-idea': 'No idea'
+    };
+    var active = confidence === lvl;
+    return /*#__PURE__*/React.createElement("button", {
+      key: lvl,
+      type: "button",
+      onClick: function () {
+        setConfidence(lvl);
+      },
+      className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+    }, labels[lvl]);
+  })));
+}
+function LiveResultsDashboard(p) {
+  var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+  if (!aggsMod) return null;
+  var sessionData = p.sessionData || {};
+  var quizState = sessionData.quizState || {};
+  var generatedContent = p.generatedContent;
+  var roster = sessionData.roster || {};
+  var mode = generatedContent && generatedContent.data && generatedContent.data.mode || 'exit-ticket';
+  var modeLabel = generatedContent && generatedContent.data && generatedContent.data.modeLabel || 'Exit Ticket';
+  var modeIcon = generatedContent && generatedContent.data && generatedContent.data.modeIcon || '📝';
+  var appId = p.appId;
+  var conceptMasteryState = React.useState(null);
+  var conceptMasteryByUid = conceptMasteryState[0];
+  var setConceptMasteryByUid = conceptMasteryState[1];
+  var rosterKeysSig = Object.keys(roster).sort().join(',');
+  React.useEffect(function () {
+    if (mode !== 'review') {
+      setConceptMasteryByUid(null);
+      return;
+    }
+    var fb = window.__alloFirebase;
+    if (!fb || !fb.doc || !fb.getDoc || !appId) {
+      setConceptMasteryByUid({});
+      return;
+    }
+    var uids = Object.keys(roster);
+    if (uids.length === 0) {
+      setConceptMasteryByUid({});
+      return;
+    }
+    var cancelled = false;
+    Promise.all(uids.map(function (uid) {
+      try {
+        var ref = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'conceptMastery', uid);
+        return fb.getDoc(ref).then(function (snap) {
+          return [uid, snap.exists() ? snap.data() : null];
+        }).catch(function () {
+          return [uid, null];
+        });
+      } catch (e) {
+        return Promise.resolve([uid, null]);
+      }
+    })).then(function (results) {
+      if (cancelled) return;
+      var map = {};
+      results.forEach(function (entry) {
+        if (entry && entry[1]) map[entry[0]] = entry[1];
+      });
+      setConceptMasteryByUid(map);
+    }).catch(function () {
+      if (!cancelled) setConceptMasteryByUid({});
+    });
+    return function () {
+      cancelled = true;
+    };
+  }, [mode, rosterKeysSig, appId]);
+  var aiGradedState = React.useState({});
+  var aiGradedCache = aiGradedState[0];
+  var setAiGradedCache = aiGradedState[1];
+  var aiGradedInFlightRef = React.useRef({});
+  var allResponsesSig = React.useMemo(function () {
+    try {
+      return JSON.stringify(quizState.allResponses || {});
+    } catch (e) {
+      return '';
+    }
+  }, [quizState.allResponses]);
+  React.useEffect(function () {
+    var aiHelpers = window.AlloModules && window.AlloModules.QuizAIHelpers;
+    if (!aiHelpers || typeof p.callGemini !== 'function') return;
+    var allResponses = quizState.allResponses || {};
+    var questions = generatedContent && generatedContent.data && generatedContent.data.questions || [];
+    var pending = [];
+    Object.keys(allResponses).forEach(function (uid) {
+      var perStudent = allResponses[uid] || {};
+      Object.keys(perStudent).forEach(function (qKey) {
+        var qIdx = parseInt(qKey, 10);
+        if (isNaN(qIdx) || !questions[qIdx]) return;
+        var response = perStudent[qKey];
+        if (!response || !response.answer || response.answer.idk) return;
+        var q = questions[qIdx];
+        var t = response.itemType || q && q.type;
+        if (t !== 'short-answer' && t !== 'self-explanation') return;
+        var text = response.answer && response.answer.text || '';
+        if (!text || !text.trim()) return;
+        var key = uid + ':' + qIdx;
+        if (aiGradedCache[key] || aiGradedInFlightRef.current[key]) return;
+        pending.push({
+          key: key,
+          q: q,
+          text: text
+        });
+      });
+    });
+    if (pending.length === 0) return;
+    pending.forEach(function (item) {
+      aiGradedInFlightRef.current[item.key] = true;
+    });
+    Promise.all(pending.map(function (item) {
+      return aiHelpers.gradeFreeformAnswer({
+        question: item.q.question || item.q.contextSentence || '',
+        expectedAnswer: item.q.expectedAnswer || item.q.exemplarAnswer || item.q.expectedFill || '',
+        studentResponse: item.text,
+        gradeLevel: p.gradeLevel,
+        callGemini: p.callGemini
+      }).then(function (result) {
+        return {
+          key: item.key,
+          result: result
+        };
+      }).catch(function (err) {
+        return {
+          key: item.key,
+          result: {
+            status: 'error',
+            feedback: err && err.message || 'Grader failed.'
+          }
+        };
+      });
+    })).then(function (results) {
+      setAiGradedCache(function (prev) {
+        var next = Object.assign({}, prev);
+        results.forEach(function (r) {
+          next[r.key] = r.result;
+          delete aiGradedInFlightRef.current[r.key];
+        });
+        return next;
+      });
+    }).catch(function () {
+      pending.forEach(function (item) {
+        delete aiGradedInFlightRef.current[item.key];
+      });
+    });
+  }, [allResponsesSig, generatedContent && generatedContent.id]);
+  var inFlightCount = Object.keys(aiGradedInFlightRef.current || {}).length;
+  var expandedRowsState = React.useState({});
+  var expandedRows = expandedRowsState[0];
+  var setExpandedRows = expandedRowsState[1];
+  function toggleRowExpanded(uid) {
+    setExpandedRows(function (prev) {
+      var next = Object.assign({}, prev);
+      if (next[uid]) delete next[uid];else next[uid] = true;
+      return next;
+    });
+  }
+  var expandedBarsState = React.useState({});
+  var expandedBars = expandedBarsState[0];
+  var setExpandedBars = expandedBarsState[1];
+  function toggleBarExpanded(qIdx) {
+    setExpandedBars(function (prev) {
+      var next = Object.assign({}, prev);
+      if (next[qIdx]) delete next[qIdx];else next[qIdx] = true;
+      return next;
+    });
+  }
+  function confidenceChip(confidence, status) {
+    if (!confidence) return null;
+    var labels = {
+      knew: 'knew',
+      guessed: 'guessed',
+      'no-idea': 'no idea'
+    };
+    var color = 'slate';
+    var note = '';
+    if (status === 'correct') {
+      if (confidence === 'guessed') {
+        color = 'amber';
+        note = ' (lucky)';
+      } else if (confidence === 'no-idea') {
+        color = 'rose';
+        note = ' (?)';
+      }
+    } else if (status === 'incorrect' || status === 'partially-correct') {
+      if (confidence === 'knew') {
+        color = 'rose';
+        note = ' (overconfident)';
+      } else if (confidence === 'no-idea') {
+        color = 'sky';
+        note = '';
+      }
+    }
+    var bgClass = color === 'amber' ? 'bg-amber-100 text-amber-800' : color === 'rose' ? 'bg-rose-100 text-rose-800' : color === 'sky' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-700';
+    return /*#__PURE__*/React.createElement("span", {
+      className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ' + bgClass,
+      title: 'Student rated: ' + labels[confidence] + note
+    }, '🎯 ' + labels[confidence]);
+  }
+  var explainerModalState = React.useState({
+    open: false,
+    conceptIdx: null,
+    conceptText: '',
+    loading: false,
+    text: '',
+    error: ''
+  });
+  var explainerModal = explainerModalState[0];
+  var setExplainerModal = explainerModalState[1];
+  var prevFocusRef = React.useRef(null);
+  var explainerCloseBtnRef = React.useRef(null);
+  function openExplainer(conceptIdx, conceptText) {
+    try {
+      prevFocusRef.current = document.activeElement;
+    } catch (e) {}
+    setExplainerModal({
+      open: true,
+      conceptIdx: conceptIdx,
+      conceptText: conceptText,
+      loading: true,
+      text: '',
+      error: ''
+    });
+    runExplainerCall(conceptText);
+  }
+  function runExplainerCall(conceptText) {
+    if (typeof p.callGemini !== 'function') {
+      setExplainerModal(function (prev) {
+        return Object.assign({}, prev, {
+          loading: false,
+          error: 'Explainer unavailable: callGemini not provided.'
+        });
+      });
+      return;
+    }
+    var grade = p.gradeLevel || 'middle school';
+    var prompt = 'You are explaining a concept to ' + grade + ' students who do not yet understand it. They just took a pre-check and got it wrong as a class. Write a 60-90 word explainer that: (1) names the concept clearly, (2) gives ONE concrete relatable example, (3) avoids jargon, (4) reads aloud naturally. Plain text only. No markdown, no fences, no headers.\n\nCONCEPT (from the pre-check question that the class missed):\n"' + String(conceptText || '').slice(0, 400) + '"\n\nReturn ONLY the explainer text.';
+    Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+      var txt = typeof raw === 'object' && raw && raw.text ? raw.text : String(raw || '');
+      txt = txt.replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      setExplainerModal(function (prev) {
+        return Object.assign({}, prev, {
+          loading: false,
+          text: txt,
+          error: ''
+        });
+      });
+    }).catch(function (err) {
+      setExplainerModal(function (prev) {
+        return Object.assign({}, prev, {
+          loading: false,
+          error: err && err.message || 'Explainer call failed.'
+        });
+      });
+    });
+  }
+  function closeExplainer() {
+    setExplainerModal({
+      open: false,
+      conceptIdx: null,
+      conceptText: '',
+      loading: false,
+      text: '',
+      error: ''
+    });
+    setPushState({
+      pushing: false,
+      pushed: false,
+      error: ''
+    });
+    try {
+      if (prevFocusRef.current && typeof prevFocusRef.current.focus === 'function') {
+        prevFocusRef.current.focus();
+      }
+    } catch (e) {}
+  }
+  React.useEffect(function () {
+    if (!explainerModal.open) return;
+    function onKey(e) {
+      if (e.key === 'Escape') closeExplainer();
+    }
+    document.addEventListener('keydown', onKey);
+    var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(function () {
+      try {
+        explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus();
+      } catch (e) {}
+    }) : setTimeout(function () {
+      try {
+        explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus();
+      } catch (e) {}
+    }, 0);
+    return function () {
+      document.removeEventListener('keydown', onKey);
+      if (typeof cancelAnimationFrame === 'function' && raf) {
+        try {
+          cancelAnimationFrame(raf);
+        } catch (e) {}
+      }
+    };
+  }, [explainerModal.open]);
+  function copyExplainer() {
+    if (!explainerModal.text) return;
+    try {
+      navigator.clipboard.writeText(explainerModal.text);
+    } catch (e) {}
+  }
+  function playExplainer() {
+    if (!explainerModal.text || typeof p.callTTS !== 'function') return;
+    try {
+      p.callTTS(explainerModal.text);
+    } catch (e) {}
+  }
+  var pushStateState = React.useState({
+    pushing: false,
+    pushed: false,
+    error: ''
+  });
+  var pushState = pushStateState[0];
+  var setPushState = pushStateState[1];
+  function pushExplainerToStudents() {
+    if (!explainerModal.text || pushState.pushing) return;
+    var fb = window.__alloFirebase;
+    if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !appId || !p.activeSessionCode) {
+      setPushState({
+        pushing: false,
+        pushed: false,
+        error: 'Push unavailable: live session not active.'
+      });
+      return;
+    }
+    setPushState({
+      pushing: true,
+      pushed: false,
+      error: ''
+    });
+    try {
+      var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
+      Promise.resolve(fb.updateDoc(sessionRef, {
+        'quizState.classExplainer': {
+          conceptIdx: explainerModal.conceptIdx,
+          conceptText: explainerModal.conceptText,
+          text: explainerModal.text,
+          ts: Date.now()
+        }
+      })).then(function () {
+        setPushState({
+          pushing: false,
+          pushed: true,
+          error: ''
+        });
+      }).catch(function (err) {
+        setPushState({
+          pushing: false,
+          pushed: false,
+          error: err && err.message || 'Push failed.'
+        });
+      });
+    } catch (e) {
+      setPushState({
+        pushing: false,
+        pushed: false,
+        error: e && e.message || 'Push failed.'
+      });
+    }
+  }
+  var teacherOverrides = quizState && quizState.teacherOverrides || {};
+  function setTeacherOverride(uid, qIdx, newStatus) {
+    var fb = window.__alloFirebase;
+    if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !fb.deleteField || !appId || !p.activeSessionCode) return;
+    var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
+    var path = 'quizState.teacherOverrides.' + uid + '.' + qIdx;
+    var update = {};
+    if (newStatus == null) {
+      update[path] = fb.deleteField();
+    } else {
+      update[path] = {
+        status: newStatus,
+        ts: Date.now()
+      };
+    }
+    try {
+      fb.updateDoc(sessionRef, update);
+    } catch (e) {}
+  }
+  var aggResult;
+  try {
+    aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides);
+  } catch (e) {
+    console.warn('[LiveResultsDashboard] aggregator failed:', e);
+    return null;
+  }
+  if (!aggResult || !aggResult.data) return null;
+  var data = aggResult.data;
+  var variant = aggResult.variant;
+  var header = /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-3 flex-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl",
+    "aria-hidden": "true"
+  }, modeIcon), /*#__PURE__*/React.createElement("h3", {
+    className: "font-black text-lg text-slate-800"
+  }, 'Live Results — ' + modeLabel), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-600"
+  }, data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')), inFlightCount > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse",
+    role: "status",
+    "aria-live": "polite",
+    "aria-label": 'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's'),
+    title: inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "✨ "), 'AI grading ' + inFlightCount + '…'));
+  var hasAnyResponses = false;
+  if (variant === 'gradebook') {
+    hasAnyResponses = data.studentRows.some(function (r) {
+      return r.totalAnswered > 0;
+    });
+  } else if (variant === 'preLessonGap') {
+    hasAnyResponses = data.conceptCards.some(function (c) {
+      return c.totalAnswered > 0;
+    });
+  } else if (variant === 'retentionCurve') {
+    hasAnyResponses = Array.isArray(data.conceptRows) && data.conceptRows.some(function (row) {
+      return row.students.some(function (s) {
+        return s.seen;
+      });
+    });
+  } else {
+    hasAnyResponses = data.bars.some(function (b) {
+      return b.total > 0;
+    });
+  }
+  if (!hasAnyResponses) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "p-5 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 mb-4"
+    }, header, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-600 italic"
+    }, "Waiting for student responses. Results will appear here as students submit answers in this live session."));
+  }
+  var body;
+  if (variant === 'gradebook') {
+    var csvEscape = function (v) {
+      var s = v == null ? '' : String(v);
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+    var buildGradebookCsv = function () {
+      var questions = generatedContent && generatedContent.data && generatedContent.data.questions || [];
+      var header = ['Student', 'Answered', 'Correct', 'IDK', 'Score %'];
+      questions.forEach(function (_, idx) {
+        header.push('Q' + (idx + 1) + ' Status', 'Q' + (idx + 1) + ' Answer', 'Q' + (idx + 1) + ' Confidence', 'Q' + (idx + 1) + ' AI Feedback');
+      });
+      var lines = [header.map(csvEscape).join(',')];
+      data.studentRows.forEach(function (row) {
+        var pct = row.totalAnswered > 0 ? Math.round(row.totalCorrect / row.totalAnswered * 100) : 0;
+        var line = [row.displayName, row.totalAnswered, row.totalCorrect, row.totalIdk, pct + '%'];
+        for (var i = 0; i < questions.length; i++) {
+          var cell = row.byQuestion[i];
+          if (!cell) {
+            line.push('', '', '', '');
+          } else {
+            line.push(cell.status || '', cell.answerSummary || '', cell.confidence || '', cell.aiFeedback || '');
+          }
+        }
+        lines.push(line.map(csvEscape).join(','));
+      });
+      return '﻿' + lines.join('\r\n');
+    };
+    var exportCsv = function () {
+      try {
+        var csv = buildGradebookCsv();
+        var blob = new Blob([csv], {
+          type: 'text/csv;charset=utf-8;'
+        });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        var d = new Date();
+        var stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        a.href = url;
+        a.download = 'quiz-gradebook-' + stamp + '-' + (mode || 'exit-ticket') + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 100);
+      } catch (e) {}
+    };
+    var statusBadge = function (cell) {
+      if (!cell) return /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600",
+        title: "No response"
+      }, "—");
+      if (cell.status === 'correct') return /*#__PURE__*/React.createElement("span", {
+        className: "text-emerald-600",
+        title: cell.aiGraded ? 'AI-graded correct' : 'Correct'
+      }, "✓");
+      if (cell.status === 'incorrect') return /*#__PURE__*/React.createElement("span", {
+        className: "text-rose-600",
+        title: cell.aiGraded ? 'AI-graded incorrect' : 'Incorrect'
+      }, "✗");
+      if (cell.status === 'idk') return /*#__PURE__*/React.createElement("span", {
+        className: "text-sky-600",
+        title: "Marked I don't know"
+      }, "🤔");
+      if (cell.status === 'partially-correct') return /*#__PURE__*/React.createElement("span", {
+        className: "text-amber-600",
+        title: "Partially correct"
+      }, "◐");
+      return /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600",
+        title: "Submitted (ungraded)"
+      }, "·");
+    };
+    body = /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-end mb-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: exportCsv,
+      className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors",
+      "aria-label": "Export gradebook as CSV",
+      "data-help-key": "quiz_csv_export_btn",
+      title: "Download gradebook as CSV — opens in Excel / Google Sheets / Numbers"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "📥 "), "Export CSV")), /*#__PURE__*/React.createElement("div", {
+      className: "overflow-x-auto"
+    }, /*#__PURE__*/React.createElement("table", {
+      className: "w-full text-sm border-collapse"
+    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+      className: "bg-slate-100"
+    }, /*#__PURE__*/React.createElement("th", {
+      className: "w-7 px-1 py-1.5",
+      "aria-label": "Expand row"
+    }), /*#__PURE__*/React.createElement("th", {
+      className: "text-left px-2 py-1.5 font-bold text-slate-700"
+    }, "Student"), /*#__PURE__*/React.createElement("th", {
+      className: "text-center px-2 py-1.5 font-bold text-slate-700"
+    }, "Answered"), /*#__PURE__*/React.createElement("th", {
+      className: "text-center px-2 py-1.5 font-bold text-slate-700"
+    }, "Correct"), /*#__PURE__*/React.createElement("th", {
+      className: "text-center px-2 py-1.5 font-bold text-slate-700"
+    }, "IDK"))), /*#__PURE__*/React.createElement("tbody", null, data.studentRows.map(function (row) {
+      var pct = row.totalAnswered > 0 ? Math.round(row.totalCorrect / row.totalAnswered * 100) : 0;
+      var isExpanded = !!expandedRows[row.uid];
+      var canExpand = row.totalAnswered > 0;
+      var summaryRow = /*#__PURE__*/React.createElement("tr", {
+        key: row.uid + ':summary',
+        className: 'border-t border-slate-200 ' + (canExpand ? 'cursor-pointer hover:bg-indigo-50/40' : ''),
+        onClick: canExpand ? function () {
+          toggleRowExpanded(row.uid);
+        } : undefined
+      }, /*#__PURE__*/React.createElement("td", {
+        className: "text-center px-1 py-1.5"
+      }, canExpand ? /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "aria-expanded": isExpanded,
+        "aria-label": (isExpanded ? 'Collapse' : 'Expand') + ' ' + row.displayName + ' details',
+        className: "text-slate-600 hover:text-indigo-600 transition-colors text-xs font-mono",
+        onClick: function (e) {
+          e.stopPropagation();
+          toggleRowExpanded(row.uid);
+        }
+      }, isExpanded ? '▼' : '▶') : /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600 text-xs"
+      }, "·")), /*#__PURE__*/React.createElement("td", {
+        className: "px-2 py-1.5 text-slate-800"
+      }, row.displayName), /*#__PURE__*/React.createElement("td", {
+        className: "text-center px-2 py-1.5"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "text-xs font-mono text-slate-600"
+      }, row.totalAnswered + ' / ' + data.totalQuestions)), /*#__PURE__*/React.createElement("td", {
+        className: "text-center px-2 py-1.5"
+      }, row.totalAnswered > 0 ? /*#__PURE__*/React.createElement("span", {
+        className: 'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')
+      }, row.totalCorrect + ' (' + pct + '%)') : /*#__PURE__*/React.createElement("span", {
+        className: "text-xs text-slate-600"
+      }, "—")), /*#__PURE__*/React.createElement("td", {
+        className: "text-center px-2 py-1.5"
+      }, row.totalIdk > 0 ? /*#__PURE__*/React.createElement("span", {
+        className: "text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800"
+      }, row.totalIdk) : /*#__PURE__*/React.createElement("span", {
+        className: "text-xs text-slate-600"
+      }, "0")));
+      if (!isExpanded) return summaryRow;
+      var detailRow = /*#__PURE__*/React.createElement("tr", {
+        key: row.uid + ':detail',
+        className: "border-t border-slate-100 bg-indigo-50/30"
+      }, /*#__PURE__*/React.createElement("td", {
+        colSpan: 5,
+        className: "px-3 py-3"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "space-y-2"
+      }, row.byQuestion.map(function (cell, qIdx) {
+        var qNum = qIdx + 1;
+        var qSnippet = cell && cell.questionText ? cell.questionText.slice(0, 90) + (cell.questionText.length > 90 ? '…' : '') : 'Question ' + qNum;
+        var border = !cell ? 'border-slate-200 bg-white' : cell.status === 'correct' ? 'border-emerald-200 bg-emerald-50/50' : cell.status === 'incorrect' ? 'border-rose-200 bg-rose-50/50' : cell.status === 'idk' ? 'border-sky-200 bg-sky-50/50' : 'border-slate-200 bg-white';
+        return /*#__PURE__*/React.createElement("div", {
+          key: qIdx,
+          className: 'p-2 rounded border ' + border
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "flex items-start gap-2 mb-1"
+        }, /*#__PURE__*/React.createElement("span", {
+          className: "text-base mt-0.5 leading-none"
+        }, statusBadge(cell)), /*#__PURE__*/React.createElement("div", {
+          className: "flex-grow min-w-0"
+        }, /*#__PURE__*/React.createElement("p", {
+          className: "text-xs font-semibold text-slate-700 mb-0.5"
+        }, 'Q' + qNum + '. ' + qSnippet), cell && cell.answerSummary ? /*#__PURE__*/React.createElement("p", {
+          className: "text-xs text-slate-800 break-words"
+        }, /*#__PURE__*/React.createElement("span", {
+          className: "text-slate-600"
+        }, "Answered: "), cell.answerSummary) : !cell && /*#__PURE__*/React.createElement("p", {
+          className: "text-xs italic text-slate-600"
+        }, "No response yet")), cell && cell.aiGraded && /*#__PURE__*/React.createElement("span", {
+          className: "flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800",
+          "aria-label": 'Graded by AI as ' + cell.aiStatus,
+          title: 'Graded by AI (' + cell.aiStatus + ')'
+        }, /*#__PURE__*/React.createElement("span", {
+          "aria-hidden": "true"
+        }, "✨ "), "AI"), cell && cell.teacherOverridden && /*#__PURE__*/React.createElement("span", {
+          className: "flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800",
+          "aria-label": 'Teacher override applied, was previously ' + (cell.priorStatus || 'unknown'),
+          title: 'Teacher override (was: ' + (cell.priorStatus || '?') + ')'
+        }, /*#__PURE__*/React.createElement("span", {
+          "aria-hidden": "true"
+        }, "🖊 "), "Teacher"), cell && confidenceChip(cell.confidence, cell.status)), cell && cell.aiFeedback && /*#__PURE__*/React.createElement("p", {
+          className: "text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1"
+        }, "\"", cell.aiFeedback, "\""), cell && p.activeSessionCode && /*#__PURE__*/React.createElement("div", {
+          className: "mt-1 flex items-center gap-1 flex-wrap",
+          "data-help-key": "quiz_teacher_override_row"
+        }, /*#__PURE__*/React.createElement("span", {
+          className: "text-xs text-slate-700 font-semibold mr-1"
+        }, "Override:"), [{
+          s: 'correct',
+          icon: '✓',
+          color: 'emerald',
+          label: 'correct'
+        }, {
+          s: 'incorrect',
+          icon: '✗',
+          color: 'rose',
+          label: 'incorrect'
+        }, {
+          s: 'partially-correct',
+          icon: '◐',
+          color: 'amber',
+          label: 'partially correct'
+        }].map(function (opt) {
+          var isActive = cell.teacherOverridden && cell.status === opt.s;
+          return /*#__PURE__*/React.createElement("button", {
+            key: opt.s,
+            type: "button",
+            onClick: function (e) {
+              e.stopPropagation();
+              setTeacherOverride(row.uid, qIdx, isActive ? null : opt.s);
+            },
+            className: 'text-xs font-bold w-6 h-6 rounded transition-colors ' + (isActive ? 'bg-' + opt.color + '-600 text-white border border-' + opt.color + '-700' : 'bg-white text-slate-700 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300'),
+            "aria-label": 'Override status to ' + opt.label + (isActive ? ' (currently set, click to undo)' : ''),
+            "aria-pressed": isActive,
+            title: 'Set status to ' + opt.s + (isActive ? ' (click again to undo)' : '')
+          }, /*#__PURE__*/React.createElement("span", {
+            "aria-hidden": "true"
+          }, opt.icon));
+        }), cell.teacherOverridden && /*#__PURE__*/React.createElement("button", {
+          type: "button",
+          onClick: function (e) {
+            e.stopPropagation();
+            setTeacherOverride(row.uid, qIdx, null);
+          },
+          className: "text-xs font-bold px-2 h-6 rounded bg-white text-slate-700 border border-slate-300 hover:bg-slate-100",
+          "aria-label": "Remove teacher override and revert to AI or deterministic grade",
+          title: "Remove teacher override (revert to AI / deterministic grade)"
+        }, /*#__PURE__*/React.createElement("span", {
+          "aria-hidden": "true"
+        }, "↺ "), "undo")));
+      }))));
+      return [summaryRow, detailRow];
+    })))));
+  } else if (variant === 'preLessonGap') {
+    body = /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2"
+    }, data.conceptCards.map(function (card) {
+      var color = card.totalAnswered === 0 ? 'slate' : card.percentCorrect >= 80 ? 'emerald' : card.percentCorrect >= 50 ? 'amber' : 'rose';
+      var urgency = card.totalAnswered === 0 ? 'no responses' : card.percentCorrect < 50 ? '⚠ Needs pre-teaching' : card.percentCorrect < 80 ? 'Review with class' : 'Class is ready';
+      var showExplainBtn = card.totalAnswered > 0 && card.percentCorrect < 80 && typeof p.callGemini === 'function';
+      return /*#__PURE__*/React.createElement("div", {
+        key: card.questionIdx,
+        className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200'
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-start justify-between gap-3 mb-1"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800'
+      }, urgency), card.totalAnswered > 0 && /*#__PURE__*/React.createElement("span", {
+        className: 'text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-200 text-' + color + '-900'
+      }, card.percentCorrect + '% correct')), /*#__PURE__*/React.createElement("p", {
+        className: "text-sm text-slate-800 mb-2"
+      }, card.conceptText), /*#__PURE__*/React.createElement("div", {
+        className: 'flex items-center gap-3 text-xs text-' + color + '-900'
+      }, /*#__PURE__*/React.createElement("span", null, card.correctCount + ' ✓'), /*#__PURE__*/React.createElement("span", null, card.incorrectCount + ' ✗'), card.idkCount > 0 && /*#__PURE__*/React.createElement("span", {
+        className: "text-sky-700"
+      }, card.idkCount + ' 🤔'), /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600"
+      }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'), showExplainBtn && /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: function () {
+          openExplainer(card.questionIdx, card.conceptText);
+        },
+        className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors",
+        "aria-label": "Explain this concept to the class",
+        "data-help-key": "quiz_explain_to_class_btn",
+        title: "Generate a 60-90 word concept explainer for the class"
+      }, /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true"
+      }, "🎓 "), "Explain to class")));
+    }));
+  } else if (variant === 'retentionCurve') {
+    body = /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600 italic mb-1"
+    }, "Cross-session retention. Concepts with longer time-since-last-attempt or unseen students surface first. Recent attempts shown as colored dots (green=correct, red=miss, sky=IDK)."), data.conceptRows.map(function (row) {
+      var sortedStudents = row.students.slice().sort(function (a, b) {
+        if (!a.seen && b.seen) return -1;
+        if (a.seen && !b.seen) return 1;
+        if (!a.seen && !b.seen) return 0;
+        return (b.daysSinceLast || 0) - (a.daysSinceLast || 0);
+      });
+      var color = row.unseenCount > 0 ? 'rose' : row.maxDaysSinceLast >= 14 ? 'rose' : row.maxDaysSinceLast >= 7 ? 'amber' : 'emerald';
+      return /*#__PURE__*/React.createElement("div", {
+        key: row.conceptId,
+        className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200'
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-2 mb-2"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800'
+      }, row.label), /*#__PURE__*/React.createElement("span", {
+        className: 'ml-auto text-[10px] text-' + color + '-700'
+      }, row.unseenCount > 0 ? row.unseenCount + ' unseen · ' : '', 'max ' + row.maxDaysSinceLast + 'd since seen')), /*#__PURE__*/React.createElement("div", {
+        className: "space-y-1"
+      }, sortedStudents.map(function (s) {
+        var dayBadgeColor = !s.seen ? 'rose' : s.daysSinceLast >= 14 ? 'rose' : s.daysSinceLast >= 7 ? 'amber' : 'emerald';
+        return /*#__PURE__*/React.createElement("div", {
+          key: s.uid,
+          className: "flex items-center gap-2 text-xs"
+        }, /*#__PURE__*/React.createElement("span", {
+          className: "flex-shrink-0 text-slate-700 font-semibold w-32 truncate"
+        }, s.displayName), !s.seen ? /*#__PURE__*/React.createElement("span", {
+          className: "text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800"
+        }, "never seen") : /*#__PURE__*/React.createElement("span", {
+          className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + dayBadgeColor + '-100 text-' + dayBadgeColor + '-800'
+        }, s.daysSinceLast + 'd ago'), s.seen && /*#__PURE__*/React.createElement("span", {
+          className: "flex items-center gap-0.5"
+        }, s.recent.map(function (att, attIdx) {
+          var dotColor = att.status === 'correct' ? '#10b981' : att.status === 'incorrect' ? '#ef4444' : att.status === 'idk' ? '#0ea5e9' : '#94a3b8';
+          return /*#__PURE__*/React.createElement("span", {
+            key: attIdx,
+            className: "inline-block rounded-full",
+            style: {
+              width: '8px',
+              height: '8px',
+              backgroundColor: dotColor
+            },
+            title: att.status + ' on ' + new Date(att.ts).toLocaleDateString()
+          });
+        })), s.seen && typeof s.successRate === 'number' && /*#__PURE__*/React.createElement("span", {
+          className: "text-slate-600 ml-auto"
+        }, s.correctAttempts + '/' + s.totalAttempts + ' (' + s.successRate + '%)'));
+      })));
+    }));
+  } else {
+    var statusColor = function (s) {
+      if (s === 'correct') return {
+        bg: 'bg-emerald-100',
+        text: 'text-emerald-800',
+        icon: '✓'
+      };
+      if (s === 'incorrect') return {
+        bg: 'bg-rose-100',
+        text: 'text-rose-800',
+        icon: '✗'
+      };
+      if (s === 'idk') return {
+        bg: 'bg-sky-100',
+        text: 'text-sky-800',
+        icon: '🤔'
+      };
+      if (s === 'partially-correct') return {
+        bg: 'bg-amber-100',
+        text: 'text-amber-800',
+        icon: '◐'
+      };
+      return {
+        bg: 'bg-slate-100',
+        text: 'text-slate-700',
+        icon: '·'
+      };
+    };
+    body = /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2"
+    }, data.bars.map(function (bar) {
+      var color = bar.total === 0 ? 'slate' : bar.percentCorrect >= 80 ? 'emerald' : bar.percentCorrect >= 50 ? 'amber' : 'rose';
+      var pctCorrect = bar.total > 0 ? bar.correct / bar.total * 100 : 0;
+      var pctIncorrect = bar.total > 0 ? bar.incorrect / bar.total * 100 : 0;
+      var pctIdk = bar.total > 0 ? bar.idk / bar.total * 100 : 0;
+      var pctSubmitted = bar.total > 0 ? bar.submitted / bar.total * 100 : 0;
+      var qLabel = bar.questionText ? bar.questionText.slice(0, 70) + (bar.questionText.length > 70 ? '…' : '') : 'Question ' + (bar.questionIdx + 1);
+      var canExpand = bar.total > 0;
+      var isExpanded = !!expandedBars[bar.questionIdx];
+      return /*#__PURE__*/React.createElement("div", {
+        key: bar.questionIdx,
+        className: "p-2 rounded bg-white border border-slate-200"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: 'flex items-start gap-2 mb-1' + (canExpand ? ' cursor-pointer' : ''),
+        onClick: canExpand ? function () {
+          toggleBarExpanded(bar.questionIdx);
+        } : undefined,
+        role: canExpand ? 'button' : undefined,
+        tabIndex: canExpand ? 0 : undefined,
+        "aria-expanded": canExpand ? isExpanded : undefined,
+        "aria-label": canExpand ? (isExpanded ? 'Collapse' : 'Expand') + ' question ' + (bar.questionIdx + 1) + ' student detail' : undefined,
+        onKeyDown: canExpand ? function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleBarExpanded(bar.questionIdx);
+          }
+        } : undefined
+      }, canExpand && /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600 hover:text-indigo-600 text-[10px] font-mono mt-0.5"
+      }, isExpanded ? '▼' : '▶'), /*#__PURE__*/React.createElement("span", {
+        className: "text-xs text-slate-700 flex-1 min-w-0"
+      }, bar.questionIdx + 1 + '. ' + qLabel), bar.total > 0 && /*#__PURE__*/React.createElement("span", {
+        className: 'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800'
+      }, bar.percentCorrect + '%')), bar.total > 0 ? /*#__PURE__*/React.createElement("div", {
+        className: "flex h-3 rounded overflow-hidden border border-slate-200"
+      }, pctCorrect > 0 && /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: pctCorrect + '%',
+          backgroundColor: '#10b981'
+        },
+        title: bar.correct + ' correct'
+      }), pctIncorrect > 0 && /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: pctIncorrect + '%',
+          backgroundColor: '#ef4444'
+        },
+        title: bar.incorrect + ' incorrect'
+      }), pctIdk > 0 && /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: pctIdk + '%',
+          backgroundColor: '#0ea5e9'
+        },
+        title: bar.idk + ' IDK'
+      }), pctSubmitted > 0 && /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: pctSubmitted + '%',
+          backgroundColor: '#94a3b8'
+        },
+        title: bar.submitted + ' submitted (ungraded)'
+      })) : /*#__PURE__*/React.createElement("div", {
+        className: "h-3 rounded bg-slate-100 border border-slate-200"
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-3 mt-1 text-[10px] text-slate-600"
+      }, /*#__PURE__*/React.createElement("span", null, bar.correct + ' ✓'), /*#__PURE__*/React.createElement("span", null, bar.incorrect + ' ✗'), bar.idk > 0 && /*#__PURE__*/React.createElement("span", {
+        className: "text-sky-700"
+      }, bar.idk + ' 🤔'), bar.submitted > 0 && /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600"
+      }, bar.submitted + ' submitted'), /*#__PURE__*/React.createElement("span", {
+        className: "ml-auto text-slate-600"
+      }, bar.total + ' / ' + data.totalStudents)), isExpanded && Array.isArray(bar.byStudent) && bar.byStudent.length > 0 && /*#__PURE__*/React.createElement("div", {
+        className: "mt-2 pt-2 border-t border-slate-100 space-y-1"
+      }, bar.byStudent.map(function (s) {
+        var sc = statusColor(s.status);
+        return /*#__PURE__*/React.createElement("div", {
+          key: s.uid,
+          className: "flex items-start gap-2 text-xs"
+        }, /*#__PURE__*/React.createElement("span", {
+          className: 'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ' + sc.bg + ' ' + sc.text
+        }, sc.icon), /*#__PURE__*/React.createElement("span", {
+          className: "flex-shrink-0 font-semibold text-slate-700 w-32 truncate"
+        }, s.displayName), /*#__PURE__*/React.createElement("span", {
+          className: "flex-grow min-w-0 break-words text-slate-700"
+        }, s.answerSummary || /*#__PURE__*/React.createElement("em", {
+          className: "text-slate-600"
+        }, "(no text)")), s.aiGraded && /*#__PURE__*/React.createElement("span", {
+          className: "flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800",
+          title: "AI-graded"
+        }, "✨"), confidenceChip(s.confidence, s.status), s.aiFeedback && /*#__PURE__*/React.createElement("span", {
+          className: "flex-shrink-0 italic text-[10px] text-indigo-800 truncate max-w-[12rem]",
+          title: s.aiFeedback
+        }, '"' + s.aiFeedback.slice(0, 50) + (s.aiFeedback.length > 50 ? '…' : '') + '"'));
+      })));
+    }));
+  }
+  var explainerModalEl = explainerModal.open ? /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4",
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Concept explainer",
+    onClick: function (e) {
+      if (e.target === e.currentTarget) closeExplainer();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-2xl max-w-lg w-full p-5 border-2 border-indigo-300"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    className: "font-black text-base text-slate-800"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🎓 "), "Explain to class"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600 mt-0.5"
+  }, "Concept the class missed:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs italic text-slate-700 mt-0.5"
+  }, '"' + (explainerModal.conceptText || '') + '"')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    ref: explainerCloseBtnRef,
+    onClick: closeExplainer,
+    "aria-label": "Close concept explainer",
+    className: "flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
+  }, "×")), explainerModal.loading ? /*#__PURE__*/React.createElement("div", {
+    className: "p-4 text-center text-sm text-slate-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-block animate-pulse"
+  }, "✨ Generating explainer…")) : explainerModal.error ? /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded bg-rose-50 border border-rose-200 text-sm text-rose-800"
+  }, explainerModal.error) : /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded bg-indigo-50 border border-indigo-200 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
+  }, explainerModal.text), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mt-4 flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      runExplainerCall(explainerModal.conceptText);
+    },
+    disabled: explainerModal.loading,
+    className: "text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+  }, "↻ Regenerate"), !explainerModal.loading && !explainerModal.error && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: copyExplainer,
+    className: "text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+  }, "📋 Copy"), !explainerModal.loading && !explainerModal.error && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: playExplainer,
+    className: "text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100",
+    title: "Play explainer aloud"
+  }, "🔊 Play aloud"), !explainerModal.loading && !explainerModal.error && p.activeSessionCode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: pushExplainerToStudents,
+    disabled: pushState.pushing,
+    className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed ? 'bg-emerald-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
+    "aria-label": pushState.pushed ? 'Explainer pushed to all students' : 'Push this explainer to every student\'s screen',
+    "data-help-key": "quiz_push_to_students_btn",
+    title: "Send this explainer to every student's screen now"
+  }, pushState.pushing ? 'Pushing…' : pushState.pushed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "✓ "), "Pushed to students") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📡 "), "Push to all students")), pushState.error && /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-rose-700 italic",
+    role: "alert"
+  }, pushState.error), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: closeExplainer,
+    className: "ml-auto text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+  }, "Close")))) : null;
+  var reflectionsData = null;
+  try {
+    reflectionsData = aggsMod.aggregateReflections && aggsMod.aggregateReflections(quizState, generatedContent, roster);
+  } catch (e) {
+    reflectionsData = null;
+  }
+  var reflectionsExpandedState = React.useState(true);
+  var reflectionsExpanded = reflectionsExpandedState[0];
+  var setReflectionsExpanded = reflectionsExpandedState[1];
+  var reflectionsEl = reflectionsData ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 pt-4 border-t-2 border-indigo-100"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setReflectionsExpanded(!reflectionsExpanded);
+    },
+    "aria-expanded": reflectionsExpanded,
+    className: "flex items-center gap-2 text-sm font-bold text-indigo-800 hover:text-indigo-900"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-mono"
+  }, reflectionsExpanded ? '▼' : '▶'), /*#__PURE__*/React.createElement("span", null, '✏️ Reflections (' + reflectionsData.totalReflections + ')')), reflectionsExpanded && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 space-y-3"
+  }, reflectionsData.buckets.map(function (bucket) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: bucket.reflectionIdx,
+      className: "p-3 rounded-lg bg-indigo-50/50 border border-indigo-100"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs font-semibold uppercase tracking-wider text-indigo-700 mb-1"
+    }, 'Prompt ' + (bucket.reflectionIdx + 1)), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm italic text-slate-700 mb-2"
+    }, bucket.promptText), bucket.responses.length === 0 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-xs italic text-slate-600"
+    }, "No responses yet.") : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2"
+    }, bucket.responses.map(function (r) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: r.uid,
+        className: "p-2 rounded bg-white border border-indigo-100"
+      }, /*#__PURE__*/React.createElement("p", {
+        className: "text-xs font-bold text-slate-700 mb-0.5"
+      }, r.displayName), /*#__PURE__*/React.createElement("p", {
+        className: "text-sm text-slate-800 whitespace-pre-wrap break-words"
+      }, r.text));
+    })));
+  }))) : null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm",
+    role: "region",
+    "aria-label": "Live Results Dashboard"
+  }, header, body, reflectionsEl, explainerModalEl);
+}
+function FreeformItemsBlock(p) {
+  var allQuestions = Array.isArray(p.questions) ? p.questions : [];
+  var freeform = allQuestions.map(function (q, idx) {
+    return {
+      q: q,
+      idx: idx
+    };
+  }).filter(function (entry) {
+    return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch');
+  });
+  if (freeform.length === 0) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 mt-6"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-slate-700 flex items-center gap-2 text-base"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "✏️"), " Open-Response Items"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600 mb-2"
+  }, "Type your answer and click \"Grade my answer\" — an AI will give you immediate feedback."), freeform.map(function (entry) {
+    if (entry.q.type === 'sequence-sense') {
+      return /*#__PURE__*/React.createElement(SequenceSenseCard, {
+        key: entry.idx,
+        q: entry.q,
+        itemNumber: entry.idx + 1,
+        questionIdx: entry.idx,
+        onSubmitLiveAnswer: p.onSubmitLiveAnswer,
+        modeStrategy: p.modeStrategy,
+        callGemini: p.callGemini,
+        callTTS: p.callTTS,
+        gradeLevel: p.gradeLevel
+      });
+    }
+    if (entry.q.type === 'relation-mismatch') {
+      return /*#__PURE__*/React.createElement(RelationMismatchCard, {
+        key: entry.idx,
+        q: entry.q,
+        itemNumber: entry.idx + 1,
+        questionIdx: entry.idx,
+        onSubmitLiveAnswer: p.onSubmitLiveAnswer,
+        modeStrategy: p.modeStrategy,
+        callGemini: p.callGemini,
+        callTTS: p.callTTS,
+        gradeLevel: p.gradeLevel
+      });
+    }
+    return /*#__PURE__*/React.createElement(FreeformItemCard, {
+      key: entry.idx,
+      q: entry.q,
+      itemNumber: entry.idx + 1,
+      questionIdx: entry.idx,
+      callGemini: p.callGemini,
+      callTTS: p.callTTS,
+      gradeLevel: p.gradeLevel,
+      QuizAIHelpers: p.QuizAIHelpers,
+      modeStrategy: p.modeStrategy,
+      onSubmitLiveAnswer: p.onSubmitLiveAnswer
+    });
+  }));
+}
+function FreeformItemCard(p) {
+  var q = p.q;
+  var modeStrat = p.modeStrategy || null;
+  var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+  var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+  var responseState = React.useState('');
+  var response = responseState[0];
+  var setResponse = responseState[1];
+  var gradeState = React.useState({
+    status: null,
+    feedback: '',
+    loading: false
+  });
+  var grade = gradeState[0];
+  var setGrade = gradeState[1];
+  var confidenceState = React.useState(null);
+  var confidence = confidenceState[0];
+  var setConfidence = confidenceState[1];
+  var explainerState = React.useState({
+    open: false,
+    loading: false,
+    text: '',
+    error: ''
+  });
+  var explainer = explainerState[0];
+  var setExplainer = explainerState[1];
+  function emitLiveAnswer(extraConfidence) {
+    if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
+    try {
+      p.onSubmitLiveAnswer({
+        questionIdx: p.questionIdx,
+        itemType: q.type || 'short-answer',
+        conceptLabel: q && q.conceptLabel || '',
+        answer: {
+          text: response
+        },
+        confidence: typeof extraConfidence !== 'undefined' ? extraConfidence : confidence || null,
+        timestamp: Date.now()
+      });
+    } catch (e) {}
+  }
+  function submitGrade() {
+    if (!response || !response.trim()) return;
+    emitLiveAnswer();
+    if (!p.QuizAIHelpers) {
+      setGrade({
+        status: 'error',
+        feedback: 'Grader unavailable: QuizAIHelpers not loaded.',
+        loading: false
+      });
+      return;
+    }
+    setGrade({
+      status: null,
+      feedback: '',
+      loading: true
+    });
+    var graderArgs = {
+      callGemini: p.callGemini,
+      gradeLevel: p.gradeLevel
+    };
+    var promise;
+    if (q.type === 'fill-blank') {
+      graderArgs.contextSentence = q.question;
+      graderArgs.expectedFill = q.expectedFill || '';
+      graderArgs.acceptableAlternatives = q.acceptableAlternatives || [];
+      graderArgs.studentFill = response;
+      promise = p.QuizAIHelpers.gradeFillBlank(graderArgs);
+    } else if (q.type === 'self-explanation') {
+      graderArgs.question = 'EXPLAIN IN YOUR OWN WORDS: ' + (q.question || '');
+      graderArgs.expectedAnswer = q.rubric || q.expectedAnswer || 'Student demonstrates understanding of the concept in their own words, including key terms and relationships. Avoid grading on memorization of specific phrasing — reward genuine understanding.';
+      graderArgs.studentResponse = response;
+      promise = p.QuizAIHelpers.gradeFreeformAnswer(graderArgs);
+    } else {
+      graderArgs.question = q.question;
+      graderArgs.expectedAnswer = q.expectedAnswer || '';
+      graderArgs.studentResponse = response;
+      promise = p.QuizAIHelpers.gradeFreeformAnswer(graderArgs);
+    }
+    Promise.resolve(promise).then(function (result) {
+      setGrade({
+        status: result.status || 'unclear',
+        feedback: result.feedback || '',
+        loading: false
+      });
+    }).catch(function (err) {
+      setGrade({
+        status: 'error',
+        feedback: err && err.message ? err.message : 'Grader failed.',
+        loading: false
+      });
+    });
+  }
+  function markIDK() {
+    setGrade({
+      status: 'idk',
+      feedback: 'No worries — here\'s a quick explanation.',
+      loading: false
+    });
+    requestExplainer();
+  }
+  function requestExplainer() {
+    if (typeof p.callGemini !== 'function') {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: 'Explainer unavailable: callGemini not provided.'
+      });
+      return;
+    }
+    setExplainer({
+      open: true,
+      loading: true,
+      text: '',
+      error: ''
+    });
+    var grade = p.gradeLevel || 'middle school';
+    var conceptHint = q.type === 'fill-blank' ? q.expectedFill || q.question || '' : q.type === 'self-explanation' ? q.question || '' : q.question || '';
+    var prompt = 'You are a patient teacher. A ' + grade + ' student needs a quick refresher on this concept so they can answer the question. Concept or question: "' + conceptHint + '". Give a 60-90 word explanation in plain language. Use a concrete example or analogy. End with one sentence checking understanding. Plain text only — no headings, no bullet points.';
+    Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+      var txt = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
+      setExplainer({
+        open: true,
+        loading: false,
+        text: txt.trim(),
+        error: ''
+      });
+    }).catch(function (err) {
+      setExplainer({
+        open: true,
+        loading: false,
+        text: '',
+        error: err && err.message ? err.message : 'Explainer failed.'
+      });
+    });
+  }
+  var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
+  var statusLabel = grade.status === 'correct' ? '✓ Correct' : grade.status === 'partially-correct' ? '~ Close' : grade.status === 'incorrect' ? '✗ Not yet' : grade.status === 'unclear' ? '? Unclear' : grade.status === 'error' ? '! Error' : grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : '';
+  var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' : q.type === 'self-explanation' ? 'Self-explanation' : 'Short answer';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5"
+  }, p.itemNumber), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
+  }, typeLabel), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, q.question || ''))), q.type === 'fill-blank' ? /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: response,
+    onChange: function (ev) {
+      setResponse(ev.target.value);
+    },
+    onKeyDown: function (ev) {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        submitGrade();
+      }
+    },
+    placeholder: "Type the missing word or phrase...",
+    disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
+    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50",
+    "aria-label": "Fill in the blank"
+  }) : /*#__PURE__*/React.createElement("textarea", {
+    value: response,
+    onChange: function (ev) {
+      setResponse(ev.target.value);
+    },
+    placeholder: q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...',
+    disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
+    rows: q.type === 'self-explanation' ? 5 : 3,
+    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y",
+    "aria-label": typeLabel + ' response'
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-2 mt-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: submitGrade,
+    disabled: !response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk',
+    className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+  }, grade.loading ? 'Grading…' : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : 'Grade my answer'), allowIDK && !grade.status && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: markIDK,
+    className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
+    "aria-label": "I don't know — skip without penalty",
+    title: "Skip — no penalty. The AI will explain the concept."
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🤔 "), "I don't know")), grade.status && grade.status !== 'correct' && grade.status !== 'idk' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setGrade({
+        status: null,
+        feedback: '',
+        loading: false
+      });
+      setResponse('');
+      setExplainer({
+        open: false,
+        loading: false,
+        text: '',
+        error: ''
+      });
+    },
+    className: "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+  }, "Try again")), grade.status && /*#__PURE__*/React.createElement("div", {
+    className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-1 flex-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
+  }, statusLabel), aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: requestExplainer,
+    className: "ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
+    title: "Get a quick AI explanation of this concept"
+  }, "🤖 Explain this")), grade.feedback && /*#__PURE__*/React.createElement("p", {
+    className: 'text-sm text-' + statusColor + '-900 mb-2'
+  }, grade.feedback), explainer.open && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 p-3 bg-white border border-indigo-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+  }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-indigo-700 italic"
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-rose-700"
+  }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      p.callTTS(explainer.text);
+    },
+    className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
+    "aria-label": "Read aloud"
+  }, "🔊 Read aloud"))), allowConfidence && grade.status && grade.status !== 'idk' && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex items-center gap-2 flex-wrap text-xs"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-600 font-semibold"
+  }, "How sure were you?"), ['knew', 'guessed', 'no-idea'].map(function (lvl) {
+    var labels = {
+      knew: 'I knew this',
+      guessed: 'I guessed',
+      'no-idea': 'No idea'
+    };
+    var active = confidence === lvl;
+    return /*#__PURE__*/React.createElement("button", {
+      key: lvl,
+      type: "button",
+      onClick: function () {
+        setConfidence(lvl);
+        emitLiveAnswer(lvl);
+      },
+      className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+    }, labels[lvl]);
+  })));
+}
+function QuizView(props) {
   var t = props.t;
   var isTeacherMode = props.isTeacherMode;
   var isParentMode = props.isParentMode;
   var isIndependentMode = props.isIndependentMode;
   var activeSessionCode = props.activeSessionCode;
   var sessionData = props.sessionData;
-  // Plan T Slice Ta: live-session response capture. When the host passes
-  // onSubmitLiveAnswer AND we're in an active session, item cards write
-  // each submission to quizState.allResponses[uid][questionIdx]. Inactive
-  // session → onSubmitLiveAnswer is undefined and writes are no-ops.
-  var onSubmitLiveAnswer = (activeSessionCode && typeof props.onSubmitLiveAnswer === 'function')
-    ? props.onSubmitLiveAnswer
-    : null;
-  // Plan T v3+: per-MCQ student-answer state for the standalone (non-presentation)
-  // view. Map of questionIdx → selected optionIdx. Click an option to select +
-  // auto-submit to live session if active. Doesn't disturb presentation-mode
-  // path (which has its own pState handler).
+  var onSubmitLiveAnswer = activeSessionCode && typeof props.onSubmitLiveAnswer === 'function' ? props.onSubmitLiveAnswer : null;
   var mcqAnswersState = React.useState({});
   var studentMcqAnswers = mcqAnswersState[0];
   var setStudentMcqAnswers = mcqAnswersState[1];
-  // Plan T v3+ Chunk 1B: per-MCQ confidence rating ('knew'/'guessed'/'no-idea').
-  // Captured in the live-session payload. Updates fire a fresh write — Firestore
-  // overwrites the same slot. Default null means "not rated yet."
   var mcqConfidenceState = React.useState({});
   var studentMcqConfidence = mcqConfidenceState[0];
   var setStudentMcqConfidence = mcqConfidenceState[1];
@@ -1885,12 +2109,15 @@
         onSubmitLiveAnswer({
           questionIdx: qIdx,
           itemType: 'mcq',
-          conceptLabel: (q && q.conceptLabel) || '',
-          answer: { optionIdx: optIdx, optionText: optText },
+          conceptLabel: q && q.conceptLabel || '',
+          answer: {
+            optionIdx: optIdx,
+            optionText: optText
+          },
           confidence: studentMcqConfidence[qIdx] || null,
-          timestamp: Date.now(),
+          timestamp: Date.now()
         });
-      } catch (e) { /* swallow — local selection still works */ }
+      } catch (e) {}
     }
   }
   function setMcqConfidence(qIdx, confidenceValue, q) {
@@ -1899,32 +2126,31 @@
       next[qIdx] = confidenceValue;
       return next;
     });
-    // Re-emit existing answer with new confidence so dashboard updates.
     var prevOptIdx = studentMcqAnswers[qIdx];
     if (typeof prevOptIdx !== 'number' || typeof onSubmitLiveAnswer !== 'function') return;
     try {
       onSubmitLiveAnswer({
         questionIdx: qIdx,
         itemType: 'mcq',
-        conceptLabel: (q && q.conceptLabel) || '',
-        answer: { optionIdx: prevOptIdx, optionText: q.options[prevOptIdx] },
+        conceptLabel: q && q.conceptLabel || '',
+        answer: {
+          optionIdx: prevOptIdx,
+          optionText: q.options[prevOptIdx]
+        },
         confidence: confidenceValue,
-        timestamp: Date.now(),
+        timestamp: Date.now()
       });
-    } catch (e) { /* swallow */ }
+    } catch (e) {}
   }
-  // Plan T v3+ Chunk 1A: per-reflection state. Reflections live in
-  // generatedContent.data.reflections[] (separate from data.questions[]).
-  // Stored under string-keyed slots in quizState.allResponses (e.g. 'r0', 'r1')
-  // so the existing aggregator's parseInt-NaN filter naturally skips them
-  // out of the gradebook score path. Surfaced via aggregateReflections.
   var reflectionAnswersState = React.useState({});
   var reflectionAnswers = reflectionAnswersState[0];
   var setReflectionAnswers = reflectionAnswersState[1];
   function setReflectionDraft(rIdx, text) {
     setReflectionAnswers(function (prev) {
       var next = Object.assign({}, prev);
-      next[rIdx] = Object.assign({}, next[rIdx] || {}, { draft: text });
+      next[rIdx] = Object.assign({}, next[rIdx] || {}, {
+        draft: text
+      });
       return next;
     });
   }
@@ -1934,7 +2160,11 @@
     if (!text) return;
     setReflectionAnswers(function (prev) {
       var next = Object.assign({}, prev);
-      next[rIdx] = { draft: text, submitted: true, submittedText: text };
+      next[rIdx] = {
+        draft: text,
+        submitted: true,
+        submittedText: text
+      };
       return next;
     });
     if (typeof onSubmitLiveAnswer !== 'function') return;
@@ -1943,55 +2173,48 @@
         questionIdx: 'r' + rIdx,
         itemType: 'reflection',
         conceptLabel: '',
-        answer: { text: text },
-        timestamp: Date.now(),
+        answer: {
+          text: text
+        },
+        timestamp: Date.now()
       });
-    } catch (e) { /* swallow — local state still reflects submission */ }
+    } catch (e) {}
   }
   function reopenReflection(rIdx) {
     setReflectionAnswers(function (prev) {
       var next = Object.assign({}, prev);
-      next[rIdx] = Object.assign({}, next[rIdx] || {}, { submitted: false });
+      next[rIdx] = Object.assign({}, next[rIdx] || {}, {
+        submitted: false
+      });
       return next;
     });
   }
-
-  // Plan T v3+ Chunk 8: img2img refinement for Visual MCQ images. Mirrors the
-  // Glossary refinement pattern (handleRefineGlossaryImage in App.jsx). State
-  // is keyed by '<qIdx>:question' for the question stimulus or '<qIdx>:o<optIdx>'
-  // for option images so a teacher can refine multiple images concurrently.
   var quizImageRefineInputsState = React.useState({});
   var quizImageRefineInputs = quizImageRefineInputsState[0];
   var setQuizImageRefineInputs = quizImageRefineInputsState[1];
   var isRefiningQuizImageState = React.useState({});
   var isRefiningQuizImage = isRefiningQuizImageState[0];
   var setIsRefiningQuizImage = isRefiningQuizImageState[1];
-  // Open/close the refine panel per image (collapsed by default — overlay
-  // pencil button toggles it).
   var refineOpenState = React.useState({});
   var refineOpen = refineOpenState[0];
   var setRefineOpen = refineOpenState[1];
   function refineKey(qIdx, target, optIdx) {
-    return target === 'question' ? (qIdx + ':question') : (qIdx + ':o' + optIdx);
+    return target === 'question' ? qIdx + ':question' : qIdx + ':o' + optIdx;
   }
   function toggleRefinePanel(key) {
     setRefineOpen(function (prev) {
       var next = Object.assign({}, prev);
-      if (next[key]) delete next[key]; else next[key] = true;
+      if (next[key]) delete next[key];else next[key] = true;
       return next;
     });
   }
   async function refineQuizImage(qIdx, target, optIdx, instructionOverride) {
     var key = refineKey(qIdx, target, optIdx);
-    var instruction = (typeof instructionOverride === 'string')
-      ? instructionOverride
-      : (quizImageRefineInputs[key] || '').trim();
+    var instruction = typeof instructionOverride === 'string' ? instructionOverride : (quizImageRefineInputs[key] || '').trim();
     if (!instruction) return;
     var q = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
     if (!q) return;
-    var currentUrl = (target === 'question')
-      ? q.imageUrl
-      : (Array.isArray(q.optionImageUrls) ? q.optionImageUrls[optIdx] : null);
+    var currentUrl = target === 'question' ? q.imageUrl : Array.isArray(q.optionImageUrls) ? q.optionImageUrls[optIdx] : null;
     if (!currentUrl || typeof currentUrl !== 'string' || currentUrl.indexOf(',') === -1) {
       if (typeof addToast === 'function') addToast('No image to refine yet.', 'error');
       return;
@@ -2001,41 +2224,41 @@
       return;
     }
     setIsRefiningQuizImage(function (prev) {
-      var next = Object.assign({}, prev); next[key] = true; return next;
+      var next = Object.assign({}, prev);
+      next[key] = true;
+      return next;
     });
     try {
       var rawBase64 = currentUrl.split(',')[1];
       var grade = props.gradeLevel || 'middle school';
-      // Plan T v3+ Chunk 10: read persisted style hint (from generation) and
-      // include in the style-preservation prompt so refines stay on-brand.
-      var styleHint = (generatedContent && generatedContent.data && generatedContent.data.imageStyle) || '';
+      var styleHint = generatedContent && generatedContent.data && generatedContent.data.imageStyle || '';
       var styleClause = styleHint ? ' Required visual style: ' + styleHint + '.' : '';
       var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity).' + styleClause + ' Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
       var refinedUrl = await callGeminiImageEdit(prompt, rawBase64);
       if (typeof handleQuizImageRefine === 'function') {
         handleQuizImageRefine(qIdx, target, optIdx, refinedUrl);
       }
-      // Clear input + close panel after success
       setQuizImageRefineInputs(function (prev) {
-        var next = Object.assign({}, prev); delete next[key]; return next;
+        var next = Object.assign({}, prev);
+        delete next[key];
+        return next;
       });
       setRefineOpen(function (prev) {
-        var next = Object.assign({}, prev); delete next[key]; return next;
+        var next = Object.assign({}, prev);
+        delete next[key];
+        return next;
       });
       if (typeof addToast === 'function') addToast('Image refined.', 'success');
     } catch (err) {
-      if (typeof addToast === 'function') addToast((err && err.message) || 'Refine failed — try again.', 'error');
+      if (typeof addToast === 'function') addToast(err && err.message || 'Refine failed — try again.', 'error');
     } finally {
       setIsRefiningQuizImage(function (prev) {
-        var next = Object.assign({}, prev); delete next[key]; return next;
+        var next = Object.assign({}, prev);
+        delete next[key];
+        return next;
       });
     }
   }
-  // Plan T v3+ Chunk 9: distractor auto-improve. When Chunk 7's
-  // distractorQuality flagged a distractor as not encoding a misconception,
-  // teacher can click "✨ improve" to ask Gemini to rewrite it as a real
-  // misconception. Replaces in place via handleQuizChange. Per-(qIdx, optIdx)
-  // loading state so multiple distractors can improve concurrently.
   var isImprovingDistractorState = React.useState({});
   var isImprovingDistractor = isImprovingDistractorState[0];
   var setIsImprovingDistractor = isImprovingDistractorState[1];
@@ -2046,35 +2269,29 @@
     var q = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
     if (!q) return;
     setIsImprovingDistractor(function (prev) {
-      var next = Object.assign({}, prev); next[key] = true; return next;
+      var next = Object.assign({}, prev);
+      next[key] = true;
+      return next;
     });
     try {
       var grade = props.gradeLevel || 'middle school';
-      var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n'
-        + 'QUESTION: "' + (q.question || '') + '"\n'
-        + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n'
-        + 'CURRENT WEAK DISTRACTOR: "' + currentDistractor + '"\n'
-        + 'WHY IT IS WEAK: "' + (weakReason || 'does not encode a specific misconception') + '"\n\n'
-        + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
+      var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n' + 'QUESTION: "' + (q.question || '') + '"\n' + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n' + 'CURRENT WEAK DISTRACTOR: "' + currentDistractor + '"\n' + 'WHY IT IS WEAK: "' + (weakReason || 'does not encode a specific misconception') + '"\n\n' + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
       var raw = await props.callGemini(prompt, false);
-      var newText = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+      var newText = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
       newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
       if (!newText) throw new Error('Empty rewrite');
-      // Replace via existing host helper
       handleQuizChange(qIdx, 'option', newText, optIdx);
       if (typeof addToast === 'function') addToast('Distractor rewritten.', 'success');
     } catch (err) {
-      if (typeof addToast === 'function') addToast((err && err.message) || 'Rewrite failed.', 'error');
+      if (typeof addToast === 'function') addToast(err && err.message || 'Rewrite failed.', 'error');
     } finally {
       setIsImprovingDistractor(function (prev) {
-        var next = Object.assign({}, prev); delete next[key]; return next;
+        var next = Object.assign({}, prev);
+        delete next[key];
+        return next;
       });
     }
   }
-  // Plan T v3+ Chunk 11: bulk-improve all weak distractors in one click.
-  // Walks every MCQ's distractorQuality, fires improvements in parallel,
-  // applies the resulting rewrites in a single batched host write to avoid
-  // closure-stomping that would happen with N sequential handleQuizChange calls.
   var isBulkImprovingState = React.useState(false);
   var isBulkImproving = isBulkImprovingState[0];
   var setIsBulkImproving = isBulkImprovingState[1];
@@ -2085,17 +2302,21 @@
       if (typeof addToast === 'function') addToast('Bulk improve unavailable.', 'error');
       return;
     }
-    // Collect tasks: (qIdx, optIdx, currentDistractor, reason) for every weak distractor
     var tasks = [];
     generatedContent.data.questions.forEach(function (q, qIdx) {
-      if (!q || (q.type && q.type !== 'mcq')) return;
+      if (!q || q.type && q.type !== 'mcq') return;
       if (!Array.isArray(q.distractorQuality) || !Array.isArray(q.options)) return;
       q.distractorQuality.forEach(function (dq) {
         if (!dq || dq.encodesMisconception !== false) return;
         var optIdx = q.options.indexOf(dq.distractor);
         if (optIdx < 0) return;
         if (q.options[optIdx] === q.correctAnswer) return;
-        tasks.push({ qIdx: qIdx, optIdx: optIdx, currentDistractor: dq.distractor, reason: dq.reason || '' });
+        tasks.push({
+          qIdx: qIdx,
+          optIdx: optIdx,
+          currentDistractor: dq.distractor,
+          reason: dq.reason || ''
+        });
       });
     });
     if (tasks.length === 0) {
@@ -2103,55 +2324,62 @@
       return;
     }
     setIsBulkImproving(true);
-    // Mark all per-cell as in-flight too so individual badges show 'rewriting…'
     setIsImprovingDistractor(function (prev) {
       var next = Object.assign({}, prev);
-      tasks.forEach(function (t) { next[t.qIdx + ':' + t.optIdx] = true; });
+      tasks.forEach(function (t) {
+        next[t.qIdx + ':' + t.optIdx] = true;
+      });
       return next;
     });
     if (typeof addToast === 'function') addToast('Rewriting ' + tasks.length + ' weak distractor' + (tasks.length === 1 ? '' : 's') + '…', 'info');
     var grade = props.gradeLevel || 'middle school';
     var results = await Promise.all(tasks.map(function (task) {
       var q = generatedContent.data.questions[task.qIdx];
-      var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n'
-        + 'QUESTION: "' + (q.question || '') + '"\n'
-        + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n'
-        + 'CURRENT WEAK DISTRACTOR: "' + task.currentDistractor + '"\n'
-        + 'WHY IT IS WEAK: "' + task.reason + '"\n\n'
-        + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
-      return Promise.resolve(props.callGemini(prompt, false))
-        .then(function (raw) {
-          var newText = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-          newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
-          if (!newText) return { ok: false, task: task };
-          return { ok: true, task: task, newText: newText };
-        })
-        .catch(function () { return { ok: false, task: task }; });
+      var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n' + 'QUESTION: "' + (q.question || '') + '"\n' + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n' + 'CURRENT WEAK DISTRACTOR: "' + task.currentDistractor + '"\n' + 'WHY IT IS WEAK: "' + task.reason + '"\n\n' + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
+      return Promise.resolve(props.callGemini(prompt, false)).then(function (raw) {
+        var newText = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
+        newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
+        if (!newText) return {
+          ok: false,
+          task: task
+        };
+        return {
+          ok: true,
+          task: task,
+          newText: newText
+        };
+      }).catch(function () {
+        return {
+          ok: false,
+          task: task
+        };
+      });
     }));
-    // Apply all successful rewrites in one atomic host write
-    var updates = results.filter(function (r) { return r.ok; }).map(function (r) {
-      return { qIdx: r.task.qIdx, optIdx: r.task.optIdx, newText: r.newText };
+    var updates = results.filter(function (r) {
+      return r.ok;
+    }).map(function (r) {
+      return {
+        qIdx: r.task.qIdx,
+        optIdx: r.task.optIdx,
+        newText: r.newText
+      };
     });
     if (updates.length > 0) {
       handleQuizBulkOptionChange(updates);
     }
-    // Clear in-flight markers
     setIsImprovingDistractor(function (prev) {
       var next = Object.assign({}, prev);
-      tasks.forEach(function (t) { delete next[t.qIdx + ':' + t.optIdx]; });
+      tasks.forEach(function (t) {
+        delete next[t.qIdx + ':' + t.optIdx];
+      });
       return next;
     });
     setIsBulkImproving(false);
     var failures = tasks.length - updates.length;
     if (typeof addToast === 'function') {
-      if (failures === 0) addToast('Rewrote ' + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');
-      else addToast('Rewrote ' + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
+      if (failures === 0) addToast('Rewrote ' + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');else addToast('Rewrote ' + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
     }
   }
-
-  // Reusable refine UI block — overlay pencil button + collapsible input panel.
-  // Caller picks target ('question' | 'option') + optIdx; gets back a fragment
-  // to drop into the JSX.
   function renderImageRefineOverlay(qIdx, target, optIdx, isCompact) {
     if (!isEditingQuiz) return null;
     var key = refineKey(qIdx, target, optIdx);
@@ -2159,67 +2387,70 @@
     var isLoading = !!isRefiningQuizImage[key];
     var inputValue = quizImageRefineInputs[key] || '';
     var btnSize = isCompact ? 'h-6 w-6 text-[10px]' : 'h-7 w-7 text-xs';
-    return React.createElement(React.Fragment, null,
-      // Floating pencil button overlay (top-right of image)
-      React.createElement('button', {
-        type: 'button',
-        onClick: function (e) { e.stopPropagation(); toggleRefinePanel(key); },
-        disabled: isLoading,
-        className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
-        title: isLoading ? 'Refining…' : 'Refine this image',
-        'aria-label': 'Refine image',
-        'data-help-key': 'quiz_image_refine_btn',
-      }, isLoading ? '⋯' : '✏️'),
-      // Inline panel below the image
-      isOpen && React.createElement('div', {
-        className: 'mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs',
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function (e) {
+        e.stopPropagation();
+        toggleRefinePanel(key);
       },
-        React.createElement('div', { className: 'flex items-center gap-2 mb-1.5 flex-wrap' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { refineQuizImage(qIdx, target, optIdx, 'Remove all text and labels from this image. Keep everything else identical.'); },
-            disabled: isLoading,
-            className: 'text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50',
-            'aria-label': 'Remove text from this image',
-            title: 'One-click: remove text from this image',
-          }, React.createElement('span', { 'aria-hidden': 'true' }, '🧹 '), 'Remove text')
-        ),
-        React.createElement('textarea', {
-          value: inputValue,
-          onChange: function (e) {
-            var v = e.target.value;
-            setQuizImageRefineInputs(function (prev) {
-              var next = Object.assign({}, prev); next[key] = v; return next;
-            });
-          },
-          onKeyDown: function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              refineQuizImage(qIdx, target, optIdx);
-            }
-          },
-          placeholder: 'Describe how to refine this image (e.g. "make the background pure white", "add a clearer label")…',
-          'aria-label': 'Image refinement instructions',
-          rows: 2,
-          className: 'w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none resize-y',
-          disabled: isLoading,
-        }),
-        React.createElement('div', { className: 'flex items-center gap-2 mt-1.5' },
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { refineQuizImage(qIdx, target, optIdx); },
-            disabled: isLoading || !inputValue.trim(),
-            className: 'text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
-          }, isLoading ? 'Refining…' : 'Submit'),
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { toggleRefinePanel(key); },
-            disabled: isLoading,
-            className: 'text-xs font-semibold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50',
-          }, 'Cancel')
-        )
-      )
-    );
+      disabled: isLoading,
+      className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
+      title: isLoading ? 'Refining…' : 'Refine this image',
+      "aria-label": "Refine image",
+      "data-help-key": "quiz_image_refine_btn"
+    }, isLoading ? '⋯' : '✏️'), isOpen && /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mb-1.5 flex-wrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        refineQuizImage(qIdx, target, optIdx, 'Remove all text and labels from this image. Keep everything else identical.');
+      },
+      disabled: isLoading,
+      className: "text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50",
+      "aria-label": "Remove text from this image",
+      title: "One-click: remove text from this image"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "🧹 "), "Remove text")), /*#__PURE__*/React.createElement("textarea", {
+      value: inputValue,
+      onChange: function (e) {
+        var v = e.target.value;
+        setQuizImageRefineInputs(function (prev) {
+          var next = Object.assign({}, prev);
+          next[key] = v;
+          return next;
+        });
+      },
+      onKeyDown: function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          refineQuizImage(qIdx, target, optIdx);
+        }
+      },
+      placeholder: 'Describe how to refine this image (e.g. "make the background pure white", "add a clearer label")…',
+      "aria-label": "Image refinement instructions",
+      rows: 2,
+      className: "w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none resize-y",
+      disabled: isLoading
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mt-1.5"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        refineQuizImage(qIdx, target, optIdx);
+      },
+      disabled: isLoading || !inputValue.trim(),
+      className: "text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    }, isLoading ? 'Refining…' : 'Submit'), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        toggleRefinePanel(key);
+      },
+      disabled: isLoading,
+      className: "text-xs font-semibold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    }, "Cancel"))));
   }
   var isPresentationMode = props.isPresentationMode;
   var isReviewGame = props.isReviewGame;
@@ -2239,18 +2470,15 @@
   var showQuizAnswers = props.showQuizAnswers;
   var leveledTextLanguage = props.leveledTextLanguage;
   var appId = props.appId;
-  // Setters
   var setReviewGameState = props.setReviewGameState;
   var setSoundEnabled = props.setSoundEnabled;
   var setGameTeams = props.setGameTeams;
   var setEscapeRoomState = props.setEscapeRoomState;
   var setIsEscapeTimerRunning = props.setIsEscapeTimerRunning;
   var setConfirmDialog = props.setConfirmDialog;
-  // Handlers (lifted in Phase 1)
   var handleStartLiveSession = props.handleStartLiveSession;
   var handleToggleInteractive = props.handleToggleInteractive;
   var handleEndLiveSession = props.handleEndLiveSession;
-  // Existing handlers
   var handleToggleIsPresentationMode = props.handleToggleIsPresentationMode;
   var handleToggleIsReviewGame = props.handleToggleIsReviewGame;
   var handleToggleIsEditingQuiz = props.handleToggleIsEditingQuiz;
@@ -2271,7 +2499,6 @@
   var handleQuizBulkOptionChange = props.handleQuizBulkOptionChange;
   var handleReflectionChange = props.handleReflectionChange;
   var handleFactCheck = props.handleFactCheck;
-  // Escape room handlers
   var endCollaborativeEscapeRoom = props.endCollaborativeEscapeRoom;
   var resetEscapeRoom = props.resetEscapeRoom;
   var launchCollaborativeEscapeRoom = props.launchCollaborativeEscapeRoom;
@@ -2289,7 +2516,6 @@
   var handleFinalDoorAnswer = props.handleFinalDoorAnswer;
   var handleRevealHint = props.handleRevealHint;
   var derangeShuffle = props.derangeShuffle;
-  // For TeacherLiveQuizControls pass-through
   var handleCreateGroup = props.handleCreateGroup;
   var handleAssignStudent = props.handleAssignStudent;
   var handleSetGroupResource = props.handleSetGroupResource;
@@ -2299,212 +2525,216 @@
   var isPushingResource = props.isPushingResource;
   var callImagen = props.callImagen;
   var callGeminiImageEdit = props.callGeminiImageEdit;
-  // Pure helpers
   var getRows = props.getRows;
   var formatInlineText = props.formatInlineText;
   var renderFormattedText = props.renderFormattedText;
   var getReviewCategories = props.getReviewCategories;
   var playSound = props.playSound;
   var addToast = props.addToast;
-  // Components
   var ErrorBoundary = props.ErrorBoundary;
   var EscapeRoomTeacherControls = props.EscapeRoomTeacherControls;
   var TeacherLiveQuizControls = props.TeacherLiveQuizControls;
   var Stamp = props.Stamp;
   var ConfettiExplosion = props.ConfettiExplosion;
-
-  // ─── Plan S: Quiz Mode-aware header + AI explainer ────────────────────
-  // Reads mode + strategy from the resolved quiz item. Default 'exit-ticket'
-  // preserves all existing UX. Other modes render a small intro banner +
-  // (for pre-check + review) an inline AI Concept Explainer panel.
-  var _quizMode = (generatedContent && generatedContent.data && generatedContent.data.mode) || 'exit-ticket';
-  var _qmStrategiesMod = (window.AlloModules && window.AlloModules.QuizModeStrategies) || null;
+  var _quizMode = generatedContent && generatedContent.data && generatedContent.data.mode || 'exit-ticket';
+  var _qmStrategiesMod = window.AlloModules && window.AlloModules.QuizModeStrategies || null;
   var _modeStrat = _qmStrategiesMod ? _qmStrategiesMod.getStrategy(_quizMode) : null;
   var _aiExplainerEnabled = !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail);
   var _showModeBanner = _quizMode !== 'exit-ticket' && !!_modeStrat;
-
-  // Local state for the AI Concept Explainer (pre-check + review modes only)
-  var _explainerState = React.useState({ topic: '', loading: false, response: '', error: '' });
-  var explainerData = _explainerState[0]; var setExplainerData = _explainerState[1];
+  var _explainerState = React.useState({
+    topic: '',
+    loading: false,
+    response: '',
+    error: ''
+  });
+  var explainerData = _explainerState[0];
+  var setExplainerData = _explainerState[1];
   var _explainerInput = React.useState('');
-  var explainerInput = _explainerInput[0]; var setExplainerInput = _explainerInput[1];
-
+  var explainerInput = _explainerInput[0];
+  var setExplainerInput = _explainerInput[1];
   function explainConcept(topic) {
     if (!topic || !topic.trim()) return;
     if (typeof props.callGemini !== 'function') {
-      setExplainerData({ topic: topic, loading: false, response: '', error: 'Explainer unavailable: callGemini not provided.' });
+      setExplainerData({
+        topic: topic,
+        loading: false,
+        response: '',
+        error: 'Explainer unavailable: callGemini not provided.'
+      });
       return;
     }
-    setExplainerData({ topic: topic, loading: true, response: '', error: '' });
+    setExplainerData({
+      topic: topic,
+      loading: true,
+      response: '',
+      error: ''
+    });
     var grade = props.gradeLevel || 'middle school';
     var prompt = 'You are a patient teacher explaining a concept to a ' + grade + ' student who needs a quick refresher. Explain "' + topic + '" in 60-90 words. Use simple, concrete language. Use an analogy or example if it helps. End with one sentence checking the student\'s understanding (e.g., "Does that make sense?"). Plain text only — no headings, no bullet points.';
     Promise.resolve(props.callGemini(prompt, false)).then(function (raw) {
-      var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-      setExplainerData({ topic: topic, loading: false, response: txt.trim(), error: '' });
+      var txt = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
+      setExplainerData({
+        topic: topic,
+        loading: false,
+        response: txt.trim(),
+        error: ''
+      });
     }).catch(function (err) {
-      setExplainerData({ topic: topic, loading: false, response: '', error: err && err.message ? err.message : 'Explainer failed.' });
+      setExplainerData({
+        topic: topic,
+        loading: false,
+        response: '',
+        error: err && err.message ? err.message : 'Explainer failed.'
+      });
     });
   }
-
-  // Plan S Slice 5+: surface smart-skip notice when the dispatcher dropped an
-  // item type because the curriculum already has the dedicated tool (Timeline /
-  // Glossary). Helps teachers understand why their pre-check or review didn't
-  // include certain mechanics.
-  var _smartSkips = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.smartSkips)) ? generatedContent.data.smartSkips : [];
-
-  // Plan T v3+ Chunk 2: ClassExplainerBanner — students see the teacher's
-  // pushed explainer at the top of their quiz. Per-student dismiss tracked
-  // by ts (component state); a NEW push (different ts) re-shows the banner.
-  // Hidden in edit mode, presentation mode, and for the teacher themselves.
+  var _smartSkips = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.smartSkips) ? generatedContent.data.smartSkips : [];
   var _pushedExplainer = sessionData && sessionData.quizState && sessionData.quizState.classExplainer;
   var dismissedExplainerTsState = React.useState(0);
-  var dismissedExplainerTs = dismissedExplainerTsState[0]; var setDismissedExplainerTs = dismissedExplainerTsState[1];
-  var _showClassExplainer = !!_pushedExplainer
-    && _pushedExplainer.text
-    && _pushedExplainer.ts !== dismissedExplainerTs
-    && !isEditingQuiz
-    && !isPresentationMode
-    && !isTeacherMode; // teacher already saw it in the modal
-  var classExplainerBanner = _showClassExplainer ? React.createElement('div', {
-    key: 'class-explainer-banner',
-    className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-4 mb-2 shadow-sm animate-in fade-in slide-in-from-top-2',
-    role: 'region',
-    'aria-label': 'Teacher explanation',
-  },
-    React.createElement('div', { className: 'flex items-start gap-3' },
-      React.createElement('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📡'),
-      React.createElement('div', { className: 'flex-grow min-w-0' },
-        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-amber-800 mb-1' }, 'From your teacher · pause and read'),
-        _pushedExplainer.conceptText && React.createElement('p', { className: 'text-xs italic text-amber-700 mb-1' }, '"' + _pushedExplainer.conceptText + '"'),
-        React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed whitespace-pre-wrap' }, _pushedExplainer.text),
-        React.createElement('div', { className: 'flex items-center gap-2 mt-3 flex-wrap' },
-          typeof props.callTTS === 'function' && React.createElement('button', {
-            type: 'button',
-            onClick: function () { try { props.callTTS(_pushedExplainer.text); } catch (e) { /* noop */ } },
-            className: 'text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100',
-            'aria-label': 'Read aloud',
-          }, '🔊 Read aloud'),
-          React.createElement('button', {
-            type: 'button',
-            onClick: function () { setDismissedExplainerTs(_pushedExplainer.ts); },
-            className: 'text-xs font-bold px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700',
-          }, '✓ Got it')
-        )
-      )
-    )
-  ) : null;
-
-  var modeBanner = _showModeBanner ? React.createElement('div', {
-    key: 'mode-banner',
-    className: 'rounded-xl border-2 p-4 mb-2 ' + (_quizMode === 'pre-check' ? 'border-amber-300 bg-amber-50' : _quizMode === 'review' ? 'border-purple-300 bg-purple-50' : 'border-sky-300 bg-sky-50'),
-    role: 'region',
-    'aria-label': _modeStrat.label,
-  },
-    React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
-      React.createElement('span', { className: 'text-xl', 'aria-hidden': 'true' }, _modeStrat.icon),
-      React.createElement('h3', { className: 'font-black text-base ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.label),
-      React.createElement('span', { className: 'ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (_quizMode === 'pre-check' ? 'bg-amber-200 text-amber-900' : _quizMode === 'review' ? 'bg-purple-200 text-purple-900' : 'bg-sky-200 text-sky-900') }, _quizMode)
-    ),
-    _modeStrat.render.intro && React.createElement('p', { className: 'text-sm leading-relaxed ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.render.intro),
-    _smartSkips.length > 0 && React.createElement('p', { className: 'text-xs italic mt-2 ' + (_quizMode === 'pre-check' ? 'text-amber-800' : _quizMode === 'review' ? 'text-purple-800' : 'text-sky-800') },
-      'ℹ️ Skipped ' + _smartSkips.join(' and ') + ' — using the dedicated tool instead avoids redundancy.'
-    ),
-    // Plan T v3+ Chunk 7: distractor-review summary (only on pre-check / formative
-    // where misconception flag was used). Visible to teachers only — students
-    // don't need to see grading-time validation.
-    isTeacherMode && generatedContent && generatedContent.data && generatedContent.data.distractorReview && React.createElement('div', {
-      className: 'mt-2 flex items-center gap-2 flex-wrap',
-      'data-help-key': 'quiz_distractor_review_summary',
+  var dismissedExplainerTs = dismissedExplainerTsState[0];
+  var setDismissedExplainerTs = dismissedExplainerTsState[1];
+  var _showClassExplainer = !!_pushedExplainer && _pushedExplainer.text && _pushedExplainer.ts !== dismissedExplainerTs && !isEditingQuiz && !isPresentationMode && !isTeacherMode;
+  var classExplainerBanner = _showClassExplainer ? /*#__PURE__*/React.createElement("div", {
+    key: "class-explainer-banner",
+    className: "rounded-xl border-2 border-amber-300 bg-amber-50 p-4 mb-2 shadow-sm animate-in fade-in slide-in-from-top-2",
+    role: "region",
+    "aria-label": "Teacher explanation"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl flex-shrink-0",
+    "aria-hidden": "true"
+  }, "📡"), /*#__PURE__*/React.createElement("div", {
+    className: "flex-grow min-w-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-bold tracking-wider text-amber-800 mb-1"
+  }, "From your teacher · pause and read"), _pushedExplainer.conceptText && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs italic text-amber-700 mb-1"
+  }, '"' + _pushedExplainer.conceptText + '"'), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
+  }, _pushedExplainer.text), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mt-3 flex-wrap"
+  }, typeof props.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      try {
+        props.callTTS(_pushedExplainer.text);
+      } catch (e) {}
     },
-      React.createElement('p', {
-        className: 'text-xs italic ' + (_quizMode === 'pre-check' ? 'text-amber-800' : 'text-sky-800'),
-        title: (generatedContent.data.distractorReview.weakItems || []).length > 0
-          ? 'Weak items: Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q')
-          : 'All MCQs have at least half their distractors encoding a known misconception',
-      },
-        React.createElement('span', { 'aria-hidden': 'true' }, '🎯 '),
-        'Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0)
-          + ' of ' + (generatedContent.data.distractorReview.totalDistractors || 0)
-          + ' distractors encode a misconception (' + (generatedContent.data.distractorReview.quality != null ? generatedContent.data.distractorReview.quality + '%' : '—') + ')'
-          + ((generatedContent.data.distractorReview.weakItems || []).length > 0
-              ? ' — review Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q') + ' before deploying'
-              : ' — looks solid')
-      ),
-      // Plan T v3+ Chunk 11: bulk-improve button — only in edit mode AND when
-      // at least one weak distractor exists. One click rewrites all flagged
-      // distractors in parallel via Gemini, applies in a single batched write.
-      isEditingQuiz && (function () {
-        var weakCount = (Array.isArray(generatedContent.data.questions) ? generatedContent.data.questions : [])
-          .reduce(function (sum, q) {
-            if (!q || (q.type && q.type !== 'mcq')) return sum;
-            if (!Array.isArray(q.distractorQuality)) return sum;
-            return sum + q.distractorQuality.filter(function (dq) {
-              return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && q.options[q.options.indexOf(dq.distractor)] !== q.correctAnswer;
-            }).length;
-          }, 0);
-        if (weakCount === 0) return null;
-        return React.createElement('button', {
-          type: 'button',
-          onClick: bulkImproveDistractors,
-          disabled: isBulkImproving,
-          className: 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors',
-          'aria-label': isBulkImproving
-            ? 'Rewriting ' + weakCount + ' weak distractors'
-            : 'Rewrite all ' + weakCount + ' flagged distractors in one batch',
-          'data-help-key': 'quiz_bulk_improve_btn',
-          title: 'Rewrite all ' + weakCount + ' flagged distractor' + (weakCount === 1 ? '' : 's') + ' in one batch',
-        },
-          React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),
-          isBulkImproving ? 'Rewriting ' + weakCount + '…' : 'Improve all ' + weakCount);
-      })()
-    )
-  ) : null;
-
-  var explainerPanel = _aiExplainerEnabled ? React.createElement('div', {
-    key: 'ai-explainer',
-    className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-6',
-    role: 'region',
-    'aria-label': 'AI concept explainer',
-  },
-    React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-      React.createElement('span', { className: 'text-lg', 'aria-hidden': 'true' }, '🤖'),
-      React.createElement('h4', { className: 'font-bold text-sm text-indigo-900' }, 'Don\'t know a concept? Ask for a quick explainer.')
-    ),
-    React.createElement('p', { className: 'text-xs text-indigo-800 mb-2' },
-      'Type any concept from the quiz (or any prior knowledge you\'re unsure about). The AI will give you a 60-90 word explanation tuned to your grade level.'
-    ),
-    React.createElement('div', { className: 'flex items-stretch gap-2' },
-      React.createElement('input', {
-        type: 'text',
-        value: explainerInput,
-        onChange: function (ev) { setExplainerInput(ev.target.value); },
-        onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); explainConcept(explainerInput); } },
-        placeholder: _quizMode === 'pre-check' ? 'e.g., "what plants need to grow"' : 'e.g., "photosynthesis"',
-        className: 'flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400',
-        'aria-label': 'Concept to explain',
-      }),
-      React.createElement('button', {
-        type: 'button',
-        onClick: function () { explainConcept(explainerInput); },
-        disabled: !explainerInput.trim() || explainerData.loading,
-        className: 'px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-      }, explainerData.loading ? 'Explaining…' : 'Explain')
-    ),
-    explainerData.response && React.createElement('div', { className: 'mt-3 p-3 bg-white border border-indigo-200 rounded-lg' },
-      React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, explainerData.topic),
-      React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainerData.response),
-      typeof props.callTTS === 'function' && React.createElement('button', {
-        type: 'button',
-        onClick: function () { props.callTTS(explainerData.response); },
-        className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-        'aria-label': 'Read aloud',
-      }, '🔊 Read aloud')
-    ),
-    explainerData.error && React.createElement('div', { className: 'mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800' },
-      explainerData.error
-    )
-  ) : null;
-
+    className: "text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100",
+    "aria-label": "Read aloud"
+  }, "🔊 Read aloud"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setDismissedExplainerTs(_pushedExplainer.ts);
+    },
+    className: "text-xs font-bold px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700"
+  }, "✓ Got it"))))) : null;
+  var modeBanner = _showModeBanner ? /*#__PURE__*/React.createElement("div", {
+    key: "mode-banner",
+    className: 'rounded-xl border-2 p-4 mb-2 ' + (_quizMode === 'pre-check' ? 'border-amber-300 bg-amber-50' : _quizMode === 'review' ? 'border-purple-300 bg-purple-50' : 'border-sky-300 bg-sky-50'),
+    role: "region",
+    "aria-label": _modeStrat.label
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xl",
+    "aria-hidden": "true"
+  }, _modeStrat.icon), /*#__PURE__*/React.createElement("h3", {
+    className: 'font-black text-base ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900')
+  }, _modeStrat.label), /*#__PURE__*/React.createElement("span", {
+    className: 'ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (_quizMode === 'pre-check' ? 'bg-amber-200 text-amber-900' : _quizMode === 'review' ? 'bg-purple-200 text-purple-900' : 'bg-sky-200 text-sky-900')
+  }, _quizMode)), _modeStrat.render.intro && /*#__PURE__*/React.createElement("p", {
+    className: 'text-sm leading-relaxed ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900')
+  }, _modeStrat.render.intro), _smartSkips.length > 0 && /*#__PURE__*/React.createElement("p", {
+    className: 'text-xs italic mt-2 ' + (_quizMode === 'pre-check' ? 'text-amber-800' : _quizMode === 'review' ? 'text-purple-800' : 'text-sky-800')
+  }, 'ℹ️ Skipped ' + _smartSkips.join(' and ') + ' — using the dedicated tool instead avoids redundancy.'), isTeacherMode && generatedContent && generatedContent.data && generatedContent.data.distractorReview && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex items-center gap-2 flex-wrap",
+    "data-help-key": "quiz_distractor_review_summary"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: 'text-xs italic ' + (_quizMode === 'pre-check' ? 'text-amber-800' : 'text-sky-800'),
+    title: (generatedContent.data.distractorReview.weakItems || []).length > 0 ? 'Weak items: Q' + generatedContent.data.distractorReview.weakItems.map(function (i) {
+      return i + 1;
+    }).join(', Q') : 'All MCQs have at least half their distractors encoding a known misconception'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🎯 "), 'Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0) + ' of ' + (generatedContent.data.distractorReview.totalDistractors || 0) + ' distractors encode a misconception (' + (generatedContent.data.distractorReview.quality != null ? generatedContent.data.distractorReview.quality + '%' : '—') + ')' + ((generatedContent.data.distractorReview.weakItems || []).length > 0 ? ' — review Q' + generatedContent.data.distractorReview.weakItems.map(function (i) {
+    return i + 1;
+  }).join(', Q') + ' before deploying' : ' — looks solid')), isEditingQuiz && function () {
+    var weakCount = (Array.isArray(generatedContent.data.questions) ? generatedContent.data.questions : []).reduce(function (sum, q) {
+      if (!q || q.type && q.type !== 'mcq') return sum;
+      if (!Array.isArray(q.distractorQuality)) return sum;
+      return sum + q.distractorQuality.filter(function (dq) {
+        return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && q.options[q.options.indexOf(dq.distractor)] !== q.correctAnswer;
+      }).length;
+    }, 0);
+    if (weakCount === 0) return null;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: bulkImproveDistractors,
+      disabled: isBulkImproving,
+      className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors",
+      "aria-label": isBulkImproving ? 'Rewriting ' + weakCount + ' weak distractors' : 'Rewrite all ' + weakCount + ' flagged distractors in one batch',
+      "data-help-key": "quiz_bulk_improve_btn",
+      title: 'Rewrite all ' + weakCount + ' flagged distractor' + (weakCount === 1 ? '' : 's') + ' in one batch'
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "✨ "), isBulkImproving ? 'Rewriting ' + weakCount + '…' : 'Improve all ' + weakCount);
+  }())) : null;
+  var explainerPanel = _aiExplainerEnabled ? /*#__PURE__*/React.createElement("div", {
+    key: "ai-explainer",
+    className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-6",
+    role: "region",
+    "aria-label": "AI concept explainer"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-lg",
+    "aria-hidden": "true"
+  }, "🤖"), /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-sm text-indigo-900"
+  }, "Don't know a concept? Ask for a quick explainer.")), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-indigo-800 mb-2"
+  }, "Type any concept from the quiz (or any prior knowledge you're unsure about). The AI will give you a 60-90 word explanation tuned to your grade level."), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-stretch gap-2"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: explainerInput,
+    onChange: function (ev) {
+      setExplainerInput(ev.target.value);
+    },
+    onKeyDown: function (ev) {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        explainConcept(explainerInput);
+      }
+    },
+    placeholder: _quizMode === 'pre-check' ? 'e.g., "what plants need to grow"' : 'e.g., "photosynthesis"',
+    className: "flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400",
+    "aria-label": "Concept to explain"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      explainConcept(explainerInput);
+    },
+    disabled: !explainerInput.trim() || explainerData.loading,
+    className: "px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+  }, explainerData.loading ? 'Explaining…' : 'Explain')), explainerData.response && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 p-3 bg-white border border-indigo-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+  }, explainerData.topic), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, explainerData.response), typeof props.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      props.callTTS(explainerData.response);
+    },
+    className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
+    "aria-label": "Read aloud"
+  }, "🔊 Read aloud")), explainerData.error && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800"
+  }, explainerData.error)) : null;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, classExplainerBanner, modeBanner, explainerPanel, /*#__PURE__*/React.createElement("div", {
@@ -2612,21 +2842,15 @@
     t: t
   })), isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4"
-  },
-    // Plan T Slice Tb: mode-aware Live Results Dashboard. Renders ABOVE the
-    // existing TeacherLiveQuizControls so teachers see per-mode aggregates
-    // (gradebook / pre-lesson concept gaps / live heatmap) without losing
-    // the legacy presentation-mode option-distribution chart below.
-    /*#__PURE__*/React.createElement(LiveResultsDashboard, {
-      sessionData: sessionData,
-      generatedContent: generatedContent,
-      appId: appId,
-      activeSessionCode: activeSessionCode,
-      callGemini: props.callGemini,
-      callTTS: props.callTTS,
-      gradeLevel: props.gradeLevel,
-    }),
-    /*#__PURE__*/React.createElement(ErrorBoundary, {
+  }, /*#__PURE__*/React.createElement(LiveResultsDashboard, {
+    sessionData: sessionData,
+    generatedContent: generatedContent,
+    appId: appId,
+    activeSessionCode: activeSessionCode,
+    callGemini: props.callGemini,
+    callTTS: props.callTTS,
+    gradeLevel: props.gradeLevel
+  }), /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(TeacherLiveQuizControls, {
     sessionData: sessionData,
@@ -3000,24 +3224,17 @@
     className: "text-2xl font-medium leading-relaxed text-center"
   }, "\"", generatedContent?.data.reflection, "\"")))) : /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, generatedContent?.data.questions.map((q, i) => (q && q.type && q.type !== 'mcq') ? null : /*#__PURE__*/React.createElement("div", {
+  }, generatedContent?.data.questions.map((q, i) => q && q.type && q.type !== 'mcq' ? null : /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question"
-  },
-    // Plan S Slice 5: Visual MCQ — question image stimulus when present.
-    // Plan T v3+ Chunk 8: wrapped in relative container so refine overlay sits.
-    q.imageUrl && /*#__PURE__*/React.createElement("div", {
-      className: "relative mb-3",
-    },
-      /*#__PURE__*/React.createElement("img", {
-        src: q.imageUrl,
-        alt: q.question || 'Question image',
-        loading: "lazy",
-        className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50",
-      }),
-      renderImageRefineOverlay(i, 'question', null, false)
-    ),
-    /*#__PURE__*/React.createElement("div", {
+  }, q.imageUrl && /*#__PURE__*/React.createElement("div", {
+    className: "relative mb-3"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: q.imageUrl,
+    alt: q.question || 'Question image',
+    loading: "lazy",
+    className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50"
+  }), renderImageRefineOverlay(i, 'question', null, false)), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start mb-4 gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-grow flex gap-3"
@@ -3061,25 +3278,23 @@
     key: optIdx,
     role: !isEditingQuiz ? 'button' : undefined,
     tabIndex: !isEditingQuiz ? 0 : undefined,
-    "aria-pressed": !isEditingQuiz ? (studentMcqAnswers[i] === optIdx) : undefined,
+    "aria-pressed": !isEditingQuiz ? studentMcqAnswers[i] === optIdx : undefined,
     onClick: !isEditingQuiz ? () => selectMcqOption(i, optIdx, opt, q) : undefined,
-    onKeyDown: !isEditingQuiz ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectMcqOption(i, optIdx, opt, q); } } : undefined,
-    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : (studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100')}`
-  },
-    // Plan S Slice 5: Visual MCQ — option image thumbnail when present.
-    // Plan T v3+ Chunk 8: wrapped in relative container so refine overlay sits.
-    Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("div", {
-      className: "relative mb-2",
-    },
-      /*#__PURE__*/React.createElement("img", {
-        src: q.optionImageUrls[optIdx],
-        alt: opt,
-        loading: "lazy",
-        className: "w-full h-24 object-contain rounded bg-white border border-slate-200",
-      }),
-      renderImageRefineOverlay(i, 'option', optIdx, true)
-    ),
-    /*#__PURE__*/React.createElement("div", {
+    onKeyDown: !isEditingQuiz ? e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectMcqOption(i, optIdx, opt, q);
+      }
+    } : undefined,
+    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
+  }, Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("div", {
+    className: "relative mb-2"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: q.optionImageUrls[optIdx],
+    alt: opt,
+    loading: "lazy",
+    className: "w-full h-24 object-contain rounded bg-white border border-slate-200"
+  }), renderImageRefineOverlay(i, 'option', optIdx, true)), /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "mt-1.5 opacity-50"
@@ -3106,53 +3321,51 @@
     className: "absolute top-2 right-2 text-green-600"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  })),
-    // Plan T v3+ Chunk 9: per-distractor quality badge. Surfaces Chunk 7's
-    // distractorQuality data inline (only in edit mode, only on distractors,
-    // not on the correct answer). 🎯 misconception (green) or ⚠ generic
-    // (amber) with the LLM's reason as a tooltip; the amber case also gets
-    // a "✨ improve" button that calls improveDistractor to rewrite via LLM.
-    isEditingQuiz && opt !== q.correctAnswer && Array.isArray(q.distractorQuality) && (function () {
-      var dq = q.distractorQuality.find(function (d) { return d && d.distractor === opt; });
-      if (!dq) return null;
-      return /*#__PURE__*/React.createElement("div", { className: "mt-1.5 ml-1 flex items-center gap-1.5 flex-wrap" },
-        dq.encodesMisconception
-          ? /*#__PURE__*/React.createElement("span", {
-              className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800",
-              'aria-label': 'This distractor encodes a known student misconception. ' + (dq.reason || ''),
-              title: dq.reason || 'Encodes a known student misconception',
-            }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '🎯 '), 'misconception')
-          : /*#__PURE__*/React.createElement(React.Fragment, null,
-              /*#__PURE__*/React.createElement("span", {
-                className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800",
-                'aria-label': 'Generic distractor — does not encode a specific misconception. ' + (dq.reason || ''),
-                title: dq.reason || 'Generic distractor — does not encode a specific misconception',
-              }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '⚠ '), 'generic'),
-              /*#__PURE__*/React.createElement("button", {
-                type: "button",
-                onClick: function (e) { e.stopPropagation(); improveDistractor(i, optIdx, opt, dq.reason || ''); },
-                disabled: !!isImprovingDistractor[i + ':' + optIdx],
-                className: "text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
-                'aria-label': isImprovingDistractor[i + ':' + optIdx] ? 'Rewriting distractor' : 'Rewrite this distractor to encode a real misconception',
-                title: "Rewrite this distractor to encode a real misconception",
-              }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),
-                 isImprovingDistractor[i + ':' + optIdx] ? 'rewriting…' : 'improve')
-            )
-      );
-    })()))),
-    // Plan S Slice 5+: per-MCQ enhancements (Explain / IDK / confidence) — same parity as freeform items
-    /*#__PURE__*/React.createElement(McqEnhancements, {
-      q: q,
-      questionIdx: i,
-      modeStrategy: _modeStrat,
-      callGemini: props.callGemini,
-      callTTS: props.callTTS,
-      gradeLevel: props.gradeLevel,
-      onSubmitLiveAnswer: onSubmitLiveAnswer,
-      currentConfidence: studentMcqConfidence[i] || null,
-      onSetConfidence: function (lvl) { setMcqConfidence(i, lvl, q); },
-    }),
-    q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
+  })), isEditingQuiz && opt !== q.correctAnswer && Array.isArray(q.distractorQuality) && function () {
+    var dq = q.distractorQuality.find(function (d) {
+      return d && d.distractor === opt;
+    });
+    if (!dq) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-1.5 ml-1 flex items-center gap-1.5 flex-wrap"
+    }, dq.encodesMisconception ? /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800",
+      "aria-label": 'This distractor encodes a known student misconception. ' + (dq.reason || ''),
+      title: dq.reason || 'Encodes a known student misconception'
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "🎯 "), "misconception") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800",
+      "aria-label": 'Generic distractor — does not encode a specific misconception. ' + (dq.reason || ''),
+      title: dq.reason || 'Generic distractor — does not encode a specific misconception'
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "⚠ "), "generic"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function (e) {
+        e.stopPropagation();
+        improveDistractor(i, optIdx, opt, dq.reason || '');
+      },
+      disabled: !!isImprovingDistractor[i + ':' + optIdx],
+      className: "text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
+      "aria-label": isImprovingDistractor[i + ':' + optIdx] ? 'Rewriting distractor' : 'Rewrite this distractor to encode a real misconception',
+      title: "Rewrite this distractor to encode a real misconception"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "✨ "), isImprovingDistractor[i + ':' + optIdx] ? 'rewriting…' : 'improve')));
+  }()))), /*#__PURE__*/React.createElement(McqEnhancements, {
+    q: q,
+    questionIdx: i,
+    modeStrategy: _modeStrat,
+    callGemini: props.callGemini,
+    callTTS: props.callTTS,
+    gradeLevel: props.gradeLevel,
+    onSubmitLiveAnswer: onSubmitLiveAnswer,
+    currentConfidence: studentMcqConfidence[i] || null,
+    onSetConfidence: function (lvl) {
+      setMcqConfidence(i, lvl, q);
+    }
+  }), q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in slide-in-from-top-2 relative"
   }, /*#__PURE__*/React.createElement(Stamp, {
     label: t('quiz.verified_stamp'),
@@ -3174,25 +3387,17 @@
     className: "flex-grow"
   }, /*#__PURE__*/React.createElement("div", {
     className: "whitespace-pre-line leading-relaxed text-slate-700"
-  }, renderFormattedText(q.factCheck)))))),
-    // ─── Plan S Slice 2: freeform item types (fill-blank + short-answer) ───
-    // Renders below MCQ items. Each freeform item gets its own card with input
-    // + AI-graded feedback via QuizAIHelpers. Mode-agnostic — works in any
-    // mode that includes these item types in its strategy.
-    Array.isArray(generatedContent?.data?.questions) &&
-    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch'); }) &&
-    /*#__PURE__*/React.createElement(FreeformItemsBlock, {
-      questions: generatedContent.data.questions,
-      callGemini: props.callGemini,
-      callTTS: props.callTTS,
-      gradeLevel: props.gradeLevel,
-      QuizAIHelpers: window.AlloModules && window.AlloModules.QuizAIHelpers,
-      modeStrategy: _modeStrat,
-      onSubmitLiveAnswer: onSubmitLiveAnswer,
-    }),
-    // Only render the Reflections section when there's actual reflection content
-    ((Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0) || generatedContent?.data.reflection) &&
-    /*#__PURE__*/React.createElement("div", {
+  }, renderFormattedText(q.factCheck)))))), Array.isArray(generatedContent?.data?.questions) && generatedContent.data.questions.some(function (q) {
+    return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch');
+  }) && /*#__PURE__*/React.createElement(FreeformItemsBlock, {
+    questions: generatedContent.data.questions,
+    callGemini: props.callGemini,
+    callTTS: props.callTTS,
+    gradeLevel: props.gradeLevel,
+    QuizAIHelpers: window.AlloModules && window.AlloModules.QuizAIHelpers,
+    modeStrategy: _modeStrat,
+    onSubmitLiveAnswer: onSubmitLiveAnswer
+  }), (Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0 || generatedContent?.data.reflection) && /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-indigo-900 mb-2 flex items-center gap-2"
@@ -3201,12 +3406,8 @@
   }), " ", t('quiz.reflections')), Array.isArray(generatedContent?.data.reflections) ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, generatedContent?.data.reflections.map((ref, i) => {
-    const text = typeof ref === 'string' ? ref : (ref.text || ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : ''));
+    const text = typeof ref === 'string' ? ref : ref.text || ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : '');
     const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
-    // Plan T v3+ Chunk 1A: reflection capture (replaces inert dashed-line space).
-    // In presentation mode, keep the inert space (the prompt is meant to be
-    // read aloud, not typed into). In standalone non-edit mode, show a real
-    // textarea + submit button + submitted state.
     var refEntry = reflectionAnswers[i] || {};
     var refSubmitted = !!refEntry.submitted;
     var refDraft = refEntry.draft || '';
@@ -3229,81 +3430,87 @@
       className: "text-indigo-800 mb-1 italic text-sm px-2 py-1"
     }, text), textEn && /*#__PURE__*/React.createElement("p", {
       className: "text-indigo-600 mb-4 text-xs px-2 py-1 italic"
-    }, textEn)),
-    // Student input area (only when NOT editing the quiz)
-    !isEditingQuiz && (isPresentationMode
-      ? /*#__PURE__*/React.createElement("div", { className: "h-24 border-b border-indigo-200 border-dashed" })
-      : refSubmitted
-        ? /*#__PURE__*/React.createElement("div", { className: "mt-2 p-3 rounded-lg bg-white border border-indigo-200" },
-            /*#__PURE__*/React.createElement("div", { className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1" }, '✓ Reflection submitted'),
-            /*#__PURE__*/React.createElement("p", { className: "text-sm text-slate-800 whitespace-pre-wrap" }, refEntry.submittedText || refDraft),
-            /*#__PURE__*/React.createElement("button", {
-              type: 'button',
-              onClick: function () { reopenReflection(i); },
-              className: 'mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-            }, 'Edit response')
-          )
-        : /*#__PURE__*/React.createElement("div", { className: "mt-2" },
-            /*#__PURE__*/React.createElement("textarea", {
-              "aria-label": 'Your reflection',
-              value: refDraft,
-              onChange: function (e) { setReflectionDraft(i, e.target.value); },
-              placeholder: 'Type your reflection here…',
-              className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
-              rows: 4,
-            }),
-            /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mt-2" },
-              /*#__PURE__*/React.createElement("button", {
-                type: 'button',
-                onClick: function () { submitReflection(i); },
-                disabled: !refDraft.trim(),
-                className: 'text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
-              }, 'Submit reflection'),
-              !refDraft.trim() && /*#__PURE__*/React.createElement("span", { className: 'text-[11px] italic text-slate-600' }, 'Type a response to enable submit')
-            )
-          )
-    ));
+    }, textEn)), !isEditingQuiz && (isPresentationMode ? /*#__PURE__*/React.createElement("div", {
+      className: "h-24 border-b border-indigo-200 border-dashed"
+    }) : refSubmitted ? /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 p-3 rounded-lg bg-white border border-indigo-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+    }, "✓ Reflection submitted"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-800 whitespace-pre-wrap"
+    }, refEntry.submittedText || refDraft), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        reopenReflection(i);
+      },
+      className: "mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
+    }, "Edit response")) : /*#__PURE__*/React.createElement("div", {
+      className: "mt-2"
+    }, /*#__PURE__*/React.createElement("textarea", {
+      "aria-label": "Your reflection",
+      value: refDraft,
+      onChange: function (e) {
+        setReflectionDraft(i, e.target.value);
+      },
+      placeholder: "Type your reflection here…",
+      className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
+      rows: 4
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mt-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        submitReflection(i);
+      },
+      disabled: !refDraft.trim(),
+      className: "text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    }, "Submit reflection"), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
+      className: "text-[11px] italic text-slate-600"
+    }, "Type a response to enable submit")))));
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-indigo-800 mb-4 italic text-sm"
-  }, generatedContent?.data.reflection),
-    // Student input area for singular reflection (mirrors array branch)
-    !isEditingQuiz && (isPresentationMode
-      ? /*#__PURE__*/React.createElement("div", { className: "h-24 border-b border-indigo-200 border-dashed" })
-      : (function () {
-          var refEntry = reflectionAnswers[0] || {};
-          var refSubmitted = !!refEntry.submitted;
-          var refDraft = refEntry.draft || '';
-          return refSubmitted
-            ? /*#__PURE__*/React.createElement("div", { className: "mt-2 p-3 rounded-lg bg-white border border-indigo-200" },
-                /*#__PURE__*/React.createElement("div", { className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1" }, '\u2713 Reflection submitted'),
-                /*#__PURE__*/React.createElement("p", { className: "text-sm text-slate-800 whitespace-pre-wrap" }, refEntry.submittedText || refDraft),
-                /*#__PURE__*/React.createElement("button", {
-                  type: 'button',
-                  onClick: function () { reopenReflection(0); },
-                  className: 'mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
-                }, 'Edit response')
-              )
-            : /*#__PURE__*/React.createElement("div", { className: "mt-2" },
-                /*#__PURE__*/React.createElement("textarea", {
-                  "aria-label": 'Your reflection',
-                  value: refDraft,
-                  onChange: function (e) { setReflectionDraft(0, e.target.value); },
-                  placeholder: 'Type your reflection here\u2026',
-                  className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
-                  rows: 4,
-                }),
-                /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mt-2" },
-                  /*#__PURE__*/React.createElement("button", {
-                    type: 'button',
-                    onClick: function () { submitReflection(0); },
-                    disabled: !refDraft.trim(),
-                    className: 'text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
-                  }, 'Submit reflection'),
-                  !refDraft.trim() && /*#__PURE__*/React.createElement("span", { className: 'text-[11px] italic text-slate-600' }, 'Type a response to enable submit')
-                )
-              );
-        })()
-    )))));
+  }, generatedContent?.data.reflection), !isEditingQuiz && (isPresentationMode ? /*#__PURE__*/React.createElement("div", {
+    className: "h-24 border-b border-indigo-200 border-dashed"
+  }) : function () {
+    var refEntry = reflectionAnswers[0] || {};
+    var refSubmitted = !!refEntry.submitted;
+    var refDraft = refEntry.draft || '';
+    return refSubmitted ? /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 p-3 rounded-lg bg-white border border-indigo-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
+    }, "✓ Reflection submitted"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-800 whitespace-pre-wrap"
+    }, refEntry.submittedText || refDraft), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        reopenReflection(0);
+      },
+      className: "mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
+    }, "Edit response")) : /*#__PURE__*/React.createElement("div", {
+      className: "mt-2"
+    }, /*#__PURE__*/React.createElement("textarea", {
+      "aria-label": "Your reflection",
+      value: refDraft,
+      onChange: function (e) {
+        setReflectionDraft(0, e.target.value);
+      },
+      placeholder: "Type your reflection here…",
+      className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
+      rows: 4
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mt-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function () {
+        submitReflection(0);
+      },
+      disabled: !refDraft.trim(),
+      className: "text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    }, "Submit reflection"), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
+      className: "text-[11px] italic text-slate-600"
+    }, "Type a response to enable submit")));
+  }())))));
 }
 
   window.AlloModules = window.AlloModules || {};

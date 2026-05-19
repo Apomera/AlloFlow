@@ -45,7 +45,7 @@ const componentName = compMatch[1];
 
 // Find JSDoc block from legacy module (first /** ... */ block)
 const moduleSrc = fs.readFileSync(moduleFile, 'utf-8');
-const jsdocMatch = moduleSrc.match(/^\/\*\*[\s\S]*?\*\/\n/);
+const jsdocMatch = moduleSrc.match(/^\/\*\*[\s\S]*?\*\/\r?\n/);
 const jsdoc = jsdocMatch ? jsdocMatch[0] : `/**\n * AlloFlow ${componentName} Module\n */\n`;
 
 console.log(`Reverse-migrating: ${stem} (component: ${componentName})`);
@@ -108,6 +108,7 @@ const result = babel.transformSync(source, {
   babelrc: false,
   configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
 

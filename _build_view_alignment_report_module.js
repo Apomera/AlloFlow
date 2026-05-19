@@ -1,29 +1,25 @@
-// Build view_alignment_report_module.js — extracted from
-// AlloFlowANTI.txt activeView==='alignment-report' block (116 lines body).
+#!/usr/bin/env node
+/**
+ * Build view_alignment_report_module.js from view_alignment_report_source.jsx
+ * Uses @babel/core with @babel/plugin-transform-react-jsx to match the
+ * formatting of the legacy build (which was the original generator).
+ *
+ * Auto-migrated 2026-05-19 from legacy build_view_alignment_report.js (which read from
+ * a c:/tmp/ file that no longer exists / was stale).
+ */
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_alignment.txt', 'utf-8');
+const source = fs.readFileSync('view_alignment_report_source.jsx', 'utf-8');
 
-const wrapped = `
-function AlignmentReportView(props) {
-  var t = props.t;
-  var generatedContent = props.generatedContent;
-  return (
-${inner}
-  );
-}
-`;
-
-const result = babel.transformSync(wrapped, {
+const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
   babelrc: false,
   configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
-
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
-const transformedFn = result.code;
 
 const moduleSrc = `/**
  * AlloFlow View - Alignment Report Renderer
@@ -44,22 +40,7 @@ const moduleSrc = `/**
   if (!React) { console.error('[ViewAlignmentReportModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  var _lazyIcon = function (name) {
-    return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
-      return I ? React.createElement(I, props) : null;
-    };
-  };
-  var ShieldCheck = _lazyIcon('ShieldCheck');
-  var BookOpen = _lazyIcon('BookOpen');
-  var Quote = _lazyIcon('Quote');
-  var Layout = _lazyIcon('Layout');
-  var CheckSquare = _lazyIcon('CheckSquare');
-  var ClipboardList = _lazyIcon('ClipboardList');
-  var AlertCircle = _lazyIcon('AlertCircle');
-  var Sparkles = _lazyIcon('Sparkles');
-
-  ${transformedFn}
+  ${result.code}
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AlignmentReportView = AlignmentReportView;

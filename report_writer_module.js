@@ -1676,7 +1676,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'flex items-center gap-2' },
                         h('label', { className: 'text-[11px] text-slate-600' }, 'Age:'),
                         h('input', { type: 'number', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'yrs', 'aria-label': 'Student age', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 }),
-                        h('label', { className: 'text-[11px] text-slate-600 ml-2' }, 'Grade:'),
+                        h('label', { className: 'text-[11px] text-slate-600 ms-2' }, 'Grade:'),
                         h('input', { type: 'text', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'e.g. 3', 'aria-label': 'Student grade', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
                     )
                 ),
@@ -1742,18 +1742,18 @@ Return ONLY valid JSON:
                     h('div', { className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[11px] text-amber-600' }, 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.'),
                         Object.entries(DEMO_CASES).map(([key, demo]) =>
-                            h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-left px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-[11px] transition-colors',
+                            h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-start px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-[11px] transition-colors',
                                 onClick: () => loadDemoCase(key)
                             }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
                         ),
                         h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
-                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
+                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-start px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
                                 onClick: generateAIDemoCase,
                                 disabled: generatingDemo
                             },
                                 generatingDemo ? h('span', { className: 'inline-block animate-spin w-3 h-3 border border-violet-400 border-t-violet-700 rounded-full' }) : h('span', null, '🤖'),
                                 h('span', { className: 'font-medium text-violet-800' }, generatingDemo ? 'Generating random case...' : '🎲 Generate Random AI Case'),
-                                !generatingDemo && h('span', { className: 'text-[11px] text-violet-500 ml-auto' }, 'Unique each time')
+                                !generatingDemo && h('span', { className: 'text-[11px] text-violet-500 ms-auto' }, 'Unique each time')
                             )
                         )
                     )
@@ -1891,7 +1891,7 @@ Return ONLY valid JSON:
                                 h('span', { className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
                                 h('span', { className: `px-2 py-0.5 rounded-full text-[11px] ${cBadge(s.classColor)}` }, s.classification),
                                 s.percentile !== null && h('span', { className: 'text-slate-600' }, `${s.percentile}%ile`),
-                                h('button', { 'aria-label': 'Remove score entry', className: 'ml-2 text-red-600 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
+                                h('button', { 'aria-label': 'Remove score entry', className: 'ms-2 text-red-600 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
                             )
                         )
                     )
@@ -1947,7 +1947,7 @@ Return ONLY valid JSON:
                                     h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
                                     h('span', { className: 'text-slate-600 text-[11px]' }, ref.text.substring(0, 80) + '...')
                                 ),
-                                h('button', { 'aria-label': 'Remove reference', className: 'ml-2 text-red-600 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
+                                h('button', { 'aria-label': 'Remove reference', className: 'ms-2 text-red-600 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
                             )
                         ),
                         h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
@@ -1974,7 +1974,7 @@ Return ONLY valid JSON:
                     h('span', { className: 'text-[11px] font-medium text-green-600' }, `✅ ${verifiedCount} verified`),
                     h('span', { className: 'text-[11px] font-medium text-slate-600' }, `⏳ ${totalChunks - verifiedCount} pending`),
                     deficitCount > 0 && h('span', { className: 'text-[11px] font-medium text-red-600' }, `⚠️ ${deficitCount} deficits`),
-                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ml-auto text-[11px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
+                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ms-auto text-[11px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
                     }, '✅ Verify All')
                 ),
                 extracting && h('div', { className: 'text-center py-6' },
@@ -2048,7 +2048,7 @@ Return ONLY valid JSON:
                                 differentialResults[hyp] && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[11px] font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
                                 }, differentialResults[hyp].strengthScore + '/10')
                             ),
-                            hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': 'Remove hypothesis', className: 'text-red-600 hover:text-red-600 ml-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
+                            hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': 'Remove hypothesis', className: 'text-red-600 hover:text-red-600 ms-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
                         )
                     ),
                     h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\u2611\uFE0F Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')
@@ -2075,15 +2075,15 @@ Return ONLY valid JSON:
                             h('div', { className: 'px-3 pb-2 space-y-1 text-[11px]' },
                                 data.evidenceFor && data.evidenceFor.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-green-700' }, '\u2705 Evidence For:'),
-                                    data.evidenceFor.map((e, i) => h('p', { key: i, className: 'ml-3 text-slate-600' }, '- ' + e.fact + ' (' + e.strength + ': ' + (e.explanation || '') + ')'))
+                                    data.evidenceFor.map((e, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + e.fact + ' (' + e.strength + ': ' + (e.explanation || '') + ')'))
                                 ),
                                 data.evidenceAgainst && data.evidenceAgainst.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-red-600' }, '\u274C Evidence Against:'),
-                                    data.evidenceAgainst.map((e, i) => h('p', { key: i, className: 'ml-3 text-slate-600' }, '- ' + e.fact + ': ' + (e.explanation || '')))
+                                    data.evidenceAgainst.map((e, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + e.fact + ': ' + (e.explanation || '')))
                                 ),
                                 data.evidenceGaps && data.evidenceGaps.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-amber-600' }, '\u26A0\uFE0F Evidence Gaps:'),
-                                    data.evidenceGaps.map((g, i) => h('p', { key: i, className: 'ml-3 text-slate-600' }, '- ' + g))
+                                    data.evidenceGaps.map((g, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + g))
                                 )
                             )
                         )
@@ -2262,7 +2262,7 @@ Return ONLY valid JSON:
                                 ),
                             // Evidence chips
                             (sectionEvidenceMap[section] || []).length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-2 pt-1 border-t border-slate-100' },
-                                h('span', { className: 'text-[11px] text-slate-600 mr-1 self-center' }, 'Evidence:'),
+                                h('span', { className: 'text-[11px] text-slate-600 me-1 self-center' }, 'Evidence:'),
                                 (sectionEvidenceMap[section] || []).map(chunkId => {
                                     const chunk = factChunks.find(c => c.id === chunkId);
                                     const chipColor = chunk ? (chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') : 'bg-slate-100 text-slate-600';
@@ -2310,7 +2310,7 @@ Return ONLY valid JSON:
                             h('p', { className: 'text-lg font-bold text-purple-600' }, accuracyResults.filter(r => r.status === 'discrepancy').length),
                             h('p', { className: 'text-[11px] text-slate-600' }, '\u26A0\uFE0F Discrepancy')
                         ),
-                        h('div', { className: 'ml-auto text-center' },
+                        h('div', { className: 'ms-auto text-center' },
                             h('p', { className: 'text-lg font-bold text-violet-700' }, `${accuracyResults.length > 0 ? Math.round((accuracyResults.filter(r => r.status === 'verified').length / accuracyResults.length) * 100) : 0}%`),
                             h('p', { className: 'text-[11px] text-slate-600' }, 'Accuracy')
                         ),
@@ -2325,7 +2325,7 @@ Return ONLY valid JSON:
                                     h('p', { className: 'font-medium text-slate-800 break-words' }, r.claim),
                                     h('p', { className: 'text-slate-600 mt-0.5' }, r.explanation || ''),
                                     r.confidence && h('span', { className: 'inline-block mt-0.5 text-[11px] px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600') }, r.confidence === 'high' ? 'High Confidence' : r.confidence === 'needs-review' ? 'Needs Review' : 'Medium'),
-                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { className: 'inline-block mt-0.5 ml-1 text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
+                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { className: 'inline-block mt-0.5 ms-1 text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
                                 )
                             )
                         )
@@ -2430,7 +2430,7 @@ Return ONLY valid JSON:
                                     h('span', { className: 'font-medium text-slate-800 truncate block' }, r.name),
                                     h('span', { className: 'text-slate-600' }, new Date(r.savedAt).toLocaleDateString() + ' • ' + (r.scoreEntries?.length || 0) + ' scores')
                                 ),
-                                h('div', { className: 'flex gap-1 ml-2' },
+                                h('div', { className: 'flex gap-1 ms-2' },
                                     h('button', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 rounded hover:bg-violet-200', onClick: () => loadSavedReport(r) }, 'Load'),
                                     h('button', { 'aria-label': 'Delete saved report', className: 'px-2 py-0.5 bg-red-50 text-red-500 rounded hover:bg-red-100', onClick: () => deleteSavedReport(r.id) }, '✕')
                                 )

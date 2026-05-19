@@ -62,7 +62,11 @@ function propsToAttributes(propsArg) {
     else { attrs.push(t.jsxSpreadAttribute(t.objectExpression([prop]))); continue; }
 
     let value;
-    if (t.isStringLiteral(prop.value) && !/[{}]/.test(prop.value.value)) {
+    // JSX attribute strings don't honor backslash escapes. Use a plain
+    // string attribute only when the value is safe (no quotes, braces, or
+    // backslashes); otherwise fall back to JSXExpressionContainer which uses
+    // normal JS string semantics.
+    if (t.isStringLiteral(prop.value) && !/[{}"\\]/.test(prop.value.value)) {
       value = t.stringLiteral(prop.value.value);
     } else {
       value = t.jsxExpressionContainer(prop.value);
@@ -115,15 +119,16 @@ const ast = parser.parse(code, {
   allowReturnOutsideFunction: true,
 });
 
-// Strip Babel's /*#__PURE__*/ pragmas globally — they get re-added on
-// recompile. As JSX siblings/leading comments they would render as invalid
-// inline text or fail to parse.
+// Strip all comments globally. Babel's /*#__PURE__*/ pragmas get re-added on
+// recompile, and other comments may land in JSX child positions where `//`
+// and `/* */` are not interpreted as comments but as literal text, breaking
+// the re-compile. We accept the loss of explanatory comments in the source
+// as a cost of the reverse-compile pipeline; source-of-truth is now the JSX.
 traverse(ast, {
   enter(path) {
-    const filter = arr => arr ? arr.filter(c => !/^#__PURE__$/.test(c.value.trim())) : arr;
-    if (path.node.leadingComments) path.node.leadingComments = filter(path.node.leadingComments);
-    if (path.node.trailingComments) path.node.trailingComments = filter(path.node.trailingComments);
-    if (path.node.innerComments) path.node.innerComments = filter(path.node.innerComments);
+    path.node.leadingComments = null;
+    path.node.trailingComments = null;
+    path.node.innerComments = null;
   }
 });
 

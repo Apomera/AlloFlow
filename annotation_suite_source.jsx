@@ -520,7 +520,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
       <div className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-t-lg" style={{ background: '#dc2626', color: 'white' }}>
         <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse"></span>
         <span>RECORDING</span>
-        <span className="ml-auto font-mono">{Math.floor(elapsedSec || 0)}s / {VOICE_MAX_SECONDS}s</span>
+        <span className="ms-auto font-mono">{Math.floor(elapsedSec || 0)}s / {VOICE_MAX_SECONDS}s</span>
       </div>
       <div className="px-3 py-2">
         <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
@@ -1098,7 +1098,7 @@ function Toolbar(props) {
       {/* Sticker mode toggle */}
       <button
         onClick={toggleStickerMode}
-        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (mode === 'sticker' ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'sticker' ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100')}
         title={tt('toolbar.stickers_tooltip')}
         aria-pressed={mode === 'sticker'}
       >
@@ -1109,7 +1109,7 @@ function Toolbar(props) {
       {/* Note mode toggle */}
       <button
         onClick={toggleNoteMode}
-        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (mode === 'note' ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'note' ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-200' : 'text-slate-600 hover:bg-slate-100')}
         title="Sticky note: click anywhere to leave a note"
         aria-pressed={mode === 'note'}
       >
@@ -1120,7 +1120,7 @@ function Toolbar(props) {
       {/* Highlight mode toggle */}
       <button
         onClick={toggleHighlightMode}
-        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (mode === 'highlight' ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300' : 'text-slate-600 hover:bg-slate-100')}
+        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'highlight' ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300' : 'text-slate-600 hover:bg-slate-100')}
         title="Highlighter: select text to highlight"
         aria-pressed={mode === 'highlight'}
       >
@@ -1131,7 +1131,7 @@ function Toolbar(props) {
       {/* Voice mode toggle */}
       <button
         onClick={toggleVoiceMode}
-        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (mode === 'voice' ? 'bg-red-100 text-red-700 ring-2 ring-red-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'voice' ? 'bg-red-100 text-red-700 ring-2 ring-red-200' : 'text-slate-600 hover:bg-slate-100')}
         title="Voice note: click to start recording (max 60s, stays local)"
         aria-pressed={mode === 'voice'}
       >
@@ -1142,7 +1142,7 @@ function Toolbar(props) {
       {/* Draw mode toggle */}
       <button
         onClick={toggleDrawMode}
-        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (mode === 'draw' ? 'bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'draw' ? 'bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200' : 'text-slate-600 hover:bg-slate-100')}
         title="Drawing: freehand pen overlay"
         aria-pressed={mode === 'draw'}
       >
@@ -1152,7 +1152,7 @@ function Toolbar(props) {
       </button>
       {/* Sticker sub-controls */}
       {mode === 'sticker' && (
-        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
+        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1">
           {STICKER_TYPES.map(function (type) {
             return (
               <button
@@ -1178,7 +1178,7 @@ function Toolbar(props) {
       )}
       {/* Note color + template sub-controls */}
       {mode === 'note' && (
-        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
+        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1">
           {NOTE_COLOR_KEYS.map(function (key) {
             const palette = NOTE_COLORS[key];
             return (
@@ -1222,7 +1222,7 @@ function Toolbar(props) {
       )}
       {/* Highlight color sub-controls */}
       {mode === 'highlight' && (
-        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
+        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1">
           {HIGHLIGHT_COLOR_KEYS.map(function (key) {
             const palette = HIGHLIGHT_COLORS[key];
             return (
@@ -1250,7 +1250,7 @@ function Toolbar(props) {
       {/* Draw sub-controls: shape picker, then color + width (color/width
           hidden in eraser mode since eraser has no fill). */}
       {mode === 'draw' && (
-        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
+        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1">
           {/* Shape picker */}
           {DRAW_SHAPES.map(function (sh) {
             const isErase = sh === 'erase';
@@ -1789,7 +1789,7 @@ function Sidebar(props) {
           return (
             <div
               key={a.id}
-              className={'group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors ' + (isTeacherAnno ? 'bg-indigo-50/60 hover:bg-indigo-100 border-l-2 border-indigo-400' : 'bg-amber-50/40 hover:bg-amber-100 border-l-2 border-amber-300')}
+              className={'group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors ' + (isTeacherAnno ? 'bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400' : 'bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300')}
               onClick={function () { onFocus(a.id); }}
               role="button"
               tabIndex={0}

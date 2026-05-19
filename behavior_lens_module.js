@@ -297,7 +297,7 @@
         if (!affirming) return clinicalTitle;
         return h('span', { className: 'bl-dual-label' },
             affirming,
-            h('span', { className: 'text-[11px] italic text-slate-600 ml-1.5 font-normal' },
+            h('span', { className: 'text-[11px] italic text-slate-600 ms-1.5 font-normal' },
                 `(${stripped || clinicalTitle})`)
         );
     };
@@ -385,7 +385,7 @@
                 h('span', { className: 'font-bold text-indigo-300 text-[11px] mb-1', style: { display: 'block' } }, `${term} — ${entry.affirming}`),
                 h('span', { className: 'text-amber-700', style: { display: 'block' } }, entry.def),
                 h('span', {
-                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900',
+                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-900',
                     style: { display: 'block' }
                 })
             )
@@ -396,11 +396,11 @@
      * InfoTooltip — generic tooltip for micro-trainings next to labels
      */
     const InfoTooltip = ({ text }) => {
-        return h('div', { className: 'group relative inline-flex items-center justify-center ml-1.5 z-10' },
+        return h('div', { className: 'group relative inline-flex items-center justify-center ms-1.5 z-10' },
             h('span', { className: 'w-4 h-4 rounded-full bg-indigo-100/80 text-indigo-500 text-[11px] font-black flex items-center justify-center cursor-help border border-indigo-200 transition-colors group-hover:bg-indigo-500 group-hover:text-white' }, '?'),
             h('div', { className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 p-3 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-normal pointer-events-none leading-relaxed' },
                 text,
-                h('div', { className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-800' })
+                h('div', { className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-800' })
             )
         );
     };
@@ -897,7 +897,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             onChange: e => setSearchText(e.target.value),
                             placeholder: t('behavior_lens.search_placeholder') || 'Search antecedent, behavior, consequence, notes, setting...',
                             'aria-label': 'Search ABC entries',
-                            className: 'w-full text-xs pl-8 pr-3 py-2 border border-slate-400 rounded-lg focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none transition-all'
+                            className: 'w-full text-xs ps-8 pe-3 py-2 border border-slate-400 rounded-lg focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none transition-all'
                         }),
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs' }, '🔍')
                     ),
@@ -959,7 +959,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     ),
                 h('button', { "aria-label": "Toggle selected ids",
                     onClick: () => { setSelectedIds(new Set()); setConfirmBulkDelete(false); },
-                    className: 'ml-auto text-[11px] text-red-600 hover:text-red-600 font-bold transition-colors'
+                    className: 'ms-auto text-[11px] text-red-600 hover:text-red-600 font-bold transition-colors'
                 }, t('behavior_lens.clear_selection') || 'Clear selection')
             ),
             // Entries table
@@ -1004,19 +1004,19 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                     if (sortField === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                                     else { setSortField(col); setSortDir('desc'); }
                                                 },
-                                                className: 'px-3 py-2.5 text-left text-xs font-bold text-slate-600 uppercase tracking-wide cursor-pointer hover:text-indigo-600 transition-colors select-none'
+                                                className: 'px-3 py-2.5 text-start text-xs font-bold text-slate-600 uppercase tracking-wide cursor-pointer hover:text-indigo-600 transition-colors select-none'
                                             },
                                                 col === 'timestamp' ? (t('behavior_lens.abc.time') || 'Time') :
                                                     col === 'intensity' ? '📊' :
                                                         (t(`behavior_lens.abc.${col}`) || col.charAt(0).toUpperCase() + col.slice(1)),
-                                                sortField === col && h('span', { className: 'ml-1' }, sortDir === 'asc' ? '↑' : '↓')
+                                                sortField === col && h('span', { className: 'ms-1' }, sortDir === 'asc' ? '↑' : '↓')
                                             )
                                         ),
                                         // Phase column header
                                         entries.some(e => e.phase) && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 uppercase tracking-wide' }, t('behavior_lens.abc.phase') || 'Phase'),
                                         // Notes indicator header
                                         h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 w-8' }, '📝'),
-                                        h('th', { scope: 'col', className: 'px-3 py-2.5 text-right text-xs font-bold text-slate-600 uppercase' }, '')
+                                        h('th', { scope: 'col', className: 'px-3 py-2.5 text-end text-xs font-bold text-slate-600 uppercase' }, '')
                                     )
                                 ),
                                 h('tbody', null,
@@ -1077,7 +1077,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                         title: entry.notes ? 'View notes' : 'View setting'
                                                     }, expandedId === entry.id ? '▾' : '📝')
                                                 ),
-                                                h('td', { className: 'px-3 py-2.5 text-right' },
+                                                h('td', { className: 'px-3 py-2.5 text-end' },
                                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-end gap-1' },
                                                         callGemini && h('button', { "aria-label": "Restorative Questions",
                                                             onClick: () => handleRestorativeQuestions(entry),
@@ -1253,7 +1253,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('h2', { className: 'text-lg font-black' },
                         '🔍 ', t('behavior_lens.obs.title') || 'Live Observation'
                     ),
-                    studentName && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-600 ml-2' }, `— ${studentName}`)
+                    studentName && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-600 ms-2' }, `— ${studentName}`)
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
                     h('button', { onClick: handleSave,
@@ -1523,11 +1523,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             h('div', { className: 'space-y-2' },
                 items.map(([label, count], i) =>
                     h('div', { key: i, className: 'flex items-center gap-2' },
-                        h('div', { className: 'text-xs font-medium text-slate-600 w-28 truncate text-right' }, label),
+                        h('div', { className: 'text-xs font-medium text-slate-600 w-28 truncate text-end' }, label),
                         h('div', { className: 'flex-1 bg-slate-100 rounded-full h-5 overflow-hidden' },
                             h('div', { className: `h-full bg-${color}-400 rounded-full transition-all`, style: { width: `${(count / Math.max(1, maxVal)) * 100}%` } })
                         ),
-                        h('span', { className: 'text-xs font-bold text-slate-600 w-6 text-right' }, count)
+                        h('span', { className: 'text-xs font-bold text-slate-600 w-6 text-end' }, count)
                     )
                 )
             );
@@ -1712,14 +1712,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('table', { className: 'w-full text-xs', style: { borderCollapse: 'separate', borderSpacing: '2px' } },
                         h('caption', { className: 'sr-only' }, '🔗 '), h('thead', null,
                             h('tr', null,
-                                h('th', { scope: 'col', className: 'text-right pr-2 text-[11px] text-slate-600 font-bold w-28' }, ''),
+                                h('th', { scope: 'col', className: 'text-end pe-2 text-[11px] text-slate-600 font-bold w-28' }, ''),
                                 ...stats.topBehaviors.map(b => h('th', { scope: 'col', key: b, className: 'text-center text-[11px] text-slate-600 font-bold px-1 py-1 max-w-[80px] truncate', title: b }, b))
                             )
                         ),
                         h('tbody', null,
                             Object.entries(stats.corrMatrix).map(([ante, bMap]) =>
                                 h('tr', { key: ante },
-                                    h('td', { className: 'text-right pr-2 text-[11px] text-slate-600 font-medium truncate max-w-[100px]', title: ante }, ante),
+                                    h('td', { className: 'text-end pe-2 text-[11px] text-slate-600 font-medium truncate max-w-[100px]', title: ante }, ante),
                                     ...stats.topBehaviors.map(b => {
                                         const count = bMap[b] || 0;
                                         const opacity = count > 0 ? 0.15 + (count / stats.corrMax) * 0.85 : 0;
@@ -2123,7 +2123,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Timer display
             h('div', { className: 'p-4 border-t border-slate-700 text-center' },
                 h('span', { className: 'text-2xl font-black tabular-nums text-white' }, fmtDuration(elapsed)),
-                h('span', { className: 'text-xs text-slate-600 ml-3' }, `${intervalSec}s intervals`)
+                h('span', { className: 'text-xs text-slate-600 ms-3' }, `${intervalSec}s intervals`)
             )
         );
     };
@@ -2368,7 +2368,7 @@ Return ONLY valid JSON:
                         h('button', { "aria-label": "Toggle schedule type",
                             key: st.id,
                             onClick: () => setScheduleType(st.id),
-                            className: `text-left p-3 rounded-xl border-2 transition-all ${scheduleType === st.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-slate-100 hover:border-slate-200'}`
+                            className: `text-start p-3 rounded-xl border-2 transition-all ${scheduleType === st.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-slate-100 hover:border-slate-200'}`
                         },
                             h('div', { className: 'text-sm font-bold text-slate-800' }, st.label),
                             h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, st.desc)
@@ -2403,7 +2403,7 @@ Return ONLY valid JSON:
                 }, showThinning ? '▾ Hide Thinning Guide' : '▸ Schedule Thinning Guide'),
                 showThinning && h('div', { className: 'mt-2 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 space-y-1' },
                     h('p', { className: 'font-bold' }, '📈 Schedule Thinning Steps:'),
-                    h('ol', { className: 'list-decimal pl-4 space-y-0.5' },
+                    h('ol', { className: 'list-decimal ps-4 space-y-0.5' },
                         h('li', null, t('behavior_lens.reinforce_step_1') || 'Start with dense reinforcement (e.g., FR-1 or FR-2)'),
                         h('li', null, t('behavior_lens.reinforce_step_2') || 'Once behavior is consistent (~80%), increase ratio by 1-2'),
                         h('li', null, t('behavior_lens.reinforce_step_3') || 'Move to variable schedule (VR) for more natural maintenance'),
@@ -2557,7 +2557,7 @@ Return ONLY valid JSON:
                         h('div', { key: s.id, className: 'flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs' },
                             h('div', null,
                                 h('span', { className: 'font-bold text-slate-700' }, fmtDate(s.timestamp)),
-                                h('span', { className: 'text-slate-600 ml-2' }, s.scheduleType === 'token' ? 'Token' : `${s.scheduleType}-${s.scheduleParam}`)
+                                h('span', { className: 'text-slate-600 ms-2' }, s.scheduleType === 'token' ? 'Token' : `${s.scheduleType}-${s.scheduleParam}`)
                             ),
                             h('div', { className: 'text-slate-600' }, `${s.tokensEarned}/${s.totalSlots} tokens · ${s.responseCount} responses`)
                         )
@@ -2664,7 +2664,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                                 })
                                 : h('button', { "aria-label": "Start Edit",
                                     onClick: () => startEdit(routine),
-                                    className: 'w-44 text-xs font-medium text-slate-600 text-left truncate hover:text-indigo-600 transition-colors'
+                                    className: 'w-44 text-xs font-medium text-slate-600 text-start truncate hover:text-indigo-600 transition-colors'
                                 }, routine),
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex gap-1' },
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
@@ -3604,7 +3604,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                 suggestions.map((g, i) => h('button', { "aria-label": "Apply Suggestion",
                     key: i,
                     onClick: () => applySuggestion(g),
-                    className: 'w-full text-left p-3 bg-white rounded-lg border border-lime-600 hover:border-lime-400 transition-all text-sm text-slate-700'
+                    className: 'w-full text-start p-3 bg-white rounded-lg border border-lime-600 hover:border-lime-400 transition-all text-sm text-slate-700'
                 }, g.preview || g.specific))
             ),
             // SMART form
@@ -3859,7 +3859,7 @@ Generate a behavior contract and return ONLY valid JSON:
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 mt-0.5' }, `${fmtDate(c.savedAt)} • ${c.duration || '—'} • ${c.status || 'active'}`)
                     ),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '8px', padding: '2px 6px', borderRadius: 8, background: (statusColors[c.status] || statusColors.active).bg, color: (statusColors[c.status] || statusColors.active).text, border: `1px solid ${(statusColors[c.status] || statusColors.active).border}`, fontWeight: 700, textTransform: 'uppercase' } }, c.status || 'active'),
-                    h('button', { onClick: () => deleteHistoryItem(c.id), title: 'Close', 'aria-label': 'Close', className: 'ml-2 text-slate-600 hover:text-red-500 text-sm transition-colors', title: (t('behavior_lens.raw.delete') || 'Delete') }, '✕')
+                    h('button', { onClick: () => deleteHistoryItem(c.id), title: 'Close', 'aria-label': 'Close', className: 'ms-2 text-slate-600 hover:text-red-500 text-sm transition-colors', title: (t('behavior_lens.raw.delete') || 'Delete') }, '✕')
                 ))
             ),
             // Status badge bar
@@ -4027,7 +4027,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                         return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: phase.name },
                             h('button', { "aria-label": "Toggle selected",
                                 onClick: () => setSelected(isSelected ? null : idx),
-                                className: 'w-full text-left rounded-xl p-4 border-2 transition-all hover:shadow-md',
+                                className: 'w-full text-start rounded-xl p-4 border-2 transition-all hover:shadow-md',
                                 style: { background: phase.bg, borderColor: isSelected ? phase.color : 'transparent' }
                             },
                                 h('div', { className: 'flex items-center justify-between' },
@@ -4173,7 +4173,7 @@ Recommend reinforcers and return ONLY valid JSON:
                 top3.map(([item, rating], i) =>
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: item, className: 'inline-flex items-center gap-1 bg-white rounded-full px-3 py-1 text-xs font-bold border border-amber-200 text-slate-700' },
                         `${i + 1}. ${item}`,
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-amber-700 ml-1' }, '★'.repeat(rating))
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-amber-700 ms-1' }, '★'.repeat(rating))
                     )
                 )
             ),
@@ -4224,7 +4224,7 @@ Recommend reinforcers and return ONLY valid JSON:
                             h('span', { className: 'text-pink-500 mt-0.5' }, '✓'),
                             h('div', null,
                                 h('span', { className: 'text-sm font-bold text-slate-700' }, r.reinforcer),
-                                h('span', { className: 'text-xs text-slate-600 ml-2' }, r.rationale)
+                                h('span', { className: 'text-xs text-slate-600 ms-2' }, r.rationale)
                             )
                         )
                     )
@@ -4261,7 +4261,7 @@ Recommend reinforcers and return ONLY valid JSON:
                         h('div', { key: item, className: 'flex items-center gap-2 text-sm' },
                             h('span', { className: 'text-xs font-bold text-amber-600 w-4' }, `${i + 1}.`),
                             h('span', { className: 'text-slate-700' }, item),
-                            h('span', { className: 'text-amber-700 ml-auto' }, '★'.repeat(rating))
+                            h('span', { className: 'text-amber-700 ms-auto' }, '★'.repeat(rating))
                         )
                     )
                 )
@@ -4547,7 +4547,7 @@ Provide improvement recommendations and return ONLY valid JSON:
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold uppercase', style: { color: grade.color } }, t('behavior_lens.overall_score') || 'Overall Score'),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl font-black', style: { color: grade.color } }, `${total}/${maxScore}`)
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-right' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-end' },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-black', style: { color: grade.color } }, `${pct}%`),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold px-2 py-0.5 rounded-full text-white mt-1', style: { background: grade.color } }, grade.label)
                     )
@@ -4778,7 +4778,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-5 bg-yellow-100 rounded-full overflow-hidden' },
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full bg-gradient-to-r from-yellow-400 to-red-400 rounded-full transition-all', style: { width: `${Math.min(100, (b.value / b.max) * 100)}%` } })
                             ),
-                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-black text-yellow-700 w-20 text-right' }, `${b.value.toFixed(0)} ${b.unit}`)
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-black text-yellow-700 w-20 text-end' }, `${b.value.toFixed(0)} ${b.unit}`)
                         )
                     )
                 ),
@@ -5032,7 +5032,7 @@ Create student-friendly language and return ONLY valid JSON:
                                     style: { color: z.color }
                                 })
                             ),
-                            h('div', { className: 'space-y-1 ml-9' },
+                            h('div', { className: 'space-y-1 ms-9' },
                                 itemList.map((item, i) =>
                                     h('div', { key: i, className: 'flex items-center gap-2 text-sm', style: { color: z.color } },
                                         h('span', { className: 'text-xs' }, '•'), item
@@ -5135,7 +5135,7 @@ Return ONLY valid JSON:
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                     h('caption', { className: 'sr-only' }, 'Latency Recording'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.date') || 'Date'),
                             ...Array.from({ length: numIntervals }, (_, i) =>
                                 h('th', { scope: 'col', key: i, className: 'border border-slate-400 px-2 py-1.5' }, `Period ${i + 1}`)
                             ),
@@ -5159,11 +5159,11 @@ Return ONLY valid JSON:
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                     h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.date') || 'Date'),
                             h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
                             h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
                             h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.notes') || 'Notes')
                         )
                     ),
                     h('tbody', null,
@@ -5204,11 +5204,11 @@ Return ONLY valid JSON:
             return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                 h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.date') || 'Date'),
                         h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
                         h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
                         h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.notes') || 'Notes')
                     )
                 ),
                 h('tbody', null,
@@ -5802,9 +5802,9 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 h('table', { className: 'w-full text-xs border-collapse' },
                     h('caption', { className: 'sr-only' }, '📐 Goal Attainment Scale'), h('thead', null,
                         h('tr', null,
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-left w-40' }, (t('behavior_lens.raw.level') || 'Level')),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-left' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start w-16' }, t('behavior_lens.score') || 'Score'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start w-40' }, (t('behavior_lens.raw.level') || 'Level')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
                         )
                     ),
                     h('tbody', null,
@@ -6566,7 +6566,7 @@ Respond only with the student's words:`;
                             h('button', { "aria-label": "Toggle scenario",
                                 key: s.id,
                                 onClick: () => setScenario(s),
-                                className: `w-full text-left rounded-xl p-4 border-2 transition-all hover:shadow-md ${scenario?.id === s.id ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-transparent bg-slate-50 hover:bg-slate-100'}`,
+                                className: `w-full text-start rounded-xl p-4 border-2 transition-all hover:shadow-md ${scenario?.id === s.id ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-transparent bg-slate-50 hover:bg-slate-100'}`,
                             },
                                 h('div', { className: 'flex items-center gap-3' },
                                     h('span', { className: 'text-2xl' }, s.icon),
@@ -6644,7 +6644,7 @@ Respond only with the student's words:`;
                     h('h3', { className: 'text-lg font-black text-slate-800 mb-1' }, '📋 Session Reflection'),
                     h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Scenario: ' + (scenario ? scenario.label : '') + ' | ' + messages.filter(function(m) { return m.role === 'counselor'; }).length + ' counselor exchanges'),
                     moodHistory.length > 1 && h('div', { className: 'flex items-center justify-center gap-1 flex-wrap mt-2' },
-                        h('span', { className: 'text-[11px] text-slate-600 mr-1' }, 'Mood journey:'),
+                        h('span', { className: 'text-[11px] text-slate-600 me-1' }, 'Mood journey:'),
                         moodHistory.map(function(m, idx) { return h('span', { key: idx, className: 'text-sm' }, (MOOD_MAP[m.mood] || MOOD_MAP.neutral).emoji); })
                     )
                 ),
@@ -6698,7 +6698,7 @@ Respond only with the student's words:`;
                     ),
                     aiFeedback.suggested_phrases && aiFeedback.suggested_phrases.length > 0 && h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
                         h('div', { className: 'text-[11px] font-black text-blue-700 uppercase mb-1.5' }, '💬 Try These Phrases Next Time'),
-                        aiFeedback.suggested_phrases.map(function(p, i) { return h('div', { key: i, className: 'text-[11px] text-blue-800 italic mb-1 pl-2 border-l-2 border-blue-300' }, '"' + p + '"'); })
+                        aiFeedback.suggested_phrases.map(function(p, i) { return h('div', { key: i, className: 'text-[11px] text-blue-800 italic mb-1 ps-2 border-s-2 border-blue-300' }, '"' + p + '"'); })
                     ),
                     aiFeedback.clinical_note && h('div', { className: 'text-xs text-slate-600 italic text-center pt-2 border-t border-slate-200' },
                         '🧠 ' + aiFeedback.clinical_note
@@ -6731,7 +6731,7 @@ Respond only with the student's words:`;
                     h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, '💬 Review Conversation'),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 space-y-2 max-h-64 overflow-y-auto' },
                         messages.filter(m => m.role !== 'system').map((m, i) =>
-                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `text-xs p-2 rounded-lg ${m.role === 'counselor' ? 'bg-teal-50 text-teal-800 ml-8' : 'bg-white text-slate-700 mr-8 border border-slate-400'}` },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `text-xs p-2 rounded-lg ${m.role === 'counselor' ? 'bg-teal-50 text-teal-800 ms-8' : 'bg-white text-slate-700 me-8 border border-slate-400'}` },
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold' }, m.role === 'counselor' ? '🧑‍⚕️ You: ' : '🧒 Student: '),
                                 m.content
                             )
@@ -8320,7 +8320,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         ].map(p => h('button', { "aria-label": "Toggle expected pattern",
                             key: p.id,
                             onClick: () => setExpectedPattern(p.id),
-                            className: `p-2 rounded-lg text-left transition-all ${expectedPattern === p.id
+                            className: `p-2 rounded-lg text-start transition-all ${expectedPattern === p.id
                                 ? 'bg-indigo-50 border-2 border-indigo-400'
                                 : 'bg-slate-50 border-2 border-transparent hover:border-slate-200'}`
                         },
@@ -8584,14 +8584,14 @@ Rules:
                     },
                         h('button', { "aria-label": "Toggle expanded term",
                             onClick: () => setExpandedTerm(isOpen ? null : term.term),
-                            className: 'w-full text-left p-4 flex items-center justify-between'
+                            className: 'w-full text-start p-4 flex items-center justify-between'
                         },
                             h('div', { className: 'flex items-center gap-3' },
                                 h('span', { className: `text-[11px] px-2 py-0.5 rounded-full font-bold ${catColors[cat.color]}` }, cat.label.split(' ')[0]),
                                 term.affirming
                                     ? h('div', null,
                                         h('span', { className: 'text-sm font-bold text-emerald-700' }, term.affirming),
-                                        h('span', { className: 'text-[11px] text-slate-600 italic ml-1.5' }, `(${term.term})`)
+                                        h('span', { className: 'text-[11px] text-slate-600 italic ms-1.5' }, `(${term.term})`)
                                       )
                                     : h('span', { className: 'text-sm font-bold text-slate-800' }, term.term)
                             ),
@@ -8740,7 +8740,7 @@ Rules:
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
                         h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
                     ),
-                    h('div', { className: 'text-[11px] text-white/50 mt-1 text-right' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
+                    h('div', { className: 'text-[11px] text-white/50 mt-1 text-end' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
                 )
             )
         );
@@ -9033,7 +9033,7 @@ Rules:
                             h('div', { className: 'text-2xl font-black' }, currentLevel.name)
                         )
                     ),
-                    h('div', { className: 'text-right' },
+                    h('div', { className: 'text-end' },
                         h('div', { className: 'text-3xl font-black' }, totalXP),
                         h('div', { className: 'text-xs text-indigo-200 font-bold' }, 'Total XP')
                     )
@@ -9068,12 +9068,12 @@ Rules:
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-400 shadow-sm overflow-hidden' },
                 h('button', { "aria-label": "Toggle show badges",
                     onClick: () => setShowBadges(v => !v),
-                    className: 'w-full flex items-center justify-between px-5 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-left'
+                    className: 'w-full flex items-center justify-between px-5 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-start'
                 },
                     h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-lg' }, '🏆'),
                         h('span', { className: 'text-sm font-black text-slate-700' }, 'Badges & Achievements'),
-                        h('span', { className: 'ml-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, `${earnedBadges.length}/${BADGES.length}`)
+                        h('span', { className: 'ms-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, `${earnedBadges.length}/${BADGES.length}`)
                     ),
                     h('span', { className: 'text-slate-600 text-sm transition-transform ' + (showBadges ? 'rotate-180' : '') }, '▾')
                 ),
@@ -9101,7 +9101,7 @@ Rules:
                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: domain.id, className: `rounded-xl border-2 overflow-hidden transition-all ${domainColors[domain.color]}` },
                         h('button', { "aria-label": "Toggle expanded domain",
                             onClick: () => setExpandedDomain(isOpen ? null : domain.id),
-                            className: 'w-full flex items-center justify-between px-5 py-4 text-left hover:opacity-90 transition-all'
+                            className: 'w-full flex items-center justify-between px-5 py-4 text-start hover:opacity-90 transition-all'
                         },
                             h('div', { className: 'flex items-center gap-3' },
                                 h('div', { className: `w-10 h-10 rounded-xl ${domainBgs[domain.color]} text-white flex items-center justify-center text-xl` }, domain.icon),
@@ -9450,7 +9450,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                         return h('button', { "aria-label": "Toggle workflow track",
                             key: tr.id,
                             onClick: () => setWorkflowTrack(tr.id),
-                            className: 'w-full text-left group'
+                            className: 'w-full text-start group'
                         },
                             h('div', { className: `bg-white rounded-2xl border-2 border-slate-100 p-5 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-200 group-hover:scale-[1.01]` },
                                 h('div', { className: 'flex items-center gap-4' },
@@ -9520,7 +9520,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                         // Step header (always visible)
                         h('button', { "aria-label": "Toggle expanded step",
                             onClick: () => setExpandedStep(isExpanded ? null : step.id),
-                            className: 'w-full flex items-center gap-3 p-4 text-left'
+                            className: 'w-full flex items-center gap-3 p-4 text-start'
                         },
                             // Step number circle
                             h('div', {
@@ -9562,7 +9562,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                                     return h('button', { "aria-label": "Toggle active panel",
                                         key: sub.id,
                                         onClick: (e) => { e.stopPropagation(); toggleSub(sub.id); },
-                                        className: `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all ${checked ? 'bg-green-50 border border-green-600' : 'bg-slate-50 border border-slate-100 hover:border-slate-200'}`
+                                        className: `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-start transition-all ${checked ? 'bg-green-50 border border-green-600' : 'bg-slate-50 border border-slate-100 hover:border-slate-200'}`
                                     },
                                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${checked ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300'}` },
                                             checked && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px]' }, '✓')
@@ -9636,7 +9636,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                                                         }
                                                     },
                                                     disabled: answered,
-                                                    className: `w-full text-left px-3 py-2.5 rounded-lg text-xs border-2 transition-all ${showResult ? (isRight ? 'bg-green-50 border-green-300 text-green-800' : chosen ? 'bg-red-50 border-red-300 text-red-700' : 'bg-slate-50 border-slate-100 text-slate-600') : 'bg-white border-slate-200 hover:border-violet-300 text-slate-700 cursor-pointer'}`
+                                                    className: `w-full text-start px-3 py-2.5 rounded-lg text-xs border-2 transition-all ${showResult ? (isRight ? 'bg-green-50 border-green-300 text-green-800' : chosen ? 'bg-red-50 border-red-300 text-red-700' : 'bg-slate-50 border-slate-100 text-slate-600') : 'bg-white border-slate-200 hover:border-violet-300 text-slate-700 cursor-pointer'}`
                                                 }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium' }, `${String.fromCharCode(65 + idx)}. `), opt);
                                             })
                                         ),
@@ -9921,10 +9921,10 @@ Keep it concise and encouraging. Use plain language.`;
                     settingData.map((s, i) => {
                         const maxC = Math.max(1, ...settingData.map(d => d.count));
                         return h('div', { key: i, className: 'flex items-center gap-3' },
-                            h('div', { className: 'w-28 text-[11px] font-bold text-slate-600 text-right truncate shrink-0' }, s.label),
+                            h('div', { className: 'w-28 text-[11px] font-bold text-slate-600 text-end truncate shrink-0' }, s.label),
                             h('div', { className: 'flex-1 bg-slate-100 rounded-full h-6 overflow-hidden' },
                                 h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
-                                    className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full flex items-center justify-end pr-2 transition-all duration-500',
+                                    className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full flex items-center justify-end pe-2 transition-all duration-500',
                                     style: { width: `${(s.count / maxC) * 100}%` }
                                 }, h('span', { className: 'text-[11px] font-bold text-white' }, s.count))
                             )
@@ -9946,7 +9946,7 @@ Keep it concise and encouraging. Use plain language.`;
                             ...heatmapData.map((row, dayIdx) => {
                                 const maxVal = Math.max(1, ...heatmapData.flat());
                                 return h('tr', { key: dayIdx },
-                                    h('td', { className: 'text-[11px] font-bold text-slate-600 pr-2 text-right' }, dayLabels[dayIdx]),
+                                    h('td', { className: 'text-[11px] font-bold text-slate-600 pe-2 text-end' }, dayLabels[dayIdx]),
                                     ...row.map((val, colIdx) => {
                                         const intensity = val / maxVal;
                                         const bg = val === 0 ? 'bg-slate-50' : intensity < 0.33 ? 'bg-green-200' : intensity < 0.66 ? 'bg-amber-300' : 'bg-red-400';
@@ -10718,7 +10718,7 @@ Provide:
                             ),
                             h('button', { "aria-label": "Try this example",
                                 onClick: () => setInput(ex.deficit),
-                                className: 'text-[11px] text-teal-500 ml-5 hover:text-teal-700 font-bold'
+                                className: 'text-[11px] text-teal-500 ms-5 hover:text-teal-700 font-bold'
                             }, '→ Try this example')
                         )
                     )
@@ -10911,7 +10911,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
                 guides.map(g => h('button', { "aria-label": "Toggle active guide",
                     key: g.id,
                     onClick: () => setActiveGuide(g.id),
-                    className: `w-full text-left p-5 rounded-xl border-2 ${guideColors[g.color]} shadow-sm hover:shadow-md transition-all`
+                    className: `w-full text-start p-5 rounded-xl border-2 ${guideColors[g.color]} shadow-sm hover:shadow-md transition-all`
                 },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, g.icon),
@@ -11087,7 +11087,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     const s = suggestions[cat.id];
                     if (!s) return null;
                     const c = catColors[cat.color];
-                    return h('button', { "aria-label": "Select Plan", key: cat.id, onClick: () => selectPlan(cat.id), className: `w-full text-left p-5 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
+                    return h('button', { "aria-label": "Select Plan", key: cat.id, onClick: () => selectPlan(cat.id), className: `w-full text-start p-5 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
                         h('div', { className: 'flex items-center gap-2 mb-2' },
                             h('span', { className: 'text-2xl' }, cat.emoji),
                             h('div', null,
@@ -11140,7 +11140,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[11px] font-bold px-2 py-0.5 rounded-full ${completedCount === completionSteps.length ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}` }, `${completedCount}/${completionSteps.length}`)
                         ),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
-                            completionSteps.map(step => h('button', { "aria-label": "Toggle Step", key: step.id, onClick: () => toggleStep(step.id), className: `w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-all ${step.done ? 'bg-green-50 border-green-600' : 'bg-white border-slate-100 hover:border-slate-200'}` },
+                            completionSteps.map(step => h('button', { "aria-label": "Toggle Step", key: step.id, onClick: () => toggleStep(step.id), className: `w-full text-start flex items-center gap-3 p-3 rounded-lg border transition-all ${step.done ? 'bg-green-50 border-green-600' : 'bg-white border-slate-100 hover:border-slate-200'}` },
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `w-5 h-5 rounded-full border-2 flex items-center justify-center text-[11px] transition-all ${step.done ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300'}` }, step.done ? '✓' : ''),
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-xs ${step.done ? 'text-green-700 line-through' : 'text-slate-700'}` }, step.label)
                             ))
@@ -11576,7 +11576,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                                     h('span', null, c.followUp),
                                     !c.followUpDone && h('button', { "aria-label": "(mark done)",
                                         onClick: () => toggleFollowUp(c.id),
-                                        className: 'ml-1 text-green-500 hover:text-green-700'
+                                        className: 'ms-1 text-green-500 hover:text-green-700'
                                     }, '(mark done)')
                                 )
                             );
@@ -11783,7 +11783,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 quadrants.map(q => {
                     const c = quadrantColors[q.color];
                     const count = (toolkit[q.id] || []).length;
-                    return h('button', { "aria-label": "Toggle selected quadrant", key: q.id, onClick: () => setSelectedQuadrant(q.id), className: `text-left p-4 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
+                    return h('button', { "aria-label": "Toggle selected quadrant", key: q.id, onClick: () => setSelectedQuadrant(q.id), className: `text-start p-4 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl mb-1' }, q.emoji),
                         h('h3', { className: `text-xs font-black ${c.text}` }, q.label),
                         h('p', { className: 'text-[11px] text-slate-600 mt-0.5 mb-2' }, q.desc),
@@ -11869,7 +11869,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 tools.map(t => h('button', { "aria-label": "Toggle active tool",
                     key: t.id,
                     onClick: () => setActiveTool(t.id),
-                    className: `text-left p-4 rounded-xl border-2 ${toolColors[t.color]} shadow-sm hover:shadow-md transition-all`
+                    className: `text-start p-4 rounded-xl border-2 ${toolColors[t.color]} shadow-sm hover:shadow-md transition-all`
                 },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl mb-1' }, t.icon),
                     h('h3', { className: 'text-xs font-black text-slate-800' }, t.title),
@@ -11980,7 +11980,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-black text-teal-800' }, step.sense),
                                     h('p', { className: 'text-[11px] text-teal-600 mt-0.5' }, step.prompt)
                                 ),
-                                i < groundingStep && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto text-green-500' }, '✅')
+                                i < groundingStep && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ms-auto text-green-500' }, '✅')
                             )
                         )
                     )
@@ -12304,7 +12304,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                     highPBank.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-3' },
                         highPBank.map(hp => h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: hp.id, className: 'inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-lg text-[11px] font-bold border border-green-200' },
                             hp.request,
-                            h('button', { onClick: () => removeHighP(hp.id), title: 'Close', 'aria-label': 'Close', className: 'text-green-700 hover:text-red-500 ml-1' }, '✕')
+                            h('button', { onClick: () => removeHighP(hp.id), title: 'Close', 'aria-label': 'Close', className: 'text-green-700 hover:text-red-500 ms-1' }, '✕')
                         ))
                     ),
                     callGemini && h('button', { onClick: handleAISuggest, disabled: aiLoading, 'aria-busy': aiLoading, className: 'w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-xs disabled:opacity-50 transition-all' }, aiLoading ? '⏳ Thinking...' : '🧠 AI Suggest High-P Requests')
@@ -12943,7 +12943,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                 : h('div', null,
                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start justify-between' },
                                         h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1 whitespace-pre-wrap' }, note.text),
-                                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity' },
+                                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 ms-2 opacity-0 group-hover:opacity-100 transition-opacity' },
                                             h('button', { "aria-label": "Toggle editing id",
                                                 onClick: () => { setEditingId(note.id); setEditText(note.text); },
                                                 className: 'p-1 hover:bg-slate-100 rounded text-xs',
@@ -13374,7 +13374,7 @@ Keep it encouraging and professional. Under 300 words.`;
                         h('button', { "aria-label": "Toggle difficulty",
                             key: d.id,
                             onClick: () => setDifficulty(d),
-                            className: `text-left p-3 rounded-xl border-2 transition-all ${
+                            className: `text-start p-3 rounded-xl border-2 transition-all ${
                                 difficulty?.id === d.id ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 hover:border-indigo-600 bg-white'
                             }`
                         },
@@ -13393,7 +13393,7 @@ Keep it encouraging and professional. Under 300 words.`;
                         h('button', { "aria-label": "Toggle selected template",
                             key: tmpl.id,
                             onClick: () => setSelectedTemplate(tmpl),
-                            className: `text-left p-3 rounded-xl border-2 transition-all ${
+                            className: `text-start p-3 rounded-xl border-2 transition-all ${
                                 selectedTemplate?.id === tmpl.id ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 hover:border-indigo-600 bg-white'
                             }`
                         },
@@ -13591,7 +13591,7 @@ Respond helpfully and concisely as AlloBot:`;
             // Collapsed header
             h('button', { 'aria-expanded': String(isExpanded), "aria-label": "Toggle is expanded",
                 onClick: () => setIsExpanded(!isExpanded),
-                className: 'w-full flex items-center justify-between px-4 py-3 text-left hover:bg-teal-100/50 transition-colors'
+                className: 'w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors'
             },
                 h('div', { className: 'flex items-center gap-2' },
                     h('span', { className: 'text-lg' }, '👤'),
@@ -13761,7 +13761,7 @@ Respond helpfully and concisely as AlloBot:`;
                                     h('button', { "aria-label": "Quiz Answer",
                                         key: i,
                                         onClick: () => handleQuizAnswer(activeModule, i),
-                                        className: `w-full text-left px-3 py-2 rounded-lg text-xs font-medium border transition-all ${quizAnswers[activeModule] === i ? (i === modContent.quiz.answer ? 'bg-green-100 border-green-600 text-green-800' : 'bg-red-100 border-red-600 text-red-800') : 'bg-white border-slate-200 hover:border-indigo-600'}`
+                                        className: `w-full text-start px-3 py-2 rounded-lg text-xs font-medium border transition-all ${quizAnswers[activeModule] === i ? (i === modContent.quiz.answer ? 'bg-green-100 border-green-600 text-green-800' : 'bg-red-100 border-red-600 text-red-800') : 'bg-white border-slate-200 hover:border-indigo-600'}`
                                     }, opt)
                                 )
                             )
@@ -13803,7 +13803,7 @@ Respond helpfully and concisely as AlloBot:`;
                     return h('button', { key: mod.id,
                         onClick: () => !isLocked && setActiveModule(mod.id),
                         disabled: isLocked,
-                        className: `w-full text-left p-4 rounded-xl border-2 transition-all ${isComplete ? 'bg-green-50 border-green-600' : isLocked ? 'bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed' : 'bg-white border-slate-200 hover:border-indigo-600 hover:shadow-md'}`
+                        className: `w-full text-start p-4 rounded-xl border-2 transition-all ${isComplete ? 'bg-green-50 border-green-600' : isLocked ? 'bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed' : 'bg-white border-slate-200 hover:border-indigo-600 hover:shadow-md'}`
                     },
                         h('div', { className: 'flex items-center gap-3' },
                             h('div', { className: `w-10 h-10 rounded-xl flex items-center justify-center text-lg ${isComplete ? 'bg-green-100' : 'bg-slate-100'}` },
@@ -14070,7 +14070,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                                 h('div', { className: 'w-24 bg-slate-100 rounded-full h-2' },
                                     h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-indigo-500 rounded-full', style: { width: `${Math.min(100, (c / Math.max(...dataStats.topBehaviors.map(x => x[1]))) * 100)}%` } })
                                 ),
-                                h('span', { className: 'text-[11px] font-bold text-slate-600 w-8 text-right' }, `${c}×`)
+                                h('span', { className: 'text-[11px] font-bold text-slate-600 w-8 text-end' }, `${c}×`)
                             )
                         )
                     )
@@ -14196,7 +14196,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                                     className: 'accent-indigo-600'
                                 }),
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-700' }, label),
-                                !available && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 ml-auto' }, 'No data')
+                                !available && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 ms-auto' }, 'No data')
                             )
                         )
                     )
@@ -14312,7 +14312,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' }, q.opts.map((opt, i) =>
                     h('button', { "aria-label": "Answer",
                         key: i, onClick: () => handleAnswer(i),
-                        className: `w-full text-left px-4 py-3 rounded-xl border-2 text-xs font-medium transition-all ${answers[currentQ] === i ? (i === q.answer ? 'bg-green-100 border-green-600' : 'bg-red-100 border-red-600') : 'bg-white border-slate-200 hover:border-indigo-600 hover:bg-indigo-50'}`
+                        className: `w-full text-start px-4 py-3 rounded-xl border-2 text-xs font-medium transition-all ${answers[currentQ] === i ? (i === q.answer ? 'bg-green-100 border-green-600' : 'bg-red-100 border-red-600') : 'bg-white border-slate-200 hover:border-indigo-600 hover:bg-indigo-50'}`
                     }, opt)
                 ))
             )
@@ -14750,7 +14750,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                         h('div', { key: d.key, className: 'bg-slate-50 rounded-lg border border-slate-400 p-3' },
                             h('label', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1 mb-1' },
                                 h('span', null, d.icon), ' ', d.label,
-                                h('span', { className: 'ml-auto text-[11px] text-slate-600 font-normal' }, d.hint)
+                                h('span', { className: 'ms-auto text-[11px] text-slate-600 font-normal' }, d.hint)
                             ),
                             h('input', {
                                 type: 'text',
@@ -14945,7 +14945,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                     )
                 ),
                 h('input', { type: 'text', value: probes[key].notes, onChange: e => updateProbe(key, 'notes', e.target.value), 'aria-label': 'Optional notes about this condition', placeholder: 'Optional notes about this condition...', className: 'w-full border border-slate-400 rounded-lg px-3 py-1.5 text-[11px] focus:ring-2 focus:ring-indigo-400 outline-none' }),
-                parseInt(probes[key].attempts) > 0 && h('div', { className: 'text-right' },
+                parseInt(probes[key].attempts) > 0 && h('div', { className: 'text-end' },
                     h('span', { className: `text-xs font-black ${pct(key) >= 80 ? 'text-green-600' : pct(key) >= 50 ? 'text-amber-600' : 'text-red-500'}` }, `${pct(key)}%`)
                 )
             );
@@ -15193,7 +15193,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ...scenarios.map(sc => h('button', { "aria-label": "Start Scenario",
                     key: sc.id,
                     onClick: () => startScenario(sc),
-                    className: 'w-full text-left bg-white rounded-xl border border-slate-400 p-4 shadow-sm hover:shadow-md hover:border-teal-600 transition-all'
+                    className: 'w-full text-start bg-white rounded-xl border border-slate-400 p-4 shadow-sm hover:shadow-md hover:border-teal-600 transition-all'
                 },
                     h('div', { className: 'flex items-start gap-3' },
                         h('span', { className: 'text-2xl' }, sc.icon),
@@ -15220,7 +15220,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         h('p', { className: 'text-[11px] text-slate-600' }, selectedScenario.student)
                     )
                 ),
-                scores.length > 0 && h('div', { className: 'text-right' },
+                scores.length > 0 && h('div', { className: 'text-end' },
                     h('div', { className: `text-sm font-black ${overall.avg >= 4 ? 'text-green-600' : overall.avg >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `${overall.avg.toFixed(1)} / 5`),
                     h('div', { className: 'text-[11px] text-slate-600' }, 'MI Quality')
                 )
@@ -15293,7 +15293,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 bg-white rounded px-2 py-1 flex items-center gap-2' },
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `font-bold ${s.quality >= 4 ? 'text-green-600' : s.quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `${s.quality}/5`),
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, s.skills.length > 0 ? s.skills.join(' ') : '—'),
-                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600 text-[11px] flex-1 text-right' }, s.tip)
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600 text-[11px] flex-1 text-end' }, s.tip)
                         )
                     ))
                 ),
@@ -15446,7 +15446,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                         day.pp > 0 && h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-amber-400', style: { width: `${(day.pp / total) * 100}%` } }),
                                         day.ind > 0 && h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-green-400', style: { width: `${(day.ind / total) * 100}%` } })
                                     ),
-                                    h('span', { className: 'w-6 text-right text-slate-600' }, total)
+                                    h('span', { className: 'w-6 text-end text-slate-600' }, total)
                                 );
                             })
                         ),
@@ -16177,7 +16177,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                     h('span', { className: 'text-[11px] text-slate-600' }, 'Phase Δ at:'),
                                     h('input', { type: 'number', min: 2, value: tier.phaseChange, onChange: e => updateMbTier(idx, 'phaseChange', parseInt(e.target.value) || 2), 'aria-label': 'Phase change at session', className: 'w-12 text-xs border border-slate-400 rounded px-1 py-0.5 text-center' })
                                 ),
-                                mbTierData.length > 2 && h('button', { onClick: () => removeMbTier(idx), title: 'Remove tier', 'aria-label': 'Remove multiple-baseline tier', className: 'text-red-600 hover:text-red-600 text-sm ml-2' }, '✕')
+                                mbTierData.length > 2 && h('button', { onClick: () => removeMbTier(idx), title: 'Remove tier', 'aria-label': 'Remove multiple-baseline tier', className: 'text-red-600 hover:text-red-600 text-sm ms-2' }, '✕')
                             ),
                             // Quick add row
                             h('div', { className: 'flex gap-2 items-center' },
@@ -16189,7 +16189,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 tier.data.map((d, di) =>
                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: di, className: 'px-2 py-0.5 bg-slate-50 border border-slate-400 rounded text-[11px] font-mono text-slate-600 flex items-center gap-1' },
                                         `S${d.session}: ${d.value}`,
-                                        h('button', { onClick: () => removeMbTierPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 text-[11px] ml-0.5' }, '✕')
+                                        h('button', { onClick: () => removeMbTierPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 text-[11px] ms-0.5' }, '✕')
                                     )
                                 )
                             )
@@ -16305,7 +16305,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             h('div', { className: 'flex items-center gap-2 mb-2' },
                                 h('div', { className: 'w-3 h-3 rounded-full', style: { backgroundColor: atColors[idx % atColors.length] } }),
                                 h('input', { value: cond.name, onChange: e => updateAtCondition(idx, 'name', e.target.value), className: 'text-sm font-bold text-slate-800 border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded flex-1', 'aria-label': `Condition ${idx + 1} name`, placeholder: `Condition ${idx + 1}` }),
-                                atConditions.length > 2 && h('button', { onClick: () => setAtConditions(prev => prev.filter((_, i) => i !== idx)), title: 'Remove condition', 'aria-label': 'Remove alternating-treatment condition', className: 'text-red-600 hover:text-red-600 text-sm ml-2' }, '✕')
+                                atConditions.length > 2 && h('button', { onClick: () => setAtConditions(prev => prev.filter((_, i) => i !== idx)), title: 'Remove condition', 'aria-label': 'Remove alternating-treatment condition', className: 'text-red-600 hover:text-red-600 text-sm ms-2' }, '✕')
                             ),
                             h('div', { className: 'flex gap-2 items-center' },
                                 h('input', { type: 'number', min: 0, step: 'any', value: cond.newVal, onChange: e => updateAtCondition(idx, 'newVal', e.target.value), onKeyDown: e => { if (e.key === 'Enter') addAtPoint(idx); }, 'aria-label': 'New session value for condition ' + (idx + 1), placeholder: `Session ${cond.data.length + 1} value`, className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white' }),
@@ -16315,7 +16315,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 cond.data.map((d, di) =>
                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: di, className: 'px-2 py-0.5 bg-slate-50 border border-slate-400 rounded text-[11px] font-mono text-slate-600 flex items-center gap-1' },
                                         `S${d.session}: ${d.value}`,
-                                        h('button', { onClick: () => removeAtPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 text-[11px] ml-0.5' }, '✕')
+                                        h('button', { onClick: () => removeAtPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 text-[11px] ms-0.5' }, '✕')
                                     )
                                 )
                             )
@@ -16476,9 +16476,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('table', { className: 'w-full text-[11px]' },
                         h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', { className: 'bg-fuchsia-50' },
-                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.session') || 'Session')),
-                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.value') || 'Value')),
-                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-right font-bold text-fuchsia-700' }, (t('behavior_lens.raw.actions') || 'Actions'))
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (t('behavior_lens.raw.session') || 'Session')),
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (t('behavior_lens.raw.value') || 'Value')),
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-end font-bold text-fuchsia-700' }, (t('behavior_lens.raw.actions') || 'Actions'))
                             )
                         ),
                         h('tbody', null,
@@ -16496,7 +16496,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                             className: 'w-20 text-xs border border-slate-400 rounded px-2 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-fuchsia-300 font-mono'
                                         })
                                     ),
-                                    h('td', { className: 'px-3 py-1 text-right' },
+                                    h('td', { className: 'px-3 py-1 text-end' },
                                         h('button', {
                                             onClick: () => deleteManualPoint(i),
                                             'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 font-bold'
@@ -16552,7 +16552,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-700 cursor-pointer bg-slate-100 px-2 py-0.5 rounded shadow-sm' },
                         h('input', { type: 'checkbox', checked: jabaMode, onChange: () => setJabaMode(!jabaMode), className: 'accent-slate-700' }), '📓 JABA Format (B&W)'
                     ),
-                    showAim && h('div', { className: 'flex items-center gap-1 ml-2' },
+                    showAim && h('div', { className: 'flex items-center gap-1 ms-2' },
                         h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Aim Target:'),
                         h('input', { type: 'number', value: aimTarget, onChange: e => setAimTarget(e.target.value), 'aria-label': 'eg 2', placeholder: 'e.g. 2', min: 0, step: 'any', className: 'w-16 text-[11px] border border-green-600 rounded px-1.5 py-0.5 bg-green-50' })
                     )
@@ -16877,7 +16877,7 @@ Keep under 200 words. Use bullet points.`);
                         h('button', { "aria-label": "Select Design",
                             key: d.id,
                             onClick: () => selectDesign(d.id),
-                            className: 'text-left bg-white rounded-xl border-2 border-slate-200 p-4 hover:border-indigo-600 hover:shadow-md transition-all'
+                            className: 'text-start bg-white rounded-xl border-2 border-slate-200 p-4 hover:border-indigo-600 hover:shadow-md transition-all'
                         },
                             h('div', { className: 'flex items-center gap-2 mb-2' },
                                 h('span', { className: 'text-2xl' }, d.icon),
@@ -17004,7 +17004,7 @@ Keep under 200 words. Use bullet points.`);
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: s.id, className: `bg-white rounded-xl border-2 ${selected === s.id ? `border-${s.color}-400` : 'border-slate-200'} overflow-hidden transition-all shadow-sm` },
                         h('button', { "aria-label": "Toggle selected",
                             onClick: () => setSelected(selected === s.id ? null : s.id),
-                            className: 'w-full text-left p-4'
+                            className: 'w-full text-start p-4'
                         },
                             h('div', { className: 'flex items-center gap-3' },
                                 h('span', { className: 'text-2xl' }, s.icon),
@@ -17199,7 +17199,7 @@ Keep under 250 words. Use clear sections.`);
                         h('button', { "aria-label": "Toggle func",
                             key: f.id,
                             onClick: () => { setFunc(f.id); if (!targetPhrase) setTargetPhrase(f.phrase); },
-                            className: `text-left p-3 rounded-xl border-2 transition-all ${func === f.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`
+                            className: `text-start p-3 rounded-xl border-2 transition-all ${func === f.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`
                         },
                             h('div', { className: 'flex items-center gap-2' },
                                 h('span', { className: 'text-lg' }, f.icon),
@@ -17521,7 +17521,7 @@ Keep it under 150 words.`);
                         { id: 'free', name: 'Free Operant', desc: 'Naturalistic observation of engagement duration with available items.', icon: '⏱️' }
                     ].map(m => h('button', { "aria-label": "Toggle mode",
                         key: m.id, onClick: () => setMode(m.id),
-                        className: 'p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-indigo-400 hover:shadow-lg text-left transition-all group'
+                        className: 'p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-indigo-400 hover:shadow-lg text-start transition-all group'
                     },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl mb-3 group-hover:scale-110 transition-transform' }, m.icon),
                         h('h3', { className: 'font-bold text-slate-800 mb-2' }, m.name),
@@ -17543,7 +17543,7 @@ Keep it under 150 words.`);
                                     value: it, onChange: e => handleItemChange(idx, e.target.value),
                                     placeholder: `e.g. ${['iPad', 'Skittles', 'Kinetic Sand', 'Bubbles', 'Slinky'][idx % 5]}`,
                                     'aria-label': 'Preference item ' + (idx + 1),
-                                    className: 'w-full pl-8 pr-3 py-2 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none'
+                                    className: 'w-full ps-8 pe-3 py-2 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none'
                                 })
                             ),
                             items.length > 3 && h('button', { onClick: () => removeItem(idx), className: 'p-2 text-red-500 hover:bg-red-50 rounded-lg' }, '🗑️')
@@ -17594,7 +17594,7 @@ Keep it under 150 words.`);
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-4' },
                         validItems.map(item => h('button', { "aria-label": "Toggle Fo Timer",
                             key: item, onClick: () => toggleFoTimer(item),
-                            className: `p-4 rounded-xl border-2 transition-all text-left flex justify-between items-center ${activeTimer === item ? 'bg-green-100 border-green-500 shadow-md ring-4 ring-green-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`
+                            className: `p-4 rounded-xl border-2 transition-all text-start flex justify-between items-center ${activeTimer === item ? 'bg-green-100 border-green-500 shadow-md ring-4 ring-green-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`
                         },
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `font-bold text-lg ${activeTimer === item ? 'text-green-800' : 'text-slate-700'}` }, item),
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `font-mono text-xl ${activeTimer === item ? 'text-green-700' : 'text-slate-600'}` }, formatTime(foTimers[item]))
@@ -17651,7 +17651,7 @@ Keep it under 150 words.`);
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-32 h-2 bg-slate-200 rounded-full overflow-hidden' },
                                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full bg-emerald-500', style: { width: `${res.pct}%` } })
                                 ),
-                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-mono block w-16 text-right font-bold text-slate-600' }, res.label)
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-mono block w-16 text-end font-bold text-slate-600' }, res.label)
                             )
                         ))
                 ),
@@ -18335,7 +18335,7 @@ Keep it under 150 words.`);
                     h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📐 Select IOA Method'),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-3 gap-2' },
                         IOA_METHODS_LIST.map(function(m) {
-                            return h('button', { "aria-label": "Set Ioa Method", key: m.id, onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-left transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                            return h('button', { "aria-label": "Set Ioa Method", key: m.id, onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-start transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg mb-1' }, m.icon),
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-800' }, m.label),
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, m.desc)
@@ -18362,7 +18362,7 @@ Keep it under 150 words.`);
                                 })
                             )
                         ),
-                        h('div', { className: 'text-[11px] text-slate-600 ml-auto' }, 'Total: ' + (intervalCount * intervalDuration) + ' min')
+                        h('div', { className: 'text-[11px] text-slate-600 ms-auto' }, 'Total: ' + (intervalCount * intervalDuration) + ' min')
                     ),
                     // Structured interval rows
                     !bulkMode && h('div', { className: 'space-y-1' },
@@ -18375,7 +18375,7 @@ Keep it under 150 words.`);
                             h('div', { className: 'text-center' }, 'Obs 2')
                         ),
                         // Data rows
-                        h('div', { className: 'max-h-80 overflow-y-auto space-y-0.5 pr-1' },
+                        h('div', { className: 'max-h-80 overflow-y-auto space-y-0.5 pe-1' },
                             intervalData.slice(0, intervalCount).map(function(row, idx) {
                                 return h('div', { key: idx, className: 'grid gap-2 items-center py-1 rounded-lg hover:bg-slate-50 transition-all', style: { gridTemplateColumns: '36px 60px 1fr 64px 64px' } },
                                     h('div', { className: 'text-xs font-black text-slate-600 text-center' }, idx + 1),
@@ -18563,7 +18563,7 @@ Keep it under 150 words.`);
                             h('div', { className: 'w-8 text-center font-black text-lg ' + (iv.code > 0 ? 'text-red-600' : 'text-slate-600') }, iv.code > 0 ? iv.code : '—'),
                             h('div', { className: 'flex-1 text-slate-600 truncate' }, iv.observation || ''),
                             iv.uncertain && h('div', { className: 'px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[11px] font-bold' }, '⚠ Uncertain'),
-                            h('div', { className: 'w-12 text-right text-slate-600 text-[11px]' }, (iv.confidence || 0) + '%')
+                            h('div', { className: 'w-12 text-end text-slate-600 text-[11px]' }, (iv.confidence || 0) + '%')
                         );
                     })
                 )
@@ -18593,7 +18593,7 @@ Keep it under 150 words.`);
                                     h('span', { className: 'text-slate-600 mx-1' }, '|'),
                                     h('span', { className: 'text-slate-600 italic' }, d.aiNote || '')
                                 ),
-                                h('div', { className: 'ml-auto text-[11px] text-slate-600' }, d.aiConfidence + '% conf')
+                                h('div', { className: 'ms-auto text-[11px] text-slate-600' }, d.aiConfidence + '% conf')
                             );
                         })
                     )
@@ -19010,7 +19010,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         h(InfoTooltip, { text: "Forward chaining teaches the first step independently. Backward chaining teaches the last step first. Total task requires the student to complete every step with prompting as needed." })
                     ),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-                        CHAINING.map(c => h('button', { "aria-label": "Toggle chaining method", key: c.id, onClick: () => setChainingMethod(c.id), className: `flex-1 p-2 rounded-lg border-2 text-left ${chainingMethod === c.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
+                        CHAINING.map(c => h('button', { "aria-label": "Toggle chaining method", key: c.id, onClick: () => setChainingMethod(c.id), className: `flex-1 p-2 rounded-lg border-2 text-start ${chainingMethod === c.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                             h('span', { className: 'text-[11px] font-bold text-slate-700 block' }, c.name),
                             h('span', { className: 'text-[11px] text-slate-600' }, c.desc)
                         ))
@@ -19378,7 +19378,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, '📋 Assessment Method'),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-                        METHODS.map(m => h('button', { "aria-label": "Toggle method", key: m.id, onClick: () => setMethod(m.id), className: `flex-1 p-3 rounded-xl border-2 text-left ${method === m.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
+                        METHODS.map(m => h('button', { "aria-label": "Toggle method", key: m.id, onClick: () => setMethod(m.id), className: `flex-1 p-3 rounded-xl border-2 text-start ${method === m.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' }, h('span', null, m.icon), h('span', { className: 'text-xs font-bold text-slate-700' }, m.name)),
                             h('p', { className: 'text-[11px] text-slate-600' }, m.desc)
                         ))
@@ -19513,7 +19513,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('table', { className: 'w-full border-collapse' },
                         h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', null,
-                                h('th', { scope: 'col', className: 'text-[11px] text-slate-600 font-bold p-1 text-left' }, (t('behavior_lens.raw.time') || 'Time')),
+                                h('th', { scope: 'col', className: 'text-[11px] text-slate-600 font-bold p-1 text-start' }, (t('behavior_lens.raw.time') || 'Time')),
                                 ...DAY_LABELS.slice(0, days).map(d => h('th', { scope: 'col', key: d, className: 'text-[11px] text-slate-600 font-bold p-1 text-center' }, d))
                             )
                         ),
@@ -19914,7 +19914,7 @@ Keep the language professional but accessible.`;
                             if (preVal === undefined || postVal === undefined) return null;
                             const d = postVal - preVal;
                             return h('div', { key: i, className: 'flex items-center gap-2' },
-                                h('span', { className: 'w-6 text-[11px] text-slate-600 text-right' }, `${i + 1}.`),
+                                h('span', { className: 'w-6 text-[11px] text-slate-600 text-end' }, `${i + 1}.`),
                                 h('div', { className: 'flex-1 text-[11px] text-slate-600 truncate', title: item }, item),
                                 h('span', { className: `text-[11px] font-bold ${d > 0 ? 'text-green-600' : d < 0 ? 'text-red-600' : 'text-slate-600'}` }, d > 0 ? `+${d}` : d < 0 ? `${d}` : '=')
                             );
@@ -19932,11 +19932,11 @@ Keep the language professional but accessible.`;
             ),
             // Measure selector tabs (TARF, IRP-15, Custom)
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-                Object.entries(MEASURES).map(([id, m]) => h('button', { "aria-label": "Toggle measure", key: id, onClick: () => { setMeasure(id); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-left ${measure === id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
+                Object.entries(MEASURES).map(([id, m]) => h('button', { "aria-label": "Toggle measure", key: id, onClick: () => { setMeasure(id); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-start ${measure === id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 block' }, m.name),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, m.desc)
                 )),
-                h('button', { "aria-label": "Toggle measure", onClick: () => { setMeasure('custom'); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-left ${isCustom ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}` },
+                h('button', { "aria-label": "Toggle measure", onClick: () => { setMeasure('custom'); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-start ${isCustom ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}` },
                     h('span', { className: 'text-xs font-bold text-slate-700 block' }, '✏️ Custom Survey'),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'Build your own')
                 )
@@ -20186,7 +20186,7 @@ Keep the language professional but accessible.`;
                             const past = daysSinceMastery >= tier.days;
                             return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `px-2 py-1 rounded-lg text-[11px] border ${active ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-bold ring-2 ring-indigo-300' : past ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-slate-200 text-slate-600'}` },
                                 h('span', null, `${tier.label}`),
-                                active && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1' }, '← current')
+                                active && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ms-1' }, '← current')
                             );
                         })
                     )
@@ -20251,7 +20251,7 @@ Keep the language professional but accessible.`;
                         const totalGen = [...s.generalization.settings, ...s.generalization.people, ...s.generalization.materials];
                         const genPct = totalGen.length > 0 ? Math.round((totalGen.filter(g => g.demonstrated).length / totalGen.length) * 100) : 0;
                         const od = getOverdueInfo(s);
-                        return h('button', { "aria-label": "Toggle selected skill", key: s.id, onClick: () => setSelectedSkill(s.id), className: `w-full text-left bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${od.isOverdue ? 'border-red-600 ring-1 ring-red-200' : 'border-slate-200'}` },
+                        return h('button', { "aria-label": "Toggle selected skill", key: s.id, onClick: () => setSelectedSkill(s.id), className: `w-full text-start bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${od.isOverdue ? 'border-red-600 ring-1 ring-red-200' : 'border-slate-200'}` },
                             h('div', { className: 'flex items-center justify-between' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('div', { className: 'flex items-center gap-2' },
@@ -20260,9 +20260,9 @@ Keep the language professional but accessible.`;
                                     ),
                                     h('p', { className: 'text-[11px] text-slate-600' }, `Mastered: ${s.masteryDate} | ${s.probes.length} probes | ${s.schedule}`)
                                 ),
-                                h('div', { className: 'flex items-center gap-3 ml-3' },
+                                h('div', { className: 'flex items-center gap-3 ms-3' },
                                     s.probes.length >= 2 && renderSparkline(s.probes),
-                                    h('div', { className: 'text-right' },
+                                    h('div', { className: 'text-end' },
                                         h('span', { className: `text-[11px] px-2 py-0.5 rounded-full font-bold ${s.status === 'maintained' ? 'bg-green-100 text-green-700' : s.status === 'regression' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}` }, s.status),
                                         totalGen.length > 0 && h('p', { className: 'text-[11px] text-slate-600 mt-1' }, `Gen: ${genPct}%`)
                                     )
@@ -20430,7 +20430,7 @@ Keep the language professional but accessible.`;
                 h('button', { onClick: exportPNG, className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 transition-all' }, '📷 Export PNG'),
                 h('button', { onClick: copyCSV, className: 'px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-400 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all' }, '📋 Copy Data'),
                 ...phases.map((p, i) => h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-[11px] font-medium text-red-700' },
-                    `S${p.session}: ${p.label}`, h('button', { onClick: () => removePhase(i), title: 'Close', 'aria-label': 'Close', className: 'ml-1 text-red-600 hover:text-red-600' }, '×')
+                    `S${p.session}: ${p.label}`, h('button', { onClick: () => removePhase(i), title: 'Close', 'aria-label': 'Close', className: 'ms-1 text-red-600 hover:text-red-600' }, '×')
                 ))
             ),
             // Add phase form
@@ -20563,14 +20563,14 @@ Keep the language professional but accessible.`;
                 heatmapMatrix.rows.length > 0 ? h('table', { className: 'w-full text-center border-collapse' },
                     h('caption', { className: 'sr-only' }, '🗺️ P(Behavior | Antecedent) — All Pairs'), h('thead', null,
                         h('tr', null,
-                            h('th', { scope: 'col', className: 'text-[11px] font-bold text-slate-600 p-2 text-left border-b border-slate-200' }, 'Antecedent ↓ / Behavior →'),
+                            h('th', { scope: 'col', className: 'text-[11px] font-bold text-slate-600 p-2 text-start border-b border-slate-200' }, 'Antecedent ↓ / Behavior →'),
                             ...heatmapMatrix.cols.map(b => h('th', { scope: 'col', key: b, className: 'text-[11px] font-bold text-slate-600 p-2 border-b border-slate-200 max-w-[80px] truncate' }, b))
                         )
                     ),
                     h('tbody', null,
                         heatmapMatrix.rows.map(a =>
                             h('tr', { key: a },
-                                h('td', { className: 'text-[11px] font-medium text-slate-700 p-2 text-left border-b border-slate-100 max-w-[100px] truncate' }, a),
+                                h('td', { className: 'text-[11px] font-medium text-slate-700 p-2 text-start border-b border-slate-100 max-w-[100px] truncate' }, a),
                                 ...heatmapMatrix.cols.map(b => {
                                     const cell = heatmapMatrix.cells[`${a}__${b}`];
                                     if (!cell) return h('td', { key: b, className: 'p-2 border-b border-slate-100 bg-slate-50' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, '—'));
@@ -20588,7 +20588,7 @@ Keep the language professional but accessible.`;
                     [['bg-green-50', '0–24%'], ['bg-amber-50', '25–49%'], ['bg-orange-100', '50–74%'], ['bg-red-200', '75–100%']].map(([bg, lbl]) =>
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: lbl, className: `${bg} px-2 py-0.5 rounded text-[11px] font-medium text-slate-600` }, lbl)
                     ),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 ml-2' }, '(click cell for focused analysis)')
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 ms-2' }, '(click cell for focused analysis)')
                 )
             ) : viewMode === 'consequence' ?
             // ── Consequence Analysis P(C|B) ──
@@ -20673,13 +20673,13 @@ Keep the language professional but accessible.`;
                             ),
                             h('tbody', null,
                                 h('tr', null,
-                                    h('td', { className: 'p-2 text-[11px] font-bold text-purple-700 border border-slate-400 bg-purple-50 text-left' }, `A: "${selectedAntecedent}"`),
+                                    h('td', { className: 'p-2 text-[11px] font-bold text-purple-700 border border-slate-400 bg-purple-50 text-start' }, `A: "${selectedAntecedent}"`),
                                     h('td', { className: `p-3 border border-slate-400 font-black text-lg ${analysis.ct.a > 0 ? 'bg-red-50 text-red-700' : 'text-slate-600'}` }, analysis.ct.a),
                                     h('td', { className: 'p-3 border border-slate-400 text-slate-600 font-bold text-lg' }, analysis.ct.b),
                                     h('td', { className: 'p-2 border border-slate-400 text-[11px] font-bold text-slate-600 bg-slate-50' }, analysis.withAntN)
                                 ),
                                 h('tr', null,
-                                    h('td', { className: 'p-2 text-[11px] font-bold text-slate-600 border border-slate-400 bg-slate-50 text-left' }, 'No A'),
+                                    h('td', { className: 'p-2 text-[11px] font-bold text-slate-600 border border-slate-400 bg-slate-50 text-start' }, 'No A'),
                                     h('td', { className: 'p-3 border border-slate-400 text-slate-600 font-bold text-lg' }, analysis.ct.c),
                                     h('td', { className: `p-3 border border-slate-400 font-black text-lg ${analysis.ct.d > 0 ? 'bg-green-50 text-green-700' : 'text-slate-600'}` }, analysis.ct.d),
                                     h('td', { className: 'p-2 border border-slate-400 text-[11px] font-bold text-slate-600 bg-slate-50' }, analysis.withoutAntN)
@@ -20789,7 +20789,7 @@ Keep the language professional but accessible.`;
                 ),
                 avgIntegrity < 80 && h('div', { className: 'mt-3 bg-amber-50 rounded-lg p-3 border border-amber-200' },
                     h('p', { className: 'text-[11px] font-bold text-amber-800 mb-1' }, '⚠️ Below 80% Threshold'),
-                    h('ul', { className: 'text-[11px] text-amber-700 space-y-0.5 list-disc pl-4' },
+                    h('ul', { className: 'text-[11px] text-amber-700 space-y-0.5 list-disc ps-4' },
                         h('li', null, t('behavior_lens.fidelity_tip_1') || 'Review implementation procedures with staff'),
                         h('li', null, t('behavior_lens.fidelity_tip_2') || 'Provide additional BST (Behavioral Skills Training)'),
                         h('li', null, t('behavior_lens.fidelity_tip_3') || 'Simplify procedures if too complex'),
@@ -21093,7 +21093,7 @@ Keep the language professional but accessible.`;
 
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '🎯 Goal Focus Area'),
 
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { "aria-label": "Toggle goal type", key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-left transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[11px] text-slate-600' }, gt.desc)))),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { "aria-label": "Toggle goal type", key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-start transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[11px] text-slate-600' }, gt.desc)))),
 
                 h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), placeholder: (t('behavior_lens.raw.additional_context') || 'Additional context...'), className: 'w-full p-2 border border-slate-400 rounded-lg text-xs resize-none', rows: 3 }),
 
@@ -21285,7 +21285,7 @@ Keep the language professional but accessible.`;
 
                 h('button', { onClick: handleCaseloadSummary, disabled: summaryLoading || studentCaseData.length === 0, className: 'px-3 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-xs hover:bg-teal-700 disabled:opacity-40' }, summaryLoading ? '⏳ Generating...' : '🤖 AI Caseload Summary'),
 
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 ml-auto' }, ['all', 'urgent', 'needs_attention', 'on_track'].map(f => h('button', { "aria-label": "Toggle filter status", key: f, onClick: () => setFilterStatus(f), className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' + (filterStatus === f ? 'bg-teal-200 text-teal-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, f === 'all' ? 'All' : f === 'needs_attention' ? '🟡' : f === 'urgent' ? '🔴' : '🟢')))
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 ms-auto' }, ['all', 'urgent', 'needs_attention', 'on_track'].map(f => h('button', { "aria-label": "Toggle filter status", key: f, onClick: () => setFilterStatus(f), className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' + (filterStatus === f ? 'bg-teal-200 text-teal-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, f === 'all' ? 'All' : f === 'needs_attention' ? '🟡' : f === 'urgent' ? '🔴' : '🟢')))
 
             ),
 
@@ -21395,7 +21395,7 @@ Keep the language professional but accessible.`;
 
                         h('span', { className: 'text-xs font-bold text-slate-700' }, name),
 
-                        h('select', { value: tierNum, onChange: (e) => setTier(name, parseInt(e.target.value)), 'aria-label': 'MTSS tier level for ' + name, className: 'ml-1 text-[11px] bg-white border border-slate-400 rounded px-1 text-' + tc.color + '-700 font-bold cursor-pointer' }, h('option', { value: 1 }, 'T1'), h('option', { value: 2 }, 'T2'), h('option', { value: 3 }, 'T3'))
+                        h('select', { value: tierNum, onChange: (e) => setTier(name, parseInt(e.target.value)), 'aria-label': 'MTSS tier level for ' + name, className: 'ms-1 text-[11px] bg-white border border-slate-400 rounded px-1 text-' + tc.color + '-700 font-bold cursor-pointer' }, h('option', { value: 1 }, 'T1'), h('option', { value: 2 }, 'T2'), h('option', { value: 3 }, 'T3'))
 
                     )))
 
@@ -21841,7 +21841,7 @@ Keep the language professional but accessible.`;
                 }, '📂 Load Student Workspaces'),
                 h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, className: 'hidden' }),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' }, comparisonWorkspaces.length + ' student(s) loaded'),
-                comparisonWorkspaces.length > 0 && h('button', { "aria-label": "Clear All", onClick: () => setComparisonWorkspaces([]), className: 'text-[11px] text-red-600 hover:text-red-600 ml-auto' }, '✕ Clear All')
+                comparisonWorkspaces.length > 0 && h('button', { "aria-label": "Clear All", onClick: () => setComparisonWorkspaces([]), className: 'text-[11px] text-red-600 hover:text-red-600 ms-auto' }, '✕ Clear All')
             ),
 
             // Empty state
@@ -21898,11 +21898,11 @@ Keep the language professional but accessible.`;
                                     const pct = Math.round((count / maxBehaviorCount) * 100);
                                     const colors = ['#8b5cf6', '#ec4899', '#06b6d4', '#f59e0b', '#22c55e', '#ef4444', '#6366f1', '#14b8a6'];
                                     return h('div', { key: i, className: 'flex items-center gap-2' },
-                                        h('div', { className: 'w-16 text-[11px] text-slate-600 truncate text-right' }, w.student),
+                                        h('div', { className: 'w-16 text-[11px] text-slate-600 truncate text-end' }, w.student),
                                         h('div', { className: 'flex-1 h-3 bg-slate-100 rounded-full overflow-hidden' },
                                             h('div', { className: 'h-full rounded-full transition-all', style: { width: pct + '%', backgroundColor: colors[i % colors.length] } })
                                         ),
-                                        h('span', { className: 'text-[11px] font-bold text-slate-600 w-6 text-right' }, count || '')
+                                        h('span', { className: 'text-[11px] font-bold text-slate-600 w-6 text-end' }, count || '')
                                     );
                                 })
                             )
@@ -22061,7 +22061,7 @@ Keep the language professional but accessible.`;
                     h('table', { className: 'w-full text-xs' },
                         h('caption', { className: 'sr-only' }, 'Handle Import'), h('thead', null, h('tr', { className: 'bg-slate-50' },
                             (importMode === 'abc' ? abcHeaders : studentHeaders).map(hdr =>
-                                h('th', { scope: 'col', key: hdr, className: 'px-3 py-2 text-left text-[11px] font-bold text-slate-600 uppercase' }, hdr)
+                                h('th', { scope: 'col', key: hdr, className: 'px-3 py-2 text-start text-[11px] font-bold text-slate-600 uppercase' }, hdr)
                             )
                         )),
                         h('tbody', null, parsedRows.slice(0, 50).map((row, i) =>
@@ -22203,7 +22203,7 @@ Keep the language professional but accessible.`;
                 // Phase editor toggle
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
                     h('button', { 'aria-expanded': String(showPhaseEditor), "aria-label": "Toggle show phase editor", onClick: () => setShowPhaseEditor(!showPhaseEditor), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-all' }, showPhaseEditor ? '▴ Hide Phases' : '📐 Edit Phase Lines'),
-                    trendDesc && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 ml-auto' }, trendDesc)
+                    trendDesc && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 ms-auto' }, trendDesc)
                 ),
                 showPhaseEditor && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 bg-slate-50 rounded-lg p-3' },
                     phases.map((p, i) => h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2' },
@@ -22458,7 +22458,7 @@ Keep the language professional but accessible.`;
                 // Role selector
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-3 gap-2' },
                     roles.map(r => h('button', { "aria-label": "Toggle share role", key: r.key, onClick: () => setShareRole(r.key),
-                        className: `p-3 rounded-xl border-2 text-left transition-all ${shareRole === r.key ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-600'}`
+                        className: `p-3 rounded-xl border-2 text-start transition-all ${shareRole === r.key ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-600'}`
                     },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, r.label),
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 mt-0.5' }, r.desc)
@@ -22924,7 +22924,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                     [['parent', '👨‍👩‍👧 Parent Report', 'Simple, encouraging language'], ['iep', '📋 IEP Team', 'Goal-aligned, measurable language'], ['clinical', '🔬 Clinical', 'Full ABA terminology and detail']].map(([key, label, desc]) =>
                         h('button', { "aria-label": "Toggle audience",
                             key, onClick: () => setAudience(key),
-                            className: `flex-1 py-3 rounded-xl text-left px-4 transition-all border-2 ${audience === key ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`
+                            className: `flex-1 py-3 rounded-xl text-start px-4 transition-all border-2 ${audience === key ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`
                         },
                             h('div', { className: 'text-xs font-bold text-slate-800' }, label),
                             h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, desc)
@@ -23306,7 +23306,7 @@ IMPORTANT rules for expert keys:
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
                         h('h3', { className: 'text-sm font-black text-slate-800' }, `📋 ${scenario.title}`),
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold' }, `${scenarioIdx + 1} of ${ALL_SCENARIOS.length}`),
-                        scenario._aiGenerated && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold ml-1' }, '🤖 AI')
+                        scenario._aiGenerated && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold ms-1' }, '🤖 AI')
                     ),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 text-xs text-slate-600' },
                         h('p', null, h('strong', null, 'Student: '), scenario.student),
@@ -23351,7 +23351,7 @@ IMPORTANT rules for expert keys:
                     METHODS.map(m => h('button', { "aria-label": "Toggle mode",
                         key: m.id,
                         onClick: () => setMode(m.id),
-                        className: `w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-100 hover:border-${m.color}-400 hover:bg-${m.color}-50 transition-all text-left group shadow-sm hover:shadow-md`
+                        className: `w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-100 hover:border-${m.color}-400 hover:bg-${m.color}-50 transition-all text-start group shadow-sm hover:shadow-md`
                     },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `w-12 h-12 rounded-full bg-${m.color}-100 flex items-center justify-center text-2xl shrink-0` }, m.icon),
                         h('div', null,
@@ -23586,11 +23586,11 @@ IMPORTANT rules for expert keys:
                             h('button', { "aria-label": "Select",
                                 key: opt.id,
                                 onClick: () => handleSelect(opt),
-                                className: 'w-full flex items-center p-5 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-left group shadow-sm hover:shadow-md'
+                                className: 'w-full flex items-center p-5 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-start group shadow-sm hover:shadow-md'
                             },
-                                h('div', { className: 'w-12 h-12 rounded-full bg-slate-100 group-hover:bg-white flex items-center justify-center text-2xl shrink-0 mr-5 shadow-sm transition-colors' }, opt.icon),
+                                h('div', { className: 'w-12 h-12 rounded-full bg-slate-100 group-hover:bg-white flex items-center justify-center text-2xl shrink-0 me-5 shadow-sm transition-colors' }, opt.icon),
                                 h('span', { className: 'font-bold text-slate-700 group-hover:text-indigo-800 text-lg transition-colors' }, opt.label),
-                                h('div', { className: 'ml-auto opacity-0 group-hover:opacity-100 text-indigo-500 font-black text-xl transition-all group-hover:translate-x-1' }, '→')
+                                h('div', { className: 'ms-auto opacity-0 group-hover:opacity-100 text-indigo-500 font-black text-xl transition-all group-hover:translate-x-1' }, '→')
                             )
                         )
                     )
@@ -25585,7 +25585,7 @@ Analyze this data and return ONLY valid JSON:
                                 )
                             ),
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100' },
-                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl font-black text-indigo-600 tracking-tight truncate mr-2' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl font-black text-indigo-600 tracking-tight truncate me-2' },
                                     selectedAdj && selectedAnimal ? `${selectedAdj} ${selectedAnimal}` : (t('behavior_lens.hub.no_codename') || 'Pick a codename...')
                                 ),
                                 h('button', { "aria-label": "Randomize Name",
@@ -25654,7 +25654,7 @@ Analyze this data and return ONLY valid JSON:
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'truncate max-w-[80px]' }, r.name),
                                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                                     onClick: (e) => { e.stopPropagation(); setStudentRoster(prev => prev.filter(x => x.name !== r.name)); },
-                                    'aria-label': 'Close', className: 'ml-0.5 text-violet-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-[11px]'
+                                    'aria-label': 'Close', className: 'ms-0.5 text-violet-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-[11px]'
                                 }, '✕')
                             )
                         )
@@ -25678,7 +25678,7 @@ Analyze this data and return ONLY valid JSON:
                             ),
                             h('button', {
                                 onClick: () => setDismissedAlerts(prev => new Set([...prev, alert.id])),
-                                'aria-label': 'Close', className: 'text-xs opacity-50 hover:opacity-100 transition-opacity ml-3 shrink-0'
+                                'aria-label': 'Close', className: 'text-xs opacity-50 hover:opacity-100 transition-opacity ms-3 shrink-0'
                             }, '✕')
                         );
                     })
@@ -25689,7 +25689,7 @@ Analyze this data and return ONLY valid JSON:
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '🎓'),
                         h('div', null,
                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-black text-amber-800' }, `Practice Mode: ${practiceScenarioName}`),
-                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-600 ml-2' }, '⚠️ All data is simulated — no real students')
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-600 ms-2' }, '⚠️ All data is simulated — no real students')
                         )
                     ),
                     h('button', { "aria-label": "Clear Practice Data",
@@ -25702,7 +25702,7 @@ Analyze this data and return ONLY valid JSON:
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `rounded-xl border-2 transition-all overflow-hidden ${fullSummary ? 'border-purple-300 bg-purple-50/30' : 'border-dashed border-purple-200 bg-white hover:border-purple-300'}` },
                     h('button', { onClick: handleFullSummary,
                         disabled: summaryLoading,
-                        className: 'w-full flex items-center justify-between p-4 text-left'
+                        className: 'w-full flex items-center justify-between p-4 text-start'
                     },
                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg' }, '🧠'),
@@ -25816,7 +25816,7 @@ Analyze this data and return ONLY valid JSON:
                         return h('button', { key: tool.id,
                             onClick: () => { if (!tool.disabled) handleToolOpen(tool.id); },
                             disabled: tool.disabled || (!selectedStudent && !['analysis', 'export', 'record', 'abaguide', 'glossary', 'fbaworkflow', 'sandbox'].includes(tool.id)),
-                            className: `relative text-left p-5 rounded-xl border-2 transition-all ${cc.border} ${cc.hover} bg-white shadow-sm hover:shadow-md ${tool.disabled || !selectedStudent ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`
+                            className: `relative text-start p-5 rounded-xl border-2 transition-all ${cc.border} ${cc.hover} bg-white shadow-sm hover:shadow-md ${tool.disabled || !selectedStudent ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`
                         },
                             // Favorite star
                             h('span', { tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
@@ -25858,15 +25858,15 @@ Analyze this data and return ONLY valid JSON:
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('abc'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
-                                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '👩‍🏫'), h('div', { className: 'text-left' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.teacher') || 'Teacher'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.start_with_abc_data') || 'Start with ABC Data'))),
+                                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '👩‍🏫'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.teacher') || 'Teacher'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.start_with_abc_data') || 'Start with ABC Data'))),
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('homelog'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
-                                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '👪'), h('div', { className: 'text-left' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.parent') || 'Parent'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.home_behavior_log') || 'Home Behavior Log'))),
+                                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '👪'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.parent') || 'Parent'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.home_behavior_log') || 'Home Behavior Log'))),
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('abagraph'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
-                                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '📊'), h('div', { className: 'text-left' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.bcba_specialist') || 'BCBA / Specialist'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.aba_graph_engine') || 'ABA Graph Engine')))
+                                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '📊'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.bcba_specialist') || 'BCBA / Specialist'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.aba_graph_engine') || 'ABA Graph Engine')))
                                 ),
                                 h('button', { "aria-label": "Dismiss Welcome",
                                     onClick: () => { dismissWelcome(); handleToolOpen('pdpath'); },
@@ -25879,7 +25879,7 @@ Analyze this data and return ONLY valid JSON:
                                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); loadDemoStudent(); },
-                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-left hover:bg-white/20 transition-all'
+                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all'
                                     },
                                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
                                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '⚡'),
@@ -25889,7 +25889,7 @@ Analyze this data and return ONLY valid JSON:
                                     ),
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('fbaworkflow'); },
-                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-left hover:bg-white/20 transition-all'
+                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all'
                                     },
                                         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
                                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '🧭'),
@@ -25899,7 +25899,7 @@ Analyze this data and return ONLY valid JSON:
                                     ),
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('skilltracker'); },
-                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-left hover:bg-white/20 transition-all'
+                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all'
                                     },
                                         h('div', { className: 'flex items-center gap-2 mb-1' },
                                             h('span', { className: 'text-lg' }, '🏅'),
@@ -25918,7 +25918,7 @@ Analyze this data and return ONLY valid JSON:
                                 onChange: (e) => setSearchQuery(e.target.value),
                                 placeholder: t('behavior_lens.ph.search_81_tools') || '🔍  Search 81+ tools…',
                                 'aria-label': 'Search BehaviorLens tools',
-                                className: 'w-full px-4 py-3 pl-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm'
+                                className: 'w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm'
                             }),
                             searchQuery && h('button', {
                                 onClick: () => setSearchQuery(''),
@@ -26076,12 +26076,12 @@ Analyze this data and return ONLY valid JSON:
                                     return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: cat.key, className: 'rounded-xl border border-slate-400 bg-white shadow-sm overflow-hidden' },
                                         h('button', { "aria-label": "Toggle Cat",
                                             onClick: () => toggleCat(cat.key),
-                                            className: 'w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-left'
+                                            className: 'w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-start'
                                         },
                                             h('div', { className: 'flex items-center gap-2' },
                                                 h('span', { className: 'text-lg' }, cat.icon),
                                                 h('span', { className: 'text-sm font-black text-slate-700' }, cat.label),
-                                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-2 px-2 py-0.5 bg-slate-200 text-slate-600 text-[11px] font-bold rounded-full' }, catTools.length)
+                                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ms-2 px-2 py-0.5 bg-slate-200 text-slate-600 text-[11px] font-bold rounded-full' }, catTools.length)
                                             ),
                                             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600 text-sm transition-transform ' + (isOpen ? 'rotate-180' : '') }, '▾')
                                         ),
@@ -26135,7 +26135,7 @@ Analyze this data and return ONLY valid JSON:
                                     fc.emoji, ' ', aiAnalysis.hypothesizedFunction
                                 )
                             ),
-                            h('div', { className: 'text-right' },
+                            h('div', { className: 'text-end' },
                                 h('div', { className: 'text-2xl font-black', style: { color: fc.text } }, `${aiAnalysis.confidence}%`),
                                 h('div', { className: 'text-[11px] font-bold', style: { color: fc.text } }, t('behavior_lens.analysis.confidence') || 'Confidence')
                             )
@@ -26148,7 +26148,7 @@ Analyze this data and return ONLY valid JSON:
                             aiAnalysis.patterns.map((p, i) =>
                                 h('div', { key: i, className: 'text-xs p-3 bg-slate-50 rounded-lg border border-slate-100' },
                                     h('span', { className: 'font-bold text-slate-700' }, p.pattern),
-                                    p.frequency && h('span', { className: 'text-slate-600 ml-2' }, `(${p.frequency})`)
+                                    p.frequency && h('span', { className: 'text-slate-600 ms-2' }, `(${p.frequency})`)
                                 )
                             )
                         )
@@ -26176,7 +26176,7 @@ Analyze this data and return ONLY valid JSON:
                             h('div', { key: session.id, className: 'flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg text-xs' },
                                 h('div', null,
                                     h('span', { className: 'font-bold text-slate-700' }, fmtDate(session.timestamp)),
-                                    h('span', { className: 'text-slate-600 ml-2' }, session.method)
+                                    h('span', { className: 'text-slate-600 ms-2' }, session.method)
                                 ),
                                 h('div', { className: 'text-slate-600' },
                                     session.method === 'frequency' ? `${session.data?.count || 0} occurrences` :
@@ -26209,7 +26209,7 @@ Analyze this data and return ONLY valid JSON:
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
                         activePanel !== 'hub' && h('button', { "aria-label": "Toggle active panel",
                             onClick: () => setActivePanel('hub'),
-                            className: 'p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 mr-1 transition-colors'
+                            className: 'p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 me-1 transition-colors'
                         }, h(ArrowLeft, { size: 18 })),
                         h('div', { className: 'bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl text-white shadow-md' },
                             h(Eye, { size: 22 })
@@ -26324,15 +26324,15 @@ Analyze this data and return ONLY valid JSON:
                             },
                                 h('button', { "aria-label": "Copy as Text",
                                     onClick: handleCopyToolText,
-                                    className: 'w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
+                                    className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
                                 }, '📋 Copy as Text'),
                                 h('button', { "aria-label": "Download CSV",
                                     onClick: handleDownloadToolCsv,
-                                    className: 'w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
+                                    className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
                                 }, '📁 Download CSV'),
                                 graphPanels.includes(activePanel) && h('button', { "aria-label": "Export as PNG",
                                     onClick: () => { exportSvgAsPng(`behaviorlens-${activePanel}.png`); setShowExportMenu(false); },
-                                    className: 'w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
+                                    className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
                                 }, '🖼️ Export as PNG')
                             )
                         ),

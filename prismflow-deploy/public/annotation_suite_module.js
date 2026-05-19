@@ -456,7 +456,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
         e.stopPropagation();
       }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-t-lg", style: { background: "#dc2626", color: "white" } }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-white animate-pulse" }), /* @__PURE__ */ React.createElement("span", null, "RECORDING"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-mono" }, Math.floor(elapsedSec || 0), "s / ", VOICE_MAX_SECONDS, "s")),
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-t-lg", style: { background: "#dc2626", color: "white" } }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-white animate-pulse" }), /* @__PURE__ */ React.createElement("span", null, "RECORDING"), /* @__PURE__ */ React.createElement("span", { className: "ms-auto font-mono" }, Math.floor(elapsedSec || 0), "s / ", VOICE_MAX_SECONDS, "s")),
     /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 rounded-full bg-slate-200 overflow-hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-red-500 transition-all", style: { width: pct + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mt-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -965,7 +965,7 @@ function Toolbar(props) {
     "button",
     {
       onClick: toggleStickerMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 " + (mode === "sticker" ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "sticker" ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200" : "text-slate-600 hover:bg-slate-100"),
       title: tt("toolbar.stickers_tooltip"),
       "aria-pressed": mode === "sticker"
     },
@@ -976,7 +976,7 @@ function Toolbar(props) {
     "button",
     {
       onClick: toggleNoteMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 " + (mode === "note" ? "bg-amber-100 text-amber-700 ring-2 ring-amber-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "note" ? "bg-amber-100 text-amber-700 ring-2 ring-amber-200" : "text-slate-600 hover:bg-slate-100"),
       title: "Sticky note: click anywhere to leave a note",
       "aria-pressed": mode === "note"
     },
@@ -987,7 +987,7 @@ function Toolbar(props) {
     "button",
     {
       onClick: toggleHighlightMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 " + (mode === "highlight" ? "bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "highlight" ? "bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300" : "text-slate-600 hover:bg-slate-100"),
       title: "Highlighter: select text to highlight",
       "aria-pressed": mode === "highlight"
     },
@@ -998,7 +998,7 @@ function Toolbar(props) {
     "button",
     {
       onClick: toggleVoiceMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 " + (mode === "voice" ? "bg-red-100 text-red-700 ring-2 ring-red-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "voice" ? "bg-red-100 text-red-700 ring-2 ring-red-200" : "text-slate-600 hover:bg-slate-100"),
       title: "Voice note: click to start recording (max 60s, stays local)",
       "aria-pressed": mode === "voice"
     },
@@ -1009,14 +1009,14 @@ function Toolbar(props) {
     "button",
     {
       onClick: toggleDrawMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 " + (mode === "draw" ? "bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "draw" ? "bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200" : "text-slate-600 hover:bg-slate-100"),
       title: "Drawing: freehand pen overlay",
       "aria-pressed": mode === "draw"
     },
     /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F"),
     " ",
     "Draw"
-  ), mode === "sticker" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, STICKER_TYPES.map(function(type) {
+  ), mode === "sticker" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, STICKER_TYPES.map(function(type) {
     return /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1038,7 +1038,7 @@ function Toolbar(props) {
       "aria-label": tt("toolbar.clear_stickers")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "note" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, NOTE_COLOR_KEYS.map(function(key) {
+  )), mode === "note" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, NOTE_COLOR_KEYS.map(function(key) {
     const palette = NOTE_COLORS[key];
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -1078,7 +1078,7 @@ function Toolbar(props) {
       "aria-label": "Clear all annotations"
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "highlight" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, HIGHLIGHT_COLOR_KEYS.map(function(key) {
+  )), mode === "highlight" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, HIGHLIGHT_COLOR_KEYS.map(function(key) {
     const palette = HIGHLIGHT_COLORS[key];
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -1102,7 +1102,7 @@ function Toolbar(props) {
       "aria-label": "Clear all annotations"
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, DRAW_SHAPES.map(function(sh) {
+  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, DRAW_SHAPES.map(function(sh) {
     const isErase = sh === "erase";
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -1584,7 +1584,7 @@ function Sidebar(props) {
         "div",
         {
           key: a.id,
-          className: "group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors " + (isTeacherAnno ? "bg-indigo-50/60 hover:bg-indigo-100 border-l-2 border-indigo-400" : "bg-amber-50/40 hover:bg-amber-100 border-l-2 border-amber-300"),
+          className: "group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors " + (isTeacherAnno ? "bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400" : "bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300"),
           onClick: function() {
             onFocus(a.id);
           },

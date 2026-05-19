@@ -73,7 +73,10 @@
     "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub — explore, create, and grow",
     "mic_title": "Microphone Setup",
     "mic_desc": "Some tools use your microphone for dictation, recording, and voice input.",
-    "mic_canvas_warning": "In this environment, enabling the microphone will briefly reload the app. It's best to do it now before you start working."
+    "mic_canvas_warning": "In this environment, enabling the microphone will briefly reload the app. It's best to do it now before you start working.",
+    "change_language": "Change language",
+    "current_language": "Current",
+    "available_languages": "Available languages"
   },
   "guided": {
     "indicator_title": "Guided Mode",

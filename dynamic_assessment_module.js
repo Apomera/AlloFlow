@@ -4237,6 +4237,35 @@
     var monitoringPanelOpen = monitoringPanelOpenTuple[0];
     var setMonitoringPanelOpen = monitoringPanelOpenTuple[1];
 
+    // ── Start-screen draft state ──
+    // Lifted out of renderStartScreen() because a function-scope useState
+    // inside a render branch fires conditionally (only when the start screen
+    // actually renders), which breaks React's hook-order invariant on the
+    // first transition into an active session. See:
+    //   https://reactjs.org/link/invalid-hook-call
+    var nicknameDraftTuple = useState("");
+    var nicknameDraft = nicknameDraftTuple[0];
+    var setNicknameDraft = nicknameDraftTuple[1];
+    var difficultyDraftTuple = useState("easy");
+    var difficultyDraft = difficultyDraftTuple[0];
+    var setDifficultyDraft = difficultyDraftTuple[1];
+    var modeDraftTuple = useState("clinician");
+    var modeDraft = modeDraftTuple[0];
+    var setModeDraft = modeDraftTuple[1];
+    var domainDraftTuple = useState("math");
+    var domainDraft = domainDraftTuple[0];
+    var setDomainDraft = domainDraftTuple[1];
+
+    // Auto-show the onboarding tour on first ever open. Lifted from below the
+    // render dispatch (where it was unreachable because every branch returns
+    // before it) up to the top of the component body where it actually runs.
+    useEffect(function () {
+      if (!state.onboardingSeen && (!state.sessions || state.sessions.length === 0) && !state.activeSession) {
+        setTourStep(0);
+      }
+      // eslint-disable-next-line
+    }, []);
+
     // ── Helpers ──
     var addToast = props.addToast || function (msg) { announce(msg); };
 
@@ -5449,19 +5478,11 @@
 
     // ─── Start screen ───
     function renderStartScreen() {
-      var nicknameDraftTuple = useState("");
-      var nicknameDraft = nicknameDraftTuple[0];
-      var setNicknameDraft = nicknameDraftTuple[1];
-      var difficultyDraftTuple = useState("easy");
-      var difficultyDraft = difficultyDraftTuple[0];
-      var setDifficultyDraft = difficultyDraftTuple[1];
-      var modeDraftTuple = useState("clinician");
-      var modeDraft = modeDraftTuple[0];
-      var setModeDraft = modeDraftTuple[1];
-      // Phase C — domain picker (math + reading + WM + language)
-      var domainDraftTuple = useState("math");
-      var domainDraft = domainDraftTuple[0];
-      var setDomainDraft = domainDraftTuple[1];
+      // nicknameDraft, difficultyDraft, modeDraft, domainDraft now live at
+      // the component's top level (see "Start-screen draft state" comment
+      // above). They were lifted out of this render function to keep React's
+      // hook-order invariant when the user transitions from the start screen
+      // into an active session.
       var hasGemini = typeof props.callGemini === "function";
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 720, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
@@ -7832,13 +7853,9 @@
       );
     }
 
-    // Auto-show tour on first ever open
-    useEffect(function () {
-      if (!state.onboardingSeen && (!state.sessions || state.sessions.length === 0) && !state.activeSession) {
-        setTourStep(0);
-      }
-      // eslint-disable-next-line
-    }, []);
+    // (Auto-show-tour useEffect was here but was unreachable — every render
+    // path returns from the dispatch above. Now lifted to the top of the
+    // component body alongside the other top-level effects.)
 
     // ─── Phase A-bis — Custom probe BUILDER screen ───
     // Form for the clinician to spec a construct → AI generates items.
