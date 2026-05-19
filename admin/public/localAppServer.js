@@ -639,7 +639,7 @@ async function handleNvidiaProxy(req, res, body) {
     console.log(`[nvidia-proxy] Request received — model: ${effectiveModel}, bodyLen: ${JSON.stringify(nvidiaBody).length}`);
     try {
         const nvidiaAbort = new AbortController();
-        const nvidiaTimeout = setTimeout(() => nvidiaAbort.abort(), 90_000); // 90-second cap
+        const nvidiaTimeout = setTimeout(() => nvidiaAbort.abort(), 300_000); // 300-second cap (reasoning model needs time on large prompts)
         let upstream;
         try {
             upstream = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
