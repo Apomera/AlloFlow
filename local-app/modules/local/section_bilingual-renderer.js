@@ -593,7 +593,12 @@ const parseTaggedContent = (text) => {
           throw new Error(_errData.error || `NVIDIA proxy ${_nvRes.status}`);
         }
         const _nvData = await _nvRes.json();
-        const _nvText = _nvData?.choices?.[0]?.message?.content || '';
+        const _nvRaw = _nvData?.choices?.[0]?.message?.content || '';
+        // Reasoning models (nemotron) prefix output with <think>...</think> — strip it
+        // Also strip markdown code fences (```json ... ```) that some models add
+        let _nvText = _nvRaw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        _nvText = _nvText.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
+        console.log(`[callGemini] NVIDIA response: raw=${_nvRaw.length}ch, cleaned=${_nvText.length}ch, finish=${_nvData?.choices?.[0]?.finish_reason}`);
         if (useSearch) return { text: _nvText, groundingMetadata: null };
         return _nvText;
       } catch (nvErr) {

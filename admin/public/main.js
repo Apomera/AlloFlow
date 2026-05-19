@@ -738,12 +738,29 @@ async function startDeployment(setupData, onProgress) {
     // - CPU → CPU inference fallback
     
     let finalServiceList = [...servicesToInstall];
-    
-    // Determine AI provider from selected services
-    const AI_PROVIDERS = ['llm-engine', 'gemini', 'copilot'];
-    const selectedAiProvider = finalServiceList.find(s => AI_PROVIDERS.includes(s)) || 'llm-engine';
-    
-    // Ensure llm-engine is included when Local AI is the provider
+
+    // Determine AI provider — read from ai_config.json that the wizard saved BEFORE calling
+    // startDeployment. This is more reliable than deriving from servicesToInstall because
+    // cloud providers (nvidia, gemini, copilot) are not in SERVICE_DEFINITIONS (no binary to
+    // install) and get filtered out of servicesToInstall above.
+    let selectedAiProvider = 'llm-engine';
+    try {
+      if (fs.existsSync(AI_CONFIG_FILE)) {
+        const savedAiCfg = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf8'));
+        if (savedAiCfg.aiProvider) {
+          selectedAiProvider = savedAiCfg.aiProvider;
+          console.log('[deploy:start] AI provider from saved config:', selectedAiProvider);
+        }
+      }
+    } catch (_) {}
+    // Fallback: scan service list for a recognized provider id
+    if (selectedAiProvider === 'llm-engine') {
+      const AI_PROVIDERS = ['llm-engine', 'gemini', 'copilot', 'nvidia'];
+      const fromList = finalServiceList.find(s => AI_PROVIDERS.includes(s));
+      if (fromList) selectedAiProvider = fromList;
+    }
+
+    // Only auto-add llm-engine when it is the selected provider (not for cloud providers)
     if (selectedAiProvider === 'llm-engine' && !finalServiceList.includes('llm-engine')) {
       finalServiceList.push('llm-engine');
       console.log('[deploy:start] Added llm-engine (LM Studio with llama.cpp) for local AI');
@@ -900,7 +917,9 @@ async function startDeployment(setupData, onProgress) {
 
     // PHASE 5: Configure LM Studio (llama.cpp) for web app
     // LM Studio provides OpenAI-compatible API on port 1234 for all GPU types
-    if (servicesToInstallFinal.includes('llm-engine')) {
+    // Skip if user selected a cloud AI provider (nvidia/gemini/copilot) — their config
+    // was already saved by the wizard via writeAIConfig and must not be overwritten.
+    if (servicesToInstallFinal.includes('llm-engine') && !['nvidia', 'gemini', 'copilot'].includes(selectedAiProvider)) {
       console.log('[deploy:start] PHASE 5: LM Studio configuration (llama.cpp)');
       
       onProgress({ 
@@ -967,6 +986,9 @@ async function startDeployment(setupData, onProgress) {
         ...(existingAiConfig.googleClientId ? { googleClientId: existingAiConfig.googleClientId } : {}),
         ...(existingAiConfig.googleClientSecret ? { googleClientSecret: existingAiConfig.googleClientSecret } : {}),
         ...(existingAiConfig.copilot ? { copilot: existingAiConfig.copilot } : {}),
+        // Preserve NVIDIA credentials in case they exist (belt-and-suspenders)
+        ...(existingAiConfig.nvidiaApiKey ? { nvidiaApiKey: existingAiConfig.nvidiaApiKey } : {}),
+        ...(existingAiConfig.nvidiaModel ? { nvidiaModel: existingAiConfig.nvidiaModel } : {}),
       };
       
       fs.writeFileSync(
