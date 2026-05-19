@@ -1,15 +1,15 @@
 # Portuguese (Brazil) Language Pack — Handoff
 
-**Last updated:** 2026-05-18 (Session 3)
-**Current state:** 8,721 / ~9,307 keys (94% coverage), 156+ sections, ~994 KB
+**Last updated:** 2026-05-19 (Session 4 — 100% COMPLETE)
+**Current state:** 9,513 / 9,307+ keys (100% coverage, exceeds target), 163 sections, ~1029 KB
 **Slug:** `portuguese_brazil`
 **Dialect:** Brazilian Portuguese (PT-BR), informal "você" register for K-12 student-facing UI
 **Live URL:** https://alloflow-cdn.pages.dev/lang/portuguese_brazil.js
 **Matcher status:** All common Portuguese aliases (`portuguese`, `Portuguese (Brazil)`, `brasileiro`, `português`, `portuges` misspelling) already route to `portuguese_brazil` — no matcher edits needed.
 
-## Status: SHIPPABLE QUALITY
+## Status: 100% COMPLETE ✓
 
-Portuguese (Brazil) is now the **third most complete** language pack after Spanish (LatAm) and French. With behavior_lens and help_strings sections both COMPLETE, the pack covers all major user-facing content. Remaining ~6% is concentrated in auto-generated STEM lab subsections (periodic table elements, dissection terminology, synthesizer params, etc.) with low user-visibility.
+Portuguese (Brazil) is now one of **six fully complete** language packs (alongside Arabic, Chinese Simplified, French, Somali, Spanish LatAm). The manifest shows ✓ status. All sections — including behavior_lens (1,483 leaves), help_strings (782 long-form pedagogical descriptions), and the STEM Lab subsections (periodic table elements, dissection anatomy, music synthesis, brain atlas, galaxy/rocks/planet terms) — are translated.
 
 ## Sections complete (156)
 
@@ -50,14 +50,15 @@ Portuguese (Brazil) is now the **third most complete** language pack after Spani
   - Batch 7 (98): socratic, source, standards, syntax, teacher gate, timeline deep, timer, tool catalog (20 cards), tour, ui_lang, venn, visuals open
   - Batch 8 (96, 11 overwrites): visuals deep, volume_builder, welcome, wizard (full), word_sounds, ws_gen, xp_modal
 
-## Sections NOT YET started (~586 keys remaining, ~6%)
+## Sections NOT YET started
 
-**stem large subsections (~586 keys)** — periodic(196), dissection(217), synth(97), synth_ui(115), galaxy(71), rocks(53), planet_view(43)
-- Many of these have auto-generated keys with emoji-escape values (e.g. `"u2b50": "\\u2B50 +"`)
-- Periodic table elements, dissection terminology, synthesizer parameters
-- **LOWER user-visibility priority** — most STEM Lab tools are highly specialized; defer until other languages catch up
-
-**Smaller misc still missing**: a handful of orphan top-level keys not in standard sections. Mostly safe to defer.
+**NONE — pack is at 100% coverage.** Session 4 closed the final gap by translating the 7 remaining STEM Lab subsections (792 leaves):
+- periodic (196): full periodic table with PT-BR IUPAC element names (Hidrogênio → Oganessônio) + element-description blurbs + common compounds (Dióxido de Carbono, Bicarbonato de Sódio, etc.)
+- dissection (217): Virtual Dissection Lab anatomy terms — earthworm/eye/heart/brain structures + cardiac valves + neural/excretory/respiratory pathways
+- synth (97) + synth_ui (115): music synthesizer (escalas, acordes, intervalos, ADSR) + brain atlas anatomy (lobos, áreas de Broca/Wernicke, gânglios basais, etc.)
+- galaxy (71): astronomy — star types (O-M), nebulae (Órion, Caranguejo, Águia, Lagoa), stellar lifecycle (protoestrela → supernova → estrela de nêutrons / buraco negro)
+- rocks (53): geology — rock types (Ígnea/Sedimentar/Metamórfica), mineral identification (quartzo, calcita, hematita), Mohs hardness
+- planet_view (43): planetary geography mission briefings — Olympus Mons, Valles Marineris, Fossa das Marianas, Grande Mancha Vermelha, anel de Saturno, etc.
 
 ## Translation conventions established
 
@@ -129,22 +130,20 @@ cb5009be (S3) help_strings batch 3/8 (98) → 8,244 (89%)
 
 ## How to continue (next session, if any)
 
-The pack is **shipping-ready at 94%**. Further work is optional polish. If you want to push to ~99%:
+The pack is **100% COMPLETE** — no continuation work required. Only follow-ups would be:
 
-1. **Read this doc + `lang/LANGUAGE_PACK_GUIDE.md`** first
-2. **Remaining target: stem large subsections (~586 keys)** — periodic table elements, dissection terms, synthesizer params
-   - Skip auto-generated emoji-escape keys (`"u2b50": "\\u2B50 +"`) — preserve verbatim
-   - Translate only the genuine user-facing text labels
-3. **Use the merge script pattern** for efficiency:
+1. **Polish pass** if any specific term reads wrong in classroom use (PT-BR speakers reporting issues)
+2. **New-feature backfill** as AlloFlow ships new English UI strings — run the standard merge pattern:
    ```bash
-   node c:/tmp/merge_help_mode.js c:/tmp/<your_translation>.json  # adapt for stem
+   # Edit lang/portuguese_brazil.js directly OR use a merge script like:
+   node c:/tmp/merge_help_mode.js c:/tmp/<new_translations>.json
    ```
-4. **Validate parse after each merge** and ship with the pre-commit pattern (per [feedback_deploy_must_pre_commit.md](../memory/feedback_deploy_must_pre_commit.md)):
+3. **Ship with the pre-commit pattern** (per [feedback_deploy_must_pre_commit.md](../memory/feedback_deploy_must_pre_commit.md)):
    ```bash
    cp lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js && \
    node dev-tools/update_lang_manifest.cjs && \
    git add lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && \
-   git commit -m "lang: Portuguese (Brazil) +N keys (TOTAL total, X% coverage) - <section>" && \
+   git commit -m "lang: Portuguese (Brazil) +N keys (<reason>)" && \
    git push origin main
    ```
 
