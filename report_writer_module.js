@@ -1644,6 +1644,25 @@ Return ONLY valid JSON:
                     )
                 )
             ) : null,
+            // ── DA launch CTA — shown when no payload is queued. ──
+            // Lets the clinician open Dynamic Assessment Studio directly from
+            // Report Writer when they realize they need DA data. Triggers the
+            // host's __alloOpenDynamicAssessment() hook installed by AlloFlowANTI.
+            !daExportPayload && typeof window !== 'undefined' && typeof window.__alloOpenDynamicAssessment === 'function' ? h('div', {
+                className: 'rounded-xl px-4 py-2.5 border border-slate-200 bg-slate-50 flex items-center justify-between gap-3',
+                role: 'region',
+                'aria-label': 'Launch Dynamic Assessment Studio'
+            },
+                h('div', { className: 'flex items-center gap-2 text-xs text-slate-600' },
+                    h('span', { className: 'text-base flex-shrink-0' }, '🔬'),
+                    h('span', null, 'Need Dynamic Assessment data? Run a probe to capture modifiability + scaffold-response findings — they will flow into this report automatically.')
+                ),
+                h('button', {
+                    onClick: function () { try { window.__alloOpenDynamicAssessment(); } catch (e) {} },
+                    className: 'px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold transition-colors flex-shrink-0',
+                    'aria-label': 'Open Dynamic Assessment Studio'
+                }, 'Run a probe →')
+            ) : null,
             // Header
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-5 border border-violet-200' },
                 h('div', { className: 'flex items-center justify-between mb-3' },

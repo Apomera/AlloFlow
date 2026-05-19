@@ -18,6 +18,9 @@ function EducatorHubModal(props) {
     // never defined in host scope). The real host setter is setPdfBatchQueue,
     // matching the batch-files array shape stored in `pdfBatchQueue` state.
     setPdfBatchQueue = (() => {}),
+    // Dynamic Assessment Studio entry — added May 2026. Optional so legacy
+    // hosts that haven't wired the setter still render the rest of the hub.
+    setIsDynamicAssessmentOpen = (() => {}),
   } = props;
 
   return (
@@ -50,6 +53,13 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
                   <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🔬</span>
+                <div>
+                  <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
+                  <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">

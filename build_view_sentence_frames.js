@@ -5,7 +5,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_sentence_frames.txt', 'utf-8');
+const inner = fs.readFileSync('view_sentence_frames_source.jsx', 'utf-8');
 
 const wrapped = `
 function SentenceFramesView(props) {

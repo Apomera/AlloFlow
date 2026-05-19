@@ -1268,6 +1268,29 @@
       var student = importedStudents.find(function(s) { return (s.nickname || s.name) === studentName; });
       var stats = student ? student.stats || {} : {};
       var tierResult = classifyRTITier(stats);
+      // Dynamic Assessment sessions for this student (if DA module is loaded).
+      // Defensive: returns [] on any error, so meeting summary still prints cleanly without DA data.
+      var daSessions = [];
+      try {
+        var _DA = window.AlloModules && window.AlloModules.DynamicAssessment;
+        if (_DA && _DA._meta && typeof _DA._meta.getSessionsByStudent === 'function') {
+          daSessions = _DA._meta.getSessionsByStudent(studentName).slice(0, 3);
+        }
+      } catch (e) {}
+      var daRows = '';
+      daSessions.forEach(function(sess) {
+        if (!sess) return;
+        var d = '--';
+        try { d = new Date(sess.dateStarted || sess.dateFinalized || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); } catch (_) {}
+        var domain = sess.isCustomBank ? 'custom probe' : (sess.domain || '--');
+        var diffLabel = sess.difficulty ? ' / ' + sess.difficulty : '';
+        var mi = typeof sess.modifiabilityIndex === 'number' ? sess.modifiabilityIndex.toFixed(2) : '--';
+        var tier = sess.modifiabilityTier || {};
+        daRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+d+'</td>'+
+          '<td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+domain+diffLabel+'</td>'+
+          '<td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700">'+mi+'</td>'+
+          '<td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+(tier.color||'#334155')+';font-weight:700">'+(tier.label||'--')+'</span></td></tr>';
+      });
       var benchmarkRows = '', growthRows = '', interventionRows = '';
       var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
       var typeLabels = { orf: 'ORF (WCPM)', nwf: 'NWF (CLS)', lnf: 'LNF', math: 'Math (DCPM)', fluency: 'ORF (WCPM)', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Disc.' };
@@ -1278,6 +1301,7 @@
         '<h1>RTI Data Team Meeting Summary</h1><div style="color:#64748b;font-size:11px;margin-bottom:8px"><strong>Student:</strong> ' + studentName + ' &bull; <strong>Date:</strong> ' + dateStr + ' &bull; <strong>Season:</strong> ' + seasonLabel + '</div>' +
         '<div style="margin:8px 0 12px"><span class="tier-badge" style="background:' + (tierResult.bg||'#f1f5f9') + ';color:' + (tierResult.color||'#334155') + ';border:2px solid ' + (tierResult.border||'#cbd5e1') + '">' + (tierResult.emoji||'') + ' ' + (tierResult.label||'Not Classified') + '</span></div>' +
         (benchmarkRows ? '<h2>Current Benchmark Status</h2><table><thead><tr><th>Measure</th><th>Score</th><th>50th %ile</th><th>Status</th></tr></thead><tbody>' + benchmarkRows + '</tbody></table>' : '') +
+        (daRows ? '<h2>Dynamic Assessment Findings</h2><table><thead><tr><th>Date</th><th>Probe</th><th>Modifiability Index</th><th>Tier</th></tr></thead><tbody>' + daRows + '</tbody></table><div style="margin-top:4px;font-size:9px;color:#94a3b8;font-style:italic">Vygotsky/Feuerstein/Lidz dynamic assessment — measures growth in response to scaffolding rather than static ability. High modifiability with low static benchmarks is a strong intervention-responder signal.</div>' : '') +
         (interventionRows ? '<h2>Intervention History</h2><table><thead><tr><th>Program</th><th>Frequency</th><th>Duration</th><th>Start Date</th></tr></thead><tbody>' + interventionRows + '</tbody></table>' : '<h2>Intervention History</h2><p style="color:#94a3b8;font-style:italic">No interventions logged.</p>') +
         '<h2>Recommendation</h2><div class="rec-box" style="background:' + (tierResult.bg||'#f1f5f9') + ';border-left:4px solid ' + (tierResult.color||'#64748b') + '">' + recommendation + '</div>' +
         '<h2>Team Decision</h2><div style="font-size:11px;line-height:2"><label><input type="checkbox" style="margin-right:4px"> Continue current intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Modify intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Move to higher tier</label><br><label><input type="checkbox" style="margin-right:4px"> Refer for comprehensive evaluation</label><br><label><input type="checkbox" style="margin-right:4px"> Other: _______________</label></div>' +

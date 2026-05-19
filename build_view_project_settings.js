@@ -1,7 +1,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_project_settings.txt', 'utf-8');
+const inner = fs.readFileSync('view_project_settings_source.jsx', 'utf-8');
 
 const wrapped = `
 function ProjectSettingsView(props) {

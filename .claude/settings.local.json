@@ -71,10 +71,44 @@
       "Bash(powershell -NoProfile -File /tmp/search7.ps1)",
       "WebFetch(domain:deepwiki.com)",
       "Bash(/tmp/search8.ps1:*)",
-      "Bash(powershell -NoProfile -File /tmp/search8.ps1)"
+      "Bash(powershell -NoProfile -File /tmp/search8.ps1)",
+      "Bash(bash deploy.sh \"v0.29\")",
+      "Bash(grep -n \"^      switch.*sel\\\\|tabBar,$\\\\|return h\\('div', { style: { padding: 0,\" \"c:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_astronomy.js\")",
+      "Bash(node --check stem_lab/stem_tool_learning_lab.js)",
+      "Bash(node --check c:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_assessmentliteracy.js)",
+      "Bash(bash deploy.sh \"v0.32\")",
+      "Bash(bash deploy.sh \"v0.33\")",
+      "Bash(./deploy.sh \"\\(deploy Learning Lab My Toolkit wave 3\\)\")",
+      "Bash(node --check \"c:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_astronomy.js\")",
+      "Bash(node /tmp/test_full.js \"c:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_astronomy.js\")",
+      "Bash(./deploy.sh \"\\(retry deploy wave 3\\)\")",
+      "Bash(awk -F: '$2 < 3300')",
+      "Bash(node -e ' *)",
+      "Bash(node _build_tool_catalog_module.js)",
+      "Bash(node _check_tool_catalog.cjs)",
+      "Bash(awk '/^const COMPILE_PAIRS = \\\\[/,/^];/' build.js)",
+      "Bash(node c:/tmp/audit_i18n.cjs)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(bash deploy.sh \"help_strings: 27 missing entries for new tools + immersive + header + timeline\")",
+      "Bash(node _audit_help_keys.cjs)",
+      "Bash(node _audit_help_anchors.cjs)",
+      "Bash(awk '{print $1}')",
+      "Bash(node -e \"let s=require\\('fs'\\).readFileSync\\('help_strings.js','utf8'\\).replace\\(/^\\\\/\\\\/[^\\\\n]*\\\\n/gm,''\\).trim\\(\\); const h=eval\\('\\('+s+'\\)'\\); console.log\\('Total keys:', Object.keys\\(h\\).length\\);\")",
+      "Bash(bash deploy.sh \"help_strings: 107 entries closing help-mode-blind gap on 14 components + audit scripts\")"
     ],
     "additionalDirectories": [
       "\\tmp"
+    ]
+  },
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/extract-signals.mjs" },
+          { "type": "command", "command": "node .claude/hooks/append-letter.mjs" }
+        ]
+      }
     ]
   }
 }

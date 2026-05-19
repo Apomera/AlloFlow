@@ -10,8 +10,8 @@
   // Top-level clinical tool sibling to allohaven_module.js / symbol_studio.
   // Implements Vygotsky/Feuerstein dynamic-assessment methodology:
   // pretest → mediation → posttest with graduated prompt hierarchies +
-  // modifiability scoring. Examiner-led by default; AI-mediated path
-  // ships in Phase B (later).
+  // modifiability scoring. Both examiner-led and AI-mediated paths ship.
+  // Module covers Phases A–BB (see DA_AUDIT.md for the full inventory).
   //
   // Core mechanic: each item ships with a 4-level prompt ladder.
   // Level 0 = no scaffold (student attempts alone).
@@ -2077,7 +2077,7 @@
   // in the prompt so Gemini's role is DECISION (which scaffold next)
   // rather than CONTENT GENERATION (no hallucinated hints). Scaffold
   // text shown to the student is always the pre-authored ladder copy.
-  function buildAiMediatePrompt(item, lastResponse, scaffoldsDelivered) {
+  function buildAiMediatePrompt(item, lastResponse, scaffoldsDelivered, outputLanguage) {
     var ladderLines = item.promptLadder.map(function (step) {
       var was = scaffoldsDelivered.indexOf(step.level) >= 0 ? " [ALREADY DELIVERED]" : "";
       return "  L" + step.level + " (" + step.type + ")" + was + ": " + step.text;
@@ -2085,7 +2085,7 @@
     return [
       "You are mediating one item in a dynamic assessment session for a student.",
       "Your job: evaluate the student's most recent response, then decide which scaffold level (if any) to deliver next.",
-      "",
+      buildLanguageDirective(outputLanguage),
       "ITEM:",
       "  " + item.prompt,
       "  Canonical correct answer: " + item.correctAnswer,
@@ -2539,7 +2539,7 @@
   // ─── Custom probe Gemini prompt ───
   // Built around DECISION constraints (which scaffold goes where) rather
   // than open-ended generation. Strict JSON shape; explicit anti-patterns.
-  function buildCustomProbePrompt(form) {
+  function buildCustomProbePrompt(form, outputLanguage) {
     var domain = String(form.domain || "math");
     var gradeBand = String(form.gradeBand || "4-5");
     var construct = String(form.construct || "").trim().slice(0, 240);
@@ -2549,7 +2549,7 @@
 
     return [
       "You are generating items for a Dynamic Assessment probe — a school-psychology methodology that measures a student's modifiability (how much they grow with structured scaffolding) rather than static ability.",
-      "",
+      buildLanguageDirective(outputLanguage),
       "PROBE SPEC:",
       "- Domain: " + domain,
       "- Grade band: " + gradeBand,
@@ -2691,7 +2691,7 @@
 
   // Build a critique prompt for an already-generated draft. Items
   // are passed as the validated array from validateGeneratedItem.
-  function buildCritiquePrompt(draftItems, form) {
+  function buildCritiquePrompt(draftItems, form, outputLanguage) {
     var domainHint = {
       "math": "math reasoning items — common failure modes: L1 leaking the operation, L3 modeling collapsing into 'the answer with extra arithmetic.'",
       "reading": "reading comprehension items — common failure modes: L1 stating the inference, L3 modeling restating the canonical answer with paraphrase.",
@@ -2701,7 +2701,7 @@
 
     return [
       "You are a senior school psychologist reviewing draft Dynamic Assessment items + prompt ladders. Your job is to identify quality issues and propose specific refinements. Be rigorous and concrete.",
-      "",
+      buildLanguageDirective(outputLanguage),
       "Domain context: " + domainHint,
       "",
       "Evaluate EACH item against these 5 criteria:",
@@ -2788,7 +2788,7 @@
 
   // Build a refinement prompt that applies only the called-out fixes
   // to the items that need them. Items marked 'good' are not touched.
-  function buildRefinementPrompt(draftItems, critiques, form) {
+  function buildRefinementPrompt(draftItems, critiques, form, outputLanguage) {
     var itemsNeedingRefinement = [];
     critiques.forEach(function (c, ci) {
       if (c.overallQuality !== "good" && c.issues.length > 0) {
@@ -2800,7 +2800,7 @@
     });
     return [
       "You are refining Dynamic Assessment items based on specific critique feedback from a senior school psychologist.",
-      "",
+      buildLanguageDirective(outputLanguage),
       "Rules:",
       "1. Apply ONLY the changes called out in the critique. Do NOT make other changes.",
       "2. Preserve correctAnswer, construct, gradeBand, prompt. Do NOT change the canonical answer or the question itself.",
@@ -2945,6 +2945,62 @@
   // clinician owns the final wording.
   // ═════════════════════════════════════════════════════════
 
+  // Phase V-bis — Format Math Fluency CBM probes (passed in via props from the
+  // host's main history) into a multi-line block suitable for the intake's
+  // existingAssessmentData field. Appends, never overwrites. Computes a trend
+  // line if 2+ probes share the same operation+difficulty.
+  function formatMathFluencyProbesForIntake(probes) {
+    if (!Array.isArray(probes) || probes.length === 0) return "";
+    var lines = ["Math Fluency CBM probes (auto-pulled from session history):"];
+    probes.slice(0, 3).forEach(function (p) {
+      var d = (p && p.data) || {};
+      var dateStr = "";
+      try { dateStr = new Date(d.date || (p && p.timestamp) || Date.now()).toISOString().slice(0, 10); } catch (_) {}
+      var op = d.operation || "?";
+      var diff = d.difficulty || "?";
+      var dcpm = typeof d.dcpm === "number" ? d.dcpm : "?";
+      var acc = typeof d.accuracy === "number" ? d.accuracy : "?";
+      var corr = typeof d.totalCorrect === "number" ? d.totalCorrect : "?";
+      var att = typeof d.totalAttempted === "number" ? d.totalAttempted : "?";
+      lines.push("- " + dateStr + ": " + dcpm + " DCPM, " + acc + "% accuracy (" + op + "/" + diff + "; " + corr + "/" + att + " correct)");
+    });
+    if (probes.length >= 2) {
+      var firstOp = probes[0] && probes[0].data && probes[0].data.operation;
+      var firstDiff = probes[0] && probes[0].data && probes[0].data.difficulty;
+      var match = probes.filter(function (p) {
+        return p && p.data && p.data.operation === firstOp && p.data.difficulty === firstDiff;
+      });
+      if (match.length >= 2) {
+        // probes are most-recent-first, so match[0] is newest, match[last] is oldest
+        var newest = match[0].data || {};
+        var oldest = match[match.length - 1].data || {};
+        var delta = (newest.dcpm || 0) - (oldest.dcpm || 0);
+        var trendWord = delta > 0 ? "improving" : delta < 0 ? "declining" : "flat";
+        lines.push("Trend (" + firstOp + "/" + firstDiff + "): " + (delta >= 0 ? "+" : "") + delta + " DCPM across " + match.length + " probe" + (match.length === 1 ? "" : "s") + " (" + trendWord + ").");
+      }
+    }
+    return lines.join("\n");
+  }
+
+  // Output-language directive injected into every AI prompt that produces
+  // student/family/clinician-facing text. Sourced from the host's leveledTextLanguage
+  // (the same setting that controls leveled-text and glossary translation across
+  // AlloFlow), with an optional per-DA-session override. Returns "" for English
+  // so prompts don't carry a phantom directive in the default case.
+  function buildLanguageDirective(outputLanguage) {
+    if (!outputLanguage || outputLanguage === "English") return "";
+    return [
+      "",
+      "═══ OUTPUT LANGUAGE ═══",
+      "Generate ALL output text in " + outputLanguage + ", including item prompts, scaffold-ladder text, transfer-twin prompts, observation hints, narrative summaries, IEP goal text, accommodation text, family-letter body, teacher-handoff body, and monitoring-plan text. Use " + outputLanguage + "'s standard pedagogical and clinical terminology for K-12 special education.",
+      "Universal acronyms (IEP, FBA, BIP, RTI, ABA, UDL, ABC, DOK, DCPM, WCPM, CBM, MTSS, AAC, ELL) stay as-is; provide a brief " + outputLanguage + " gloss on first mention only.",
+      "Author names and bibliographic references (Vygotsky, Feuerstein, Lidz, Tzuriel, etc.) stay in their original Latin spelling.",
+      "Field keys in JSON (e.g., \"prompt\", \"correctAnswer\", \"construct\", \"verdict\", \"nextScaffoldLevel\") MUST remain English — only the VALUES are translated.",
+      "═══════════════════════",
+      ""
+    ].join("\n");
+  }
+
   // Phase V — Format intake context as a block to prepend to AI prompts.
   // Returns "" if no fields filled, so prompts don't get a phantom block.
   function formatIntakeForPrompt(session) {
@@ -2965,7 +3021,7 @@
     return ["=== PRE-SESSION REFERRAL CONTEXT ==="].concat(parts).join("\n");
   }
 
-  function buildIepGoalPrompt(session, studentName) {
+  function buildIepGoalPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
     var mediationResults = (session.itemResults || []).filter(function (r) { return r.phase === "mediation"; });
@@ -3002,6 +3058,7 @@
 
     return [
       "You are an expert school psychologist drafting IEP goals based on Dynamic Assessment findings. ",
+      buildLanguageDirective(outputLanguage),
       "Generate 2 to 4 SMART-format measurable annual IEP goals derived ONLY from the data provided below. ",
       "Each goal must follow the structure: 'Given [conditions], [student] will [observable behavior] at [criterion level], as measured by [evaluation method] across [timeframe].' ",
       "Goals must be observable and measurable — never use words like 'understand,' 'know,' 'appreciate,' or 'demonstrate awareness.' Use action verbs ('will identify,' 'will solve,' 'will produce,' 'will paraphrase'). ",
@@ -3122,7 +3179,7 @@
     "setting": "Setting"
   };
 
-  function buildAccommodationsPrompt(session, studentName) {
+  function buildAccommodationsPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
     var mediationResults = (session.itemResults || []).filter(function (r) { return r.phase === "mediation"; });
@@ -3155,6 +3212,7 @@
 
     return [
       "You are an expert school psychologist drafting a list of UDL-aligned classroom accommodations based on Dynamic Assessment findings. ",
+      buildLanguageDirective(outputLanguage),
       "Generate 4 to 7 specific, evidence-anchored accommodations derived ONLY from the data provided below. ",
       "Each accommodation must be: ",
       "  (a) specific and observable — NOT vague (no 'provide visual supports'; YES 'provide a single-page reference card showing the operation-cue strategy that worked in mediation'); ",
@@ -3273,7 +3331,7 @@
     "what_helps", "next_steps", "questions_for_team"
   ];
 
-  function buildFamilySummaryPrompt(session, studentName) {
+  function buildFamilySummaryPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
     var mediationResults = (session.itemResults || []).filter(function (r) { return r.phase === "mediation"; });
@@ -3306,7 +3364,8 @@
 
     return [
       "You are an experienced school psychologist writing a plain-language letter to a family describing what you learned in a one-on-one session with their child. ",
-      "The audience is a parent or guardian who is NOT a clinician — they may not have a high-school education and English may not be their first language. ",
+      buildLanguageDirective(outputLanguage),
+      "The audience is a parent or guardian who is NOT a clinician — they may not have a high-school education and the AlloFlow user-set output language may not be their first language. ",
       "Reading level target: 6th grade. Short sentences. Concrete examples. No jargon. ",
       "BANNED WORDS: 'modifiability,' 'modifiable,' 'scaffolding,' 'scaffold,' 'mediation,' 'mediated,' 'construct,' 'tier,' 'index,' 'baseline,' 'posttest,' 'ZPD,' 'zone of proximal development,' 'cognitive,' 'metacognitive,' 'pretest,' 'probe,' 'phoneme,' 'orthography,' acronyms (no 'IEP' — say 'school plan'). ",
       "REQUIRED TONE: warm, honest, strengths-first. NEVER make grandiose claims. NEVER promise outcomes. ",
@@ -3404,7 +3463,7 @@
   // DA findings, watch-for behaviors, quick informal probes,
   // re-referral triggers.
   // ═════════════════════════════════════════════════════════
-  function buildTeacherHandoffPrompt(session, studentName) {
+  function buildTeacherHandoffPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
     var mediationResults = (session.itemResults || []).filter(function (r) { return r.phase === "mediation"; });
@@ -3432,6 +3491,7 @@
 
     return [
       "You are an experienced school psychologist writing a one-page handoff to a classroom teacher or special-education case manager who will implement instruction for this student. ",
+      buildLanguageDirective(outputLanguage),
       "The audience is a professional educator (NOT a parent) — technical language about instruction is fine. Reading level: educated professional. ",
       "Focus on PRACTICAL CLASSROOM IMPLEMENTATION. Each strategy must be something a teacher can do during instruction on Monday morning. NEVER vague ('use visual supports'); always specific ('use a 3-column strategy chart at the top of every word problem packet showing: the question / the numbers / the operation needed'). ",
       "Tie every strategy to specific DA evidence — which scaffold worked, which observation pattern was seen, which construct was probed. ",
@@ -3557,7 +3617,7 @@
   // emphasizes evidence-based CBM (AIMSweb / FastBridge /
   // DIBELS / mCLASS / iReady) and the NCII 4-point rule.
   // ═════════════════════════════════════════════════════════
-  function buildProgressMonitoringPrompt(session, studentName) {
+  function buildProgressMonitoringPrompt(session, studentName, outputLanguage) {
     var pretestResults = (session.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
     var posttestResults = (session.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
     var pretestSum = sumItemResultScores(pretestResults);
@@ -3578,6 +3638,7 @@
 
     return [
       "You are an experienced school psychologist drafting a progress monitoring plan that the IEP team will use to measure whether the student is responding to instruction. ",
+      buildLanguageDirective(outputLanguage),
       "Anchor every monitored construct to a SPECIFIC evidence-based CBM (curriculum-based measurement) tool when possible. Real tools include: AIMSweb Plus, FastBridge (CBMreading, CBMmath), DIBELS 8, mCLASS, iReady, Read Naturally GOMs, M-COMP, Easy CBM, NWEA MAP Growth (less ideal — too coarse for progress monitoring), CBM-Maze (silent reading comprehension). ",
       "Do NOT invent tool names. If unsure which tool fits, name the construct ('oral reading fluency probe') and let the team choose. ",
       "Decision rules MUST align with NCII / RTI standards: ",
@@ -3734,6 +3795,22 @@
     var h = React.createElement;
     var useState = React.useState;
     var useEffect = React.useEffect;
+
+    // Phase V-bis — Math Fluency CBM probes piped in from the host's main
+    // history array. Most-recent-first. May be empty or undefined if the
+    // host hasn't passed them (legacy callers, embedded contexts, etc).
+    var mathFluencyProbes = Array.isArray(props.mathFluencyProbes) ? props.mathFluencyProbes : [];
+
+    // Output language for all AI-generated DA content (items, scaffolds, IEP
+    // goals, accommodations, family letter, teacher handoff, monitoring plan).
+    // Source-of-truth: host's leveledTextLanguage (same setting the text-adaptation
+    // panel uses). Per-DA-session override via the intake UI; the override resets
+    // when the host language changes between opens.
+    var hostOutputLanguage = (typeof props.outputLanguage === "string" && props.outputLanguage.trim()) ? props.outputLanguage.trim() : "English";
+    var daOutputLangTuple = useState(hostOutputLanguage);
+    var daOutputLanguage = daOutputLangTuple[0];
+    var setDaOutputLanguage = daOutputLangTuple[1];
+    useEffect(function () { setDaOutputLanguage(hostOutputLanguage); }, [hostOutputLanguage]);
 
     // ── Top-level state (loaded from localStorage) ──
     var stTuple = useState(loadState);
@@ -4237,7 +4314,7 @@
       setGenStage("draft");
 
       // Stage 1 — Draft generation
-      var draftPrompt = buildCustomProbePrompt(form);
+      var draftPrompt = buildCustomProbePrompt(form, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(draftPrompt); })
         .then(function (out) {
@@ -4274,7 +4351,7 @@
 
           // Stage 2 — Critique
           setGenStage("critique");
-          var critiquePrompt = buildCritiquePrompt(draftItems, form);
+          var critiquePrompt = buildCritiquePrompt(draftItems, form, daOutputLanguage);
           return Promise.resolve()
             .then(function () { return callGeminiFn(critiquePrompt); })
             .then(function (critiqueOut) {
@@ -4314,7 +4391,7 @@
 
               // Stage 3 — Refinement
               setGenStage("refine");
-              var refinePrompt = buildRefinementPrompt(draftItems, critiques, form);
+              var refinePrompt = buildRefinementPrompt(draftItems, critiques, form, daOutputLanguage);
               return Promise.resolve()
                 .then(function () { return callGeminiFn(refinePrompt); })
                 .then(function (refineOut) {
@@ -4384,7 +4461,7 @@
       var formCopy = Object.assign({}, customForm, { itemCount: 1 });
       setGenBusy(true);
       setGenError(null);
-      var prompt = buildCustomProbePrompt(formCopy);
+      var prompt = buildCustomProbePrompt(formCopy, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -4455,7 +4532,7 @@
       }
       setIepBusy(true);
       setIepError(null);
-      var prompt = buildIepGoalPrompt(session, session.studentNickname);
+      var prompt = buildIepGoalPrompt(session, session.studentNickname, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -4490,7 +4567,7 @@
       if (typeof callGeminiFn !== "function") { setIepError("AI generation requires callGemini."); return; }
       setIepBusy(true);
       setIepError(null);
-      var prompt = buildIepGoalPrompt(session, session.studentNickname) +
+      var prompt = buildIepGoalPrompt(session, session.studentNickname, daOutputLanguage) +
         "\n\nIMPORTANT: This is a regeneration request — return only ONE goal (single-element JSON array) covering a different angle than goals previously generated.";
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
@@ -4572,7 +4649,7 @@
       }
       setAccomBusy(true);
       setAccomError(null);
-      var prompt = buildAccommodationsPrompt(session, session.studentNickname);
+      var prompt = buildAccommodationsPrompt(session, session.studentNickname, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -4606,7 +4683,7 @@
       if (typeof callGeminiFn !== "function") { setAccomError("AI generation requires callGemini."); return; }
       setAccomBusy(true);
       setAccomError(null);
-      var prompt = buildAccommodationsPrompt(session, session.studentNickname) +
+      var prompt = buildAccommodationsPrompt(session, session.studentNickname, daOutputLanguage) +
         "\n\nIMPORTANT: This is a regeneration request — return only ONE accommodation (single-element JSON array) covering a different angle than accommodations previously generated.";
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
@@ -4666,7 +4743,7 @@
       }
       setFamilyBusy(true);
       setFamilyError(null);
-      var prompt = buildFamilySummaryPrompt(session, session.studentNickname);
+      var prompt = buildFamilySummaryPrompt(session, session.studentNickname, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -4768,7 +4845,7 @@
       }
       setTeacherBusy(true);
       setTeacherError(null);
-      var prompt = buildTeacherHandoffPrompt(session, session.studentNickname);
+      var prompt = buildTeacherHandoffPrompt(session, session.studentNickname, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -4900,7 +4977,7 @@
       }
       setMonitoringBusy(true);
       setMonitoringError(null);
-      var prompt = buildProgressMonitoringPrompt(session, session.studentNickname);
+      var prompt = buildProgressMonitoringPrompt(session, session.studentNickname, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -5240,7 +5317,7 @@
         return;
       }
 
-      var prompt = buildAiMediatePrompt(itemDef, responseText, scaffoldsDelivered);
+      var prompt = buildAiMediatePrompt(itemDef, responseText, scaffoldsDelivered, daOutputLanguage);
       Promise.resolve()
         .then(function () { return callGeminiFn(prompt); })
         .then(function (out) {
@@ -5573,6 +5650,36 @@
               })
             )
           ),
+          // Output language picker — sourced from host leveledTextLanguage but
+          // overridable per-DA-session. Drives every AI-generated output below
+          // (items, scaffolds, IEP goals, accommodations, family/teacher/monitoring).
+          h("div", {
+            style: { marginBottom: 14, padding: "10px 12px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }
+          },
+            h("span", { style: { fontSize: 16, flexShrink: 0 } }, "🌐"),
+            h("label", {
+              htmlFor: "da-output-language",
+              style: { fontSize: 11.5, fontWeight: 700, color: "#0c4a6e", flexShrink: 0 }
+            }, "Output language for AI:"),
+            h("input", {
+              id: "da-output-language",
+              type: "text",
+              value: daOutputLanguage,
+              onChange: function (e) { setDaOutputLanguage(e.target.value); },
+              placeholder: "English",
+              "aria-label": "Output language for AI-generated content in this Dynamic Assessment session",
+              style: { flex: "1 1 160px", minWidth: 140, padding: "4px 8px", border: "1px solid #7dd3fc", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, background: "#ffffff" }
+            }),
+            daOutputLanguage !== hostOutputLanguage ? h("button", {
+              type: "button",
+              onClick: function () { setDaOutputLanguage(hostOutputLanguage); },
+              "aria-label": "Reset output language to the AlloFlow setting",
+              title: "Reset to the AlloFlow text-adaptation language (" + hostOutputLanguage + ")",
+              style: { padding: "3px 8px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }
+            }, "↺ reset") : null,
+            h("span", { style: { fontSize: 10.5, color: "#0369a1", fontStyle: "italic", flexBasis: "100%", marginTop: 2 } },
+              daOutputLanguage === "English" ? "Items, scaffolds, IEP goals, accommodations, family/teacher/monitoring outputs will be generated in English." : "Items, scaffolds, IEP goals, accommodations, family/teacher/monitoring outputs will be generated in " + daOutputLanguage + ". Built-in item banks remain in English; use Custom Probe (✨) to generate items in " + daOutputLanguage + ".")
+          ),
           // Phase V — Pre-session intake context (collapsible; optional)
           h("details", { style: { marginBottom: 14 } },
             h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em", padding: "6px 0" } },
@@ -5587,11 +5694,27 @@
                 { id: "priorInterventions",      label: "Prior interventions tried",  placeholder: "Math fact fluency probes in fall; small-group reteach during Tier 2 block (6 weeks, no measurable change in word-problem accuracy)." },
                 { id: "existingAssessmentData",  label: "Existing assessment data",   placeholder: "WJ-IV Math Calc SS=92 (avg), Applied Problems SS=78 (low avg); AIMSweb math CBM at 25th percentile fall; classroom observation 3/14 noted prolonged decision-making before any number manipulation." }
               ].map(function (field) {
+                var showPullButton = field.id === "existingAssessmentData" && mathFluencyProbes.length > 0;
                 return h("div", { key: "da-intake-" + field.id },
                   h("label", {
                     htmlFor: "da-intake-" + field.id,
                     style: { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 2 }
                   }, field.label),
+                  // Phase V-bis — Pull-from-Math-Fluency button (only on existingAssessmentData when probes exist)
+                  showPullButton ? h("button", {
+                    type: "button",
+                    onClick: function () {
+                      var formatted = formatMathFluencyProbesForIntake(mathFluencyProbes);
+                      if (!formatted) return;
+                      var existing = (intakeDraft.existingAssessmentData || "").trim();
+                      var combined = existing ? (existing + "\n\n" + formatted) : formatted;
+                      updateIntakeField("existingAssessmentData", combined);
+                      announce("Math Fluency probe data added.");
+                    },
+                    "aria-label": "Append recent Math Fluency probe data to the existing assessment data field",
+                    title: "Appends the " + Math.min(3, mathFluencyProbes.length) + " most recent CBM-Math probe(s) to this field, plus a trend line if applicable.",
+                    style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", marginBottom: 6, borderRadius: 8, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontWeight: 700, fontSize: 11.5, cursor: "pointer", fontFamily: "inherit" }
+                  }, "📊 Pull from recent Math Fluency probe" + (mathFluencyProbes.length > 1 ? " (" + mathFluencyProbes.length + " available)" : "")) : null,
                   h("textarea", {
                     id: "da-intake-" + field.id,
                     value: intakeDraft[field.id] || "",
@@ -10378,8 +10501,32 @@
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.DynamicAssessment = DynamicAssessment;
   // Also expose constants for future host integrations / Report Writer.
+  // Public read-only query: return DA sessions for a given student nickname,
+  // most-recent-first. Used by sibling tools (Student Analytics, Report Writer,
+  // etc.) to surface DA findings without coupling to DA's internal storage shape.
+  // Returns [] on any failure — never throws.
+  function getSessionsByStudent(nickname) {
+    if (!nickname || typeof nickname !== "string") return [];
+    try {
+      var raw = typeof localStorage !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      if (!raw) return [];
+      var state = JSON.parse(raw);
+      var sessions = Array.isArray(state && state.sessions) ? state.sessions : [];
+      var target = nickname.toLowerCase();
+      var matches = sessions.filter(function (s) {
+        return s && typeof s.studentNickname === "string" && s.studentNickname.toLowerCase() === target;
+      });
+      matches.sort(function (a, b) {
+        var ad = a && a.dateStarted ? new Date(a.dateStarted).getTime() : 0;
+        var bd = b && b.dateStarted ? new Date(b.dateStarted).getTime() : 0;
+        return bd - ad;
+      });
+      return matches;
+    } catch (e) { return []; }
+  }
+
   window.AlloModules.DynamicAssessment._meta = {
-    version: "1.0.0-phaseE",
+    version: "1.0.0-phaseBB",
     storageKey: STORAGE_KEY,
     domains: ["math", "reading", "working-memory", "language"],
     itemCounts: {
@@ -10394,7 +10541,9 @@
     // Phase D — export helpers exposed for cross-tool integration
     buildDaFactChunks: buildDaFactChunks,
     buildDaNarrativeSection: buildDaNarrativeSection,
-    exportSessionToReportWriter: exportSessionToReportWriter
+    exportSessionToReportWriter: exportSessionToReportWriter,
+    // Public query helper for sibling tools (Student Analytics, Report Writer, etc.)
+    getSessionsByStudent: getSessionsByStudent
   };
-  console.log("[CDN] DynamicAssessment loaded (Phases A–E: math " + MATH_ITEMS.length + ", reading " + READING_ITEMS.length + ", working-memory " + WM_ITEMS.length + ", language " + LANGUAGE_ITEMS.length + " — " + (MATH_ITEMS.length + READING_ITEMS.length + WM_ITEMS.length + LANGUAGE_ITEMS.length) + " items total)");
+  console.log("[CDN] DynamicAssessment loaded (Phases A–BB: math " + MATH_ITEMS.length + ", reading " + READING_ITEMS.length + ", working-memory " + WM_ITEMS.length + ", language " + LANGUAGE_ITEMS.length + " — " + (MATH_ITEMS.length + READING_ITEMS.length + WM_ITEMS.length + LANGUAGE_ITEMS.length) + " items total)");
 })();

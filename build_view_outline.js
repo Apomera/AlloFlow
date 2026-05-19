@@ -4,7 +4,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_outline.txt', 'utf-8');
+const inner = fs.readFileSync('view_outline_source.jsx', 'utf-8');
 
 // Comprehensive prop destructuring. Verified against view-internal phantom audit.
 const wrapped = `

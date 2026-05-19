@@ -6,7 +6,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_word_sounds.txt', 'utf-8');
+const inner = fs.readFileSync('view_word_sounds_preview_source.jsx', 'utf-8');
 
 const wrapped = `
 function WordSoundsPreviewView(props) {

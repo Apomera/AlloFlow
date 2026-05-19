@@ -3,7 +3,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_brainstorm.txt', 'utf-8');
+const inner = fs.readFileSync('view_brainstorm_source.jsx', 'utf-8');
 
 const wrapped = `
 function BrainstormView(props) {

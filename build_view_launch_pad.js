@@ -1,10 +1,13 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_launch_pad.txt', 'utf-8');
+const inner = fs.readFileSync('view_launch_pad_source.jsx', 'utf-8');
 
 const wrapped = `
 function LaunchPadView(props) {
+  var React = window.React;
+  var useState = React.useState;
+  var useContext = React.useContext;
   var t = props.t;
   var micBannerDismissed = props.micBannerDismissed;
   var _isCanvasEnv = props._isCanvasEnv;
@@ -22,6 +25,18 @@ function LaunchPadView(props) {
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  // Compact language switcher state (LanguageContext is mirrored to window.AlloLanguageContext at AlloFlowANTI.txt:1583)
+  var _langCtx = useContext(window.AlloLanguageContext) || {};
+  var currentUiLanguage = _langCtx.currentUiLanguage || 'English';
+  var setUiLanguage = _langCtx.setUiLanguage || function(){};
+  var isTranslating = !!_langCtx.isTranslating;
+  var _langMenu = useState(false);
+  var langMenuOpen = _langMenu[0];
+  var setLangMenuOpen = _langMenu[1];
+  var LAUNCH_PAD_LANGS = [
+    'English', 'Spanish', 'French', 'Arabic', 'Chinese (Simplified)',
+    'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole'
+  ];
   return (
 ${inner}
   );

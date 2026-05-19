@@ -17,35 +17,39 @@
   var Fragment = React.Fragment;
 
   var _lazyIcon = function (name) {
-    return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
-      return I ? React.createElement(I, props) : null;
-    };
+  return function (props) {
+    var I = window.AlloIcons && window.AlloIcons[name];
+    return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
-  var CheckCircle2 = _lazyIcon('CheckCircle2');
-  var Pencil = _lazyIcon('Pencil');
-  var ChevronDown = _lazyIcon('ChevronDown');
-
-  function FaqView(props) {
+};
+var CheckCircle2 = _lazyIcon('CheckCircle2');
+var Pencil = _lazyIcon('Pencil');
+var ChevronDown = _lazyIcon('ChevronDown');
+function FaqView(props) {
   // Accordion state — which FAQ items are currently expanded.
   // Editing mode + TTS playback force expansion separately (see isExpanded).
-  var expandedSet_state = React.useState(function () { return new Set(); });
+  var expandedSet_state = React.useState(function () {
+    return new Set();
+  });
   var expandedSet = expandedSet_state[0];
   var setExpandedSet = expandedSet_state[1];
   var toggleFaq = function (idx) {
     setExpandedSet(function (prev) {
       var next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
+      if (next.has(idx)) next.delete(idx);else next.add(idx);
       return next;
     });
   };
   var expandAll = function () {
     if (!props.generatedContent) return;
-    var all = (props.generatedContent.data || []).map(function (_, i) { return i; });
+    var all = (props.generatedContent.data || []).map(function (_, i) {
+      return i;
+    });
     setExpandedSet(new Set(all));
   };
-  var collapseAll = function () { setExpandedSet(new Set()); };
+  var collapseAll = function () {
+    setExpandedSet(new Set());
+  };
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -138,21 +142,24 @@
     "aria-label": "Hide all FAQ answers"
   }, "▸ Hide all"), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-500 italic ml-1"
-  }, "Tip: tap a question to reveal its answer")),
-  /*#__PURE__*/React.createElement("div", {
+  }, "Tip: tap a question to reveal its answer")), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, (() => {
     // PASS 1: precompute sentence index ranges per FAQ so we can derive
     // which FAQ contains the currently-playing TTS sentence (used to
     // auto-expand the matching item).
-    var data = (generatedContent && generatedContent.data) || [];
+    var data = generatedContent && generatedContent.data || [];
     var rangeStart = [];
     var rangeEnd = [];
     var _sCount = 0;
     data.forEach(function (faq, idx) {
       rangeStart[idx] = _sCount;
-      var qN = splitTextToSentences(faq.question).filter(function (s) { return s && s.trim().length > 0; }).length;
-      var aN = splitTextToSentences(faq.answer).filter(function (s) { return s && s.trim().length > 0; }).length;
+      var qN = splitTextToSentences(faq.question).filter(function (s) {
+        return s && s.trim().length > 0;
+      }).length;
+      var aN = splitTextToSentences(faq.answer).filter(function (s) {
+        return s && s.trim().length > 0;
+      }).length;
       _sCount += qN + aN;
       rangeEnd[idx] = _sCount;
     });
@@ -183,112 +190,118 @@
     // they stay stable regardless of which FAQs are expanded/collapsed.
     return generatedContent?.data.map((faq, idx) => {
       var isExpanded = isEditingFaq || expandedSet.has(idx) || idx === currentlyReadingFaqIdx;
-      var qSentencesForCount = splitTextToSentences(faq.question).filter(function (s) { return s && s.trim().length > 0; });
+      var qSentencesForCount = splitTextToSentences(faq.question).filter(function (s) {
+        return s && s.trim().length > 0;
+      });
       var qBase = rangeStart[idx] || 0;
       var aBase = qBase + qSentencesForCount.length;
       return /*#__PURE__*/React.createElement("div", {
-      key: idx,
-      className: "bg-white p-5 rounded-lg border border-slate-400 shadow-sm",
-      "data-help-key": "faq_item"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-start gap-3" + (isEditingFaq ? "" : " cursor-pointer select-none"),
-      onClick: !isEditingFaq ? function (e) {
-        // Clicks on sentence spans stop propagation for TTS — so reaching
-        // the row handler means the user clicked the Q badge, the chevron,
-        // or whitespace, all of which should toggle.
-        toggleFaq(idx);
-      } : undefined,
-      role: !isEditingFaq ? "button" : undefined,
-      tabIndex: !isEditingFaq ? 0 : undefined,
-      "aria-expanded": !isEditingFaq ? isExpanded : undefined,
-      "aria-controls": !isEditingFaq ? ("faq-answer-" + idx) : undefined,
-      onKeyDown: !isEditingFaq ? function (e) {
-        if (e.key === ' ' || e.key === 'Enter') {
-          // Only fire if the target is the row itself (not a sentence span)
-          if (e.target === e.currentTarget) {
-            e.preventDefault();
-            toggleFaq(idx);
+        key: idx,
+        className: "bg-white p-5 rounded-lg border border-slate-400 shadow-sm",
+        "data-help-key": "faq_item"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-start gap-3" + (isEditingFaq ? "" : " cursor-pointer select-none"),
+        onClick: !isEditingFaq ? function (e) {
+          // Clicks on sentence spans stop propagation for TTS — so reaching
+          // the row handler means the user clicked the Q badge, the chevron,
+          // or whitespace, all of which should toggle.
+          toggleFaq(idx);
+        } : undefined,
+        role: !isEditingFaq ? "button" : undefined,
+        tabIndex: !isEditingFaq ? 0 : undefined,
+        "aria-expanded": !isEditingFaq ? isExpanded : undefined,
+        "aria-controls": !isEditingFaq ? "faq-answer-" + idx : undefined,
+        onKeyDown: !isEditingFaq ? function (e) {
+          if (e.key === ' ' || e.key === 'Enter') {
+            // Only fire if the target is the row itself (not a sentence span)
+            if (e.target === e.currentTarget) {
+              e.preventDefault();
+              toggleFaq(idx);
+            }
           }
-        }
-      } : undefined
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1"
-    }, "Q"), /*#__PURE__*/React.createElement("div", {
-      className: "flex-grow space-y-2"
-    }, isEditingFaq ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": t('faq.edit_question') || 'Edit FAQ question',
-      value: faq.question,
-      onChange: e => handleFaqChange(idx, 'question', e.target.value),
-      className: "w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
-      rows: getRows(faq.question),
-      placeholder: t('faq.question_placeholder')
-    }), (faq.question_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": t('faq.edit_question_translation') || 'Edit FAQ question translation',
-      value: faq.question_en || '',
-      onChange: e => handleFaqChange(idx, 'question_en', e.target.value),
-      className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
-      rows: getRows(faq.question_en || ''),
-      placeholder: t('common.placeholder_question_trans')
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"
-    }, /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": t('faq.edit_answer') || 'Edit FAQ answer',
-      value: faq.answer,
-      onChange: e => handleFaqChange(idx, 'answer', e.target.value),
-      className: "w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
-      rows: getRows(faq.answer),
-      placeholder: t('faq.answer_placeholder')
-    }), (faq.answer_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": t('faq.edit_answer_translation') || 'Edit FAQ answer translation',
-      value: faq.answer_en || '',
-      onChange: e => handleFaqChange(idx, 'answer_en', e.target.value),
-      className: "w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200",
-      rows: getRows(faq.answer_en || ''),
-      placeholder: t('common.placeholder_answer_trans')
-    }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h4", {
-      className: "font-bold text-slate-800 text-lg mb-1 leading-relaxed"
-    }, (() => {
-      const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
-      return qSentences.map((s, sIdx) => {
-        const currentGlobalIdx = qBase + sIdx;
-        const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-        return /*#__PURE__*/React.createElement("span", {
-          key: sIdx,
-          id: `sentence-${currentGlobalIdx}`,
-          className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`,
-          onClick: e => {
-            e.stopPropagation();
-            handleSpeak(s, 'faq-active', currentGlobalIdx);
-          }
-        }, formatInteractiveText(s, false), " ");
-      });
-    })()), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", {
-      className: "text-sm text-slate-600 italic mb-2"
-    }, "(", faq.question_en, ")"), isExpanded && /*#__PURE__*/React.createElement("div", {
-      id: `faq-answer-${idx}`,
-      className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200"
-    }, (() => {
-      const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
-      return aSentences.map((s, sIdx) => {
-        const currentGlobalIdx = aBase + sIdx;
-        const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-        return /*#__PURE__*/React.createElement("span", {
-          key: sIdx,
-          id: `sentence-${currentGlobalIdx}`,
-          className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`,
-          onClick: e => {
-            e.stopPropagation();
-            handleSpeak(s, 'faq-active', currentGlobalIdx);
-          }
-        }, formatInteractiveText(s, false), " ");
-      });
-    })(), faq.answer_en && /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
-    }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("div", {
-      className: "shrink-0 mt-2 text-slate-600 transition-transform duration-200",
-      style: { transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' },
-      "aria-hidden": "true"
-    }, /*#__PURE__*/React.createElement(ChevronDown, { size: 20 }))));
+        } : undefined
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1"
+      }, "Q"), /*#__PURE__*/React.createElement("div", {
+        className: "flex-grow space-y-2"
+      }, isEditingFaq ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
+        "aria-label": t('faq.edit_question') || 'Edit FAQ question',
+        value: faq.question,
+        onChange: e => handleFaqChange(idx, 'question', e.target.value),
+        className: "w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+        rows: getRows(faq.question),
+        placeholder: t('faq.question_placeholder')
+      }), (faq.question_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
+        "aria-label": t('faq.edit_question_translation') || 'Edit FAQ question translation',
+        value: faq.question_en || '',
+        onChange: e => handleFaqChange(idx, 'question_en', e.target.value),
+        className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+        rows: getRows(faq.question_en || ''),
+        placeholder: t('common.placeholder_question_trans')
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"
+      }, /*#__PURE__*/React.createElement("textarea", {
+        "aria-label": t('faq.edit_answer') || 'Edit FAQ answer',
+        value: faq.answer,
+        onChange: e => handleFaqChange(idx, 'answer', e.target.value),
+        className: "w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+        rows: getRows(faq.answer),
+        placeholder: t('faq.answer_placeholder')
+      }), (faq.answer_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
+        "aria-label": t('faq.edit_answer_translation') || 'Edit FAQ answer translation',
+        value: faq.answer_en || '',
+        onChange: e => handleFaqChange(idx, 'answer_en', e.target.value),
+        className: "w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200",
+        rows: getRows(faq.answer_en || ''),
+        placeholder: t('common.placeholder_answer_trans')
+      }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h4", {
+        className: "font-bold text-slate-800 text-lg mb-1 leading-relaxed"
+      }, (() => {
+        const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
+        return qSentences.map((s, sIdx) => {
+          const currentGlobalIdx = qBase + sIdx;
+          const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
+          return /*#__PURE__*/React.createElement("span", {
+            key: sIdx,
+            id: `sentence-${currentGlobalIdx}`,
+            className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`,
+            onClick: e => {
+              e.stopPropagation();
+              handleSpeak(s, 'faq-active', currentGlobalIdx);
+            }
+          }, formatInteractiveText(s, false), " ");
+        });
+      })()), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", {
+        className: "text-sm text-slate-600 italic mb-2"
+      }, "(", faq.question_en, ")"), isExpanded && /*#__PURE__*/React.createElement("div", {
+        id: `faq-answer-${idx}`,
+        className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200"
+      }, (() => {
+        const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
+        return aSentences.map((s, sIdx) => {
+          const currentGlobalIdx = aBase + sIdx;
+          const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
+          return /*#__PURE__*/React.createElement("span", {
+            key: sIdx,
+            id: `sentence-${currentGlobalIdx}`,
+            className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`,
+            onClick: e => {
+              e.stopPropagation();
+              handleSpeak(s, 'faq-active', currentGlobalIdx);
+            }
+          }, formatInteractiveText(s, false), " ");
+        });
+      })(), faq.answer_en && /*#__PURE__*/React.createElement("p", {
+        className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
+      }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("div", {
+        className: "shrink-0 mt-2 text-slate-600 transition-transform duration-200",
+        style: {
+          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+        },
+        "aria-hidden": "true"
+      }, /*#__PURE__*/React.createElement(ChevronDown, {
+        size: 20
+      }))));
     });
   })()));
 }

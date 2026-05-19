@@ -3,7 +3,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('c:/tmp/mini_math.txt', 'utf-8');
+const inner = fs.readFileSync('view_math_source.jsx', 'utf-8');
 
 const wrapped = `
 function MathView(props) {
