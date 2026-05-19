@@ -579,7 +579,7 @@ const QuickStartWizard = React.memo(({
       className: `${isIndependentMode ? 'text-sm font-medium text-slate-800' : 'text-xs text-slate-600'} leading-snug`
     }, std.description))));
   })), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 text-right"
+    className: "text-xs text-slate-600 text-end"
   }, localData.standards.length, " ", t('wizard.selected_counter')))), step === 2 && /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 animate-in slide-in-from-right-4 duration-300"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
@@ -752,7 +752,7 @@ const QuickStartWizard = React.memo(({
     "aria-label": t('common.refresh'),
     "data-help-key": "wizard_search_result_select",
     onClick: () => selectSearchOption(opt),
-    className: "w-full text-left p-4 pr-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
+    className: "w-full text-start p-4 pe-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "font-bold text-slate-700 group-hover:text-teal-800 mb-1 text-sm"
   }, opt.title || t('wizard.untitled_resource')), /*#__PURE__*/React.createElement("div", {
@@ -777,7 +777,7 @@ const QuickStartWizard = React.memo(({
       setUrlInput('');
       if (addToast) addToast(t('wizard.link_opened_toast'), "info");
     },
-    className: "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20",
+    className: "absolute end-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20",
     "data-help-key": "wizard_search_result_link",
     title: t('wizard.open_link_title')
   }, /*#__PURE__*/React.createElement(ExternalLink, {
@@ -825,7 +825,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.input_topic_label')), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    className: "absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/React.createElement(Type, {
     size: 14,
     className: "text-slate-600"
@@ -848,7 +848,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.input_tone_label')), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    className: "absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 14,
     className: "text-slate-600"
@@ -878,7 +878,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.input_length_label')), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    className: "absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/React.createElement(AlignJustify, {
     size: 14,
     className: "text-slate-600"
@@ -908,7 +908,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.input_level_label')), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    className: "absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/React.createElement(GraduationCap, {
     size: 14,
     className: "text-slate-600"
@@ -956,7 +956,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.input_dok_label')), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    className: "absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/React.createElement(Brain, {
     size: 14,
     className: "text-slate-600"
@@ -1047,7 +1047,7 @@ const QuickStartWizard = React.memo(({
         if (addToast) addToast(t('standards.toast_max_limit'), "error");
       }
     },
-    className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
+    className: "w-full text-start p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start gap-1"
   }, !isIndependentMode && /*#__PURE__*/React.createElement("span", {
@@ -1088,7 +1088,7 @@ const QuickStartWizard = React.memo(({
     title: std
   }, std.split(':')[0]), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleRemoveStandard(idx),
-    className: "hover:text-green-900 ml-1 shrink-0",
+    className: "hover:text-green-900 ms-1 shrink-0",
     "data-help-key": "wizard_std_remove_btn",
     title: t('standards.remove_standard'),
     "aria-label": t('standards.remove_standard')
@@ -1101,7 +1101,7 @@ const QuickStartWizard = React.memo(({
   }, t('common.optional'))), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+    className: "absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/React.createElement(Languages, {
     size: 14,
     className: "text-slate-600"
@@ -1123,7 +1123,7 @@ const QuickStartWizard = React.memo(({
   }, t('common.optional'))), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-3 left-3 pointer-events-none"
+    className: "absolute top-3 start-3 pointer-events-none"
   }, /*#__PURE__*/React.createElement(Wrench, {
     size: 14,
     className: "text-slate-600"
@@ -1280,7 +1280,7 @@ const QuickStartWizard = React.memo(({
     "aria-label": t('common.close'),
     "data-help-key": "wizard_lang_remove_btn",
     onClick: () => removeWizLanguage(lang),
-    className: "hover:text-indigo-900 ml-1"
+    className: "hover:text-indigo-900 ms-1"
   }, /*#__PURE__*/React.createElement(X, {
     size: 12
   })))), localData.languages.length === 0 && /*#__PURE__*/React.createElement("span", {
@@ -1318,7 +1318,7 @@ const QuickStartWizard = React.memo(({
     "aria-label": t('common.close'),
     "data-help-key": "wizard_interest_remove_btn",
     onClick: () => removeWizInterest(interest),
-    className: "hover:text-pink-900 ml-1"
+    className: "hover:text-pink-900 ms-1"
   }, /*#__PURE__*/React.createElement(X, {
     size: 12
   })))), localData.interests.length === 0 && /*#__PURE__*/React.createElement("span", {
