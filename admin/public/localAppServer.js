@@ -625,8 +625,9 @@ async function handleNvidiaProxy(req, res, body) {
     }
 
     const effectiveModel = loadNvidiaModel();
-    // Always force stream:false — streaming SSE responses cause upstream.json() to throw AbortError
-    const nvidiaBody = { ...body, model: effectiveModel, stream: false };
+    // Allow stream:true from client (enables SSE passthrough for real-time think-token progress)
+    const wantsStream = (body.stream === true);
+    const nvidiaBody = { ...body, model: effectiveModel, stream: wantsStream };
     const nvidiaHeaders = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -653,6 +654,31 @@ async function handleNvidiaProxy(req, res, body) {
         }
 
         console.log(`[nvidia-proxy] Upstream responded — status: ${upstream.status}, content-type: ${upstream.headers.get('content-type')}`);
+
+        // Streaming mode: pipe SSE through directly so the client can display real-time think tokens
+        if (wantsStream && upstream.status === 200) {
+            logAIProxy('/api/nvidia/proxy (stream)', 'nvidia', 200, Date.now() - t0);
+            res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'X-Accel-Buffering': 'no',
+            });
+            const sseReader = upstream.body.getReader();
+            try {
+                while (true) {
+                    const { done, value } = await sseReader.read();
+                    if (done) break;
+                    res.write(value);
+                }
+            } catch (sseErr) {
+                console.error('[nvidia-proxy] SSE pipe error:', sseErr.message);
+            } finally {
+                sseReader.releaseLock();
+                res.end();
+            }
+            return;
+        }
 
         // Handle 202 async — NVIDIA may queue long multimodal requests
         if (upstream.status === 202) {

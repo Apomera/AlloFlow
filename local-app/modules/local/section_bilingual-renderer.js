@@ -574,12 +574,13 @@ const parseTaggedContent = (text) => {
     // In local mode with cloud provider, tokens are ALWAYS server-side in ~/.alloflow/
     // Just proceed to the proxy call — let the proxy validate the token and return 401 if missing
     if (_aiProv === 'nvidia') {
-      // Route through NVIDIA NIM proxy using OpenAI-compatible format
+      // Route through NVIDIA NIM proxy with SSE streaming for real-time think-token progress
       try {
-        const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
+        const _base = 'http://localhost:3730'; // always the admin server
         const _nvPayload = {
           messages: [{ role: 'user', content: prompt }],
-          max_tokens: 16384, // reasoning models consume tokens for <think> phase; 4096 causes finish=length on long outputs
+          max_tokens: 16384, // reasoning models consume tokens for <think> phase
+          stream: true,      // enables SSE so think tokens display progressively
           ...(temperature !== null ? { temperature } : {}),
           ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
         };
@@ -592,13 +593,55 @@ const parseTaggedContent = (text) => {
           const _errData = await _nvRes.json().catch(() => ({}));
           throw new Error(_errData.error || `NVIDIA proxy ${_nvRes.status}`);
         }
-        const _nvData = await _nvRes.json();
-        const _nvRaw = _nvData?.choices?.[0]?.message?.content || '';
-        // Reasoning models (nemotron) prefix output with <think>...</think> — strip it
-        // Also strip markdown code fences (```json ... ```) that some models add
-        let _nvText = _nvRaw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        // Read SSE stream — accumulate content, surface <think> tokens via setGenerationStep
+        const _sseReader = _nvRes.body.getReader();
+        const _sseDec = new TextDecoder();
+        let _accumulated = ''; // all content deltas joined
+        let _leftover = '';    // incomplete SSE line across chunks
+        let _inThink = false;
+        let _finishReason = 'stop';
+        const _updateStep = (msg) => { try { if (typeof setGenerationStep === 'function') setGenerationStep(msg); } catch (_) {} };
+        _updateStep('🧠 NVIDIA is reasoning…');
+        try {
+          while (true) {
+            const { done, value } = await _sseReader.read();
+            if (done) break;
+            const _raw = _leftover + _sseDec.decode(value, { stream: true });
+            const _lines = _raw.split('\n');
+            _leftover = _lines.pop() || '';
+            for (const _ln of _lines) {
+              if (!_ln.startsWith('data: ')) continue;
+              const _d = _ln.slice(6).trim();
+              if (_d === '[DONE]') continue;
+              try {
+                const _chunk = JSON.parse(_d);
+                const _delta = _chunk.choices?.[0]?.delta?.content || '';
+                if (_chunk.choices?.[0]?.finish_reason) _finishReason = _chunk.choices[0].finish_reason;
+                if (!_delta) continue;
+                _accumulated += _delta;
+                // Detect think-tag transitions and update step text
+                const _hasThinkOpen = _accumulated.includes('<think>');
+                const _hasThinkClose = _accumulated.includes('</think>');
+                if (_hasThinkOpen && !_hasThinkClose) {
+                  if (!_inThink) { _inThink = true; }
+                  // Show a rolling snippet of the think content (last 120 chars, single line)
+                  const _thinkStart = _accumulated.indexOf('<think>') + 7;
+                  const _thinkSnippet = _accumulated.slice(_thinkStart).replace(/\n/g, ' ').slice(-120).trim();
+                  if (_thinkSnippet.length > 10) _updateStep(`🧠 Reasoning: “…${_thinkSnippet}”`);
+                } else if (_inThink && _hasThinkClose) {
+                  _inThink = false;
+                  _updateStep('✍️ Writing response…');
+                }
+              } catch (_e) { /* skip malformed SSE chunk */ }
+            }
+          }
+        } finally {
+          _sseReader.releaseLock();
+        }
+        // Strip think tags and code fences from accumulated content
+        let _nvText = _accumulated.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
         _nvText = _nvText.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
-        console.log(`[callGemini] NVIDIA response: raw=${_nvRaw.length}ch, cleaned=${_nvText.length}ch, finish=${_nvData?.choices?.[0]?.finish_reason}`);
+        console.log(`[callGemini] NVIDIA stream: raw=${_accumulated.length}ch, cleaned=${_nvText.length}ch, finish=${_finishReason}`);
         if (useSearch) return { text: _nvText, groundingMetadata: null };
         return _nvText;
       } catch (nvErr) {
