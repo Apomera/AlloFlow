@@ -1846,13 +1846,13 @@ const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
   const { t } = useContext(LanguageContext) || { t: (k) => undefined };
   return (
-  <div className="relative inline-block group ml-1 align-middle z-10">
+  <div className="relative inline-block group ms-1 align-middle z-10">
     <button type="button" aria-describedby={tooltipId} className="text-slate-600 cursor-help hover:text-indigo-500 focus:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded-full" aria-label={t('common.more_information') || 'More information'}>
       <HelpCircle size={12} />
     </button>
     <div id={tooltipId} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none leading-tight invisible group-hover:visible group-focus-within:visible text-center border border-slate-600 z-50">
       {text}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 -mt-1 border-b border-r border-slate-600"></div>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 -mt-1 border-b border-e border-slate-600"></div>
     </div>
   </div>
   );
@@ -1953,7 +1953,7 @@ const SESSION_TIER1_LEAVES = new Set([
   // over WebRTC to assigned drawers, never to Firestore.
   'pictionaryRound',
   // Visual-organizer interactive mode (teacher-armed): { type: 'tchart'|'venn'|...,
-  // armedAt: ms-timestamp } | null. type is an enum from a small fixed set in code;
+  // armedAt: ml-timestamp } | null. type is an enum from a small fixed set in code;
   // armedAt is a numeric timestamp used by students to distinguish new arm events
   // from arm events they've already dismissed. No student-typed content; Tier-1 safe.
   'interactiveOrganizer',
@@ -2109,8 +2109,8 @@ const ComplexityGauge = React.memo(({ level }) => {
   return (
     <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-400 relative mt-2">
       <div className="absolute inset-0 flex">
-          <div className="flex-1 border-r border-white/50"></div>
-          <div className="flex-1 border-r border-white/50"></div>
+          <div className="flex-1 border-e border-white/50"></div>
+          <div className="flex-1 border-e border-white/50"></div>
           <div className="flex-1"></div>
       </div>
       <div
@@ -11597,7 +11597,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           <div className="leading-relaxed">
              {renderFormattedText(targetText)}
           </div>
-          <div className="relative mt-2 pl-4 border-l-4 border-indigo-300 bg-slate-50 p-4 rounded-r-xl">
+          <div className="relative mt-2 ps-4 border-s-4 border-indigo-300 bg-slate-50 p-4 rounded-e-xl">
              <div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">
                English Translation
              </div>
@@ -11662,7 +11662,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               </div>
               <ol className="list-decimal list-inside space-y-2 text-sm text-slate-700 leading-relaxed marker:text-indigo-500 marker:font-bold">
                   {items.map((item, i) => (
-                      <li key={i} className="pl-1">
+                      <li key={i} className="ps-1">
                           {item.url ? (
                               <a href={item.url} target="_blank" rel="noopener noreferrer"
                                  className="text-indigo-700 underline hover:text-indigo-900 break-words">
@@ -22146,7 +22146,7 @@ ${_toolList}
         )}
         <aside
             aria-label={t('sidebar.tools_header')}
-            className={`flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 ${(isFullscreen || isZenMode) ? 'hidden' : 'block'} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
+            className={`flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 ${(isFullscreen || isZenMode) ? 'hidden' : 'block'} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
@@ -22458,7 +22458,7 @@ ${_toolList}
                     data-help-key="tool_scaffolds"
                     onClick={() => toggleTool('sentence-frames')}
                     aria-expanded={expandedTools.includes('sentence-frames')}
-                    className="flex-1 p-3 flex justify-between items-center text-left"
+                    className="flex-1 p-3 flex justify-between items-center text-start"
                   >
                     <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
                       <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
@@ -22468,7 +22468,7 @@ ${_toolList}
                   <button
                     type="button"
                     onClick={() => setShowStoryForge(true)}
-                    className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
+                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
                     aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
                   >
                     {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
@@ -22585,7 +22585,7 @@ ${_toolList}
                     data-help-key="tool_math"
                     aria-expanded={expandedTools.includes('math')}
                     onClick={() => toggleTool('math')}
-                    className="flex-1 p-3 flex justify-between items-center text-left"
+                    className="flex-1 p-3 flex justify-between items-center text-start"
                   >
                     <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Calculator size={16}/> {t('math.title')}</div>
                     {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
@@ -22593,7 +22593,7 @@ ${_toolList}
                   <button
                     type="button"
                     onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
-                    className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
+                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
                     aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}
                   >
                     🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
@@ -22720,7 +22720,7 @@ ${_toolList}
                             value={fullPackTargetGroup}
                             onChange={(e) => setFullPackTargetGroup(e.target.value)}
                             aria-label={t('fullpack.group_tooltip') || 'Target group for generation'}
-                            className="text-[11px] font-bold text-purple-800 bg-white/90 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-purple-300 border-transparent cursor-pointer shadow-sm ml-1"
+                            className="text-[11px] font-bold text-purple-800 bg-white/90 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-purple-300 border-transparent cursor-pointer shadow-sm ms-1"
                             title={t('fullpack.group_tooltip') || 'Generate for a specific group or all groups'}
                         >
                             <option value="none">{t('fullpack.group_current') || 'Current Settings'}</option>
@@ -22736,7 +22736,7 @@ ${_toolList}
                     data-help-key="fullpack_generate"
                     onClick={handleGenerateFullPack}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 bg-white rounded-2xl text-left flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
+                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                 >
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
@@ -22753,7 +22753,7 @@ ${_toolList}
                     data-help-key="tool_alignment"
                     onClick={() => handleGenerate('alignment-report')}
                     disabled={!hasSourceOrAnalysis || isProcessing}
-                    className="w-full p-3 bg-white rounded-2xl text-left flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
+                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                     title={t('alignment.generate')}
                 >
                     <div>
@@ -22795,7 +22795,7 @@ ${_toolList}
                 onMouseDown={startResizing}
             >
                 <div className="h-16 w-1 bg-slate-300 rounded-full flex items-center justify-center group-hover:bg-indigo-400 transition-colors">
-                    <GripVertical size={12} className="text-slate-600 -ml-1.5" />
+                    <GripVertical size={12} className="text-slate-600 -ms-1.5" />
                 </div>
             </div>
         )}
@@ -22847,8 +22847,8 @@ ${_toolList}
                     >
                         {isPaused ? <MonitorPlay size={20} className="fill-current text-yellow-700"/> : <AudioWave />}
                     </button>
-                    <div className="flex items-center gap-2 px-2 border-l border-slate-600 pl-4">
-                        <span className="text-[11px] font-bold text-slate-600 w-8 text-right tabular-nums">{playbackRate}x</span>
+                    <div className="flex items-center gap-2 px-2 border-s border-slate-600 ps-4">
+                        <span className="text-[11px] font-bold text-slate-600 w-8 text-end tabular-nums">{playbackRate}x</span>
                         <input aria-label={t('common.range_slider')}
                             type="range"
                             min="0.5"
@@ -22901,7 +22901,7 @@ ${_toolList}
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h3>
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
-                    <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ml-2">
+                    <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ms-2">
                         {(() => {
                             // Annotation suite toolbar — sticker + note mode
                             // toggles + per-tool sub-controls. Delegates to
@@ -22943,7 +22943,7 @@ ${_toolList}
                                     data-allo-undo-btn="true"
                                     onClick={canUndo ? handleAnnotationUndo : undefined}
                                     disabled={!canUndo}
-                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
                                     title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
                                     aria-label={t('annotation.undo_aria') || 'Undo last annotation'}
                                 >
@@ -22960,14 +22960,14 @@ ${_toolList}
                                 <button
                                     type="button"
                                     onClick={() => setShowAnnotationSidebar(prev => !prev)}
-                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
                                     title={t('annotation.show_all_tooltip') || 'Show all annotations'}
                                     aria-label={t('annotation.toggle_list_aria') || 'Toggle annotation list'}
                                     aria-pressed={showAnnotationSidebar}
                                 >
                                     {t('annotation.list_button') || '📋 List'}
                                     {total > 0 && (
-                                        <span className="ml-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
+                                        <span className="ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
                                             {total}
                                         </span>
                                     )}
@@ -22977,7 +22977,7 @@ ${_toolList}
                     {generatedContent && (activeView === 'math') && (
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
-                            className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ml-1"
+                            className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ms-1"
                             aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}>
                             🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                         </span>
@@ -23160,7 +23160,7 @@ ${_toolList}
                     <div className="w-full max-w-sm p-6 flex flex-col items-center text-center relative z-20">
                         <div className="relative mb-6">
                             <div className="w-16 h-16 border-4 border-slate-100 rounded-full"></div>
-                            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-indigo-600 border-e-indigo-600 border-b-transparent border-s-transparent rounded-full animate-spin"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <Sparkles className="text-indigo-600 fill-current animate-pulse" size={20} />
                             </div>
@@ -23766,7 +23766,7 @@ ${_toolList}
                 {activeView === 'math-fluency-maze' && (() => {
                     const FluencyMazeComponent = window.AlloModules && window.AlloModules.FluencyMaze;
                     return (
-                        <div className="space-y-4 max-w-6xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_fluency_maze_panel">
+                        <div className="space-y-4 max-w-6xl mx-auto h-full overflow-y-auto pe-2 pb-10" data-help-key="math_fluency_maze_panel">
                             <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border-2 border-amber-200 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
@@ -23826,7 +23826,7 @@ ${_toolList}
                     BilingualFieldRenderer
                 })}
                 {activeView === 'gemini-bridge' && generatedContent && (
-                    <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
+                    <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pe-2 pb-10">
                         <div className="bg-slate-900 text-slate-600 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
                                 <div className="flex items-center gap-2 text-green-700 font-bold">
@@ -23880,7 +23880,7 @@ ${_toolList}
                                 <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-200 text-yellow-700 shrink-0">
                                     <History size={20} />
                                 </div>
-                                <div className="text-left flex-grow">
+                                <div className="text-start flex-grow">
                                     <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
                                     <p className="text-slate-600 text-xs truncate max-w-[300px] hidden sm:block">
                                         {personaState.mode === 'single'
@@ -24527,7 +24527,7 @@ ${_toolList}
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
                     />
-                    <p className="text-xs text-slate-600 mt-2 italic text-right">{t('modals.save_project.extension_note')}</p>
+                    <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
                 </div>
                 <div className="flex gap-3 justify-end">
                     <button
@@ -24597,7 +24597,7 @@ ${_toolList}
                         <Cloud size={32} />
                     </div>
                     <h3 className="text-2xl font-black text-slate-800 mb-2">{t('modals.cloud_sync.title')}</h3>
-                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-left mb-6">
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-start mb-6">
                         <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2 flex items-center gap-1">
                             <AlertCircle size={12}/> {t('modals.cloud_sync.privacy_warning')}
                         </p>
@@ -25620,7 +25620,7 @@ ${_toolList}
               }
           };
           return (
-              <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-l-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
+              <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
                   style={{ background: theme === 'contrast' ? '#000' : '#0f172a', color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}
                   role="complementary" aria-label={t('read_this_page.panel_aria') || 'Read This Page panel'}
               >
@@ -25640,7 +25640,7 @@ ${_toolList}
                               style={{ background: '#dc2626' }}
                           >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
                           <button onClick={() => { handleStop(); setShowReadThisPage(false); setFocusNarrationEnabled(false); }}
-                              className="ml-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
+                              className="ms-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
                           >{'\u2715'}</button>
                       </div>
                   </div>
@@ -25665,7 +25665,7 @@ ${_toolList}
                               aria-label={`Click to hear: ${item.text.substring(0, 80)}`}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(idx); } }}
                           >
-                              <span className="mr-1">{typeIcons[item.type] || '\u{1F50A}'}</span>
+                              <span className="me-1">{typeIcons[item.type] || '\u{1F50A}'}</span>
                               {item.text}
                           </div>
                       ))}
