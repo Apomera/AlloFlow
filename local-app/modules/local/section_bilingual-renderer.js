@@ -576,7 +576,7 @@ const parseTaggedContent = (text) => {
     if (_aiProv === 'nvidia') {
       // Route through NVIDIA NIM proxy with SSE streaming for real-time think-token progress
       try {
-        const _base = 'http://localhost:3730'; // always the admin server
+        const _base = window.location.origin; // always the admin server that served this page (works on any port or domain)
         const _nvPayload = {
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 16384, // reasoning models consume tokens for <think> phase
