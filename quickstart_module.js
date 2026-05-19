@@ -523,6 +523,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.learning_goal_desc')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row gap-2"
   }, !isIndependentMode && /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_region'),
     type: "text",
     value: region,
@@ -533,6 +534,7 @@ const QuickStartWizard = React.memo(({
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow flex gap-2"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_learning_goal'),
     type: "text",
     value: learningGoal,
@@ -675,6 +677,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.url_helper')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-6"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_url_input'),
     type: "url",
     value: urlInput,
@@ -718,6 +721,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.search_helper')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-6"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_local_data'),
     type: "text",
     value: localData.searchQuery,
@@ -830,6 +834,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     type: "text",
     value: localData.topic,
     onChange: e => setLocalData(prev => ({
@@ -853,6 +858,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("select", {
+    dir: "auto",
     value: localData.tone,
     onChange: e => setLocalData(prev => ({
       ...prev,
@@ -883,6 +889,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("select", {
+    dir: "auto",
     value: localData.length,
     onChange: e => setLocalData(prev => ({
       ...prev,
@@ -913,6 +920,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("select", {
+    dir: "auto",
     value: localData.grade,
     onChange: e => setLocalData(prev => ({
       ...prev,
@@ -961,6 +969,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("select", {
+    dir: "auto",
     value: localData.dokLevel,
     onChange: e => setLocalData(prev => ({
       ...prev,
@@ -1003,6 +1012,7 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, !isIndependentMode && /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.common_standards_region_placeholder'),
     type: "text",
     value: aiStandardRegion,
@@ -1010,6 +1020,7 @@ const QuickStartWizard = React.memo(({
     placeholder: t('common.standards_region_placeholder'),
     className: "w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
   }), /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_ai_standard_query'),
     type: "text",
     value: aiStandardQuery,
@@ -1061,6 +1072,7 @@ const QuickStartWizard = React.memo(({
   }, t('standards.press_search_hint'))) : /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_standard_input_value'),
     type: "text",
     value: standardInputValue,
@@ -1106,6 +1118,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     type: "text",
     value: localData.vocabulary,
     onChange: e => setLocalData(prev => ({
@@ -1128,6 +1141,7 @@ const QuickStartWizard = React.memo(({
     size: 14,
     className: "text-slate-600"
   })), /*#__PURE__*/React.createElement("textarea", {
+    dir: "auto",
     value: localData.sourceCustomInstructions,
     onChange: e => setLocalData(prev => ({
       ...prev,
@@ -1139,6 +1153,7 @@ const QuickStartWizard = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-purple-50 p-3 rounded-xl border border-purple-100"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.toggle_verification'),
     type: "checkbox",
     "data-help-key": "wizard_verify_checkbox",
@@ -1195,6 +1210,7 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold text-slate-600 mb-2"
   }, t('wizard.output_format')), /*#__PURE__*/React.createElement("select", {
+    dir: "auto",
     "aria-label": t('common.selection'),
     value: localData.format,
     "data-help-key": "wizard_format_select",
@@ -1224,6 +1240,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.output_languages_label')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_wiz_lang_input'),
     type: "text",
     value: wizLangInput,
@@ -1242,6 +1259,7 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 20
   }))), /*#__PURE__*/React.createElement("select", {
+    dir: "auto",
     "aria-label": t('common.selection'),
     "data-help-key": "wizard_lang_common_select",
     onChange: e => {
@@ -1292,6 +1310,7 @@ const QuickStartWizard = React.memo(({
   }, " (Optional)")), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
     "aria-label": t('common.enter_wiz_interest_input'),
     type: "text",
     value: wizInterestInput,
