@@ -604,7 +604,8 @@ async function handleNvidiaProxy(req, res, body) {
     }
 
     const effectiveModel = loadNvidiaModel();
-    const nvidiaBody = { ...body, model: effectiveModel };
+    // Always force stream:false — streaming SSE responses cause upstream.json() to throw AbortError
+    const nvidiaBody = { ...body, model: effectiveModel, stream: false };
     const nvidiaHeaders = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -629,6 +630,8 @@ async function handleNvidiaProxy(req, res, body) {
         } finally {
             clearTimeout(nvidiaTimeout);
         }
+
+        console.log(`[nvidia-proxy] Upstream responded — status: ${upstream.status}, content-type: ${upstream.headers.get('content-type')}`);
 
         // Handle 202 async — NVIDIA may queue long multimodal requests
         if (upstream.status === 202) {
@@ -662,12 +665,31 @@ async function handleNvidiaProxy(req, res, body) {
             return res.end(JSON.stringify({ error: 'NVIDIA request timed out after 60 s of polling' }));
         }
 
-        const data = await upstream.json();
+        // Read body as text first to avoid AbortError from json() on unexpected content-types
+        const rawText = await upstream.text();
+        let data;
+        if (rawText.trim().startsWith('data:')) {
+            // SSE fallback: extract first data line (shouldn't happen with stream:false, but just in case)
+            const sseLines = rawText.split('\n').filter(l => l.startsWith('data:') && !l.includes('[DONE]'));
+            if (sseLines.length > 0) {
+                try { data = JSON.parse(sseLines[0].slice(5).trim()); }
+                catch { data = { error: 'Unparseable SSE response from NVIDIA' }; }
+            } else {
+                data = { error: 'Empty SSE response from NVIDIA' };
+            }
+        } else {
+            try { data = JSON.parse(rawText); }
+            catch {
+                console.error(`[nvidia-proxy] Non-JSON response (status ${upstream.status}):`, rawText.slice(0, 500));
+                data = { error: `Non-JSON response from NVIDIA (status ${upstream.status})`, detail: rawText.slice(0, 200) };
+            }
+        }
+
         logAIProxy('/api/nvidia/proxy', 'nvidia', upstream.status, Date.now() - t0);
         res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(data));
     } catch (err) {
-        console.error('[localApp:nvidia-proxy] error:', err.message);
+        console.error('[localApp:nvidia-proxy] error:', err.message, err.cause?.message || '');
         logAIProxy('/api/nvidia/proxy', 'nvidia', 500, Date.now() - t0);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: 'NVIDIA proxy error: ' + err.message }));
