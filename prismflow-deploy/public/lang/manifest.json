@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-05-19T19:38:13.618Z",
-  "count": 8,
+  "generated": "2026-05-19T19:39:44.224Z",
+  "count": 9,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -31,6 +31,13 @@
       "keys": 925,
       "bytes": 49293,
       "updated": "2026-05-17"
+    },
+    {
+      "slug": "hebrew",
+      "display": "Hebrew",
+      "keys": 533,
+      "bytes": 29861,
+      "updated": "2026-05-19"
     },
     {
       "slug": "portuguese_brazil",
