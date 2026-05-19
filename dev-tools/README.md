@@ -17,6 +17,7 @@ If you're looking for the *WCAG axe-core test suite*, that lives in [`a11y-audit
 | **Run all fast checks before pushing a deploy** | `npm run verify` | ~9 sec | 9 checks, no chromium/network needed |
 | **Run everything including runtime + a11y** | `npm run verify:all` | ~17 sec | + V2 runtime + a11y static + phase2 diff |
 | **Run unit tests** | `npm test` | varies | Vitest unit tests in `tests/` |
+| **Build a pre-baked language pack** | `npm run build:lang -- --lang="Spanish (Latin America)"` | 30-90 sec | Generates `lang/<slug>.js`. Once committed, runtime users get the language without making any API calls. Requires `GEMINI_API_KEY` env var or `--api-key=` flag. Add `--dry-run` to validate the pipeline without spending tokens. Add `--resume` to retry failed chunks. Mirrors the runtime translateChunk DNT + glossary logic. |
 
 **Especially valuable in multi-chat workflows:** `verify:mirror` and `verify:source-pair` catch the case where one chat edits a source file but doesn't sync to `prismflow-deploy/public/` (or to the `prismflow-deploy/src/` source duplicate). Run `npm run verify` after a parallel chat lands changes to surface drift before deploying.
 

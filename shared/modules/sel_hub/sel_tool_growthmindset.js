@@ -571,7 +571,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontSize: '14px', color: '#1e3a8a', margin: 0, fontStyle: 'italic' } }, '"' + reframeInput + '"')
             ),
             h('div', { style: { background: EMERALD_LIGHT, border: '2px solid #6ee7b7', borderRadius: '16px', padding: '20px', marginBottom: '12px', position: 'relative' } },
-              h('div', { style: { position: 'absolute', top: '-12px', left: '20px', background: EMERALD_LIGHT, border: '2px solid #6ee7b7', borderBottom: 'none', borderRight: 'none', borderRadius: '8px 0 0 0', width: '20px', height: '12px', transform: 'rotate(45deg)' } }),
+              h('div', { style: { position: 'absolute', top: '-12px', left: '20px', background: EMERALD_LIGHT, borderTop: '2px solid #6ee7b7', borderRight: '2px solid #6ee7b7', borderLeft: '2px solid #6ee7b7', borderBottom: 'none', borderRight: 'none', borderRadius: '8px 0 0 0', width: '20px', height: '12px', transform: 'rotate(45deg)' } }),
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '\uD83C\uDF31 Growth Mindset Version'),
               h('p', { style: { fontSize: '16px', fontWeight: 700, color: EMERALD_DARK, margin: 0 } }, '"' + current.growth + '"')
             ),

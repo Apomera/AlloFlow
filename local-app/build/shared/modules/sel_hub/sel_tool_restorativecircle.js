@@ -1660,7 +1660,7 @@ window.SelHub = window.SelHub || {
                 }, '← Different role')
               ),
               // Scene
-              rcRpScene && h('div', { style: { padding: '10px 12px', background: '#fafafa', border: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
+              rcRpScene && h('div', { style: { padding: '10px 12px', background: '#fafafa', borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
                 h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#92400e', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
                 rcRpScene
               ),
@@ -2667,7 +2667,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ PRINT ═══
         tab === 'print' && h('div', { className: 'space-y-3' },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Facilitator pocket reference. '),
             'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
           ),

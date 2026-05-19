@@ -8,11 +8,12 @@
 // and helpers come through the per-renderer deps interface.
 
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
-  const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks } = deps;
+  const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks, t } = deps;
+  const _t = t || ((k) => null);
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderFormattedText fired"); } catch(_) {}
     if (!text) return null;
     if (typeof text !== 'string') {
-        return <div className="text-red-500 text-xs">Error: Invalid text format</div>;
+        return <div className="text-red-500 text-xs">{_t('renderers.error_invalid_text_format') || 'Error: Invalid text format'}</div>;
     }
     text = sanitizeTruncatedCitations(text);
     const processedText = normalizeResourceLinks(text);
@@ -189,7 +190,9 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
+  // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
+  const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
@@ -197,6 +200,11 @@ const renderOutlineContent = (deps) => {
   const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() { const _C = window.AlloModules.OutlineSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() { const _C = window.AlloModules.FishboneSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() { const _C = window.AlloModules.ProblemSolutionSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() { const _C = window.AlloModules.FrayerSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() { const _C = window.AlloModules.SeeThinkWonderSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() { const _C = window.AlloModules.StoryMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const handleGenerateFrayerImage = deps.handleGenerateFrayerImage;
+  const handleRemoveFrayerImage = deps.handleRemoveFrayerImage;
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
         if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return null;
         const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
@@ -301,7 +309,7 @@ const renderOutlineContent = (deps) => {
         ));
         if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
             // ── Pipeline Builder game rendering ──
-            if (isPipelinePlaying) {
+            if (isPipelinePlaying || (isInteractivePipeline && !isTeacherMode)) {
                 const stepData = branches.map(b => ({ title: b.title, items: b.items || [] }));
                 return (
                     <ErrorBoundary fallbackMessage="Pipeline Builder encountered an error.">
@@ -322,13 +330,19 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-4">
                         <GameButtonHint />
                         <button
-                            onClick={() => setIsPipelinePlaying(true)}
+                            onClick={() => { setIsInteractivePipeline(true); setIsPipelinePlaying(true); _broadcastInteractiveOrganizer('pipeline'); }}
                             className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                             aria-describedby="game-btn-hint"
                             aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
                         >
                             <Gamepad2 size={16}/> {t('games.pipeline.play_btn') || 'Build the Flow'}
                         </button>
+                        {isInteractivePipeline && isTeacherMode && (
+                          <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                            <button onClick={() => { setIsInteractivePipeline(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                          </div>
+                        )}
                     </div>
                     )}
                     <MainTitle />
@@ -372,10 +386,10 @@ const renderOutlineContent = (deps) => {
                                     <BranchItem branch={b} bIdx={i} colorClass="bg-white border-none shadow-none" />
                                     {isBranching && (
                                         <div className="flex items-center gap-2 px-4 pb-2 flex-wrap">
-                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">Branches to:</span>
+                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">{t('outline.branches_to') || 'Branches to:'}</span>
                                             {b.connectsTo.map((target) => (
                                                 <span key={target} className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
-                                                    Step {target + 1}: {branches[target]?.title || '?'}
+                                                    {t('outline.step_target', { number: target + 1, title: branches[target]?.title || '?' }) || ('Step ' + (target + 1) + ': ' + (branches[target]?.title || '?'))}
                                                 </span>
                                             ))}
                                         </div>
@@ -516,10 +530,10 @@ const renderOutlineContent = (deps) => {
                                     {vennGameData.setA.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('setA', i)} className="text-rose-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button onClick={() => handleRemoveVennItem('setA', i)} className="text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-400 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                             <div className="bg-purple-50 rounded-xl border-2 border-purple-200 p-4 flex flex-col">
@@ -539,10 +553,10 @@ const renderOutlineContent = (deps) => {
                                     {vennGameData.shared.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('shared', i)} className="text-purple-300 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button onClick={() => handleRemoveVennItem('shared', i)} className="text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-400 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                             <div className="bg-blue-50 rounded-xl border-2 border-blue-200 p-4 flex flex-col">
@@ -562,10 +576,10 @@ const renderOutlineContent = (deps) => {
                                     {vennGameData.setB.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('setB', i)} className="text-blue-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button onClick={() => handleRemoveVennItem('setB', i)} className="text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-400 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                         </div>
@@ -574,7 +588,7 @@ const renderOutlineContent = (deps) => {
                             className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-xl shadow-lg hover:bg-indigo-700 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                             onClick={handleSetIsVennPlayingToTrue}
                         >
-                            <Gamepad2 size={24} className="fill-current text-yellow-400"/> {t('concept_map.venn.start_game')}
+                            <Gamepad2 size={24} className="fill-current text-yellow-700"/> {t('concept_map.venn.start_game')}
                         </button>
                     </div>
                 );
@@ -656,7 +670,7 @@ const renderOutlineContent = (deps) => {
             const rightItems = (right.items || []).map(itemText).filter(Boolean);
             const showBilingual = leveledTextLanguage !== 'English' || left.title_en || right.title_en;
             // ── T-Chart Sort Game rendering ──
-            if (isTChartPlaying) {
+            if (isTChartPlaying || (isInteractiveTChart && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="T-Chart Sort encountered an error.">
                         <TChartSortGame
@@ -740,7 +754,7 @@ const renderOutlineContent = (deps) => {
                                 );
                             })}
                             {items.length === 0 && (
-                                <li className="text-xs italic text-slate-400 text-center py-4">{t('outline.no_items') || 'No items'}</li>
+                                <li className="text-xs italic text-slate-600 text-center py-4">{t('outline.no_items') || 'No items'}</li>
                             )}
                         </ul>
                     </div>
@@ -753,13 +767,19 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsTChartPlaying(true)}
+                                onClick={() => { setIsInteractiveTChart(true); setIsTChartPlaying(true); _broadcastInteractiveOrganizer('tchart'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.tchart_sort.play_btn') || 'Play T-Chart Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.tchart_sort.play_btn') || 'Sort Into Columns'}
                             </button>
+                            {isInteractiveTChart && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveTChart(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -784,7 +804,7 @@ const renderOutlineContent = (deps) => {
             const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
             const showBilingual = leveledTextLanguage !== 'English' || branches.some(b => b.title_en);
             // ── Fishbone Sort Game rendering ──
-            if (isFishboneSortPlaying) {
+            if (isFishboneSortPlaying || (isInteractiveFishboneSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Fishbone Sort encountered an error.">
                         <FishboneSortGame
@@ -824,13 +844,19 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsFishboneSortPlaying(true)}
+                                onClick={() => { setIsInteractiveFishboneSort(true); setIsFishboneSortPlaying(true); _broadcastInteractiveOrganizer('fishbone'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.fishbone_sort.play_btn') || 'Play Fishbone Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.fishbone_sort.play_btn') || 'Sort Causes Onto Bones'}
                             </button>
+                            {isInteractiveFishboneSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveFishboneSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     {/* SVG fishbone skeleton — purely decorative, the real content is in the cards below */}
@@ -935,7 +961,7 @@ const renderOutlineContent = (deps) => {
                                             );
                                         })}
                                         {items.length === 0 && (
-                                            <li className="text-xs italic text-slate-400 text-center py-2">{t('outline.no_items') || 'No causes in this category'}</li>
+                                            <li className="text-xs italic text-slate-600 text-center py-2">{t('outline.no_items') || 'No causes in this category'}</li>
                                         )}
                                     </ul>
                                 </div>
@@ -951,7 +977,7 @@ const renderOutlineContent = (deps) => {
             const chains = branches.filter(b => b.title.toLowerCase().includes('chain') || b.title.toLowerCase().includes('sequence'));
             const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
             // ── Sort Game rendering ──
-            if (isCESortPlaying) {
+            if (isCESortPlaying || (isInteractiveCESort && !isTeacherMode)) {
                 const causeItems = [];
                 const effectItems = [];
                 if (isLegacy) {
@@ -987,13 +1013,19 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsCESortPlaying(true)}
+                                onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); _broadcastInteractiveOrganizer('cesort'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                             >
                                 <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                             </button>
+                            {isInteractiveCESort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                         )}
                         <MainTitle />
@@ -1043,13 +1075,19 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-6">
                         <GameButtonHint />
                         <button
-                            onClick={() => setIsCESortPlaying(true)}
+                            onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); _broadcastInteractiveOrganizer('cesort'); }}
                             className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                             aria-describedby="game-btn-hint"
                             aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                         >
                             <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                         </button>
+                        {isInteractiveCESort && isTeacherMode && (
+                          <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                            <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                          </div>
+                        )}
                     </div>
                     )}
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
@@ -1108,7 +1146,7 @@ const renderOutlineContent = (deps) => {
             const totalSolutionItems = solutionBranches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
             // Game needs at least 6 solutions so the thirds are meaningful (2 per bucket).
             const showPSGame = totalSolutionItems >= 6;
-            if (isProblemSolutionSortPlaying) {
+            if (isProblemSolutionSortPlaying || (isInteractiveProblemSolutionSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Solution Prioritize encountered an error.">
                         <ProblemSolutionSortGame
@@ -1128,13 +1166,19 @@ const renderOutlineContent = (deps) => {
                          <div className="flex justify-center mb-6">
                              <GameButtonHint />
                              <button
-                                 onClick={() => setIsProblemSolutionSortPlaying(true)}
+                                 onClick={() => { setIsInteractiveProblemSolutionSort(true); setIsProblemSolutionSortPlaying(true); _broadcastInteractiveOrganizer('problemsolution'); }}
                                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                  aria-describedby="game-btn-hint"
                                  aria-label={t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
                              >
                                  <Gamepad2 size={16}/> {t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
                              </button>
+                             {isInteractiveProblemSolutionSort && isTeacherMode && (
+                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                 <button onClick={() => { setIsInteractiveProblemSolutionSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                               </div>
+                             )}
                          </div>
                      )}
                      <div className="relative z-10 mb-16">
@@ -1224,7 +1268,7 @@ const renderOutlineContent = (deps) => {
                     </div>
                 );
             }
-            if (isConceptMapSortPlaying) {
+            if (isConceptMapSortPlaying || (isInteractiveConceptMapSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Concept Map Sort encountered an error.">
                         <ConceptMapSortGame
@@ -1244,25 +1288,383 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsConceptMapSortPlaying(true)}
+                                onClick={() => { setIsInteractiveConceptMapSort(true); setIsConceptMapSortPlaying(true); _broadcastInteractiveOrganizer('conceptmap'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.concept_map_sort.play_btn') || 'Play Concept Map Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.concept_map_sort.play_btn') || 'Sort Onto Branches'}
                             </button>
+                            {isInteractiveConceptMapSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveConceptMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} />
                 </div>
             );
         }
+        // ── Frayer Model: 4-quadrant vocabulary grid ──
+        if (type === 'Frayer Model' && !isEditingOutline) {
+            const frayerImage = generatedContent?.data?.frayerExampleImage;
+            const onGenerateFrayerVisual = async () => {
+                if (typeof handleGenerateFrayerImage === 'function') await handleGenerateFrayerImage('');
+            };
+            const onRefineFrayerVisual = async () => {
+                const instruction = (typeof window !== 'undefined' && typeof window.prompt === 'function')
+                    ? window.prompt('How should the image change? (e.g., "make it more colorful", "show a microscope view")')
+                    : '';
+                if (instruction && typeof handleGenerateFrayerImage === 'function') {
+                    await handleGenerateFrayerImage(instruction);
+                }
+            };
+            const onRemoveFrayerVisual = () => {
+                if (typeof handleRemoveFrayerImage === 'function') handleRemoveFrayerImage();
+            };
+            if (isFrayerSortPlaying || (isInteractiveFrayerSort && !isTeacherMode)) {
+                return (
+                    <ErrorBoundary fallbackMessage="Frayer Sort encountered an error.">
+                        <FrayerSortGame
+                            data={generatedContent?.data}
+                            onClose={closeFrayerSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            const defBranch = branches[0] || { title: 'Definition', items: [] };
+            const charBranch = branches[1] || { title: 'Characteristics', items: [] };
+            const exBranch = branches[2] || { title: 'Examples', items: [] };
+            const nonExBranch = branches[3] || { title: 'Non-Examples', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const QUADRANT_COLORS = {
+                indigo:  { bg: 'bg-indigo-50/70',  header: 'text-indigo-800',  dot: 'text-indigo-500' },
+                emerald: { bg: 'bg-emerald-50/70', header: 'text-emerald-800', dot: 'text-emerald-500' },
+                amber:   { bg: 'bg-amber-50/70',   header: 'text-amber-800',   dot: 'text-amber-500' },
+                rose:    { bg: 'bg-rose-50/70',    header: 'text-rose-800',    dot: 'text-rose-500' },
+            };
+            const renderQuadrant = (branch, colorKey, borders, quadrantLabel, includeImage, isBottomRow) => {
+                const items = (branch.items || []).map(itemText).filter(Boolean);
+                const c = QUADRANT_COLORS[colorKey];
+                // Bottom-row quadrants get extra top-padding so the centered
+                // "term" pill (positioned at the row boundary) does not
+                // visually overlap their headers.
+                const padCls = isBottomRow ? 'px-5 pb-5 pt-10' : 'p-5';
+                return (
+                    <div className={`${c.bg} ${padCls} ${borders}`} aria-label={quadrantLabel}>
+                        <h4 className={`font-black text-sm uppercase tracking-wider mb-3 ${c.header}`}>
+                            {branch.title}
+                        </h4>
+                        {includeImage && frayerImage ? (
+                            <div className="mb-3 bg-white rounded-md border border-slate-200 p-2 flex items-center justify-center">
+                                <img src={frayerImage} alt={`Visual representation of ${main || 'the vocabulary term'}`} style={{ maxHeight: '120px', objectFit: 'contain' }} />
+                            </div>
+                        ) : null}
+                        <ul className="space-y-1.5">
+                            {items.length > 0 ? items.map((text, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
+                                    <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
+                                    <span>{text}</span>
+                                </li>
+                            )) : (
+                                <li className="text-xs text-slate-600 italic">—</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-6 relative">
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => { setIsInteractiveFrayerSort(true); setIsFrayerSortPlaying(true); _broadcastInteractiveOrganizer('frayer'); }}
+                                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.frayer_sort.play_btn') || 'Play Frayer Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.frayer_sort.play_btn') || 'Sort into Quadrants'}
+                            </button>
+                            {isInteractiveFrayerSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveFrayerSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
+                        {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition',     false, false)}
+                        {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics', false, false)}
+                        {renderQuadrant(exBranch,     'amber',   'border-r border-slate-300',          'Examples',        true,  true)}
+                        {renderQuadrant(nonExBranch,  'rose',    '',                                   'Non-Examples',    false, true)}
+                        {/* Centered vocabulary-term pill — sits exactly on the
+                            row+column intersection. Tighter px/py + smaller
+                            max-w keeps it visually balanced. Bottom-row
+                            quadrants have pt-10 to leave clear breathing room
+                            below this pill. */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-5 py-2 shadow-2xl z-10 max-w-[180px]">
+                            <div className="text-center font-black text-base text-slate-800 leading-tight whitespace-normal break-words">
+                                {main || 'Vocabulary Term'}
+                            </div>
+                        </div>
+                    </div>
+                    {isTeacherMode ? (
+                        <div className="flex gap-2 justify-center mt-3">
+                            {frayerImage ? (
+                                <>
+                                    <button
+                                        onClick={onRefineFrayerVisual}
+                                        disabled={isProcessing}
+                                        className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50"
+                                        aria-label={t('outline.frayer_refine_visual_aria') || 'Refine the Examples-quadrant visual via image-to-image edit'}
+                                    >
+                                        {t('outline.frayer_refine_visual_button') || '✨ Refine visual'}
+                                    </button>
+                                    <button
+                                        onClick={onRemoveFrayerVisual}
+                                        disabled={isProcessing}
+                                        className="px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50"
+                                        aria-label={t('outline.frayer_remove_visual_aria') || 'Remove the Examples-quadrant visual'}
+                                    >
+                                        {t('outline.frayer_remove_visual_button') || 'Remove visual'}
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={onGenerateFrayerVisual}
+                                    disabled={isProcessing}
+                                    className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50"
+                                    aria-label={t('outline.frayer_add_visual_aria') || 'Generate an AI visual for the Examples quadrant'}
+                                >
+                                    {t('outline.frayer_add_visual_button') || '🖼️ Add visual to Examples'}
+                                </button>
+                            )}
+                        </div>
+                    ) : null}
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.frayer_caption') || 'Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.'}</p>
+                </div>
+            );
+        }
+
+        // ── See-Think-Wonder: 3-column observation routine ──
+        if (type === 'See-Think-Wonder' && !isEditingOutline) {
+            if (isSeeThinkWonderSortPlaying || (isInteractiveSeeThinkWonderSort && !isTeacherMode)) {
+                return (
+                    <ErrorBoundary fallbackMessage="See-Think-Wonder Sort encountered an error.">
+                        <SeeThinkWonderSortGame
+                            data={generatedContent?.data}
+                            onClose={closeSeeThinkWonderSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            const seeBranch    = branches[0] || { title: 'See',    items: [] };
+            const thinkBranch  = branches[1] || { title: 'Think',  items: [] };
+            const wonderBranch = branches[2] || { title: 'Wonder', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const STW_COLORS = {
+                sky:    { bg: 'bg-sky-50/70',    header: 'bg-sky-600 text-white',    dot: 'text-sky-500' },
+                violet: { bg: 'bg-violet-50/70', header: 'bg-violet-600 text-white', dot: 'text-violet-500' },
+                amber:  { bg: 'bg-amber-50/70',  header: 'bg-amber-600 text-white',  dot: 'text-amber-500' },
+            };
+            const renderSTWColumn = (branch, colorKey, hint) => {
+                const items = (branch.items || []).map(itemText).filter(Boolean);
+                const c = STW_COLORS[colorKey];
+                return (
+                    <div className={`${c.bg} flex-1 min-h-[280px]`}>
+                        <h4 className={`${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4`}>{branch.title}</h4>
+                        <div className="px-4 pt-2 pb-1 text-[11px] italic text-slate-500 text-center">{hint}</div>
+                        <ul className="p-4 pt-2 space-y-2">
+                            {items.length > 0 ? items.map((text, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
+                                    <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
+                                    <span>{text}</span>
+                                </li>
+                            )) : (
+                                <li className="text-xs text-slate-600 italic">—</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => { setIsInteractiveSeeThinkWonderSort(true); setIsSeeThinkWonderSortPlaying(true); _broadcastInteractiveOrganizer('seethinkwonder'); }}
+                                className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.see_think_wonder_sort.play_btn') || 'Play See-Think-Wonder Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.see_think_wonder_sort.play_btn') || 'Sort: Observation, Inference, or Question?'}
+                            </button>
+                            {isInteractiveSeeThinkWonderSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveSeeThinkWonderSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        {renderSTWColumn(seeBranch,    'sky',    'What you can directly observe')}
+                        {renderSTWColumn(thinkBranch,  'violet', 'What the observations suggest')}
+                        {renderSTWColumn(wonderBranch, 'amber',  'Questions you want to explore')}
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.see_think_wonder_caption') || 'See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct.'}</p>
+                </div>
+            );
+        }
+
+        // ── KWL Chart: 3-column table ──
+        if (type === 'KWL Chart' && !isEditingOutline) {
+            const knowBranch = branches[0] || { title: 'Know', items: [] };
+            const wantBranch = branches[1] || { title: 'Want to Know', items: [] };
+            const learnedBranch = branches[2] || { title: 'Learned', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const KWL_COLORS = {
+                sky:     { bg: 'bg-sky-50/70',     header: 'bg-sky-600 text-white',     dot: 'text-sky-500' },
+                violet:  { bg: 'bg-violet-50/70',  header: 'bg-violet-600 text-white',  dot: 'text-violet-500' },
+                emerald: { bg: 'bg-emerald-50/70', header: 'bg-emerald-600 text-white', dot: 'text-emerald-500' },
+            };
+            const renderColumn = (branch, colorKey, placeholderWhenEmpty) => {
+                const items = (branch.items || []).map(itemText).filter(Boolean);
+                const c = KWL_COLORS[colorKey];
+                return (
+                    <div className={`${c.bg} flex-1 min-h-[300px]`}>
+                        <h4 className={`${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4`}>
+                            {branch.title}
+                        </h4>
+                        <ul className="p-4 space-y-2">
+                            {items.length > 0 ? items.map((text, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
+                                    <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
+                                    <span>{text}</span>
+                                </li>
+                            )) : (
+                                <li className="text-xs text-slate-600 italic">{placeholderWhenEmpty || '—'}</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        {renderColumn(knowBranch,    'sky',     null)}
+                        {renderColumn(wantBranch,    'violet',  null)}
+                        {renderColumn(learnedBranch, 'emerald', t('outline.kwl_learned_placeholder') || '(students fill this in after the lesson)')}
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.kwl_caption') || 'KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.'}</p>
+                </div>
+            );
+        }
+
+        // ── Story Map: arc visualization of narrative tension ──
+        if (type === 'Story Map' && !isEditingOutline) {
+            if (isStoryMapSortPlaying || (isInteractiveStoryMapSort && !isTeacherMode)) {
+                return (
+                    <ErrorBoundary fallbackMessage="Story Map Sort encountered an error.">
+                        <StoryMapSortGame
+                            data={generatedContent?.data}
+                            onClose={closeStoryMapSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            const stages = [
+                { branch: branches[0] || { title: 'Exposition',     items: [] }, x: 60,  y: 340, color: '#0891b2', anchor: 'start'  },
+                { branch: branches[1] || { title: 'Rising Action',  items: [] }, x: 250, y: 220, color: '#7c3aed', anchor: 'middle' },
+                { branch: branches[2] || { title: 'Climax',         items: [] }, x: 450, y: 70,  color: '#dc2626', anchor: 'middle' },
+                { branch: branches[3] || { title: 'Falling Action', items: [] }, x: 650, y: 220, color: '#7c3aed', anchor: 'middle' },
+                { branch: branches[4] || { title: 'Resolution',     items: [] }, x: 840, y: 340, color: '#059669', anchor: 'end'    },
+            ];
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => { setIsInteractiveStoryMapSort(true); setIsStoryMapSortPlaying(true); _broadcastInteractiveOrganizer('storymap'); }}
+                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.story_map_sort.play_btn') || 'Play Story Map Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.story_map_sort.play_btn') || 'Sort Events Along the Arc'}
+                            </button>
+                            {isInteractiveStoryMapSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveStoryMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
+                        <svg viewBox="0 0 900 400" className="w-full h-auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label={t('outline.plot_diagram_arc_aria') || 'Plot diagram arc showing narrative tension rising to the climax and falling toward resolution'}>
+                            <path d="M 60 340 Q 250 280 450 70 Q 650 280 840 340" fill="none" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" strokeDasharray="6 6" />
+                            {stages.map((stage, i) => (
+                                <g key={i}>
+                                    <circle cx={stage.x} cy={stage.y} r="9" fill={stage.color} stroke="white" strokeWidth="3" />
+                                    <text x={stage.x} y={stage.y - 20} textAnchor={stage.anchor} style={{ fontSize: '13px', fontWeight: 900, fill: stage.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        {stage.branch.title}
+                                    </text>
+                                </g>
+                            ))}
+                        </svg>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+                            {stages.map((stage, i) => {
+                                const items = (stage.branch.items || []).map(itemText).filter(Boolean);
+                                return (
+                                    <div key={i} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
+                                        <h5 className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: stage.color }}>
+                                            {stage.branch.title}
+                                        </h5>
+                                        <ul className="space-y-1">
+                                            {items.length > 0 ? items.map((text, k) => (
+                                                <li key={k} className="text-xs text-slate-700 leading-snug">• {text}</li>
+                                            )) : (
+                                                <li className="text-xs text-slate-600 italic">—</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.story_map_caption') || 'Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension.'}</p>
+                </div>
+            );
+        }
+
         if (type === 'Structured Outline') {
             const toRoman = (num) => {
                 const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
                 return lookup[num] || num;
             };
-            if (isOutlineSortPlaying) {
+            if (isOutlineSortPlaying || (isInteractiveOutlineSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Outline Sort encountered an error.">
                         <OutlineSortGame
@@ -1283,13 +1685,19 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsOutlineSortPlaying(true)}
+                                onClick={() => { setIsInteractiveOutlineSort(true); setIsOutlineSortPlaying(true); _broadcastInteractiveOrganizer('outline'); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.outline_sort.play_btn') || 'Play Outline Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.outline_sort.play_btn') || 'Sort Under Headings'}
                             </button>
+                            {isInteractiveOutlineSort && isTeacherMode && (
+                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
+                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
+                                <button onClick={() => { setIsInteractiveOutlineSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label="Stop the interactive activity so students see the static diagram">⏹ Stop Activity</button>
+                              </div>
+                            )}
                         </div>
                     )}
                     <div className="relative mt-8 space-y-8 ml-4 md:ml-12">
@@ -1607,18 +2015,18 @@ const renderInteractiveMap = (deps) => {
                   {generatedContent?.data?.structureType === 'Cause and Effect' && (
                       <div className="absolute inset-0 pointer-events-none z-0 flex">
                           <div className="w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200">
-                              <div className="absolute top-3 left-4 text-orange-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <div className="w-2.5 h-2.5 rounded-full bg-orange-300"></div>
                                   CAUSES
                               </div>
                           </div>
                           <div className="w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40">
-                              <div className="absolute top-3 right-4 text-teal-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   EFFECTS
                                   <div className="w-2.5 h-2.5 rounded-full bg-teal-300"></div>
                               </div>
                           </div>
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-300">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600">
                               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
                                   <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
                               </svg>
@@ -1629,19 +2037,19 @@ const renderInteractiveMap = (deps) => {
                   {generatedContent?.data?.structureType === 'Problem Solution' && (
                       <div className="absolute inset-0 pointer-events-none z-0 flex flex-col">
                           <div className="h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200">
-                              <div className="absolute top-3 left-4 text-red-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 left-4 text-red-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                                   PROBLEM
                               </div>
                           </div>
                           <div className="flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent">
-                              <div className="absolute top-[22%] left-4 text-green-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-[22%] left-4 text-green-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <div className="w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45"></div>
                                   SOLUTIONS
                               </div>
                           </div>
                           <div className="h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200">
-                              <div className="absolute bottom-3 left-4 text-blue-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute bottom-3 left-4 text-blue-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                                   OUTCOME
                               </div>

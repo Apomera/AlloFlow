@@ -1,0 +1,37 @@
+====================================================
+  HELP MODE COVERAGE AUDIT
+====================================================
+
+Files scanned: 289
+Defined help keys (help_strings.js): 782
+Referenced help keys (data-help-key attrs): 761
+  - With definition: 761
+  - MISSING definition: 0
+Dead entries (defined but never referenced): 21
+
+--- MISSING help strings (referenced, no definition) ---
+
+--- DEAD entries (defined but never used) ---
+  alignment_generate_button
+  alignment_grade_select
+  alignment_standard_select
+  brainstorm_simulation_detailed
+  brainstorm_step_count_detailed
+  concept_sort_input
+  header_actions
+  header_settings
+  header_tools
+  header_utils
+  header_view_student
+  header_view_teacher
+  math_difficulty
+  math_problem_count
+  math_show_work
+  persona_custom_instructions_detailed
+  persona_mode_toggle
+  timeline_count_detailed
+  timeline_topic_detailed
+  visuals_low_quality
+  wizard_close_btn
+
+--- Top sections of MISSING keys (by snake_case prefix) ---

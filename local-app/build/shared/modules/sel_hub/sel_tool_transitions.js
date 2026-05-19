@@ -717,7 +717,7 @@ window.SelHub = window.SelHub || {
         var phases = (CHANGE_CURVE[band] || CHANGE_CURVE.middle);
         var phaseContext = (myPhase != null && phases[myPhase]) ? phases[myPhase] : null;
         printContent = h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#f0f9ff', border: '1px solid #bae6fd', borderLeft: '3px solid ' + SKY, marginBottom: 12, fontSize: 12.5, color: SKY_DARK, lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#f0f9ff', borderTop: '1px solid #bae6fd', borderRight: '1px solid #bae6fd', borderBottom: '1px solid #bae6fd', borderLeft: '3px solid ' + SKY, marginBottom: 12, fontSize: 12.5, color: SKY_DARK, lineHeight: 1.65 } },
             h('strong', null, '🖨 My transition plan. '),
             'A one-page artifact you can bring to a counselor, school psychologist, case manager, family member, or new teacher. Names what is changing, where you are in the change curve, what is holding you steady, and your next steps.'
           ),

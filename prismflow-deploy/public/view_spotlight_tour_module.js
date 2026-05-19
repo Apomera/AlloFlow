@@ -79,7 +79,7 @@
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "text-slate-300 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark"
+    className: "text-slate-600 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark"
   }, (spotlightMessage.text || '').split(/\r?\n/).map((line, i) => {
     const cleanLine = line.trim();
     if (!cleanLine) return /*#__PURE__*/React.createElement("div", {
@@ -110,7 +110,7 @@
       const headerText = cleanLine.replace(/^###\s*/, '').trim();
       return /*#__PURE__*/React.createElement("h5", {
         key: i,
-        className: "text-violet-300 font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b border-white/10 pb-1"
+        className: "text-violet-700 font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b border-white/10 pb-1"
       }, formatText(headerText));
     }
     const isBullet = cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('* ');
@@ -123,12 +123,12 @@
       }, /*#__PURE__*/React.createElement("div", {
         className: "mt-2 h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)] mx-auto shrink-0"
       }), /*#__PURE__*/React.createElement("span", {
-        className: "text-slate-300 text-sm font-medium"
+        className: "text-slate-600 text-sm font-medium"
       }, formatText(bulletText)));
     }
     return /*#__PURE__*/React.createElement("p", {
       key: i,
-      className: "text-slate-300 text-sm leading-relaxed"
+      className: "text-slate-600 text-sm leading-relaxed"
     }, formatText(cleanLine));
   })), /*#__PURE__*/React.createElement("svg", {
     className: "absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95",

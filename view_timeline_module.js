@@ -394,7 +394,7 @@
         next.add(_vKey);
         return next;
       }),
-      className: "ml-auto text-red-400 hover:text-red-600 p-0.5 rounded",
+      className: "ml-auto text-red-600 hover:text-red-600 p-0.5 rounded",
       "aria-label": t('timeline.validation.dismiss') || 'Dismiss verification concern',
       title: t('timeline.validation.dismiss') || 'Dismiss'
     }, /*#__PURE__*/React.createElement(X, {
@@ -437,7 +437,7 @@
     className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 24,
-    className: "fill-current text-yellow-400"
+    className: "fill-current text-yellow-700"
   }), " ", t('timeline.start_activity'))))), isTimelineGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Sequence Game encountered an error."
   }, /*#__PURE__*/React.createElement(TimelineGame, {

@@ -523,7 +523,7 @@
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar"
   }, /*#__PURE__*/React.createElement("div", {
@@ -564,7 +564,7 @@
     className: "w-full bg-white p-4 rounded-xl border border-slate-400 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative"
   }, /*#__PURE__*/React.createElement(Quote, {
     size: 16,
-    className: "absolute top-2 left-2 text-slate-200 fill-current"
+    className: "absolute top-2 left-2 text-slate-600 fill-current"
   }), "\"", personaState.selectedCharacter.context, "\""), /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -976,7 +976,7 @@
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp'))))))))));
 }
 

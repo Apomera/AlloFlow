@@ -1569,7 +1569,7 @@ window.StemLab = window.StemLab || {
             style: {
               padding: '10px 14px', borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
-              border: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+              borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
               color: '#0c4a6e', fontSize: 13, lineHeight: 1.55
             }
           },
@@ -2162,12 +2162,12 @@ window.StemLab = window.StemLab || {
           function renderOutbreakAIPanel() {
             if (outbreak.aiReadLoading) {
               return h('div', { role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
                 '⏳ AI public health educator is reading your county data...');
             }
             if (!outbreak.aiReadResponse) return null;
             return h('div', { role: 'region', 'aria-label': 'AI Public Health Reading',
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
                 h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Public Health Reading'),
@@ -2596,7 +2596,7 @@ window.StemLab = window.StemLab || {
           var coachingTip = (outbreak.week === 1 && !outbreak.firstTipDismissed && outbreak.weekActions.length === 0) ? outbreakCoachingTip() : null;
           return h('div', { className: 'space-y-3' },
             outbreakDeepDive,
-            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
               h('div', { style: { flex: 1 } },
                 h('strong', { style: { color: '#a855f7' } }, 'Week 1 priority: '),
@@ -3132,7 +3132,7 @@ window.StemLab = window.StemLab || {
             style: {
               padding: '10px 14px', borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)',
-              border: '1px solid rgba(251,191,36,0.6)', borderLeft: '3px solid #fbbf24',
+              borderTop: '1px solid rgba(251,191,36,0.6)', borderRight: '1px solid rgba(251,191,36,0.6)', borderBottom: '1px solid rgba(251,191,36,0.6)', borderLeft: '3px solid #fbbf24',
               color: '#78350f', fontSize: 13, lineHeight: 1.55
             }
           },

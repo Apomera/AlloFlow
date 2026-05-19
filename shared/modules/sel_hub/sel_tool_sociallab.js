@@ -693,6 +693,16 @@ window.SelHub = window.SelHub || {
           // Chat messages
           h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Conversation with ' + aiScenario.peerName, 'aria-busy': chatLoading ? 'true' : 'false', style: { flex: 1, overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             chatHistory.map(function(msg, i) {
+              // Coach break-character message (fired when safeRehearseCheck
+              // blocked a tier-3 student message). Render as full-width banner
+              // alongside the loud crisis-resources block.
+              if (msg.role === 'coach') {
+                return h('div', { key: i, style: { alignSelf: 'stretch', padding: '12px 14px', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '10px', marginBottom: '4px' } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#92400e', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪶 Coach (out of character)'),
+                  h('div', { style: { fontSize: 13, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, msg.text),
+                  window.SelHub && window.SelHub.renderCrisisResources && h('div', { style: { marginTop: 10 } }, window.SelHub.renderCrisisResources(h, gradeBand))
+                );
+              }
               var isPeer = msg.role === 'peer';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isPeer ? 'flex-start' : 'flex-end', gap: '8px' } },
                 isPeer && h('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }, 'aria-hidden': 'true' }, msg.mood ? (MOOD_EMOJIS[msg.mood] || '😐') : '🗣️'),

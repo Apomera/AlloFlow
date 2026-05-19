@@ -311,11 +311,11 @@
     tabIndex: 0,
     "aria-label": (t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub'),
     onClick: () => {
-      setHasSelectedMode(true);
-      setHasSelectedRole(true);
-      setShowWizard(false);
+      setShowLearningHub(true);
       setIsTeacherMode(false);
-      setTimeout(() => setShowLearningHub(true), 0);
+      setShowWizard(false);
+      setHasSelectedRole(true);
+      setHasSelectedMode(true);
     },
     onKeyDown: e => {
       if (e.key === 'Enter' || e.key === ' ') {

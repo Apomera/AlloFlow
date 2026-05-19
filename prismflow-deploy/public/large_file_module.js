@@ -217,6 +217,7 @@ const LargeFileTranscriptionModal = React.memo(({
         className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200",
         role: "dialog",
         "aria-modal": "true",
+        "aria-labelledby": "large-file-modal-title",
         onClick: (e) => e.stopPropagation()
       },
       /* @__PURE__ */ React.createElement(
@@ -230,7 +231,7 @@ const LargeFileTranscriptionModal = React.memo(({
         },
         /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\xD7")
       ),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, isVideo ? "\u{1F3AC}" : "\u{1F3B5}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800" }, isVideo ? t?.("large_file.title_video") || "Large Video File Detected" : t?.("large_file.title") || "Large Audio File Detected"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-medium" }, file.name))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, isVideo ? "\u{1F3AC}" : "\u{1F3B5}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "large-file-modal-title", className: "text-lg font-black text-slate-800" }, isVideo ? t?.("large_file.title_video") || "Large Video File Detected" : t?.("large_file.title") || "Large Audio File Detected"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-medium" }, file.name))),
       /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, isVideo ? t?.("large_file.description_video") || `This video is ${fileSizeMB} MB. The audio will be extracted and split into ~${estimatedChunks} smaller chunks for transcription, then combined.` : t?.("large_file.description") || `This file is ${fileSizeMB} MB and exceeds the 20MB limit for direct transcription. It will be split into ~${estimatedChunks} smaller chunks and transcribed separately, then combined.`)),
       isProcessing && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, status || "Processing..."), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, progress, "/", totalChunks, " (", progressPercent, "%)")), /* @__PURE__ */ React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement(
         "div",

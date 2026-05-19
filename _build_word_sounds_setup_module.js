@@ -171,14 +171,12 @@ ${compiled}
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.WordSoundsGenerator = (typeof WordSoundsGenerator !== 'undefined') ? WordSoundsGenerator : null;
-  window.AlloModules.WordSoundsReviewPanel = (typeof WordSoundsReviewPanel !== 'undefined') ? WordSoundsReviewPanel : null;
+  // WordSoundsReviewPanel is registered by misc_components_module.js (the canonical version,
+  // which includes onRegenerateManipulationTask). Do NOT re-register here — this module loads
+  // later and its older copy lacks that prop, silently breaking the regenerate-manipulation button.
   window.AlloModules.WordSoundsSetupModule = true;
 
-  if (typeof WordSoundsReviewPanel !== 'undefined') {
-    window.WordSoundsReviewPanel = WordSoundsReviewPanel;
-  }
-
-  console.log('[WordSoundsSetupModule] WordSoundsGenerator + WordSoundsReviewPanel registered');
+  console.log('[WordSoundsSetupModule] WordSoundsGenerator registered');
 })();
 `;
 

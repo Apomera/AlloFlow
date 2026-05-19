@@ -8,6 +8,202 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// ── Festival mode CSS (opt-in high-stim mode) ──
+// Default UX is sensory-friendly (sound + motion are muted by default).
+// Festival mode is the OPPOSITE: rainbow background, all mascots cheering,
+// confetti per word, screen shake on big combo. Designed for ADHD-pattern
+// brains + students who find calm UIs boring. prefers-reduced-motion still
+// caps the shake + sparkle classes (handled by the rule above).
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('tp-festival-css')) return;
+  var st = document.createElement('style');
+  st.id = 'tp-festival-css';
+  st.textContent = [
+    '@keyframes tp-fest-rainbow-bg {',
+    '  0%   { background-position: 0% 50%; }',
+    '  100% { background-position: 200% 50%; }',
+    '}',
+    '@keyframes tp-fest-shake {',
+    '  0%, 100% { transform: translate(0, 0) rotate(0deg); }',
+    '  20% { transform: translate(-4px, 2px) rotate(-0.4deg); }',
+    '  40% { transform: translate(4px, -2px) rotate(0.4deg); }',
+    '  60% { transform: translate(-3px, 1px) rotate(-0.3deg); }',
+    '  80% { transform: translate(3px, -1px) rotate(0.3deg); }',
+    '}',
+    '@keyframes tp-fest-confetti-fall {',
+    '  0%   { transform: translate(0, -20px) rotate(0deg);   opacity: 1; }',
+    '  100% { transform: translate(var(--tp-fest-dx, 40px), 320px) rotate(720deg); opacity: 0; }',
+    '}',
+    '@keyframes tp-fest-sparkle-pop {',
+    '  0%   { transform: scale(0.2) translate(0, 0); opacity: 1; }',
+    '  60%  { transform: scale(1.2) translate(var(--tp-fest-sdx, 0), var(--tp-fest-sdy, -30px)); opacity: 1; }',
+    '  100% { transform: scale(0.4) translate(var(--tp-fest-sdx, 0), var(--tp-fest-sdy, -60px)); opacity: 0; }',
+    '}',
+    '@keyframes tp-fest-mascot-bob {',
+    '  0%, 100% { transform: translateY(0) rotate(-2deg); }',
+    '  50%      { transform: translateY(-12px) rotate(2deg); }',
+    '}',
+    '@keyframes tp-fest-streak-pulse {',
+    '  0%, 100% { transform: scale(1); }',
+    '  50%      { transform: scale(1.15); }',
+    '}',
+    // Rainbow-background shell — applied to the drill content wrapper
+    '.tp-fest-shell {',
+    '  position: relative;',
+    '  background: linear-gradient(90deg, #fef3c7, #fce7f3, #dbeafe, #dcfce7, #fef3c7);',
+    '  background-size: 400% 400%;',
+    '  animation: tp-fest-rainbow-bg 18s linear infinite;',
+    '}',
+    '.tp-fest-shake { animation: tp-fest-shake 0.45s ease-in-out; }',
+    // Mascot row at the bottom — all 5 visible
+    '.tp-fest-mascot-row {',
+    '  position: absolute; bottom: 12px; left: 0; right: 0;',
+    '  display: flex; justify-content: space-around; align-items: flex-end;',
+    '  pointer-events: none; z-index: 2;',
+    '  padding: 0 24px;',
+    '}',
+    '.tp-fest-mascot-row > * {',
+    '  animation: tp-fest-mascot-bob 2.2s ease-in-out infinite;',
+    '}',
+    '.tp-fest-mascot-row > *:nth-child(2) { animation-delay: 0.2s; }',
+    '.tp-fest-mascot-row > *:nth-child(3) { animation-delay: 0.4s; }',
+    '.tp-fest-mascot-row > *:nth-child(4) { animation-delay: 0.6s; }',
+    '.tp-fest-mascot-row > *:nth-child(5) { animation-delay: 0.8s; }',
+    // Streak counter big badge
+    '.tp-fest-streak-badge {',
+    '  position: absolute; top: 16px; right: 16px; z-index: 3;',
+    '  background: linear-gradient(135deg, #f97316, #ec4899, #8b5cf6);',
+    '  color: white; padding: 8px 16px; border-radius: 999px;',
+    '  font-weight: 900; font-size: 18px;',
+    '  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);',
+    '  animation: tp-fest-streak-pulse 0.6s ease-in-out infinite;',
+    '  pointer-events: none;',
+    '  text-shadow: 0 1px 2px rgba(0,0,0,0.3);',
+    '}',
+    // Confetti pieces (positioned absolutely by JS)
+    '.tp-fest-confetti {',
+    '  position: absolute; width: 8px; height: 12px; pointer-events: none;',
+    '  animation: tp-fest-confetti-fall 1.2s ease-out forwards;',
+    '  z-index: 10;',
+    '}',
+    '.tp-fest-sparkle {',
+    '  position: absolute; pointer-events: none;',
+    '  font-size: 18px; line-height: 1;',
+    '  animation: tp-fest-sparkle-pop 0.7s ease-out forwards;',
+    '  z-index: 11;',
+    '}',
+    // Festival mode toggle button — eye-catching rainbow
+    '.tp-fest-toggle {',
+    '  background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7);',
+    '  background-size: 200% 100%;',
+    '  color: white;',
+    '  padding: 8px 16px;',
+    '  border-radius: 999px;',
+    '  font-weight: 800;',
+    '  font-size: 13px;',
+    '  border: none;',
+    '  cursor: pointer;',
+    '  box-shadow: 0 2px 8px rgba(0,0,0,0.15);',
+    '  animation: tp-fest-rainbow-bg 4s linear infinite;',
+    '  text-shadow: 0 1px 2px rgba(0,0,0,0.4);',
+    '  letter-spacing: 0.02em;',
+    '}',
+    '.tp-fest-toggle:hover { transform: scale(1.05); }',
+    '.tp-fest-toggle[aria-pressed="true"] { box-shadow: 0 0 0 3px white, 0 0 0 6px #ec4899, 0 4px 16px rgba(236,72,153,0.5); }',
+    // Per-keystroke sparkle (✨ that drifts up + fades)
+    '@keyframes tp-fest-keystroke-sparkle {',
+    '  0%   { transform: translate(0,0) scale(0.5) rotate(0deg); opacity: 1; }',
+    '  40%  { transform: translate(var(--tp-fest-kdx, 0), -10px) scale(1.4) rotate(180deg); opacity: 1; }',
+    '  100% { transform: translate(var(--tp-fest-kdx, 0), -50px) scale(0.4) rotate(360deg); opacity: 0; }',
+    '}',
+    '.tp-fest-keystroke-sparkle {',
+    '  position: absolute; pointer-events: none; z-index: 11;',
+    '  font-size: 22px; line-height: 1;',
+    '  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));',
+    '  animation: tp-fest-keystroke-sparkle 0.6s ease-out forwards;',
+    '}',
+    // Combo milestone phrase (HOT! / ON FIRE! / etc) — pops in big + tilted
+    '@keyframes tp-fest-combo-phrase {',
+    '  0%   { transform: translate(-50%, -50%) scale(0.3) rotate(-12deg); opacity: 0; }',
+    '  15%  { transform: translate(-50%, -50%) scale(1.4) rotate(-8deg); opacity: 1; }',
+    '  40%  { transform: translate(-50%, -50%) scale(1.0) rotate(-4deg); opacity: 1; }',
+    '  100% { transform: translate(-50%, -160%) scale(0.85) rotate(8deg); opacity: 0; }',
+    '}',
+    '.tp-fest-combo-phrase {',
+    '  position: absolute; top: 38%; left: 50%; z-index: 20;',
+    '  pointer-events: none;',
+    '  font-family: ui-sans-serif, system-ui, sans-serif;',
+    '  font-weight: 900; font-size: 56px;',
+    '  letter-spacing: 0.04em;',
+    '  background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6);',
+    '  -webkit-background-clip: text; background-clip: text;',
+    '  -webkit-text-fill-color: transparent;',
+    '  filter: drop-shadow(0 4px 12px rgba(236,72,153,0.6));',
+    '  text-shadow: 0 0 0 white;',
+    '  animation: tp-fest-combo-phrase 1.6s ease-out forwards;',
+    '  white-space: nowrap;',
+    '}',
+    // Mascot speech bubble — slides up + fades
+    '@keyframes tp-fest-speech-bubble {',
+    '  0%   { transform: translate(-50%, 10px) scale(0.6); opacity: 0; }',
+    '  15%  { transform: translate(-50%, -8px) scale(1.1); opacity: 1; }',
+    '  85%  { transform: translate(-50%, -10px) scale(1.0); opacity: 1; }',
+    '  100% { transform: translate(-50%, -30px) scale(0.8); opacity: 0; }',
+    '}',
+    '.tp-fest-speech-bubble {',
+    '  position: absolute; z-index: 5;',
+    '  pointer-events: none;',
+    '  background: white; color: #1f2937;',
+    '  padding: 5px 12px; border-radius: 14px;',
+    '  font-weight: 800; font-size: 14px;',
+    '  border: 2px solid #f97316;',
+    '  box-shadow: 0 3px 8px rgba(0,0,0,0.2);',
+    '  animation: tp-fest-speech-bubble 1.8s ease-out forwards;',
+    '  white-space: nowrap;',
+    '}',
+    '.tp-fest-speech-bubble::after {',
+    '  content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);',
+    '  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;',
+    '  border-top: 8px solid white;',
+    '  filter: drop-shadow(0 1px 0 #f97316);',
+    '}',
+    // Perfect-drill grand finale — mascots rise + spin, screen flash
+    '@keyframes tp-fest-finale-mascot {',
+    '  0%   { transform: translateY(0) rotate(0deg) scale(1); }',
+    '  50%  { transform: translateY(-220px) rotate(360deg) scale(1.4); }',
+    '  100% { transform: translateY(-60px) rotate(720deg) scale(1.1); }',
+    '}',
+    '.tp-fest-finale-active .tp-fest-mascot-row > * {',
+    '  animation: tp-fest-finale-mascot 2.6s ease-out forwards;',
+    '}',
+    '@keyframes tp-fest-finale-flash {',
+    '  0%, 100% { background: transparent; }',
+    '  20%      { background: rgba(255,255,255,0.6); }',
+    '  40%      { background: rgba(252, 211, 77, 0.4); }',
+    '  60%      { background: rgba(236, 72, 153, 0.3); }',
+    '  80%      { background: rgba(96, 165, 250, 0.3); }',
+    '}',
+    '.tp-fest-finale-flash {',
+    '  position: absolute; inset: 0; z-index: 15; pointer-events: none;',
+    '  animation: tp-fest-finale-flash 1.4s ease-in-out 2;',
+    '}',
+    '.tp-fest-finale-banner {',
+    '  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);',
+    '  z-index: 30; pointer-events: none;',
+    '  font-family: ui-sans-serif, system-ui, sans-serif;',
+    '  font-weight: 900; font-size: 64px;',
+    '  background: linear-gradient(135deg, #fbbf24, #f97316, #ec4899, #8b5cf6, #3b82f6);',
+    '  -webkit-background-clip: text; background-clip: text;',
+    '  -webkit-text-fill-color: transparent;',
+    '  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4));',
+    '  animation: tp-fest-combo-phrase 2.8s ease-out forwards;',
+    '  white-space: nowrap;',
+    '}'
+  ].join('\n');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_typingpractice.js — Typing Practice: Disability-first keyboarding
 // Four pillars: (1) accommodations AS the product (dyslexia font, motor-planning
@@ -72,7 +268,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       sampleLength: null,      // null/any | 'short' | 'medium' | 'long' — preferred sample size
       // Visual-reward modes — opt-in image generation after certain drill types.
       storyModeImage: false,   // passage drills: generate an illustration of the passage
-      promptModeImage: false   // custom drills: treat the text as an image prompt, refine on retry
+      promptModeImage: false,  // custom drills: treat the text as an image prompt, refine on retry
+      // Companion mascot in drill view — opt-in for students who want a
+      // small reactive character watching their practice. Default off so
+      // the minimalist drill experience stays clean for students who find
+      // peripheral motion dysregulating. Maps drill state to mascot states
+      // (clean streak → combo, recent errors → danger, paused → sleep,
+      // completion → win/idle). Honors prefers-reduced-motion.
+      showCompanion: false
     },
     accommodationBadges: [],   // badge ids earned for TRYING an accommodation
     masteryLevel: 0,           // progression tier: 0=home-row, 1=top-row, 2=bottom-row, 3=words, 4=passages
@@ -98,6 +301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     audioTheme: 'chime',       // 'chime' (default) | 'soft' | 'mute'
     accentColor: 'blue',       // 'blue' (default) | 'teal' | 'violet' | 'amber' | 'rose'
     theme: 'default',          // named visual theme: default | steampunk | cyberpunk | kawaii | neutral
+    festivalMode: false,       // 🌈 high-stim opt-in mode — all mascots cheer, confetti per word, screen shake on big combo. Default OFF (sensory-friendly). Designed for ADHD-pattern brains.
     // Lifetime totals survive session-array capping, so the IEP report stays
     // accurate for long-term students even after the 200-session cap trims
     // the oldest records.
@@ -119,6 +323,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // milestonesEarned — array of milestone IDs the student has crossed.
     // Additive only; we never un-earn to avoid guilt patterns.
     milestonesEarned: [],
+    // Battle Mode (Solo Cascade — Phase 1; vs Bot — Phase 2).
+    // Optional game-mode surface, explicitly opt-in. Words rise from
+    // the bottom; type the top word to clear; stack-hits-ceiling =
+    // match end (NOT "game over" — non-shaming session summary).
+    // Personal best tracked but never shown as leaderboard. Reduced-
+    // motion respected. Default cadence is generous (15s/row) for
+    // accommodation-friendly first plays.
+    battle: {
+      view: 'menu',              // 'menu' | 'playing' | 'summary'
+      mode: 'solo',              // 'solo' | 'vs-bot'
+      botSpeed: 'medium',        // 'slow' | 'medium' | 'fast' (WPM 15/30/50)
+      difficulty: 'mercy',       // 'mercy' | 'standard' | 'challenge'
+      lastResult: null,          // last match summary
+      personalBest: { cleared: 0, longestStreak: 0, durationSec: 0 },
+      personalBestVsBot: { wins: 0, losses: 0, ties: 0 }
+    },
     // favoriteDrills — drill IDs the student has starred. Sort first on menu.
     favoriteDrills: [],
     // Custom drill — teacher or student can author their own practice text
@@ -176,7 +396,865 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
   // Maximum size of the saved-passage library. Keep low to avoid clutter —
   // students who want more have Custom Drill for arbitrary text.
-  var MAX_PASSAGE_LIBRARY = 8;
+  var MAX_PASSAGE_LIBRARY = 12;
+
+  // ── Battle Mode (Solo Cascade) — Phase 1 ──
+  // Curated word bank, ~80 entries, mixed lengths 4-9 chars, common
+  // English words students at all grade bands can recognize. Pre-
+  // categorized by difficulty:
+  //   short (4-5 chars) — score 1, color green
+  //   medium (6-7 chars) — score 2, color amber
+  //   long (8+ chars) — score 3, color rose
+  // No proper nouns, no edge-case spellings, no homophones (those
+  // come in Phase 3 as "send slot" attack words). All entries
+  // hand-picked for clear pronunciation + standard spelling.
+  var BATTLE_WORDBANK = {
+    short: [
+      'cake', 'milk', 'snow', 'tree', 'rain', 'fire', 'star', 'moon', 'home', 'song',
+      'book', 'desk', 'door', 'lamp', 'bird', 'fish', 'rock', 'sand', 'wind', 'gold',
+      'apple', 'beach', 'cloud', 'dream', 'flame', 'green', 'house', 'juice', 'light', 'mouse',
+      'piano', 'queen', 'river', 'silly', 'table', 'under', 'voice', 'water', 'young', 'zebra'
+    ],
+    medium: [
+      'banana', 'castle', 'dragon', 'eleven', 'forest', 'garden', 'hammer', 'island', 'jungle', 'kitten',
+      'ladder', 'meadow', 'orange', 'pencil', 'rabbit', 'silver', 'tunnel', 'window', 'yellow', 'zigzag',
+      'compass', 'desktop', 'evening', 'fountain', 'gallery', 'harvest', 'journey', 'kingdom', 'lantern', 'mineral'
+    ],
+    long: [
+      'adventure', 'beautiful', 'classroom', 'discovery', 'elephants', 'fascinate', 'gathering', 'happiness', 'imagining', 'judgement',
+      'lighthouse', 'monastery', 'navigator', 'orchestra', 'paragraph', 'questions', 'remarkable', 'symphonic', 'transform', 'umbrella'
+    ]
+  };
+  // Per-difficulty pacing knobs. 'mercy' = friendly default; rises slowly
+  // and pauses briefly after every clear so falling behind is recoverable.
+  // 'standard' = brisk but achievable. 'challenge' = real time pressure.
+  var BATTLE_DIFFICULTY = {
+    mercy:     { riseMs: 18000, postClearPauseMs: 1500, lengthMix: { short: 0.7, medium: 0.3, long: 0.0 }, label: '🌱 Mercy',     blurb: 'Slow rise. Generous pause after each clear. Recommended first time.' },
+    standard:  { riseMs: 12000, postClearPauseMs: 600,  lengthMix: { short: 0.5, medium: 0.4, long: 0.1 }, label: '⚡ Standard',  blurb: 'Brisk rise. Most students after a few rounds.' },
+    challenge: { riseMs: 7000,  postClearPauseMs: 0,    lengthMix: { short: 0.3, medium: 0.5, long: 0.2 }, label: '🔥 Challenge', blurb: 'Real time pressure. Long words. No mercy pause.' }
+  };
+  var BATTLE_STACK_LIMIT = 9; // rows. Stack hits this height → match end.
+
+  // Attack-word bank — pulled from when a player or bot earns a "send"
+  // (combo of 4+ for player; every N cleared words for bot). Words here
+  // are deliberately harder: longer, less predictable rhythm, with one
+  // or two high-value letters. Curated for safety (no slurs, no tricky
+  // homophones that would make the game feel unfair).
+  var BATTLE_ATTACK_WORDS = [
+    'quartz', 'jazzy', 'fjord', 'zephyr', 'kayak', 'puzzle', 'mystic', 'sphinx',
+    'blizzard', 'tropical', 'magnetic', 'electric', 'sympathy', 'gigantic', 'paradox',
+    'rhythmic', 'bewitch', 'voltage', 'whimsy', 'kingdom',
+    'lightning', 'wonderful', 'extremely', 'twilight', 'majestic',
+    'chemistry', 'vehement', 'frequent', 'gizmo', 'jukebox',
+    'hexagon', 'dynamic', 'volcano', 'amazingly'
+  ];
+
+  // Per-theme flavor pool — when the picker opens, one of the three options
+  // is biased toward the active theme's vocabulary. Adds character (Inko
+  // sends marine words; Cogsworth sends workshop/clockwork words; Vex sends
+  // cyber-coded words; Mochi sends sweet-cozy words) without losing the
+  // generic hard-word pool. Words still curated for safety + standard
+  // spelling. Falls back to the generic pool when no flavor list applies.
+  var BATTLE_ATTACK_FLAVOR = {
+    'oceanic': [
+      'plankton', 'kelp', 'tidepool', 'seafloor', 'lantern', 'abyssal',
+      'shimmer', 'currents', 'pressure', 'lagoon', 'mariner', 'beacon',
+      'cuttlefish', 'iridescent', 'phosphor', 'leviathan', 'submerge', 'sonar'
+    ],
+    'steampunk': [
+      'piston', 'flywheel', 'aether', 'brassy', 'cogwork', 'gauntlet',
+      'gauge', 'compass', 'lantern', 'workshop', 'clockwork', 'apparatus',
+      'mechanism', 'leveraged', 'ingenious', 'foundry', 'cylinder'
+    ],
+    'cyberpunk': [
+      'cipher', 'vector', 'glitch', 'protocol', 'neon', 'circuit',
+      'override', 'firewall', 'syntax', 'kernel', 'binary', 'optical',
+      'recursion', 'phantom', 'overload', 'datastream', 'subnet'
+    ],
+    'kawaii': [
+      'sparkle', 'cookie', 'bubble', 'cuddly', 'sunshine', 'rainbow',
+      'kitten', 'cinnamon', 'flutter', 'snuggle', 'cherry', 'dollop',
+      'bouquet', 'pretzel', 'twinkle', 'pillowy'
+    ]
+    // 'default' + 'neutral' use only the generic pool (no flavor bias)
+  };
+  var COMBO_SEND_THRESHOLD = 4; // 4-in-a-row combo earns a send
+
+  // Bot send cadence per speed — how many words bot clears before
+  // sending an attack to the player. Faster bots send more often.
+  var BOT_SEND_EVERY = { slow: 7, medium: 5, fast: 4 };
+
+  // ──────────────────────────────────────────────────────────
+  // BATTLE MASCOTS — bespoke SVG characters per theme
+  // ──────────────────────────────────────────────────────────
+  // Four mascots: Pip (default chick), Cogsworth (steampunk owl),
+  // Vex (cyberpunk grid-face), Mochi (kawaii kitten). Each is a pure
+  // SVG render function that takes state + opts and returns a single
+  // <svg>. State-driven CSS classes attach the animations injected
+  // in the global style block. Colors parameterized so the bot's
+  // mascot uses violet while player's uses the theme accent — same
+  // character, different tint, distinct identity at a glance.
+  //
+  // Designed icon-quality, not illustration-quality: clear shapes,
+  // recognizable silhouettes, animatable from primitives. Aaron's
+  // strategic rationale is that these assets can be reused beyond
+  // Battle Mode (avatars, achievement art, hub-wide character
+  // appearances), so they're built as reusable atoms.
+  //
+  // Author hint: the mascot system is the foundation. Each mascot
+  // currently supports 4 active states (idle, combo, attack-out,
+  // incoming) + 2 outcome states (win, loss). More can be added by
+  // extending the state-driven className map and the CSS keyframes
+  // block above without touching the SVG body.
+  // ──────────────────────────────────────────────────────────
+
+  function _renderPip(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#fde047';     // soft yellow
+    var beakColor = opts.beakColor || '#fb923c';     // warm orange
+    var legColor = opts.legColor || '#f97316';
+    var eyeColor = '#0f172a';
+    var cls = 'tp-mascot tp-mascot-pip tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Pip the typing chick',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Floating Z's — only visible in sleep state via CSS
+      h('text', { x: 70, y: 30, fill: '#94a3b8', fontSize: 8, fontWeight: 700, opacity: 0, className: 'tp-mascot-z' }, 'z'),
+      h('text', { x: 76, y: 22, fill: '#94a3b8', fontSize: 6, fontWeight: 700, opacity: 0, className: 'tp-mascot-z tp-mascot-z-2' }, 'z'),
+      // Legs
+      h('g', { className: 'tp-pip-legs' },
+        h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+        h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+        h('path', { d: 'M 38 92 L 42 92 L 46 92 M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+      ),
+      // Body — round yellow blob. Class lets danger state add a subtle puff.
+      h('ellipse', { cx: 50, cy: 56, rx: 30, ry: 28, fill: bodyColor, stroke: '#eab308', strokeWidth: 1.5, className: 'tp-pip-body', style: { transformOrigin: '50px 56px', transformBox: 'fill-box' } }),
+      // Left wing — flaps in combo via CSS rotate around shoulder pivot
+      h('path', { d: 'M 26 56 Q 22 64 30 70 L 36 64 Z', fill: '#facc15', opacity: 0.7, className: 'tp-pip-wing tp-pip-wing-l', style: { transformOrigin: '32px 60px', transformBox: 'fill-box' } }),
+      // Right wing — symmetrical, opposite phase so the flap reads as bilateral
+      h('path', { d: 'M 74 56 Q 78 64 70 70 L 64 64 Z', fill: '#facc15', opacity: 0.7, className: 'tp-pip-wing tp-pip-wing-r', style: { transformOrigin: '68px 60px', transformBox: 'fill-box' } }),
+      // Eye whites + pupils
+      h('g', { className: 'tp-pip-eyes' },
+        h('circle', { cx: 42, cy: 50, r: 5.5, fill: '#fff' }),
+        h('circle', { cx: 58, cy: 50, r: 5.5, fill: '#fff' }),
+        h('circle', { cx: 43, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-l' }),
+        h('circle', { cx: 59, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-r' })
+      ),
+      // Beak — diamond pointing down. Class lets it open slightly during
+      // attack-out (the chirp / peck moment) via CSS scaleY.
+      h('polygon', { points: '50,58 45,62 55,62', fill: beakColor, stroke: '#c2410c', strokeWidth: 1, className: 'tp-pip-beak', style: { transformOrigin: '50px 60px', transformBox: 'fill-box' } }),
+      // Cheek-tuft feathers — class lets them puff in danger state
+      h('circle', { cx: 30, cy: 62, r: 2, fill: '#facc15', opacity: 0.6, className: 'tp-pip-cheek tp-pip-cheek-l' }),
+      h('circle', { cx: 70, cy: 62, r: 2, fill: '#facc15', opacity: 0.6, className: 'tp-pip-cheek tp-pip-cheek-r' })
+    );
+  }
+
+  function _renderCogsworth(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#a16207';     // warm brass
+    var brassLight = '#ca8a04';
+    var brassDark = '#713f12';
+    var goggleRim = '#854d0e';
+    var lensColor = opts.eyeColor || '#fef3c7';      // pale lamp glow
+    var cls = 'tp-mascot tp-mascot-cogsworth tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Cogsworth the clockwork owl',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Steam puff (decorative — animated when in combo state)
+      h('g', { className: 'tp-cog-steam', style: { transformOrigin: '50px 12px' } },
+        h('circle', { cx: 44, cy: 14, r: 3.5, fill: '#fef3c7', opacity: 0 }),
+        h('circle', { cx: 50, cy: 8, r: 4, fill: '#fef3c7', opacity: 0 }),
+        h('circle', { cx: 58, cy: 14, r: 3, fill: '#fef3c7', opacity: 0 })
+      ),
+      // Left rotating gear (ear)
+      h('g', { className: 'tp-cog-gear-l', style: { transformOrigin: '24px 30px' } },
+        h('circle', { cx: 24, cy: 30, r: 8, fill: brassLight, stroke: brassDark, strokeWidth: 1.5 }),
+        h('circle', { cx: 24, cy: 30, r: 3, fill: brassDark }),
+        // Six teeth
+        [0, 60, 120, 180, 240, 300].map(function(deg, i) {
+          var rad = deg * Math.PI / 180;
+          var x = 24 + Math.cos(rad) * 10;
+          var y = 30 + Math.sin(rad) * 10;
+          return h('rect', { key: 'tl' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: brassLight, stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
+        })
+      ),
+      // Right rotating gear (ear)
+      h('g', { className: 'tp-cog-gear-r', style: { transformOrigin: '76px 30px' } },
+        h('circle', { cx: 76, cy: 30, r: 8, fill: brassLight, stroke: brassDark, strokeWidth: 1.5 }),
+        h('circle', { cx: 76, cy: 30, r: 3, fill: brassDark }),
+        [30, 90, 150, 210, 270, 330].map(function(deg, i) {
+          var rad = deg * Math.PI / 180;
+          var x = 76 + Math.cos(rad) * 10;
+          var y = 30 + Math.sin(rad) * 10;
+          return h('rect', { key: 'tr' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: brassLight, stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
+        })
+      ),
+      // Owl body
+      h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 28, fill: bodyColor, stroke: brassDark, strokeWidth: 2, className: 'tp-cog-body' }),
+      // Brass plate chest seam
+      h('line', { x1: 50, y1: 38, x2: 50, y2: 84, stroke: brassDark, strokeWidth: 1, opacity: 0.5 }),
+      h('circle', { cx: 50, cy: 50, r: 1.2, fill: brassDark }),
+      h('circle', { cx: 50, cy: 60, r: 1.2, fill: brassDark }),
+      h('circle', { cx: 50, cy: 70, r: 1.2, fill: brassDark }),
+      // Pendulum — small brass weight visible behind chest seam, swings
+      // metronomically in idle (slow), faster in combo. Counterweighted
+      // by the gear ears so the silhouette stays balanced.
+      h('g', { className: 'tp-cog-pendulum', style: { transformOrigin: '50px 50px', transformBox: 'fill-box' } },
+        h('line', { x1: 50, y1: 50, x2: 50, y2: 78, stroke: brassDark, strokeWidth: 0.8, opacity: 0.7 }),
+        h('circle', { cx: 50, cy: 78, r: 2.2, fill: brassLight, stroke: brassDark, strokeWidth: 0.8 })
+      ),
+      // Goggles — round brass-rim circles with lamp-glow lenses
+      h('g', { className: 'tp-cog-eyes' },
+        h('circle', { cx: 40, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
+        h('circle', { cx: 60, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
+        h('circle', { cx: 40, cy: 52, r: 3, fill: '#0c0a09' }),
+        h('circle', { cx: 60, cy: 52, r: 3, fill: '#0c0a09' }),
+        // Goggle highlight
+        h('circle', { cx: 38, cy: 50, r: 1.5, fill: '#fff', opacity: 0.8 }),
+        h('circle', { cx: 58, cy: 50, r: 1.5, fill: '#fff', opacity: 0.8 })
+      ),
+      // Beak
+      h('polygon', { points: '50,62 46,68 54,68', fill: brassDark, stroke: '#451a03', strokeWidth: 1 })
+    );
+  }
+
+  function _renderVex(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#06b6d4';     // neon cyan
+    var glowColor = '#67e8f9';
+    var bgColor = opts.bgColor || '#020617';         // near-black panel
+    var alertColor = '#ef4444';
+    var cls = 'tp-mascot tp-mascot-vex tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Vex the cyberpunk grid-face',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Hex/diamond face panel — gets hue-shift / clip distortion on attack
+      h('polygon', {
+        points: '50,8 86,30 86,70 50,92 14,70 14,30',
+        fill: bgColor, stroke: bodyColor, strokeWidth: 2,
+        className: 'tp-vex-panel',
+        style: { transformOrigin: '50px 50px', transformBox: 'fill-box' }
+      }),
+      // Outer rim glow ring — duplicate hex outline that pulses brighter
+      // on combo (the "rendering at full power" cue)
+      h('polygon', {
+        points: '50,4 90,28 90,72 50,96 10,72 10,28',
+        fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0,
+        className: 'tp-vex-rim'
+      }),
+      // Inner face panel (slightly smaller, neon outlined)
+      h('polygon', {
+        points: '50,16 78,34 78,66 50,84 22,66 22,34',
+        fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0.4
+      }),
+      // Boot-strip dots — three small dots along the bottom edge that
+      // sequentially light up during win, evoke a power-on sequence;
+      // they fade in reverse during loss (power-down).
+      h('g', { className: 'tp-vex-boot' },
+        h('rect', { x: 38, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-1' }),
+        h('rect', { x: 48, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-2' }),
+        h('rect', { x: 58, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-3' })
+      ),
+      // Scanline (animated — single horizontal bar that drifts vertically)
+      h('rect', {
+        x: 22, y: 32, width: 56, height: 1.5, fill: glowColor, opacity: 0.5,
+        className: 'tp-vex-scanline'
+      }),
+      // Eye — single horizontal LED bar (visor style)
+      h('g', { className: 'tp-vex-eyes' },
+        h('rect', { x: 28, y: 46, width: 44, height: 6, rx: 3, fill: bgColor, stroke: bodyColor, strokeWidth: 1.5 }),
+        h('rect', { x: 30, y: 47.5, width: 16, height: 3, fill: bodyColor, opacity: 0.95, className: 'tp-vex-eye-l' }),
+        h('rect', { x: 54, y: 47.5, width: 16, height: 3, fill: bodyColor, opacity: 0.95, className: 'tp-vex-eye-r' })
+      ),
+      // Mouth grid (3x3 dot pattern)
+      h('g', { className: 'tp-vex-mouth' },
+        [0, 1, 2].map(function(row) {
+          return [0, 1, 2].map(function(col) {
+            return h('circle', {
+              key: 'd-' + row + '-' + col,
+              cx: 42 + col * 8, cy: 64 + row * 5, r: 1.5,
+              fill: bodyColor, opacity: 0.6 + (row * 0.15)
+            });
+          });
+        })
+      ),
+      // Corner glow chevrons
+      h('polyline', { points: '20,28 14,30 14,36', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      h('polyline', { points: '80,28 86,30 86,36', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      h('polyline', { points: '14,64 14,70 20,72', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      h('polyline', { points: '86,64 86,70 80,72', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      // Alert overlay (red — only shows in incoming state via CSS opacity)
+      h('rect', {
+        x: 14, y: 8, width: 72, height: 84, fill: alertColor, opacity: 0,
+        className: 'tp-vex-alert'
+      })
+    );
+  }
+
+  function _renderMochi(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#fce7f3';     // pastel pink-cream
+    var trimColor = '#f9a8d4';
+    var bowColor = '#ec4899';
+    var eyeColor = '#0f172a';
+    var cheekColor = '#fbcfe8';
+    var cls = 'tp-mascot tp-mascot-mochi tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Mochi the kawaii kitten',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Floating sparkles (animated only on combo) + heart particles for
+      // combo. Hearts feel right for Mochi's personality — they pop in
+      // sync with the sparkles for a "kawaii burst" effect.
+      h('g', { className: 'tp-mochi-sparkles' },
+        h('text', { x: 18, y: 22, fill: bowColor, fontSize: 8, opacity: 0 }, '✦'),
+        h('text', { x: 78, y: 28, fill: bowColor, fontSize: 6, opacity: 0 }, '✦'),
+        h('text', { x: 14, y: 70, fill: bowColor, fontSize: 7, opacity: 0 }, '✧'),
+        h('text', { x: 82, y: 76, fill: bowColor, fontSize: 8, opacity: 0 }, '♡')
+      ),
+      h('g', { className: 'tp-mochi-hearts' },
+        h('text', { x: 12, y: 40, fill: bowColor, fontSize: 9, opacity: 0 }, '♡'),
+        h('text', { x: 86, y: 44, fill: bowColor, fontSize: 8, opacity: 0 }, '♡'),
+        h('text', { x: 50, y: 14, fill: bowColor, fontSize: 7, opacity: 0 }, '♡')
+      ),
+      // Tail — curls behind the head, sways in idle. Drawn first so the
+      // head occludes its connection to the body.
+      h('path', {
+        d: 'M 78 78 Q 88 76 92 64 Q 88 70 84 74',
+        fill: 'none', stroke: trimColor, strokeWidth: 3, strokeLinecap: 'round',
+        opacity: 0.85, className: 'tp-mochi-tail',
+        style: { transformOrigin: '78px 78px', transformBox: 'fill-box' }
+      }),
+      // Left ear (triangle with pink inner)
+      h('polygon', { points: '24,40 28,16 42,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
+      h('polygon', { points: '28,32 30,22 38,30', fill: '#fbcfe8' }),
+      // Right ear
+      h('polygon', { points: '76,40 72,16 58,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
+      h('polygon', { points: '72,32 70,22 62,30', fill: '#fbcfe8' }),
+      // Head — round
+      h('circle', { cx: 50, cy: 56, r: 30, fill: bodyColor, stroke: trimColor, strokeWidth: 1.8, className: 'tp-mochi-head' }),
+      // Cheeks
+      h('circle', { cx: 32, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
+      h('circle', { cx: 68, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
+      // Eyes — big sparkly. Each eye wrapped in its own class so a CSS
+      // scaleY blink animation can squish them shut occasionally
+      // (parity with Pip + Vex). Highlights stay outside the blinking
+      // group so the white spec doesn't disappear during the blink.
+      h('g', { className: 'tp-mochi-eyes' },
+        h('ellipse', { cx: 40, cy: 54, rx: 4.5, ry: 6, fill: eyeColor, className: 'tp-mochi-eye-l', style: { transformOrigin: '40px 54px', transformBox: 'fill-box' } }),
+        h('ellipse', { cx: 60, cy: 54, rx: 4.5, ry: 6, fill: eyeColor, className: 'tp-mochi-eye-r', style: { transformOrigin: '60px 54px', transformBox: 'fill-box' } }),
+        // Eye highlights
+        h('circle', { cx: 41.5, cy: 51, r: 1.5, fill: '#fff' }),
+        h('circle', { cx: 61.5, cy: 51, r: 1.5, fill: '#fff' }),
+        h('circle', { cx: 39, cy: 56, r: 0.8, fill: '#fff' }),
+        h('circle', { cx: 59, cy: 56, r: 0.8, fill: '#fff' })
+      ),
+      // Whiskers — three thin lines per side, fanning slightly. Adds
+      // unmistakable kitten silhouette without clutter. Behind cheeks.
+      h('g', { className: 'tp-mochi-whiskers', stroke: '#475569', strokeWidth: 0.6, strokeLinecap: 'round', opacity: 0.7 },
+        h('line', { x1: 22, y1: 60, x2: 32, y2: 62 }),
+        h('line', { x1: 22, y1: 64, x2: 32, y2: 64 }),
+        h('line', { x1: 22, y1: 68, x2: 32, y2: 66 }),
+        h('line', { x1: 78, y1: 60, x2: 68, y2: 62 }),
+        h('line', { x1: 78, y1: 64, x2: 68, y2: 64 }),
+        h('line', { x1: 78, y1: 68, x2: 68, y2: 66 })
+      ),
+      // Tiny mouth — happy curve
+      h('path', { d: 'M 47 66 Q 50 70 53 66', stroke: eyeColor, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', className: 'tp-mochi-mouth' }),
+      // Tiny nose
+      h('path', { d: 'M 49 62 L 51 62 L 50 64 Z', fill: bowColor }),
+      // Bow on left ear — wiggles on combo + win via CSS
+      h('g', { transform: 'translate(28 14) scale(0.6)', className: 'tp-mochi-bow', style: { transformOrigin: '28px 14px' } },
+        h('circle', { cx: 0, cy: 0, r: 4, fill: bowColor }),
+        h('polygon', { points: '-7,-4 -2,0 -7,4', fill: bowColor }),
+        h('polygon', { points: '7,-4 2,0 7,4', fill: bowColor })
+      ),
+      // Tear (only visible in loss state via CSS)
+      h('ellipse', { cx: 60, cy: 64, rx: 1.5, ry: 3, fill: '#7dd3fc', opacity: 0, className: 'tp-mochi-tear' })
+    );
+  }
+
+  // Inko — the oceanic theme cuttlefish. Real cuttlefish are colorblind
+  // but change the color of their skin in milliseconds via chromatophores
+  // (specialized pigment cells). The mascot honors that: scattered dots
+  // across the mantle pulse different hues per game state. W-shaped pupils
+  // are the cuttlefish signature — accurate to real anatomy. Eight short
+  // arms + two longer feeding tentacles complete the silhouette.
+  function _renderInko(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#67e8f9';   // pale cyan body base
+    var bodyDeep  = '#0e7490';                      // shadow / underbelly
+    var mantleEdge = '#22d3ee';                     // mantle outline
+    var finColor  = '#a5f3fc';                      // translucent fin
+    var eyeWhite  = '#f0fdfa';
+    var eyeRing   = '#0c4a6e';
+    var inkColor  = '#020617';                      // pupil + ink cloud
+    var cls = 'tp-mascot tp-mascot-inko tp-mascot-' + st;
+
+    // Twelve chromatophore dots scattered across the mantle, in two layers.
+    // Large dots (r ~2.4) dominate the wave; small "satellite" dots (r ~1.2)
+    // sit between them and pulse half-beat off, giving the skin a richer
+    // dappled texture. Each dot carries its own animation-delay so the
+    // color travels left→right→down across the body rather than blinking in
+    // unison. Coordinates avoid eyes + arms and stay inside the mantle path.
+    var chromatophores = [
+      // Top row — large dots
+      { cx: 38, cy: 32, r: 2.2, d: '0s',     small: false },
+      { cx: 50, cy: 26, r: 2.6, d: '0.12s',  small: false },
+      { cx: 62, cy: 32, r: 2.2, d: '0.24s',  small: false },
+      // Top satellite dots
+      { cx: 44, cy: 28, r: 1.2, d: '0.06s',  small: true },
+      { cx: 56, cy: 28, r: 1.2, d: '0.18s',  small: true },
+      // Middle row — large dots
+      { cx: 32, cy: 44, r: 2.0, d: '0.36s',  small: false },
+      { cx: 50, cy: 42, r: 2.4, d: '0.48s',  small: false },
+      { cx: 68, cy: 44, r: 2.0, d: '0.6s',   small: false },
+      // Middle satellites
+      { cx: 41, cy: 48, r: 1.1, d: '0.42s',  small: true },
+      { cx: 59, cy: 48, r: 1.1, d: '0.54s',  small: true },
+      // Lower row
+      { cx: 40, cy: 56, r: 2.0, d: '0.72s',  small: false },
+      { cx: 60, cy: 56, r: 2.0, d: '0.84s',  small: false }
+    ];
+
+    // Tentacle classes (1..10) so each arm can sway with its own phase
+    // offset — the bottom row of arms then reads as a slow underwater wave
+    // instead of a frozen fan. Phase offsets baked into CSS keyframe delays.
+    var armClass = function(i) { return 'tp-inko-arm tp-inko-arm-' + i; };
+
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Inko the color-changing cuttlefish',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Ink cloud — only visible during attack-out / loss states via CSS
+      h('g', { className: 'tp-inko-ink' },
+        h('circle', { cx: 78, cy: 50, r: 12, fill: inkColor, opacity: 0 }),
+        h('circle', { cx: 86, cy: 44, r: 7, fill: inkColor, opacity: 0 }),
+        h('circle', { cx: 88, cy: 56, r: 5, fill: inkColor, opacity: 0 })
+      ),
+      // Bubble particles — visible during combo state via CSS
+      h('g', { className: 'tp-inko-bubbles' },
+        h('circle', { cx: 22, cy: 30, r: 1.8, fill: '#f0fdfa', opacity: 0, stroke: '#67e8f9', strokeWidth: 0.4 }),
+        h('circle', { cx: 16, cy: 22, r: 1.2, fill: '#f0fdfa', opacity: 0, stroke: '#67e8f9', strokeWidth: 0.4 }),
+        h('circle', { cx: 12, cy: 14, r: 0.9, fill: '#f0fdfa', opacity: 0, stroke: '#67e8f9', strokeWidth: 0.4 })
+      ),
+      // Side fins — undulating membranes that run along the mantle edges.
+      // Two soft wavy paths, one per side, with low opacity so they
+      // read as gauzy / translucent.
+      h('g', { className: 'tp-inko-fins' },
+        h('path', {
+          d: 'M 22 28 Q 14 36 16 50 Q 18 64 22 72 Q 24 60 26 50 Q 24 38 22 28 Z',
+          fill: finColor, opacity: 0.55, stroke: mantleEdge, strokeWidth: 0.6
+        }),
+        h('path', {
+          d: 'M 78 28 Q 86 36 84 50 Q 82 64 78 72 Q 76 60 74 50 Q 76 38 78 28 Z',
+          fill: finColor, opacity: 0.55, stroke: mantleEdge, strokeWidth: 0.6
+        })
+      ),
+      // Mantle (main body) — torpedo / shield shape, wider at top and
+      // tapering toward the arms. Cuttlefish silhouette is unmistakably
+      // dome-on-top, narrow-at-base.
+      h('path', {
+        d: 'M 28 30 Q 50 14 72 30 Q 76 50 70 68 L 30 68 Q 24 50 28 30 Z',
+        fill: bodyColor, stroke: mantleEdge, strokeWidth: 1.5, className: 'tp-inko-mantle'
+      }),
+      // Underbelly shadow stripe (subtle depth)
+      h('path', {
+        d: 'M 32 60 Q 50 66 68 60 L 68 68 L 32 68 Z',
+        fill: bodyDeep, opacity: 0.25
+      }),
+      // Zebra display — vertical stripes that real cuttlefish flash for
+      // territorial display + courtship. Mostly hidden (opacity 0); CSS
+      // briefly fades them in during the signature window. Clipped to the
+      // mantle path via parent group structure so they stay inside the body.
+      h('g', { className: 'tp-inko-zebra', opacity: 0 },
+        h('path', { d: 'M 36 22 L 36 60', stroke: bodyDeep, strokeWidth: 1.4, opacity: 0.5 }),
+        h('path', { d: 'M 44 18 L 44 62', stroke: bodyDeep, strokeWidth: 1.6, opacity: 0.55 }),
+        h('path', { d: 'M 50 16 L 50 64', stroke: bodyDeep, strokeWidth: 1.8, opacity: 0.6 }),
+        h('path', { d: 'M 56 18 L 56 62', stroke: bodyDeep, strokeWidth: 1.6, opacity: 0.55 }),
+        h('path', { d: 'M 64 22 L 64 60', stroke: bodyDeep, strokeWidth: 1.4, opacity: 0.5 })
+      ),
+      // Bioluminescent rim glow — concentric outline of the mantle that
+      // brightens during win/wow states (and stays soft otherwise). Fills
+      // 'none' so it reads purely as a halo around the silhouette.
+      h('path', {
+        d: 'M 28 30 Q 50 14 72 30 Q 76 50 70 68 L 30 68 Q 24 50 28 30 Z',
+        fill: 'none', stroke: '#67e8f9', strokeWidth: 0.8, opacity: 0,
+        className: 'tp-inko-rim'
+      }),
+      // Chromatophore dots — color-cycling pigment cells. Large + satellite
+      // sub-classes let the small dots pulse half-beat off for richer
+      // skin texture. Each gets its own animation-delay (inline) so the
+      // color wave travels across the body instead of strobing.
+      h('g', { className: 'tp-inko-chromatophores' },
+        chromatophores.map(function(c, i) {
+          return h('circle', {
+            key: 'chrom-' + i,
+            cx: c.cx, cy: c.cy, r: c.r,
+            fill: '#22d3ee',
+            opacity: c.small ? 0.5 : 0.7,
+            className: 'tp-inko-chrom' + (c.small ? ' tp-inko-chrom-sat' : ''),
+            style: { animationDelay: c.d }
+          });
+        })
+      ),
+      // Eyes — outer ring + W-shaped pupil (the real cuttlefish trick).
+      // The W is drawn as a polyline path, sitting inside a sclera oval.
+      // Each pupil sits inside its own group (tp-inko-pupil-l/r) so a
+      // small CSS translate can simulate eye-tracking — used during
+      // combo (alert) and danger (darting) states.
+      h('g', { className: 'tp-inko-eyes' },
+        // Left eye sclera
+        h('ellipse', { cx: 40, cy: 40, rx: 5.5, ry: 4.5, fill: eyeWhite, stroke: eyeRing, strokeWidth: 1 }),
+        // Left W-pupil — wrapped for movement
+        h('g', { className: 'tp-inko-pupil tp-inko-pupil-l', style: { transformOrigin: '40px 40px', transformBox: 'fill-box' } },
+          h('path', {
+            d: 'M 36 40 L 38 42.5 L 40 39.5 L 42 42.5 L 44 40',
+            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
+          })
+        ),
+        // Eye highlight — small white spec, suggests wetness
+        h('circle', { cx: 38, cy: 38, r: 0.8, fill: '#fff', opacity: 0.85 }),
+        // Right eye sclera
+        h('ellipse', { cx: 60, cy: 40, rx: 5.5, ry: 4.5, fill: eyeWhite, stroke: eyeRing, strokeWidth: 1 }),
+        // Right W-pupil — wrapped for movement
+        h('g', { className: 'tp-inko-pupil tp-inko-pupil-r', style: { transformOrigin: '60px 40px', transformBox: 'fill-box' } },
+          h('path', {
+            d: 'M 56 40 L 58 42.5 L 60 39.5 L 62 42.5 L 64 40',
+            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
+          })
+        ),
+        h('circle', { cx: 58, cy: 38, r: 0.8, fill: '#fff', opacity: 0.85 })
+      ),
+      // Eight short arms + two long feeding tentacles. Each arm carries its
+      // own className (tp-inko-arm-0..9) so a stagger-delayed CSS sway
+      // animation makes the row read as a slow underwater wave rather than
+      // a frozen fan. Origin pinned at the mantle base so the arm-tip
+      // travels while the connection point stays put.
+      h('g', { className: 'tp-inko-arms' },
+        // Long feeding tentacles (center pair) — slowest, deepest sway.
+        // Three small sucker dots on each tentacle for cuttlefish
+        // anatomical authenticity (real feeding tentacles have suction
+        // pads along their inner edge).
+        h('path', { d: 'M 46 68 Q 44 80 42 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(0), style: { transformOrigin: '46px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 54 68 Q 56 80 58 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(1), style: { transformOrigin: '54px 68px', transformBox: 'fill-box' } }),
+        // Sucker dots — anchored to the body so they stay put while the
+        // arm-paths sway around them. Subtle, easy to miss at small sizes,
+        // visible at 64px+.
+        h('circle', { cx: 45, cy: 76, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 44, cy: 82, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 43, cy: 88, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 55, cy: 76, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 56, cy: 82, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 57, cy: 88, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        // Short arms — 4 per side, fanning outward
+        h('path', { d: 'M 38 68 Q 34 76 30 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(2), style: { transformOrigin: '38px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 34 68 Q 28 74 22 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(3), style: { transformOrigin: '34px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 32 66 Q 24 70 18 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(4), style: { transformOrigin: '32px 66px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 30 64 Q 22 64 14 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(5), style: { transformOrigin: '30px 64px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 62 68 Q 66 76 70 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(6), style: { transformOrigin: '62px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 66 68 Q 72 74 78 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(7), style: { transformOrigin: '66px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 68 66 Q 76 70 82 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(8), style: { transformOrigin: '68px 66px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 70 64 Q 78 64 86 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(9), style: { transformOrigin: '70px 64px', transformBox: 'fill-box' } })
+      ),
+      // Tiny mantle highlight — wet sheen on the top of the dome
+      h('path', {
+        d: 'M 36 22 Q 50 16 64 22',
+        fill: 'none', stroke: '#f0fdfa', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.6
+      })
+    );
+  }
+
+  // Mascot bios — grow the SVG icons into a character family. Each
+  // entry has the canonical name, theme it belongs to, one-sentence
+  // personality, and a couple lines of lore that show up on the
+  // "Meet the cast" roster on the Battle Menu. Same role AlloBot's
+  // canonical bio plays for that character — once students know the
+  // name and the personality, the mascot becomes someone they relate
+  // to rather than just an icon.
+  var MASCOT_BIOS = [
+    {
+      theme: 'default', themeLabel: 'Default',
+      name: 'Pip', tagline: 'The chick who never gives up.',
+      bio: 'Hatched from a typewriter ribbon. Round, fluffy, and surprisingly fast on tiny legs. Pecks letters with rhythmic precision; cheers loudest for personal bests, not perfect scores.',
+      accent: '#fde047'
+    },
+    {
+      theme: 'steampunk', themeLabel: 'Steampunk',
+      name: 'Cogsworth', tagline: 'Wound at dawn. Runs all day.',
+      bio: 'A brass clockwork owl built in a Victorian printer\'s shop. Eyes are lamp-glow lenses behind goggles. Two counter-rotating gears keep the mechanism balanced. Ticks calmly while everything around them burns.',
+      accent: '#a16207'
+    },
+    {
+      theme: 'cyberpunk', themeLabel: 'Cyberpunk',
+      name: 'Vex', tagline: 'A face made of light.',
+      bio: 'A neon hex-panel rendered by a forgotten arcade cabinet. Speaks in scanlines. Glitches when excited, alerts red when threatened. Surprisingly thoughtful for a face made of grids.',
+      accent: '#06b6d4'
+    },
+    {
+      theme: 'kawaii', themeLabel: 'Kawaii',
+      name: 'Mochi', tagline: 'Soft outside. Steel inside.',
+      bio: 'A pastel-pink kitten who looks delicate and is anything but. Sparkles on combos, frowns at danger, sheds exactly one tear when defeated, and gets back up immediately. Wears a tiny bow on the left ear.',
+      accent: '#f9a8d4'
+    },
+    {
+      theme: 'oceanic', themeLabel: 'Oceanic',
+      name: 'Inko', tagline: 'Speaks in color, not in words.',
+      bio: 'A young cuttlefish from a deep saltwater shelf. Communicates through chromatophores — the pigment cells across the mantle pulse cyan when calm, gold-and-orange on a streak, deep red when threatened, and rainbow on a clear win. W-shaped pupils, eight short arms plus two long feeding tentacles, and an ink reserve held back for when it actually matters.',
+      accent: '#22d3ee'
+    }
+  ];
+
+  // Mascot dispatcher — picks the right render fn for the active theme.
+  // Theme 'neutral' returns null per the design rule (neutral = quiet,
+  // no decorative characters). Returns a React element ready to mount.
+  function renderBattleMascot(themeName, state, opts) {
+    opts = Object.assign({ state: state }, opts || {});
+    var mascotEl;
+    if (themeName === 'steampunk')      mascotEl = _renderCogsworth(opts);
+    else if (themeName === 'cyberpunk') mascotEl = _renderVex(opts);
+    else if (themeName === 'kawaii')    mascotEl = _renderMochi(opts);
+    else if (themeName === 'oceanic')   mascotEl = _renderInko(opts);
+    else if (themeName === 'neutral')   return null;
+    else                                mascotEl = _renderPip(opts);
+
+    // Bot wrapper — when the mascot represents the opponent, wrap it in a
+    // <div class="tp-mascot-as-bot"> so CSS can add a subtle hue-shift +
+    // small "BOT" corner badge. Distinguishes opponent from player at a
+    // glance without changing the character itself (Inko vs Inko-the-bot
+    // is still recognizably Inko, just visibly the rival).
+    if (opts.isBot) {
+      var React = window.React;
+      var h = React.createElement;
+      return h('div', {
+        className: 'tp-mascot-as-bot',
+        style: { position: 'relative', display: 'inline-block', lineHeight: 0 }
+      },
+        mascotEl,
+        h('span', {
+          className: 'tp-mascot-bot-badge',
+          'aria-hidden': 'true',
+          style: {
+            position: 'absolute', bottom: -2, right: -2,
+            background: '#a78bfa', color: '#1e1b4b',
+            fontSize: 7, fontWeight: 800, letterSpacing: '0.06em',
+            padding: '1px 4px', borderRadius: 999,
+            border: '1px solid #1e1b4b', lineHeight: 1.2,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+          }
+        }, 'BOT')
+      );
+    }
+    return mascotEl;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Mascot gallery — dev-surface preview grid
+  // ─────────────────────────────────────────────────────────
+  // Triggered by `#mascot-gallery` URL hash. Renders all 5 mascots in
+  // every supported state (10 states × 5 themes = 50 cells). Useful for
+  // visual QA without grinding through Battle Mode. No persistent state,
+  // no event handlers — pure render. Each cell labels the state so design
+  // regressions are obvious at a glance.
+  function _renderMascotGallery(h) {
+    var themes = [
+      { id: 'default',   label: 'Pip',       sub: 'default' },
+      { id: 'steampunk', label: 'Cogsworth', sub: 'steampunk' },
+      { id: 'cyberpunk', label: 'Vex',       sub: 'cyberpunk' },
+      { id: 'kawaii',    label: 'Mochi',     sub: 'kawaii' },
+      { id: 'oceanic',   label: 'Inko',      sub: 'oceanic' }
+    ];
+    var states = [
+      'idle', 'combo', 'attack-out', 'incoming',
+      'danger', 'wow', 'thinking', 'sleep', 'win', 'loss'
+    ];
+    return h('div', {
+      style: {
+        padding: 24, color: '#e2e8f0', fontFamily: 'system-ui, -apple-system, sans-serif',
+        background: '#0f172a', minHeight: '100vh'
+      }
+    },
+      h('div', { style: { marginBottom: 18 } },
+        h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-0.01em' } },
+          'Mascot State Gallery'),
+        h('p', { style: { margin: '6px 0 0', fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
+          'Dev surface · 5 mascots × ', states.length, ' states. Remove ',
+          h('code', { style: { background: '#1e293b', padding: '1px 5px', borderRadius: 3 } }, '#mascot-gallery'),
+          ' from the URL to return to the tool.')
+      ),
+      // Header row — state names
+      h('div', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: '120px repeat(' + states.length + ', minmax(80px, 1fr))',
+          gap: 6, marginBottom: 8, alignItems: 'end',
+          position: 'sticky', top: 0, background: '#0f172a', padding: '6px 0', zIndex: 2,
+          borderBottom: '1px solid #334155'
+        }
+      },
+        h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'theme'),
+        states.map(function(s) {
+          return h('div', { key: 'h-' + s, style: {
+            fontSize: 9, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em',
+            textTransform: 'uppercase', textAlign: 'center'
+          } }, s);
+        })
+      ),
+      // Per-mascot rows
+      themes.map(function(t) {
+        return h('div', {
+          key: 'row-' + t.id,
+          style: {
+            display: 'grid',
+            gridTemplateColumns: '120px repeat(' + states.length + ', minmax(80px, 1fr))',
+            gap: 6, marginBottom: 12, alignItems: 'center'
+          }
+        },
+          // Theme label cell
+          h('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } },
+            h('div', null, t.label),
+            h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 500 } }, t.sub)
+          ),
+          // One cell per state
+          states.map(function(s) {
+            return h('div', {
+              key: 'cell-' + t.id + '-' + s,
+              style: {
+                background: '#1e293b', borderRadius: 8, padding: 8,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', minHeight: 96,
+                border: '1px solid #334155'
+              }
+            },
+              h('div', { style: { width: 56, height: 56 } },
+                renderBattleMascot(t.id, s, { size: 56, label: t.label + ' — ' + s })
+              ),
+              h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4 } }, s)
+            );
+          })
+        );
+      }),
+      // Bot-variant row — show oceanic + kawaii as bot to verify the
+      // wrapper treatment renders cleanly across themes
+      h('div', { style: { marginTop: 24, paddingTop: 16, borderTop: '1px solid #334155' } },
+        h('h2', { style: { margin: 0, fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 10 } }, 'Bot-variant treatment'),
+        h('div', { style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, minmax(80px, 1fr))',
+          gap: 8
+        } },
+          themes.map(function(t) {
+            return h('div', {
+              key: 'bot-' + t.id,
+              style: {
+                background: '#1e293b', borderRadius: 8, padding: 12,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                border: '1px solid #334155'
+              }
+            },
+              h('div', { style: { width: 56, height: 56 } },
+                renderBattleMascot(t.id, 'idle', { size: 56, isBot: true, bodyColor: '#a78bfa', label: t.label + ' (bot)' })
+              ),
+              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6 } }, t.label + ' · bot')
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Shared mascot namespace (window.AlloMascots)
+  // ─────────────────────────────────────────────────────────
+  // Cross-tool access for the same 5 mascots: AlloHaven uses these as
+  // the player's growing companion + procedural dorm-mates. The
+  // typingpractice tool keeps using them internally for Battle Mode.
+  // Single source of truth — fix the SVG once, both tools update.
+  //
+  // API:
+  //   window.AlloMascots.ids          → ['pip','cogsworth','vex','mochi','inko']
+  //   window.AlloMascots.bios         → [{ id, name, tagline, bio, accent, theme }]
+  //   window.AlloMascots.getBio(id)   → bio entry for one mascot
+  //   window.AlloMascots.render(id, opts) → React element
+  //
+  // The id key maps to the theme key, so 'pip' == default, 'cogsworth' ==
+  // steampunk, etc. Bios are exported with both the legacy `theme` field
+  // (back-compat for typingpractice) and a fresh `id` field (clean API
+  // for outside tools).
+  (function exposeAlloMascotsNamespace() {
+    if (typeof window === 'undefined') return;
+    var THEME_TO_ID = {
+      'default':   'pip',
+      'steampunk': 'cogsworth',
+      'cyberpunk': 'vex',
+      'kawaii':    'mochi',
+      'oceanic':   'inko'
+    };
+    var ID_TO_THEME = {};
+    Object.keys(THEME_TO_ID).forEach(function(t) { ID_TO_THEME[THEME_TO_ID[t]] = t; });
+
+    // Augment bios with id field for the external API
+    var publicBios = MASCOT_BIOS.map(function(b) {
+      return Object.assign({}, b, { id: THEME_TO_ID[b.theme] || b.theme });
+    });
+    var byId = {};
+    publicBios.forEach(function(b) { byId[b.id] = b; });
+
+    // Don't clobber if another file already set this up (defensive)
+    if (window.AlloMascots && window.AlloMascots.__locked) return;
+
+    window.AlloMascots = {
+      __locked: true,
+      ids: ['pip', 'cogsworth', 'vex', 'mochi', 'inko'],
+      bios: publicBios,
+      getBio: function(id) { return byId[id] || null; },
+      // Render a mascot by id. opts: { state, size, label, bodyColor, eyeColor, ... }
+      // Returns React element (or null for unknown id with no fallback).
+      render: function(id, opts) {
+        opts = opts || {};
+        var theme = ID_TO_THEME[id];
+        if (!theme) {
+          // Unknown id — fall back to Pip so the UI never blanks
+          theme = 'default';
+        }
+        // Map AlloHaven-style sleeping flag → 'sleep' state if not already set
+        if (opts.sleeping && !opts.state) opts.state = 'sleep';
+        return renderBattleMascot(theme, opts.state || 'idle', opts);
+      }
+    };
+  })();
+
+  // Bot opponents — three speeds. WPM converted to ms-per-character
+  // assuming 5 chars/word standard. errorRate is small to feel human;
+  // bot stalls briefly on errors mirroring student behavior.
+  var BATTLE_BOTS = {
+    slow:   { wpm: 15, errorRate: 0.04, label: '🐢 Slow',   blurb: 'Beginner pace. ~15 WPM. Most students will out-clear this one.' },
+    medium: { wpm: 30, errorRate: 0.03, label: '🦊 Steady', blurb: 'Average teen typing speed. ~30 WPM. A real race.' },
+    fast:   { wpm: 50, errorRate: 0.02, label: '🐎 Fast',   blurb: 'Advanced typist pace. ~50 WPM. Push your limits.' }
+  };
 
   // Visual-mode gallery cap. 3 images × ~80 KB base64 PNG = ~240 KB, well
   // within localStorage comfort. More than 3 and students lose track of
@@ -278,6 +1356,179 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     '6-8': '6th to 8th grade. 12 to 20 word sentences. Academic and domain-specific vocabulary. Compound and complex sentences. Transitional phrases. Target CCSS.ELA-LITERACY.RF.9-10 (middle school literacy).',
     '9-12': 'High school. Sophisticated vocabulary and varied complex sentence structures. Subordinate clauses, appositives, participial phrases allowed. Domain-specific academic content.'
   };
+
+  // ─────────────────────────────────────────────────────────
+  // CURATED PACKS — hand-written passages organized by theme.
+  // Three reasons to ship these alongside AI generation:
+  //   (1) Works offline — no callGemini required.
+  //   (2) Consistent baseline across sessions: a clinician-vetted
+  //       passage drilled three weeks running gives a fair WPM
+  //       comparison that AI-regenerated text never can.
+  //   (3) Cultural specificity AI is bad at — Wabanaki history
+  //       and place names need a human author, not a model that
+  //       might fabricate detail.
+  // Each pack has a label, description, and an array of passage
+  // objects in the same shape generatePassage produces. Imports
+  // are prepended to aiPassageLibrary with fresh ids+timestamps.
+  // ─────────────────────────────────────────────────────────
+  var CURATED_PACKS = [
+    {
+      id: 'maine',
+      label: 'Maine Pack',
+      icon: '🦞',
+      accent: '#0ea5e9',
+      accentSoft: 'rgba(14,165,233,0.12)',
+      description: 'Seven hand-written passages about Maine — lighthouses, lobstering, Mount Katahdin, the Penobscot River, Wabanaki history, blueberry barrens, Portland fog. One per grade band, K through high school.',
+      author: 'AlloFlow editorial team, Portland ME',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'Maine bees', difficulty: 'on-level', language: 'en',
+          text: 'Bees in Maine make sweet honey. They live in white boxes by the trees. They fly to blue and yellow flowers all summer long.'
+        },
+        {
+          gradeLevel: '1', topic: 'lighthouse', difficulty: 'on-level', language: 'en',
+          text: 'A lighthouse stands on the rocks by the sea. Its bright light spins around in the dark. Boats see the light and find their way home through the fog.'
+        },
+        {
+          gradeLevel: '2-3', topic: 'lobster boats', difficulty: 'on-level', language: 'en',
+          text: 'Lobster boats leave Portland harbor before the sun comes up. The traps sit on the cold ocean floor. Each trap has a colored buoy floating on top of the water. The colors tell the harbor master whose trap it is.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'Mount Katahdin', difficulty: 'on-level', language: 'en',
+          text: 'Mount Katahdin is the tallest mountain in Maine. Its name means greatest mountain in the language of the Penobscot people. The Appalachian Trail begins in Georgia and ends right at the very top of Katahdin. Some hikers walk for six whole months to get there.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'wild blueberries', difficulty: 'on-level', language: 'en',
+          text: 'Wild blueberries grow low to the ground on rocky barrens in eastern Maine. The Wabanaki people have harvested them here for thousands of years. Every August, families come out with long-handled wooden rakes and gather the small dark berries by the bucket.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'the Penobscot River', difficulty: 'on-level', language: 'en',
+          text: 'The Penobscot River runs from the deep woods of northern Maine all the way down to the Atlantic Ocean. For more than twelve thousand years, the Penobscot Nation has lived along its banks and depended on it for fish, travel, and food. In 2012 and 2013, the state of Maine removed two old dams. Salmon and shad began returning to the upper river for the first time in over a hundred years.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'Portland in fog', difficulty: 'on-level', language: 'en',
+          text: 'On certain September mornings in Portland, a cool inland breeze meets warm Atlantic water and the harbor disappears into fog. The Portland Head Light sounds its low horn every twenty seconds. Ferries to Peaks Island and Long Island run on schedule but slowly, navigating by radar and old instinct. By midmorning the sun usually wins, the fog lifts, and the working waterfront returns to view, smelling of salt, diesel, and bait.'
+        }
+      ]
+    },
+    {
+      id: 'self-advocacy',
+      label: 'Self-Advocacy Phrases',
+      icon: '🗣️',
+      accent: '#14b8a6',
+      accentSoft: 'rgba(20,184,166,0.12)',
+      description: 'Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.',
+      author: 'AlloFlow editorial team — designed with school-psych guidance for IEP/504 self-advocacy',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'asking for help', difficulty: 'on-level', language: 'en',
+          text: 'I need help. Can someone please show me how? It is okay to ask. I will say thank you when you are done.'
+        },
+        {
+          gradeLevel: '1', topic: 'asking for a break', difficulty: 'on-level', language: 'en',
+          text: 'I am working hard right now. My hands and my brain get tired sometimes. Can I take a quick break and come right back, please?'
+        },
+        {
+          gradeLevel: '2-3', topic: 'audio learning', difficulty: 'on-level', language: 'en',
+          text: 'I learn best when I can hear the words read out loud. The audio book helps me stay with the class. May I use the headphones for reading time today, please?'
+        },
+        {
+          gradeLevel: '4-5', topic: 'fidget tools', difficulty: 'on-level', language: 'en',
+          text: 'My fidget tool helps me focus during class. It is not a toy for play. When my hands are busy with it, my brain has an easier time listening. I am not being rude when I use it during a lesson.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'IEP extra time', difficulty: 'on-level', language: 'en',
+          text: 'My IEP says I get extra time on tests. That does not make me less smart than other kids. It means my brain shows what I know best when it does not feel rushed. Asking for the time I am supposed to get is part of taking care of myself.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'recess and sensory needs', difficulty: 'on-level', language: 'en',
+          text: 'I want to be friends with you, but recess can be hard for me. Loud games like tag or kickball make my body feel like too much is happening at once. Could we play something quieter sometimes? I like drawing, building with blocks, or walking around the field and talking.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'lighting and migraines', difficulty: 'on-level', language: 'en',
+          text: 'I would like to talk to you about something that has been hard for me in this class. The fluorescent lighting in this room can trigger my migraines, and by third period I can usually feel one starting. Could we work together to find a different seat near the window, or maybe a different room when one is available? I am asking because I want to do my best work in here, not less of it.'
+        }
+      ]
+    },
+    {
+      id: 'calming',
+      label: 'Mind & Body Calming',
+      icon: '🌬️',
+      accent: '#a78bfa',
+      accentSoft: 'rgba(167,139,250,0.14)',
+      description: 'Seven self-regulation passages a student can type — and read aloud — when feelings get big. Includes box-breathing language, the 5-4-3-2-1 grounding technique, the "feelings are waves" frame, the "pause is not giving up" reframe, and the "anxiety lies" CBT script. Designed by school-psych guidance; not a substitute for clinical care, but a typing-rhythm anchor a student can use in the moment.',
+      author: 'AlloFlow editorial team — designed with school-psych guidance for affect regulation',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'simple breathing', difficulty: 'on-level', language: 'en',
+          text: 'I am safe right now. I can breathe in slow. I can breathe out slow. I am here.'
+        },
+        {
+          gradeLevel: '1', topic: 'three deep breaths', difficulty: 'on-level', language: 'en',
+          text: 'My body feels big right now. I can take three deep breaths. One. Two. Three. Now I feel a little better than before.'
+        },
+        {
+          gradeLevel: '2-3', topic: 'noticing my heart slow down', difficulty: 'on-level', language: 'en',
+          text: 'When I am scared or upset, my heart beats really fast. That is normal. I can put my hand on my chest and feel it slow down again. My body knows how to come back.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'feelings are waves', difficulty: 'on-level', language: 'en',
+          text: 'Big feelings are like ocean waves. They come up high and then they go back down. I do not have to make them stop. I just have to stay safe and breathe while they pass over me. The wave will not stay forever. It never does.'
+        },
+        {
+          gradeLevel: '4-5', topic: '5-4-3-2-1 grounding', difficulty: 'on-level', language: 'en',
+          text: 'I notice five things I can see. I notice four things I can hear. I notice three things I can touch. I notice two things I can smell. I notice one thing I can taste. I am here. I am present in my body.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'pausing is not giving up', difficulty: 'on-level', language: 'en',
+          text: 'When my brain feels too full, I can pause. I do not have to answer right away. I do not have to fix everything at once. I can put my hand on my desk, feel my feet on the floor, take one slow breath, and then choose what to do next. Pausing is not giving up. Pausing is taking care of myself.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'anxiety lies', difficulty: 'on-level', language: 'en',
+          text: 'Anxiety lies. It tells me a thing is dangerous when it is only unfamiliar. It tells me I am alone in this when I am not. It tells me this feeling will never end when in fact it always ends. I can hear what anxiety is saying to me without believing every word of it. I can name it, breathe through it, and keep doing what matters to me, even while it is still talking.'
+        }
+      ]
+    },
+    {
+      id: 'growth-mindset',
+      label: 'Growth Mindset & "Yet"',
+      icon: '🌱',
+      accent: '#22c55e',
+      accentSoft: 'rgba(34,197,94,0.14)',
+      description: 'Seven passages on effort, struggle, and the small word YET. Built on Carol Dweck\'s growth-mindset research and current brain-plasticity science. Pairs with Mind & Body Calming (regulate) and Self-Advocacy (speak up) to form a complete SEL arc — regulate, reframe, advocate. K through high school.',
+      author: 'AlloFlow editorial team — aligned with EL Education Habits of Heart and Mind',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'I cannot do this YET', difficulty: 'on-level', language: 'en',
+          text: 'I cannot do this YET. I am still learning. My brain grows a little bit each time I try.'
+        },
+        {
+          gradeLevel: '1', topic: 'hard means brain working', difficulty: 'on-level', language: 'en',
+          text: 'When something feels hard, that means my brain is working. Hard things help me grow new ideas. I am still learning every day.'
+        },
+        {
+          gradeLevel: '2-3', topic: 'mistakes wake the brain', difficulty: 'on-level', language: 'en',
+          text: 'Mistakes are part of learning. When I get something wrong, my brain wakes up and pays more attention to it. The next time I try, I will know a little more than I did before. That is exactly how it is supposed to work.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'label vs journey', difficulty: 'on-level', language: 'en',
+          text: 'I do not say I am bad at math. I say I am still learning math. Those two sentences sound almost the same but they mean very different things. The first one is a label that closes a door. The second one is a journey that opens one. I am on the journey.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'first try vs hundredth try', difficulty: 'on-level', language: 'en',
+          text: 'It is not fair to compare my first try at something with someone else\'s hundredth try. They had more practice. They had more help. They had more time. My first try is exactly where my first try should be. The hundredth try comes later, when it is supposed to come.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'the word YET', difficulty: 'on-level', language: 'en',
+          text: 'When I hear myself say I cannot do this, I can add the small word YET to the end of the sentence. I cannot read this YET. I cannot do this math YET. I do not know how to type this fast YET. That tiny three-letter word turns a locked door into a door I just have not opened yet.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'frustration is the sound of learning', difficulty: 'on-level', language: 'en',
+          text: 'My brain is still forming. Current neuroscience research shows it keeps changing well into my twenties, and continues changing in smaller ways for the rest of my life. When I struggle with something hard and stick with it anyway, I am literally helping it grow new connections. The frustration I feel right now is not a sign that I am failing at this. It is part of how learning actually happens inside a brain. I get to choose to stay with it a little longer.'
+        }
+      ]
+    }
+  ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 2: DRILL CATALOG (minimal for skeleton — expanded in later steps)
@@ -788,6 +2039,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     setTimeout(function() { playTone(safe(base * 1.5),  110, waveType); }, 180);
   }
 
+  // ── 🌈 Festival audio (independent of the user's audioTheme + audioCues
+  // accommodation — by toggling festival mode the student is explicitly
+  // opting INTO sound). All festival sounds are short, kept under -12dB-ish
+  // by the playTone envelope, and skip silently if Web Audio fails. ──
+  // Per-keystroke: tiny pluck. Slight pitch variance per call so rapid
+  // typing reads as a melody rather than a metronome.
+  function audioFestivalKey() {
+    var freqs = [880, 988, 1047, 1175, 1319, 1397];
+    var f = freqs[Math.floor(Math.random() * freqs.length)];
+    playTone(f, 28, 'sine');
+  }
+  // Word complete: bright two-note bounce.
+  function audioFestivalWord() {
+    playTone(1047, 50, 'sine');
+    setTimeout(function() { playTone(1397, 70, 'sine'); }, 60);
+  }
+  // Combo milestone (every 10): four-note rising fanfare. Bigger event,
+  // bigger sound. Cap the top so 100-streak doesn't shred eardrums.
+  function audioFestivalCombo() {
+    var notes = [880, 1109, 1319, 1568];
+    notes.forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 90, 'triangle'); }, i * 70);
+    });
+  }
+  // Perfect-drill grand finale: arpeggio + sustained chord.
+  function audioFestivalFinale() {
+    var notes = [523, 659, 784, 1047, 1319, 1568];
+    notes.forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 80, 'sine'); }, i * 60);
+    });
+    // Final chord — staggered fundamental + fifth + octave
+    setTimeout(function() {
+      playTone(523, 800, 'sine');
+      playTone(784, 800, 'sine');
+      playTone(1047, 800, 'sine');
+    }, 500);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // 🎺 Synth "meme vibes" sound pack
+  // ─────────────────────────────────────────────────────────
+  // All synthesized via Web Audio — zero asset loading, no licensing
+  // exposure (the actual viral SFX like Vine boom / SpongeBob / Mario
+  // are copyrighted; this pack captures the VIBE without using them).
+  // Helper for richer envelopes than playTone exposes: lets us swoop
+  // pitch over time + apply ADSR-style gain shapes.
+  function _playSwoopTone(opts) {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = opts.type || 'sine';
+      var now = ctx.currentTime;
+      var dur = (opts.durationMs || 200) / 1000;
+      // Pitch envelope: linear or exponential from startHz → endHz
+      osc.frequency.setValueAtTime(opts.startHz, now);
+      if (opts.exponential) {
+        // Exponential ramp can't reach 0 — clamp endHz
+        osc.frequency.exponentialRampToValueAtTime(Math.max(20, opts.endHz), now + dur);
+      } else {
+        osc.frequency.linearRampToValueAtTime(opts.endHz, now + dur);
+      }
+      // Gain envelope: attack + sustain + release
+      var peak = opts.peakGain || 0.12;
+      var attack = (opts.attackMs || 5) / 1000;
+      var release = (opts.releaseMs || 30) / 1000;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(peak, now + attack);
+      gain.gain.setValueAtTime(peak, now + Math.max(attack, dur - release));
+      gain.gain.linearRampToValueAtTime(0, now + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+    } catch (e) { /* swallow */ }
+  }
+
+  // AIRHORN — the classic "blaaaat blaaaat blaaaaaaat" pattern.
+  // Sawtooth at ~340Hz with a slight pitch wobble, three pulses (short,
+  // short, long). For 10-streak milestones — celebratory not piercing.
+  function audioFestivalAirhorn() {
+    var pulses = [{ d: 120, gap: 40 }, { d: 120, gap: 40 }, { d: 380, gap: 0 }];
+    var t = 0;
+    pulses.forEach(function(p) {
+      setTimeout(function() {
+        _playSwoopTone({ startHz: 320, endHz: 360, type: 'sawtooth', durationMs: p.d, peakGain: 0.14, attackMs: 8, releaseMs: 40 });
+        // Layer a fifth above for thickness
+        _playSwoopTone({ startHz: 480, endHz: 540, type: 'sawtooth', durationMs: p.d, peakGain: 0.07, attackMs: 8, releaseMs: 40 });
+      }, t);
+      t += p.d + p.gap;
+    });
+  }
+
+  // VINE-BOOM-STYLE THUMP — sub-bass thump that drops in pitch fast.
+  // For dramatic moments (e.g., after a long error-free run). Heavy but short.
+  function audioFestivalBoom() {
+    // Main sub-bass
+    _playSwoopTone({ startHz: 120, endHz: 32, type: 'sine', durationMs: 500, peakGain: 0.25, attackMs: 3, releaseMs: 200, exponential: true });
+    // Click at the top for transient punch
+    _playSwoopTone({ startHz: 800, endHz: 200, type: 'triangle', durationMs: 80, peakGain: 0.08, attackMs: 2, releaseMs: 60, exponential: true });
+  }
+
+  // PARTY HORN — quick rising sawtooth (the kazoo-y kid's-birthday vibe).
+  // Pairs with combo milestone phrases for cheap dopamine.
+  function audioFestivalPartyHorn() {
+    _playSwoopTone({ startHz: 280, endHz: 720, type: 'sawtooth', durationMs: 220, peakGain: 0.10, attackMs: 10, releaseMs: 30 });
+    // Tiny pop at the end
+    setTimeout(function() { playTone(900, 40, 'square'); }, 230);
+  }
+
+  // BASS DROP — sweep from high to low (DJ-style drop).
+  // For really big moments: 50+ streak.
+  function audioFestivalBassDrop() {
+    _playSwoopTone({ startHz: 1600, endHz: 60, type: 'sawtooth', durationMs: 700, peakGain: 0.16, attackMs: 10, releaseMs: 100, exponential: true });
+    // Land with a thud
+    setTimeout(function() {
+      _playSwoopTone({ startHz: 80, endHz: 40, type: 'sine', durationMs: 260, peakGain: 0.22, attackMs: 2, releaseMs: 150, exponential: true });
+    }, 700);
+  }
+
+  // POWER-UP SWEEP — ascending square-wave swoop. For 25-streak.
+  // Evokes the "you just got a star" vibe without using the actual sound.
+  function audioFestivalPowerUp() {
+    var notes = [262, 330, 392, 523, 659, 784, 988, 1175, 1397];
+    notes.forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 50, 'square'); }, i * 35);
+    });
+  }
+
+  // VICTORY FANFARE — brass-stack-style triadic resolution. For 100-streak
+  // and perfect drill. Sawtooth gives the "trumpet" character.
+  function audioFestivalVictory() {
+    var chord = [392, 523, 659, 784]; // G major-ish
+    // Anticipation: short rising line
+    [440, 523, 659].forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 90, 'sawtooth'); }, i * 70);
+    });
+    // Resolution: chord stack held for ~900ms
+    setTimeout(function() {
+      chord.forEach(function(n) {
+        _playSwoopTone({ startHz: n, endHz: n, type: 'sawtooth', durationMs: 900, peakGain: 0.07, attackMs: 30, releaseMs: 300 });
+      });
+    }, 240);
+  }
+
+  // CROWD CHEER — burst of filtered noise + multiple detuned tones to
+  // suggest voices. Not vocal-quality, but reads as "cheering" in context.
+  function audioFestivalCheer() {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      // Noise burst (the "crowd" texture)
+      var bufSize = ctx.sampleRate * 0.6;
+      var noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      var data = noiseBuf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
+      var noise = ctx.createBufferSource();
+      noise.buffer = noiseBuf;
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1200;
+      filter.Q.value = 0.6;
+      var noiseGain = ctx.createGain();
+      var now = ctx.currentTime;
+      noiseGain.gain.setValueAtTime(0, now);
+      noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.06);
+      noiseGain.gain.linearRampToValueAtTime(0, now + 0.6);
+      noise.connect(filter).connect(noiseGain).connect(ctx.destination);
+      noise.start(now);
+      noise.stop(now + 0.62);
+    } catch (e) {}
+    // Layer voiced tones — slight detunes suggest multiple "yeahs"
+    [523, 587, 659].forEach(function(n, i) {
+      setTimeout(function() { playTone(n, 350, 'triangle'); }, i * 30);
+    });
+  }
+
+  // DING DING DING — three-bell winner ping. For first session of the day
+  // or other milestone-of-the-day events (currently not wired but available).
+  function audioFestivalDing() {
+    playTone(1320, 90, 'sine');
+    setTimeout(function() { playTone(1320, 90, 'sine'); }, 130);
+    setTimeout(function() { playTone(1320, 200, 'sine'); }, 260);
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 3: STYLE HELPERS
   // ─────────────────────────────────────────────────────────
@@ -889,6 +2325,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       onAccent:  '#ffffff'    // white text on accent in light themes
     },
 
+    // 🌊 Oceanic · deep-sea blues with bioluminescent accents. The
+    // visual register of staring into a saltwater tank at midnight —
+    // calm, slow, with little flashes of color. Pairs with Inko the
+    // cuttlefish whose chromatophores pulse to match game state.
+    'oceanic': {
+      bg:        '#031b2e',   // deep-sea midnight
+      surface:   '#0a2a44',   // twilight ocean
+      surface2:  '#0f3a5c',
+      border:    '#1e4a6f',
+      text:      '#e0f2fe',   // sea-foam white — high contrast
+      textDim:   '#a5d8e8',
+      textMute:  '#7fb3c9',
+      accent:    '#22d3ee',   // bioluminescent cyan
+      accentDim: '#0891b2',
+      success:   '#5eead4',   // pale teal
+      warn:      '#fbbf24',   // bright lure (amber)
+      danger:    '#fb7185',   // coral alarm
+      onAccent:  '#031b2e'
+    },
+
     // 🪨 Neutral · warm gray dark palette, no blue cast.
     // For students/clinicians who find blue tones cool or overstimulating.
     'neutral': {
@@ -948,6 +2404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     'steampunk': '"Georgia", "Palatino Linotype", "Book Antiqua", "Hoefler Text", serif',
     'cyberpunk': '"JetBrains Mono", "Fira Code", "Source Code Pro", "Courier New", ui-monospace, monospace',
     'kawaii':    '"Nunito", "Varela Round", "Quicksand", "Comic Sans MS", ui-rounded, sans-serif',
+    'oceanic':   '"Lora", "Iowan Old Style", "Apple Garamond", Georgia, serif',
     'neutral':   '"Inter", "Helvetica Neue", system-ui, sans-serif'
   };
 
@@ -960,6 +2417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     { id: 'steampunk', label: '🔩 Steampunk', sub: 'brass + leather',  bgSample: '#1a1108', accentSample: '#d4884c' },
     { id: 'cyberpunk', label: '🌃 Cyberpunk', sub: 'neon magenta',     bgSample: '#0a0514', accentSample: '#ff00a8' },
     { id: 'kawaii',    label: '🍓 Kawaii',    sub: 'pastel · LIGHT',   bgSample: '#fff5fa', accentSample: '#e85a8a' },
+    { id: 'oceanic',   label: '🌊 Oceanic',   sub: 'deep-sea + bioluminescent', bgSample: '#031b2e', accentSample: '#22d3ee' },
     { id: 'neutral',   label: '🪨 Neutral',   sub: 'warm gray',        bgSample: '#1a1a1a', accentSample: '#b8a080' }
   ];
 
@@ -974,6 +2432,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Subtle theme-specific background texture. Returned as a CSS string that
   // goes into the tool root's background property. Each theme gets a flavor
   // effect that reads as ambiance, not noise.
+  // Reusable paper-grain SVG (low-opacity fractalNoise). Same SVG-data-uri
+  // pattern used by PrintingPress + ClimateExplorer; the texture is calibrated
+  // to read as 'subtle paper' rather than visible noise. Generated once at
+  // module load. Returns a CSS background-image url string.
+  var TP_PAPER_GRAIN_URI = (function() {
+    var svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" aria-hidden="true">' +
+        '<filter id="g">' +
+          '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="13"/>' +
+          '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.6   0 0 0 0 0.7   0 0 0 0.06 0"/>' +
+        '</filter>' +
+        '<rect width="100%" height="100%" filter="url(#g)"/>' +
+      '</svg>';
+    return 'url("data:image/svg+xml;utf8,' + encodeURIComponent(svg) + '")';
+  })();
+
   function getThemeBackgroundTexture(palette, themeName) {
     switch (themeName) {
       case 'steampunk':
@@ -990,12 +2464,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Soft vertical gradient from bg to surface (pale cream-pink to
         // slightly-pinker-cream). Gives depth without fighting the content.
         return 'linear-gradient(180deg, ' + palette.bg + ' 0%, ' + palette.surface + ' 100%)';
+      case 'oceanic':
+        // Deep-sea atmospheric stack:
+        //   (1) cyan bioluminescent glow at top center (the 'aquarium light')
+        //   (2) lower 'deeper water' cool gradient toward the floor — gives
+        //       the sense of pressure and depth without losing contrast
+        //   (3) faint paper-grain so flat surfaces feel touched
+        //   (4) base palette.bg as the abyss
+        return 'radial-gradient(ellipse 70% 40% at 50% 0%, ' + palette.accent + '1f, transparent 70%), ' +
+               'linear-gradient(180deg, transparent 0%, ' + palette.bg + ' 70%, #010f1c 100%), ' +
+               TP_PAPER_GRAIN_URI + ', ' + palette.bg;
       case 'neutral':
         // No texture — neutral means quiet.
         return palette.bg;
       case 'default':
       default:
-        return palette.bg;
+        // Three-layer atmospheric stack:
+        //   (1) soft accent glow at top center (the 'reading lamp' for the
+        //       default professional palette — uses the active accent color
+        //       so each accent (blue/teal/violet/amber/rose) gets its own
+        //       gentle wash without changing the overall palette)
+        //   (2) faint paper-grain texture so flat surfaces feel touched
+        //   (3) base palette.bg as the floor
+        // Matches the layered atmospheric backgrounds shipped on
+        // PrintingPress + ClimateExplorer, scaled down to clinical-tool
+        // calm — the glow is ~6% opacity, the grain is ~6% opacity.
+        var accentGlow = palette.accent || '#3b82f6';
+        return 'radial-gradient(ellipse 65% 45% at 50% 0%, ' + accentGlow + '14, transparent 70%), ' +
+               TP_PAPER_GRAIN_URI + ', ' + palette.bg;
     }
   }
 
@@ -1028,6 +2524,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       return c === 'image'   ? '✨ Drawing... 💕'
            : c === 'passage' ? '✨ Writing... 💕'
            :                   '✨ Making magic... 💕';
+    }
+    if (t === 'oceanic') {
+      return c === 'image'   ? '🌊 Surfacing imagery…'
+           : c === 'passage' ? '🌊 Drifting through current…'
+           :                   '🌊 Echolocating…';
     }
     if (t === 'neutral') {
       return c === 'image'   ? 'Rendering.'
@@ -1082,6 +2583,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii input:focus-visible,',
       '.tp-root.tp-theme-kawaii textarea:focus-visible,',
       '.tp-root.tp-theme-kawaii [role="switch"]:focus-visible { outline-color: #4a2838; }',
+      '.tp-root.tp-theme-oceanic button:focus-visible,',
+      '.tp-root.tp-theme-oceanic [tabindex]:focus-visible,',
+      '.tp-root.tp-theme-oceanic input:focus-visible,',
+      '.tp-root.tp-theme-oceanic textarea:focus-visible,',
+      '.tp-root.tp-theme-oceanic [role="switch"]:focus-visible { outline-color: #67e8f9; }',
       '.tp-root.tp-theme-neutral button:focus-visible,',
       '.tp-root.tp-theme-neutral [tabindex]:focus-visible,',
       '.tp-root.tp-theme-neutral input:focus-visible,',
@@ -1159,15 +2665,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  border-radius: 18px !important;',
       '}',
 
+      /* ── Oceanic: bioluminescent button hover + drill-target deep-water inset ── */
+      '.tp-root.tp-theme-oceanic button:not([disabled]) {',
+      '  transition: box-shadow 200ms ease, filter 160ms ease, transform 80ms ease;',
+      '}',
+      '.tp-root.tp-theme-oceanic button:not([disabled]):hover {',
+      '  box-shadow: 0 0 12px rgba(34, 211, 238, 0.35), 0 0 24px rgba(34, 211, 238, 0.12);',
+      '  filter: brightness(1.06);',
+      '}',
+      '.tp-root.tp-theme-oceanic button:not([disabled]):active { transform: translateY(1px); }',
+      '@keyframes tp-oceanic-pulse {',
+      '  0%, 100% { box-shadow: 0 0 6px rgba(34, 211, 238, 0.35); }',
+      '  50%      { box-shadow: 0 0 14px rgba(34, 211, 238, 0.6); }',
+      '}',
+      '.tp-root.tp-theme-oceanic .tp-current-char {',
+      '  animation: tp-oceanic-pulse 1.6s ease-in-out infinite;',
+      '}',
+      '.tp-root.tp-theme-oceanic [role="textbox"] {',
+      '  box-shadow: inset 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(34, 211, 238, 0.18);',
+      '}',
+      // ─── Default + steampunk current-char (closing the per-theme set) ──
+      // Default: soft accent breathe so the eye anchors on the cursor
+      // without competing with the surrounding text. Quiet, not jumpy.
+      // Scoped to .tp-theme-default so it doesn\'t override the
+      // theme-specific cyberpunk/kawaii/oceanic rules above.
+      '@keyframes tp-default-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(96,165,250,0.30); } 50% { box-shadow: 0 0 6px 1px rgba(96,165,250,0.45); } }',
+      '.tp-root.tp-theme-default .tp-current-char { animation: tp-default-pulse 1.8s ease-in-out infinite; }',
+      // Steampunk: warm brass-bracket. The cursor reads as a hot iron
+      // resting on the page — anchored, deliberate, slightly molten.
+      '@keyframes tp-steam-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,136,76,0.30); } 50% { box-shadow: 0 0 8px 1px rgba(212,136,76,0.55); } }',
+      '.tp-root.tp-theme-steampunk .tp-current-char {',
+      '  animation: tp-steam-glow 2.0s ease-in-out infinite;',
+      '}',
+      // Neutral overrides — neutral theme is intentionally still: no
+      // current-char animation, no pulse. Consistent with the "quiet" theme.
+      '.tp-root.tp-theme-neutral .tp-current-char { animation: none; }',
+
       /* ── Loading spinner keyframes per theme ──────────────────── */
       '@keyframes tp-spin-gear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }',
       '@keyframes tp-cyber-blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.35; } }',
       '@keyframes tp-kawaii-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }',
       '@keyframes tp-neutral-dots { 0%, 25% { opacity: 0.3; } 50% { opacity: 1; } 75%, 100% { opacity: 0.3; } }',
+      '@keyframes tp-oceanic-drift { 0% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } 100% { opacity: 0.4; transform: translateY(0); } }',
 
       '.tp-root.tp-theme-steampunk .tp-loading-icon { display: inline-block; animation: tp-spin-gear 2.4s linear infinite; }',
       '.tp-root.tp-theme-cyberpunk .tp-loading-icon { display: inline-block; animation: tp-cyber-blink 0.9s steps(2, jump-none) infinite; font-family: ui-monospace, monospace; }',
       '.tp-root.tp-theme-kawaii    .tp-loading-icon { display: inline-block; animation: tp-kawaii-bounce 0.8s ease-in-out infinite; }',
+      '.tp-root.tp-theme-oceanic   .tp-loading-icon { display: inline-block; animation: tp-oceanic-drift 1.6s ease-in-out infinite; }',
       '.tp-root.tp-theme-neutral   .tp-loading-icon { display: inline-block; animation: tp-neutral-dots 1.2s ease-in-out infinite; }',
 
       /* ── Summary celebration animation (one-shot, not infinite) ─────────
@@ -1185,6 +2729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-steampunk .tp-celebrate { animation: tp-celebrate-steam 0.8s ease-in-out 1, tp-celebrate-glow 1.4s ease-out 1; }',
       '.tp-root.tp-theme-cyberpunk .tp-celebrate { animation: tp-celebrate-cyber 0.7s steps(8, jump-none) 1; }',
       '.tp-root.tp-theme-kawaii    .tp-celebrate { animation: tp-celebrate-kawaii 1.1s ease-in-out 1; }',
+      '.tp-root.tp-theme-oceanic   .tp-celebrate { animation: tp-celebrate-pulse 0.9s ease-out 1, tp-celebrate-glow 1.6s ease-out 1; color: #67e8f9; }',
       '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
 
       /* ── Fresh-PB shimmer — applied to the 'X WPM' text on drill cards
@@ -1255,11 +2800,560 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-view-in-cyber   { 0% { opacity: 0; clip-path: inset(0 100% 0 0); } 60% { opacity: 1; clip-path: inset(0 0 0 0); } 65% { opacity: 0.7; } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }',
       '@keyframes tp-view-in-kawaii  { 0% { opacity: 0; transform: scale(0.96) translateY(10px); } 60% { opacity: 1; transform: scale(1.01) translateY(-1px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }',
       '@keyframes tp-view-in-neutral { 0% { opacity: 0; } 100% { opacity: 1; } }',
+      '@keyframes tp-pack-card-in { 0% { opacity: 0; transform: translateY(6px) scale(0.985); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+      // ── Battle Mode mascot animations ──
+      // Idle = gentle bob breathe (all mascots). Combo = excitement.
+      // Attack-out = lean-forward+spring. Incoming = flinch-cower.
+      // Danger = worried tremble (stack >= 7). Wow = triumphant
+      // back-arch (long-word clear). Sleep = drift (paused). Win =
+      // bounce+rotate. Loss = droop+desaturate.
+      '@keyframes tp-mascot-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
+      '@keyframes tp-mascot-shake-h { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-1.5px); } 75% { transform: translateX(1.5px); } }',
+      '@keyframes tp-mascot-pop { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }',
+      '@keyframes tp-mascot-throw { 0% { transform: translateX(0) rotate(0); } 30% { transform: translateX(-3px) rotate(-8deg); } 60% { transform: translateX(8px) rotate(10deg); } 100% { transform: translateX(0) rotate(0); } }',
+      '@keyframes tp-mascot-flinch { 0% { transform: translateX(0) scale(1); } 25% { transform: translateX(2px) scale(0.94); } 60% { transform: translateX(-2px) scale(0.94); } 100% { transform: translateX(0) scale(1); } }',
+      '@keyframes tp-mascot-celebrate { 0% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-6px) rotate(-6deg); } 60% { transform: translateY(-6px) rotate(6deg); } 100% { transform: translateY(0) rotate(0); } }',
+      '@keyframes tp-mascot-droop { 0%,100% { transform: rotate(-3deg) translateY(2px); filter: saturate(0.5) brightness(0.85); } }',
+      '@keyframes tp-mascot-tremble { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-1px,1px); } 50% { transform: translate(1px,-1px); } 75% { transform: translate(-1px,-1px); } }',
+      '@keyframes tp-mascot-arch { 0% { transform: translateY(0) scale(1); } 30% { transform: translateY(-3px) scale(1.06); } 60% { transform: translateY(-1px) scale(1.04); } 100% { transform: translateY(0) scale(1); } }',
+      '@keyframes tp-mascot-drift { 0%,100% { transform: translateY(0) rotate(0); opacity: 0.85; } 50% { transform: translateY(-3px) rotate(2deg); opacity: 1; } }',
+      '@keyframes tp-mascot-zfloat { 0% { transform: translate(0,0); opacity: 0; } 30% { opacity: 0.9; } 100% { transform: translate(8px,-14px); opacity: 0; } }',
+      // Thinking state — mascot tilts its head slightly back-and-forth
+      // (the "watching you decide" beat). Used while the attack-picker
+      // overlay is open. Slightly slower + softer than the bob.
+      '@keyframes tp-mascot-think { 0%, 100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(2deg) translateY(-1px); } }',
+      // Per-mascot internal animations
+      '@keyframes tp-pip-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }',
+      '@keyframes tp-cog-rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }',
+      '@keyframes tp-cog-rotate-rev { from { transform: rotate(0); } to { transform: rotate(-360deg); } }',
+      '@keyframes tp-cog-steam { 0%, 100% { opacity: 0; transform: translateY(0); } 50% { opacity: 0.85; transform: translateY(-6px); } }',
+      '@keyframes tp-vex-scan { 0% { transform: translateY(0); opacity: 0.5; } 50% { opacity: 0.7; } 100% { transform: translateY(48px); opacity: 0.4; } }',
+      '@keyframes tp-vex-eye-blink { 0%, 90%, 100% { transform: scaleY(1); opacity: 0.95; } 95% { transform: scaleY(0.15); opacity: 1; } }',
+      '@keyframes tp-vex-alert { 0%, 100% { opacity: 0; } 50% { opacity: 0.55; } }',
+      '@keyframes tp-vex-glitch { 0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); } 25% { transform: translateX(-2px); filter: hue-rotate(30deg); } 50% { transform: translateX(2px); filter: hue-rotate(-30deg); } 75% { transform: translateX(-1px); filter: hue-rotate(15deg); } }',
+      '@keyframes tp-mochi-sparkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.1); } }',
+      // Pip wing flap — symmetrical rotation around shoulder pivot.
+      // Idle = subtle sway; combo = aggressive flap; loss = drooped.
+      '@keyframes tp-pip-wing-flap { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(8deg); } }',
+      '@keyframes tp-pip-wing-flap-r { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-8deg); } }',
+      '@keyframes tp-pip-wing-sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes tp-pip-wing-sway-r { 0%, 100% { transform: rotate(1deg); } 50% { transform: rotate(-2deg); } }',
+      // Pip cheek puff — tiny scale on cheek tufts during danger
+      '@keyframes tp-pip-cheek-puff { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.6); } }',
+      // Pip beak chirp — open vertically during attack-out
+      '@keyframes tp-pip-beak-chirp { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.4); } }',
+      // Pip body squash on combo — small breathing-style scale
+      '@keyframes tp-pip-body-pulse { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.96); } }',
+      // Cogsworth pendulum — slow swing in idle, faster in combo
+      '@keyframes tp-cog-pendulum { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }',
+      // Vex hex distortion — subtle skew + hue-shift on attack
+      '@keyframes tp-vex-hex-distort { 0%, 100% { transform: skewX(0deg); filter: hue-rotate(0deg); } 33% { transform: skewX(-1.5deg); filter: hue-rotate(20deg); } 66% { transform: skewX(1.5deg); filter: hue-rotate(-20deg); } }',
+      // Vex rim-glow pulse — outer hex ring brightens on combo
+      '@keyframes tp-vex-rim-pulse { 0%, 100% { opacity: 0; } 50% { opacity: 0.7; } }',
+      // Vex boot dots — sequential power-on
+      '@keyframes tp-vex-boot-on { 0% { opacity: 0; } 50%, 100% { opacity: 1; } }',
+      '@keyframes tp-vex-boot-off { 0% { opacity: 1; } 50%, 100% { opacity: 0.15; } }',
+      // Mochi tail — slow rocking sway
+      '@keyframes tp-mochi-tail-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } }',
+      '@keyframes tp-mochi-tail-wag { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(14deg); } }',
+      // Mochi heart pop — used on combo, scale-and-fade for one-shot
+      '@keyframes tp-mochi-heart-pop { 0% { opacity: 0; transform: translateY(0) scale(0.4); } 30% { opacity: 1; transform: translateY(-3px) scale(1.1); } 100% { opacity: 0; transform: translateY(-10px) scale(1); } }',
+      // Mochi bow wiggle — bow rocks side to side during combo + win
+      '@keyframes tp-mochi-bow-wiggle { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }',
+      // Vex eye-bar heartbeat — subtle pulse in idle, like a system readout
+      '@keyframes tp-vex-eye-pulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }',
+      // Cogsworth chest-rivet glow — slow alternating warm-tip pulse
+      '@keyframes tp-cog-rivet-glow { 0%, 100% { fill: #713f12; } 50% { fill: #d4884c; } }',
+      // Inko tentacle fidget — center pair occasionally touch tips, like
+      // a self-soothing gesture cuttlefish actually do in the wild
+      '@keyframes tp-inko-fidget-l { 0%, 88%, 100% { transform: rotate(-2deg); } 92% { transform: rotate(8deg); } 96% { transform: rotate(2deg); } }',
+      '@keyframes tp-inko-fidget-r { 0%, 88%, 100% { transform: rotate(2deg); } 92% { transform: rotate(-8deg); } 96% { transform: rotate(-2deg); } }',
+      // Bot mascot scanline — adds a subtle horizontal sweep across any
+      // mascot when it\'s rendered as the opponent. Reads as "AI-driven"
+      // without changing the character itself.
+      '@keyframes tp-bot-scanline { 0% { background-position: 0 -100%; } 100% { background-position: 0 200%; } }',
+      // Mochi blink — long-cycle (94% open, 6% closed) so it reads as
+      // a natural occasional blink rather than a tic.
+      '@keyframes tp-mochi-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }',
+      '.tp-mascot-mochi .tp-mochi-eye-l, .tp-mascot-mochi .tp-mochi-eye-r { animation: tp-mochi-blink 5.5s ease-in-out infinite; }',
+      // Whiskers twitch on combo
+      '@keyframes tp-mochi-whiskers-twitch { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-whiskers { animation: tp-mochi-whiskers-twitch 0.4s ease-in-out infinite; transform-origin: 50px 64px; }',
+      // ─── Per-mascot signature moves ────────────────────────────────────
+      // Each mascot has one unique gesture that fires every ~14-18s in idle.
+      // Identifiable by silhouette alone — adds character depth without
+      // making the avatar busy. Suppressed under reduced-motion.
+      // Pip — quick double-bounce (chick hop + chirp)
+      '@keyframes tp-pip-signature { 0%, 88%, 100% { transform: translateY(0) scale(1,1); } 90% { transform: translateY(-5px) scale(0.95,1.05); } 92% { transform: translateY(0) scale(1.05,0.95); } 94% { transform: translateY(-3px) scale(1,1); } 96% { transform: translateY(0) scale(1,1); } }',
+      '.tp-mascot-pip.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-pip-twitch 9s ease-in-out infinite, tp-pip-signature 14s ease-in-out infinite; }',
+      // Cogsworth — full pendulum + steam puff release (workshop chime)
+      '@keyframes tp-cog-signature-steam { 0%, 84%, 100% { opacity: 0; transform: translateY(0); } 86%, 92% { opacity: 0.85; } 96% { opacity: 0; transform: translateY(-8px); } }',
+      '.tp-mascot-cogsworth.tp-mascot-idle .tp-cog-steam circle:nth-child(1) { animation: tp-cog-signature-steam 16s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-idle .tp-cog-steam circle:nth-child(3) { animation: tp-cog-signature-steam 16s ease-in-out infinite 0.15s; }',
+      // Vex — boot dot ripple sweeps the bottom edge
+      '.tp-mascot-vex.tp-mascot-idle .tp-vex-boot-1 { animation: tp-vex-boot-on 3s ease-in-out infinite alternate, tp-vex-boot-off 18s linear infinite; }',
+      '.tp-mascot-vex.tp-mascot-idle .tp-vex-boot-2 { animation: tp-vex-boot-on 3s ease-in-out infinite alternate 1s, tp-vex-boot-off 18s linear infinite 0.2s; }',
+      '.tp-mascot-vex.tp-mascot-idle .tp-vex-boot-3 { animation: tp-vex-boot-on 3s ease-in-out infinite alternate 2s, tp-vex-boot-off 18s linear infinite 0.4s; }',
+      // Mochi — sneeze (whiskers twitch + tiny full-body flinch)
+      '@keyframes tp-mochi-signature { 0%, 92%, 100% { transform: rotate(0deg) translateY(0); } 94% { transform: rotate(-3deg) translateY(-2px); } 96% { transform: rotate(2deg) translateY(0); } }',
+      '.tp-mascot-mochi.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-mochi-signature 17s ease-in-out infinite; }',
+      // Inko — full-body chromatophore rainbow ripple (cuttlefish display)
+      '@keyframes tp-inko-signature-rainbow { 0%, 86%, 100% { fill: #22d3ee; } 88% { fill: #fb7185; } 90% { fill: #fbbf24; } 92% { fill: #5eead4; } 94% { fill: #a78bfa; } 96% { fill: #fb7185; } }',
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-chrom { animation: tp-inko-chrom-idle 2.4s ease-in-out infinite, tp-inko-signature-rainbow 18s linear infinite; }',
+      // Inko zebra display — vertical stripes flash briefly during the
+      // signature window. Real cuttlefish behavior; one of the most
+      // recognizable cephalopod patterns. ~6% of the cycle visible.
+      '@keyframes tp-inko-zebra-flash { 0%, 90%, 100% { opacity: 0; } 92%, 96% { opacity: 0.6; } }',
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-zebra { animation: tp-inko-zebra-flash 22s ease-in-out infinite; }',
+      // ─── Companion entry wave ──────────────────────────────────────────
+      // Plays once when the companion mounts (drill view enter, summary
+      // view enter, or first toggle-on). Soft fade-in + scale-up + small
+      // tilt wave so the mascot reads as a friendly arrival rather than a
+      // sudden appearance.
+      '@keyframes tp-companion-enter { 0% { opacity: 0; transform: translateY(-6px) scale(0.6) rotate(0deg); } 40% { opacity: 1; transform: translateY(0) scale(1.1) rotate(-8deg); } 60% { transform: translateY(0) scale(1) rotate(8deg); } 80% { transform: translateY(0) scale(1) rotate(-4deg); } 100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); } }',
+      '.tp-companion-wrap { animation: tp-companion-enter 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 1; transform-origin: bottom center; }',
+      '@media (prefers-reduced-motion: reduce) { .tp-companion-wrap { animation: none !important; } }',
+      // ─── Final anatomy polish for the other mascots ───────────────────
+      // Vex mouth-grid ripple — the 9 dots in the 3x3 mouth grid pulse in
+      // a left-to-right wave during idle. Reads as "background processing."
+      '@keyframes tp-vex-mouth-ripple { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }',
+      '.tp-mascot-vex .tp-vex-mouth circle:nth-child(1n+1) { animation: tp-vex-mouth-ripple 3s ease-in-out infinite; }',
+      '.tp-mascot-vex .tp-vex-mouth circle:nth-child(2n+1) { animation-delay: 0.4s; }',
+      '.tp-mascot-vex .tp-vex-mouth circle:nth-child(3n+1) { animation-delay: 0.8s; }',
+      // Pip beak breath — the orange triangle scales subtly (1 → 1.04 → 1)
+      // with the body bob, suggesting breathing. Faint but lifelike.
+      '@keyframes tp-pip-beak-breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }',
+      '.tp-mascot-pip .tp-pip-beak { animation: tp-pip-beak-breath 3.2s ease-in-out infinite; }',
+      // Cogsworth gear glint — a tiny brass highlight pulses on each gear
+      // hub every full rotation. Catches the light, suggests polished metal.
+      '@keyframes tp-cog-gear-glint { 0%, 88%, 100% { opacity: 0.7; } 92% { opacity: 1; filter: brightness(1.3); } }',
+      '.tp-mascot-cogsworth .tp-cog-gear-l circle:nth-child(2), .tp-mascot-cogsworth .tp-cog-gear-r circle:nth-child(2) { animation: tp-cog-gear-glint 6s ease-in-out infinite; }',
+      // Stack column danger pulse — red border ring scales out when stack
+      // is high (≥7 of 9 rows). Reads peripherally as "you are losing
+      // headroom." Box-shadow approach so it doesn\'t fight the column
+      // border itself.
+      '@keyframes tp-stack-col-danger-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.0); } 50% { box-shadow: 0 0 0 4px rgba(239,68,68,0.35); } }',
+      '.tp-stack-col-danger { animation: tp-stack-col-danger-pulse 1.4s ease-in-out infinite; }',
+      // Stack column hit shake — fires when an incoming attack lands on
+      // the player column. Short, sharp; one-shot via JS-driven className.
+      '@keyframes tp-stack-col-hit-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }',
+      '.tp-stack-col-hit { animation: tp-stack-col-hit-shake 0.32s ease-out 1; }',
+      // Attack-ready chip — when combo crosses send-threshold, the chip
+      // gets a brighter pulse so the eye lands on it immediately. Layered
+      // on top of the existing static accent style.
+      '@keyframes tp-attack-ready-pulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 currentColor; } 50% { transform: scale(1.06); box-shadow: 0 0 8px 1px currentColor; } }',
+      '.tp-attack-ready { animation: tp-attack-ready-pulse 0.7s ease-in-out infinite; }',
+      // Combo counter bump — fires when the combo number remounts via
+      // key={combo}. One-shot scale-pop with a satisfying overshoot so
+      // each successful clear gives a punchy visual receipt that scales
+      // with the combo number itself (set via inline fontSize).
+      '@keyframes tp-combo-bump { 0% { transform: scale(0.7); opacity: 0.5; } 60% { transform: scale(1.25); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }',
+      '.tp-combo-bump { animation: tp-combo-bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1; transform-origin: center; }',
+      // ─── Fresh-earned achievement row pulse ────────────────────────────
+      // Highlights milestone rows earned within the last 24 hours so a
+      // returning student can see "this is the one I just got." Soft
+      // success-colored glow that fades out after ~3 cycles, then
+      // settles to the normal row state — so the highlight is noticed
+      // but not perpetually distracting on subsequent visits within the
+      // same 24-hour window.
+      '@keyframes tp-ach-fresh-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(74,154,106,0); } 50% { box-shadow: 0 0 0 5px rgba(74,154,106,0.30); } }',
+      '.tp-ach-fresh { animation: tp-ach-fresh-pulse 1.8s ease-in-out 3; }',
+      '@media (prefers-reduced-motion: reduce) { .tp-ach-fresh { animation: none !important; } }',
+      // ─── Personal-best cell celebration (Battle summary) ───────────────
+      // Three layered effects when a stat is a new PB:
+      //   (1) tp-pb-cell-glow — soft success-color outer glow on the cell
+      //   (2) tp-pb-value-pop — value scale-pops in (0→1.2→1) over 600ms
+      //   (3) tp-pb-tag-flip   — "★ Personal best" tag flips in vertically
+      // All one-shot. PB cells get noticed without lording over the screen.
+      '@keyframes tp-pb-cell-glow { 0% { box-shadow: 0 0 0 0 rgba(74,154,106,0); } 30% { box-shadow: 0 0 0 6px rgba(74,154,106,0.30); } 60% { box-shadow: 0 0 0 12px rgba(74,154,106,0.0); } 100% { box-shadow: 0 0 0 0 rgba(74,154,106,0); } }',
+      '@keyframes tp-pb-value-pop { 0% { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }',
+      '@keyframes tp-pb-tag-flip { 0% { opacity: 0; transform: scaleY(0); } 50% { opacity: 1; } 100% { opacity: 1; transform: scaleY(1); } }',
+      '.tp-pb-cell { animation: tp-pb-cell-glow 1.6s ease-out 1; }',
+      '.tp-pb-value { animation: tp-pb-value-pop 0.6s cubic-bezier(0.34,1.56,0.64,1) 1; transform-origin: center; }',
+      '.tp-pb-tag { animation: tp-pb-tag-flip 0.5s ease-out 1 0.4s; transform-origin: top; animation-fill-mode: backwards; }',
+      // ─── Battle-stage ambient particles (per theme) ────────────────────
+      // Each .tp-amb-N slot is given size + start position via base rules,
+      // then shape + color + animation timing via the parent theme class.
+      // 6 particles per stage; staggered delays via :nth-child so they
+      // never spawn in lockstep. Slow (10–18s) so the playfield stays
+      // calm; opacity capped at ~0.25 so reading the stack remains easy.
+      '.tp-amb { position: absolute; pointer-events: none; opacity: 0; }',
+      // ── Oceanic: bubbles drift up from the bottom edge ──
+      '@keyframes tp-amb-bubble { 0% { opacity: 0; transform: translateY(0) translateX(0) scale(0.8); } 10% { opacity: 0.4; } 90% { opacity: 0.4; } 100% { opacity: 0; transform: translateY(-110vh) translateX(8px) scale(1); } }',
+      '.tp-battle-stage-oceanic .tp-amb { width: 8px; height: 8px; bottom: -10px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(240,253,250,0.7), rgba(103,232,249,0.3) 60%, transparent 100%); border: 1px solid rgba(103,232,249,0.4); animation: tp-amb-bubble 14s linear infinite; }',
+      '.tp-battle-stage-oceanic .tp-amb-0 { left: 8%;  animation-duration: 16s; animation-delay: 0s; }',
+      '.tp-battle-stage-oceanic .tp-amb-1 { left: 22%; animation-duration: 13s; animation-delay: 4s; width: 5px; height: 5px; }',
+      '.tp-battle-stage-oceanic .tp-amb-2 { left: 38%; animation-duration: 18s; animation-delay: 9s; width: 10px; height: 10px; }',
+      '.tp-battle-stage-oceanic .tp-amb-3 { left: 58%; animation-duration: 15s; animation-delay: 2s; }',
+      '.tp-battle-stage-oceanic .tp-amb-4 { left: 76%; animation-duration: 12s; animation-delay: 7s; width: 4px; height: 4px; }',
+      '.tp-battle-stage-oceanic .tp-amb-5 { left: 90%; animation-duration: 17s; animation-delay: 11s; }',
+      // ── Steampunk: embers drift up + drift sideways like a forge ──
+      '@keyframes tp-amb-ember { 0% { opacity: 0; transform: translateY(0) translateX(0); } 10% { opacity: 0.55; } 90% { opacity: 0.4; } 100% { opacity: 0; transform: translateY(-100vh) translateX(20px); } }',
+      '.tp-battle-stage-steampunk .tp-amb { width: 4px; height: 4px; bottom: -10px; border-radius: 50%; background: radial-gradient(circle, rgba(251,191,36,0.85), rgba(212,136,76,0.4) 60%, transparent 100%); box-shadow: 0 0 4px rgba(251,191,36,0.5); animation: tp-amb-ember 12s linear infinite; }',
+      '.tp-battle-stage-steampunk .tp-amb-0 { left: 12%; animation-duration: 14s; animation-delay: 0s; }',
+      '.tp-battle-stage-steampunk .tp-amb-1 { left: 26%; animation-duration: 11s; animation-delay: 3s; }',
+      '.tp-battle-stage-steampunk .tp-amb-2 { left: 44%; animation-duration: 16s; animation-delay: 7s; width: 3px; height: 3px; }',
+      '.tp-battle-stage-steampunk .tp-amb-3 { left: 60%; animation-duration: 13s; animation-delay: 5s; }',
+      '.tp-battle-stage-steampunk .tp-amb-4 { left: 78%; animation-duration: 15s; animation-delay: 9s; }',
+      '.tp-battle-stage-steampunk .tp-amb-5 { left: 92%; animation-duration: 12s; animation-delay: 2s; width: 5px; height: 5px; }',
+      // ── Cyberpunk: pixel rain drops down (digital matrix) ──
+      '@keyframes tp-amb-pixel { 0% { opacity: 0; transform: translateY(-10vh); } 5% { opacity: 0.5; } 95% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(110vh); } }',
+      '.tp-battle-stage-cyberpunk .tp-amb { width: 2px; height: 14px; top: 0; background: linear-gradient(180deg, transparent, rgba(255,0,168,0.8), transparent); animation: tp-amb-pixel 10s linear infinite; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-0 { left: 8%;  animation-duration: 8s;  animation-delay: 0s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-1 { left: 24%; animation-duration: 12s; animation-delay: 1.5s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-2 { left: 40%; animation-duration: 9s;  animation-delay: 3s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-3 { left: 56%; animation-duration: 11s; animation-delay: 4.5s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-4 { left: 72%; animation-duration: 8.5s; animation-delay: 6s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-5 { left: 88%; animation-duration: 10s; animation-delay: 7.5s; }',
+      // ── Kawaii: petals drift down with a side wobble ──
+      '@keyframes tp-amb-petal { 0% { opacity: 0; transform: translateY(-10vh) translateX(0) rotate(0deg); } 10% { opacity: 0.65; } 90% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(110vh) translateX(40px) rotate(360deg); } }',
+      '.tp-battle-stage-kawaii .tp-amb { width: 8px; height: 8px; top: 0; border-radius: 50% 0 50% 0; background: rgba(244,114,182,0.6); animation: tp-amb-petal 14s ease-in-out infinite; }',
+      '.tp-battle-stage-kawaii .tp-amb-0 { left: 10%; animation-duration: 16s; animation-delay: 0s; }',
+      '.tp-battle-stage-kawaii .tp-amb-1 { left: 28%; animation-duration: 13s; animation-delay: 3s; width: 6px; height: 6px; }',
+      '.tp-battle-stage-kawaii .tp-amb-2 { left: 46%; animation-duration: 18s; animation-delay: 7s; width: 10px; height: 10px; }',
+      '.tp-battle-stage-kawaii .tp-amb-3 { left: 64%; animation-duration: 15s; animation-delay: 4s; }',
+      '.tp-battle-stage-kawaii .tp-amb-4 { left: 80%; animation-duration: 12s; animation-delay: 9s; width: 7px; height: 7px; }',
+      '.tp-battle-stage-kawaii .tp-amb-5 { left: 94%; animation-duration: 17s; animation-delay: 12s; }',
+      // ── Default: feathers drift down softly (Pip\'s feather motif) ──
+      '@keyframes tp-amb-feather { 0% { opacity: 0; transform: translateY(-10vh) rotate(-15deg); } 10% { opacity: 0.4; } 90% { opacity: 0.3; } 100% { opacity: 0; transform: translateY(110vh) translateX(30px) rotate(15deg); } }',
+      '.tp-battle-stage-default .tp-amb { width: 4px; height: 12px; top: 0; border-radius: 50% 50% 50% 0; background: rgba(253,224,71,0.55); animation: tp-amb-feather 16s ease-in-out infinite; }',
+      '.tp-battle-stage-default .tp-amb-0 { left: 12%; animation-duration: 18s; animation-delay: 0s; }',
+      '.tp-battle-stage-default .tp-amb-1 { left: 30%; animation-duration: 15s; animation-delay: 4s; }',
+      '.tp-battle-stage-default .tp-amb-2 { left: 48%; animation-duration: 20s; animation-delay: 8s; }',
+      '.tp-battle-stage-default .tp-amb-3 { left: 64%; animation-duration: 17s; animation-delay: 5s; }',
+      '.tp-battle-stage-default .tp-amb-4 { left: 80%; animation-duration: 13s; animation-delay: 11s; }',
+      '.tp-battle-stage-default .tp-amb-5 { left: 92%; animation-duration: 19s; animation-delay: 14s; }',
+      // Neutral theme — no ambient particles by design (theme is "quiet")
+      '.tp-battle-stage-neutral .tp-amb { display: none; }',
+      // Drill stage uses the same ambience but at half-strength + slower
+      // so the typing focus stays paramount. The particles read as quiet
+      // atmosphere, not gameplay action.
+      '.tp-drill-stage .tp-amb { opacity: 0; }',
+      '.tp-drill-stage.tp-battle-stage-oceanic .tp-amb { animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-oceanic .tp-amb { opacity: 0; }',
+      '.tp-drill-stage .tp-amb { animation-iteration-count: infinite; }',
+      // Override per-particle keyframes to peak at lower opacity (~50% of battle)
+      '@keyframes tp-amb-bubble-soft { 0% { opacity: 0; transform: translateY(0) translateX(0) scale(0.8); } 10% { opacity: 0.18; } 90% { opacity: 0.18; } 100% { opacity: 0; transform: translateY(-110vh) translateX(8px) scale(1); } }',
+      '@keyframes tp-amb-ember-soft  { 0% { opacity: 0; transform: translateY(0) translateX(0); } 10% { opacity: 0.25; } 90% { opacity: 0.18; } 100% { opacity: 0; transform: translateY(-100vh) translateX(20px); } }',
+      '@keyframes tp-amb-pixel-soft  { 0% { opacity: 0; transform: translateY(-10vh); } 5% { opacity: 0.22; } 95% { opacity: 0.22; } 100% { opacity: 0; transform: translateY(110vh); } }',
+      '@keyframes tp-amb-petal-soft  { 0% { opacity: 0; transform: translateY(-10vh) translateX(0) rotate(0deg); } 10% { opacity: 0.28; } 90% { opacity: 0.22; } 100% { opacity: 0; transform: translateY(110vh) translateX(40px) rotate(360deg); } }',
+      '@keyframes tp-amb-feather-soft{ 0% { opacity: 0; transform: translateY(-10vh) rotate(-15deg); } 10% { opacity: 0.18; } 90% { opacity: 0.14; } 100% { opacity: 0; transform: translateY(110vh) translateX(30px) rotate(15deg); } }',
+      '.tp-drill-stage.tp-battle-stage-oceanic .tp-amb { animation-name: tp-amb-bubble-soft; animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-steampunk .tp-amb { animation-name: tp-amb-ember-soft; animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-cyberpunk .tp-amb { animation-name: tp-amb-pixel-soft; animation-duration: 18s; }',
+      '.tp-drill-stage.tp-battle-stage-kawaii    .tp-amb { animation-name: tp-amb-petal-soft; animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-default   .tp-amb { animation-name: tp-amb-feather-soft; animation-duration: 24s; }',
+      // Reduced motion — kill all ambient particles
+      '@media (prefers-reduced-motion: reduce) { .tp-battle-ambience, .tp-amb { display: none !important; } }',
+      // ─── Cleared-word burst (theme-flavored expanding ring) ────────────
+      // Triggered at the moment a word clears the player\'s stack. A small
+      // ring expands out from the word\'s position then fades. Two layered
+      // rings (one delayed 60ms) give a "double pulse" satisfying feel.
+      // Colors per theme; size capped at 64px so it stays inside the
+      // column. Pure CSS one-shot — replays on key change in React.
+      '@keyframes tp-clear-burst-ring { 0% { opacity: 0.85; transform: translate(-50%,-50%) scale(0.2); } 60% { opacity: 0.55; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); } }',
+      '.tp-clear-burst { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border-radius: 50%; border: 2px solid currentColor; animation: tp-clear-burst-ring 0.6s ease-out 1 forwards; pointer-events: none; }',
+      '.tp-clear-burst-2 { width: 48px; height: 48px; border-width: 1.5px; }',
+      // Per-theme color (uses currentColor so the ring picks it up)
+      '.tp-clear-burst-default { color: #fde047; }',
+      '.tp-clear-burst-steampunk { color: #d4884c; }',
+      '.tp-clear-burst-cyberpunk { color: #06b6d4; }',
+      '.tp-clear-burst-kawaii { color: #f472b6; }',
+      '.tp-clear-burst-oceanic { color: #22d3ee; box-shadow: 0 0 12px rgba(34,211,238,0.45); }',
+      '.tp-clear-burst-neutral { color: #b8a080; }',
+      '@media (prefers-reduced-motion: reduce) { .tp-clear-burst { display: none !important; } }',
+      // Bot wrapper — slight violet hue-shift + faint scanline overlay
+      // distinguishes the opponent mascot from the player\'s. The character
+      // is unchanged (Inko is still Inko); the framing reads as "rival."
+      '.tp-mascot-as-bot .tp-mascot { filter: hue-rotate(40deg) saturate(0.85); }',
+      '.tp-mascot-as-bot::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(167,139,250,0.10) 3px, rgba(167,139,250,0.10) 4px); border-radius: 4px; mix-blend-mode: screen; }',
+      // Bot badge has its own subtle pulse so the eye finds it
+      '@keyframes tp-bot-badge-pulse { 0%, 100% { opacity: 0.85; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }',
+      '.tp-mascot-bot-badge { animation: tp-bot-badge-pulse 2.4s ease-in-out infinite; }',
+      // ─── Per-mascot bot quirks ────────────────────────────────────────
+      // Each rival gets a unique anatomical tell so the bot version reads
+      // as "the other one" not just "the same one tinted purple." Each
+      // quirk is recognizable in its own silhouette without any text label.
+      // Pip-bot — RED PUPILS. The friendly chick is suddenly menacing.
+      // Override the global hue-shift since the red needs to stay pure red.
+      '.tp-mascot-as-bot .tp-mascot-pip { filter: saturate(0.9) drop-shadow(0 0 6px rgba(239,68,68,0.4)); }',
+      '.tp-mascot-as-bot .tp-pip-pupil-l, .tp-mascot-as-bot .tp-pip-pupil-r { fill: #ef4444; }',
+      // Cogsworth-bot — REVERSE GEARS. The clockwork is running backwards
+      // (a saboteur), each gear opposite the player\'s direction.
+      '.tp-mascot-as-bot .tp-cog-gear-l { animation: tp-cog-rotate-rev 6s linear infinite; }',
+      '.tp-mascot-as-bot .tp-cog-gear-r { animation: tp-cog-rotate 7s linear infinite; }',
+      // The pendulum also swings the opposite phase
+      '.tp-mascot-as-bot .tp-cog-pendulum { animation-direction: reverse; }',
+      // Vex-bot — GLITCHIER SCANLINE + persistent red alert at low opacity.
+      // The rival system is unstable, broadcasting interference.
+      '.tp-mascot-as-bot .tp-vex-scanline { animation-duration: 1.1s; opacity: 0.8; }',
+      '.tp-mascot-as-bot .tp-vex-alert { opacity: 0.18; }',
+      // Mochi-bot — DESATURATED. The kitten is colorless, drained — uncanny.
+      // Override the global hue-rotate (which would tint pink to violet)
+      // with a true grayscale + slight darkening.
+      '.tp-mascot-as-bot .tp-mascot-mochi { filter: grayscale(0.85) brightness(0.85) drop-shadow(0 2px 6px rgba(100,100,100,0.30)); }',
+      // Inko-bot — STUCK-RED CHROMATOPHORES. Real cuttlefish flash red as
+      // a threat display. The rival Inko is permanently in alert mode.
+      '.tp-mascot-as-bot .tp-mascot-inko { filter: hue-rotate(280deg) saturate(0.95) drop-shadow(0 0 10px rgba(220,80,80,0.35)); }',
+      '.tp-mascot-as-bot .tp-inko-chrom { animation: tp-inko-chrom-danger 0.8s ease-in-out infinite !important; }',
+      '.tp-mascot-as-bot .tp-inko-chrom-sat { animation: tp-inko-chrom-danger 0.8s ease-in-out infinite 0.4s !important; }',
+      // Inko-bot W-pupils stay constricted (alert)
+      '.tp-mascot-as-bot .tp-inko-pupil { animation: tp-inko-pupil-dart 0.6s ease-in-out infinite; }',
+      // Atmospheric idle pulses — long-cycle background life. The mascot
+      // emits a tiny flourish (a bubble, a steam puff, a sparkle) every
+      // ~6 seconds in idle so it never feels frozen. Each is mostly empty
+      // (90% off, 10% visible) so the screen doesn\'t feel busy.
+      '@keyframes tp-inko-bubble-drift { 0%, 80%, 100% { opacity: 0; transform: translateY(0); } 85%, 95% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-18px); } }',
+      '@keyframes tp-cog-steam-drift   { 0%, 85%, 100% { opacity: 0; transform: translateY(0); } 90% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(-6px); } }',
+      '@keyframes tp-mochi-sparkle-drift { 0%, 88%, 100% { opacity: 0; transform: scale(0.6); } 92% { opacity: 0.7; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }',
+      '@keyframes tp-pip-twitch        { 0%, 92%, 100% { transform: rotate(0deg); } 94% { transform: rotate(-3deg); } 96% { transform: rotate(3deg); } 98% { transform: rotate(0deg); } }',
+      // Inko (cuttlefish) — chromatophore color cycle. Idle is a slow cool
+      // cyan-to-teal wash; combo is fast warm yellow-orange flashes; danger
+      // is alarmed red; wow is rainbow burst; loss desaturates to gray.
+      // Per-dot animationDelay (set inline on each circle) staggers the
+      // wave across the mantle so it ripples instead of pulsing in lockstep.
+      '@keyframes tp-inko-chrom-idle { 0%, 100% { fill: #22d3ee; opacity: 0.55; transform: scale(1); } 50% { fill: #5eead4; opacity: 0.85; transform: scale(1.15); } }',
+      '@keyframes tp-inko-chrom-combo { 0%, 100% { fill: #fbbf24; opacity: 0.7; transform: scale(1); } 50% { fill: #f97316; opacity: 1; transform: scale(1.4); } }',
+      '@keyframes tp-inko-chrom-danger { 0%, 100% { fill: #fb7185; opacity: 0.7; } 50% { fill: #dc2626; opacity: 1; } }',
+      '@keyframes tp-inko-chrom-wow { 0% { fill: #fb7185; } 25% { fill: #fbbf24; } 50% { fill: #5eead4; } 75% { fill: #a78bfa; } 100% { fill: #fb7185; } }',
+      '@keyframes tp-inko-chrom-incoming { 0%, 100% { fill: #1e4a6f; opacity: 0.4; transform: scale(0.9); } 50% { fill: #0f3a5c; opacity: 0.7; transform: scale(1); } }',
+      '@keyframes tp-inko-ink-spurt { 0% { opacity: 0; transform: translateX(0) scale(0.6); } 30% { opacity: 0.85; transform: translateX(8px) scale(1.2); } 100% { opacity: 0; transform: translateX(20px) scale(1.6); } }',
+      '@keyframes tp-inko-bubble-rise { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 0.85; } 100% { opacity: 0; transform: translateY(-22px); } }',
+      '@keyframes tp-inko-fin-undulate { 0%, 100% { transform: translateX(0) scaleY(1); } 50% { transform: translateX(-1px) scaleY(1.04); } }',
+      // Arm sway — gentle swing of the tip; transformOrigin set inline at
+      // the mantle attachment so the connection point stays put. Long
+      // tentacles use a deeper, slower swing; short arms a quick brush.
+      '@keyframes tp-inko-arm-long  { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes tp-inko-arm-short { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }',
+      '@keyframes tp-inko-arm-flick { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }',
+      // Satellite chromatophore — half-beat off the main wave so the small
+      // dots add a "pulse between pulses" texture instead of doubling up.
+      '@keyframes tp-inko-chrom-sat-idle { 0%, 100% { fill: #5eead4; opacity: 0.35; transform: scale(0.85); } 50% { fill: #22d3ee; opacity: 0.7; transform: scale(1.1); } }',
+      // Rim glow — concentric outline brightens for win/wow celebration
+      '@keyframes tp-inko-rim-glow { 0%, 100% { opacity: 0; stroke-width: 0.8; } 50% { opacity: 0.8; stroke-width: 2.2; } }',
+      // Pupil dart — tiny translate on the W-pupil for "alert" / "scanning"
+      // feel during combo + danger states. Stays sub-pixel-tiny so the
+      // anatomy still reads correct, just *aware*.
+      '@keyframes tp-inko-pupil-dart { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-0.6px, -0.3px); } 75% { transform: translate(0.6px, 0.3px); } }',
+      // Mantle breathing — subtle scale across the whole body in idle, gives
+      // a sense the cuttlefish is alive instead of frozen
+      '@keyframes tp-inko-mantle-breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.02); } }',
+      // Idle (default for any state without overrides). Subtle theme-tinted
+      // drop-shadow so each mascot reads as belonging to its theme palette
+      // even at small sizes. Filter ignored under prefers-reduced-motion
+      // (the universal block at the bottom turns animations off, but the
+      // shadow stays since it's not motion).
+      '.tp-mascot { animation: tp-mascot-bob 3.2s ease-in-out infinite; transform-origin: center; }',
+      '.tp-mascot-pip { filter: drop-shadow(0 2px 6px rgba(253,224,71,0.25)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-cogsworth { filter: drop-shadow(0 2px 6px rgba(212,136,76,0.25)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-vex { filter: drop-shadow(0 0 8px rgba(6,182,212,0.30)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-mochi { filter: drop-shadow(0 3px 8px rgba(232,90,138,0.20)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-inko { filter: drop-shadow(0 0 10px rgba(34,211,238,0.30)); transition: filter 240ms ease, transform 240ms ease; }',
+      // Stronger glow during combo / win — drop-shadow scales up so the
+      // mascot reads as energized at a glance even before you parse the
+      // body animation.
+      '.tp-mascot-pip.tp-mascot-combo,    .tp-mascot-pip.tp-mascot-win    { filter: drop-shadow(0 2px 10px rgba(253,224,71,0.55)); }',
+      '.tp-mascot-cogsworth.tp-mascot-combo, .tp-mascot-cogsworth.tp-mascot-win { filter: drop-shadow(0 2px 12px rgba(212,136,76,0.55)); }',
+      '.tp-mascot-vex.tp-mascot-combo,    .tp-mascot-vex.tp-mascot-win    { filter: drop-shadow(0 0 14px rgba(6,182,212,0.60)); }',
+      '.tp-mascot-mochi.tp-mascot-combo,  .tp-mascot-mochi.tp-mascot-win  { filter: drop-shadow(0 3px 12px rgba(232,90,138,0.50)); }',
+      '.tp-mascot-inko.tp-mascot-combo,   .tp-mascot-inko.tp-mascot-win   { filter: drop-shadow(0 0 16px rgba(34,211,238,0.60)); }',
+      // Loss desaturation is universal — overrides the bright theme glow
+      // so the mascot reads as visibly drained rather than just sad-posed.
+      '.tp-mascot.tp-mascot-loss { filter: saturate(0.4) brightness(0.85) drop-shadow(0 1px 4px rgba(0,0,0,0.3)) !important; }',
+      // Hover perk — when a mascot card in the "Meet the cast" panel
+      // is hovered, the inner mascot scales up slightly + shadow lifts.
+      // Reads as the character noticing you. Suppressed under reduced-motion.
+      '.tp-root [aria-pressed] .tp-mascot { transition: transform 180ms cubic-bezier(0.34,1.56,0.64,1), filter 220ms ease; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot { transform: scale(1.08); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-pip { filter: drop-shadow(0 4px 10px rgba(253,224,71,0.45)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth { filter: drop-shadow(0 4px 10px rgba(212,136,76,0.45)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-vex { filter: drop-shadow(0 0 14px rgba(6,182,212,0.55)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-mochi { filter: drop-shadow(0 5px 12px rgba(232,90,138,0.40)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko { filter: drop-shadow(0 0 18px rgba(34,211,238,0.55)); }',
+      // Hover excitement — on hover, each mascot\'s characteristic
+      // motion speeds up (the cast card wakes them up). Per-mascot rules
+      // because each character has its own animated sub-elements.
+      // Pip — wings flap faster + body pulses
+      '.tp-root [aria-pressed]:hover .tp-mascot-pip .tp-pip-wing-l { animation: tp-pip-wing-flap 0.5s ease-in-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-pip .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.5s ease-in-out infinite; }',
+      // Cogsworth — gears spin double-time + pendulum swings faster
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth .tp-cog-gear-l { animation-duration: 2.4s; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth .tp-cog-gear-r { animation-duration: 2.8s; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth .tp-cog-pendulum { animation-duration: 1.2s; }',
+      // Vex — scanline accelerates (system goes online)
+      '.tp-root [aria-pressed]:hover .tp-mascot-vex .tp-vex-scanline { animation-duration: 1.2s; }',
+      // Mochi — tail wags + bow wiggles (delighted to be picked)
+      '.tp-root [aria-pressed]:hover .tp-mascot-mochi .tp-mochi-tail { animation: tp-mochi-tail-wag 0.45s ease-in-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-mochi .tp-mochi-bow { animation: tp-mochi-bow-wiggle 0.5s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      // Inko — chromatophores cycle warm yellow + bubbles stream up
+      // (curiosity / greeting display)
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-chrom { animation: tp-inko-chrom-combo 0.7s ease-in-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-bubbles circle { animation: tp-inko-bubble-rise 1.3s ease-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-bubbles circle:nth-child(2) { animation-delay: 0.3s; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-bubbles circle:nth-child(3) { animation-delay: 0.6s; }',
+      '.tp-mascot-pip .tp-pip-pupil-l, .tp-mascot-pip .tp-pip-pupil-r { transform-origin: center; transform-box: fill-box; animation: tp-pip-blink 5s ease-in-out infinite; }',
+      // Pip idle wings — slow, sleepy sway. Becomes a real flap on combo.
+      '.tp-mascot-pip .tp-pip-wing-l { animation: tp-pip-wing-sway 3.6s ease-in-out infinite; }',
+      '.tp-mascot-pip .tp-pip-wing-r { animation: tp-pip-wing-sway-r 3.6s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth .tp-cog-gear-l { animation: tp-cog-rotate 6s linear infinite; }',
+      '.tp-mascot-cogsworth .tp-cog-gear-r { animation: tp-cog-rotate-rev 7s linear infinite; }',
+      // Cogsworth pendulum — metronomic swing
+      '.tp-mascot-cogsworth .tp-cog-pendulum { animation: tp-cog-pendulum 2.4s ease-in-out infinite; }',
+      // Mochi idle tail sway
+      '.tp-mascot-mochi .tp-mochi-tail { animation: tp-mochi-tail-sway 2.8s ease-in-out infinite; }',
+      // Vex eye-bar idle pulse — slow LED-readout heartbeat
+      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { animation: tp-vex-eye-blink 4.5s ease-in-out infinite, tp-vex-eye-pulse 1.6s ease-in-out infinite; }',
+      // Cogsworth chest-rivets glow softly in alternating phase
+      '.tp-mascot-cogsworth .tp-cog-body ~ circle:nth-of-type(1) { animation: tp-cog-rivet-glow 3s ease-in-out infinite; }',
+      // Inko center tentacles fidget every ~10s in idle
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-arm-0 { animation: tp-inko-arm-long 3.8s ease-in-out infinite, tp-inko-fidget-l 10s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-arm-1 { animation: tp-inko-arm-long 3.8s ease-in-out infinite 0.5s, tp-inko-fidget-r 10s ease-in-out infinite; }',
+      // Atmospheric idle background — the mascot emits a tiny flourish
+      // every ~6 seconds when idle. Adds life without becoming visually
+      // noisy. Suppressed when active states (combo/danger/etc.) override
+      // the same sub-elements.
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-bubbles circle:first-child { animation: tp-inko-bubble-drift 6s ease-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-idle .tp-cog-steam circle:nth-child(2) { animation: tp-cog-steam-drift 7s ease-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-sparkles text:first-child { animation: tp-mochi-sparkle-drift 8s ease-out infinite; }',
+      '.tp-mascot-pip.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-pip-twitch 9s ease-in-out infinite; }',
+      '.tp-mascot-vex .tp-vex-scanline { animation: tp-vex-scan 2.4s linear infinite; }',
+      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { transform-origin: center; transform-box: fill-box; animation: tp-vex-eye-blink 4.5s ease-in-out infinite; }',
+      // Inko idle — chromatophore wash + fin undulation + arm sway + mantle
+      // breathing + satellite half-beat pulse. Each dot uses its own inline
+      // animationDelay so the color wave moves left-to-right; the long
+      // tentacles wave slowly while short arms flick at faster rates with
+      // staggered delays for a natural underwater feel.
+      '.tp-mascot-inko .tp-inko-chrom { transform-origin: center; transform-box: fill-box; animation: tp-inko-chrom-idle 2.4s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-chrom-sat { animation: tp-inko-chrom-sat-idle 2.4s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-fins path { transform-origin: center; transform-box: fill-box; animation: tp-inko-fin-undulate 2.6s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-mantle { animation: tp-inko-mantle-breathe 3.4s ease-in-out infinite; transform-origin: 50px 40px; transform-box: fill-box; }',
+      // Long feeding tentacles (0, 1) — slow, deep sway
+      '.tp-mascot-inko .tp-inko-arm-0 { animation: tp-inko-arm-long 3.8s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-arm-1 { animation: tp-inko-arm-long 3.8s ease-in-out infinite 0.5s; }',
+      // Short arms (2..9) — quicker, staggered phases give a wave across the row
+      '.tp-mascot-inko .tp-inko-arm-2 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0s; }',
+      '.tp-mascot-inko .tp-inko-arm-3 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.2s; }',
+      '.tp-mascot-inko .tp-inko-arm-4 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.4s; }',
+      '.tp-mascot-inko .tp-inko-arm-5 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.6s; }',
+      '.tp-mascot-inko .tp-inko-arm-6 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-inko .tp-inko-arm-7 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.3s; }',
+      '.tp-mascot-inko .tp-inko-arm-8 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.5s; }',
+      '.tp-mascot-inko .tp-inko-arm-9 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.7s; }',
+      // Combo state — excitement burst
+      '.tp-mascot-combo { animation: tp-mascot-pop 0.6s ease-out 1, tp-mascot-bob 3.2s ease-in-out infinite 0.6s; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-sparkles text { animation: tp-mochi-sparkle 0.8s ease-out forwards; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-steam circle { animation: tp-cog-steam 0.9s ease-out forwards; }',
+      // Pip combo — wings flap fast, body pulses
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-l { animation: tp-pip-wing-flap 0.32s ease-in-out infinite; }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.32s ease-in-out infinite; }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-body { animation: tp-pip-body-pulse 0.32s ease-in-out infinite; }',
+      // Cogsworth combo — pendulum swings faster, gears spin double-time
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-pendulum { animation-duration: 0.8s; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-l { animation-duration: 2s; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-r { animation-duration: 2.4s; }',
+      // Vex combo — outer rim pulses neon
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-rim { animation: tp-vex-rim-pulse 0.8s ease-in-out infinite; }',
+      // Mochi combo — heart particles + faster tail wag
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text { animation: tp-mochi-heart-pop 1.1s ease-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text:nth-child(2) { animation-delay: 0.35s; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text:nth-child(3) { animation-delay: 0.7s; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-tail { animation: tp-mochi-tail-wag 0.5s ease-in-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-bow { animation: tp-mochi-bow-wiggle 0.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-mochi.tp-mascot-win .tp-mochi-bow { animation: tp-mochi-bow-wiggle 0.5s ease-in-out 4; transform-origin: center; transform-box: fill-box; }',
+      // Inko combo — warm yellow-orange chromatophore flash + bubble stream
+      // + alert pupil-dart + arms flick faster, all coordinated for an
+      // "excited and aware" read.
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-chrom { animation: tp-inko-chrom-combo 0.6s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-chrom-sat { animation: tp-inko-chrom-combo 0.6s ease-in-out infinite 0.3s; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle { animation: tp-inko-bubble-rise 1.1s ease-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle:nth-child(2) { animation-delay: 0.25s; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle:nth-child(3) { animation-delay: 0.5s; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-pupil { animation: tp-inko-pupil-dart 0.8s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-arm-2, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-3, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-4, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-5, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-6, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-7, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-8, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-9 { animation: tp-inko-arm-flick 0.7s ease-in-out infinite; }',
+      // Attack-out state — throw motion
+      '.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1; }',
+      '.tp-mascot-vex.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1, tp-vex-glitch 0.7s ease-out 1; }',
+      // Vex attack-out — hex panel distorts (skew + hue shift) for a glitch-strike feel
+      '.tp-mascot-vex.tp-mascot-attack-out .tp-vex-panel { animation: tp-vex-hex-distort 0.7s ease-out 1; }',
+      // Pip attack-out — beak chirps open
+      '.tp-mascot-pip.tp-mascot-attack-out .tp-pip-beak { animation: tp-pip-beak-chirp 0.5s ease-out 1; }',
+      // Inko attack-out — ink spurts behind the body during the throw motion
+      '.tp-mascot-inko.tp-mascot-attack-out .tp-inko-ink circle { animation: tp-inko-ink-spurt 0.8s ease-out 1; }',
+      // Incoming state — flinch
+      '.tp-mascot-incoming { animation: tp-mascot-flinch 0.6s ease-out 1; }',
+      '.tp-mascot-vex.tp-mascot-incoming .tp-vex-alert { animation: tp-vex-alert 0.6s ease-out 1; }',
+      // Inko incoming — defensive mottling (chromatophores darken to blend with seafloor)
+      '.tp-mascot-inko.tp-mascot-incoming .tp-inko-chrom { animation: tp-inko-chrom-incoming 0.6s ease-out 1; }',
+      // Win/loss
+      '.tp-mascot-win { animation: tp-mascot-celebrate 0.9s ease-in-out 1; }',
+      '.tp-mascot-loss { animation: tp-mascot-droop 1s ease-out forwards; }',
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tear { opacity: 0.85; transition: opacity 600ms ease-in; }',
+      // Mochi loss — tail droops still
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tail { animation: none; transform: rotate(-15deg); }',
+      // Vex win — boot dots sequence on
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-1 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-2 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.15s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-3 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.30s; }',
+      // Vex loss — boot dots reverse-sequence off (power-down)
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-1 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.30s; }',
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-2 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.15s; }',
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-3 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards; }',
+      // Pip win — wings flap proud once
+      '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-l { animation: tp-pip-wing-flap 0.5s ease-out 2; }',
+      '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.5s ease-out 2; }',
+      // Cogsworth win — pendulum swings dramatic
+      '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-pendulum { animation-duration: 0.6s; }',
+      // Inko loss — ink cloud + chromatophore desaturation
+      '.tp-mascot-inko.tp-mascot-loss .tp-inko-chrom { animation: none; fill: #475569; opacity: 0.4; }',
+      '.tp-mascot-inko.tp-mascot-loss .tp-inko-ink circle { opacity: 0.55; transition: opacity 800ms ease-in; }',
+      // Inko win — rainbow chromatophore burst + rim glow + bubble joy
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom { animation: tp-inko-chrom-wow 0.9s linear infinite; }',
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.9s linear infinite 0.45s; }',
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-rim { animation: tp-inko-rim-glow 1.2s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-bubbles circle { animation: tp-inko-bubble-rise 1.4s ease-out infinite; }',
+      // Danger / wow / sleep — new states
+      '.tp-mascot-danger { animation: tp-mascot-tremble 0.45s ease-in-out infinite, tp-mascot-bob 3.2s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(239,68,68,0.55)); }',
+      '.tp-mascot-wow { animation: tp-mascot-arch 0.7s ease-out 1; filter: drop-shadow(0 0 8px rgba(251,191,36,0.6)); }',
+      '.tp-mascot-sleep { animation: tp-mascot-drift 4s ease-in-out infinite; }',
+      '.tp-mascot-sleep .tp-mascot-z { animation: tp-mascot-zfloat 2.5s ease-out infinite; }',
+      '.tp-mascot-sleep .tp-mascot-z-2 { animation-delay: 1.25s; }',
+      // Thinking — gentle head-tilt while waiting for input (picker open)
+      '.tp-mascot-thinking { animation: tp-mascot-think 2.4s ease-in-out infinite; }',
+      // Per-mascot state-specific overrides
+      '.tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-l, .tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-r { transform: scaleY(0.1); animation: none; }',
+      '.tp-mascot-mochi.tp-mascot-sleep .tp-mochi-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-scanline { animation: none; opacity: 0.2; }',
+      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-l, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-r { animation: none; opacity: 0.3; transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-l, .tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-r { animation-duration: 18s; }',
+      '.tp-mascot-pip.tp-mascot-danger .tp-pip-eyes circle:not(.tp-pip-pupil-l):not(.tp-pip-pupil-r) { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }',
+      // Pip danger — cheek tufts puff out anxiously
+      '.tp-mascot-pip.tp-mascot-danger .tp-pip-cheek { animation: tp-pip-cheek-puff 0.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-mouth { transform: translateY(2px) scaleY(-1); transform-origin: 50px 67px; }',
+      // Mochi danger — tail freezes mid-sway
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-tail { animation: none; transform: rotate(0deg); }',
+      // Inko danger — chromatophores flash red + pupils dart anxiously
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom-sat { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite 0.25s; }',
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-pupil { animation: tp-inko-pupil-dart 0.4s ease-in-out infinite; }',
+      // Inko wow — rainbow burst (long-word clear celebration) + rim flash
+      '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom { animation: tp-inko-chrom-wow 0.7s linear 1; }',
+      '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.7s linear 1 0.35s; }',
+      '.tp-mascot-inko.tp-mascot-wow .tp-inko-rim { animation: tp-inko-rim-glow 0.7s ease-out 1; }',
+      // Inko sleep — chromatophores still, fins stop, eyes close (W-pupil scaled flat)
+      '.tp-mascot-inko.tp-mascot-sleep .tp-inko-chrom { animation: none; opacity: 0.3; }',
+      '.tp-mascot-inko.tp-mascot-sleep .tp-inko-fins path { animation: none; }',
+      '.tp-mascot-inko.tp-mascot-sleep .tp-inko-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      // Reduced motion — stop all mascot animations
+      '@media (prefers-reduced-motion: reduce) { .tp-mascot, .tp-mascot *, .tp-mascot.tp-mascot-combo, .tp-mascot.tp-mascot-attack-out, .tp-mascot.tp-mascot-incoming, .tp-mascot.tp-mascot-win, .tp-mascot.tp-mascot-loss { animation: none !important; } }',
+      '.tp-pack-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }',
+      '.tp-pack-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }',
+      '@media (prefers-reduced-motion: reduce) { .tp-pack-card { animation: none !important; transition: none !important; } .tp-pack-card:hover { transform: none !important; } }',
 
       '.tp-root .tp-view-enter { animation: tp-view-in-default 240ms ease-out 1; }',
       '.tp-root.tp-theme-steampunk .tp-view-enter { animation: tp-view-in-steam 260ms ease-out 1; }',
       '.tp-root.tp-theme-cyberpunk .tp-view-enter { animation: tp-view-in-cyber 260ms ease-out 1; }',
       '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
+      '.tp-root.tp-theme-oceanic   .tp-view-enter { animation: tp-view-in-default 240ms ease-out 1; }',
       '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
 
       /* ── Current-tier pulse on the Progress skill tree ──────────
@@ -1271,11 +3365,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-tier-current-steam   { 0%, 100% { box-shadow: inset 0 1px 0 rgba(255,220,150,0.1), 0 0 0 0 rgba(212,136,76,0.15); } 50% { box-shadow: inset 0 1px 0 rgba(255,220,150,0.2), 0 0 0 4px rgba(212,136,76,0.08); } }',
       '@keyframes tp-tier-current-cyber   { 0%, 100% { box-shadow: 0 0 8px rgba(255,0,168,0.25); } 50% { box-shadow: 0 0 14px rgba(255,0,168,0.45), 0 0 0 2px rgba(255,0,168,0.15); } }',
       '@keyframes tp-tier-current-kawaii  { 0%, 100% { box-shadow: 0 3px 8px rgba(232,90,138,0.18); } 50% { box-shadow: 0 4px 12px rgba(232,90,138,0.32); } }',
+      '@keyframes tp-tier-current-oceanic { 0%, 100% { box-shadow: 0 0 6px rgba(34,211,238,0.2); } 50% { box-shadow: 0 0 14px rgba(34,211,238,0.45), 0 0 0 2px rgba(34,211,238,0.12); } }',
       '@keyframes tp-tier-current-neutral { 0%, 100% { box-shadow: 0 0 0 0 rgba(184,160,128,0.1); } 50% { box-shadow: 0 0 0 3px rgba(184,160,128,0.08); } }',
       '.tp-root .tp-tier-current { animation: tp-tier-current-default 2800ms ease-in-out 4; }',
       '.tp-root.tp-theme-steampunk .tp-tier-current { animation: tp-tier-current-steam 3000ms ease-in-out 4; }',
       '.tp-root.tp-theme-cyberpunk .tp-tier-current { animation: tp-tier-current-cyber 2200ms ease-in-out 4; }',
       '.tp-root.tp-theme-kawaii    .tp-tier-current { animation: tp-tier-current-kawaii 2600ms ease-in-out 4; }',
+      '.tp-root.tp-theme-oceanic   .tp-tier-current { animation: tp-tier-current-oceanic 2800ms ease-in-out 4; }',
       '.tp-root.tp-theme-neutral   .tp-tier-current { animation: tp-tier-current-neutral 3200ms ease-in-out 4; }',
 
       /* ── Progress-bar shimmer — a soft diagonal highlight sweeps across
@@ -1349,6 +3445,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  transform: translateY(-3px) scale(1.01);',
       '  box-shadow: 0 8px 20px rgba(232,90,138,0.18), 0 2px 4px rgba(0,0,0,0.04);',
       '}',
+      '.tp-root.tp-theme-oceanic .tp-drill-card:hover,',
+      '.tp-root.tp-theme-oceanic .tp-drill-card:focus-visible {',
+      '  transform: translateY(-2px);',
+      '  box-shadow: 0 0 0 1px rgba(34,211,238,0.40), 0 0 16px rgba(34,211,238,0.30), 0 4px 12px rgba(3,27,46,0.6);',
+      '}',
       '.tp-root.tp-theme-neutral .tp-drill-card:hover,',
       '.tp-root.tp-theme-neutral .tp-drill-card:focus-visible {',
       '  transform: translateY(-1px);',
@@ -1396,6 +3497,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var useEffect = React.useEffect;
         var useRef = React.useRef;
         var useCallback = React.useCallback;
+
+        // Mascot gallery dev surface — a static grid of every mascot in
+        // every state. Triggered by a URL hash (#mascot-gallery), so it
+        // never appears for normal users but is one click away for design
+        // QA. Returns early before any state hooks fire so toggling the
+        // hash on/off doesn\'t lose the in-progress drill.
+        var hashStr = (typeof window !== 'undefined' && window.location && window.location.hash) || '';
+        if (hashStr.indexOf('mascot-gallery') >= 0) {
+          return _renderMascotGallery(h);
+        }
 
         // Pull persistent state, merged with defaults for forward-compatibility
         var rawState = (ctx.toolData && ctx.toolData['typingPractice']) || {};
@@ -1919,6 +4030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (_tm === 'steampunk')      _mToast = '⚙ Achievement inscribed: ' + _mLabels;
             else if (_tm === 'cyberpunk') _mToast = '[MILESTONE ACQUIRED] ' + _mLabels;
             else if (_tm === 'kawaii')    _mToast = '🎉✨ New milestone unlocked! ' + _mLabels + ' 💕';
+            else if (_tm === 'oceanic')   _mToast = '🌊 Surfaced a milestone — ' + _mLabels;
             else if (_tm === 'neutral')   _mToast = 'Milestone earned: ' + _mLabels;
             else                          _mToast = '🎉 Milestone: ' + _mLabels;
             addToast(_mToast);
@@ -1929,6 +4041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (_tm === 'steampunk')      _masteryToast = '⚙ Tier mastered: ' + _drillName + '. The next workbench awaits.';
             else if (_tm === 'cyberpunk') _masteryToast = '[TIER CLEARED] ' + _drillName.toUpperCase() + ' :: next node unlocked';
             else if (_tm === 'kawaii')    _masteryToast = '🌟✨ Yay! ' + _drillName + ' tier cleared — so proud! 💖';
+            else if (_tm === 'oceanic')   _masteryToast = '🌊 Tier cleared on ' + _drillName + '. The current carries you up.';
             else if (_tm === 'neutral')   _masteryToast = 'Mastery tier advanced: ' + _drillName + '.';
             else                          _masteryToast = '🌟 Mastery tier advanced! ' + _drillName + ' cleared.';
             addToast(_masteryToast);
@@ -2009,6 +4122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (_aTm === 'steampunk')      _aToast = '⚙ The bench remains. Stop when the gearwork tires — no fault in it.';
               else if (_aTm === 'cyberpunk') _aToast = '[DRILL ABORTED] :: no log :: self-regulation registered :: respect';
               else if (_aTm === 'kawaii')    _aToast = '💕 It\'s okay to stop when you need to. ✨ You\'ll be back when you\'re ready. 🌸';
+              else if (_aTm === 'oceanic')   _aToast = '🌊 Drifted off — no log. Resting is part of the dive.';
               else if (_aTm === 'neutral')   _aToast = 'Drill exited. Not saved.';
               else                           _aToast = 'Drill exited — knowing when to stop is a skill too.';
               addToast(_aToast);
@@ -2210,6 +4324,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     h('span', { style: { color: palette.accent, fontSize: '22px' } }, ' ✨')
                   );
                 }
+                if (tm === 'oceanic') {
+                  // tilde-waves on either side, deep-sea field-guide tone
+                  return h('h2', { style: titleStyle },
+                    h('span', { style: { color: palette.accent, fontSize: '20px', marginRight: '8px' } }, '~ 🌊'),
+                    '⌨  Typing Practice',
+                    h('span', { style: { color: palette.accent, fontSize: '20px', marginLeft: '8px' } }, '🌊 ~')
+                  );
+                }
                 if (tm === 'neutral') {
                   // minimal — no decoration, just tighter tracking
                   return h('h2', { style: Object.assign({}, titleStyle, { fontWeight: 500 }) }, 'Typing Practice');
@@ -2225,12 +4347,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   maxWidth: '640px'
                 }
               }, (function() {
+                // UDL framing: describe how the tool behaves, not who it
+                // was "built for." Naming conditions others students who
+                // do have those labels and excludes students who don't —
+                // opposite of inclusion. The accessibility is in the
+                // design (toggles, no timers, no leaderboards). The blurb
+                // just confirms that.
                 var tm = state.theme || 'default';
-                if (tm === 'steampunk') return 'A workshop for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Set your own cadence — no hourglass, no ranks, no punishment for missed days.';
-                if (tm === 'cyberpunk') return '[BUILT FOR] dysgraphia :: dyslexia :: ADHD :: motor-planning :: low-vision. [OFF] timers :: leaderboards :: streak-punish :: ads. user-pace :: always.';
-                if (tm === 'kawaii')    return 'Made with love for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. 💕 Go at YOUR pace — no timers, no rankings, no streak guilt. Just you, being you. ✨';
-                if (tm === 'neutral')   return 'For learners with dysgraphia, dyslexia, ADHD, motor-planning differences, low vision. Self-paced. No timers, rankings, or streak penalties.';
-                return 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.';
+                if (tm === 'steampunk') return 'Self-paced practice at the workshop bench. The hourglass stays still; rankings do not exist; the ledger never punishes a missed day.';
+                if (tm === 'cyberpunk') return '[SELF-PACED] :: no timers :: no leaderboards :: no streak-penalty :: user-pace always';
+                if (tm === 'kawaii')    return 'Practice at YOUR pace 💕 No timers, no rankings, no streak guilt — just you, being you ✨';
+                if (tm === 'oceanic')   return 'Move at your own depth. No clocks, no rankings, no penalty for surfacing when you need to.';
+                if (tm === 'neutral')   return 'Self-paced. No timers, rankings, or streak penalties.';
+                return 'Self-paced typing practice. No timers, leaderboards, or streak penalties.';
               })())
             ),
 
@@ -2265,10 +4394,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk') return '⚙ Palette';
                 if (tm === 'cyberpunk') return '[PALETTE]';
                 if (tm === 'kawaii')    return '💕 Look';
+                if (tm === 'oceanic')   return '🌊 Tide';
                 if (tm === 'neutral')   return 'Theme';
                 return '🎨 Look';
               })()),
-              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
                 THEME_OPTIONS.map(function(opt) {
                   var isActive = (state.theme || 'default') === opt.id;
                   return h('button', {
@@ -2307,7 +4437,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       }
                     })
                   );
-                })
+                }),
+                // ── 🌈 Festival mode toggle ──
+                // Opt-in high-stim mode: all 5 mascots cheering, confetti per
+                // word, screen shake on big combos. Default OFF (calm is the
+                // baseline). Sits with the theme swatches because it's a
+                // top-level vibe choice, not a buried setting.
+                h('button', {
+                  className: 'tp-fest-toggle',
+                  onClick: function() { upd('festivalMode', !state.festivalMode); },
+                  'aria-pressed': state.festivalMode ? 'true' : 'false',
+                  'aria-label': state.festivalMode ? 'Festival mode is on. Click to turn off.' : 'Turn on festival mode — all mascots cheer, confetti per word, screen shake on combos. High-stim.',
+                  title: state.festivalMode ? 'Festival mode ON — click to turn off' : 'Festival mode OFF — click for max stim'
+                }, state.festivalMode ? '🌈 Festival ON' : '🌈 Festival')
               ),
               // Active theme name + keyboard hint — the text label is the
               // color-independent indicator of which theme is active,
@@ -2375,6 +4517,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                             : daysSinceLast >= 7   ? 'You\'re BACK! We missed you 💕 (' + daysSinceLast + ' days)'
                             : daysSinceLast >= 2   ? 'Hi again! ' + daysSinceLast + ' days since last time ✨'
                             :                        'Ready to practice? 🌱';
+              } else if (theme === 'oceanic') {
+                timeOfDay = hr < 5 ? '🌊 Deep tide'
+                          : hr < 12 ? '🌊 Morning current'
+                          : hr < 17 ? '🌊 Afternoon shoal'
+                          : hr < 22 ? '🌊 Evening drift'
+                          : '🌊 Deep tide';
+                contextLine = daysSinceLast === null ? 'First descent. Inko is curious.'
+                            : daysSinceLast >= 7   ? 'Surfacing again after ' + daysSinceLast + ' days. The shelf is unchanged.'
+                            : daysSinceLast >= 2   ? 'Last dive: ' + daysSinceLast + ' days back. The current waited.'
+                            :                        'The shelf is calm. Ready when you are.';
               } else if (theme === 'neutral') {
                 timeOfDay = hr < 12 ? 'Morning'
                           : hr < 17 ? 'Afternoon'
@@ -2449,6 +4601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk')      lead = '⚙ Today\'s shift: ';
               else if (tm === 'cyberpunk') lead = '[TODAY] ';
               else if (tm === 'kawaii')    lead = '✨ Today so far: ';
+              else if (tm === 'oceanic')   lead = '🌊 Today\'s dive: ';
               else if (tm === 'neutral')   lead = 'Today: ';
               else                         lead = '☀️ Today so far: ';
               // Wrap the inline-flex pill in a block div so marginBottom
@@ -2548,6 +4701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'Every master once held the tools for the first time. Begin wherever suits you — there is no wrong workbench.';
                 else if (tm === 'cyberpunk') text = '[FIRST BOOT] every operator started here :: pick any node :: no wrong path';
                 else if (tm === 'kawaii')    text = 'Every expert started with their very first session! 💕 Start anywhere — there\'s no wrong drill. ✨';
+                else if (tm === 'oceanic')   text = 'Every diver had a first descent. Pick any drill — the shelf does not judge the entry point.';
                 else if (tm === 'neutral')   text = 'First session. Start anywhere; no wrong choice.';
                 else                         text = 'Every expert was once a first-timer. Start anywhere — there\'s no wrong drill.';
               } else if (daysSinceLast !== null && daysSinceLast >= 5) {
@@ -2555,6 +4709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'Welcome back. The gearwork in your hands has not rusted — muscle memory is patient.';
                 else if (tm === 'cyberpunk') text = '[RECONNECT] ' + daysSinceLast + 'd :: neural cache intact :: patterns persist across downtime';
                 else if (tm === 'kawaii')    text = 'Welcome back! 💕 Your fingers remember — muscle memory doesn\'t forget just because life got busy. ✨';
+                else if (tm === 'oceanic')   text = 'Surfacing after ' + daysSinceLast + ' days. The patterns held — muscle memory does not dissolve in saltwater.';
                 else if (tm === 'neutral')   text = 'Return after ' + daysSinceLast + ' days. Muscle memory persists.';
                 else                         text = 'Welcome back — the muscle memory you built didn\'t disappear. It\'s just been resting.';
               } else if (firstGoalDays !== null && firstGoalDays <= 7) {
@@ -2562,6 +4717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days hence') + '. Your clinician will wish to know.';
                 else if (tm === 'cyberpunk') text = '[ACHIEVEMENT] IEP-goal first-cross :: T-' + firstGoalDays + 'd :: notify clinician';
                 else if (tm === 'kawaii')    text = '🎯✨ You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days ago') + '! 💕 That\'s a big deal!';
+                else if (tm === 'oceanic')   text = '🎯 You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days ago') + '. That signal travels — your clinician should hear it.';
                 else if (tm === 'neutral')   text = 'IEP goal first-met: T-' + firstGoalDays + 'd. Worth documenting.';
                 else                         text = 'You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days ago') + '. Your clinician will want to know.';
               } else if (masteryDays !== null && masteryDays <= 3) {
@@ -2569,6 +4725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'You ascended a rank on the mastery ladder just ' + (masteryDays === 0 ? 'today' : masteryDays + ' days back') + '. Compounding gains follow.';
                 else if (tm === 'cyberpunk') text = '[TIER UP] T-' + masteryDays + 'd :: compounding gain window :: continue stream';
                 else if (tm === 'kawaii')    text = '🌟💕 You cleared a tier ' + (masteryDays === 0 ? 'today' : masteryDays + ' days ago') + '! That momentum is magical. ✨ Keep going!';
+                else if (tm === 'oceanic')   text = 'You cleared a tier ' + (masteryDays === 0 ? 'today' : masteryDays + ' days back') + '. The current is moving in your direction — let it carry you.';
                 else if (tm === 'neutral')   text = 'Tier cleared T-' + masteryDays + 'd. Compounding phase.';
                 else                         text = 'You cleared a mastery tier ' + (masteryDays === 0 ? 'today' : masteryDays + ' days ago') + '. Tier-clears unlock compounding gains — keep going.';
               } else if (recentPbDays !== null && recentPbDays <= 5) {
@@ -2576,6 +4733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'Your most recent personal best was ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days back') + '. The gearwork is finding its rhythm.';
                 else if (tm === 'cyberpunk') text = '[NEW PEAK] T-' + recentPbDays + 'd :: trajectory positive';
                 else if (tm === 'kawaii')    text = '📈✨ Your last personal best was ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days ago') + '! You\'re on a roll! 💕';
+                else if (tm === 'oceanic')   text = 'New peak ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days back') + '. The trajectory is upward.';
                 else if (tm === 'neutral')   text = 'Last PB: T-' + recentPbDays + 'd.';
                 else                         text = 'Your last personal best was ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days ago') + '. Nice work.';
               } else if (daysThisWeek >= 3) {
@@ -2583,6 +4741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'You\'ve tended the workshop ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week. Cadence is the craft.';
                 else if (tm === 'cyberpunk') text = '[WEEKLY CADENCE] ' + daysThisWeek + ' days online :: consistency > intensity';
                 else if (tm === 'kawaii')    text = 'You\'ve shown up ' + daysThisWeek + ' days this week! 💕 That cadence IS the skill — showing up wins. ✨';
+                else if (tm === 'oceanic')   text = 'Visited the shelf ' + daysThisWeek + ' days this week. Tide-in, tide-out — that rhythm is the skill.';
                 else if (tm === 'neutral')   text = daysThisWeek + ' days active this week. Cadence > intensity.';
                 else                         text = 'You\'ve shown up ' + daysThisWeek + ' days this week. That cadence IS the skill.';
               } else if (accDip) {
@@ -2590,6 +4749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'Accuracy dips while new patterns are being forged. Steady hands — the gearwork will catch up.';
                 else if (tm === 'cyberpunk') text = '[SIGNAL] accuracy dip :: substrate reconfiguring :: expected during learning';
                 else if (tm === 'kawaii')    text = '🌊 Accuracy dips happen and that\'s totally okay! 💕 It usually means a new pattern is being built underneath. ✨';
+                else if (tm === 'oceanic')   text = 'Accuracy dipped — the substrate is being rebuilt below the surface. The depth gauge says: this is normal.';
                 else if (tm === 'neutral')   text = 'Accuracy dip noted. Often signals substrate relearning.';
                 else                         text = 'Accuracy dips happen. They\'re often signal that a new pattern is being built under the surface.';
               } else {
@@ -2597,6 +4757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      text = 'Steady hands compound. The workshop rewards the hand that returns, not the one that strikes hardest.';
                 else if (tm === 'cyberpunk') text = '[INFO] reliable gains emerge around session-10 :: trust the cadence';
                 else if (tm === 'kawaii')    text = '🌱 Every session adds up — reliable gains usually show up around session 10. 💕 You\'re growing! ✨';
+                else if (tm === 'oceanic')   text = 'Steady tides shape the shelf. Reliable gains usually surface around session 10 — the cadence is doing the work.';
                 else if (tm === 'neutral')   text = 'Reliable gains emerge around session 10. Cadence compounds.';
                 else                         text = 'Reliable gains show up around session 10. Keep at it — cadence compounds.';
               }
@@ -2652,6 +4813,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               } else if (tm === 'kawaii') {
                 body = '💕 You\'ve built up so much progress! ✨ It only lives on this computer — let\'s save a backup so you never lose it. 🌸';
                 label = '💕 Save a backup';
+              } else if (tm === 'oceanic') {
+                body = '🌊 ' + sessionCount + ' sessions logged on this shelf. Nothing leaves the machine — a backup export is your line to shore.';
+                label = '🌊 Save to shore';
               } else if (tm === 'neutral') {
                 body = sessionCount + ' sessions. Local-only storage. Recommend a backup export.';
                 label = 'Open backup';
@@ -2735,6 +4899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk')      body = '⚙ ' + Math.round(pct * 100) + '% of your bench time has been on ' + topDrillName + '. Varying the drills trains the hand more broadly — even one other workbench today helps.';
               else if (tm === 'cyberpunk') body = '[PATTERN] ' + Math.round(pct * 100) + '% sessions :: ' + topDrillName.toUpperCase() + ' :: variable-practice > blocked-practice :: rotate recommended';
               else if (tm === 'kawaii')    body = '🌸 You\'ve practiced ' + topDrillName + ' a LOT — like ' + Math.round(pct * 100) + '% of your sessions! 💕 Mixing in a different drill every now and then helps your skills grow wider. ✨';
+              else if (tm === 'oceanic')   body = '🌊 ' + Math.round(pct * 100) + '% of your time has been on ' + topDrillName + '. Drifting to a neighbor shelf for a session widens the catch — variable practice transfers better than staying in one current.';
               else if (tm === 'neutral')   body = Math.round(pct * 100) + '% of sessions on ' + topDrillName + '. Variable practice yields better transfer than blocked.';
               else                         body = 'About ' + Math.round(pct * 100) + '% of your sessions are on ' + topDrillName + '. Mixing in other drills builds broader skill — try a different card today.';
               return h('div', {
@@ -2898,15 +5063,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               var weekAvgAcc = Math.round(
                 thisWeek.reduce(function(a, s) { return a + (s.accuracy || 0); }, 0) / thisWeek.length
               );
+              // Build the four stat tiles. Each is a small icon + value
+              // + label triplet, color-coded so a glance tells the student
+              // which dimension they're looking at: sessions/days = neutral
+              // accent, best WPM = success (green), avg acc = neutral text.
+              // Subtle internal spacing matches the curated-pack design
+              // system shipped earlier.
+              function statTile(icon, value, label, valueColor) {
+                return h('div', {
+                  style: {
+                    display: 'flex', alignItems: 'baseline', gap: '6px',
+                    padding: '4px 10px', borderRadius: '8px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: 1, position: 'relative', top: '1px' } }, icon),
+                  h('strong', {
+                    style: {
+                      fontSize: '14px',
+                      color: valueColor || palette.text,
+                      fontWeight: 800,
+                      fontVariantNumeric: 'tabular-nums',
+                      letterSpacing: '-0.01em'
+                    }
+                  }, value),
+                  h('span', { style: { fontSize: '11px', color: palette.textMute } }, label)
+                );
+              }
               return h('div', {
                 style: {
                   marginBottom: '16px',
-                  padding: '12px 16px',
+                  padding: '12px 14px 12px 14px',
                   background: palette.surface,
                   border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.success,
                   borderRadius: '10px',
                   display: 'flex',
-                  gap: '18px',
+                  gap: '12px',
                   alignItems: 'center',
                   flexWrap: 'wrap',
                   fontVariantNumeric: 'tabular-nums'
@@ -2918,23 +5112,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     color: palette.textMute,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
-                    fontWeight: 700
+                    fontWeight: 800,
+                    paddingRight: '8px',
+                    borderRight: '1px solid ' + palette.border,
+                    marginRight: '2px'
                   }
                 }, '📅 This week'),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  h('strong', { style: { color: palette.text } }, thisWeek.length),
-                  ' session', thisWeek.length === 1 ? '' : 's'
-                ),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  h('strong', { style: { color: palette.text } }, Object.keys(weekDays).length),
-                  ' day', Object.keys(weekDays).length === 1 ? '' : 's', ' practiced'
-                ),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  'best ', h('strong', { style: { color: palette.success } }, weekBestWpm + ' WPM')
-                ),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  'avg ', h('strong', { style: { color: palette.text } }, weekAvgAcc + '% acc')
-                )
+                statTile('⌨️', thisWeek.length, 'session' + (thisWeek.length === 1 ? '' : 's'), palette.text),
+                statTile('✓', Object.keys(weekDays).length, 'day' + (Object.keys(weekDays).length === 1 ? '' : 's') + ' practiced', palette.text),
+                statTile('🏁', weekBestWpm, 'best WPM', palette.success),
+                statTile('🎯', weekAvgAcc + '%', 'avg accuracy', palette.text)
               );
             })() : null,
 
@@ -3054,7 +5241,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   flexWrap: 'wrap'
                 }
               },
-                h('span', { style: { fontSize: '28px', flexShrink: 0 } }, drill.icon),
+                // Circular warn-colored icon badge — matches drill-card and
+                // pack-card vocabulary; warn accent ties to the borderLeft.
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: '44px', height: '44px', borderRadius: '50%',
+                    background: palette.warn + '22',
+                    border: '1.5px solid ' + palette.warn,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '22px', flexShrink: 0, lineHeight: 1
+                  }
+                }, drill.icon),
                 h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
                   h('div', { style: { fontSize: '11px', color: palette.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } },
                     (function() {
@@ -3062,6 +5260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       if (tm === 'steampunk') return done ? '⚙ Today\'s bench · done' : '⚙ Today\'s bench';
                       if (tm === 'cyberpunk') return done ? '[DAILY DRILL · COMPLETE]' : '[DAILY DRILL · ONLINE]';
                       if (tm === 'kawaii')    return done ? '🌸✨ Today\'s pick · done! 💕' : '🌸 Today\'s pick ✨';
+                      if (tm === 'oceanic')   return done ? '🌊 Today\'s drift · done' : '🌊 Today\'s drift';
                       if (tm === 'neutral')   return done ? 'Daily drill · done' : 'Daily drill';
                       return done ? '🌟 Today\'s drill · done!' : '🌟 Drill of the day';
                     })()),
@@ -3110,6 +5309,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   padding: '14px 16px',
                   background: palette.surface,
                   border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.accent,
                   borderRadius: '10px',
                   display: 'flex',
                   gap: '14px',
@@ -3117,7 +5317,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   flexWrap: 'wrap'
                 }
               },
-                h('span', { style: { fontSize: '28px', flexShrink: 0 } }, lastDrill.icon),
+                // Circular accent-colored icon badge — matches drill-card
+                // and pack-card vocabulary. Accent (rather than warn) on
+                // this card distinguishes it from drill-of-the-day above.
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: '44px', height: '44px', borderRadius: '50%',
+                    background: palette.accent + '22',
+                    border: '1.5px solid ' + palette.accent,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '22px', flexShrink: 0, lineHeight: 1
+                  }
+                }, lastDrill.icon),
                 h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } }, 'Last session · ' + ageLabel),
                   h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, resumeLabel),
@@ -3193,6 +5405,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   prefix = h('span', { style: { color: palette.accent } }, '✿');
                   label = 'pick a drill';
                   suffix = h('span', { style: { color: palette.accent } }, '✿');
+                } else if (tm === 'oceanic') {
+                  prefix = h('span', { style: { color: palette.accent, fontSize: '13px' } }, '~');
+                  label = 'pick your shelf';
+                  suffix = h('span', { style: { color: palette.accent, fontSize: '13px' } }, '~');
                 } else if (tm === 'neutral') {
                   prefix = null;
                   label = 'drills';
@@ -3319,6 +5535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               renderNavButton('📊 Progress & Goals', function() { go('progress'); }, palette, (state.sessions || []).length === 0),
               renderNavButton('⚙️ Accommodations', function() { go('settings'); }, palette, false),
               renderNavButton('🏅 Achievements', function() { go('achievements'); }, palette, false),
+              renderNavButton('🌊 Battle Mode', function() { go('battle'); }, palette, false),
               renderNavButton('? Shortcuts', function() { go('shortcuts'); }, palette, false),
               state.iepGoal ? h('div', {
                 style: {
@@ -3363,6 +5580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk') return '⚙  Custom drills' + counter;
                 if (tm === 'cyberpunk') return '[CUSTOM DRILLS :: ' + library.length + '/' + MAX_CUSTOM_LIBRARY + ']';
                 if (tm === 'kawaii')    return '📋💕 Custom drills' + counter;
+                if (tm === 'oceanic')   return '🌊 Your own shelves' + counter;
                 if (tm === 'neutral')   return 'Custom drills' + counter;
                 return '📋  Custom drills' + counter;
               })()),
@@ -3373,6 +5591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk') return 'Enter your own practice text — spelling ledgers, IEP sight words, verse, science lexicon — whatever the curriculum demands. Not judged against mastery; runs still enter the ledger.';
               if (tm === 'cyberpunk') return '[USER-TEXT] spelling :: IEP sight words :: sci-vocab :: verse :: any string → drill. [UNSCORED ON MASTERY] :: sessions still logged.';
               if (tm === 'kawaii')    return 'Your own words go here! 💕 Spelling lists, sight words, vocabulary, poems — anything you want to practice. ✨ Not graded for mastery, but sessions still get saved!';
+              if (tm === 'oceanic')   return 'Your own text — spelling lists, sight words, vocabulary, verse, anything. Not mastery-scored, but every session enters the log.';
               if (tm === 'neutral')   return 'User-authored practice text. Not mastery-scored; sessions recorded.';
               return 'Teacher- or student-authored practice text. Save spelling lists, IEP sight words, science vocabulary, poems — whatever your curriculum needs. Not scored for mastery; sessions still get recorded.';
             })()),
@@ -3583,6 +5802,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             updMulti({ view: 'drill' });
           };
 
+          // Companion mascot at idle — shows on the intro so the cast
+          // member greets the student before practice starts. Same
+          // continuity as drill + summary; doesn't fire on neutral theme.
+          var introCompanion = null;
+          if (state.accommodations.showCompanion) {
+            introCompanion = renderBattleMascot(state.theme || 'default', 'idle', {
+              size: 48,
+              label: 'Companion mascot — ready'
+            });
+          }
           return h('div', {
             style: {
               padding: '20px',
@@ -3591,9 +5820,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               color: palette.text,
               fontFamily: fontFamily,
               background: palette.bg,
-              minHeight: '60vh'
+              minHeight: '60vh',
+              position: 'relative'
             }
           },
+            // Companion top-right — same placement as drill + summary so
+            // the mascot stays visually anchored across the practice flow.
+            introCompanion ? h('div', {
+              className: 'tp-companion-wrap',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 12,
+                right: 16,
+                width: 48,
+                height: 48,
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            }, introCompanion) : null,
             renderBackButton(function() { go('menu'); }, palette),
 
             h('div', {
@@ -3606,7 +5851,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 textAlign: 'center'
               }
             },
-              h('div', { style: { fontSize: '44px', marginBottom: '10px' } }, drill.icon),
+              // Centered circular accent badge for the drill icon — same
+              // vocabulary as drill cards, pack cards, milestone rows,
+              // drill-of-the-day, and quick-resume. 64px (largest in the
+              // tool) so it anchors this 'ready to type' moment as the
+              // visual focal point. Soft accent fill + 2px solid ring.
+              h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '64px', height: '64px', borderRadius: '50%',
+                  background: palette.accent + '1a',
+                  border: '2px solid ' + palette.accent,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '34px', lineHeight: 1,
+                  margin: '0 auto 14px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.10)'
+                }
+              }, drill.icon),
               h('h3', { style: { margin: '0 0 6px 0', color: palette.text, fontSize: '22px', fontWeight: 700 } }, drill.name),
               h('p', { style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' } }, drill.description),
 
@@ -3619,6 +5880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      { lq = '« '; rq = ' »'; }
                 else if (tm === 'cyberpunk') { lq = '[ '; rq = ' ]'; }
                 else if (tm === 'kawaii')    { lq = '💕 '; rq = ' 💕'; }
+                else if (tm === 'oceanic')   { lq = '~ '; rq = ' ~'; }
                 else if (tm === 'neutral')   { lq = '';    rq = '';    }
                 else                         { lq = '"';   rq = '"';   }
                 return h('div', {
@@ -3668,6 +5930,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   } else if (tm === 'kawaii') {
                     title = '✨💕 Story Mode is available here';
                     body = 'Let AI draw a picture to go with your passage! 🎨 It shows up at the end of the session. 🌸';
+                  } else if (tm === 'oceanic') {
+                    title = '🌊 Story Mode is open here';
+                    body = 'AI surfaces an illustration of your passage on the session summary — picture as field-sketch.';
                   } else if (tm === 'neutral') {
                     title = 'Story Mode available';
                     body = 'AI illustration of the passage renders on the summary page.';
@@ -3685,6 +5950,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   } else if (tm === 'kawaii') {
                     title = '🖼💕 Prompt Mode is available!';
                     body = 'Finish your custom drill and get an AI picture based on what you typed — refine it again and again! ✨';
+                  } else if (tm === 'oceanic') {
+                    title = '🌊 Prompt Mode is open here';
+                    body = 'Finish the drill and AI surfaces an image from your text — image-to-image, so each pass refines what came before.';
                   } else if (tm === 'neutral') {
                     title = 'Prompt Mode available';
                     body = 'Post-completion image generation + image-to-image refinement from drill text.';
@@ -3696,6 +5964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      { enableLabel = 'Engage'; dismissLabel = 'Not today'; }
                 else if (tm === 'cyberpunk') { enableLabel = '[ENABLE]'; dismissLabel = '[DISMISS]'; }
                 else if (tm === 'kawaii')    { enableLabel = '💕 Turn it on!'; dismissLabel = 'Maybe later'; }
+                else if (tm === 'oceanic')   { enableLabel = '🌊 Open it'; dismissLabel = 'Not now'; }
                 else if (tm === 'neutral')   { enableLabel = 'Enable'; dismissLabel = 'Dismiss'; }
                 else                         { enableLabel = '✨ Enable ' + (isPassage ? 'Story' : 'Prompt') + ' Mode'; dismissLabel = 'Maybe later'; }
                 return h('div', {
@@ -3773,6 +6042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'steampunk') return '⚙ Workshop controls';
                     if (tm === 'cyberpunk') return '[QUICK CONFIG]';
                     if (tm === 'kawaii')    return '💕 Quick adjust';
+                    if (tm === 'oceanic')   return '🌊 Quick trim';
                     if (tm === 'neutral')   return 'Quick adjust';
                     return 'Quick adjust';
                   })()),
@@ -3828,6 +6098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      body = '⚙ ' + daysSince + ' days since your last bench shift. A warmup run — below — is a kindness to the gearwork; it will not enter the ledger.';
                 else if (tm === 'cyberpunk') body = '[NOTE] ' + daysSince + 'd since last run :: warmup mode below :: no log-impact :: recommended';
                 else if (tm === 'kawaii')    body = '🌸 It\'s been ' + daysSince + ' days — a warmup first might feel nice! 💕 Just check the box below; this one won\'t count toward your stats. ✨';
+                else if (tm === 'oceanic')   body = '🌊 ' + daysSince + ' days since the last dive. The warmup toggle below keeps this run off the log — easing back in is the kind move.';
                 else if (tm === 'neutral')   body = 'Last session ' + daysSince + 'd ago. Warmup mode below is off-record.';
                 else                         body = '💡 ' + daysSince + ' days since your last session — consider checking warmup mode below so this first one back doesn\'t affect your stats.';
                 return h('div', {
@@ -3886,6 +6157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk') return '⚙ Instruments engaged: ' + activeAccLabels.join(' · ');
                 if (tm === 'cyberpunk') return '[LOADOUT] ' + activeAccLabels.join(' :: ');
                 if (tm === 'kawaii')    return '🏅 Helpful friends on: ' + activeAccLabels.join(' · ') + ' 💕';
+                if (tm === 'oceanic')   return '🌊 Currents engaged: ' + activeAccLabels.join(' · ');
                 if (tm === 'neutral')   return 'Active: ' + activeAccLabels.join(', ');
                 return '🏅 On: ' + activeAccLabels.join(' · ');
               })()) : h('div', {
@@ -3900,6 +6172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk') return 'Additional workshop instruments await in Accommodations.';
                 if (tm === 'cyberpunk') return '[INFO] extended mods available via Accommodations menu';
                 if (tm === 'kawaii')    return '✨ Need more support? Peek at Accommodations from the menu! 💕';
+                if (tm === 'oceanic')   return '🌊 Other currents available in Accommodations.';
                 if (tm === 'neutral')   return 'More supports available in Accommodations.';
                 return 'Tip: Visit Accommodations from the menu for more advanced supports.';
               })()),
@@ -3920,6 +6193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'cyberpunk') return '▶ ENGAGE';
                     if (tm === 'steampunk') return '⚙ Begin';
                     if (tm === 'kawaii')    return '✨ Let\'s go!';
+                    if (tm === 'oceanic')   return '🌊 Dive in';
                     if (tm === 'neutral')   return '▶ Start';
                     return '▶ Start drill';
                   })()),
@@ -4037,7 +6311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             '- Lowercase is fine. Capital letters only at the start of sentences or for proper nouns.',
             '- No numbers unless essential (typing digits requires reaching up to the number row, which is advanced).',
             '- No lists, no headers, no markdown, no HTML. Plain sentences only.',
-            '- This is for a student with possible disabilities (dyslexia, dysgraphia, motor planning). Keep it encouraging and calm. No pressure, no competition framing.',
+            '- Keep it encouraging and calm. No pressure, no competition framing, no urgency.',
             '',
             'Output ONLY the passage text, nothing else. No preamble, no title, no explanation. Just the sentences.'
           ].join('\n');
@@ -4095,6 +6369,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var cached = state.aiPassage;
           var gradeOptions = ['K', '1', '2-3', '4-5', '6-8', '9-12'];
 
+          // Passage-setup hero — 56px mascot at idle. Calm, ready-to-help
+          // posture for a creative work surface (different from celebration
+          // surfaces which use 'win'). Always-on, not gated on
+          // showCompanion — this is page identity, not reactive companion.
+          var passageHeroMascot = renderBattleMascot(state.theme || 'default', 'idle', {
+            size: 56,
+            label: 'Passage generator hero'
+          });
           return h('div', {
             style: {
               padding: '20px',
@@ -4107,23 +6389,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+            h('div', {
+              style: {
+                marginTop: '14px',
+                marginBottom: '4px',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '14px 0',
+                background: 'radial-gradient(ellipse 50% 100% at 50% 50%, ' + palette.accent + '0e, transparent 70%)',
+                borderRadius: 16
+              }
+            },
+              h('div', { style: { width: 56, height: 56 } },
+                passageHeroMascot || h('div', {
+                  'aria-hidden': 'true',
+                  style: { width: 56, height: 56, borderRadius: '50%', background: palette.accent + '1a', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }
+                }, '✨')
+              )
+            ),
+            h('h3', { style: { margin: '8px 0 4px 0', color: palette.text, textAlign: 'center' } }, (function() {
               var tm = state.theme || 'default';
               if (tm === 'steampunk') return '⚙  Bespoke Passage';
               if (tm === 'cyberpunk') return '[AI PASSAGE :: PERSONALIZED]';
               if (tm === 'kawaii')    return '✨💕 Personalized Passage 💕✨';
+              if (tm === 'oceanic')   return '🌊 Personalized Passage';
               if (tm === 'neutral')   return 'Personalized Passage';
               return '✨  Personalized Passage';
             })()),
             h('p', {
-              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5', textAlign: 'center' }
             }, (function() {
+              // UDL framing: "thoughtfully written" / "age-appropriate"
+              // describe HOW the AI writes, not WHO the writing is for.
+              // No condition-naming.
               var tm = state.theme || 'default';
-              if (tm === 'steampunk') return 'Have the workshop compose a passage in your grade and to your interests. Every draft is age-fitting and disability-aware.';
-              if (tm === 'cyberpunk') return '[GEN] grade-pinned :: interest-weighted :: age-safe :: disability-aware by default';
+              if (tm === 'steampunk') return 'Have the workshop compose a passage in your grade and to your interests. Every draft is age-fitting and thoughtfully written.';
+              if (tm === 'cyberpunk') return '[GEN] grade-pinned :: interest-weighted :: age-safe :: calm-by-default';
               if (tm === 'kawaii')    return 'Let\'s make a passage just for you! 💕 At your grade level, about something you love. Always age-friendly and thoughtfully written. ✨';
-              if (tm === 'neutral')   return 'Grade-pinned, interest-driven, age-appropriate, disability-aware.';
-              return 'Generate a passage at your grade level about something you care about. Passages are always age-appropriate and disability-aware.';
+              if (tm === 'oceanic')   return 'A passage shaped to your grade, your interests, and your reading depth — calmly written, always age-appropriate.';
+              if (tm === 'neutral')   return 'Grade-pinned, interest-driven, age-appropriate.';
+              return 'Generate a passage at your grade level about something you care about. Passages are always age-appropriate and calmly written.';
             })()),
 
             // Grade selector
@@ -4330,6 +6635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         (state.theme === 'steampunk') ? '⚙'
                         : (state.theme === 'cyberpunk') ? '▮'
                         : (state.theme === 'kawaii')    ? '💕'
+                        : (state.theme === 'oceanic')   ? '🌊'
                         : (state.theme === 'neutral')   ? '•'
                         : '✨'),
                       h('span', { key: 'lbl' }, getLoadingLabel(state.theme, 'passage'))
@@ -4356,6 +6662,194 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 'Last passage: grade ' + cached.gradeLevel + (cached.topic ? ' · ' + cached.topic : '')),
               h('div', { style: { fontSize: '13px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
                 '"' + (cached.text.length > 140 ? cached.text.slice(0, 140) + '…' : cached.text) + '"')
+            ) : null,
+
+            // ─── Curated packs ───
+            // Hand-written passage bundles. Each pack carries its own
+            // accent color, a circular icon badge, a passage-count chip,
+            // a grade-range chip, a one-line snippet preview from a
+            // representative passage, and an author line. Imports prepend
+            // to aiPassageLibrary with fresh ids and timestamps; dedup
+            // by text so re-importing doesn't double-fill. Future packs
+            // slot in by adding entries to CURATED_PACKS — UI iterates.
+            !genLoading ? h('div', {
+              style: {
+                marginTop: '20px',
+                padding: '16px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '12px'
+              }
+            },
+              // Section header — title row + subtitle
+              h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px', marginBottom: '4px' } },
+                h('div', { style: { fontSize: '12px', color: palette.text, fontWeight: 800, letterSpacing: '0.04em' } },
+                  '📦 Curated packs'),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  CURATED_PACKS.length + ' pack' + (CURATED_PACKS.length === 1 ? '' : 's') + ' · ' +
+                  CURATED_PACKS.reduce(function(s, p) { return s + p.passages.length; }, 0) + ' passages'
+                )
+              ),
+              h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' } },
+                'Hand-written passage sets that work without AI. Imported passages join your saved library; same passage week-after-week is a fairer baseline for IEP trend than re-generated text.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' } },
+                CURATED_PACKS.map(function(pack, packIdx) {
+                  var lib = state.aiPassageLibrary || [];
+                  var libTexts = {};
+                  lib.forEach(function(p) { libTexts[p.text] = true; });
+                  var allPresent = pack.passages.every(function(p) { return libTexts[p.text]; });
+                  var anyPresent = pack.passages.some(function(p) { return libTexts[p.text]; });
+                  // Grade range from first/last passage entries (assumes
+                  // pack passages are authored in grade-band order — true
+                  // for all current packs).
+                  var firstGrade = pack.passages[0].gradeLevel;
+                  var lastGrade = pack.passages[pack.passages.length - 1].gradeLevel;
+                  var gradeRange = firstGrade === lastGrade ? firstGrade : (firstGrade + '–' + lastGrade);
+                  // Snippet preview — take the middle passage's first
+                  // sentence so older students see depth, younger see
+                  // accessibility, and the chosen sentence is short.
+                  var midPassage = pack.passages[Math.floor(pack.passages.length / 2)];
+                  var firstSentenceEnd = midPassage.text.search(/[.!?]\s/);
+                  var snippet = firstSentenceEnd > 0
+                    ? midPassage.text.slice(0, firstSentenceEnd + 1)
+                    : (midPassage.text.length > 80 ? midPassage.text.slice(0, 78) + '…' : midPassage.text);
+                  var accent = pack.accent || palette.accent;
+                  var accentSoft = pack.accentSoft || (accent + '20');
+                  return h('div', {
+                    key: 'pack-' + pack.id,
+                    className: 'tp-pack-card',
+                    style: {
+                      padding: '14px',
+                      background: palette.bg,
+                      border: '1px solid ' + (allPresent ? palette.success : palette.border),
+                      borderLeft: '4px solid ' + (allPresent ? palette.success : accent),
+                      borderRadius: '10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      position: 'relative',
+                      animation: 'tp-pack-card-in 360ms cubic-bezier(0.2, 0.7, 0.3, 1) ' + (packIdx * 60) + 'ms both'
+                    }
+                  },
+                    // Header row: circular icon badge + label + chips
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
+                      // Circular soft-accent icon badge
+                      h('div', {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: '40px', height: '40px', borderRadius: '50%',
+                          background: accentSoft,
+                          border: '1.5px solid ' + accent,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '22px', flexShrink: 0, lineHeight: 1
+                        }
+                      }, pack.icon),
+                      h('div', { style: { flex: 1, minWidth: 0 } },
+                        h('div', { style: { fontSize: '13px', fontWeight: 800, color: palette.text, lineHeight: 1.3, marginBottom: '4px' } }, pack.label),
+                        // Chip row — passage count + grade range + import status
+                        h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
+                          h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: accentSoft,
+                              color: accent,
+                              fontSize: '10px', fontWeight: 700,
+                              fontFamily: 'ui-monospace, Menlo, monospace'
+                            }
+                          }, pack.passages.length + ' passages'),
+                          h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: palette.surface,
+                              color: palette.textDim,
+                              fontSize: '10px', fontWeight: 700,
+                              fontFamily: 'ui-monospace, Menlo, monospace'
+                            }
+                          }, 'grades ' + gradeRange),
+                          allPresent ? h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: palette.success + '22',
+                              color: palette.success,
+                              fontSize: '10px', fontWeight: 700
+                            }
+                          }, '✓ in library') : (anyPresent ? h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: palette.warning ? palette.warning + '22' : 'rgba(251,191,36,0.18)',
+                              color: palette.warning || '#fbbf24',
+                              fontSize: '10px', fontWeight: 700
+                            }
+                          }, 'partial') : null)
+                        )
+                      )
+                    ),
+                    // Description
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.55' } }, pack.description),
+                    // Snippet preview — italic, accent-bordered quote block
+                    h('div', {
+                      style: {
+                        padding: '8px 10px', borderRadius: '6px',
+                        background: accentSoft,
+                        borderLeft: '2px solid ' + accent,
+                        fontSize: '11px', lineHeight: '1.55',
+                        color: palette.text, fontStyle: 'italic'
+                      }
+                    },
+                      h('span', { style: { color: accent, fontWeight: 700, marginRight: '4px' } }, '“'),
+                      snippet,
+                      h('span', { style: { color: accent, fontWeight: 700, marginLeft: '2px' } }, '”'),
+                      h('div', { style: { fontSize: '9px', color: palette.textMute, fontStyle: 'normal', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } },
+                        'sample · grade ' + midPassage.gradeLevel)
+                    ),
+                    // Footer row — author + import button
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginTop: 'auto' } },
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flex: 1, lineHeight: 1.4 } }, pack.author),
+                      h('button', {
+                        onClick: function() {
+                          if (allPresent) return;
+                          var existing = (state.aiPassageLibrary || []).slice();
+                          var existingTexts = {};
+                          existing.forEach(function(p) { existingTexts[p.text] = true; });
+                          var nowIso = new Date().toISOString();
+                          var fresh = pack.passages
+                            .filter(function(p) { return !existingTexts[p.text]; })
+                            .map(function(p, i) {
+                              return {
+                                id: 'pack-' + pack.id + '-' + Date.now() + '-' + i,
+                                text: p.text,
+                                gradeLevel: p.gradeLevel,
+                                topic: p.topic,
+                                difficulty: p.difficulty,
+                                language: p.language || 'en',
+                                generatedAt: nowIso,
+                                source: 'curated:' + pack.id
+                              };
+                            });
+                          if (fresh.length === 0) { addToast('Pack already imported.'); return; }
+                          var nextLib = fresh.concat(existing).slice(0, MAX_PASSAGE_LIBRARY);
+                          updMulti({ aiPassageLibrary: nextLib });
+                          addToast('Imported ' + fresh.length + ' passage' + (fresh.length === 1 ? '' : 's') + ' from ' + pack.label + '.');
+                        },
+                        disabled: allPresent,
+                        'aria-label': allPresent ? pack.label + ' already imported' : 'Import ' + pack.label,
+                        style: Object.assign({}, primaryBtnStyle(palette), {
+                          fontSize: '11px',
+                          padding: '6px 12px',
+                          flexShrink: 0,
+                          background: allPresent ? palette.surface : accent,
+                          color: allPresent ? palette.textMute : '#0f172a',
+                          border: '1px solid ' + (allPresent ? palette.border : accent),
+                          cursor: allPresent ? 'default' : 'pointer',
+                          opacity: allPresent ? 0.65 : 1,
+                          fontWeight: 700,
+                          letterSpacing: '0.02em'
+                        })
+                      }, allPresent ? '✓ Imported' : (anyPresent ? 'Add ' + pack.passages.filter(function(p) { return !libTexts[p.text]; }).length + ' more' : 'Import pack'))
+                    )
+                  );
+                })
+              )
             ) : null,
 
             // Saved passages library — reusable stash of previously generated
@@ -4445,6 +6939,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ) : null
           );
         }
+
+        // ── Festival-mode hooks (top-level so they fire every render, drill view or not) ──
+        var festActive = !!state.festivalMode;
+        var festShellRef = useRef(null);
+        var festConfettiRef = useRef([]);
+        var festSparkleRef = useRef([]);
+        var festPhraseRef = useRef(null);
+        var festBubbleRef = useRef(null);
+        var festTickTuple = useState(0);
+        var festTick = festTickTuple[0], setFestTick = festTickTuple[1];
+        var festFinaleTuple = useState(false);
+        var festFinale = festFinaleTuple[0], setFestFinale = festFinaleTuple[1];
+        var typedLenRef = useRef(0);
+        var bumpTick = function() { setFestTick(function(t) { return t + 1; }); };
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (wordPulse.key === 0) return;
+          var palette2 = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+          var pieces = [];
+          for (var i = 0; i < 14; i++) {
+            pieces.push({
+              key: wordPulse.key + ':' + i + ':' + Date.now(),
+              color: palette2[i % palette2.length],
+              dx: (Math.random() * 200 - 100) + 'px',
+              top: Math.round(80 + Math.random() * 40),
+              left: Math.round(20 + Math.random() * 60)
+            });
+          }
+          festConfettiRef.current = festConfettiRef.current.concat(pieces);
+          bumpTick();
+          try { audioFestivalWord(); } catch (_) {}
+          setTimeout(function() {
+            festConfettiRef.current = festConfettiRef.current.filter(function(p) {
+              return pieces.indexOf(p) === -1;
+            });
+            bumpTick();
+          }, 1300);
+        }, [festActive, wordPulse.key]);
+
+        useEffect(function() {
+          if (!festActive) {
+            typedLenRef.current = typed.length;
+            return;
+          }
+          if (typed.length <= typedLenRef.current) {
+            typedLenRef.current = typed.length;
+            return;
+          }
+          typedLenRef.current = typed.length;
+          var glyphs = ['✨', '⭐', '💫', '✦', '·'];
+          var n = 1 + Math.floor(Math.random() * 2);
+          var sparkles = [];
+          for (var i = 0; i < n; i++) {
+            sparkles.push({
+              key: 'sp-' + typed.length + '-' + i + '-' + Math.random(),
+              glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
+              top: Math.round(220 + Math.random() * 90),
+              left: Math.round(35 + Math.random() * 30),
+              kdx: ((Math.random() * 80 - 40) | 0) + 'px'
+            });
+          }
+          festSparkleRef.current = festSparkleRef.current.concat(sparkles);
+          bumpTick();
+          try { audioFestivalKey(); } catch (_) {}
+          setTimeout(function() {
+            festSparkleRef.current = festSparkleRef.current.filter(function(p) {
+              return sparkles.indexOf(p) === -1;
+            });
+            bumpTick();
+          }, 700);
+        }, [festActive, typed.length]);
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (streak === 0) return;
+          var phrase = null;
+          if (streak === 5)        phrase = '🔥 HOT!';
+          else if (streak === 10)  phrase = '⚡ ON FIRE!';
+          else if (streak === 25)  phrase = '💫 UNSTOPPABLE!';
+          else if (streak === 50)  phrase = '👑 LEGEND!';
+          else if (streak === 100) phrase = '🌟 MYTH!';
+          else if (streak === 200) phrase = '🌌 GODMODE!';
+          if (phrase) {
+            festPhraseRef.current = { key: 'phrase-' + streak + '-' + Date.now(), text: phrase };
+            bumpTick();
+            setTimeout(function() { festPhraseRef.current = null; bumpTick(); }, 1700);
+          }
+          if (streak % 10 === 0) {
+            var el = festShellRef.current;
+            if (el) {
+              el.classList.add('tp-fest-shake');
+              setTimeout(function() { el.classList.remove('tp-fest-shake'); }, 460);
+            }
+            try {
+              if (streak >= 100)      { audioFestivalVictory(); audioFestivalAirhorn(); }
+              else if (streak >= 50)  { audioFestivalCheer(); audioFestivalBoom(); }
+              else if (streak >= 25)  { audioFestivalBassDrop(); audioFestivalPowerUp(); }
+              else if (streak >= 10)  { audioFestivalAirhorn(); }
+              else                    { audioFestivalCombo(); }
+            } catch (_) {}
+          }
+          if (phrase) {
+            try { audioFestivalPartyHorn(); } catch (_) {}
+          }
+        }, [festActive, streak]);
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (drillComplete || paused) return;
+          var cheers = ['YEAH!', 'KEEP GOING!', 'NICE!', 'WOOO!', "LET'S GO!", 'AMAZING!', 'YOU GOT THIS!', 'BOOM!', 'HECK YES!', 'GO GO GO!'];
+          var int = setInterval(function() {
+            if (!festShellRef.current) return;
+            festBubbleRef.current = {
+              key: 'bub-' + Date.now(),
+              mascotIdx: Math.floor(Math.random() * 5),
+              text: cheers[Math.floor(Math.random() * cheers.length)]
+            };
+            bumpTick();
+            setTimeout(function() {
+              festBubbleRef.current = null;
+              bumpTick();
+            }, 1800);
+          }, 5000);
+          return function() { clearInterval(int); };
+        }, [festActive, drillComplete, paused]);
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (!drillComplete) { setFestFinale(false); return; }
+          var totalKeystrokes = typed.length + errorCount;
+          var acc = totalKeystrokes > 0 ? Math.round((typed.length / totalKeystrokes) * 100) : 0;
+          if (acc >= 100 && !festFinale) {
+            setFestFinale(true);
+            try {
+              audioFestivalFinale();
+              setTimeout(function() { try { audioFestivalVictory(); } catch (_) {} }, 250);
+              setTimeout(function() { try { audioFestivalAirhorn(); } catch (_) {} }, 900);
+              setTimeout(function() { try { audioFestivalDing(); } catch (_) {} }, 1700);
+            } catch (_) {}
+            setTimeout(function() { setFestFinale(false); }, 3000);
+          }
+        }, [festActive, drillComplete, typed.length, errorCount]);
 
         // ═════════════════════════════════════════════════════
         // VIEW: DRILL — real typing surface with keystroke capture
@@ -4580,17 +7217,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             beatOpacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(phase * 2 * Math.PI));
           }
 
+          // Companion mascot — opt-in via accommodations.showCompanion.
+          // Reads existing drill state and maps to mascot states. No new
+          // tracking; uses streak (clean keystroke count), errorCount,
+          // paused, drillComplete, and lastWasWrong already managed by the
+          // drill loop. State priorities (high → low):
+          //   sleep   — drill is paused
+          //   win     — drill complete and current liveWpm beats personal best
+          //   wow     — drill complete (no PB)
+          //   incoming — most recent keystroke was wrong (transient)
+          //   danger   — accuracy under 80% with ≥10 chars typed
+          //   combo   — clean streak ≥ 5
+          //   idle    — default
+          var companionMascot = null;
+          if (state.accommodations.showCompanion) {
+            var companionState = 'idle';
+            var pbRow = ((state.personalBest || {})[activeDrill && activeDrill.id]) || {};
+            var pbWpm = pbRow.wpm || 0;
+            if (paused) companionState = 'sleep';
+            else if (drillComplete && liveWpm > pbWpm && liveWpm > 0) companionState = 'win';
+            else if (drillComplete) companionState = 'wow';
+            else if (lastWasWrong) companionState = 'incoming';
+            else if (typed.length >= 10 && liveAcc < 80) companionState = 'danger';
+            else if (streak >= 5) companionState = 'combo';
+            companionMascot = renderBattleMascot(state.theme || 'default', companionState, {
+              size: 48,
+              label: 'Companion mascot — ' + companionState
+            });
+          }
           return h('div', {
+            ref: festShellRef,
+            className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage' + (festActive ? ' tp-fest-shell' : '') + (festActive && festFinale ? ' tp-fest-finale-active' : ''),
             style: {
               padding: '20px',
               maxWidth: '960px',
               margin: '0 auto',
               color: palette.text,
               fontFamily: fontFamily,
-              background: palette.bg,
-              minHeight: '60vh'
+              background: festActive ? undefined : palette.bg,  // let .tp-fest-shell rainbow show through
+              minHeight: '60vh',
+              position: 'relative',
+              overflow: 'hidden'
             }
           },
+            // Theme-flavored ambient particles — same system as Battle
+            // playfield but at half-opacity (`.tp-drill-stage` rules below)
+            // so they read as quiet atmosphere without competing with the
+            // typing focus. Off entirely under prefers-reduced-motion + on
+            // neutral theme (consistent with Battle stage). Pointer-events
+            // none so they never block keystroke focus.
+            h('div', {
+              className: 'tp-battle-ambience',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              [0, 1, 2, 3].map(function(i) {
+                return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + i });
+              })
+            ),
+            // ── 🌈 Festival overlay ──
+            // Mounted only when festivalMode is on. Three layers:
+            //   1. All 5 mascots cheering in a row at the bottom.
+            //   2. Big rainbow streak badge top-right when streak ≥ 5.
+            //   3. Live confetti pieces from word-completion bursts.
+            festActive ? h('div', {
+              key: 'fest-overlay',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 1 }
+            },
+              // Mascot row — all 5 of them, in combo state
+              h('div', { className: 'tp-fest-mascot-row' },
+                ['default', 'steampunk', 'cyberpunk', 'kawaii', 'oceanic'].map(function(themeId) {
+                  return h('div', { key: 'festmas-' + themeId, style: { width: 64, height: 64 } },
+                    renderBattleMascot(themeId, 'combo', { size: 64, label: themeId + ' cheering' })
+                  );
+                })
+              ),
+              // Streak badge — only at 5+ so it doesn't pop on every keystroke
+              streak >= 5 ? h('div', { className: 'tp-fest-streak-badge' },
+                '🔥 ' + streak + ' STREAK'
+              ) : null,
+              // Confetti pieces (transient — auto-removed after animation)
+              festConfettiRef.current.map(function(p) {
+                return h('span', {
+                  key: 'fconf-' + p.key,
+                  className: 'tp-fest-confetti',
+                  style: {
+                    background: p.color,
+                    top: p.top + 'px',
+                    left: p.left + '%',
+                    '--tp-fest-dx': p.dx,
+                    borderRadius: Math.random() > 0.5 ? '50%' : '2px'
+                  }
+                });
+              }),
+              // Per-keystroke sparkles (drift up + fade, 600ms)
+              festSparkleRef.current.map(function(s) {
+                return h('span', {
+                  key: 'fspk-' + s.key,
+                  className: 'tp-fest-keystroke-sparkle',
+                  style: {
+                    top: s.top + 'px',
+                    left: s.left + '%',
+                    '--tp-fest-kdx': s.kdx
+                  }
+                }, s.glyph);
+              }),
+              // Combo-milestone phrase ("HOT!" / "LEGEND!" / etc) — only one
+              // at a time; new ones replace old via single-ref state.
+              festPhraseRef.current ? h('div', {
+                key: festPhraseRef.current.key,
+                className: 'tp-fest-combo-phrase'
+              }, festPhraseRef.current.text) : null,
+              // Mascot speech bubble (random cheer over a random mascot)
+              festBubbleRef.current ? h('div', {
+                key: festBubbleRef.current.key,
+                className: 'tp-fest-speech-bubble',
+                style: {
+                  // Position horizontally above the chosen mascot in the row.
+                  // Row uses justify-content: space-around with 5 mascots
+                  // padded by 24px. Compute approximate center as a percent.
+                  bottom: 84,
+                  left: (10 + festBubbleRef.current.mascotIdx * 20) + '%'
+                }
+              }, festBubbleRef.current.text) : null,
+              // Grand finale flash + banner — only during the 3s celebration
+              festFinale ? h('div', { className: 'tp-fest-finale-flash', key: 'fest-finale-flash' }) : null,
+              festFinale ? h('div', { className: 'tp-fest-finale-banner', key: 'fest-finale-banner' }, '✨ PERFECT! ✨') : null
+            ) : null,
+            // Companion in top-right corner — absolute so it doesn't
+            // disturb the existing drill layout. Hidden when neutral
+            // theme (renderBattleMascot returns null) or toggle is off.
+            // Mount-time enter animation (tp-companion-enter) plays a
+            // soft fade-in + scale-up + small tilt wave so the mascot
+            // arrives like a friendly greeting rather than just popping
+            // into view.
+            companionMascot ? h('div', {
+              className: 'tp-companion-wrap',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 12,
+                right: 16,
+                width: 48,
+                height: 48,
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            }, companionMascot) : null,
             // Top bar: back + drill title + pause + live chip
             h('div', {
               style: { display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }
@@ -4729,6 +7503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'steampunk') return '⚙ ' + streak + ' clean';
                   if (tm === 'cyberpunk') return '[STREAK :: ' + streak + ']';
                   if (tm === 'kawaii')    return '✨ ' + streak + ' in a row 💕';
+                  if (tm === 'oceanic')   return '🌊 ' + streak + ' clean';
                   if (tm === 'neutral')   return streak + ' clean';
                   return '🔥 ' + streak + ' in a row';
                 })()) : null,
@@ -4814,6 +7589,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               } else if (tm === 'kawaii') {
                 msg = '💕 Break time! ✨ No rush, we\'ll wait for you 💕';
                 extraStyle = { borderRadius: '18px', boxShadow: '0 3px 10px rgba(232,90,138,0.2)' };
+              } else if (tm === 'oceanic') {
+                msg = '🌊 Drifting. The current waits — surface to resume when you\'re ready.';
+                extraStyle = { borderRadius: '8px', boxShadow: '0 0 12px rgba(34,211,238,0.18)' };
               } else if (tm === 'neutral') {
                 msg = 'Paused. WPM unaffected.';
                 extraStyle = { borderRadius: '4px', fontWeight: 500 };
@@ -4887,6 +7665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk')      body = '⚙ The key ' + charLabel + ' has snagged ' + stuckCount + '× — reach with your ' + finger + '. Steady hands.';
               else if (tm === 'cyberpunk') body = '[STUCK :: ' + charLabel + ' × ' + stuckCount + '] :: target :: ' + finger.toUpperCase();
               else if (tm === 'kawaii')    body = '💕 The key ' + charLabel + ' has been tricky (' + stuckCount + '×) — try your ' + finger + '! ✨';
+              else if (tm === 'oceanic')   body = '🌊 ' + charLabel + ' has slipped past ' + stuckCount + '× — reach with your ' + finger + '. Slow stroke, even pressure.';
               else if (tm === 'neutral')   body = charLabel + ' missed ' + stuckCount + '×. Use ' + finger + '.';
               else                         body = '🎯 You\'ve missed ' + charLabel + ' ' + stuckCount + '× this drill — try using your ' + finger + '.';
               return h('div', {
@@ -5015,6 +7794,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               } else if (tm === 'kawaii') {
                 // Pastel rainbow — cream-pink to rose gradient
                 fillStyle.background = 'linear-gradient(90deg, #ffd6e5 0%, ' + fill + ' 60%, #ff90b8 100%)';
+              } else if (tm === 'oceanic') {
+                // Bioluminescent gradient — deep teal to cyan, mimics tide glow
+                fillStyle.background = 'linear-gradient(90deg, #0e7490 0%, ' + fill + ' 50%, #67e8f9 100%)';
               }
               // Neutral and default: solid fill (unchanged)
               return h('div', {
@@ -5170,6 +7952,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               goalMet:      '🎯 Goal met this session! Nicely done! 💕',
               plain:        '🌸 Session saved — nice work.'
             },
+            'oceanic': {
+              warmup:       '🌊 Warmup drift complete. Off the log — just easing in.',
+              firstGoalMet: '🎯 IEP goal cleared for the first time. The signal travels.',
+              masteryUp:    '🌊 Tier ${tier} reached. The current carries you up.',
+              baseline:     '🌊 Baseline charted. Future dives compare against this depth.',
+              personalBest: '🌊 New peak. Trajectory upward.',
+              goalMet:      '🎯 IEP goal met this dive.',
+              plain:        '🌊 Session logged.'
+            },
             'neutral': {
               warmup:       'Warmup complete. Not recorded.',
               firstGoalMet: 'IEP goal met for the first time.',
@@ -5219,6 +8010,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 nextStepHint = '[UNLOCK] ' + _nd.icon + ' ' + _nd.name.toUpperCase() + ' :: node online :: jack in via menu when ready';
               } else if (_hintTm === 'kawaii') {
                 nextStepHint = _nd.icon + ' ' + _nd.name + ' is unlocked! ✨ Pop by whenever you\'re ready — it\'ll be waiting on the menu! 💕';
+              } else if (_hintTm === 'oceanic') {
+                nextStepHint = _nd.icon + ' ' + _nd.name + ' is now in reach. Surface to the menu when the tide is right.';
               } else if (_hintTm === 'neutral') {
                 nextStepHint = _nd.name + ' unlocked. Available from the menu.';
               } else {
@@ -5231,6 +8024,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 nextStepHint = '[ALL TIERS CLEARED] :: next-step :: AI-passage @ grade-level :: typing meets live reading';
               } else if (_hintTm === 'kawaii') {
                 nextStepHint = '🏆✨ You cleared EVERY tier! Try generating a personalized passage at your grade level — where typing meets stories you actually want to read! 💕';
+              } else if (_hintTm === 'oceanic') {
+                nextStepHint = '🏆 Every structured shelf is cleared. Generate a personalized passage at your grade — where the practice meets real reading.';
               } else if (_hintTm === 'neutral') {
                 nextStepHint = 'All structured tiers cleared. Try an AI-generated grade-level passage next.';
               } else {
@@ -5248,6 +8043,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 nextStepHint = '[Δ ' + gap + ' WPM] :: tier-clear within range :: push on';
               } else if (_hintTm === 'kawaii') {
                 nextStepHint = 'You\'re just ' + gap + ' WPM from clearing this tier! 💪✨ Almost there!';
+              } else if (_hintTm === 'oceanic') {
+                nextStepHint = gap + ' WPM short of the tier line. The next current is in reach.';
               } else if (_hintTm === 'neutral') {
                 nextStepHint = gap + ' WPM below tier-clear threshold.';
               } else {
@@ -5261,6 +8058,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               nextStepHint = '[BASELINE SET] :: all future runs :: Δ from this reference';
             } else if (_hintTm === 'kawaii') {
               nextStepHint = '🌸 Your baseline is saved! Every session from now on is just about YOUR growth — no comparisons needed! 💕';
+            } else if (_hintTm === 'oceanic') {
+              nextStepHint = '🌊 Baseline charted. Every future dive is measured against your own depth — no comparisons to anyone else.';
             } else if (_hintTm === 'neutral') {
               nextStepHint = 'Baseline recorded. All future sessions compared against it.';
             } else {
@@ -5268,6 +8067,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           }
 
+          // Companion mascot in summary — same opt-in as drill view. Maps
+          // session outcome to mascot state so the celebration carries
+          // through from drill → summary instead of the mascot vanishing
+          // at the end of the practice.
+          var summaryCompanion = null;
+          if (state.accommodations.showCompanion) {
+            var summaryCompanionState = (s.isNewBest || s.firstGoalMet || s.masteryAdvanced) ? 'win'
+                                       : s.isBaseline ? 'wow'
+                                       : 'idle';
+            summaryCompanion = renderBattleMascot(state.theme || 'default', summaryCompanionState, {
+              size: 56,
+              label: 'Companion mascot — ' + summaryCompanionState
+            });
+          }
           return h('div', {
             style: {
               padding: '20px',
@@ -5276,9 +8089,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               color: palette.text,
               fontFamily: fontFamily,
               background: palette.bg,
-              minHeight: '60vh'
+              minHeight: '60vh',
+              position: 'relative'
             }
           },
+            // Companion absolute top-right — matches drill view placement.
+            // Hidden when toggle off or on neutral theme. Same enter
+            // animation as the drill view companion so the mascot reads
+            // as "joining the celebration."
+            summaryCompanion ? h('div', {
+              className: 'tp-companion-wrap',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 12,
+                right: 16,
+                width: 56,
+                height: 56,
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            }, summaryCompanion) : null,
             h('div', {
               style: {
                 background: palette.surface,
@@ -5315,6 +8146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'steampunk')      glyph = '⚙';
                   else if (tm === 'cyberpunk') glyph = '▮';
                   else if (tm === 'kawaii')    glyph = '✿';
+                  else if (tm === 'oceanic')   glyph = '◌';
                   else if (tm === 'neutral')   glyph = '·';
                   else                         glyph = '✦';
                   // Eight particles, evenly spaced in a ring
@@ -5382,6 +8214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk')      lead = '⚙ Against your baseline: ';
                 else if (tm === 'cyberpunk') lead = '[Δ BASELINE] ';
                 else if (tm === 'kawaii')    lead = '✨ Since your baseline: ';
+                else if (tm === 'oceanic')   lead = '🌊 vs baseline: ';
                 else if (tm === 'neutral')   lead = 'vs baseline: ';
                 else                         lead = '📊 Since your baseline: ';
                 var parts = [];
@@ -5439,6 +8272,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 } else if (tm === 'kawaii') {
                   title = '🌧 A tricky session — and that\'s okay 💕';
                   body = 'Some days are wobbly days, and that\'s 100% allowed. ✨ Your progress isn\'t gone. Your baseline didn\'t move. You showed up — that\'s already the win. 🌱';
+                } else if (tm === 'oceanic') {
+                  title = '🌊 A choppy run — and that is allowed';
+                  body = 'Some dives run rough. The depth chart is unchanged: baseline holds, prior peaks hold. You came down to the shelf — that itself is the practice.';
                 } else if (tm === 'neutral') {
                   title = 'Rough session';
                   body = 'Accuracy low this run. Baseline + prior bests unaffected. Next session is independent.';
@@ -5491,6 +8327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (tm === 'steampunk') return '⚙ Instruments engaged this session: ' + list;
                 if (tm === 'cyberpunk') return '[LOADOUT THIS RUN] ' + s.accommodationsUsed.join(' :: ');
                 if (tm === 'kawaii')    return '🏅 Helpful friends that came along: ' + list + ' 💕';
+                if (tm === 'oceanic')   return '🌊 Currents on this run: ' + list;
                 if (tm === 'neutral')   return 'Accommodations this session: ' + list;
                 return '🏅 Accommodations used this session: ' + list;
               })()) : null,
@@ -5523,6 +8360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       if (tm === 'steampunk') return '⚙ Gearwork snags — keys that gave you pause';
                       if (tm === 'cyberpunk') return '[KEY ERRORS] this run';
                       if (tm === 'kawaii')    return '🌸 Tricky keys from this session 💕';
+                      if (tm === 'oceanic')   return '🌊 Keys that slipped past this dive';
                       if (tm === 'neutral')   return 'Keys missed this session';
                       return '⌨️ Keys missed most this session';
                     })()),
@@ -5553,6 +8391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       if (tm === 'steampunk') return 'These entries join the grand heatmap on the Progress ledger. A short pass on each tightens the gearwork.';
                       if (tm === 'cyberpunk') return '[INFO] aggregates into all-time heatmap :: targeted retry → compounding gain';
                       if (tm === 'kawaii')    return '💕 These add to your Progress heatmap. A quick retry with these keys adds up over time! ✨';
+                      if (tm === 'oceanic')   return '🌊 These flow into the all-time heatmap on Progress. A short targeted run shifts the chart.';
                       if (tm === 'neutral')   return 'Aggregated into all-time heatmap on Progress view.';
                       return 'These feed the all-time heatmap on the Progress view. A short retry focused on these keys can compound over time.';
                     })())
@@ -5831,6 +8670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       (state.theme === 'steampunk') ? '⚙'
                       : (state.theme === 'cyberpunk') ? '▮▯▮'
                       : (state.theme === 'kawaii')    ? '💕'
+                      : (state.theme === 'oceanic')   ? '🌊'
                       : (state.theme === 'neutral')   ? '•••'
                       : '✨'),
                     h('div', null, getLoadingLabel(state.theme, 'image'))
@@ -6067,6 +8907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'steampunk')      label = '⚙ Practice the snags';
                   else if (tm === 'cyberpunk') label = '[RETRY :: KEYS]';
                   else if (tm === 'kawaii')    label = '💕 Retry tricky keys ✨';
+                  else if (tm === 'oceanic')   label = '🌊 Retry the slips';
                   else if (tm === 'neutral')   label = 'Practice missed keys';
                   else                         label = '🎯 Practice the tricky keys';
                   return h('button', {
@@ -6187,6 +9028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (_bTm === 'steampunk')      _bToast = '⚙ Instrument logged: first use of ' + key + '. The workshop rewards every hand that reaches.';
                 else if (_bTm === 'cyberpunk') _bToast = '[BADGE] ' + key.toUpperCase() + ' :: first-use logged :: mods are allies';
                 else if (_bTm === 'kawaii')    _bToast = '🏅✨ Badge earned! You tried ' + key + ' — helpful friends are the best! 💕';
+                else if (_bTm === 'oceanic')   _bToast = '🌊 Logged: first use of ' + key + '. Reaching for the current is the practice.';
                 else if (_bTm === 'neutral')   _bToast = 'Badge: first use of ' + key + '.';
                 else                           _bToast = '🏅 Badge earned: tried ' + key + ' — these tools are your teammates.';
                 addToast(_bToast);
@@ -6211,6 +9053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk') return '⚙  Workshop Instruments';
               if (tm === 'cyberpunk') return '[ACCOMMODATIONS]';
               if (tm === 'kawaii')    return '💕 Accommodations ✨';
+              if (tm === 'oceanic')   return '🌊 Accommodations';
               if (tm === 'neutral')   return 'Accommodations';
               return '⚙️  Accommodations';
             })()),
@@ -6221,6 +9064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk') return 'These are not spare parts — they are the instruments themselves. Reaching for them is the craft.';
               if (tm === 'cyberpunk') return '[MODS] not fallbacks :: core rig :: equipping them = intended workflow';
               if (tm === 'kawaii')    return '✨ These aren\'t extra — they\'re the whole point! Using them is the best thing you can do. 💕';
+              if (tm === 'oceanic')   return 'These are not patches — they are the rigging. Reaching for them is the practice.';
               if (tm === 'neutral')   return 'Core supports, not fallbacks. Designed to be used.';
               return 'These aren\'t fallbacks — they\'re the design. Using them is the point.';
             })()),
@@ -6304,6 +9148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'steampunk') return '⚙ Bench-ready rigs';
                   if (tm === 'cyberpunk') return '[PRESET LOADOUTS]';
                   if (tm === 'kawaii')    return '✨💕 Quick presets';
+                  if (tm === 'oceanic')   return '🌊 Quick rigs';
                   if (tm === 'neutral')   return 'Presets';
                   return '✨ Quick presets';
                 })()),
@@ -6313,6 +9158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'steampunk') return 'Pre-assembled instrument sets for common profiles. Adjust any lever after fitting.';
                   if (tm === 'cyberpunk') return '[PRE-BUILT] common-profile bundles :: mutable post-apply :: no lock-in';
                   if (tm === 'kawaii')    return 'Pre-picked combos for you! 💕 Tap one, then tweak anything you like. ✨';
+                  if (tm === 'oceanic')   return 'Pre-rigged bundles for common profiles. Tap one and trim any setting after.';
                   if (tm === 'neutral')   return 'Common-profile bundles. Editable after applying.';
                   return 'One-click common combos. Tap any toggle below to customize after applying.';
                 })()),
@@ -6355,9 +9201,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Focus-mode is a child toggle of largeKeys — only meaningful when
             // the keyboard is shown. Hide it otherwise to reduce clutter.
             acc.largeKeys ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard'); }, palette) : null,
-            renderToggleRow('High-contrast mode', 'Black / yellow / white palette that works for low vision.', acc.highContrast, function() { toggle('highContrast'); }, palette),
+            renderToggleRow('High-contrast mode', 'Black / yellow / white palette with maximum contrast.', acc.highContrast, function() { toggle('highContrast'); }, palette),
             renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues'); }, palette),
-            renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports auditory learners and low-vision typists. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace'); }, palette),
+            renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports listening + reading practice and screen-free typing. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace'); }, palette),
+            renderToggleRow('Companion mascot in drills', 'Shows the active theme\'s mascot (Pip, Cogsworth, Vex, Mochi, or Inko) in the corner of the drill view. Reacts to clean keystreaks (excited), errors (worried), and completion (celebration). Off by default — some students find peripheral motion distracting; others want a quiet companion through practice.', acc.showCompanion, function() { toggle('showCompanion'); }, palette),
 
             // Audio theme picker — only visible when audio cues are on.
             acc.audioCues ? h('div', {
@@ -6393,7 +9240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }, themeLabel);
               })
             ) : null,
-            renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — great for dysgraphia. The target advances with the correct character so the student can keep going.', acc.errorTolerant, function() { toggle('errorTolerant'); }, palette),
+            renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — the target advances with the correct character so you keep going.', acc.errorTolerant, function() { toggle('errorTolerant'); }, palette),
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist'); }, palette),
             renderToggleRow('🎨 Story mode (illustrate passages)', 'After you finish a personalized-passage drill, offer a button to illustrate the passage with an AI-generated image. Educational-illustration style, student-friendly. Off by default.', acc.storyModeImage, function() { toggle('storyModeImage'); }, palette),
             renderToggleRow('🎨 Prompt mode (art from custom drills)', 'After you finish a custom-drill session, your drill text becomes an AI image prompt. Drill again and the image refines via image-to-image — typing becomes the brushstroke. Off by default.', acc.promptModeImage, function() { toggle('promptModeImage'); }, palette),
@@ -6489,34 +9336,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     style: {
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
-                      padding: '6px 10px',
-                      borderRadius: '8px',
+                      gap: '10px',
+                      padding: '8px 12px',
+                      borderRadius: '10px',
                       border: '2px solid ' + (isActive ? palette.text : palette.border),
-                      background: 'transparent',
+                      background: isActive ? (opt.accentSample + '14') : 'transparent',
                       color: palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
                       fontFamily: 'inherit',
-                      textAlign: 'left'
+                      textAlign: 'left',
+                      transition: 'background 160ms ease, border-color 160ms ease'
                     }
                   },
-                    // Swatch showing bg + accent for the theme
-                    h('span', {
-                      'aria-hidden': 'true',
-                      style: {
-                        display: 'inline-flex',
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '6px',
-                        border: '1px solid ' + palette.border,
-                        overflow: 'hidden',
-                        flexShrink: 0
-                      }
-                    },
-                      h('span', { style: { flex: 1, background: opt.bgSample } }),
-                      h('span', { style: { flex: 1, background: opt.accentSample } })
+                    // Live mascot preview — 36px in idle. Shows the actual
+                    // character associated with the theme so students can
+                    // browse the cast before committing to a switch. Neutral
+                    // theme has no mascot, so the swatch carries the visual
+                    // weight on its own.
+                    h('span', { 'aria-hidden': 'true', style: { width: '36px', height: '36px', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } },
+                      renderBattleMascot(opt.id, 'idle', { size: 36, label: opt.label + ' mascot preview' })
+                        || h('span', {
+                          style: {
+                            width: '32px', height: '32px', borderRadius: '6px',
+                            border: '1px solid ' + palette.border, display: 'inline-flex',
+                            overflow: 'hidden'
+                          }
+                        },
+                          h('span', { style: { flex: 1, background: opt.bgSample } }),
+                          h('span', { style: { flex: 1, background: opt.accentSample } })
+                        )
                     ),
                     h('span', null,
                       h('div', { style: { fontSize: '12px', fontWeight: isActive ? 700 : 600 } }, opt.label),
@@ -7163,6 +10013,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var trend = sessions.slice(-12); // last 12 matching sessions
           var trendMax = trend.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 10);
 
+          // Progress hero mascot — quieter than the Achievements hero
+          // (64px vs 80px) since this is a data-review surface, not a
+          // celebration. State is 'wow' if the student has any session
+          // history (the mascot is impressed by the effort being reviewed)
+          // or 'idle' if the page is empty (calm welcome).
+          var progressHeroMascot = renderBattleMascot(state.theme || 'default', allSessions.length > 0 ? 'wow' : 'idle', {
+            size: 64,
+            label: 'Progress hero — ' + (allSessions.length > 0 ? 'reviewing growth' : 'no sessions yet')
+          });
           return h('div', {
             style: {
               padding: '20px',
@@ -7175,9 +10034,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '📊  Progress & Goals'),
+            // Mascot hero — centered, theme-tinted radial backdrop. Falls
+            // back to a chart emoji on neutral theme.
+            h('div', {
+              style: {
+                marginTop: '14px',
+                marginBottom: '4px',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '14px 0',
+                background: 'radial-gradient(ellipse 50% 100% at 50% 50%, ' + palette.accent + '0e, transparent 70%)',
+                borderRadius: 16
+              }
+            },
+              h('div', { style: { width: 64, height: 64 } },
+                progressHeroMascot || h('div', {
+                  'aria-hidden': 'true',
+                  style: { width: 64, height: 64, borderRadius: '50%', background: palette.accent + '1a', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }
+                }, '📊')
+              )
+            ),
+            h('h3', { style: { margin: '8px 0 4px 0', color: palette.text, textAlign: 'center' } }, '📊  Progress & Goals'),
             h('p', {
-              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5', textAlign: 'center' }
             }, 'Your personal growth path. No peer comparison — this is just you, over time.'),
 
             // Skill tree: tier progression visual
@@ -7255,6 +10134,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                                : current ? '🌸 working'
                                : locked  ? '🔒 soon'
                                :           '✨ open';
+                  } else if (tm === 'oceanic') {
+                    // Soft cyan glow — like deep-water bioluminescence
+                    nodeStyle.borderRadius = '10px';
+                    if (cleared) nodeStyle.boxShadow = '0 0 12px rgba(34,211,238,0.35), inset 0 0 8px rgba(34,211,238,0.12)';
+                    if (current) nodeStyle.boxShadow = '0 0 10px rgba(34,211,238,0.25)';
+                    statusText = cleared ? '🌊 cleared'
+                               : current ? '🌊 diving'
+                               : locked  ? '~ deep'
+                               :           '~ open';
                   } else if (tm === 'neutral') {
                     // Minimal — thin border, no shadow, square-ish
                     nodeStyle.borderRadius = '4px';
@@ -7428,6 +10316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk')      header = '⚙ The ledger since you began';
               else if (tm === 'cyberpunk') header = '[DELTA REPORT :: BASELINE → NOW]';
               else if (tm === 'kawaii')    header = '✨ How you\'ve grown 💕';
+              else if (tm === 'oceanic')   header = '🌊 Depth chart · baseline → now';
               else if (tm === 'neutral')   header = 'Baseline → current summary';
               else                         header = '🌱 How you\'ve grown';
 
@@ -7682,6 +10571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'steampunk') return 'Workshop ledger — last ' + trend.length + tail;
                     if (tm === 'cyberpunk') return '[RECENT RUNS · ' + trend.length + ']' + tail;
                     if (tm === 'kawaii')    return '🌸 Recent sessions · last ' + trend.length + tail;
+                    if (tm === 'oceanic')   return '🌊 Recent dives · last ' + trend.length + tail;
                     if (tm === 'neutral')   return 'Last ' + trend.length + ' sessions' + tail;
                     return 'Recent sessions — last ' + trend.length + tail;
                   })()),
@@ -8092,6 +10982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'steampunk') return '⚙ Grand gear-snag atlas · all-time · ' + analysis.totalErrors + ' total';
                     if (tm === 'cyberpunk') return '[ERROR HEATMAP · ALL-TIME · ' + analysis.totalErrors + ']';
                     if (tm === 'kawaii')    return '🌸 Tricky-key map · all-time · ' + analysis.totalErrors + ' total 💕';
+                    if (tm === 'oceanic')   return '🌊 Slip-map · all-time · ' + analysis.totalErrors + ' total';
                     if (tm === 'neutral')   return 'Error heatmap · all-time · ' + analysis.totalErrors;
                     return 'Error heatmap · all-time · ' + analysis.totalErrors + ' total errors';
                   })()),
@@ -8101,6 +10992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'steampunk') return 'Deeper shades mark the snags. This is no reproach — it is the workshop map that shows where effort earns its return.';
                     if (tm === 'cyberpunk') return '[LEGEND] deeper shade :: higher error density :: targeted practice → delta ↓';
                     if (tm === 'kawaii')    return 'Darker = more practice needed — and that\'s okay! 💕 This map just shows where you\'ll grow the fastest. ✨';
+                    if (tm === 'oceanic')   return 'Deeper shade = more slips. The map shows where targeted practice pays the steepest dividend.';
                     if (tm === 'neutral')   return 'Darker = higher error rate. Targeted practice yields compounding gains.';
                     return 'Darker red = more errors on that key. This isn\'t shame data — it\'s the map that shows where practice pays off.';
                   })()),
@@ -8115,6 +11007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'steampunk') return 'Snags by finger';
                     if (tm === 'cyberpunk') return '[ERR-BY-FINGER]';
                     if (tm === 'kawaii')    return '🌸 Errors by finger';
+                    if (tm === 'oceanic')   return '🌊 Slips by finger';
                     if (tm === 'neutral')   return 'Errors by finger';
                     return 'Errors by finger';
                   })()),
@@ -8647,6 +11540,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (b.date) return 1;
             return 0;
           });
+          // Achievements hero — always-on mascot at the top of this view
+          // (not gated on showCompanion). This is a celebration surface; the
+          // mascot earns its place as part of the recognition. State maps
+          // to whether the student has earned anything yet.
+          var achHeroMascot = renderBattleMascot(state.theme || 'default', earned.length > 0 ? 'win' : 'idle', {
+            size: 80,
+            label: 'Achievements ' + (earned.length > 0 ? 'celebration' : 'welcome')
+          });
           return h('div', {
             style: {
               padding: '20px',
@@ -8659,11 +11560,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+            // Mascot hero — centered, theme-tinted radial backdrop. Falls
+            // back to the trophy emoji on neutral theme (no mascot).
+            h('div', {
+              style: {
+                marginTop: '14px',
+                marginBottom: '4px',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '20px 0',
+                background: 'radial-gradient(ellipse 60% 100% at 50% 50%, ' + palette.accent + '12, transparent 70%)',
+                borderRadius: 16
+              }
+            },
+              h('div', { style: { width: 80, height: 80 } },
+                achHeroMascot || h('div', {
+                  'aria-hidden': 'true',
+                  style: { width: 80, height: 80, borderRadius: '50%', background: palette.accent + '1a', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }
+                }, earned.length > 0 ? '🏆' : '🏅')
+              )
+            ),
+            h('h3', { style: { margin: '8px 0 4px 0', color: palette.text, textAlign: 'center' } }, (function() {
               var tm = state.theme || 'default';
               if (tm === 'steampunk') return '⚙  Workshop Honours';
               if (tm === 'cyberpunk') return '[ACHIEVEMENTS]';
               if (tm === 'kawaii')    return '🏅✨ Achievements';
+              if (tm === 'oceanic')   return '🌊 Markers';
               if (tm === 'neutral')   return 'Achievements';
               return '🏅  Achievements';
             })()),
@@ -8674,12 +11596,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'steampunk') return 'You\'ve been inscribed in the ledger for ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '. Once entered, never struck.';
                   if (tm === 'cyberpunk') return '[EARNED] ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + ' :: write-once :: no rollback';
                   if (tm === 'kawaii')    return 'You\'ve earned ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '! 💕 Once earned, always yours. ✨';
+                  if (tm === 'oceanic')   return earned.length + ' marker' + (earned.length === 1 ? '' : 's') + ' charted. Once entered, never erased.';
                   if (tm === 'neutral')   return earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + ' earned. Additive; not revoked.';
                   return 'You\'ve earned ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '. Additive only — achievements are never taken away.';
                 }
                 if (tm === 'steampunk') return 'The ledger stands blank — your first session shall inscribe the opening entry. Steady hands compound.';
                 if (tm === 'cyberpunk') return '[EMPTY] :: first session unlocks first node :: cadence > speed';
                 if (tm === 'kawaii')    return '🌸 No milestones yet — your first session will unlock one! Small steps, big hearts. 💕';
+                if (tm === 'oceanic')   return 'No markers yet. The first dive sets the first one.';
                 if (tm === 'neutral')   return 'No milestones yet. First session unlocks one.';
                 return 'No milestones earned yet — your first session will unlock one. Consistent practice compounds.';
               })()
@@ -8693,6 +11617,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var ms = MILESTONES.filter(function(x) { return x.id === entry.id; })[0];
                 if (!ms) return null;
                 var tm = state.theme || 'default';
+                // Fresh-earned detection — milestones earned in the last
+                // 24 hours get a brief celebratory pulse so a returning
+                // student can see "this is the one I just got." Compares
+                // entry.date (ISO string) to now; legacy entries with
+                // null dates never pulse (they\'re by definition old).
+                var isFresh = false;
+                if (entry.date) {
+                  var ageMs = Date.now() - new Date(entry.date).getTime();
+                  if (ageMs < 24 * 60 * 60 * 1000) isFresh = true;
+                }
                 var rowStyle = {
                   padding: '12px 14px',
                   background: palette.surface,
@@ -8718,16 +11652,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   rowStyle.border = '1px solid ' + palette.success;
                   rowStyle.borderLeft = '1px solid ' + palette.success;
                   rowStyle.boxShadow = '0 2px 10px rgba(0,0,0,0.04)';
+                } else if (tm === 'oceanic') {
+                  rowStyle.borderRadius = '10px';
+                  rowStyle.boxShadow = '0 0 8px rgba(94,234,212,0.18)';
                 } else if (tm === 'neutral') {
                   rowStyle.borderRadius = '6px';
                 }
+                // Split label into leading icon + rest. Most milestones
+                // are formatted as 'EMOJI Title' (e.g. '🌱 First session').
+                // Splitting at the first space gives us the icon to put in
+                // a circular badge and the title to render as plain text.
+                var labelParts = ms.label.split(/ (.+)/);
+                var leadingIcon = labelParts.length > 1 ? labelParts[0] : '';
+                var titleText = labelParts.length > 1 ? labelParts[1] : ms.label;
                 return h('div', {
                   key: 'ach-' + entry.id,
                   role: 'listitem',
+                  className: isFresh ? 'tp-ach-fresh' : undefined,
                   style: rowStyle
                 },
-                  h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, ms.label),
-                  h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 } },
+                    // Circular success-colored badge for the milestone icon
+                    leadingIcon ? h('div', {
+                      'aria-hidden': 'true',
+                      style: {
+                        width: '34px', height: '34px', borderRadius: '50%',
+                        background: palette.success + '20',
+                        border: '1.5px solid ' + palette.success,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '18px', flexShrink: 0, lineHeight: 1
+                      }
+                    }, leadingIcon) : null,
+                    h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, titleText),
+                    isFresh ? h('span', {
+                      style: {
+                        fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
+                        textTransform: 'uppercase', padding: '2px 6px', borderRadius: 999,
+                        background: palette.success, color: palette.bg, lineHeight: 1.2
+                      }
+                    }, 'NEW') : null
+                  ),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums', flexShrink: 0 } },
                     entry.date ? new Date(entry.date).toLocaleDateString() : 'earned'
                   )
                 );
@@ -8745,6 +11710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk') headerText = 'On the horizon · ' + remaining.length + ' honour' + (remaining.length === 1 ? '' : 's') + ' awaiting';
               else if (tm === 'cyberpunk') headerText = '[QUEUED] ' + remaining.length + ' node' + (remaining.length === 1 ? '' : 's') + ' :: pending unlock';
               else if (tm === 'kawaii') headerText = '✨ Coming up · ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's') + ' waiting to be yours 💕';
+              else if (tm === 'oceanic') headerText = '🌊 On the horizon · ' + remaining.length + ' marker' + (remaining.length === 1 ? '' : 's') + ' to chart';
               else if (tm === 'neutral') headerText = 'Pending: ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's');
               else headerText = 'Coming up · ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's') + ' ahead';
 
@@ -8752,6 +11718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (tm === 'steampunk') footerText = 'No hourglass, no tolls. Each honour is inscribed when the figures warrant it.';
               else if (tm === 'cyberpunk') footerText = '[NO-CLOCK] :: [NO-STREAK] :: nodes trigger on threshold match';
               else if (tm === 'kawaii') footerText = '🌸 No deadlines, no streaks — just you being you. They unlock when they unlock! 💕';
+              else if (tm === 'oceanic') footerText = '🌊 No clock, no streak. Markers chart themselves when the depth reads right.';
               else if (tm === 'neutral') footerText = 'Threshold-triggered. No time pressure.';
               else footerText = 'No deadlines. No streak required. They unlock whenever the numbers add up.';
 
@@ -8765,6 +11732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               };
               if (tm === 'cyberpunk') { chipBase.borderRadius = '2px'; chipBase.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'; }
               else if (tm === 'kawaii') { chipBase.borderStyle = 'solid'; chipBase.borderRadius = '999px'; }
+              else if (tm === 'oceanic') { chipBase.borderStyle = 'solid'; chipBase.borderColor = palette.accentDim || palette.border; }
               else if (tm === 'steampunk') { chipBase.borderStyle = 'solid'; chipBase.borderColor = palette.accentDim || palette.border; }
 
               return h('div', {
@@ -8914,6 +11882,1107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
 
         // ═════════════════════════════════════════════════════
+        // BATTLE MODE — Solo Cascade (Phase 1)
+        // Optional opt-in game-mode surface. Words rise from the
+        // bottom; type the top word to clear; stack hits ceiling →
+        // match-end with non-shaming summary. Three views: menu /
+        // playing / summary. Personal best tracked but not surfaced
+        // as leaderboard.
+        // ═════════════════════════════════════════════════════
+        var battleStateRaw = useState({
+          stack: [], typed: '', startedAt: 0, lastRiseAt: 0, pauseUntil: 0,
+          cleared: 0, errors: 0, combo: 0, bestCombo: 0,
+          paused: false, ended: false,
+          // Bot side (only used in vs-bot mode)
+          botStack: [], botTyped: '', botCleared: 0, botLastRiseAt: 0,
+          botNextKeyAt: 0,
+          // Attack tracking — when the bot has cleared botClearedSinceSend
+          // = BOT_SEND_EVERY[speed], it pushes a random attack word to the
+          // player's stack. The player triggers the same when their combo
+          // hits COMBO_SEND_THRESHOLD (resets combo counter). lastAttackAt
+          // is used by the UI to flash a brief "INCOMING" notice.
+          botClearedSinceSend: 0,
+          incomingFlashTo: 0,    // ts until which to flash "incoming" indicator on player stack
+          outgoingFlashTo: 0,    // ts for "sent" indicator after a player attack lands
+          // Attack picker (Phase 3b) — opens on combo threshold reach.
+          // Pauses main game input; player picks 1 of 3 attack words OR
+          // auto-confirms first option after pickerTimeoutAt.
+          pickerOpen: false,
+          pickerOptions: [],     // 3 attack words to choose from
+          pickerTimeoutAt: 0     // ts at which auto-pick fires
+        });
+        var battleSt = battleStateRaw[0];
+        var setBattleSt = battleStateRaw[1];
+
+        function pickBattleWord(mix) {
+          var r = Math.random();
+          var bucket;
+          if (r < mix.short) bucket = BATTLE_WORDBANK.short;
+          else if (r < mix.short + mix.medium) bucket = BATTLE_WORDBANK.medium;
+          else bucket = BATTLE_WORDBANK.long;
+          // Avoid same-word-twice-in-a-row by quick retry
+          var pick = bucket[Math.floor(Math.random() * bucket.length)];
+          return pick;
+        }
+
+        function startBattle() {
+          var diff = BATTLE_DIFFICULTY[(state.battle && state.battle.difficulty) || 'mercy'];
+          var initialStack = [pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix)];
+          var isVsBot = state.battle.mode === 'vs-bot';
+          var botInitial = isVsBot ? [pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix)] : [];
+          var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
+          var firstKeyDelay = bot ? Math.round(60000 / bot.wpm / 5) : 0; // ms per char at WPM
+          var now = Date.now();
+          setBattleSt({
+            stack: initialStack, typed: '', startedAt: now, lastRiseAt: now, pauseUntil: 0,
+            cleared: 0, errors: 0, combo: 0, bestCombo: 0,
+            paused: false, ended: false,
+            botStack: botInitial, botTyped: '', botCleared: 0, botLastRiseAt: now,
+            botNextKeyAt: isVsBot ? now + 1500 : 0,
+            botClearedSinceSend: 0,
+            incomingFlashTo: 0, outgoingFlashTo: 0,
+            pickerOpen: false, pickerOptions: [], pickerTimeoutAt: 0
+          });
+          updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
+        }
+
+        // Animation tick — advances player + bot rise timers, advances
+        // bot typing if vs-bot mode, and detects match-end on either side.
+        useEffect(function() {
+          if (state.battle.view !== 'playing') return;
+          if (battleSt.ended || battleSt.paused) return;
+          var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          var isVsBot = state.battle.mode === 'vs-bot';
+          var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
+          var msPerChar = bot ? Math.round(60000 / bot.wpm / 5) : 0;
+          var iv = setInterval(function() {
+            var now = Date.now();
+            var patch = {};
+            var didChange = false;
+            var newPlayerStack = battleSt.stack;
+            var newBotStack = battleSt.botStack;
+            var newBotTyped = battleSt.botTyped;
+            var newBotCleared = battleSt.botCleared;
+            var newBotNextKey = battleSt.botNextKeyAt;
+            // PICKER auto-timeout — if open and timer expired, auto-confirm
+            // the FIRST option so newer players still get attacks even if
+            // they don't engage with the picker.
+            if (battleSt.pickerOpen && now >= battleSt.pickerTimeoutAt && battleSt.pickerOptions.length > 0) {
+              newBotStack = newBotStack.concat([battleSt.pickerOptions[0]]);
+              patch.botStack = newBotStack;
+              patch.outgoingFlashTo = now + 1200;
+              patch.pickerOpen = false;
+              patch.pickerOptions = [];
+              patch.combo = 0; // reset after spending
+              didChange = true;
+            }
+            // While picker is open, freeze the player stack rise — feels
+            // unfair to lose to a rising stack while the player is choosing.
+            // Bot stack still rises (you're "saving up" your attack at a
+            // small cost; bot doesn't get free time too).
+            // PLAYER stack rise (skipped if picker open)
+            if (!battleSt.pickerOpen && battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
+              newPlayerStack = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
+              patch.stack = newPlayerStack;
+              patch.lastRiseAt = now;
+              didChange = true;
+            }
+            // BOT stack rise
+            if (isVsBot && now - battleSt.botLastRiseAt >= diff.riseMs) {
+              newBotStack = newBotStack.concat([pickBattleWord(diff.lengthMix)]);
+              patch.botStack = newBotStack;
+              patch.botLastRiseAt = now;
+              didChange = true;
+            }
+            // BOT typing tick — advances 1 character per cadence
+            if (isVsBot && newBotStack.length > 0 && now >= newBotNextKey) {
+              var topBotWord = newBotStack[0];
+              if (newBotTyped.length < topBotWord.length) {
+                // Simulate occasional bot error: delay next key but don't actually typo
+                var isError = Math.random() < bot.errorRate;
+                if (isError) {
+                  newBotNextKey = now + msPerChar * 2;
+                } else {
+                  newBotTyped = newBotTyped + topBotWord[newBotTyped.length];
+                  if (newBotTyped.length >= topBotWord.length) {
+                    // Bot cleared a word
+                    newBotStack = newBotStack.slice(1);
+                    newBotTyped = '';
+                    newBotCleared += 1;
+                    newBotNextKey = now + msPerChar * 3; // brief pause between words
+                    // Bot send-attack — every BOT_SEND_EVERY[speed] cleared
+                    // words, push an attack word to the player's stack.
+                    var sinceSend = battleSt.botClearedSinceSend + 1;
+                    var sendInterval = BOT_SEND_EVERY[state.battle.botSpeed || 'medium'] || 5;
+                    if (sinceSend >= sendInterval) {
+                      var atkBot = BATTLE_ATTACK_WORDS[Math.floor(Math.random() * BATTLE_ATTACK_WORDS.length)];
+                      newPlayerStack = newPlayerStack.concat([atkBot]);
+                      patch.stack = newPlayerStack;
+                      patch.incomingFlashTo = now + 1200;
+                      patch.botClearedSinceSend = 0;
+                    } else {
+                      patch.botClearedSinceSend = sinceSend;
+                    }
+                  } else {
+                    newBotNextKey = now + msPerChar;
+                  }
+                }
+                patch.botStack = newBotStack;
+                patch.botTyped = newBotTyped;
+                patch.botCleared = newBotCleared;
+                patch.botNextKeyAt = newBotNextKey;
+                didChange = true;
+              }
+            }
+            // MATCH-END check
+            var playerCapped = newPlayerStack.length >= BATTLE_STACK_LIMIT;
+            var botCapped = isVsBot && newBotStack.length >= BATTLE_STACK_LIMIT;
+            if (playerCapped || botCapped) {
+              var outcome = isVsBot
+                ? (playerCapped && botCapped ? 'tie' : playerCapped ? 'loss' : 'win')
+                : 'solo';
+              var result = {
+                mode: state.battle.mode,
+                outcome: outcome,
+                cleared: battleSt.cleared, errors: battleSt.errors,
+                bestCombo: battleSt.bestCombo,
+                botCleared: newBotCleared,
+                durationSec: Math.round((now - battleSt.startedAt) / 1000),
+                difficulty: state.battle.difficulty,
+                botSpeed: state.battle.botSpeed
+              };
+              setBattleSt(Object.assign({}, battleSt, patch, { ended: true }));
+              var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+              var newPb = {
+                cleared: Math.max(pb.cleared, result.cleared),
+                longestStreak: Math.max(pb.longestStreak, result.bestCombo),
+                durationSec: Math.max(pb.durationSec, result.durationSec)
+              };
+              var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
+              var newPbBot = isVsBot ? {
+                wins: pbBot.wins + (outcome === 'win' ? 1 : 0),
+                losses: pbBot.losses + (outcome === 'loss' ? 1 : 0),
+                ties: pbBot.ties + (outcome === 'tie' ? 1 : 0)
+              } : pbBot;
+              updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb, personalBestVsBot: newPbBot }) });
+              return;
+            }
+            if (didChange) setBattleSt(Object.assign({}, battleSt, patch));
+          }, 100);
+          return function() { clearInterval(iv); };
+        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped, battleSt.pickerOpen, battleSt.pickerTimeoutAt]);
+
+        // Keystroke handler for Battle mode — separate from drill mode
+        useEffect(function() {
+          if (state.battle.view !== 'playing') return;
+          if (battleSt.ended) return;
+          function onKey(e) {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            // PICKER intercept — when the 3-option overlay is open, only
+            // 1/2/3 select an option; Esc skips (no attack sent). Other
+            // keys are blocked so they don't accidentally edit the typing
+            // queue while the player is choosing.
+            if (battleSt.pickerOpen) {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setBattleSt(Object.assign({}, battleSt, { pickerOpen: false, pickerOptions: [], combo: 0 }));
+                return;
+              }
+              if (e.key === '1' || e.key === '2' || e.key === '3') {
+                e.preventDefault();
+                var idx = parseInt(e.key, 10) - 1;
+                if (idx >= 0 && idx < battleSt.pickerOptions.length) {
+                  var picked = battleSt.pickerOptions[idx];
+                  setBattleSt(Object.assign({}, battleSt, {
+                    botStack: battleSt.botStack.concat([picked]),
+                    outgoingFlashTo: Date.now() + 1200,
+                    pickerOpen: false, pickerOptions: [],
+                    combo: 0
+                  }));
+                }
+                return;
+              }
+              // Block all other keys during picker
+              e.preventDefault();
+              return;
+            }
+            // Allow Esc to pause
+            if (e.key === 'Escape') {
+              setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused }));
+              return;
+            }
+            if (battleSt.paused) return;
+            if (battleSt.stack.length === 0) return;
+            var topWord = battleSt.stack[0];
+            // Backspace — undo one char
+            if (e.key === 'Backspace') {
+              if (battleSt.typed.length > 0) {
+                setBattleSt(Object.assign({}, battleSt, { typed: battleSt.typed.slice(0, -1) }));
+                e.preventDefault();
+              }
+              return;
+            }
+            if (e.key.length !== 1) return;
+            e.preventDefault();
+            var expected = topWord[battleSt.typed.length];
+            if (e.key.toLowerCase() === expected.toLowerCase()) {
+              var nextTyped = battleSt.typed + e.key;
+              if (nextTyped.length === topWord.length) {
+                // Word cleared
+                var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+                var newCombo = battleSt.combo + 1;
+                var nowMs = Date.now();
+                // Combo-attack trigger — vs-bot only. Hit the threshold,
+                // open the 3-option picker overlay (pauses main game until
+                // player picks or auto-pick timer fires).
+                var pickerPatch = {};
+                if (state.battle.mode === 'vs-bot' && newCombo >= COMBO_SEND_THRESHOLD && !battleSt.ended && !battleSt.pickerOpen) {
+                  // Pick 3 distinct random attack words for the menu. If the
+                  // active theme has a flavor pool, bias one option toward it
+                  // so Inko's send-words feel marine, Cogsworth's clockwork,
+                  // etc. The other two come from the generic harder pool —
+                  // keeps vocabulary practice broad while adding character.
+                  var pool = BATTLE_ATTACK_WORDS.slice();
+                  var options = [];
+                  var flavorPool = BATTLE_ATTACK_FLAVOR[state.theme || 'default'];
+                  if (flavorPool && flavorPool.length) {
+                    options.push(flavorPool[Math.floor(Math.random() * flavorPool.length)]);
+                  }
+                  for (var pp = options.length; pp < 3 && pool.length > 0; pp++) {
+                    var idx = Math.floor(Math.random() * pool.length);
+                    var pickWord = pool.splice(idx, 1)[0];
+                    if (options.indexOf(pickWord) !== -1) { pp--; continue; }
+                    options.push(pickWord);
+                  }
+                  // Shuffle so the flavor word isn't always option 1
+                  for (var sh = options.length - 1; sh > 0; sh--) {
+                    var sj = Math.floor(Math.random() * (sh + 1));
+                    var tmp = options[sh]; options[sh] = options[sj]; options[sj] = tmp;
+                  }
+                  pickerPatch.pickerOpen = true;
+                  pickerPatch.pickerOptions = options;
+                  pickerPatch.pickerTimeoutAt = nowMs + 3000;
+                  // combo stays — gets reset when picker resolves
+                }
+                setBattleSt(Object.assign({}, battleSt, pickerPatch, {
+                  stack: battleSt.stack.slice(1),
+                  typed: '',
+                  cleared: battleSt.cleared + 1,
+                  combo: newCombo,
+                  bestCombo: Math.max(battleSt.bestCombo, newCombo),
+                  pauseUntil: nowMs + diff.postClearPauseMs,
+                  // Burst trigger — keyed by clear count so React remounts
+                  // the burst element each time, replaying the CSS one-shot.
+                  clearBurstAt: nowMs,
+                  clearBurstCount: (battleSt.clearBurstCount || 0) + 1
+                }));
+              } else {
+                setBattleSt(Object.assign({}, battleSt, { typed: nextTyped }));
+              }
+            } else {
+              // Forgiveness mode (default): error logged, but typed not advanced
+              setBattleSt(Object.assign({}, battleSt, { errors: battleSt.errors + 1, combo: 0 }));
+            }
+          }
+          window.addEventListener('keydown', onKey);
+          return function() { window.removeEventListener('keydown', onKey); };
+        }, [state.battle.view, state.battle.mode, battleSt.ended, battleSt.paused, battleSt.stack, battleSt.typed, battleSt.combo, battleSt.bestCombo, battleSt.cleared, battleSt.errors, battleSt.pickerOpen, battleSt.pickerOptions, battleSt.botStack]);
+
+        function renderBattleMenu() {
+          var diff = state.battle.difficulty || 'mercy';
+          var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+          return h('div', {
+            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+          },
+            renderBackButton(function() { go('menu'); }, palette),
+            (function() {
+              // Theme-flavored Battle hero — color, glow, and headline copy
+              // pick up the active theme's character. Pink/Mochi was the
+              // baseline; each theme now has its own palette.
+              var tm = state.theme || 'default';
+              var heroAccent, heroAccentSoft, heroText, heroHeadline;
+              if (tm === 'steampunk') {
+                heroAccent = '#d4884c'; heroAccentSoft = 'rgba(212,136,76,0.18)'; heroText = '#fed7aa';
+                heroHeadline = '⚙ The Bench — Battle Mode';
+              } else if (tm === 'cyberpunk') {
+                heroAccent = '#06b6d4'; heroAccentSoft = 'rgba(6,182,212,0.18)'; heroText = '#a5f3fc';
+                heroHeadline = '[ARENA] Battle Mode';
+              } else if (tm === 'oceanic') {
+                heroAccent = '#22d3ee'; heroAccentSoft = 'rgba(34,211,238,0.18)'; heroText = '#a5f3fc';
+                heroHeadline = '🌊 The Shelf — Battle Mode';
+              } else if (tm === 'neutral') {
+                heroAccent = '#b8a080'; heroAccentSoft = 'rgba(184,160,128,0.16)'; heroText = '#e8e8e8';
+                heroHeadline = 'Battle Mode';
+              } else if (tm === 'kawaii') {
+                heroAccent = '#f472b6'; heroAccentSoft = 'rgba(244,114,182,0.18)'; heroText = '#f9a8d4';
+                heroHeadline = '✨ Battle Mode 💕';
+              } else {
+                heroAccent = '#60a5fa'; heroAccentSoft = 'rgba(96,165,250,0.18)'; heroText = '#bfdbfe';
+                heroHeadline = '⌨ Battle Mode';
+              }
+              return h('div', {
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 14, marginTop: 16, marginBottom: 16, padding: '14px 16px',
+                  background: 'radial-gradient(ellipse 60% 100% at 0% 50%, ' + heroAccentSoft.replace('0.18', '0.10') + ', transparent 70%), rgba(15,23,42,0.45)',
+                  border: '1px solid ' + heroAccentSoft.replace('0.18', '0.20'), borderLeft: '4px solid ' + heroAccent, borderRadius: 14
+                }
+              },
+                // Hero mascot — active theme's character at idle. Sets the
+                // tone for Battle Mode at the entry point. Falls back to
+                // the wave emoji for the neutral theme (no mascot).
+                (function() {
+                  var menuMascot = renderBattleMascot(tm, 'idle', { size: 64, label: 'Battle Mode mascot' });
+                  return menuMascot ? h('div', { style: {
+                    width: 64, height: 64, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    filter: 'drop-shadow(0 4px 12px ' + heroAccentSoft.replace('0.18', '0.30') + ')'
+                  } }, menuMascot) : h('div', { 'aria-hidden': 'true', style: {
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: heroAccentSoft, border: '2px solid ' + heroAccent,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 28, lineHeight: 1, flexShrink: 0,
+                    boxShadow: '0 4px 16px ' + heroAccentSoft.replace('0.18', '0.25')
+                  } }, '⌨');
+                })(),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h2', { style: { margin: 0, color: heroText, fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, heroHeadline),
+                  h('p', { style: { margin: '4px 0 0', fontSize: 12, color: palette.textMute, lineHeight: 1.55 } },
+                    'Optional game mode. Words rise from the bottom; type the top word to clear it. Stack hits the ceiling and the match ends. No leaderboard, no streak guilt — just personal best.')
+                )
+              );
+            })(),
+            // Mode picker — Solo / vs Bot. Theme-aware: active-state border
+            // and label color pick up the active mascot's signature accent.
+            (function() {
+              var modeTm = state.theme || 'default';
+              var modeAccentByTheme = {
+                'default':   { border: '#fde047', soft: 'rgba(253,224,71,0.10)', text: '#fde68a' },
+                'steampunk': { border: '#d4884c', soft: 'rgba(212,136,76,0.10)', text: '#fed7aa' },
+                'cyberpunk': { border: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  text: '#a5f3fc' },
+                'kawaii':    { border: '#f472b6', soft: 'rgba(244,114,182,0.10)', text: '#f9a8d4' },
+                'oceanic':   { border: '#22d3ee', soft: 'rgba(34,211,238,0.10)', text: '#a5f3fc' },
+                'neutral':   { border: '#b8a080', soft: 'rgba(184,160,128,0.10)', text: '#e8e8e8' }
+              };
+              var modeAcc = modeAccentByTheme[modeTm] || modeAccentByTheme['default'];
+              // Per-theme solo-mode label so the headline copy carries the
+              // theme's vocabulary without any extra plumbing.
+              var soloLabel = (modeTm === 'oceanic')   ? '🌊 Solo Drift'
+                            : (modeTm === 'steampunk') ? '⚙ Solo Run'
+                            : (modeTm === 'cyberpunk') ? '[SOLO] CASCADE'
+                            : (modeTm === 'kawaii')    ? '🌸 Solo Cascade ✨'
+                            : (modeTm === 'neutral')   ? 'Solo'
+                            :                            '🌊 Solo Cascade';
+              return h('div', { style: { marginBottom: 16 } },
+                h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Pick a mode'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                  [
+                    { key: 'solo', label: soloLabel, blurb: 'Survive as long as you can. No opponent. Personal best tracked.' },
+                    { key: 'vs-bot', label: '🤖 vs Bot', blurb: 'Race an NPC. Build a 4-clear combo to open the attack picker — pick 1 of 3 hard words to send to the bot. Bot sends back automatically.' }
+                  ].map(function(m) {
+                    var active = (state.battle.mode || 'solo') === m.key;
+                    return h('button', {
+                      key: 'mode-' + m.key,
+                      onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { mode: m.key }) }); },
+                      'aria-pressed': active ? 'true' : 'false',
+                      style: {
+                        padding: '12px 14px', borderRadius: 10,
+                        border: '1.5px solid ' + (active ? modeAcc.border : palette.border),
+                        background: active ? modeAcc.soft : palette.surface,
+                        color: active ? modeAcc.text : palette.text,
+                        fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
+                        fontFamily: 'inherit'
+                      }
+                    },
+                      h('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 4 } }, m.label),
+                      h('div', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } }, m.blurb)
+                    );
+                  })
+                )
+              );
+            })(),
+            // Bot speed picker — only when vs-bot selected
+            (state.battle.mode === 'vs-bot') ? h('div', { style: { marginBottom: 16 } },
+              h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Bot speed'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+                Object.keys(BATTLE_BOTS).map(function(key) {
+                  var b2 = BATTLE_BOTS[key];
+                  var active = (state.battle.botSpeed || 'medium') === key;
+                  return h('button', {
+                    key: 'botSpeed-' + key,
+                    onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { botSpeed: key }) }); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: {
+                      padding: '12px 14px', borderRadius: 10,
+                      border: '1.5px solid ' + (active ? '#a78bfa' : palette.border),
+                      background: active ? 'rgba(167,139,250,0.10)' : palette.surface,
+                      color: active ? '#c4b5fd' : palette.text,
+                      fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }
+                  },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 4 } }, b2.label + ' · ' + b2.wpm + ' WPM'),
+                    h('div', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } }, b2.blurb)
+                  );
+                })
+              )
+            ) : null,
+            // Difficulty picker
+            h('div', { style: { marginBottom: 16 } },
+              h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Pick a difficulty'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+                Object.keys(BATTLE_DIFFICULTY).map(function(key) {
+                  var d2 = BATTLE_DIFFICULTY[key];
+                  var active = diff === key;
+                  return h('button', {
+                    key: 'diff-' + key,
+                    onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { difficulty: key }) }); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: {
+                      padding: '12px 14px', borderRadius: 10,
+                      border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                      background: active ? (palette.accent + '1A') : palette.surface,
+                      color: active ? palette.accent : palette.text,
+                      fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }
+                  },
+                    h('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 4 } }, d2.label),
+                    h('div', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } }, d2.blurb)
+                  );
+                })
+              )
+            ),
+            // Personal best chip — only if any prior play
+            (pb.cleared > 0) ? h('div', {
+              style: {
+                marginBottom: 10, padding: '10px 14px', borderRadius: 8,
+                background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)',
+                display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontVariantNumeric: 'tabular-nums'
+              }
+            },
+              h('span', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, '🏁 Personal best'),
+              h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.success, fontWeight: 800 } }, pb.cleared), ' cleared'),
+              h('span', { style: { fontSize: 12, color: palette.textDim } }, 'longest streak: ', h('strong', { style: { color: palette.text, fontWeight: 800 } }, pb.longestStreak))
+            ) : null,
+            // vs-Bot record chip — only when vs-bot selected and any prior play
+            (function() {
+              var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
+              if (state.battle.mode !== 'vs-bot') return null;
+              if (!(pbBot.wins + pbBot.losses + pbBot.ties)) return null;
+              return h('div', {
+                style: {
+                  marginBottom: 16, padding: '10px 14px', borderRadius: 8,
+                  background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)',
+                  display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontVariantNumeric: 'tabular-nums'
+                }
+              },
+                h('span', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, '🤖 vs-Bot record'),
+                h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.success, fontWeight: 800 } }, pbBot.wins), ' wins'),
+                h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.text, fontWeight: 800 } }, pbBot.losses), ' losses'),
+                h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.textMute, fontWeight: 800 } }, pbBot.ties), ' ties')
+              );
+            })(),
+            h('button', {
+              onClick: startBattle,
+              style: Object.assign({}, primaryBtnStyle(palette), {
+                width: '100%', padding: '14px 20px', fontSize: 15, fontWeight: 800,
+                background: palette.accent, borderColor: palette.accent, color: palette.onAccent || '#0f172a'
+              })
+            }, (function() {
+              var startTm = state.theme || 'default';
+              return startTm === 'oceanic'   ? '🌊 Begin the dive'
+                   : startTm === 'steampunk' ? '⚙ Engage'
+                   : startTm === 'cyberpunk' ? '▶ JACK IN'
+                   : startTm === 'kawaii'    ? '✨ Start! 💕'
+                   : startTm === 'neutral'   ? '▶ Start'
+                   :                            '▶ Start Cascade';
+            })()),
+            h('div', { style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: palette.surface, border: '1px solid ' + palette.border, fontSize: 11, color: palette.textMute, lineHeight: 1.55, fontStyle: 'italic' } },
+              (function() {
+                var noteTm = state.theme || 'default';
+                if (noteTm === 'oceanic')   return '🌊 This shelf adds time pressure on purpose. Most growth happens in the regular drills, where there is no clock. Cascade is here when you want a different shape of practice — fast, snappy, and the stack resets at every surface.';
+                if (noteTm === 'steampunk') return '⚙ This bench introduces time pressure by design. Most growth comes from the regular workshops, where the clock does not run. Cascade is here when a different cadence is wanted — sharp, brief, the gearwork reset between bouts.';
+                if (noteTm === 'cyberpunk') return '[NOTE] this mode = time-pressure-by-design. main growth surface = drills (no-clock). cascade = alt-cadence :: fast :: snappy :: stack resets per run.';
+                if (noteTm === 'kawaii')    return '🌸 Heads up — this mode has a clock on purpose! 💕 Most of your growing happens in the regular drills (no timer). Cascade is just here for when you want a different kind of practice — quick, snappy, and the stack starts fresh every match. ✨';
+                if (noteTm === 'neutral')   return 'Time-pressured by design. Most growth occurs in the regular drills (untimed). Cascade is an alternate cadence; stack resets each match.';
+                return '🎯 This mode adds time pressure on purpose. Most students grow more from the regular drills, where there\'s no clock. Cascade is here for when you want a different shape of practice — fast, snappy, with stakes that reset every match.';
+              })()),
+            // Meet the cast — roster of all four mascots. The character
+            // family is part of what makes Battle Mode feel like a place,
+            // not just a drill. Each card shows the live SVG (idle), name,
+            // theme, tagline, and short bio. Tapping a card switches the
+            // active theme so students can preview each mascot.
+            h('div', {
+              style: {
+                marginTop: 22, padding: '14px 16px',
+                background: 'linear-gradient(135deg, ' + palette.accent + '11, ' + palette.accent + '08)',
+                border: '1px solid ' + palette.accent + '30', borderRadius: 12
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 6 } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: palette.accent, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '🎭 Meet the cast'),
+                h('div', { style: { fontSize: 10, color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } }, MASCOT_BIOS.length + ' characters · tap to switch theme')
+              ),
+              h('p', { style: { fontSize: 11, color: palette.textMute, margin: '0 0 12px', lineHeight: 1.55, fontStyle: 'italic' } },
+                'Each theme has a mascot who shows up in the playfield, on the menu, and in the summary screen. They react to what you\'re doing — combo, danger, attack, sleep, win, loss.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+                MASCOT_BIOS.map(function(m) {
+                  var isActive = (state.theme || 'default') === m.theme;
+                  return h('button', {
+                    key: 'cast-' + m.theme,
+                    onClick: function() { upd('theme', m.theme); },
+                    'aria-pressed': isActive ? 'true' : 'false',
+                    style: {
+                      padding: '12px',
+                      background: isActive ? (m.accent + '14') : palette.surface,
+                      border: '1.5px solid ' + (isActive ? m.accent : palette.border),
+                      borderRadius: 10,
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'inherit', color: palette.text,
+                      transition: 'border-color 140ms ease, background 140ms ease'
+                    }
+                  },
+                    // Live mascot preview (idle, 64px)
+                    h('div', { style: { flexShrink: 0, width: 64, height: 64 } },
+                      renderBattleMascot(m.theme, 'idle', { size: 64, label: m.name + ' mascot' })
+                    ),
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap', marginBottom: 2 } },
+                        h('span', { style: { fontSize: 14, fontWeight: 800, color: m.accent, lineHeight: 1.2 } }, m.name),
+                        h('span', { style: {
+                          padding: '1px 6px', borderRadius: 999,
+                          background: m.accent + '22', color: m.accent,
+                          fontSize: 9, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase'
+                        } }, m.themeLabel)
+                      ),
+                      h('div', { style: { fontSize: 11, color: palette.textDim, fontStyle: 'italic', marginBottom: 4, lineHeight: 1.4 } }, m.tagline),
+                      h('div', { style: { fontSize: 10, color: palette.textMute, lineHeight: 1.55 } }, m.bio),
+                      isActive ? h('div', { style: { fontSize: 9, color: m.accent, fontWeight: 800, marginTop: 6, letterSpacing: '0.06em', textTransform: 'uppercase' } }, '★ Active') : null
+                    )
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function renderBattlePlay() {
+          var topWord = battleSt.stack[0] || '';
+          var stack = battleSt.stack;
+          var risePct = Math.min(100, (stack.length / BATTLE_STACK_LIMIT) * 100);
+          var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          var isVsBot = state.battle.mode === 'vs-bot';
+          var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
+          var botRisePct = isVsBot ? Math.min(100, (battleSt.botStack.length / BATTLE_STACK_LIMIT) * 100) : 0;
+          // Word-length difficulty color. The "long word" color was hardcoded
+          // pink (Mochi); now uses palette.accent so each theme's long words
+          // glow in that mascot's signature color (cyan for Inko, brass for
+          // Cogsworth, etc.). Short/medium stay green/amber as universal
+          // difficulty signals (green = easy, amber = medium).
+          function colorForLen(w) {
+            if (w.length <= 5) return '#22c55e';
+            if (w.length <= 7) return '#fbbf24';
+            return palette.accent;
+          }
+          // Compute live mascot state for the player column from current
+          // game state. Priority (high → low):
+          //   sleep    — game paused
+          //   wow      — just cleared an 8+-character word (transient, ~1s)
+          //   incoming — bot just sent an attack
+          //   attack-out — player just sent an attack
+          //   danger   — player stack is critically high (≥7 of 9)
+          //   combo    — combo ≥ 3
+          //   idle     — default
+          // Bot mascot uses inverse triggers for in/out + own danger.
+          var nowMs = Date.now();
+          var playerStackHi = battleSt.stack.length >= 7;
+          var botStackHi = battleSt.botStack.length >= 7;
+          // wowFlash piggybacks on outgoingFlashTo: when the just-cleared
+          // word was 8+ chars, we'd ideally have a separate 'wow' timer,
+          // but for a clean Phase-4 ship we infer wow from combo>=4 + a
+          // word having been cleared just now. Future ship can add a
+          // dedicated wowFlashTo timer for granular control.
+          var playerMascotState = battleSt.paused ? 'sleep'
+            : battleSt.pickerOpen ? 'thinking'
+            : battleSt.incomingFlashTo > nowMs ? 'incoming'
+            : battleSt.outgoingFlashTo > nowMs ? 'attack-out'
+            : playerStackHi ? 'danger'
+            : battleSt.combo >= 3 ? 'combo'
+            : 'idle';
+          var botMascotState = battleSt.paused ? 'sleep'
+            : battleSt.incomingFlashTo > nowMs ? 'attack-out'
+            : battleSt.outgoingFlashTo > nowMs ? 'incoming'
+            : botStackHi ? 'danger'
+            : 'idle';
+          var themeName = state.theme || 'default';
+          // Reusable stack-column renderer — used for both player and bot
+          function renderStackColumn(opts) {
+            var s = opts.stack;
+            var typed = opts.typed;
+            var top = s[0] || '';
+            var pct = Math.min(100, (s.length / BATTLE_STACK_LIMIT) * 100);
+            var headerColor = opts.headerColor;
+            // State-driven column class: danger (≥7 of 9) gets a pulsing
+            // red border; incoming-attack (only on player column) shakes
+            // briefly to register the hit. Both gated under reduced-motion.
+            var colHi = s.length >= 7;
+            var hitFlash = !opts.isBot && battleSt.incomingFlashTo > nowMs;
+            var colClasses = ['tp-stack-col'];
+            if (colHi) colClasses.push('tp-stack-col-danger');
+            if (hitFlash) colClasses.push('tp-stack-col-hit');
+            return h('div', {
+              className: colClasses.join(' '),
+              style: {
+                flex: 1, minWidth: 220, padding: 12,
+                background: opts.bg,
+                border: '2px solid ' + opts.border, borderRadius: 12, minHeight: 360,
+                display: 'flex', flexDirection: 'column', gap: 6,
+                position: 'relative'
+              }
+            },
+              // Header for this column (player/bot) — now hosts a 48px mascot
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '4px 6px', gap: 8 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 } },
+                  // Mascot — bot uses violet tint to distinguish identity
+                  opts.showMascot ? h('div', { style: { flexShrink: 0, width: 48, height: 48 } },
+                    renderBattleMascot(themeName, opts.mascotState, {
+                      size: 48,
+                      bodyColor: opts.isBot ? '#a78bfa' : undefined,
+                      isBot: opts.isBot,
+                      label: (opts.isBot ? 'Opponent' : 'Your') + ' mascot — ' + opts.mascotState
+                    })
+                  ) : null,
+                  h('span', { style: { fontSize: 12, fontWeight: 800, color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' } }, opts.label)
+                ),
+                h('span', { style: { fontSize: 11, color: palette.textMute, fontVariantNumeric: 'tabular-nums' } }, opts.cleared + ' cleared')
+              ),
+              // Per-column pressure gauge
+              h('div', {
+                role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': BATTLE_STACK_LIMIT, 'aria-valuenow': s.length,
+                'aria-label': opts.label + ' stack: ' + s.length + ' of ' + BATTLE_STACK_LIMIT + ' rows',
+                style: { width: '100%', height: 4, background: palette.surface, borderRadius: 2, marginBottom: 8, overflow: 'hidden' }
+              },
+                h('div', { style: {
+                  width: pct + '%', height: '100%',
+                  background: pct < 60 ? palette.success : pct < 85 ? '#fbbf24' : '#ef4444',
+                  transition: 'width 200ms ease, background 200ms ease'
+                } })
+              ),
+              // Cleared-word burst — theme-flavored particle ring that
+              // fires when a word is cleared. Player-column only; remounts
+              // each clear via key=clearBurstCount so the CSS one-shot
+              // animation replays. The burst sits inside a 0×0 wrapper so
+              // it doesn\'t affect layout — purely visual feedback.
+              (!opts.isBot && battleSt.clearBurstCount > 0 && (nowMs - (battleSt.clearBurstAt || 0)) < 700) ? h('div', {
+                key: 'burst-' + battleSt.clearBurstCount,
+                'aria-hidden': 'true',
+                style: { position: 'absolute', left: '50%', top: '70px', width: 0, height: 0, pointerEvents: 'none' }
+              },
+                h('div', { className: 'tp-clear-burst tp-clear-burst-' + themeName }),
+                h('div', { className: 'tp-clear-burst tp-clear-burst-2 tp-clear-burst-' + themeName, style: { animationDelay: '60ms' } })
+              ) : null,
+              // Top word with character feedback. Background = palette.bg
+              // (theme-aware) so oceanic = deep-sea midnight, kawaii = pale
+              // cream, etc., instead of always-slate-900.
+              s.length > 0 ? h('div', {
+                style: {
+                  padding: '12px 10px', borderRadius: 8,
+                  background: palette.bg, border: '2px solid ' + colorForLen(top),
+                  fontSize: opts.large ? 24 : 18, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700,
+                  textAlign: 'center', letterSpacing: '0.06em'
+                },
+                'aria-live': 'off'
+              },
+                top.split('').map(function(ch, i) {
+                  var t = typed[i];
+                  var color, bg;
+                  if (t === undefined) { color = palette.textMute; bg = 'transparent'; }
+                  else if (t.toLowerCase() === ch.toLowerCase()) { color = '#22c55e'; bg = 'rgba(34,197,94,0.10)'; }
+                  else { color = '#ef4444'; bg = 'rgba(239,68,68,0.10)'; }
+                  return h('span', { key: i, style: { color: color, background: bg, padding: '2px 1px', borderRadius: 3 } }, ch);
+                })
+              ) : null,
+              // Remaining stack
+              s.slice(1).map(function(word, i) {
+                var c = colorForLen(word);
+                return h('div', {
+                  key: opts.label + '-' + i + '-' + word,
+                  style: {
+                    padding: '6px 10px', borderRadius: 6,
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid ' + c + '55',
+                    fontSize: opts.large ? 14 : 12, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 600,
+                    textAlign: 'center', color: c, letterSpacing: '0.03em'
+                  }
+                }, word);
+              })
+            );
+          }
+          return h('div', {
+            className: 'tp-battle-stage tp-battle-stage-' + themeName,
+            style: { padding: 24, maxWidth: isVsBot ? 900 : 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
+          },
+            // Theme-flavored ambient particles — drift through the playfield
+            // background. Pure CSS keyframes per `.tp-amb-N` slot; the parent
+            // theme class chooses each slot\'s shape, color, and timing
+            // (bubbles for oceanic, embers for steam, pixels for cyber,
+            // petals for kawaii, feathers for default). Pointer-events: none
+            // so they never block clicks. Absolutely-positioned so the
+            // following normal-flow children naturally paint above them.
+            h('div', {
+              className: 'tp-battle-ambience',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              [0, 1, 2, 3, 4, 5].map(function(i) {
+                return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + i });
+              })
+            ),
+            // HUD bar
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused })); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
+              }, battleSt.paused ? '▶ Resume' : '⏸ Pause'),
+              h('button', {
+                onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) }); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
+              }, '✕ Quit'),
+              isVsBot ? h('span', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic' } }, bot.label + ' · ' + bot.wpm + ' WPM') : null,
+              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12, alignItems: 'center' } },
+                // SEND SLOT chip — vs-bot only, lights up when combo is one shy of threshold (preview).
+                // Amber chip = "one more clear ⚡"; pink chip = "attack ready ⚡⚡⚡".
+                isVsBot && battleSt.combo >= COMBO_SEND_THRESHOLD - 1 ? h('span', {
+                  className: battleSt.combo >= COMBO_SEND_THRESHOLD ? 'tp-attack-ready' : undefined,
+                  style: {
+                    padding: '2px 8px', borderRadius: 999,
+                    background: battleSt.combo >= COMBO_SEND_THRESHOLD ? (palette.accent + '33') : 'rgba(251,191,36,0.18)',
+                    border: '1px solid ' + (battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : '#fbbf24'),
+                    color: battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : '#fcd34d',
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+                    display: 'inline-block'
+                  }
+                }, battleSt.combo >= COMBO_SEND_THRESHOLD ? '⚡ ATTACK READY' : '⚡ next clear sends') : null,
+                // Combo counter — the number scales with combo height so
+                // a 6-combo visibly looms larger than a 3-combo. The
+                // tp-combo-pulse class adds a subtle bounce when the
+                // count remounts (key=combo) so each successful clear
+                // gives a punchy visual receipt.
+                h('span', { style: { color: palette.textMute } }, 'Combo: ',
+                  h('strong', {
+                    key: 'combo-' + battleSt.combo,
+                    className: battleSt.combo >= 3 ? 'tp-combo-bump' : undefined,
+                    style: {
+                      color: battleSt.combo >= 3 ? palette.accent : palette.text,
+                      fontSize: battleSt.combo >= 8 ? 22
+                              : battleSt.combo >= 6 ? 18
+                              : battleSt.combo >= 4 ? 16
+                              : battleSt.combo >= 3 ? 14
+                              : 12,
+                      transition: 'font-size 200ms cubic-bezier(0.34,1.56,0.64,1), color 160ms ease',
+                      display: 'inline-block',
+                      lineHeight: 1
+                    }
+                  }, battleSt.combo)
+                )
+              )
+            ),
+            // Brief flash banners for attacks landing. Theme-flavored copy
+            // so the in-play voice tracks the active mascot. Color stays
+            // red/green as universal incoming/outgoing signal — color isn't
+            // the *only* differentiator (icon + position differ too) so the
+            // theme doesn't override the danger/success semantic.
+            (battleSt.incomingFlashTo > Date.now()) ? h('div', {
+              role: 'status',
+              style: {
+                marginBottom: 10, padding: '6px 12px', borderRadius: 6,
+                background: 'rgba(239,68,68,0.16)', border: '1px solid rgba(239,68,68,0.40)',
+                color: '#fca5a5', fontSize: 12, fontWeight: 700, textAlign: 'center'
+              }
+            }, (function() {
+              var inTm = state.theme || 'default';
+              return inTm === 'oceanic'   ? '⚡ Incoming current — bot sent a word'
+                   : inTm === 'steampunk' ? '⚡ The bot lobs a word at the bench'
+                   : inTm === 'cyberpunk' ? '[INCOMING] BOT_PACKET'
+                   : inTm === 'kawaii'    ? '⚡ The bot sent you a word! 💕'
+                   : inTm === 'neutral'   ? 'Incoming: bot sent a word.'
+                   :                         '⚡ Bot sent you a word!';
+            })()) : null,
+            (battleSt.outgoingFlashTo > Date.now()) ? h('div', {
+              role: 'status',
+              style: {
+                marginBottom: 10, padding: '6px 12px', borderRadius: 6,
+                background: 'rgba(34,197,94,0.16)', border: '1px solid rgba(34,197,94,0.40)',
+                color: '#86efac', fontSize: 12, fontWeight: 700, textAlign: 'center'
+              }
+            }, (function() {
+              var outTm = state.theme || 'default';
+              return outTm === 'oceanic'   ? '⚡ Ink spurt away — word sent to the bot'
+                   : outTm === 'steampunk' ? '⚡ The bench returns fire — word dispatched'
+                   : outTm === 'cyberpunk' ? '[OUTBOUND] PACKET_DELIVERED'
+                   : outTm === 'kawaii'    ? '⚡ You sent a word back! 💕'
+                   : outTm === 'neutral'   ? 'Outgoing: word sent to bot.'
+                   :                          '⚡ You sent a word to the bot!';
+            })()) : null,
+            // Side-by-side or solo playfield
+            isVsBot ? h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' } },
+              renderStackColumn({
+                label: 'You', cleared: battleSt.cleared,
+                stack: battleSt.stack, typed: battleSt.typed,
+                bg: 'linear-gradient(180deg, ' + palette.accent + '14, rgba(15,23,42,0.4))',
+                border: palette.accent + '4D', headerColor: palette.accent, large: true,
+                showMascot: true, isBot: false, mascotState: playerMascotState
+              }),
+              renderStackColumn({
+                label: 'Bot', cleared: battleSt.botCleared,
+                stack: battleSt.botStack, typed: battleSt.botTyped,
+                bg: 'linear-gradient(180deg, rgba(167,139,250,0.08), rgba(15,23,42,0.4))',
+                border: 'rgba(167,139,250,0.30)', headerColor: '#c4b5fd', large: false,
+                showMascot: true, isBot: true, mascotState: botMascotState
+              })
+            ) : renderStackColumn({
+              label: 'You', cleared: battleSt.cleared,
+              stack: battleSt.stack, typed: battleSt.typed,
+              bg: 'linear-gradient(180deg, ' + palette.accent + '11, rgba(15,23,42,0.4))',
+              border: palette.accent + '33', headerColor: palette.accent, large: true,
+              showMascot: true, isBot: false, mascotState: playerMascotState
+            }),
+            // ATTACK PICKER OVERLAY — opens when combo hits threshold.
+            // 3 random attack words; pick one (1/2/3 keys or click) within
+            // 3 seconds or auto-pick option 1. Esc skips entirely.
+            battleSt.pickerOpen ? (function() {
+              var msLeft = Math.max(0, battleSt.pickerTimeoutAt - Date.now());
+              var secLeft = Math.ceil(msLeft / 1000);
+              return h('div', {
+                role: 'dialog',
+                'aria-modal': 'true',
+                'aria-label': 'Choose an attack word to send to the bot',
+                style: {
+                  marginTop: 12, padding: 16, borderRadius: 10,
+                  background: 'linear-gradient(135deg, ' + palette.accent + '22, rgba(15,23,42,0.4))',
+                  border: '2px solid ' + palette.accent,
+                  boxShadow: '0 4px 20px ' + palette.accent + '40'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: palette.accent } }, '⚡ ATTACK READY — pick a word to send'),
+                  h('div', { style: { fontSize: 11, color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } }, secLeft + 's · auto-pick option 1')
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
+                  battleSt.pickerOptions.map(function(w, i) {
+                    return h('button', {
+                      key: 'pick-' + i,
+                      onClick: function() {
+                        setBattleSt(Object.assign({}, battleSt, {
+                          botStack: battleSt.botStack.concat([w]),
+                          outgoingFlashTo: Date.now() + 1200,
+                          pickerOpen: false, pickerOptions: [],
+                          combo: 0
+                        }));
+                      },
+                      style: {
+                        padding: '14px 12px', borderRadius: 8,
+                        background: palette.bg, border: '2px solid ' + palette.accent,
+                        color: palette.text, fontSize: 17, fontWeight: 700,
+                        fontFamily: 'ui-monospace, Menlo, monospace',
+                        cursor: 'pointer', letterSpacing: '0.06em',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                      }
+                    },
+                      h('div', { style: { fontSize: 9, color: palette.accent, fontWeight: 800, marginBottom: 4, fontFamily: 'inherit' } }, '[' + (i + 1) + ']'),
+                      w
+                    );
+                  })
+                ),
+                h('div', { style: { fontSize: 10, color: palette.textMute, marginTop: 10, fontStyle: 'italic', textAlign: 'center' } },
+                  'Tap a card OR press 1 / 2 / 3 to send. Press Esc to skip and not send. Your stack is frozen while you choose.')
+              );
+            })() : null,
+            // Pause overlay
+            battleSt.paused ? h('div', {
+              role: 'status',
+              style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: '#fcd34d', fontSize: 13, fontWeight: 700 }
+            }, '⏸ Paused — both stacks frozen. Press Resume or Esc to continue.') : null,
+            // Difficulty + cadence footer
+            h('div', { style: { marginTop: 14, fontSize: 11, color: palette.textMute, textAlign: 'center', fontStyle: 'italic' } },
+              diff.label + ' · rise every ' + Math.round(diff.riseMs / 1000) + 's · Esc to pause' + (isVsBot ? ' · type only YOUR stack' : ''))
+          );
+        }
+
+        function renderBattleSummary() {
+          var r = state.battle.lastResult || { cleared: 0, errors: 0, bestCombo: 0, durationSec: 0, difficulty: 'mercy', mode: 'solo', outcome: 'solo' };
+          var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+          var newPbCleared = r.cleared > 0 && r.cleared >= pb.cleared;
+          var newPbStreak = r.bestCombo > 0 && r.bestCombo >= pb.longestStreak;
+          var diff = BATTLE_DIFFICULTY[r.difficulty || 'mercy'];
+          var isVsBot = r.mode === 'vs-bot';
+          var bot = isVsBot ? BATTLE_BOTS[r.botSpeed || 'medium'] : null;
+          // Outcome theming for vs-bot. Mascot state mapped to outcome
+          // (win → celebrate; loss → droop; tie/solo → idle).
+          // Theme-flavored solo-completion accent — picks up the active
+          // mascot's signature color so Solo Cascade summaries match the
+          // theme (Pip yellow, Cogsworth brass, Vex cyan, Mochi pink, Inko
+          // bioluminescent cyan, Pip default for fallback).
+          var soloAccentByTheme = {
+            'default':   '#fde047',
+            'steampunk': '#d4884c',
+            'cyberpunk': '#06b6d4',
+            'kawaii':    '#f9a8d4',
+            'oceanic':   '#22d3ee',
+            'neutral':   '#b8a080'
+          };
+          var outcomeIcon, outcomeTitle, outcomeAccent, outcomeMascotState;
+          var _outTm = state.theme || 'default';
+          if (isVsBot) {
+            if (r.outcome === 'win') {
+              outcomeIcon = '🏆'; outcomeAccent = '#22c55e'; outcomeMascotState = 'win';
+              outcomeTitle = (_outTm === 'oceanic')   ? 'You surfaced first'
+                           : (_outTm === 'steampunk') ? 'The bench prevailed'
+                           : (_outTm === 'cyberpunk') ? '[VICTORY]'
+                           : (_outTm === 'kawaii')    ? 'You won! 🎉💕'
+                           : (_outTm === 'neutral')   ? 'Win.'
+                           :                             'You won!';
+            } else if (r.outcome === 'loss') {
+              outcomeIcon = '🌊'; outcomeAccent = '#a78bfa'; outcomeMascotState = 'loss';
+              outcomeTitle = (_outTm === 'oceanic')   ? 'The bot reached the surface first'
+                           : (_outTm === 'steampunk') ? 'The bot edged the bench this round'
+                           : (_outTm === 'cyberpunk') ? '[BOT WINS] :: this round'
+                           : (_outTm === 'kawaii')    ? 'The bot got there first this time 💕'
+                           : (_outTm === 'neutral')   ? 'Bot win.'
+                           :                             'Bot won this round';
+            } else {
+              outcomeIcon = '🤝'; outcomeAccent = '#fbbf24'; outcomeMascotState = 'idle';
+              outcomeTitle = (_outTm === 'oceanic')   ? 'Both stacks broke surface together'
+                           : (_outTm === 'steampunk') ? 'A draw — both benches at the brink'
+                           : (_outTm === 'cyberpunk') ? '[STALEMATE] both stacks capped'
+                           : (_outTm === 'kawaii')    ? 'A tie — both of you capped! 🤝💕'
+                           : (_outTm === 'neutral')   ? 'Tie. Both stacks capped.'
+                           :                             'Tie — both stacks capped';
+            }
+          } else {
+            var _soloTm = state.theme || 'default';
+            outcomeIcon = (_soloTm === 'oceanic') ? '🌊'
+                        : (_soloTm === 'cyberpunk') ? '▰'
+                        : (_soloTm === 'steampunk') ? '⚙'
+                        : (_soloTm === 'kawaii') ? '🌸'
+                        : '✨';
+            outcomeTitle = (_soloTm === 'oceanic')   ? 'Surfaced — dive complete'
+                         : (_soloTm === 'steampunk') ? 'The shift is concluded'
+                         : (_soloTm === 'cyberpunk') ? '[RUN COMPLETE]'
+                         : (_soloTm === 'kawaii')    ? 'Run complete! 💕'
+                         : (_soloTm === 'neutral')   ? 'Run complete.'
+                         :                              'Match complete';
+            outcomeAccent = soloAccentByTheme[_soloTm] || soloAccentByTheme['default'];
+            outcomeMascotState = r.cleared > 0 ? 'win' : 'idle';
+          }
+          var summaryThemeName = state.theme || 'default';
+          var summaryMascot = renderBattleMascot(summaryThemeName, outcomeMascotState, {
+            size: 96,
+            label: 'Match-result mascot — ' + outcomeMascotState
+          });
+          return h('div', {
+            className: 'tp-battle-stage tp-battle-stage-' + summaryThemeName,
+            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
+          },
+            // Theme-flavored ambience layer — same particles as the playfield
+            // so the celebration screen carries the theme through. Doubled
+            // to 8 particles (vs 6 in playfield) since the summary screen
+            // is shorter + less visually busy, can absorb more atmosphere.
+            h('div', {
+              className: 'tp-battle-ambience',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              [0, 1, 2, 3, 4, 5, 6, 7].map(function(i) {
+                return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + (i % 6) });
+              })
+            ),
+            renderBackButton(function() { go('menu'); }, palette),
+            h('div', {
+              style: {
+                marginTop: 16, padding: 24, borderRadius: 14, textAlign: 'center',
+                background: 'radial-gradient(ellipse at 50% 30%, ' + outcomeAccent + '22, rgba(15,23,42,0.4))',
+                border: '1px solid ' + outcomeAccent + '55',
+                position: 'relative'
+              }
+            },
+              // Mascot if theme has one, else fall back to the outcome emoji
+              summaryMascot ? h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, summaryMascot)
+                            : h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, outcomeIcon),
+              h('h2', { style: { margin: '0 0 4px', color: outcomeAccent, fontSize: 22, fontWeight: 900 } }, outcomeTitle),
+              h('p', { style: { margin: '0 0 16px', fontSize: 12, color: palette.textMute, fontStyle: 'italic' } },
+                isVsBot
+                  ? ('You cleared ' + r.cleared + ' vs the bot\'s ' + (r.botCleared || 0) + ' on ' + diff.label + ' against ' + bot.label + '. Every match resets both stacks.')
+                  : ('You cleared ' + r.cleared + ' word' + (r.cleared === 1 ? '' : 's') + ' on ' + diff.label + '. Every run resets the stack.'))
+            ),
+            // Stat grid — adds Bot Cleared column when vs-bot
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginTop: 14, marginBottom: 14 } },
+              [
+                { label: isVsBot ? 'You cleared' : 'Cleared', value: r.cleared, color: palette.success, isPb: newPbCleared }
+              ].concat(isVsBot ? [
+                { label: 'Bot cleared', value: r.botCleared || 0, color: '#a78bfa', isPb: false }
+              ] : []).concat([
+                { label: 'Best streak', value: r.bestCombo, color: soloAccentByTheme[summaryThemeName] || '#f472b6', isPb: newPbStreak },
+                { label: 'Duration', value: r.durationSec + 's', color: palette.text, isPb: false },
+                { label: 'Errors', value: r.errors, color: palette.textMute, isPb: false }
+              ]).map(function(s, i) {
+                // PB cells get a soft success-colored glow + a one-shot
+                // celebration on the value (scale-pop) + the ★ label flips
+                // in. Non-PB cells stay quiet so the PBs visually pop.
+                return h('div', {
+                  key: i,
+                  className: s.isPb ? 'tp-pb-cell' : undefined,
+                  style: {
+                    padding: '12px 14px',
+                    background: palette.surface,
+                    border: '1px solid ' + (s.isPb ? palette.success : palette.border),
+                    borderRadius: 10,
+                    position: 'relative'
+                  }
+                },
+                  h('div', { style: { fontSize: 10, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, s.label),
+                  h('div', {
+                    className: s.isPb ? 'tp-pb-value' : undefined,
+                    style: {
+                      fontSize: 22, fontWeight: 800, color: s.color, fontVariantNumeric: 'tabular-nums', marginTop: 2,
+                      display: 'inline-block'
+                    }
+                  }, s.value),
+                  s.isPb ? h('div', {
+                    className: 'tp-pb-tag',
+                    style: { fontSize: 10, color: palette.success, fontWeight: 700, marginTop: 2 }
+                  }, '★ Personal best') : null
+                );
+              })
+            ),
+            // Actions
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: startBattle,
+                style: Object.assign({}, primaryBtnStyle(palette), {
+                  background: palette.accent, borderColor: palette.accent, color: palette.onAccent || '#0f172a', fontSize: 13, padding: '10px 18px'
+                })
+              }, '↻ Try again'),
+              h('button', {
+                onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) }); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 13, padding: '10px 18px' })
+              }, 'Battle menu'),
+              h('button', {
+                onClick: function() { go('menu'); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 13, padding: '10px 18px' })
+              }, 'Main menu')
+            )
+          );
+        }
+
+        function renderBattle() {
+          var v = state.battle.view || 'menu';
+          if (v === 'playing') return renderBattlePlay();
+          if (v === 'summary') return renderBattleSummary();
+          return renderBattleMenu();
+        }
+
+        // ═════════════════════════════════════════════════════
         // ROUTER
         // ═════════════════════════════════════════════════════
         var viewContent;
@@ -8927,6 +12996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           case 'custom-setup':   viewContent = renderCustomSetup(); break;
           case 'shortcuts':      viewContent = renderShortcuts(); break;
           case 'achievements':   viewContent = renderAchievements(); break;
+          case 'battle':         viewContent = renderBattle(); break;
           case 'menu':
           default:               viewContent = renderMenu();
         }
@@ -8941,6 +13011,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           lang: rootLang,
           style: {
             background: rootBackground,
+            // Multi-layer default-theme backgrounds need explicit per-layer
+            // tile + attachment hints so the radial accent stays anchored
+            // and the SVG paper-grain repeats. Single-layer themes ignore
+            // these (CSS just truncates to the available layer count).
+            backgroundRepeat: 'no-repeat, repeat, no-repeat',
+            backgroundAttachment: 'fixed, scroll, scroll',
             minHeight: '100%',
             color: palette.text,
             fontFamily: fontFamily
@@ -9010,6 +13086,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // sticker card — extra rounded + soft colored shadow
       base.borderRadius = '18px';
       base.boxShadow = '0 3px 10px rgba(232,90,138,0.12)';
+    } else if (themeName === 'oceanic') {
+      // soft tide card — gentle cyan glow + accent side-bar
+      base.borderRadius = '10px';
+      base.borderLeft = '3px solid ' + palette.accent;
+      base.boxShadow = '0 0 12px rgba(34,211,238,0.1)';
     } else if (themeName === 'neutral') {
       // minimal — thinner border, less padding
       base.borderRadius = '4px';
@@ -9070,6 +13151,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       labelStyle.textTransform = 'none';
       labelStyle.letterSpacing = '0.02em';
       labelStyle.fontWeight = 600;
+    } else if (tm === 'oceanic') {
+      cardStyle.borderRadius = '10px';
+      cardStyle.borderLeft = '3px solid ' + palette.accent;
+      cardStyle.boxShadow = '0 0 10px rgba(34,211,238,0.1)';
+      labelStyle.color = palette.accent;
     } else if (tm === 'neutral') {
       cardStyle.borderRadius = '6px';
     }
@@ -9982,6 +14068,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       if (tm === 'kawaii') {
         return '🌸 ' + name + ' hasn\'t tried a typing practice session yet — but that\'s totally okay! ✨ The Home Row drill is waiting whenever they feel like saying hi. 💕';
       }
+      if (tm === 'oceanic') {
+        return name + ' has not yet made their first dive in the typing tool. The Home Row shelf is open whenever they want to start.';
+      }
       if (tm === 'neutral') {
         return name + ' has not completed a typing-practice session. The Home Row drill is available at any time.';
       }
@@ -10009,6 +14098,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       } else if (tm === 'kawaii') {
         parts.push('💕 ' + name + ' showed up for ' + thisWeek.length + ' practice session' + (thisWeek.length === 1 ? '' : 's') +
           ' this week across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' — so proud of them! ✨');
+      } else if (tm === 'oceanic') {
+        parts.push(name + ' visited the typing shelf for ' + thisWeek.length + ' session' + (thisWeek.length === 1 ? '' : 's') +
+          ' across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week — steady tide.');
       } else if (tm === 'neutral') {
         parts.push(name + ': ' + thisWeek.length + ' session' + (thisWeek.length === 1 ? '' : 's') + ' across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week.');
       } else {
@@ -10022,6 +14114,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         parts.push('[TOTAL] ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' :: [7D] no activity.');
       } else if (tm === 'kawaii') {
         parts.push('🌸 ' + name + ' has ' + sessions.length + ' practice session' + (sessions.length === 1 ? '' : 's') + ' recorded — they haven\'t stopped by in the last 7 days, and that\'s okay! 💕');
+      } else if (tm === 'oceanic') {
+        parts.push(name + ' has ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' on the chart; the shelf has been quiet for 7 days. Tide turns at its own pace.');
       } else if (tm === 'neutral') {
         parts.push(name + ': ' + sessions.length + ' total session' + (sessions.length === 1 ? '' : 's') + '; no practice in the last 7 days.');
       } else {
@@ -10038,6 +14132,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         parts.push('[PEAK 7D] ' + bestWpmThisWeek + ' WPM' + (isPB ? ' :: NEW RECORD' : '') + '.');
       } else if (tm === 'kawaii') {
         parts.push('✨ Their best speed this week was ' + bestWpmThisWeek + ' WPM' + (isPB ? ' — a brand-new personal best! 🎉💕' : '.'));
+      } else if (tm === 'oceanic') {
+        parts.push('Their peak this week was ' + bestWpmThisWeek + ' WPM' + (isPB ? ' — a new high-water mark.' : '.'));
       } else if (tm === 'neutral') {
         parts.push('Best WPM this week: ' + bestWpmThisWeek + (isPB ? ' (personal best).' : '.'));
       } else {
@@ -10050,6 +14146,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         parts.push('[ALL-TIME PEAK] ' + bestWpm + ' WPM.');
       } else if (tm === 'kawaii') {
         parts.push('🌟 All-time best: ' + bestWpm + ' WPM — that\'s amazing! 💖');
+      } else if (tm === 'oceanic') {
+        parts.push('All-time high-water mark: ' + bestWpm + ' WPM.');
       } else if (tm === 'neutral') {
         parts.push('All-time best WPM: ' + bestWpm + '.');
       } else {
@@ -10069,6 +14167,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           parts.push('[GOAL] ' + state.iepGoal.targetWpm + ' WPM @ ' + state.iepGoal.targetAccuracy + '% :: hit ' + metCount + '/' + lastN + ' recent runs.');
         } else if (tm === 'kawaii') {
           parts.push('🎯 They\'re working toward ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '% and reached it in ' + metCount + ' of the last ' + lastN + ' session' + (lastN === 1 ? '' : 's') + ' — go go go! 💪✨');
+        } else if (tm === 'oceanic') {
+          parts.push('IEP target: ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '%. Reached on ' + metCount + ' of the last ' + lastN + ' dive' + (lastN === 1 ? '' : 's') + '.');
         } else if (tm === 'neutral') {
           parts.push('IEP goal: ' + state.iepGoal.targetWpm + ' WPM / ' + state.iepGoal.targetAccuracy + '%. Met ' + metCount + '/' + lastN + ' recent sessions.');
         } else {
@@ -10084,6 +14184,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           parts.push('[GOAL] ' + state.iepGoal.targetWpm + ' WPM :: [CURRENT AVG] ' + currentAvg + ' WPM :: delta closing with session volume.');
         } else if (tm === 'kawaii') {
           parts.push('🌱 Goal: ' + state.iepGoal.targetWpm + ' WPM. Right now they\'re averaging ' + currentAvg + ' — every session gets them closer! 💕');
+        } else if (tm === 'oceanic') {
+          parts.push('IEP target: ' + state.iepGoal.targetWpm + ' WPM. Current average: ' + currentAvg + '. The current is closing the gap.');
         } else if (tm === 'neutral') {
           parts.push('IEP goal: ' + state.iepGoal.targetWpm + ' WPM. Current avg: ' + currentAvg + ' WPM.');
         } else {
@@ -10102,6 +14204,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           parts.push('[TIER CLEARED] ' + clearedName.toUpperCase() + '.');
         } else if (tm === 'kawaii') {
           parts.push('🏆 They cleared the ' + clearedName + ' tier — so cool! ✨');
+        } else if (tm === 'oceanic') {
+          parts.push('Cleared the ' + clearedName + ' shelf in the structured tier progression.');
         } else if (tm === 'neutral') {
           parts.push('Cleared tier: ' + clearedName + '.');
         } else {
@@ -10118,6 +14222,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         parts.push('[PILOT LOG] "' + state.motivationStatement + '"');
       } else if (tm === 'kawaii') {
         parts.push('💬 In their own words: "' + state.motivationStatement + '" 💕');
+      } else if (tm === 'oceanic') {
+        parts.push('In their own words: "' + state.motivationStatement + '"');
       } else if (tm === 'neutral') {
         parts.push('Student note: "' + state.motivationStatement + '"');
       } else {
@@ -10413,7 +14519,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       onMouseOut: function(e) { if (unlocked) e.currentTarget.style.borderColor = isFavorite ? palette.accent : palette.border; }
     },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' } },
-        h('span', { style: { fontSize: '24px' } }, drill.icon),
+        // Circular accent badge for the drill icon — matches the curated-
+        // pack badge aesthetic. Soft accent fill + 1.5px solid accent ring
+        // when unlocked; muted border-only when locked. Adds visual mass
+        // and distinguishes drill cards from generic surfaces.
+        h('div', {
+          'aria-hidden': 'true',
+          style: {
+            width: '38px', height: '38px', borderRadius: '50%',
+            background: unlocked ? (palette.accent + '22') : 'transparent',
+            border: '1.5px solid ' + (unlocked ? palette.accent : palette.border),
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '20px', flexShrink: 0, lineHeight: 1
+          }
+        }, drill.icon),
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginRight: '20px' } },
           // Theme-voiced AI chip — surfaces only on drills that route
           // through the AI pipeline (currently just 'passage'). Visually
@@ -10434,6 +14553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (tm === 'steampunk') return '⚙ AI';
             if (tm === 'cyberpunk') return '[AI]';
             if (tm === 'kawaii')    return '✨ AI 💕';
+            if (tm === 'oceanic')   return '🌊 AI';
             if (tm === 'neutral')   return 'AI';
             return '✨ AI';
           })()) : null,
@@ -10481,6 +14601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (tm === 'steampunk')      label = '◯ untouched — a new workbench';
           else if (tm === 'cyberpunk') label = '[UNEXPLORED]';
           else if (tm === 'kawaii')    label = '🌱 never tried yet';
+          else if (tm === 'oceanic')   label = '~ unexplored shelf';
           else if (tm === 'neutral')   label = 'not yet attempted';
           else                         label = '🌱 never tried';
           return h('div', {
@@ -10523,6 +14644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (tm === 'steampunk') return '⚙ today';
             if (tm === 'cyberpunk') return '[TODAY]';
             if (tm === 'kawaii')    return '💕 today';
+            if (tm === 'oceanic')   return '🌊 today';
             if (tm === 'neutral')   return 'today';
             return '✓ today';
           })()) : null

@@ -96,7 +96,7 @@
     className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 24,
-    className: "fill-current text-yellow-400"
+    className: "fill-current text-yellow-700"
   }), " ", t('concept_sort.start_action'))) : generatedContent?.data && generatedContent?.data.categories && /*#__PURE__*/React.createElement("div", {
     className: "space-y-4 overflow-y-auto pr-2"
   }, /*#__PURE__*/React.createElement("div", {
@@ -223,7 +223,7 @@
           height: Math.round(32 * conceptSortImageScale) + 'px'
         }
       }) : /*#__PURE__*/React.createElement("div", {
-        className: "rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-400 text-[10px]",
+        className: "rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-600 text-[10px]",
         title: "No image",
         style: {
           width: Math.round(32 * conceptSortImageScale) + 'px',

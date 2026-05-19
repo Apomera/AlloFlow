@@ -69,6 +69,2418 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   function sfxTreat() { beeTone(200,0.15,"square",0.03); beeTone(280,0.12,"square",0.03); }
 
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // EDUCATIONAL REFERENCE CONTENT — verbose data blocks consumed by the
+  // tool's reference panels. Defined at IIFE scope so the data loads once
+  // and the render function can read freely without re-allocation.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── Bee species (verbose) ──────────────────────────────────────────────
+  var BEE_SPECIES = [
+    {
+      common: 'Western honey bee',
+      scientific: 'Apis mellifera',
+      range: 'Native to Europe, Africa, Western Asia; introduced worldwide for agriculture',
+      colonySize: '20,000-80,000 in peak summer',
+      role: 'Primary commercial honey producer and crop pollinator. Eusocial. Perennial colonies.',
+      lifespan: 'Worker: 6 weeks summer / 4-6 months winter. Queen: 2-5 years. Drone: ~90 days.',
+      notes: 'The species you simulate in this lab. Most studied bee in history. ~80 subspecies including Italian (gentle, light), Carniolan (cold-hardy), Russian (varroa-resistant).',
+      educationalValue: 'Best entry point for studying social insects, agriculture, and ecology.',
+    },
+    {
+      common: 'Asian honey bee',
+      scientific: 'Apis cerana',
+      range: 'Asia (China, India, Korea, Japan, Southeast Asia)',
+      colonySize: '6,000-7,000',
+      role: 'Smaller native cousin of A. mellifera. Coevolved with varroa mites and grooms them off.',
+      lifespan: 'Similar to A. mellifera but slightly shorter',
+      notes: 'The varroa mite originally parasitized this species; jumped to A. mellifera in the 1950s with catastrophic consequences.',
+      educationalValue: 'Compare-contrast example for coevolution and host-parasite dynamics.',
+    },
+    {
+      common: 'Giant honey bee',
+      scientific: 'Apis dorsata',
+      range: 'South and Southeast Asia',
+      colonySize: '60,000+',
+      role: 'Builds single massive comb hanging from trees or cliffs; does not nest in cavities',
+      lifespan: 'Migratory — colonies move seasonally',
+      notes: 'Honey hunters in Nepal climb 100m cliffs to harvest their honey. Cannot be domesticated.',
+      educationalValue: 'Illustrates that not all social bees use cavity nests; ecological niche variation.',
+    },
+    {
+      common: 'Dwarf honey bee',
+      scientific: 'Apis florea',
+      range: 'Southern Asia',
+      colonySize: '2,000-7,000',
+      role: 'Smallest honey bee; builds single horizontal comb in open',
+      lifespan: 'Similar pattern to other Apis',
+      notes: 'Performs the waggle dance on a horizontal surface, unlike A. mellifera which dances on vertical comb.',
+      educationalValue: 'Comparative behavior — same dance, different physical context.',
+    },
+    {
+      common: 'Bumblebees',
+      scientific: 'Bombus spp. (~250 species)',
+      range: 'Worldwide except sub-Saharan Africa and most of Asia',
+      colonySize: '50-400',
+      role: 'Crucial pollinators of tomatoes, blueberries, cranberries — buzz pollination unlocks tightly-held pollen',
+      lifespan: 'Annual colonies. Queens overwinter alone, found new colonies each spring.',
+      notes: 'Larger and fuzzier than honey bees. Can fly in cooler temps. In Maine, Bombus terricola (yellow-banded bumble bee) is endangered.',
+      educationalValue: 'Native pollinator example; teaches that honey bees are imported and natives need protection too.',
+    },
+    {
+      common: 'Carpenter bees',
+      scientific: 'Xylocopa spp.',
+      range: 'Worldwide',
+      colonySize: 'Solitary or small family groups',
+      role: 'Nest in wood (drilling tunnels). Important wild pollinators but sometimes a nuisance to wooden structures.',
+      lifespan: '~1 year',
+      notes: 'Often mistaken for bumblebees. Females have shiny black abdomens (bumblebees are fuzzy throughout).',
+      educationalValue: 'Solitary bee example; tunneling behavior is observable in spring.',
+    },
+    {
+      common: 'Mason bees',
+      scientific: 'Osmia spp.',
+      range: 'Northern Hemisphere',
+      colonySize: 'Solitary',
+      role: 'Spring orchard pollinators. Each female builds her own series of mud-walled brood cells in hollow stems or holes.',
+      lifespan: '1 year',
+      notes: 'Native blue orchard mason bee (Osmia lignaria) is more efficient per-bee than honey bees for apple orchards. Maine has 24+ Osmia species.',
+      educationalValue: 'Easy-to-host native pollinators; students can build mason bee houses.',
+    },
+    {
+      common: 'Leafcutter bees',
+      scientific: 'Megachile spp.',
+      range: 'Worldwide',
+      colonySize: 'Solitary',
+      role: 'Cut circular sections from leaves to build cigar-shaped brood cells. Important alfalfa pollinators.',
+      lifespan: '1 year',
+      notes: 'Look for perfectly round bite-marks on rose or redbud leaves — that\'s leafcutter work.',
+      educationalValue: 'Easy to observe in summer; teaches that "damage" can be construction.',
+    },
+    {
+      common: 'Sweat bees',
+      scientific: 'Halictidae family (1,000+ species)',
+      range: 'Worldwide',
+      colonySize: 'Solitary to small colonies',
+      role: 'Small, often metallic green or blue, attracted to human sweat for salt',
+      lifespan: '~1 year',
+      notes: 'Easy to overlook because they\'re small (~5mm). Most-overlooked native pollinator group.',
+      educationalValue: 'Demonstrates that "bee" doesn\'t always mean "yellow and black striped."',
+    },
+    {
+      common: 'Squash bees',
+      scientific: 'Peponapis pruinosa, Xenoglossa spp.',
+      range: 'North America',
+      colonySize: 'Solitary',
+      role: 'Specialist on Cucurbita (squash, pumpkin, zucchini, gourds). Active before honey bees in the morning.',
+      lifespan: '1 year',
+      notes: 'Coevolved with squash; the relationship is older than agriculture itself. Native Americans had squash bees pollinating their crops 9,000 years ago.',
+      educationalValue: 'Plant-pollinator coevolution example; ties into agriculture history.',
+    },
+    {
+      common: 'Stingless bees',
+      scientific: 'Meliponini tribe (~500 species)',
+      range: 'Tropics worldwide',
+      colonySize: '300-100,000 depending on species',
+      role: 'Highly social bees that produce honey but have no functional sting',
+      lifespan: 'Perennial colonies',
+      notes: 'Meliponiculture (stingless beekeeping) is ancient in Maya and Aztec cultures. Honey is often medicinal.',
+      educationalValue: 'Cultural and historical dimension; not all "bees that make honey" are honey bees.',
+    },
+    {
+      common: 'Africanized honey bee',
+      scientific: 'Apis mellifera scutellata x A. m. iberiensis hybrid',
+      range: 'Americas (escaped from a 1957 Brazilian breeding experiment)',
+      colonySize: 'Similar to A. mellifera',
+      role: 'Same as A. mellifera but with much higher defensive behavior',
+      lifespan: 'Similar',
+      notes: '"Killer bees" of headline fame. Stings are no more venomous than European honey bees, but the colony defends in larger numbers and pursues longer distances. Spreading north slowly.',
+      educationalValue: 'Honest discussion of behavioral genetics, unintended consequences of selective breeding, media sensationalism vs reality.',
+    },
+  ];
+
+  // ─── Colony roles + lifecycle (verbose) ─────────────────────────────────
+  var COLONY_ROLES = [
+    {
+      role: 'Queen',
+      population: '1 per colony (rarely 2 briefly during supersedure)',
+      job: 'Lay eggs (up to 2,000 per day in peak summer). Emit pheromones that regulate colony cohesion.',
+      lifecycle: 'Egg: 3 days. Larva: ~5.5 days. Pupa: ~7.5 days. Total dev time: 16 days. Adult lifespan: 2-5 years.',
+      reproduction: 'Mates with 10-20 drones during a single mating flight (1-3 days post-emergence). Stores sperm in her spermatheca for life — ~6 million sperm.',
+      morphology: 'Longest body in the colony. Stinger is smooth (can sting repeatedly) but rarely uses it except against rival queens.',
+      pheromones: 'Queen Mandibular Pheromone (QMP) is the primary "I\'m here" signal. When QMP drops below threshold, workers begin raising new queens (supersedure).',
+      replacement: 'Workers raise emergency queens from young worker larvae (<3 days old) when the queen dies suddenly. Also raise queens for natural swarming (May-June peak) and supersedure (when old queen is failing).',
+      educationalNote: 'The "queen" metaphor is misleading. She doesn\'t rule — she\'s essentially a reproductive organ for the superorganism. Workers control colony decisions.',
+    },
+    {
+      role: 'Worker',
+      population: '20,000-60,000 in summer; 5,000-15,000 overwintering',
+      job: 'Everything except egg-laying: cleaning, nursing brood, building comb, guarding entrance, foraging.',
+      lifecycle: 'Egg: 3 days. Larva: ~6 days. Pupa: ~12 days. Total dev time: 21 days. Adult lifespan: ~6 weeks in summer; 4-6 months for winter bees.',
+      jobsByAge: [
+        'Days 1-3: Cell cleaning (priming cells for new eggs)',
+        'Days 4-12: Nurse bee (feeding larvae royal jelly, then beebread)',
+        'Days 13-18: House bee (comb-building, food storage, hive maintenance)',
+        'Days 19-21: Guard bee (defending entrance)',
+        'Days 22-42: Forager (collecting nectar, pollen, water, propolis)',
+      ],
+      reproduction: 'Sterile females in queenright colonies. In queenless colonies, some workers may lay unfertilized (drone) eggs but cannot save the colony.',
+      morphology: 'Pollen baskets on hind legs (corbiculae). Wax glands on abdomen. Barbed stinger — single use, kills the bee.',
+      educationalNote: 'Age polyethism (changing jobs by age) is one of the most studied behavioral patterns in biology. The order can flex based on colony needs — a young bee can become a forager if needed.',
+    },
+    {
+      role: 'Drone',
+      population: '500-3,000 in summer; 0 in winter (kicked out in fall)',
+      job: 'Mate with virgin queens from other colonies. Otherwise: contribute warmth, eat honey, do nothing.',
+      lifecycle: 'Egg: 3 days. Larva: ~6.5 days. Pupa: ~14.5 days. Total dev time: 24 days. Adult lifespan: ~90 days max.',
+      reproduction: 'Drones gather at "drone congregation areas" (DCAs) — specific airspaces over open fields — and pursue virgin queens. The drone that mates dies (his genitals tear off).',
+      morphology: 'Larger than workers, with huge eyes (for spotting queens in flight). No stinger. No pollen baskets.',
+      genetics: 'Drones develop from unfertilized eggs (haploid — only 16 chromosomes vs 32 for queens/workers). This is haplodiploidy, which biologists think helps explain bee eusociality.',
+      educationalNote: 'In fall, workers stop feeding drones and physically push them out of the hive to die. This is brutal but rational: drones don\'t contribute to winter survival.',
+    },
+    {
+      stage: 'Egg',
+      duration: '3 days',
+      appearance: 'White, rice-grain-shaped, ~1.5mm, glued vertically to bottom of cell on day 1; tilts over by day 3',
+      notes: 'Queen lays one egg per cell. If she walks past empty cells, those go unfilled — workers must keep up with cell-priming.',
+    },
+    {
+      stage: 'Larva',
+      duration: 'Worker: 6 days; Drone: 6.5 days; Queen: 5.5 days',
+      appearance: 'C-shaped white grub, grows ~1500x its egg weight',
+      feeding: 'Days 1-3: All larvae fed royal jelly. Days 4-6: Workers and drones switched to "beebread" (fermented pollen + nectar). Queens stay on royal jelly throughout.',
+      notes: 'It\'s diet, not genetics, that determines queen vs worker. A worker larva less than 3 days old can be raised into a queen if workers begin feeding her royal jelly continuously.',
+    },
+    {
+      stage: 'Pupa',
+      duration: 'Worker: 12 days; Drone: 14.5 days; Queen: 7.5 days',
+      appearance: 'Larva pupates inside a wax-capped cell. Transforms from grub to adult bee shape over the pupation period.',
+      notes: 'Pupae cannot eat or move. They\'re the most vulnerable stage to chilling, varroa mites, and brood diseases.',
+    },
+    {
+      stage: 'Adult emergence',
+      duration: 'Worker: day 21; Drone: day 24; Queen: day 16',
+      appearance: 'Chews through wax cap, emerges fuzzy and wet',
+      notes: 'First task for a newly-emerged worker: clean herself, then start cleaning brood cells. She\'ll begin nursing within 4 days.',
+    },
+  ];
+
+  // ─── Waggle dance (verbose) ─────────────────────────────────────────────
+  var WAGGLE_DANCE_GUIDE = [
+    {
+      concept: 'What is the waggle dance?',
+      description: 'A figure-8 dance performed by returning foragers on vertical comb in the dark hive that encodes distance and direction to a food source (or new nest site).',
+      discoverer: 'Karl von Frisch, who shared the 1973 Nobel Prize in Physiology or Medicine for decoding it. He worked it out over decades of patient observation.',
+      significance: 'The only known example of symbolic communication in invertebrates. Bees abstract real-world distances and angles into dance choreography.',
+    },
+    {
+      concept: 'The dance components',
+      parts: [
+        'Waggle run: bee walks in a straight line while vibrating her abdomen side-to-side (~13 times per second) and emitting an audible buzz',
+        'Return run: bee loops back to the start, alternating right and left between each waggle run',
+        'Repetition: dance can continue for minutes, repeating up to ~100 cycles',
+      ],
+    },
+    {
+      concept: 'Distance encoding',
+      mechanism: 'Duration of the waggle run encodes distance. ~75ms of waggle = ~100m of flight.',
+      examples: [
+        '0.5 sec waggle ≈ 200m away',
+        '1.0 sec waggle ≈ 500m away',
+        '2.0 sec waggle ≈ 1000m away',
+        '4.0 sec waggle ≈ 2000m away (typical max forage range)',
+      ],
+      notes: 'Bees gauge distance by "optic flow" — how much the visual scene moves past them during flight. Bees flying into a headwind dance for longer because they expended more energy.',
+    },
+    {
+      concept: 'Direction encoding',
+      mechanism: 'The angle of the waggle run relative to vertical on the comb encodes the angle of the food source relative to the sun.',
+      examples: [
+        'Straight up = food is toward the sun',
+        'Straight down = food is away from the sun',
+        '45° right of vertical = food is 45° clockwise of sun (i.e., right of sun)',
+        '90° left of vertical = food is 90° counterclockwise of sun (i.e., left of sun)',
+      ],
+      notes: 'Bees compensate for sun movement during long dances — they continuously update the dance angle to account for the sun\'s changing position. They also have an "internal clock" so they can compensate even when the sun is occluded by clouds.',
+    },
+    {
+      concept: 'Round dance (close food)',
+      mechanism: 'For sources within ~50m, the dance is a simple circle with no waggle phase — just "go nearby and look around."',
+      transition: 'Between round and waggle: a "sickle dance" or "transition dance" for intermediate distances. Different races of bees have different threshold distances.',
+    },
+    {
+      concept: 'Quality of the source',
+      mechanism: 'Dance vigor (number of waggle runs, speed of return) encodes the desirability of the source. A rich nectar flow gets danced more enthusiastically.',
+      followers: 'Other foragers attend the dance. Some leave to investigate; others continue resting. The decision is partially individual.',
+    },
+    {
+      concept: 'Swarm site selection',
+      mechanism: 'When a colony is about to swarm, scouts return and dance for potential new nest sites. Multiple scouts may dance for different sites simultaneously.',
+      decision: 'Scouts gradually converge on one site through a "quorum sensing" process — once enough scouts back a single site, the swarm flies. Thomas Seeley\'s book "Honeybee Democracy" details this.',
+      educationalValue: 'Beautiful example of decentralized decision-making in a complex system.',
+    },
+    {
+      concept: 'Dialects',
+      mechanism: 'Different honey bee subspecies have slightly different distance encoding. An Italian bee dancing 1 second indicates a different distance than a Carniolan bee dancing 1 second.',
+      experiment: 'Researchers have mixed colonies of different races and shown that some translation errors do occur in mixed-race colonies.',
+    },
+    {
+      concept: 'Limits',
+      mechanism: 'Dance encodes a probability distribution, not a precise GPS. Follower bees often end up scattered around the actual source, finding it by following the general direction and then searching.',
+      whyImprecise: 'In nature, food sources are patchy, not points. A small range error doesn\'t matter if there are flowers throughout the area.',
+    },
+    {
+      concept: 'Modern controversies',
+      issue: 'In the 1960s, Adrian Wenner argued that bees might use scent rather than dance to find food. Decades of clever experiments (notably Riley\'s harmonic radar tracking in 2005) eventually confirmed that the dance does encode the information bees use to find sources.',
+      lesson: 'Scientific consensus changes through evidence. Von Frisch\'s original claim took 70 years to be fully proven.',
+    },
+    {
+      teachingNotes: 'Best lessons',
+      list: [
+        'Have students chart the dance angle as the sun moves across the sky to show the dynamic encoding',
+        'Have students mime the dance — they\'ll feel why it takes a developed nervous system',
+        'Compare to human GPS coordinates: latitude/longitude vs. distance/bearing',
+        'Tie to the broader question: "what counts as language?"',
+      ],
+    },
+  ];
+
+  // ─── Pollinator plants by region (verbose, Maine-focused) ───────────────
+  var POLLINATOR_PLANTS = [
+    {
+      season: 'Early spring (March-April)',
+      plants: [
+        { name: 'Pussy willow (Salix discolor)', notes: 'First major pollen source in Maine. Critical for queens building up brood.' },
+        { name: 'Red maple (Acer rubrum)', notes: 'Both pollen and nectar in late March/early April; one of Maine\'s most important early sources.' },
+        { name: 'Dandelion (Taraxacum officinale)', notes: 'Reliable. Don\'t mow the lawn in early May — let dandelions bloom for the bees.' },
+        { name: 'Bloodroot (Sanguinaria canadensis)', notes: 'Native woodland spring ephemeral; nectarless but provides pollen.' },
+        { name: 'Skunk cabbage (Symplocarpus foetidus)', notes: 'Heats its own flowers via thermogenesis; one of the first to bloom.' },
+        { name: 'Crocus', notes: 'Yard-friendly; plant bulbs in fall for early spring color and bee food.' },
+      ],
+    },
+    {
+      season: 'Spring (May-June)',
+      plants: [
+        { name: 'Apple (Malus domestica)', notes: 'Maine\'s commercial apple orchards depend on bee pollination. Bloom peaks ~third week of May.' },
+        { name: 'Wild blueberry (Vaccinium angustifolium)', notes: 'Maine\'s signature crop. Native bees including bumblebees do most of the work; honey bees are supplemental.' },
+        { name: 'Black locust (Robinia pseudoacacia)', notes: 'Heavy nectar flow; one of the most prized honey-producing trees.' },
+        { name: 'Basswood / linden (Tilia americana)', notes: 'Mid-June bloom; can produce huge honey crops in good years.' },
+        { name: 'Clover (Trifolium spp.)', notes: 'Lawn clover (T. repens) and red clover (T. pratense) are excellent. Stop mowing in June.' },
+        { name: 'Lupines', notes: 'Iconic Maine flower; primarily pollinated by bumblebees (honey bees can\'t buzz-pollinate them efficiently).' },
+        { name: 'Raspberry / blackberry', notes: 'Both wild and cultivated provide steady nectar.' },
+      ],
+    },
+    {
+      season: 'Summer (July-August)',
+      plants: [
+        { name: 'Goldenrod (Solidago spp.)', notes: 'Maine\'s main late-summer honey source. Often confused with allergenic ragweed (which is wind-pollinated, not bee-pollinated).' },
+        { name: 'Aster (Symphyotrichum spp.)', notes: 'New England aster and other species; critical for late-season pollen.' },
+        { name: 'Joe-Pye weed (Eutrochium spp.)', notes: 'Wet meadow native; bumblebees love it.' },
+        { name: 'Bee balm (Monarda spp.)', notes: 'Native garden plant; favored by hummingbirds and long-tongued bees.' },
+        { name: 'Sunflowers (Helianthus annuus)', notes: 'Massive pollen and nectar load; easy to grow with kids.' },
+        { name: 'Buckwheat (Fagopyrum esculentum)', notes: 'Commercial cover crop; dark, strong honey.' },
+        { name: 'Sumac (Rhus typhina)', notes: 'Often overlooked; provides reliable summer nectar.' },
+      ],
+    },
+    {
+      season: 'Late summer / fall (Sept-Oct)',
+      plants: [
+        { name: 'Goldenrod (continuing)', notes: 'The "last meal" before winter for Maine colonies. Honey gets capped and stored for winter food.' },
+        { name: 'Asters (continuing)', notes: 'New England aster blooms into October.' },
+        { name: 'Witch hazel (Hamamelis virginiana)', notes: 'Unusual fall bloomer; provides late-season nectar.' },
+        { name: 'Sedum / autumn joy', notes: 'Garden staple; bees flock to it on warm fall days.' },
+      ],
+    },
+    {
+      principles: 'What makes a "pollinator garden"',
+      list: [
+        'Sequence of bloom — something flowering March through October',
+        'Diversity of flower shapes — flat-topped umbels for short-tongued bees, tubular flowers for long-tongued bees',
+        'Native plants where possible — locally evolved pollinators recognize them',
+        'No pesticides — neonicotinoids in particular are devastating to bees',
+        'Leave some bare ground — many native bees nest underground',
+        'Leave plant stems standing in winter — many native bees overwinter in hollow stems',
+        'A water source — shallow dish with pebbles for bees to land on',
+      ],
+    },
+    {
+      planting: 'How to start',
+      steps: [
+        'Pick a sunny spot — most pollinator plants need 6+ hours of sun',
+        'Group plants in clusters (5+ of the same species) so bees can forage efficiently',
+        'Aim for at least 3 species blooming at any given time',
+        'Plan for ~half native species',
+        'Add a "host plant" or two for caterpillars (milkweed for monarchs, parsley for swallowtails) — pollinators include butterflies and moths too',
+      ],
+    },
+    {
+      resources: 'Maine-specific',
+      list: [
+        'University of Maine Cooperative Extension: pollinator-friendly plant lists',
+        'Maine State Beekeepers Association — local mentors',
+        'Pollinator Partnership planting guide (PDF, Maine zone)',
+        'Wild Seed Project (Maine native plant seeds + education)',
+        'Maine Master Gardener program',
+      ],
+    },
+  ];
+
+  // ─── Colony threats (verbose) ───────────────────────────────────────────
+  var COLONY_THREATS = [
+    {
+      threat: 'Varroa destructor',
+      type: 'Parasitic mite',
+      origin: 'Jumped from Apis cerana to A. mellifera in the 1950s; reached the US in 1987',
+      mechanism: 'Adult mites cling to adult bees and feed on their fat bodies (recently discovered — not "hemolymph" as previously thought). Reproductive mites enter brood cells just before they\'re capped and parasitize developing pupae.',
+      impact: 'Currently the #1 cause of overwinter losses globally. An untreated colony will collapse within ~2 years.',
+      damage: 'Mites also vector deformed wing virus (DWV) and other viruses. The virus damage often exceeds the direct parasitic damage.',
+      management: [
+        'Monitor with alcohol wash or sugar roll (3% threshold)',
+        'Treat with oxalic acid (vaporization), formic acid (Mite-Away Quick Strips), thymol-based (Apiguard), or hopguard',
+        'Apivar (amitraz) for resistant cases',
+        'Drone brood culling (remove drone cells)',
+        'Powdered sugar dusting (limited effect)',
+        'Long-term: breed for hygienic and varroa-sensitive hygiene (VSH) behavior',
+      ],
+      teachingValue: 'Real-world coevolution and pest management; the model "host jumps to new species" cause of population collapse.',
+    },
+    {
+      threat: 'Deformed wing virus (DWV)',
+      type: 'RNA virus',
+      origin: 'Endemic in honey bees globally; transmission amplified by varroa mites',
+      mechanism: 'Virus replicates in developing pupae. Mites act as both reservoir and vector, injecting virus when they feed.',
+      impact: 'Adult bees emerge with crumpled, useless wings and shortened lifespans. Often the proximate cause of colony death in heavily varroa-infested colonies.',
+      management: 'No direct treatment; controlling varroa controls DWV transmission.',
+    },
+    {
+      threat: 'American foulbrood (AFB)',
+      type: 'Bacterial disease (Paenibacillus larvae)',
+      origin: 'Worldwide, present in honey bees for centuries',
+      mechanism: 'Spores fed to larvae germinate in their gut, killing them. Dead larvae form a "ropy" mass that dries to scale; spores persist for 70+ years in equipment.',
+      impact: 'Highly contagious among colonies. In most US states, infected hives must be burned to destroy spores.',
+      diagnosis: 'Sunken, perforated brood caps; "ropy" test (insert toothpick into a suspect cell; if it pulls out a ropy strand, it\'s AFB).',
+      management: [
+        'Confirm diagnosis with state apiarist',
+        'Most states require burning of infected equipment',
+        'Antibiotics (oxytetracycline) can suppress symptoms but don\'t kill spores',
+        'Resistant queen lines (hygienic behavior — workers detect and remove infected larvae)',
+      ],
+    },
+    {
+      threat: 'European foulbrood (EFB)',
+      type: 'Bacterial disease (Melissococcus plutonius)',
+      mechanism: 'Larvae are infected and die before pupation. Less severe than AFB; colonies often recover with management.',
+      management: 'Re-queening with hygienic stock; antibiotic treatment in severe cases; stress reduction.',
+    },
+    {
+      threat: 'Nosema',
+      type: 'Microsporidian fungal parasites (Nosema apis, Nosema ceranae)',
+      mechanism: 'Spores ingested by adult bees damage gut lining; bees can\'t digest pollen properly, leading to malnutrition.',
+      impact: 'Reduced lifespan, dysentery (N. apis), weakened immune response. N. ceranae is now more common than the historic N. apis.',
+      management: 'Fumagillin treatment (limited efficacy against N. ceranae); good ventilation; spring cleansing flights; reduce moisture.',
+    },
+    {
+      threat: 'Small hive beetle',
+      type: 'Beetle (Aethina tumida)',
+      origin: 'Native to sub-Saharan Africa; in the US since 1996',
+      mechanism: 'Larvae burrow through comb and consume honey and pollen; produces a slimy mess that ferments and ruins honey.',
+      impact: 'Severe in warm climates (southeastern US); manageable in Maine because of cold winters.',
+      management: 'Strong colonies suppress beetles. Traps with vegetable oil. Don\'t leave dead colonies in the apiary.',
+    },
+    {
+      threat: 'Wax moth',
+      type: 'Moth (Galleria mellonella greater wax moth; Achroia grisella lesser wax moth)',
+      mechanism: 'Larvae tunnel through comb, eating wax and contaminating honey.',
+      impact: 'Primary risk is to STORED comb (drawn-out frames in storage) rather than active colonies. A strong colony defends its comb.',
+      management: 'Freeze comb before storage (24 hours at 0°F kills all stages). Para-moth crystals (paradichlorobenzene) for stored equipment (NEVER on active colonies). Keep colonies strong.',
+    },
+    {
+      threat: 'Tracheal mites',
+      type: 'Internal mite (Acarapis woodi)',
+      mechanism: 'Lives in the breathing tubes of bees, blocking airflow and feeding on hemolymph.',
+      impact: 'Less common since the 1990s thanks to resistant queen lines. Still occasionally a factor.',
+      management: 'Resistant breeding (Buckfast lines were originally developed for tracheal mite resistance). Menthol or formic acid.',
+    },
+    {
+      threat: 'Pesticides — neonicotinoids',
+      type: 'Systemic insecticides',
+      mechanism: 'Neonics bind to insect nicotinic acetylcholine receptors, causing paralysis. Systemic — absorbed by plants and present in pollen and nectar.',
+      impact: 'Sublethal doses cause foraging confusion, immune suppression, increased varroa susceptibility, and reduced overwinter survival.',
+      regulation: 'EU has banned outdoor use of imidacloprid, clothianidin, thiamethoxam since 2018. US still allows them; some states (Maine included) have restricted residential use.',
+      management: 'Locate apiary away from intensively-sprayed crops; talk to neighboring farmers; advocate for IPM (Integrated Pest Management) over preventive spraying.',
+    },
+    {
+      threat: 'Pesticides — fungicides',
+      type: 'Plant disease control',
+      mechanism: 'Fungicides themselves are usually non-toxic to bees but disrupt gut microbiome and synergistically increase neonicotinoid toxicity.',
+      example: 'Fungicide + low neonicotinoid dose can be 1000x more toxic than the neonicotinoid alone.',
+      management: 'Avoid spraying flowering plants. Use IPM thresholds, not calendar sprays.',
+    },
+    {
+      threat: 'Habitat loss',
+      type: 'Landscape-level',
+      mechanism: 'Monoculture agriculture, lawn-dominated suburbs, and pavement remove the diverse bloom sequence bees need.',
+      impact: 'Even where pesticides are absent, bees starve when nothing\'s blooming for weeks at a time.',
+      management: 'Pollinator gardens, wildflower meadows, less mowing, mixed-species cover crops on farms, hedgerows.',
+    },
+    {
+      threat: 'Climate change',
+      type: 'Long-term',
+      mechanism: 'Mismatched bloom timing (flowers blooming before bees emerge); range shifts; extreme weather (droughts, floods) disrupting forage; warmer winters allowing varroa to reproduce later into fall.',
+      impact: 'Already-observed in many regions. Maine is warming faster than the US average.',
+      management: 'Beyond individual control. Advocacy, climate-resilient management (insulation, water for hot summers, location selection).',
+    },
+    {
+      threat: 'Colony Collapse Disorder (CCD)',
+      type: 'Syndrome, not a single cause',
+      mechanism: 'Workers abandon the hive en masse, leaving queen and brood behind. Symptom of multiple converging stressors.',
+      contributingFactors: ['Varroa + DWV combination (primary)', 'Neonicotinoid exposure', 'Nosema ceranae', 'Nutritional stress', 'Pesticide cocktails'],
+      management: 'No single fix. Reduce all stressors that can be reduced; advocate for systemic change.',
+      historicalContext: 'Coined in 2006-2007 when US beekeepers reported losing 30-50% of colonies. Annual losses remain high (30-40%) though varies by region and management.',
+    },
+  ];
+
+  // ─── Honey types and varietals (verbose) ────────────────────────────────
+  var HONEY_VARIETALS = [
+    {
+      name: 'Wildflower (polyfloral)',
+      source: 'Mix of whatever\'s blooming during the flow',
+      color: 'Light amber to dark amber depending on what bees foraged',
+      flavor: 'Variable; often complex and floral',
+      crystallization: 'Variable',
+      notes: 'Most common type from backyard beekeepers; reflects the local landscape.',
+    },
+    {
+      name: 'Clover',
+      source: 'Trifolium repens (white clover), T. pratense (red clover)',
+      color: 'Very light, almost water-white',
+      flavor: 'Mild, slightly sweet, classic "honey" flavor',
+      crystallization: 'Fast (high glucose)',
+      notes: 'The honey most American kids grew up with; standard supermarket fare.',
+    },
+    {
+      name: 'Goldenrod',
+      source: 'Solidago spp.',
+      color: 'Medium amber',
+      flavor: 'Strong, slightly grassy or hay-like; mellows after a few months',
+      crystallization: 'Fast — usually crystallizes in a few weeks',
+      notes: 'Maine\'s primary fall honey. Smells like dirty socks while curing (don\'t worry — finished honey is delicious).',
+    },
+    {
+      name: 'Blueberry',
+      source: 'Wild blueberry (Vaccinium angustifolium)',
+      color: 'Medium amber with reddish tinge',
+      flavor: 'Slight fruity berry note',
+      notes: 'Maine specialty. Often produced by commercial pollination services for blueberry barrens.',
+    },
+    {
+      name: 'Buckwheat',
+      source: 'Fagopyrum esculentum',
+      color: 'Very dark, almost black',
+      flavor: 'Strong, malty, molasses-like; high antioxidant content',
+      crystallization: 'Slow',
+      notes: 'Polarizing — you love it or hate it. Excellent in tea or as a baker\'s honey.',
+    },
+    {
+      name: 'Basswood / Linden',
+      source: 'Tilia americana, T. cordata',
+      color: 'Pale to medium amber',
+      flavor: 'Distinct minty, slightly medicinal note',
+      notes: 'Sometimes called "lime tree" in Europe. Beloved by some, off-putting to others.',
+    },
+    {
+      name: 'Acacia',
+      source: 'Robinia pseudoacacia (called acacia in commerce; actually black locust)',
+      color: 'Very pale, water-white',
+      flavor: 'Delicate, slightly vanilla',
+      crystallization: 'Very slow (low glucose, high fructose) — stays liquid for years',
+      notes: 'Commercial "acacia" almost always comes from Europe; can be produced in eastern US in good locust years.',
+    },
+    {
+      name: 'Orange blossom',
+      source: 'Citrus aurantium',
+      color: 'Light golden',
+      flavor: 'Floral, citrusy',
+      notes: 'Florida and California specialty; not produced in Maine.',
+    },
+    {
+      name: 'Tupelo',
+      source: 'Nyssa ogeche',
+      color: 'Pale amber',
+      flavor: 'Distinct buttery quality',
+      crystallization: 'Very slow',
+      notes: 'Highly prized; Florida panhandle specialty. Diabetic-friendly because of high fructose:glucose ratio.',
+    },
+    {
+      name: 'Manuka',
+      source: 'Leptospermum scoparium (New Zealand)',
+      color: 'Dark amber',
+      flavor: 'Earthy, medicinal',
+      notes: 'Famous for antimicrobial properties (methylglyoxal content). Often labeled with a "UMF" (Unique Manuka Factor) rating.',
+    },
+    {
+      name: 'Eucalyptus',
+      source: 'Eucalyptus spp. (Australia, California)',
+      color: 'Medium amber',
+      flavor: 'Bold, slightly menthol',
+      notes: 'Multiple species produce honey with different flavors.',
+    },
+    {
+      name: 'Sourwood',
+      source: 'Oxydendrum arboreum',
+      color: 'Light amber with slight gray tinge',
+      flavor: 'Spicy, slightly anise',
+      notes: 'Southern Appalachians specialty; prized by aficionados.',
+    },
+    {
+      name: 'Heather',
+      source: 'Calluna vulgaris',
+      color: 'Reddish amber',
+      flavor: 'Strong, slightly bitter, almost smoky',
+      notes: 'Scottish specialty. Thixotropic (gels at rest but liquefies when stirred).',
+    },
+    {
+      name: 'Honeydew',
+      source: 'NOT from flowers — bees collect sugary excretions of aphids and other sap-feeding insects',
+      color: 'Very dark',
+      flavor: 'Earthy, less sweet, malty',
+      notes: 'Common in pine and fir forests of Europe. Considered a delicacy in some cultures.',
+    },
+    {
+      principle: 'Why color and flavor vary',
+      factors: [
+        'Plant species (different nectar chemistry)',
+        'Soil type at the source',
+        'Weather during the flow (water content affects evaporative concentration)',
+        'Time since harvest (some honeys mellow with age)',
+        'Storage (heat darkens honey)',
+        'Adulteration (industrial honey often blended with rice syrup; avoid suspiciously cheap honey)',
+      ],
+    },
+    {
+      principle: 'Crystallization',
+      explanation: 'Crystallization is natural and harmless. It happens because glucose has lower solubility than fructose; high-glucose honeys (clover, goldenrod) crystallize fast.',
+      reversal: 'Gentle warming (sub-95°F / 35°C water bath) liquefies crystallized honey without harming flavor or enzymes. Avoid microwaving.',
+    },
+    {
+      principle: 'Honey grading',
+      grades: [
+        'USDA Grade A: < 18.6% moisture, < 0.6% suspended solids, no fermentation, good flavor',
+        'USDA Grade B: < 18.6% moisture, < 1.0% suspended solids',
+        'USDA Grade C: < 20.0% moisture',
+      ],
+      colorScale: 'Pfund scale (mm of color depth): Water white < Extra white < White < Extra light amber < Light amber < Amber < Dark amber',
+    },
+  ];
+
+  // ─── Beekeeping glossary (verbose) ──────────────────────────────────────
+  var BEE_GLOSSARY = [
+    { term: 'Apiary', def: 'A place where bee colonies are kept. From Latin apis (bee).' },
+    { term: 'Apiarist', def: 'A beekeeper.' },
+    { term: 'Apiculture', def: 'The science and practice of beekeeping.' },
+    { term: 'Brood', def: 'Eggs, larvae, and pupae collectively. "Capped brood" means cells where larvae have pupated under wax caps.' },
+    { term: 'Brood box', def: 'The bottom hive box where the queen lays eggs. Usually a "deep" box.' },
+    { term: 'Burr comb', def: 'Comb built outside the normal frame structure. Often removed during inspections.' },
+    { term: 'Castes', def: 'The three types of bees in a colony: queen, worker, drone.' },
+    { term: 'Cell', def: 'A single hexagonal compartment of wax comb. Worker cells are smaller (5.4mm) than drone cells (6.6mm).' },
+    { term: 'Cluster', def: 'In winter, bees ball together in a tight cluster to maintain warmth. Outer "shell" of bees is around 50°F; core can reach 95°F.' },
+    { term: 'Comb', def: 'The hexagonal wax structure bees build. Used for raising brood and storing honey/pollen.' },
+    { term: 'Drone', def: 'Male bee. Has no stinger; only job is to mate with virgin queens.' },
+    { term: 'Drone congregation area (DCA)', def: 'Aerial location where drones gather waiting for queens. Same locations are used year after year, somehow remembered across drone generations.' },
+    { term: 'Extractor', def: 'Centrifuge used to spin honey out of frames without destroying the comb.' },
+    { term: 'Festooning', def: 'Bees hanging in chains across a gap, often while building new comb.' },
+    { term: 'Foundation', def: 'A sheet of beeswax or plastic embossed with a hexagonal pattern, placed in a frame to give bees a starting template for building comb.' },
+    { term: 'Foulbrood', def: 'Bacterial brood disease. American (AFB) is severe and requires destruction; European (EFB) is milder.' },
+    { term: 'Frame', def: 'Removable rectangular wooden or plastic structure that holds a sheet of comb.' },
+    { term: 'Hive', def: 'The structure (box) housing a bee colony. Often confused with the colony itself — the hive is the box, the colony is the bees.' },
+    { term: 'Hive tool', def: 'A flat metal pry-bar used to separate boxes and frames. Essential beekeeping equipment.' },
+    { term: 'Honey super', def: 'A hive box dedicated to honey production, placed above the brood box. Often a "medium" or "shallow" size for lighter weight.' },
+    { term: 'Inner cover', def: 'A flat lid that fits inside the outer cover; helps insulate and provides space for moisture management.' },
+    { term: 'Langstroth hive', def: 'The standard rectangular box hive invented by L.L. Langstroth in 1851, the first to use removable frames. Dominant design worldwide.' },
+    { term: 'Larva (plural: larvae)', def: 'The grub stage of bee development. C-shaped, white, no legs.' },
+    { term: 'Mead', def: 'Alcoholic beverage fermented from honey. Ancient origins; experiencing a revival.' },
+    { term: 'Mite', def: 'Usually refers to Varroa destructor in beekeeping contexts. The primary pest.' },
+    { term: 'Nuc (nucleus colony)', def: 'A small starter colony, usually 4-5 frames. Easier to install than a package and includes drawn comb.' },
+    { term: 'Nurse bee', def: 'Worker aged 4-12 days, primary job is feeding larvae royal jelly and beebread.' },
+    { term: 'Outer cover', def: 'The top of the hive. "Telescoping" covers wrap over the inner cover; "migratory" covers are flat.' },
+    { term: 'Package bees', def: 'A 3-lb screened box of bees with a caged queen, sold for starting new colonies. Common in spring.' },
+    { term: 'Pheromone', def: 'Chemical signal. Queen pheromone (QMP), alarm pheromone, brood pheromone, footprint pheromone, Nasonov pheromone, etc.' },
+    { term: 'Pollen', def: 'Protein source. Workers collect it in their corbiculae and pack it into cells where it ferments into "beebread."' },
+    { term: 'Propolis', def: '"Bee glue" — a resinous substance bees collect from tree buds. Antimicrobial; used to seal cracks and varnish the hive interior.' },
+    { term: 'Queen excluder', def: 'A metal or plastic grid placed between brood box and honey supers. Workers fit through; the larger queen doesn\'t. Keeps brood out of honey supers.' },
+    { term: 'Requeening', def: 'Replacing the queen — typically because she\'s old, failing, or has undesirable genetics.' },
+    { term: 'Royal jelly', def: 'A creamy white substance produced by glands in the heads of nurse bees. All larvae get it for 3 days; queen larvae get it for life.' },
+    { term: 'Smoker', def: 'A device that produces cool smoke, used to calm bees during inspections. Smoke triggers a "fire response" — bees gorge on honey and become less defensive.' },
+    { term: 'Supersedure', def: 'When workers raise a new queen to replace a failing existing queen. Often the old queen lives alongside her daughter briefly.' },
+    { term: 'Swarm', def: 'A reproductive process where the old queen leaves with roughly half the workers to found a new colony. Spring phenomenon (May-June peak).' },
+    { term: 'Swarm cell', def: 'A queen cell built on the bottom edge of frames; bees building these are preparing to swarm.' },
+    { term: 'Top bar hive', def: 'An alternative hive design — a long horizontal box with bars across the top; bees build comb hanging from the bars.' },
+    { term: 'Varroa', def: 'Varroa destructor — the parasitic mite that\'s the #1 cause of overwinter losses globally.' },
+    { term: 'Waggle dance', def: 'A figure-8 dance returning foragers perform to communicate distance and direction of food.' },
+    { term: 'Warré hive', def: 'A vertical top-bar hive designed by Émile Warré in early 20th century France. Aims to mimic natural cavity nests.' },
+    { term: 'Wax cap', def: 'The wax lid bees place on cells of finished honey. Cappings are scraped off before extraction.' },
+    { term: 'Winter bee', def: 'A long-lived worker bee produced in late summer/fall; has elevated fat body reserves and can live 4-6 months versus the 6-week summer bee.' },
+    { term: 'Worker', def: 'Female bee that performs all colony tasks except egg-laying. Sterile in queenright colonies.' },
+    { term: 'Foragers', def: 'The oldest workers (~3 weeks old onward) who fly out to collect nectar, pollen, water, propolis.' },
+    { term: 'Eusocial', def: 'A high level of social organization with overlapping generations, cooperative care of young, and division of labor with reproductive specialization (sterile workers). Bees, ants, termites, some wasps, naked mole rats.' },
+    { term: 'Superorganism', def: 'A colony where the collective functions as a single organism. No individual bee is viable alone — the colony is the unit of selection.' },
+    { term: 'Haplodiploidy', def: 'A genetic system where males develop from unfertilized (haploid) eggs and females from fertilized (diploid) eggs. May explain bee eusociality (sisters share 75% of genes, more than they\'d share with offspring).' },
+    { term: 'Bee space', def: '~3/8 inch (~9.5mm) gap that bees leave clear for passage. Gaps smaller than this get filled with propolis; larger gaps get filled with comb. Langstroth\'s discovery enabled the modern movable-frame hive.' },
+    { term: 'Beebread', def: 'Pollen packed into cells with nectar and saliva, fermented by lactic acid bacteria. Primary protein source for the colony.' },
+    { term: 'Honeyflow', def: 'A period when nectar is abundant and bees fill their supers rapidly. "Spring flow" and "fall flow" are seasonal pulses.' },
+    { term: 'Dearth', def: 'A period when little or no nectar is available. Late summer in Maine is often a dearth before the goldenrod begins.' },
+    { term: 'Robbing', def: 'When bees from one colony invade a weaker colony to steal honey. Triggered by dearth + exposed honey. Can destroy weak colonies fast.' },
+    { term: 'Absconding', def: 'When a colony abandons its hive entirely, queen and all. Different from swarming (which leaves half behind). Usually triggered by extreme stress.' },
+  ];
+
+  // ─── Seasonal beekeeping calendar (Maine-focused) ──────────────────────
+  var SEASONAL_GUIDE = [
+    {
+      month: 'January',
+      colonyStatus: 'Cluster tight at center of brood box. Queen may begin minimal egg-laying late month. Cluster gradually moves upward as it consumes stored honey.',
+      tasks: ['Heft hive (lift back to check weight) for stores assessment', 'Clear snow from entrance', 'Plan spring orders (packages, equipment)'],
+      avoid: 'Opening the hive unless absolutely necessary — breaking the cluster on a cold day can kill bees.',
+    },
+    {
+      month: 'February',
+      colonyStatus: 'Egg-laying ramps up; brood rearing consumes honey rapidly. Highest starvation risk window because the cluster needs more food but can\'t move far to reach it.',
+      tasks: ['Continue weight checks', 'Emergency fondant feeding if light', 'Inspect entrances after each cleansing flight'],
+    },
+    {
+      month: 'March',
+      colonyStatus: 'First cleansing flights on 50°F+ days. Drone-laying may begin. Pollen collection from pussy willow if warm.',
+      tasks: ['First quick inspection on a warm day (no smoke; just verify cluster + queen)', 'Begin pollen substitute if weak', 'Check for varroa load early'],
+    },
+    {
+      month: 'April',
+      colonyStatus: 'Rapid buildup as red maple blooms. Colony doubling weekly.',
+      tasks: ['Full inspection — assess queen, brood pattern, food stores', 'Reverse boxes if upper is empty and lower is full', 'First treatment window for varroa if needed', 'Add supers if space is tight'],
+      watchFor: 'Swarm preparations — queen cells on bottom of frames signal imminent swarming',
+    },
+    {
+      month: 'May',
+      colonyStatus: 'Peak swarming season. Apple, dandelion, locust blooms.',
+      tasks: ['Weekly inspections for swarm cells', 'Splits to prevent swarming', 'Capture/hive swarms (yours or others\')', 'First honey supers on'],
+      watchFor: 'Capped queen cells = colony will swarm within a week unless split',
+    },
+    {
+      month: 'June',
+      colonyStatus: 'Peak population. Basswood and clover flows. Drones at maximum.',
+      tasks: ['Maintain super space', 'Honey extraction begins late month for early flows', 'Mid-season varroa check'],
+    },
+    {
+      month: 'July',
+      colonyStatus: 'Beginning of summer dearth in much of Maine. Colony may slim down. Robbing risk increases.',
+      tasks: ['Monitor for robbing — reduce entrance if needed', 'Extract honey from spring flows', 'Watch for queen problems (workers raised to be drone-layers if queen fails)'],
+    },
+    {
+      month: 'August',
+      colonyStatus: 'Mid-dearth. Some buckwheat or sumac. Bees beginning to reduce drone-rearing.',
+      tasks: ['Varroa testing critical — late summer brood is the next generation of winter bees', 'Treatment window if mite load is high', 'Watch for hive beetles in stored equipment'],
+    },
+    {
+      month: 'September',
+      colonyStatus: 'Goldenrod flow begins. Workers fanning to evaporate nectar — distinctive "wet socks" smell.',
+      tasks: ['Last comprehensive inspection', 'Final varroa treatment (oxalic acid is ideal once brood is minimal)', 'Combine weak colonies (1 strong > 2 weak for winter)', 'Reduce entrances'],
+    },
+    {
+      month: 'October',
+      colonyStatus: 'Wrapping up the season. Asters and witch hazel late. Drones being ejected.',
+      tasks: ['Wrap hives if doing so (insulation, windbreaks)', 'Add mouse guards', 'Final hefting — should be 60-80 lbs in a 2-deep configuration', 'Feed 2:1 sugar syrup if light'],
+    },
+    {
+      month: 'November',
+      colonyStatus: 'Brood-rearing winding down. Cluster forming.',
+      tasks: ['Final winter prep: ventilation, moisture control', 'Top entrance for winter (escape hatch above cluster)', 'Inventory equipment for next season'],
+    },
+    {
+      month: 'December',
+      colonyStatus: 'Fully clustered. Minimal activity.',
+      tasks: ['Mid-winter oxalic acid dribble or vapor (broodless period)', 'Listen to hive — gentle ear against the box reveals cluster hum', 'Catch up on reading + planning'],
+    },
+  ];
+
+  // ─── Famous bee scientists + historical figures ─────────────────────────
+  var BEE_HISTORY = [
+    {
+      name: 'Aristotle',
+      lived: '384-322 BCE',
+      contribution: 'Wrote "Historia Animalium" describing bees and beekeeping. Got some things wrong (he thought the king bee — actually a queen — was male) but accurately described many behaviors.',
+    },
+    {
+      name: 'Lorenzo Langstroth',
+      lived: '1810-1895',
+      contribution: 'American beekeeper who discovered "bee space" in 1851 and invented the movable-frame hive. Foundation of modern commercial beekeeping. His book "The Hive and the Honey Bee" (1853) is still in print.',
+    },
+    {
+      name: 'Anton Janscha',
+      lived: '1734-1773',
+      contribution: 'Slovenian beekeeper considered the father of modern apiculture. First to describe drone mating flights and queen biology accurately.',
+    },
+    {
+      name: 'François Huber',
+      lived: '1750-1831',
+      contribution: 'Blind Swiss naturalist whose observations (recorded by his assistant) revolutionized bee biology. Confirmed the queen is the mother of the colony; described many behaviors for the first time.',
+    },
+    {
+      name: 'Karl von Frisch',
+      lived: '1886-1982',
+      contribution: 'Austrian ethologist who decoded the waggle dance. Shared the 1973 Nobel Prize in Physiology or Medicine. Showed that bees can see ultraviolet light and polarized light, and use them for navigation.',
+    },
+    {
+      name: 'Maurice Maeterlinck',
+      lived: '1862-1949',
+      contribution: 'Belgian playwright whose 1901 book "La Vie des Abeilles" (The Life of the Bee) brought bee biology to a popular audience. Lyrical, philosophical, sometimes overly anthropomorphic, but inspired generations.',
+    },
+    {
+      name: 'Charles Darwin',
+      lived: '1809-1882',
+      contribution: 'Recognized eusocial insects as a "problem" for natural selection (why do sterile workers exist?) and offered the explanation that selection can act on the colony level. Foundational for kin selection theory.',
+    },
+    {
+      name: 'W.D. Hamilton',
+      lived: '1936-2000',
+      contribution: 'Formalized kin selection theory in 1964 papers that explained how haplodiploidy in bees can favor altruism among sisters. Hamilton\'s rule: rB > C.',
+    },
+    {
+      name: 'E.O. Wilson',
+      lived: '1929-2021',
+      contribution: 'Sociobiologist who made bee/ant social behavior central to his theories of evolutionary biology. "The Insect Societies" (1971) is a landmark synthesis.',
+    },
+    {
+      name: 'Thomas Seeley',
+      lived: '1952-',
+      contribution: 'Cornell biologist whose decades of work decoded swarm-site selection (collective intelligence in superorganisms). Books: "Honeybee Democracy" (2010), "The Lives of Bees" (2019).',
+    },
+    {
+      name: 'May Berenbaum',
+      lived: '1953-',
+      contribution: 'Entomologist at University of Illinois who has led research on pollinator decline and public communication of bee science.',
+    },
+    {
+      name: 'Marla Spivak',
+      lived: '1955-',
+      contribution: 'University of Minnesota professor known for breeding "Minnesota Hygienic" bees — varroa-resistant lines selected for VSH (varroa-sensitive hygiene) behavior. MacArthur Fellow.',
+    },
+    {
+      name: 'Anna Comstock',
+      lived: '1854-1930',
+      contribution: 'American educator whose "Handbook of Nature Study" (1911) brought bee biology into elementary classrooms across the US.',
+    },
+  ];
+
+  // ─── Beekeeping tools (verbose) ─────────────────────────────────────────
+  var BEEKEEPING_TOOLS = [
+    {
+      tool: 'Hive tool',
+      purpose: 'Pry boxes and frames apart (bees glue everything with propolis); scrape comb and propolis off frames',
+      types: ['J-hook style (more leverage for pulling frames)', 'Flat 10" style (more general purpose)'],
+      cost: '$8-20',
+      essential: 'Yes — you cannot inspect without this',
+    },
+    {
+      tool: 'Smoker',
+      purpose: 'Produces cool smoke that calms bees (triggers a "fire response" — gorging on honey reduces defensive behavior)',
+      fuel: 'Pine needles, burlap, dried grass, wood pellets, sumac bobs',
+      cost: '$30-60',
+      tips: 'Light it well before you need it. A weak smoker is worse than no smoker.',
+      essential: 'Yes — especially for inspections of larger colonies',
+    },
+    {
+      tool: 'Bee suit / jacket',
+      purpose: 'Protect from stings',
+      types: ['Full suit (best protection)', 'Jacket only (cooler, popular)', 'Ventilated triple-layer (best for hot weather)'],
+      cost: '$60-300',
+      tips: 'Veil quality matters most — get one with stiff support so it can\'t collapse onto your face. Light colors and smooth fabrics reduce sting attraction.',
+    },
+    {
+      tool: 'Gloves',
+      purpose: 'Protect hands',
+      types: ['Goatskin (durable, less dexterous)', 'Nitrile disposable (more dexterity, less protection)'],
+      cost: '$10-40',
+      tips: 'Many experienced beekeepers work bare-handed for sensitivity. Bees can still sting through goatskin.',
+    },
+    {
+      tool: 'Bee brush',
+      purpose: 'Gently sweep bees off frames during inspections or harvest',
+      cost: '$5-12',
+      tips: 'Don\'t use a regular brush — soft horsehair bristles are designed not to crush bees.',
+    },
+    {
+      tool: 'Frame grip',
+      purpose: 'Hold a frame from the top bar to lift it out',
+      cost: '$10-25',
+      optional: 'Yes — many beekeepers just use fingers',
+    },
+    {
+      tool: 'Hive boxes (supers)',
+      purpose: 'House the colony',
+      types: ['Deep (9 5/8" — for brood)', 'Medium (6 5/8" — popular for honey, lighter weight)', 'Shallow (5 11/16" — older standard)'],
+      cost: '$25-50 per box',
+      tips: 'Standardize on one frame depth across all boxes — much more flexible.',
+    },
+    {
+      tool: 'Frames + foundation',
+      purpose: 'Provide a structure for bees to build comb on',
+      types: ['Wood frames with wax foundation (traditional)', 'Plastic frames + foundation (durable)', 'Foundationless (let bees build natural comb)'],
+      cost: '$2-4 per frame',
+    },
+    {
+      tool: 'Bottom board',
+      purpose: 'Floor of the hive',
+      types: ['Solid (warmer for winter)', 'Screened (allows varroa monitoring + better ventilation)'],
+      cost: '$15-30',
+    },
+    {
+      tool: 'Inner cover',
+      purpose: 'Lid inside the outer cover; provides bee space, ventilation, and a place to feed',
+      cost: '$10-20',
+    },
+    {
+      tool: 'Outer cover',
+      purpose: 'Top of the hive',
+      types: ['Telescoping (wraps over inner cover; popular)', 'Migratory (flat; for commercial transport)'],
+      cost: '$15-30',
+    },
+    {
+      tool: 'Queen excluder',
+      purpose: 'Grid that keeps queen out of honey supers (workers fit through; queen doesn\'t)',
+      types: ['Wire (durable, kinder on wings)', 'Plastic (cheaper, can damage wings)'],
+      cost: '$10-25',
+      controversial: 'Some beekeepers love them, others swear by going without and managing brood/honey separately.',
+    },
+    {
+      tool: 'Entrance reducer',
+      purpose: 'Narrow the hive entrance to prevent robbing and exclude mice in fall',
+      cost: '$2-5',
+      essential: 'For new colonies and winter',
+    },
+    {
+      tool: 'Mouse guard',
+      purpose: 'Metal grid over winter entrance to exclude mice while allowing bee passage',
+      cost: '$3-8',
+    },
+    {
+      tool: 'Extractor',
+      purpose: 'Centrifuge that spins honey out of frames without destroying comb',
+      types: ['Hand-crank (2-4 frame)', 'Motorized (4-20+ frame)'],
+      cost: '$200-3000+',
+      tip: 'Often shared among beekeepers via local clubs to defer this expense.',
+    },
+    {
+      tool: 'Uncapping knife / fork',
+      purpose: 'Remove wax cappings from finished honey before extracting',
+      types: ['Cold knife (slow, requires sharpness)', 'Heated knife (faster, plug-in)', 'Uncapping fork/scratcher (manual, low-cost)'],
+      cost: '$10-150',
+    },
+    {
+      tool: 'Refractometer',
+      purpose: 'Measure honey moisture content (target: <18.6%)',
+      cost: '$20-60',
+      necessity: 'Highly recommended for selling honey',
+    },
+    {
+      tool: 'Varroa monitoring kit',
+      purpose: 'Count varroa mites on a sample of bees',
+      options: [
+        'Alcohol wash (kills the sample; very accurate)',
+        'Sugar shake (preserves bees; slightly less accurate)',
+        'Sticky board (passive; tracks natural mite drop)',
+      ],
+      cost: '$10-30',
+    },
+    {
+      tool: 'Beekeeping journal',
+      purpose: 'Record inspections, treatments, harvest weights, colony performance',
+      tips: 'Paper notebook in a ziploc, or an app like BeePlus / HiveTracks / Beetight. Beats memory by month 6.',
+    },
+  ];
+
+  // ─── FAQ for students (verbose) ────────────────────────────────────────
+  var BEE_FAQ = [
+    {
+      q: 'Are all bees yellow and black?',
+      a: 'No! Many native bees are metallic green, blue, copper, or just brown. Bumblebees are fuzzier than honey bees. Mason bees are dark and shiny. The classic "yellow and black" image mostly fits honey bees and yellowjackets (which are wasps, not bees). About 4,000 species of bees live in North America alone.',
+    },
+    {
+      q: 'Will I get stung?',
+      a: 'Eventually, probably, but less than you fear. Honey bees only sting defensively — they\'re not aggressive when foraging. The bees you see on flowers in summer are very unlikely to sting unless you swat or step on them. Wasps and yellowjackets are more aggressive than bees. If you\'re severely allergic (anaphylaxis), talk to a doctor about an EpiPen and avoid working hives.',
+    },
+    {
+      q: 'Does a bee die after stinging me?',
+      a: 'Honey bee workers do — their stinger is barbed and rips out when they sting, killing them. The queen has a smooth stinger and can sting multiple times (but rarely does, and only at rival queens). Bumblebees and most wasps also have smooth stingers and survive stinging.',
+    },
+    {
+      q: 'How do bees make honey?',
+      a: 'Foragers sip nectar from flowers and store it in a special "honey stomach." Back at the hive, they pass it mouth-to-mouth to house bees, adding enzymes (mainly invertase, which splits sucrose into glucose and fructose). House bees deposit the honey-in-progress in cells and fan their wings to evaporate water from ~80% down to <18%. Once it\'s thick enough, they cap the cell with wax. The whole process takes a few days.',
+    },
+    {
+      q: 'Where does beeswax come from?',
+      a: 'Workers age 12-18 days have wax glands on the underside of their abdomens. They eat honey (lots of it — about 6 pounds of honey to make 1 pound of wax) and secrete tiny wax flakes that they chew and shape into comb. The hexagonal shape is the most efficient way to enclose space — least wax for the most cells.',
+    },
+    {
+      q: 'Why do bees dance?',
+      a: 'The waggle dance is how returning foragers tell sisters where to find food. The angle of the dance (relative to vertical) encodes direction relative to the sun. The duration of the "waggle" part encodes distance. Karl von Frisch decoded this in the 1940s and won a Nobel Prize for it.',
+    },
+    {
+      q: 'Why is the queen bigger than the workers?',
+      a: 'Diet. Worker larvae are fed royal jelly for 3 days and then beebread (fermented pollen). Queen larvae stay on royal jelly their entire larval stage. The hormonal effects of continuous royal jelly turn on different genes and produce a fully reproductive female with a longer abdomen and bigger ovaries. Genetically, queens and workers are identical.',
+    },
+    {
+      q: 'What\'s the difference between a bee and a wasp?',
+      a: 'Bees evolved from wasps about 130 million years ago when they switched from hunting other insects to eating pollen. Bees are vegetarian (mostly) and fuzzy. Wasps are predators (or scavengers like yellowjackets) and smooth/shiny. Bees pollinate; most wasps don\'t. Wasps can be aggressive around food (picnics); bees aren\'t.',
+    },
+    {
+      q: 'Why are honey bees in trouble?',
+      a: 'Many reasons stacking on top of each other: the varroa mite (a parasitic mite that arrived in the US in the 1980s and is the biggest killer), pesticides (especially neonicotinoids), habitat loss (less wild flowers, more pavement and monoculture farms), poor nutrition (when a whole landscape is one crop), and climate change disrupting the timing of when flowers bloom.',
+    },
+    {
+      q: 'How can I help bees?',
+      a: 'Plant pollinator-friendly flowers (lots of different ones, blooming at different times). Don\'t use pesticides. Don\'t mow the lawn so much — let dandelions and clover bloom. Leave bare patches of soil and dead plant stems (native bees nest in these). Buy local honey to support local beekeepers. Support policies that protect pollinators.',
+    },
+    {
+      q: 'Is honey vegan?',
+      a: 'This depends on your definition. Honey is an animal product (made by bees), so most strict vegans don\'t eat it. Some vegans accept honey from small ethical beekeepers because the bees aren\'t harmed. Beekeepers generally argue that managed honey bees are well-cared-for and that beekeeping is closer to gardening than to ranching. Reasonable people disagree.',
+    },
+    {
+      q: 'Can I keep bees in my backyard?',
+      a: 'Usually yes, depending on local laws. Check city ordinances and your state\'s requirements (many require registration). Talk to neighbors before installing hives. You\'ll need ~$300-500 to start, willingness to learn, and a flat sunny spot with morning sun and afternoon shade. Maine has a great network of local clubs and mentors.',
+    },
+    {
+      q: 'Do bees recognize people?',
+      a: 'Bees can recognize human faces in lab experiments — they distinguish photos of faces if rewarded with sugar. Whether they "recognize" their beekeeper specifically is debated; some beekeepers are sure their bees know them, and there\'s plausible mechanism (they recognize voices and patterns), but rigorous evidence is thin.',
+    },
+    {
+      q: 'How smart are bees?',
+      a: 'Surprisingly. Honey bees can learn complex associations, count to about 4, recognize symbols, navigate using landmarks and the sun, and (some experiments suggest) experience emotional states. Their brain has about 960,000 neurons (humans have 86 billion) but the connectivity is dense and efficient.',
+    },
+    {
+      q: 'Can bees see color?',
+      a: 'Yes, but their color vision is shifted toward ultraviolet. They can\'t see red (looks black to them) but can see UV patterns on flowers that are invisible to us. Many flowers have "honey guides" — UV-reflective patterns that direct bees to the nectar.',
+    },
+  ];
+
+  // ─── Cross-disciplinary connections ─────────────────────────────────────
+  var CROSS_DISCIPLINARY = [
+    {
+      subject: 'Math',
+      connections: [
+        'Hexagons: why they\'re the optimal shape for tiling and minimum-wax cell construction (Honeycomb Conjecture, proved 1999)',
+        'Combinatorics of waggle dance: encoding two continuous values (distance, angle) in a stochastic signal',
+        'Population dynamics: exponential brood growth, modeled by simple differential equations',
+        'Probability: rule-of-thumb mite counts vs. actual sampling distributions',
+        'Geometry: bee space, frame dimensions, super stacking',
+        'Statistics: how to know if a honey crop differs significantly between two apiaries',
+      ],
+    },
+    {
+      subject: 'Science',
+      connections: [
+        'Biology: eusocial insects, kin selection, haplodiploidy',
+        'Chemistry: pheromones, enzyme catalysis (invertase), wax chemistry',
+        'Physics: thermoregulation in the cluster, waggle dance acoustics',
+        'Ecology: pollination, ecosystem services, food webs',
+        'Environmental science: pesticides, habitat fragmentation, climate change',
+        'Genetics: haploid drones, diploid females, queen vs worker differential expression',
+        'Animal behavior: communication, learning, decision-making',
+      ],
+    },
+    {
+      subject: 'Social studies',
+      connections: [
+        'Agriculture: bees pollinate ~1/3 of human food crops',
+        'Economics: commercial pollination industry, almond migration',
+        'History: ancient Egyptian, Greek, Roman beekeeping; medieval mead culture',
+        'Geography: regional honey types reflect local flora',
+        'Civic engagement: pollinator protection policy, neonic bans',
+        'Indigenous knowledge: traditional Maya stingless beekeeping',
+      ],
+    },
+    {
+      subject: 'English Language Arts',
+      connections: [
+        'Etymology: "apis" / "apiary" / "apiculture" / "melli-" prefix',
+        'Idioms: "busy as a bee," "queen bee," "the bee\'s knees"',
+        'Literature: Maeterlinck "The Life of the Bee," Sylvia Plath "Bee" poems, Sue Monk Kidd "The Secret Life of Bees"',
+        'Writing: lab notebooks, observation journals, persuasive essay (should we keep bees?)',
+      ],
+    },
+    {
+      subject: 'Art',
+      connections: [
+        'Pattern: hexagonal tessellation in design',
+        'Drawing: bee anatomy from life',
+        'Photography: macro lens on flowers and bees',
+        'Sculpture: wax-casting (lost-wax method)',
+        'Design: hive painting (color-coded for queens; aesthetic choice for beekeepers)',
+      ],
+    },
+    {
+      subject: 'Music',
+      connections: [
+        'Rimsky-Korsakov "Flight of the Bumblebee"',
+        'Vivaldi (and many others) using bee imagery',
+        'Pitch of bee wing buzz (~250-300 Hz for worker bees)',
+        'Cluster hum as a winter "concert"',
+      ],
+    },
+    {
+      subject: 'Engineering',
+      connections: [
+        'Hive design as engineering problem (ventilation, insulation, modularity)',
+        'Apiary infrastructure (stands, scales, monitoring electronics)',
+        'IoT hive monitoring (BroodMinder, Arnia)',
+        'Bioinspired design (hexagonal structures in aerospace, packaging)',
+      ],
+    },
+  ];
+
+  // ─── Bee-related careers ────────────────────────────────────────────────
+  var BEE_CAREERS = [
+    {
+      role: 'Commercial beekeeper',
+      description: 'Owns and manages thousands of hives for honey production and/or pollination services',
+      training: 'Apprenticeship + business skills; some have agricultural degrees',
+      income: '$30K-$200K+ depending on scale and crop',
+      notes: 'Hard physical work; long hours during spring/summer. Many travel cross-country for almond pollination (~80% of US hives go to California in Feb).',
+    },
+    {
+      role: 'Hobbyist / sideliner beekeeper',
+      description: 'Keeps 1-50 hives for honey, pollination, education, or community service',
+      training: 'Local beekeeping clubs, books, mentors',
+      income: 'Usually a hobby; sideliners ($1-30K/year) can supplement income',
+      notes: 'Maine has thousands of hobbyist beekeepers; very welcoming community.',
+    },
+    {
+      role: 'Beekeeping inspector',
+      description: 'State or provincial position; inspects hives for diseases and certifies for sale/transport',
+      training: 'Agricultural science background; on-the-job training',
+      income: '$35K-$70K',
+      notes: 'Maine has a state apiarist program.',
+    },
+    {
+      role: 'Bee research scientist',
+      description: 'Studies bee biology, behavior, disease, or ecology',
+      training: 'PhD in entomology, biology, or ecology',
+      income: '$60K-$130K (academic); higher in industry',
+      notes: 'Universities and USDA labs are primary employers. Field is growing as pollinator decline gets policy attention.',
+    },
+    {
+      role: 'Pollination service operator',
+      description: 'Specializes in renting hives to farmers for crop pollination',
+      training: 'Commercial beekeeping experience',
+      income: 'Variable; almonds pay $200-$300/hive',
+      notes: 'Logistics-intensive; large operations move millions of hives.',
+    },
+    {
+      role: 'Honey processor / packer',
+      description: 'Bottles, blends, labels honey for retail sale',
+      training: 'Food safety / processing background',
+    },
+    {
+      role: 'Equipment manufacturer',
+      description: 'Designs and builds hives, extractors, and beekeeping supplies',
+      examples: 'Mann Lake, Dadant, Better Bee, Brushy Mountain',
+    },
+    {
+      role: 'Beekeeping educator',
+      description: 'Teaches beekeeping classes, runs Master Beekeeper programs, conducts youth outreach',
+      training: 'Master Beekeeper certification, teaching experience',
+    },
+    {
+      role: 'Agricultural extension agent',
+      description: 'Public-facing role at a university or state agency helping farmers and beekeepers',
+      training: 'Bachelor\'s or master\'s in agriculture',
+      example: 'University of Maine Cooperative Extension employs bee specialists',
+    },
+    {
+      role: 'Pollinator habitat consultant',
+      description: 'Helps landowners and municipalities design pollinator-friendly landscapes',
+      training: 'Ecology, landscape design',
+    },
+    {
+      role: 'Bee removal specialist',
+      description: 'Removes unwanted bee colonies from structures alive (cut-out work) for relocation',
+      training: 'Beekeeping plus structural/safety skills',
+    },
+    {
+      role: 'Mead maker',
+      description: 'Crafts honey-based alcoholic beverages',
+      training: 'Brewing/winemaking background',
+      notes: 'Maine has a growing mead industry.',
+    },
+    {
+      role: 'Bee-themed artist / writer',
+      description: 'Bee imagery in visual art, jewelry, books, photography, film',
+      notes: 'Niche but real; bees have universal cultural resonance.',
+    },
+  ];
+
+  // ─── Maine-specific beekeeping context ──────────────────────────────────
+  var MAINE_BEEKEEPING = [
+    {
+      topic: 'Why Maine is challenging',
+      points: [
+        'Long winters (Nov-Apr): colonies must overwinter with adequate stores',
+        'Short build-up window (May-July): bees have only a few months to build population AND store honey',
+        'Variable weather: late frosts can kill spring blossoms; cold rainy stretches in June ground bees during the prime flow',
+        'Wild blueberry pollination: huge demand but coincides with bees\' weakest moment (spring buildup)',
+      ],
+    },
+    {
+      topic: 'Why Maine is good for bees',
+      points: [
+        'Abundant goldenrod: the late-summer flow tops off winter stores',
+        'Less ag intensity than the Midwest: more diverse forage, less pesticide pressure',
+        'Active beekeeping community: clubs, mentors, the Maine State Beekeepers Association',
+        'Strong consumer market for local honey at farmers markets',
+        'Cold winters slow some pests (small hive beetle largely absent)',
+      ],
+    },
+    {
+      topic: 'Maine-specific resources',
+      list: [
+        'Maine State Apiarist (state employee): registration, inspection, disease consultation',
+        'Maine State Beekeepers Association (MSBA): local chapters, conferences, journal',
+        'University of Maine Cooperative Extension: classes, publications, research',
+        'Maine Beekeepers\' Insurance Cooperative',
+        'Local mentors at every county fair and farmers market',
+      ],
+    },
+    {
+      topic: 'Regulations',
+      points: [
+        'Maine requires registration of all colonies with the state apiarist',
+        'Honey sold commercially must be labeled (state and federal rules)',
+        'Some municipalities have urban beekeeping ordinances (Portland, Bangor)',
+        'Selling honey at farmers markets requires food handling certification in most counties',
+      ],
+    },
+    {
+      topic: 'Iconic Maine bee crops',
+      list: [
+        'Wild blueberries: Maine produces 90%+ of US wild blueberries; commercial pollination is the industry foundation',
+        'Apples: orchards in southern Maine depend on honey bees and native bees',
+        'Cranberries: smaller market but uses bee pollination',
+        'Maple syrup: not bee-pollinated but maples are huge nectar sources for spring buildup',
+      ],
+    },
+    {
+      topic: 'Best Maine beekeeping books',
+      list: [
+        'Tony Jadczak (former Maine State Apiarist) and Lincoln Sennett "Backyard Bees" — Maine-focused',
+        'Ross Conrad "Natural Beekeeping" — useful organic/treatment-free approach',
+        'Kim Flottum "Backyard Beekeeper" — general; very accessible',
+        'Tom Seeley "The Lives of Bees" — for those wanting deep biology',
+      ],
+    },
+  ];
+
+  // ─── Bee math problems (curriculum-ready) ───────────────────────────────
+  var BEE_MATH_PROBLEMS = [
+    {
+      grade: '3-5',
+      problem: 'A worker bee visits 50 flowers per trip. She makes 15 trips per day. How many flowers does she visit in a day? In a 6-week life?',
+      solution: '50 × 15 = 750/day. 750 × 42 days = 31,500 flowers.',
+      standards: 'NGSS 3-LS2-1 (group behavior in animals)',
+    },
+    {
+      grade: '3-5',
+      problem: 'A hive has 60,000 bees in summer. About 1/3 are foragers. How many foragers are there?',
+      solution: '60,000 / 3 = 20,000 foragers',
+    },
+    {
+      grade: '3-5',
+      problem: 'A pound of honey requires bees to visit 2 million flowers. If you eat a 12-ounce jar of honey, how many flowers were visited?',
+      solution: '12 oz = 0.75 lb. 0.75 × 2,000,000 = 1,500,000 flowers',
+    },
+    {
+      grade: '6-8',
+      problem: 'A queen bee can lay 1,500 eggs per day. If she lays for 200 days during the active season, and 90% develop into workers, how many workers does she produce in a year?',
+      solution: '1500 × 200 × 0.9 = 270,000 workers',
+    },
+    {
+      grade: '6-8',
+      problem: 'A waggle dance with a 2-second waggle indicates ~1000m. A waggle of 4 seconds indicates 2000m. If the relationship is linear and 0.5 sec waggle = 200m, what is the conversion rate (m per second of waggle)?',
+      solution: 'Slope = (1000-200) / (2-0.5) = 800 / 1.5 ≈ 533 m/sec waggle. (Approximate; real bees vary.)',
+    },
+    {
+      grade: '6-8',
+      problem: 'A colony stores 90 lbs of honey for winter. It consumes about 0.5 lb per day in deep winter. How many days will the stores last?',
+      solution: '90 / 0.5 = 180 days. Roughly 6 months, covering Nov-Apr in Maine.',
+    },
+    {
+      grade: '9-12',
+      problem: 'Mite counts: alcohol wash gives 6 mites per 300 bees. What\'s the infestation rate as a percentage? Is this above the 3% treatment threshold?',
+      solution: '6/300 = 2.0%. Below the 3% threshold but worth monitoring.',
+    },
+    {
+      grade: '9-12',
+      problem: 'A colony with 30,000 bees has 2% varroa infestation. Each capped brood cell averages 1.5 mites. If 5,000 brood cells will emerge in the next 12 days, what will the mite count be then (assuming no treatment)?',
+      solution: 'Current mites on adults: 30,000 × 0.02 = 600. Mites in emerging brood: 5,000 × 1.5 = 7,500. New total ≈ 8,100. New mite-to-bee ratio: 8,100 / 35,000 ≈ 23%. (Demonstrates exponential mite growth without treatment.)',
+    },
+    {
+      grade: '9-12',
+      problem: 'A bee\'s metabolism while flying produces about 80 watts per kilogram of body mass. A bee weighs ~0.1 g. What\'s her power output in milliwatts?',
+      solution: '80 W/kg × 0.0001 kg = 0.008 W = 8 mW. (Pound for pound, more than an Olympic athlete.)',
+    },
+    {
+      grade: '9-12',
+      problem: 'Honeycomb hexagons have side length 2.7mm. What\'s the area of one cell face? What\'s the wax-to-volume ratio compared to square cells of equal area? (Demonstrates Honeycomb Conjecture.)',
+      solution: 'Hexagon area = (3√3/2)(2.7)² ≈ 18.94 mm². Hexagon perimeter = 6(2.7) = 16.2 mm. Equivalent square: side ≈ 4.35 mm, perimeter = 17.4 mm. Hexagon saves ~7% wax for the same volume.',
+    },
+  ];
+
+  // ─── Lab activities / lesson hooks ─────────────────────────────────────
+  var LAB_ACTIVITIES = [
+    {
+      title: 'Pollinator garden design',
+      gradeRange: '3-12',
+      durationMins: '60 (planning) + ongoing maintenance',
+      objectives: 'Plan a bloom sequence that supports pollinators throughout the growing season',
+      materials: 'Plant lists (use POLLINATOR_PLANTS), graph paper, calendar template, optional: actual seeds/plants',
+      procedure: [
+        'Map a real or imaginary garden plot on graph paper',
+        'Pick 8-12 plant species representing all four seasons',
+        'Place plants in clusters of 3-5 (foraging efficiency)',
+        'Verify the bloom sequence has no >2-week gaps',
+        'Calculate total area, plant count, estimated cost',
+      ],
+      assessment: 'Justify each plant choice in writing; reflect on diversity vs. visual design tradeoffs',
+    },
+    {
+      title: 'Waggle dance reconstruction',
+      gradeRange: '6-12',
+      durationMins: '45',
+      objectives: 'Translate a waggle dance into compass direction and distance, and vice versa',
+      materials: 'Compass, schoolyard, stopwatch, masking tape',
+      procedure: [
+        'Outdoors: place a "hive" marker. Mark a "sun" direction.',
+        'Teacher demonstrates a waggle dance with set duration and angle',
+        'Students translate the dance to compass bearing + distance and walk to where they think the "food" is',
+        'Reveal the actual food location (a sticker, treat, etc.) — students see how close they got',
+        'Reverse: students mark a food location and a partner produces the matching dance',
+      ],
+      assessment: 'Have students explain why bees encode angle relative to the sun rather than absolute compass bearing',
+    },
+    {
+      title: 'Honey tasting + flavor description',
+      gradeRange: '3-12',
+      durationMins: '30',
+      objectives: 'Recognize that single-source honeys have distinct flavors and identify factors that contribute',
+      materials: '4-6 single-source honey samples (clover, wildflower, buckwheat, goldenrod, etc.), water, crackers, score sheets',
+      procedure: [
+        'Pour small amounts of each honey into numbered cups',
+        'Students taste in order from lightest to darkest',
+        'Score each on sweetness, complexity, aftertaste',
+        'Compare with the source plant\'s characteristics',
+      ],
+      crossCurricular: 'Builds vocabulary (descriptive writing), sensory science, agriculture awareness',
+      cautions: 'Check for allergies; some honeys can contain trace pollen',
+    },
+    {
+      title: 'Build a mason bee house',
+      gradeRange: '3-12',
+      durationMins: '90',
+      objectives: 'Provide nesting habitat for native solitary bees',
+      materials: 'Untreated wood blocks, drill with 5/16" bit, mounting hardware',
+      procedure: [
+        'Cut a 4×6" block of untreated wood (cedar or pine)',
+        'Drill 5/16" holes 5-6" deep (not all the way through)',
+        'Space holes about 3/4" apart',
+        'Mount under an eave facing south/southeast, 4-6 ft off the ground',
+        'Replace tunnels yearly to avoid parasite buildup',
+      ],
+    },
+    {
+      title: 'Hive math project',
+      gradeRange: '6-12',
+      durationMins: 'Multi-day',
+      objectives: 'Use real beekeeping data to practice quantitative reasoning',
+      materials: 'Spreadsheet, sample data from local beekeepers',
+      procedure: [
+        'Collect data (weights of colonies, honey yields, mite counts) from local club',
+        'Calculate averages, distributions, variances',
+        'Make graphs',
+        'Investigate questions: Is colony X really underperforming, or is it within normal variation?',
+      ],
+    },
+    {
+      title: 'Pollination simulation with toy bees',
+      gradeRange: 'K-3',
+      durationMins: '30',
+      objectives: 'Understand that bees transfer pollen between flowers',
+      materials: 'Cotton-ball "bees," construction-paper flowers, Cheerios (as "pollen")',
+      procedure: [
+        'Arrange paper flowers around the room',
+        'Put pollen (Cheerios) in some flowers; mark these with yellow stickers',
+        'Students "fly" their bees from flower to flower',
+        'After a few minutes, see how many flowers received transferred pollen',
+        'Connect: this is exactly what bees do in real life',
+      ],
+    },
+    {
+      title: 'Bee anatomy drawing from observation',
+      gradeRange: '3-8',
+      durationMins: '60',
+      objectives: 'Identify major bee body parts and their functions',
+      materials: 'Magnifying glasses, dead bee specimens (acquired from a beekeeper), drawing paper',
+      procedure: [
+        'Observe bees under magnification',
+        'Draw and label: head, thorax, abdomen, 3 pairs of legs, 2 pairs of wings, compound eyes, antennae, mouthparts, pollen baskets',
+        'Discuss function of each part',
+      ],
+      cautions: 'Use specimens from a beekeeper — never collect dying bees from outside as they may carry mites',
+    },
+    {
+      title: 'Investigate colony collapse',
+      gradeRange: '8-12',
+      durationMins: 'Multi-class research project',
+      objectives: 'Analyze a complex environmental problem with multiple contributing causes',
+      materials: 'Internet research, scientific paper reading, presentation tools',
+      procedure: [
+        'Students research one specific factor (varroa, neonics, habitat loss, etc.)',
+        'Read at least one scientific paper on it',
+        'Present findings to the class as expert',
+        'Class debates: which factor is most important? What policies would help?',
+      ],
+    },
+  ];
+
+  // ─── Inquiry questions ─────────────────────────────────────────────────
+  var INQUIRY_QUESTIONS = [
+    'Why do bees build hexagonal cells instead of square or round?',
+    'How does a colony "decide" anything when no individual is in charge?',
+    'Why do worker bees die when they sting, but queens don\'t?',
+    'How can a colony of 50,000 individuals all be sisters?',
+    'What makes a queen different from a worker if they have the same genes?',
+    'How do bees survive Maine winters when they can\'t hibernate individually?',
+    'Why are honey bees in trouble, and what would it take to save them?',
+    'Could humans live without bees? What would we lose?',
+    'How is a bee colony like a city? How is it different?',
+    'If the queen is just an egg-layer, who really runs the colony?',
+    'Why are some flowers more attractive to bees than others?',
+    'How does a bee remember where it came from when it\'s 2 miles from home?',
+    'Is beekeeping ethical? (Compare to dairy farming, pet ownership, wild horse management)',
+    'Why are there so many different kinds of bees? Why not just one?',
+    'Could we engineer crops to not need bees? Would that be a good idea?',
+    'What would happen to a colony with no queen? With two queens?',
+    'How do bees know what time of year it is?',
+    'Why do bees produce more honey than they need?',
+    'Why are wild blueberries pollinated mostly by native bees, not honey bees?',
+    'If global temperatures rise 2°C, what happens to Maine bees?',
+  ];
+
+  // ─── Standards alignment ───────────────────────────────────────────────
+  var STANDARDS_ALIGNMENT = [
+    {
+      framework: 'NGSS',
+      gradeBand: 'K-2',
+      standard: 'K-LS1-1 — Use observations to describe patterns of what plants and animals (including humans) need to survive.',
+      beehiveConnection: 'Bees need flowers; flowers need bees. Mutual dependence is observable.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '3-5',
+      standard: '3-LS2-1 — Construct an argument that some animals form groups that help members survive.',
+      beehiveConnection: 'Bee colonies are the textbook example of a group with division of labor.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '3-5',
+      standard: '3-LS4-3 — Construct an argument with evidence that in a particular habitat some organisms can survive well, some survive less well, and some cannot survive at all.',
+      beehiveConnection: 'Different bee species occupy different niches. Varroa-resistant strains survive where others fail.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS2-1 — Analyze and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem.',
+      beehiveConnection: 'Nectar dearths in summer; floral diversity matters; pollinator decline data.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS2-2 — Construct an explanation that predicts patterns of interactions among organisms across multiple ecosystems.',
+      beehiveConnection: 'Pollination as mutualism; varroa as parasitism; pesticides as anthropogenic disruption.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS2-4 — Construct an argument supported by empirical evidence that changes to physical or biological components of an ecosystem affect populations.',
+      beehiveConnection: 'Habitat loss → fewer pollinators → reduced wild plant reproduction. Documentable cascade.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS4-4 — Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals\' probability of surviving and reproducing in a specific environment.',
+      beehiveConnection: 'Hygienic behavior in bees confers varroa resistance; breeding selects for it.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '9-12',
+      standard: 'HS-LS2-7 — Design, evaluate, and refine a solution for reducing the impacts of human activities on the environment and biodiversity.',
+      beehiveConnection: 'Pollinator habitat restoration, neonic policy, organic agriculture as solutions.',
+    },
+    {
+      framework: 'Common Core Math',
+      gradeBand: '3-5',
+      standard: '4.MD.A.2 — Use the four operations to solve word problems involving distances, intervals of time, liquid volumes, masses of objects, and money.',
+      beehiveConnection: 'Honey weight, hive distance to forage, time calculations for bee development.',
+    },
+    {
+      framework: 'Common Core Math',
+      gradeBand: '6-8',
+      standard: '6.RP.A.3 — Use ratio reasoning to solve real-world problems.',
+      beehiveConnection: 'Mite-to-bee ratio, foragers per colony, sugar-to-water ratios in feed.',
+    },
+    {
+      framework: 'Common Core ELA',
+      gradeBand: '3-5',
+      standard: 'CCSS.ELA-LITERACY.W.4.2 — Write informative/explanatory texts to examine a topic and convey ideas and information clearly.',
+      beehiveConnection: 'Research reports on a chosen bee species; how-to guides for pollinator gardens.',
+    },
+    {
+      framework: 'CCSS ELA',
+      gradeBand: '6-8',
+      standard: 'CCSS.ELA-LITERACY.RI.7.7 — Compare and contrast a text to an audio, video, or multimedia version.',
+      beehiveConnection: 'Read about waggle dance, then watch von Frisch\'s archival footage.',
+    },
+  ];
+
+  // ─── Bee anatomy (verbose) ──────────────────────────────────────────────
+  var BEE_ANATOMY = [
+    {
+      part: 'Head',
+      description: 'Houses brain, eyes, antennae, mouthparts',
+      details: 'Bee brain has ~960,000 neurons. Despite small size, capable of learning, memory, navigation, and abstract reasoning in some experiments.',
+    },
+    {
+      part: 'Compound eyes',
+      description: 'Two large compound eyes on either side of the head, made of ~6,900 ommatidia (individual photoreceptor units) in workers',
+      details: 'See ultraviolet but not red. Detect polarized light for navigation when sun is hidden. Can perceive movement very fast (200 frames/sec equivalent).',
+    },
+    {
+      part: 'Ocelli',
+      description: 'Three simple eyes on top of the head',
+      details: 'Detect light intensity and help with orientation during flight. Do not form images.',
+    },
+    {
+      part: 'Antennae',
+      description: 'Two segmented sensory antennae',
+      details: 'Detect odors (chemoreception), air currents, temperature, humidity, sound vibration, and CO2. Bee\'s primary "sensor array."',
+    },
+    {
+      part: 'Mandibles',
+      description: 'Jaws used for chewing wax, gripping objects, cell-cleaning, fighting',
+      details: 'Workers use mandibles to shape wax comb. Queens use them to bite open queen cells of rivals.',
+    },
+    {
+      part: 'Proboscis',
+      description: 'Tongue used to suck up nectar; folds under the head when not in use',
+      details: 'Italian bee proboscis: ~6.6mm. Specialist bees that visit deep flowers (like long-tongued bumblebees) have proboscises up to 19mm.',
+    },
+    {
+      part: 'Thorax',
+      description: 'Middle body section housing flight muscles and attaching wings/legs',
+      details: 'Bee thorax can heat itself independently — bees "warm up" thoracic muscles by isometric contractions before flight in cool weather.',
+    },
+    {
+      part: 'Forewings + hindwings',
+      description: 'Two pairs of wings; the front pair is larger',
+      details: 'Wings beat ~230 times per second. Hindwings hook onto forewings during flight via tiny hamuli (hooks), making them function as one airfoil.',
+    },
+    {
+      part: 'Legs',
+      description: 'Three pairs of legs, each adapted for specific tasks',
+      details: [
+        'Front legs: pollen brush + antenna cleaner (notch on the leg used to comb antennae)',
+        'Middle legs: spur for removing pollen baskets and prying wax',
+        'Hind legs: pollen baskets (corbiculae) — concave smooth surfaces fringed with hairs',
+      ],
+    },
+    {
+      part: 'Abdomen',
+      description: 'Posterior body section with digestive system, reproductive organs, wax glands, stinger',
+      details: 'Six visible segments. Last segment houses stinger apparatus.',
+    },
+    {
+      part: 'Wax glands',
+      description: 'Four pairs of glands on the underside of the abdomen of bees aged 12-18 days',
+      details: 'Produce wax in thin flakes about 3mm across. Bees chew and shape these into comb.',
+    },
+    {
+      part: 'Honey stomach (crop)',
+      description: 'Specialized expandable pouch in the abdomen for transporting nectar',
+      details: 'Foragers can carry ~70mg of nectar (about their body weight). Sealed off from the digestive stomach by a valve.',
+    },
+    {
+      part: 'Stinger',
+      description: 'Modified ovipositor (egg-laying organ) in workers and queens',
+      details: 'Worker stinger has barbs — gets stuck in mammalian skin and rips out, killing the worker. Queen stinger is smooth and reusable (mainly used against rival queens).',
+    },
+    {
+      part: 'Venom sac',
+      description: 'Reservoir behind the stinger that pumps melittin and other toxins',
+      details: 'Even after the stinger is detached from the bee, the venom sac continues to pump for ~30 seconds. Scrape, don\'t pinch, when removing a stinger from skin.',
+    },
+    {
+      part: 'Spiracles',
+      description: 'Openings on the abdomen and thorax that allow gas exchange',
+      details: 'Bees do not breathe through their mouths. Air enters through spiracles and circulates through internal tracheal tubes.',
+    },
+    {
+      part: 'Nasonov gland',
+      description: 'A scent gland on the abdomen used to release "I\'m here" pheromone',
+      details: 'When workers find a new home (after swarming) or want to recruit nestmates to a site, they expose this gland and fan their wings to disperse the scent.',
+    },
+    {
+      part: 'Mandibular glands',
+      description: 'Paired glands in the head producing alarm pheromone (in workers) or queen pheromone (in queens)',
+      details: 'When a worker stings, mandibular alarm pheromone is released, summoning more bees to attack. Smell: similar to banana.',
+    },
+    {
+      part: 'Hypopharyngeal glands',
+      description: 'Located in the head; produce royal jelly in young workers',
+      details: 'These glands are active in nurse bees (4-12 days old) and regress as the worker ages. Later in life they produce enzymes that convert nectar to honey.',
+    },
+  ];
+
+  // ─── Bee superpowers (engagement hooks for younger students) ───────────
+  var BEE_SUPERPOWERS = [
+    { power: 'UV vision', desc: 'Bees see ultraviolet patterns on flowers that we can\'t — like a flower\'s secret advertising in invisible ink' },
+    { power: 'Polarized light navigation', desc: 'Bees can find their way using the sun even when it\'s behind clouds, by detecting light polarization patterns in the sky' },
+    { power: 'Magnetic sense', desc: 'Bees have magnetite crystals in their abdomens and can detect Earth\'s magnetic field — possibly used for direction-finding' },
+    { power: 'Distance memory', desc: 'A forager can fly 2 miles to a food source and back, then communicate the exact location to her sisters' },
+    { power: 'Speed of perception', desc: 'Bees can resolve visual changes 5x faster than humans — useful when flying through complex environments' },
+    { power: 'Chemical language', desc: 'Bees use at least 15 different pheromones to communicate; we have nothing comparable' },
+    { power: 'Group thermoregulation', desc: 'Bees collectively maintain ~95°F brood temperature year-round despite Maine winters and summer heat waves' },
+    { power: 'Architectural mastery', desc: 'Bees build perfect hexagons without instructions — the most efficient shape mathematically proven possible' },
+    { power: 'Group democracy', desc: 'When choosing a new home, scout bees compare locations and vote through dance intensity. The colony picks the best site reliably.' },
+    { power: 'Voltage detection', desc: 'Bees can detect electric fields around flowers and use this to gauge whether a flower has been recently visited (visited flowers have weaker fields)' },
+    { power: 'Sleep-like states', desc: 'Bees rest, possibly dream, and exhibit memory consolidation similar to mammals during these states' },
+    { power: 'Symbolic communication', desc: 'The waggle dance encodes information about places not currently visible — the only known invertebrate symbolic communication system' },
+  ];
+
+  // ─── Pollination science deep dive ─────────────────────────────────────
+  var POLLINATION_SCIENCE = [
+    {
+      concept: 'What is pollination?',
+      explanation: 'Transfer of pollen from the anther (male part) of one flower to the stigma (female part) of another, enabling fertilization. The result is fruit/seed production.',
+    },
+    {
+      concept: 'Self-pollination vs cross-pollination',
+      explanation: 'Self-pollination: pollen from a flower reaches that same flower\'s stigma or another flower on the same plant. Often less robust offspring. Cross-pollination: pollen travels between different individuals, producing genetic diversity and stronger offspring.',
+      bees: 'Bees cross-pollinate by carrying pollen on their bodies from flower to flower as they forage for nectar.',
+    },
+    {
+      concept: 'Why flowers reward pollinators',
+      explanation: 'Plants spend energy producing nectar (sugar water) and excess pollen to attract and pay pollinators. This is cheaper than the genetic cost of self-pollination or the unreliability of wind/water pollination.',
+    },
+    {
+      concept: 'Coevolution',
+      explanation: 'Flowers and pollinators evolved together. Bee-pollinated flowers tend to be blue/purple/yellow (within bee color vision), often have UV nectar guides, are open during the day, and offer nectar that\'s sucrose-rich. Hummingbird-pollinated flowers are red, tubular, scentless, and have weak landing platforms.',
+    },
+    {
+      concept: 'Buzz pollination',
+      explanation: 'Some flowers (tomatoes, blueberries, cranberries, eggplants) hold pollen tightly inside tube-shaped anthers. Bumblebees and some solitary bees grab the anther and vibrate their flight muscles at the resonant frequency, shaking pollen loose. Honey bees cannot do this — they can pollinate buzz-pollinated crops but inefficiently.',
+    },
+    {
+      concept: 'Pollinator fidelity',
+      explanation: 'Individual foragers tend to specialize on one flower species per trip ("flower constancy"). This benefits plants (their pollen actually reaches another of the same species) and bees (motor pattern is optimized for one flower shape).',
+    },
+    {
+      concept: 'Pollen baskets',
+      explanation: 'Hind-leg concavities (corbiculae) where workers pack moistened pollen. A full pollen basket on each hind leg can weigh 30% of the bee\'s body weight.',
+    },
+    {
+      concept: 'Pollen as food',
+      explanation: 'Pollen provides protein (15-30%), fats, vitamins, and minerals. Honey bees fermenting pollen in cells with nectar and bacteria produce "beebread," the colony\'s primary protein source. Colonies need pollen continuously during brood-rearing.',
+    },
+    {
+      concept: 'How much pollination do bees do?',
+      stats: [
+        '$15-30 billion annual contribution to US agriculture',
+        '~1/3 of human food crops depend on bee pollination',
+        'Without bees: apples, blueberries, almonds, cherries, plums, watermelons, cucumbers, pumpkins, squash, and many others would fail or yield poorly',
+        'Wind-pollinated crops (corn, wheat, rice) don\'t need bees but make up the bulk of calories — though much of the variety and nutrition in our diet does',
+      ],
+    },
+    {
+      concept: 'Ecological services beyond agriculture',
+      list: [
+        'Wild plant reproduction (90%+ of flowering plants are animal-pollinated)',
+        'Forest regeneration (many trees are insect-pollinated)',
+        'Food web support (bees feed birds, mammals)',
+        'Honey production',
+        'Cultural and aesthetic value',
+      ],
+    },
+    {
+      concept: 'What happens if pollinators disappear?',
+      consequences: [
+        'Direct food impact: missing apples, almonds, berries, melons, squash',
+        'Indirect: crop substitution toward wind-pollinated staples = less dietary diversity = nutritional deficiencies',
+        'Ecosystem cascade: wild plants fail, dependent animals decline, forests change',
+        'Economic: $15+ billion annual US agricultural loss',
+        'Human alternative: hand-pollination is being done in parts of China where pesticides eliminated local bees. Labor-intensive and produces inferior crops.',
+      ],
+    },
+    {
+      concept: 'Native bees vs honey bees',
+      explanation: 'Honey bees are imported (from Europe). North America has 4,000+ native bee species. Many crops are pollinated by both, and some (wild blueberry, squash, pumpkins) primarily by native bees.',
+      implication: 'Conservation should support both. Honey bee management can sometimes compete with native bees for resources.',
+    },
+  ];
+
+  // ─── Apocrypha and trivia ─────────────────────────────────────────────
+  var BEE_TRIVIA = [
+    { fact: 'A bee\'s wing beats about 230 times per second, which is why they buzz at around 250-300 Hz (similar to the B note above middle C).' },
+    { fact: 'Honey has been found in 3,000-year-old Egyptian tombs and is still edible — its low water content and acidity prevent microbial growth.' },
+    { fact: 'A worker bee produces about 1/12 of a teaspoon of honey in her entire 6-week life.' },
+    { fact: 'A bee can fly about 15 mph and travel up to 6 miles from the hive (though typical foraging is 2-3 miles).' },
+    { fact: 'A colony of bees collectively consumes about 200 lbs of honey per year. They produce another ~100 lbs as surplus that the beekeeper can harvest.' },
+    { fact: 'Each cell in honeycomb is tilted up at a 13-degree angle — preventing honey from running out.' },
+    { fact: 'A bee\'s sense of smell is about 50 times more sensitive than a dog\'s.' },
+    { fact: 'Bees have been trained to detect explosives, drugs, cancer biomarkers, and tuberculosis through scent.' },
+    { fact: 'The largest bee in the world is Wallace\'s giant bee (Megachile pluto), with a wingspan of 2.5 inches. Rediscovered in 2019 after being thought extinct.' },
+    { fact: 'The smallest bee is Perdita minima, less than 2mm long — smaller than a grain of rice.' },
+    { fact: 'A bee\'s brain has fewer neurons than your laptop has transistors, yet performs more complex behavior than most AI systems.' },
+    { fact: 'Honey bees were brought to North America by European colonists in the 1620s. Native Americans called them "white man\'s flies."' },
+    { fact: 'When new queens hatch, they sometimes "pipe" — make a high-pitched sound. Unhatched queens still in cells "quack" in response. The exact purpose is debated.' },
+    { fact: 'A bee\'s six legs each have specialized parts: pollen brushes, antenna cleaners, wax-handling spurs. They\'re multi-tool Swiss army knives.' },
+    { fact: 'The amount of honey a colony stores for winter (60-100 lbs in Maine) represents the lifetime work of thousands of bees and millions of foraging trips.' },
+    { fact: 'Bees are warm-blooded in a sense — they generate heat through muscle contractions to maintain their cluster at 95°F.' },
+    { fact: 'Albert Einstein has been falsely quoted as saying "If the bee disappeared off the face of the Earth, man would only have four years left to live." There is no evidence he ever said this.' },
+    { fact: 'A typical hive has ~6 to 8 honey supers stacked on top in peak season, each holding 30-50 lbs of honey when full.' },
+    { fact: 'Beeswax has been used since antiquity for sealing wax, candles, polishes, cosmetics, and lost-wax casting in metalworking.' },
+    { fact: 'Propolis ("bee glue") has antimicrobial properties so strong that the hive interior is more sterile than a hospital operating room.' },
+    { fact: 'In ancient Egypt, the bee was a symbol of royalty — pharaohs were called "He of the Sedge and the Bee."' },
+    { fact: 'The drone has no father (since drones develop from unfertilized eggs) but does have a grandfather. Drone genetics is half as complex as it sounds and twice as complex as it sounds.' },
+    { fact: 'A queen bee can lay her own body weight in eggs every day.' },
+    { fact: 'Bees were the inspiration for hexagonal honeycomb structures in aerospace engineering — used in aircraft wings, satellite components, and the International Space Station for their strength-to-weight ratio.' },
+    { fact: 'The famous "killer bee" (Africanized honey bee) is no more venomous than European bees per sting — they\'re just more defensive and pursue intruders longer.' },
+  ];
+
+  // ─── Hive failure modes — what kills colonies ──────────────────────────
+  var FAILURE_MODES = [
+    {
+      mode: 'Starvation',
+      description: 'Colony runs out of stored honey before nectar flows resume',
+      season: 'Late winter / early spring (Feb-Apr)',
+      indicators: ['Dead bees head-first in empty cells (frozen mid-feed)', 'No honey adjacent to cluster', 'Cluster very small'],
+      prevention: 'Ensure 60-80 lbs of stored honey going into winter. Feed sugar fondant in emergency.',
+      bigPicture: 'The "starvation paradox" — colonies often die with food in the hive, but on the wrong side of the cluster. They can\'t leave the cluster to reach it on a cold day.',
+    },
+    {
+      mode: 'Queen failure',
+      description: 'Old, injured, or poorly-mated queen lays poorly or stops laying',
+      season: 'Any time, especially fall',
+      indicators: ['Spotty brood pattern', 'Drone-laying worker pattern (multiple eggs per cell, mostly drone brood)', 'Population declining', 'No fresh eggs visible'],
+      prevention: 'Requeen annually or biannually with a mated queen from a good source.',
+      bigPicture: 'A failing queen is the single most common requeening trigger.',
+    },
+    {
+      mode: 'Varroa + DWV',
+      description: 'Mite load reaches critical threshold; deformed wing virus crashes the brood',
+      season: 'Late summer / fall',
+      indicators: ['Crawling bees with crumpled wings in front of hive', 'Spotty brood', 'Capped brood that doesn\'t emerge', 'High mite counts in samples'],
+      prevention: 'Monitor mite counts; treat at 3% threshold; rotate treatment chemistries to prevent resistance.',
+      bigPicture: 'The number-one cause of overwintering loss in modern beekeeping. Even good colonies can collapse if mites aren\'t managed.',
+    },
+    {
+      mode: 'Absconding',
+      description: 'Entire colony — queen and all — abandons the hive',
+      season: 'Spring or after major disturbance',
+      indicators: ['Empty hive with no dead bees, often with honey still present'],
+      causes: 'Severe stress: pest infestation, repeated disturbance, environmental contamination, very poor location',
+      prevention: 'Choose a stable, undisturbed location. Manage pests aggressively. Avoid frequent unnecessary inspections.',
+    },
+    {
+      mode: 'Pesticide kill',
+      description: 'Acute pesticide exposure kills foragers',
+      season: 'During flowering crop sprays',
+      indicators: ['Large piles of dead bees at hive entrance', 'Twitching or convulsing bees', 'Sudden population crash with no other symptoms'],
+      prevention: 'Locate apiary away from intensively-sprayed crops. Communicate with neighboring farmers. Document and report kills to state apiarist.',
+      bigPicture: 'Acute kills are dramatic but sublethal exposure (foraging confusion, reduced immune function) is more common and harder to detect.',
+    },
+    {
+      mode: 'Robbing',
+      description: 'Bees from other colonies invade weak colonies to steal honey, ultimately destroying them',
+      season: 'Late summer dearth',
+      indicators: ['Fighting at entrance', 'Bees attempting to enter from all sides', 'Torn wax cappings on robbed comb', 'Rapid honey loss'],
+      prevention: 'Reduce entrances on weak colonies. Avoid spilling honey or sugar syrup near apiaries. Don\'t leave dead colonies in place.',
+    },
+    {
+      mode: 'Swarmed-out / queenless',
+      description: 'Colony swarmed but failed to raise a successor queen; or queen was lost during virgin mating flight',
+      season: 'Spring after a swarm',
+      indicators: ['No eggs or young larvae', 'No queen cells', 'Population declining', 'Workers may begin laying (drone-layer)'],
+      prevention: 'Monitor after a swarm; if no queen cells or new queen within 3 weeks, requeen.',
+    },
+    {
+      mode: 'Mouse damage',
+      description: 'Mice enter unguarded hives in fall and chew comb',
+      season: 'Late fall / winter',
+      indicators: ['Shredded comb', 'Mouse nests in hive corners', 'Strong urine smell'],
+      prevention: 'Install mouse guards at entrance before first hard frost. Reduce entrance.',
+    },
+    {
+      mode: 'Skunks',
+      description: 'Skunks scratch at hive entrances at night, eat bees that come out to investigate',
+      indicators: ['Scratched soil in front of hive', 'Bees acting defensive during day', 'Skunk tracks'],
+      prevention: 'Elevate hive 18+ inches. Use a "scratch board" with nails pointing up below entrance (forces skunk to expose vulnerable belly).',
+    },
+    {
+      mode: 'Bears',
+      description: 'Bears destroy hives for honey and brood; major problem in some Maine areas',
+      indicators: ['Hives torn apart, comb eaten', 'Bear tracks'],
+      prevention: 'Electric fence (2-3 wires; baited with bacon or honey for first lesson). The only reliable deterrent.',
+    },
+    {
+      mode: 'Cold + dampness',
+      description: 'Wet bees can\'t survive winter. Condensation dripping on cluster is deadly.',
+      season: 'Winter',
+      prevention: 'Top ventilation, insulated cover, slight tilt forward so condensation runs off rather than dripping.',
+    },
+    {
+      mode: 'Foulbrood (AFB)',
+      description: 'Bacterial brood disease; spores persist in equipment for 70+ years',
+      indicators: ['Sunken, perforated brood caps', 'Sour smell', 'Ropy test positive (toothpick pulls out a thread)'],
+      prevention: 'Buy bees only from reputable sources. Inspect new equipment. Re-queen with hygienic stock.',
+      response: 'Most states require burning of infected equipment. Call the state apiarist.',
+    },
+  ];
+
+  // ─── Lesson plan templates ────────────────────────────────────────────
+  var LESSON_PLAN_TEMPLATES = [
+    {
+      title: 'Why are bees disappearing?',
+      grade: '6-8',
+      duration: '50 minutes',
+      objectives: [
+        'Identify the major contributing factors to honey bee decline',
+        'Evaluate proposed solutions',
+        'Construct an argument supported by evidence',
+      ],
+      standards: ['NGSS MS-LS2-4'],
+      sequence: [
+        '(5 min) Hook: Show short video of a varroa mite on a bee. Have students react.',
+        '(10 min) Direct instruction: 5 major factors (varroa, pesticides, habitat loss, nutrition, climate)',
+        '(20 min) Small group: Each group researches one factor in depth',
+        '(10 min) Carousel share: Groups rotate, share findings',
+        '(5 min) Closure: Each student writes one sentence answer: "What\'s the most important thing we can do?"',
+      ],
+      assessment: 'Exit ticket — students must support their answer with at least one piece of evidence from group research',
+      materials: 'Internet access, research prompts, exit ticket forms',
+    },
+    {
+      title: 'The waggle dance: invertebrate communication',
+      grade: '7-12',
+      duration: '60 minutes',
+      objectives: [
+        'Decode a sample waggle dance into direction and distance',
+        'Explain how Karl von Frisch confirmed the dance carries information',
+        'Compare the waggle dance to human symbolic communication',
+      ],
+      standards: ['NGSS HS-LS1-1 (biological functions)', 'NGSS HS-LS2-8 (social interactions)'],
+      sequence: [
+        '(10 min) Show von Frisch archival footage with narration',
+        '(15 min) Direct instruction with diagrams: how angle and duration encode info',
+        '(20 min) Activity: Students translate sample dances on worksheet AND construct a dance for a teacher-given location',
+        '(15 min) Discussion: How is this similar to/different from human language? What counts as language?',
+      ],
+      assessment: 'Worksheet + discussion participation',
+    },
+    {
+      title: 'Pollinator garden design',
+      grade: '3-12',
+      duration: 'Multiple sessions over a unit',
+      objectives: [
+        'Design a garden that supports pollinators through the growing season',
+        'Apply ecological principles (diversity, succession, native species)',
+        'Possibly: plant the garden as a school project',
+      ],
+      standards: ['NGSS 3-LS2-1', 'NGSS MS-LS2-1'],
+      sequence: [
+        'Session 1: Identify a real or imaginary site; survey existing conditions',
+        'Session 2: Research plants for the region; build a sequence of bloom calendar',
+        'Session 3: Design layout on graph paper; consider sun, water, scale',
+        'Session 4: Present designs to class for peer feedback',
+        'Optional: Acquire plants and install the garden',
+      ],
+      assessment: 'Final design portfolio with justifications',
+    },
+    {
+      title: 'Hive math: real-world numbers',
+      grade: '4-7',
+      duration: '45 minutes',
+      objectives: [
+        'Use multiplication, division, and unit conversion to solve real-world problems',
+        'Recognize that math models can describe natural systems',
+      ],
+      sequence: [
+        '(5 min) Frame: "Honey bees do everything by the numbers. Let\'s do their math."',
+        '(30 min) Stations with different problems (from BEE_MATH_PROBLEMS): bee miles, honey weight, pollination counts, brood development',
+        '(10 min) Share strategies and answers',
+      ],
+      assessment: 'Math problem set with explanations of strategy',
+    },
+    {
+      title: 'Build a mason bee house',
+      grade: '3-12',
+      duration: '90 minutes',
+      objectives: [
+        'Provide nesting habitat for native solitary bees',
+        'Understand that not all bees live in colonies',
+      ],
+      sequence: [
+        '(15 min) Intro to native bees — diversity beyond honey bees',
+        '(60 min) Build (untreated wood, drill 5/16" holes 5-6" deep)',
+        '(15 min) Plan placement (south/southeast facing, 4-6 ft off ground)',
+      ],
+      crossCurricular: 'Math (measurement), shop skills, life science',
+    },
+    {
+      title: 'Honey tasting and sensory science',
+      grade: '3-8',
+      duration: '40 minutes',
+      objectives: [
+        'Use sensory observation to compare different honeys',
+        'Connect flavor differences to source plants',
+      ],
+      sequence: [
+        '(5 min) Intro: where honey comes from',
+        '(25 min) Tasting with score sheets (4-6 single-source honeys)',
+        '(10 min) Reveal sources; discuss why each tastes different',
+      ],
+      cautions: 'Check for allergies. No honey for kids under 12 months (botulism risk).',
+    },
+    {
+      title: 'From egg to bee: development timeline',
+      grade: '3-6',
+      duration: '45 minutes',
+      objectives: [
+        'Order the stages of bee development',
+        'Recognize that all insects undergo metamorphosis',
+      ],
+      sequence: [
+        '(5 min) Hook: show photos of egg, larva, pupa, adult',
+        '(15 min) Direct instruction: 21-day worker timeline',
+        '(20 min) Activity: students make a 21-day calendar showing what bees look like each day',
+        '(5 min) Closure: compare to butterfly metamorphosis',
+      ],
+    },
+    {
+      title: 'Eusociality: living as a superorganism',
+      grade: '9-12',
+      duration: '60 minutes',
+      objectives: [
+        'Define eusociality and identify its components',
+        'Explain how kin selection makes worker sterility evolutionarily stable',
+        'Apply concepts to other eusocial species (ants, termites, naked mole rats)',
+      ],
+      standards: ['NGSS HS-LS4-4 (selection and adaptation)'],
+      sequence: [
+        '(15 min) Direct instruction: definition + Hamilton\'s rule',
+        '(20 min) Activity: calculate relatedness in haplodiploidy. Sisters share 75% of genes with each other but only 50% with their own offspring — why does that make sterility favored?',
+        '(15 min) Compare eusociality across species',
+        '(10 min) Discussion: Is human society eusocial? Why or why not?',
+      ],
+    },
+  ];
+
+  // ─── Pollinator decline policy + advocacy ─────────────────────────────
+  var POLICY_ADVOCACY = [
+    {
+      action: 'Plant native flowers',
+      level: 'Individual',
+      impact: 'Supports local pollinators directly. Even a 4×8 ft patch helps.',
+    },
+    {
+      action: 'Stop using neonicotinoid pesticides',
+      level: 'Individual / community',
+      impact: 'Imidacloprid, clothianidin, thiamethoxam are devastating to bees. Check labels and avoid them.',
+    },
+    {
+      action: 'Reduce lawn area',
+      level: 'Individual',
+      impact: 'Lawns are pollinator deserts. Convert some lawn to meadow or pollinator garden.',
+    },
+    {
+      action: 'Leave bare soil patches',
+      level: 'Individual',
+      impact: '70% of native bees nest in soil; mulch everywhere prevents this.',
+    },
+    {
+      action: 'Buy local honey',
+      level: 'Individual',
+      impact: 'Supports local beekeepers, who in turn support local pollinator habitat.',
+    },
+    {
+      action: 'Support pollinator-friendly zoning',
+      level: 'Local government',
+      impact: 'Many cities have outdated ordinances against backyard beekeeping. Advocate for change.',
+    },
+    {
+      action: 'Push for IPM (Integrated Pest Management) in your municipality',
+      level: 'Local government',
+      impact: 'IPM uses targeted, threshold-based pesticide application rather than calendar spraying. Better for pollinators.',
+    },
+    {
+      action: 'Vote for pollinator-friendly state policies',
+      level: 'State',
+      impact: 'Several states (Maine, Maryland, Connecticut, New York) have restricted neonics. Federal action lags.',
+    },
+    {
+      action: 'Support the Pollinator Protection Act',
+      level: 'Federal',
+      impact: 'Federal legislation that would restrict neonics on federal lands and fund pollinator research.',
+    },
+    {
+      action: 'Donate to pollinator conservation organizations',
+      level: 'National',
+      examples: ['Xerces Society', 'Pollinator Partnership', 'Bee Informed Partnership', 'Pollinator.org'],
+    },
+    {
+      action: 'Educate others',
+      level: 'Personal / community',
+      impact: 'Sharing what you learn matters. Most people\'s "bee fear" comes from confusion with yellowjackets.',
+    },
+    {
+      action: 'Plant pollinator strips on farms',
+      level: 'Agricultural',
+      impact: 'Set-aside strips of native flowers along field edges support bees and provide natural pest control. NRCS cost-share programs are available.',
+    },
+    {
+      action: 'Encourage school pollinator gardens',
+      level: 'School',
+      impact: 'Combines education with habitat creation; engages a generation of kids.',
+    },
+    {
+      action: 'Get certified as a Bee Campus or Bee City',
+      level: 'Institution / municipality',
+      impact: 'Xerces Society certification program requiring pollinator commitments. Maine has several certified campuses.',
+    },
+  ];
+
+  // ─── Bee-themed art and culture ──────────────────────────────────────
+  var BEE_CULTURE = [
+    {
+      work: 'The Life of the Bee (book)',
+      author: 'Maurice Maeterlinck',
+      year: 1901,
+      notes: 'Belgian playwright\'s lyrical meditation on bee biology. Romantic and sometimes anthropomorphic, but inspired generations of naturalists.',
+    },
+    {
+      work: 'Honey from a Weed (book)',
+      author: 'Patience Gray',
+      year: 1986,
+      notes: 'Mediterranean food memoir with deep beekeeping connections.',
+    },
+    {
+      work: 'The Secret Life of Bees (novel)',
+      author: 'Sue Monk Kidd',
+      year: 2001,
+      notes: '1960s-era American South novel using beekeeping as central metaphor. Made into a film.',
+    },
+    {
+      work: 'Honeybee Democracy (book)',
+      author: 'Thomas Seeley',
+      year: 2010,
+      notes: 'Decades of swarm research; how 10,000 bees make a single decision. Used as a metaphor for collective intelligence in many fields.',
+    },
+    {
+      work: 'The Lives of Bees (book)',
+      author: 'Thomas Seeley',
+      year: 2019,
+      notes: 'How bees live in the wild, outside of managed hives. Foundational for thinking about natural beekeeping.',
+    },
+    {
+      work: 'The Beekeeper of Aleppo (novel)',
+      author: 'Christy Lefteri',
+      year: 2019,
+      notes: 'Syrian refugee story centered on beekeeping. Won 2020 Aspen Words Literary Prize.',
+    },
+    {
+      work: 'The Bee Movie (film)',
+      year: 2007,
+      notes: 'Jerry Seinfeld animated film. Loved by some, derided by others. Sparked many memes.',
+    },
+    {
+      work: 'More Than Honey (documentary)',
+      year: 2012,
+      notes: 'German-Swiss documentary on global beekeeping. Visually stunning, sobering.',
+    },
+    {
+      work: 'Vanishing of the Bees (documentary)',
+      year: 2009,
+      notes: 'Early documentary on CCD; widely shown in schools.',
+    },
+    {
+      work: 'Queen of the Sun (documentary)',
+      year: 2010,
+      notes: 'Film tackling pollinator crisis with focus on biodynamic and organic approaches.',
+    },
+    {
+      work: 'Flight of the Bumblebee (music)',
+      author: 'Nikolai Rimsky-Korsakov',
+      year: 1899,
+      notes: 'Orchestral interlude from "The Tale of Tsar Saltan." Demanding virtuoso piece, especially for solo instruments.',
+    },
+    {
+      work: 'Sylvia Plath bee poems',
+      year: 1962,
+      notes: 'Five-poem sequence in "Ariel" using beekeeping as personal and political metaphor. "The Bee Meeting," "The Arrival of the Bee Box," "Stings," "The Swarm," "Wintering."',
+    },
+    {
+      work: 'Beehive State (nickname)',
+      year: 'Historical',
+      notes: 'Utah\'s official state nickname. Comes from a Mormon use of "deseret" (beehive) as a symbol of industry. The state insect of Utah is the honey bee.',
+    },
+    {
+      work: 'Beehive hairstyle',
+      year: '1960s',
+      notes: 'Margaret Vinci Heldt invented the look in 1960 for Modern Beauty Shop magazine. Named for resemblance to a domed bee skep.',
+    },
+    {
+      work: 'Bees in heraldry',
+      notes: 'The Barberini family of Florence used three bees on their crest. Napoleon\'s imperial robes were embroidered with golden bees. Symbols of industry, royalty, and immortality across European heraldry.',
+    },
+    {
+      work: 'Bee in religion',
+      notes: 'In ancient Egypt, the bee was sacred to Ra. The Quran has a chapter named "The Bee" (An-Nahl). Honey is a symbol of paradise in many traditions. Christian art used beeswax candles symbolically (Easter Vigil paschal candle is pure beeswax).',
+    },
+    {
+      work: '"Busy as a bee" / "Queen bee" / "Drone"',
+      notes: 'English-language idioms reflect millennia of close human observation of bees. "Beeline," "honeyed words," "to bee or not to bee" (pun heritage long).',
+    },
+  ];
+
+  // ─── Common misconceptions to address ──────────────────────────────────
+  var BEE_MISCONCEPTIONS = [
+    {
+      myth: 'All bees can sting',
+      reality: 'Only female bees have stingers (modified ovipositors). Drones (males) cannot sting. Many native bees are too small to deliver a sting that penetrates human skin. Stingless bee species (Meliponini) have stingers that don\'t function.',
+    },
+    {
+      myth: 'Bees and wasps are the same thing',
+      reality: 'Bees evolved from wasps ~130 million years ago when they switched from hunting to pollen. Bees are fuzzy and vegetarian; wasps are smooth and predatory. Yellowjackets are wasps, not bees.',
+    },
+    {
+      myth: 'Bees aggressively chase humans',
+      reality: 'Honey bees only sting defensively. The bees foraging on flowers are not interested in you. Only if you swat at them or approach their hive will they defend. Africanized bees defend in larger numbers but the trigger is the same.',
+    },
+    {
+      myth: 'A queen rules the hive',
+      reality: 'The queen doesn\'t make decisions. She\'s the only egg-layer but workers control everything else, including raising new queens when she fails. The colony is decentralized.',
+    },
+    {
+      myth: 'Honey is bee vomit',
+      reality: 'Foragers carry nectar in a specialized honey crop (separate from their digestive stomach) and pass it mouth-to-mouth to house bees. The nectar is enzymatically processed and water-evaporated into honey. It\'s closer to "bee storage" than "bee vomit."',
+    },
+    {
+      myth: 'Bees only live a few weeks',
+      reality: 'Summer workers do live ~6 weeks. But winter workers can live 4-6 months. Queens live 2-5 years.',
+    },
+    {
+      myth: 'Local honey cures allergies',
+      reality: 'Mixed evidence at best. Most seasonal allergens are wind-pollinated plants (grasses, ragweed, tree pollens), not the flowers bees visit. Honey contains primarily insect-pollinated plant pollens. Some people report relief, but rigorous studies haven\'t supported the claim.',
+    },
+    {
+      myth: 'Saving honey bees will save pollinators',
+      reality: 'Honey bees are managed livestock — they\'re not threatened with extinction. Native pollinators are. Beekeeping is fine but isn\'t pollinator conservation in itself. Plant native flowers and reduce pesticides to help all pollinators.',
+    },
+    {
+      myth: 'Pesticides only kill bees on contact',
+      reality: 'Neonicotinoids are systemic — taken up by plants and present in nectar and pollen. Sublethal doses cause foraging confusion, immune suppression, and learning deficits. The damage is often invisible until colonies collapse.',
+    },
+    {
+      myth: 'Bees freeze in winter',
+      reality: 'Bees cluster and generate heat through muscle contractions. The cluster core stays at 90-95°F even when outside temperatures are below zero. Individual bees on the outer surface rotate inward to warm up.',
+    },
+    {
+      myth: 'Bees recognize their owner',
+      reality: 'Not proven. Bees can recognize human faces in lab experiments (when rewarded with sugar), and some experienced beekeepers feel their bees know them. But the evidence is thin. They probably do recognize the patterns of disturbance, smoke, and approach, not the person specifically.',
+    },
+    {
+      myth: 'Killer bees are deadlier than European bees',
+      reality: 'Africanized "killer" bees are more defensive and pursue intruders longer, but a single sting is no more venomous. Most fatalities involve large numbers of stings from a defending colony, not exceptional venom potency.',
+    },
+    {
+      myth: 'A bee dies right after stinging',
+      reality: 'True only for honey bee workers stinging into mammalian skin (barbed stinger pulls out). Honey bees can sting each other without dying. Queens have smooth stingers and can sting repeatedly. Bumblebees and most other bees can sting multiple times.',
+    },
+    {
+      myth: 'If you find a swarm, call exterminators',
+      reality: 'Call a local beekeeper instead! Swarms are gentle (no brood to defend, full bellies of honey) and welcome. Most beekeepers will collect a swarm for free. Most state beekeeping associations have swarm hotlines.',
+    },
+    {
+      myth: 'Honey is the same as sugar',
+      reality: 'Honey is ~80% sugar (fructose + glucose, plus minor sugars), 18% water, and 2% trace amounts of vitamins, minerals, enzymes, and antimicrobial compounds. Nutritionally similar to sugar but with additional bioactive components. Diabetics should treat it like sugar.',
+    },
+    {
+      myth: 'Bees can\'t fly mathematically',
+      reality: 'A persistent meme based on a 1934 calculation that assumed rigid wings and steady flow. Actual bee flight involves rapid wing rotation and dynamic stall, which generate plenty of lift. The myth dies hard but should.',
+    },
+  ];
+
+  // ─── Bee body parts illustrated reference ───────────────────────────
+  var BEE_PARTS_LABELED = [
+    { part: 'Antenna', count: 2, location: 'Head', function: 'Sense smell, taste, touch, sound, humidity' },
+    { part: 'Compound eye', count: 2, location: 'Head', function: 'See color, motion, polarized light, UV' },
+    { part: 'Ocellus (simple eye)', count: 3, location: 'Top of head', function: 'Detect light intensity and orient during flight' },
+    { part: 'Mandible', count: 2, location: 'Mouth', function: 'Chew wax, grip, fight' },
+    { part: 'Proboscis (tongue)', count: 1, location: 'Mouth', function: 'Suck nectar; folds when not in use' },
+    { part: 'Pharynx', count: 1, location: 'Inside head', function: 'Pump nectar to honey crop' },
+    { part: 'Forewing', count: 2, location: 'Thorax (top)', function: 'Primary flight surfaces' },
+    { part: 'Hindwing', count: 2, location: 'Thorax (top)', function: 'Couple to forewings via hamuli to make one continuous airfoil' },
+    { part: 'Front leg', count: 2, location: 'Thorax', function: 'Pollen brush + antenna cleaner notch' },
+    { part: 'Middle leg', count: 2, location: 'Thorax', function: 'Spur for cleaning pollen basket, prying wax' },
+    { part: 'Hind leg', count: 2, location: 'Thorax', function: 'Pollen basket (corbicula) for transporting pollen' },
+    { part: 'Wax gland', count: 8, location: 'Underside of abdomen (worker, age 12-18 days)', function: 'Produce wax flakes for comb building' },
+    { part: 'Honey stomach (crop)', count: 1, location: 'Abdomen', function: 'Transport nectar from forage site to hive' },
+    { part: 'True stomach', count: 1, location: 'Abdomen', function: 'Digest food for the bee herself' },
+    { part: 'Heart', count: 1, location: 'Abdomen', function: 'Pump hemolymph through tube-shaped circulatory system' },
+    { part: 'Spiracle', count: '~10 pairs', location: 'Thorax + abdomen', function: 'Breathing openings (bees don\'t breathe through mouth)' },
+    { part: 'Stinger', count: 1, location: 'Tip of abdomen (worker, queen)', function: 'Defense (worker barbed = single-use; queen smooth = reusable)' },
+    { part: 'Venom sac', count: 1, location: 'Behind stinger', function: 'Pump melittin and other toxins after stinging' },
+    { part: 'Nasonov gland', count: 1, location: 'Abdomen', function: 'Release "I\'m here" pheromone for swarming and orientation' },
+    { part: 'Mandibular gland', count: 2, location: 'Head', function: 'Produce alarm pheromone (worker) or queen pheromone (queen)' },
+    { part: 'Hypopharyngeal gland', count: 2, location: 'Head', function: 'Produce royal jelly (young workers) or honey-processing enzymes (older workers)' },
+  ];
+
+  // ─── Bee vocabulary by grade band ─────────────────────────────────────
+  var BEE_VOCABULARY = [
+    {
+      gradeBand: 'K-2',
+      words: ['bee', 'hive', 'honey', 'flower', 'pollen', 'nectar', 'wing', 'sting', 'queen', 'worker', 'buzz', 'beehive'],
+    },
+    {
+      gradeBand: '3-5',
+      words: ['colony', 'pollinate', 'pollination', 'beeswax', 'honeycomb', 'apiary', 'beekeeper', 'forager', 'drone', 'larva', 'pupa', 'metamorphosis', 'antenna', 'compound eye', 'pollen basket'],
+    },
+    {
+      gradeBand: '6-8',
+      words: ['superorganism', 'eusocial', 'waggle dance', 'pheromone', 'caste', 'haplodiploidy', 'varroa', 'colony collapse', 'mutualism', 'coevolution', 'monoculture', 'neonicotinoid', 'IPM', 'corbicula', 'beebread'],
+    },
+    {
+      gradeBand: '9-12',
+      words: ['kin selection', 'Hamilton\'s rule', 'inclusive fitness', 'altruism', 'reproductive division of labor', 'thermogenesis', 'invertase', 'melittin', 'thigmotropism', 'photoperiodism', 'supersedure', 'absconding', 'optic flow', 'ommatidium', 'thelytoky'],
+    },
+  ];
+
+  // ─── Bees and other ecosystems ─────────────────────────────────────────
+  var ECOSYSTEM_CONNECTIONS = [
+    {
+      ecosystem: 'Forest',
+      connections: [
+        'Tree pollination: maples, basswood, locust, tupelo, sourwood — major nectar trees',
+        'Cavity nesting: feral honey bee colonies often inhabit hollow trees',
+        'Understory plants depend on bees for reproduction',
+      ],
+    },
+    {
+      ecosystem: 'Grassland / meadow',
+      connections: [
+        'Floral diversity is highest in undisturbed meadows',
+        'Bumblebees especially favor meadow habitats',
+        'Ground-nesting bees benefit from sparse vegetation and bare soil patches',
+      ],
+    },
+    {
+      ecosystem: 'Agricultural',
+      connections: [
+        'Bee-pollinated crops: apples, almonds, blueberries, cherries, cucurbits, almost all fruit and many vegetables',
+        'Cover crops (clover, buckwheat) provide nectar between cash crops',
+        'Pesticide use threatens both managed honey bees and wild pollinators',
+      ],
+    },
+    {
+      ecosystem: 'Urban / suburban',
+      connections: [
+        'Cities can be surprisingly bee-rich due to floral diversity (gardens, parks)',
+        'Pollinator gardens transform yards into habitat',
+        'Urban beekeeping is growing globally',
+      ],
+    },
+    {
+      ecosystem: 'Wetland',
+      connections: [
+        'Aquatic plants (water lilies, pickerelweed) provide bee forage',
+        'Wet meadows favor bumblebees and other natives',
+        'Cattail flowering peak supports pollinators in late summer',
+      ],
+    },
+    {
+      ecosystem: 'Coastal',
+      connections: [
+        'Beach plum, beach pea, goldenrod — pollinator plants of coastal habitats',
+        'Salt marsh aster bloom for late-season foragers',
+        'Maine coastal islands once hosted feral honey bee colonies',
+      ],
+    },
+    {
+      ecosystem: 'Arctic / boreal',
+      connections: [
+        'Bumblebees are the dominant pollinators in subarctic and arctic regions',
+        'Bumblebee queens can warm up faster in cold air than honey bees can',
+        'Climate change is shifting bee ranges northward',
+      ],
+    },
+  ];
+
+  // ─── How to start beekeeping (practical guide) ────────────────────────
+  var STARTING_BEEKEEPING = [
+    {
+      step: '1. Read first',
+      details: [
+        'Read at least one general beekeeping book before buying any equipment',
+        'Suggested: "The Backyard Beekeeper" by Kim Flottum, "Natural Beekeeping" by Ross Conrad',
+        'Watch videos: University of Guelph YouTube channel, Bob Binnie, Frederick Dunn',
+      ],
+    },
+    {
+      step: '2. Find local mentors',
+      details: [
+        'Join your state beekeeping association (Maine: MSBA)',
+        'Attend meetings of your local beekeeping chapter',
+        'Find a mentor who has at least 3 years of experience',
+        'Mentors are the difference between losing your first colony and not',
+      ],
+    },
+    {
+      step: '3. Take a beginner class',
+      details: [
+        'Many universities and clubs offer winter classes for spring beekeepers',
+        'University of Maine Cooperative Extension is a Maine resource',
+        '~$50-150 for 6-8 sessions — best investment in beekeeping',
+      ],
+    },
+    {
+      step: '4. Check local regulations',
+      details: [
+        'Most US states require colony registration',
+        'Some municipalities have urban beekeeping rules (setbacks, hive limits)',
+        'Notify neighbors before installing hives — manage relationships proactively',
+      ],
+    },
+    {
+      step: '5. Pick a hive type',
+      details: [
+        '8-frame Langstroth (mediums) — recommended for beginners: easier on the back',
+        '10-frame Langstroth (deeps) — traditional but heavy',
+        'Top-bar hive — lower entry cost but unusual; harder to find local help',
+        'Warré hive — vertical top-bar; favored by some natural-beekeeping advocates',
+      ],
+    },
+    {
+      step: '6. Buy equipment in winter',
+      details: [
+        'For each hive: 2 brood boxes + 2-3 honey supers + frames + foundation + bottom board + inner + outer cover + entrance reducer + mouse guard',
+        'Personal gear: smoker, hive tool, suit/jacket, gloves, bee brush',
+        'Budget: $300-500 per hive for a complete starter setup',
+        'Buy from reputable suppliers (Mann Lake, Dadant, BetterBee, BrushyMountain)',
+      ],
+    },
+    {
+      step: '7. Order bees in winter',
+      details: [
+        'Packages: 3-lb wire-screened box of bees with a caged queen ($150-200). Available April-May.',
+        'Nucs: 4-5 frames of brood, comb, bees, and queen ($150-250). Better for beginners. Available May-June.',
+        'Splits from local beekeepers: ideal — known genetics, local-adapted, often mentor-supported',
+      ],
+    },
+    {
+      step: '8. Site selection',
+      details: [
+        'Morning sun, afternoon shade (in summer)',
+        'Wind break to the north',
+        'Flat, dry ground; level the hive slightly tilted forward',
+        '50+ feet from neighbors\' high-traffic areas',
+        'Water source nearby (within 100 feet)',
+      ],
+    },
+    {
+      step: '9. Install and inspect carefully',
+      details: [
+        'Install bees on a warm, calm day (60°F+, no rain)',
+        'First inspection 1 week later: verify queen is laying',
+        'Inspect every 1-2 weeks during active season; watch for swarming signs',
+        'Less is often more — don\'t over-inspect',
+      ],
+    },
+    {
+      step: '10. Plan for year 2+',
+      details: [
+        'Year 1: build comb, build population. Don\'t expect to harvest much honey.',
+        'Year 2: should be your first significant honey crop',
+        'Treat for varroa starting late summer',
+        'Plan winter prep by August',
+      ],
+    },
+  ];
+
+  // ─── Beekeeping costs (realistic budget) ───────────────────────────────
+  var BEEKEEPING_COSTS = [
+    {
+      category: 'Initial setup (per hive)',
+      items: [
+        { item: '2 deep brood boxes + frames + foundation', cost: '$80-100' },
+        { item: '2 medium honey supers + frames + foundation', cost: '$60-80' },
+        { item: 'Bottom board (screened)', cost: '$20-30' },
+        { item: 'Inner cover', cost: '$15-20' },
+        { item: 'Outer cover (telescoping)', cost: '$20-30' },
+        { item: 'Entrance reducer + mouse guard', cost: '$5-10' },
+        { item: 'Bees (nuc, locally)', cost: '$180-250' },
+        { item: 'Stand (cinder blocks or pressure-treated)', cost: '$15-30' },
+      ],
+      subtotal: '$395-550 per hive',
+    },
+    {
+      category: 'Personal gear',
+      items: [
+        { item: 'Bee jacket with veil', cost: '$60-120' },
+        { item: 'Gloves', cost: '$10-25' },
+        { item: 'Hive tool', cost: '$8-15' },
+        { item: 'Smoker', cost: '$30-50' },
+        { item: 'Bee brush', cost: '$5-10' },
+        { item: 'First aid kit (epinephrine if allergic)', cost: '$10+ or RX' },
+      ],
+      subtotal: '$120-220',
+    },
+    {
+      category: 'Ongoing annual',
+      items: [
+        { item: 'Sugar for fall/winter feeding', cost: '$10-30' },
+        { item: 'Varroa treatments', cost: '$15-40' },
+        { item: 'Replacement queen if needed', cost: '$35-50' },
+        { item: 'Extracting equipment rental or club use', cost: 'often free with membership' },
+        { item: 'Bottles and labels for selling honey', cost: '$20-100' },
+        { item: 'State registration', cost: '$5-25 depending on state' },
+      ],
+      subtotal: '$85-245 per year',
+    },
+    {
+      category: 'Honey harvest (year 2+)',
+      items: [
+        { item: 'Average per-hive yield in Maine', stat: '20-60 lbs/year' },
+        { item: 'Retail value of local honey', stat: '$8-15/lb' },
+        { item: 'Gross revenue per hive', stat: '$160-900/year' },
+      ],
+      note: 'Break-even on initial investment usually takes 2-3 years for a single-hive hobbyist',
+    },
+    {
+      category: 'Cost-saving tips',
+      list: [
+        'Buy from local beekeepers selling used equipment (inspect for AFB first)',
+        'Build your own hive boxes from rough lumber',
+        'Catch swarms (free bees!)',
+        'Trade pollination services for honey with local farmers',
+        'Join a club that owns shared extracting equipment',
+      ],
+    },
+  ];
+
   window.StemLab.registerTool('beehive', {
     icon: '\uD83D\uDC1D',
     label: 'Beehive Simulator',
@@ -5656,6 +8068,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = season === 3 ? '#d0dae8' : '#ffe066';
               c.beginPath(); c.arc(sunX, sunY, sunR, 0, 6.28); c.fill();
               c.restore();
+              // ── 22° sun halo in cold air (winter optical phenomenon) ──
+              // Real atmospheric optics: light refracts through hexagonal ice
+              // crystals in cirrus clouds to form a faint ring at exactly 22°
+              // around the sun. Most visible on cold clear winter days. The
+              // ring has a subtle red-inner / blue-outer color separation.
+              if (season === 3 && _sunT_arc > 0.15 && _sunT_arc < 0.85) {
+                var _haloIntensity = Math.min(1, (_sunT_arc - 0.15) / 0.15) * Math.min(1, (0.85 - _sunT_arc) / 0.15);
+                var _haloR = sunR * 3.5;
+                c.save();
+                // Outer ring (slight blue tint)
+                c.strokeStyle = 'rgba(200,215,235,' + (0.35 * _haloIntensity).toFixed(3) + ')';
+                c.lineWidth = 1.0;
+                c.beginPath(); c.arc(sunX, sunY, _haloR + 0.6, 0, 6.28); c.stroke();
+                // Mid ring (white core)
+                c.strokeStyle = 'rgba(255,255,255,' + (0.55 * _haloIntensity).toFixed(3) + ')';
+                c.lineWidth = 1.2;
+                c.beginPath(); c.arc(sunX, sunY, _haloR, 0, 6.28); c.stroke();
+                // Inner ring (faint red tint)
+                c.strokeStyle = 'rgba(255,220,200,' + (0.30 * _haloIntensity).toFixed(3) + ')';
+                c.lineWidth = 0.7;
+                c.beginPath(); c.arc(sunX, sunY, _haloR - 0.8, 0, 6.28); c.stroke();
+                c.restore();
+              }
+
               // Sun rays (not winter) — short radiating spikes
               if (season !== 3) {
                 c.strokeStyle = 'rgba(255,220,100,0.15)'; c.lineWidth = 1;
@@ -5720,9 +8156,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(0, 0, W, H * 0.55);
               }
 
-              // Clouds (parallax, layered)
-              c.globalAlpha = 0.25;
-              c.fillStyle = '#fff';
+              // ── Periodic weather cycle: clear → rain → rainbow → clear ──
+              // 240s cycle independent of the sim's activeEvent system. The
+              // rain phase darkens clouds, animates falling drops + ground
+              // splashes, and is followed by a brief rainbow as the sun
+              // returns. Real bee biology: bees can't fly in rain (droplets
+              // hit their wings with hurricane force at their scale), so the
+              // weather cycle is also a felt-cue for "no foraging right now."
+              // Suppressed in winter (where snow already covers the system).
+              var _wxPeriod = 240000; // 4 minutes
+              var _wxPhase = (Date.now() % _wxPeriod) / _wxPeriod; // 0..1
+              // Rain phase: 0.60..0.80 (~48s)
+              // Rainbow: 0.80..0.92 (~29s, while sun returns)
+              var _wxRain = 0;
+              var _wxRainbow = 0;
+              if (season !== 3 && _sunCycle < 1.0) {
+                if (_wxPhase >= 0.60 && _wxPhase < 0.80) {
+                  var _wxRainT = (_wxPhase - 0.60) / 0.20; // 0..1
+                  _wxRain = Math.sin(_wxRainT * Math.PI); // ramp-in/out bell
+                } else if (_wxPhase >= 0.80 && _wxPhase < 0.92) {
+                  var _wxRbT = (_wxPhase - 0.80) / 0.12;
+                  _wxRainbow = Math.sin(_wxRbT * Math.PI); // bell ramp
+                }
+              }
+              // Clouds (parallax, layered) — darken during rain
+              var _cloudAlpha = 0.25 + _wxRain * 0.40;
+              var _cloudFill = _wxRain > 0.1 ?
+                'rgba(' + Math.round(255 - _wxRain * 100) + ',' +
+                          Math.round(255 - _wxRain * 100) + ',' +
+                          Math.round(255 - _wxRain * 80) + ',' + _cloudAlpha.toFixed(3) + ')'
+                : '#fff';
+              c.globalAlpha = _cloudAlpha;
+              c.fillStyle = _cloudFill;
               for (var ci = 0; ci < 4; ci++) {
                 var cx = (ci * W * 0.28 + t2 * (0.08 + ci * 0.04) + ci * 70) % (W + 80) - 40;
                 var cy = 18 + ci * 14 + Math.sin(t2 * 0.005 + ci) * 3;
@@ -5730,6 +8195,335 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(cx + 18, cy - 3, 18, 7, 0, 0, 6.28); c.fill();
               }
               c.globalAlpha = 1;
+              // ── Rain shower (falling streaks + ground splashes) ──
+              if (_wxRain > 0.08) {
+                c.save();
+                c.strokeStyle = 'rgba(160,190,220,' + (0.6 * _wxRain).toFixed(3) + ')';
+                c.lineWidth = 0.5;
+                for (var rd = 0; rd < 80; rd++) {
+                  var _rdX = ((rd * 31 + 7) % W) + Math.sin(rd) * 5;
+                  var _rdY = ((rd * 41 + t2 * 6) % H);
+                  c.beginPath();
+                  c.moveTo(_rdX, _rdY);
+                  c.lineTo(_rdX - 1.2, _rdY + 4);
+                  c.stroke();
+                }
+                // Ground splashes — tiny ellipses along H*0.80
+                c.strokeStyle = 'rgba(200,220,240,' + (0.55 * _wxRain).toFixed(3) + ')';
+                c.lineWidth = 0.3;
+                for (var sp = 0; sp < 14; sp++) {
+                  var _spX = (sp * 67 + ((t2 * 1.5) % 60)) % W;
+                  var _spY = H * 0.83;
+                  var _spT = ((t2 * 0.5 + sp * 23) % 30) / 30;
+                  if (_spT > 0.6) continue;
+                  c.beginPath();
+                  c.arc(_spX, _spY, 1 + _spT * 3, 0, Math.PI);
+                  c.stroke();
+                }
+                c.restore();
+                // Soft gray overlay across the whole scene
+                c.fillStyle = 'rgba(50,60,80,' + (0.12 * _wxRain).toFixed(3) + ')';
+                c.fillRect(0, 0, W, H * 0.78);
+                // ── Lightning bolts (rare; ~2-3 per rain phase) ──
+                // Sharp white-blue flash that briefly illuminates the entire sky.
+                // Period: every ~14s during heavy rain only (_wxRain > 0.4).
+                if (_wxRain > 0.4) {
+                  var _ltPeriod = 14000;
+                  var _ltPhase = (Date.now() % _ltPeriod) / _ltPeriod;
+                  if (_ltPhase < 0.025) {
+                    var _ltT = _ltPhase / 0.025;
+                    var _ltFlash = Math.sin(_ltT * Math.PI);
+                    // Full-screen flash
+                    c.fillStyle = 'rgba(220,230,255,' + (0.55 * _ltFlash * _wxRain).toFixed(3) + ')';
+                    c.fillRect(0, 0, W, H);
+                    // Jagged bolt — descend with random zigzag
+                    var _ltOriginX = W * 0.45 + Math.sin(_ltPeriod * 0.0001) * W * 0.25;
+                    c.save();
+                    c.strokeStyle = 'rgba(245,250,255,' + (0.9 * _ltFlash).toFixed(3) + ')';
+                    c.lineWidth = 1.4;
+                    c.beginPath();
+                    var _ltCurX = _ltOriginX, _ltCurY = 0;
+                    c.moveTo(_ltCurX, _ltCurY);
+                    for (var lts = 0; lts < 8; lts++) {
+                      _ltCurX += (lts % 2 === 0 ? -1 : 1) * (4 + (lts * 7) % 6);
+                      _ltCurY += H * 0.075;
+                      c.lineTo(_ltCurX, _ltCurY);
+                    }
+                    c.stroke();
+                    // Inner brighter core
+                    c.strokeStyle = 'rgba(255,255,255,' + (0.95 * _ltFlash).toFixed(3) + ')';
+                    c.lineWidth = 0.6;
+                    c.beginPath();
+                    _ltCurX = _ltOriginX; _ltCurY = 0;
+                    c.moveTo(_ltCurX, _ltCurY);
+                    for (var lts2 = 0; lts2 < 8; lts2++) {
+                      _ltCurX += (lts2 % 2 === 0 ? -1 : 1) * (4 + (lts2 * 7) % 6);
+                      _ltCurY += H * 0.075;
+                      c.lineTo(_ltCurX, _ltCurY);
+                    }
+                    c.stroke();
+                    // Small branching fork halfway down
+                    c.strokeStyle = 'rgba(245,250,255,' + (0.6 * _ltFlash).toFixed(3) + ')';
+                    c.lineWidth = 0.8;
+                    c.beginPath();
+                    var _ltBrX = _ltOriginX + (8 % 2 === 0 ? -1 : 1) * 5;
+                    var _ltBrY = H * 0.30;
+                    c.moveTo(_ltBrX, _ltBrY);
+                    c.lineTo(_ltBrX + 10, _ltBrY + H * 0.10);
+                    c.lineTo(_ltBrX + 6, _ltBrY + H * 0.18);
+                    c.stroke();
+                    c.restore();
+                  }
+                }
+              }
+              // ── Wet-ground puddle lingering after rain (post-rain wetness) ──
+              // The ground darkens for ~60s after the rain ends, with two soft
+              // puddles in low spots that catch a thin reflective sheen.
+              var _wxWet = 0;
+              if (_wxPhase >= 0.80 && _wxPhase < 0.95) {
+                _wxWet = Math.max(0, 1 - (_wxPhase - 0.80) / 0.15);
+              } else if (_wxRain > 0) {
+                _wxWet = _wxRain;
+              }
+              if (_wxWet > 0.08) {
+                c.save();
+                // Two puddles in the meadow
+                var _wpPuddles = [
+                  { x: W * 0.34, y: H * 0.86, rx: 9, ry: 1.4 },
+                  { x: W * 0.69, y: H * 0.88, rx: 7, ry: 1.1 }
+                ];
+                _wpPuddles.forEach(function(wp) {
+                  // Puddle body — pale gray water
+                  c.fillStyle = 'rgba(140,160,180,' + (0.55 * _wxWet).toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(wp.x, wp.y, wp.rx, wp.ry, 0, 0, 6.28); c.fill();
+                  // Sky reflection (faint blue-white)
+                  c.fillStyle = 'rgba(200,220,240,' + (0.40 * _wxWet).toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(wp.x, wp.y - 0.2, wp.rx - 1.5, wp.ry * 0.55, 0, 0, 6.28); c.fill();
+                  // Highlight (sun gleam)
+                  c.fillStyle = 'rgba(255,255,255,' + (0.45 * _wxWet).toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(wp.x - wp.rx * 0.4, wp.y - 0.3, wp.rx * 0.35, wp.ry * 0.3, 0, 0, 6.28); c.fill();
+                });
+                c.restore();
+              }
+              // ── Rainbow (arcs across the sky as the rain dies away) ──
+              if (_wxRainbow > 0.1) {
+                c.save();
+                var _rbCx = W * 0.5;
+                var _rbCy = H * 0.95;
+                var _rbR = H * 0.55;
+                var _rbBands = [
+                  { col: 'rgba(220, 38, 38, ', off:  0 },
+                  { col: 'rgba(251,146, 60, ', off:  2 },
+                  { col: 'rgba(250,204, 21, ', off:  4 },
+                  { col: 'rgba(74, 222,128, ', off:  6 },
+                  { col: 'rgba(56, 189,248, ', off:  8 },
+                  { col: 'rgba(99,102,241, ', off: 10 },
+                  { col: 'rgba(167,139,250, ', off: 12 }
+                ];
+                _rbBands.forEach(function(rb) {
+                  c.strokeStyle = rb.col + (0.35 * _wxRainbow).toFixed(3) + ')';
+                  c.lineWidth = 2.2;
+                  c.beginPath();
+                  c.arc(_rbCx, _rbCy, _rbR - rb.off, Math.PI * 1.1, Math.PI * 1.9);
+                  c.stroke();
+                });
+                c.restore();
+              }
+
+              // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
+              // Tiny silhouettes in the upper sky add scale and the felt sense
+              // of a real ecosystem above the apiary. Fully suppressed in winter.
+              if (season === 0 || season === 1) {
+                // Lazy circling hawk with periodic dive (stoop).
+                // Real biology: red-tailed and cooper's hawks dive at ~120 mph
+                // when stooping on prey. Most of the time the hawk circles;
+                // every ~30 seconds it plunges briefly then climbs back to its
+                // circle. During the dive, wings tuck (smaller silhouette).
+                var _hkT = t2 * 0.003;
+                var _hkCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
+                var _hkCy = H * 0.16 + Math.cos(t2 * 0.0008) * 8;
+                var _hkCircX = _hkCx + Math.cos(_hkT) * 36;
+                var _hkCircY = _hkCy + Math.sin(_hkT) * 12;
+                // Dive cycle — 3s active out of every 30s
+                var _hkDivePeriod = 30000;
+                var _hkDivePhase = (Date.now() % _hkDivePeriod) / _hkDivePeriod;
+                var _hkInDive = _hkDivePhase > 0.40 && _hkDivePhase < 0.50;
+                var _hkX, _hkY, _hkRot, _hkFlap, _hkSize;
+                if (_hkInDive) {
+                  // Plunge: ease-in down, then ease-out climb
+                  var _hkDiveT = (_hkDivePhase - 0.40) / 0.10; // 0..1
+                  // Parabolic Y: starts at circle, dips to H*0.62, returns
+                  var _hkDiveBend = Math.sin(_hkDiveT * Math.PI); // 0..1..0
+                  _hkX = _hkCircX + _hkDiveT * 30; // drifts right during dive
+                  _hkY = _hkCircY + _hkDiveBend * (H * 0.42);
+                  _hkRot = Math.PI / 2 + _hkDiveBend * 0.6; // tilt downward
+                  _hkFlap = 0; // wings tucked
+                  _hkSize = 0.7; // smaller silhouette (tucked)
+                } else {
+                  _hkX = _hkCircX;
+                  _hkY = _hkCircY;
+                  _hkRot = _hkT + Math.PI / 2;
+                  _hkFlap = Math.sin(t2 * 0.04) * 0.35;
+                  _hkSize = 1;
+                }
+                c.save();
+                c.translate(_hkX, _hkY);
+                c.rotate(_hkRot);
+                c.scale(_hkSize, _hkSize);
+                c.strokeStyle = 'rgba(60,50,40,0.55)';
+                c.lineWidth = 1.1;
+                c.beginPath();
+                c.moveTo(-9, 0);
+                c.quadraticCurveTo(-4, -2 + _hkFlap, 0, 0);
+                c.quadraticCurveTo(4, -2 + _hkFlap, 9, 0);
+                c.stroke();
+                // Tail dot
+                c.fillStyle = 'rgba(60,50,40,0.6)';
+                c.beginPath(); c.arc(0, 1.5, 0.9, 0, 6.28); c.fill();
+                c.restore();
+                // Speed-streak motion lines behind the diving hawk
+                if (_hkInDive) {
+                  c.strokeStyle = 'rgba(60,50,40,0.30)';
+                  c.lineWidth = 0.5;
+                  for (var hst = 0; hst < 4; hst++) {
+                    var _hstY = _hkY - 4 - hst * 3;
+                    c.beginPath();
+                    c.moveTo(_hkX - 1, _hstY);
+                    c.lineTo(_hkX - 4, _hstY - 1);
+                    c.stroke();
+                  }
+                }
+              } else if (season === 2) {
+                // Fall: V-formation of 5 migrating geese sweeping right→left across sky
+                var _vfPhase = ((t2 * 0.18) % (W + 240)) - 60;
+                var _vfBaseX = W - _vfPhase;
+                var _vfBaseY = H * 0.13 + Math.sin(t2 * 0.002) * 4;
+                c.save();
+                c.strokeStyle = 'rgba(50,45,55,0.55)';
+                c.lineWidth = 1;
+                for (var vfi = 0; vfi < 5; vfi++) {
+                  var _vfRow = Math.floor(vfi / 2);
+                  var _vfSide = (vfi % 2 === 0) ? -1 : 1;
+                  var _vfX = _vfBaseX + _vfRow * 7 * _vfSide + (vfi === 0 ? 0 : 0);
+                  var _vfY = _vfBaseY + _vfRow * 4;
+                  if (vfi === 0) { _vfX = _vfBaseX; _vfY = _vfBaseY; }
+                  // Per-bird wing flap, slight phase offset
+                  var _vfFlap = Math.sin(t2 * 0.07 + vfi * 0.6) * 0.5;
+                  c.beginPath();
+                  c.moveTo(_vfX - 4, _vfY);
+                  c.quadraticCurveTo(_vfX - 1.5, _vfY - 1.5 + _vfFlap, _vfX, _vfY);
+                  c.quadraticCurveTo(_vfX + 1.5, _vfY - 1.5 + _vfFlap, _vfX + 4, _vfY);
+                  c.stroke();
+                }
+                c.restore();
+              }
+
+              // ── Small flock of sheep grazing in the back pasture (spring/summer/fall) ──
+              // Real Maine farm scene: a few sheep scattered across the pasture,
+              // bodies down to graze. White fluffy bodies, dark faces + legs.
+              // Distinct from the horse (positioned to its left, grazing low).
+              if (season !== 3) {
+                var _shFlock = [
+                  { dx: -25, dy: 0,  size: 1.0 },
+                  { dx: -18, dy: 2,  size: 0.9 },
+                  { dx: -32, dy: 1.5, size: 1.1 },
+                  { dx: -22, dy: 4,  size: 0.85 }
+                ];
+                _shFlock.forEach(function(sh) {
+                  var _shX = W * 0.66 + sh.dx;
+                  var _shY = H * 0.74 + sh.dy;
+                  var _shS = sh.size;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.20)';
+                  c.beginPath(); c.ellipse(_shX, _shY + 2.5 * _shS, 3.5 * _shS, 0.6 * _shS, 0, 0, 6.28); c.fill();
+                  // Body — fluffy white cloud-shaped silhouette
+                  c.fillStyle = '#fafaf9';
+                  c.beginPath(); c.ellipse(_shX, _shY, 3.2 * _shS, 2 * _shS, 0, 0, 6.28); c.fill();
+                  // Soft fluff bumps
+                  c.beginPath(); c.arc(_shX - 1.8 * _shS, _shY - 0.5 * _shS, 1.2 * _shS, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_shX + 1.8 * _shS, _shY - 0.5 * _shS, 1.2 * _shS, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_shX, _shY - 1.3 * _shS, 1.3 * _shS, 0, 6.28); c.fill();
+                  // Subtle cool shadow on lower-right
+                  c.fillStyle = 'rgba(180,200,225,0.45)';
+                  c.beginPath(); c.ellipse(_shX + 0.6 * _shS, _shY + 0.7 * _shS, 2.5 * _shS, 1.2 * _shS, 0, 0, 6.28); c.fill();
+                  // Dark head (sheep face is darker)
+                  c.fillStyle = '#3a3025';
+                  c.beginPath(); c.ellipse(_shX - 3 * _shS, _shY + 0.5 * _shS, 0.9 * _shS, 0.7 * _shS, -0.2, 0, 6.28); c.fill();
+                  // Ear flop
+                  c.beginPath(); c.ellipse(_shX - 3.2 * _shS, _shY - 0.2 * _shS, 0.4 * _shS, 0.6 * _shS, -0.4, 0, 6.28); c.fill();
+                  // Eye glint
+                  c.fillStyle = '#fafaf9';
+                  c.beginPath(); c.arc(_shX - 2.8 * _shS, _shY + 0.4 * _shS, 0.1 * _shS, 0, 6.28); c.fill();
+                  // Four dark legs
+                  c.fillStyle = '#3a3025';
+                  c.fillRect(_shX - 2 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                  c.fillRect(_shX - 0.6 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                  c.fillRect(_shX + 1 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                  c.fillRect(_shX + 2 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                });
+              }
+
+              // ── Horse silhouette grazing in the back pasture (Maine farm detail) ──
+              // Distant horse silhouette near the farmhouse — a calm sentinel
+              // grazing in the back pasture. Head goes down to graze, lifts
+              // occasionally to scan. Suppressed in winter (horses sheltered).
+              if (season !== 3) {
+                var _hrX = W * 0.66, _hrY = H * 0.74;
+                var _hrGrazeT = ((t2 * 0.005) % 1);
+                var _hrHeadUp = _hrGrazeT > 0.75 && _hrGrazeT < 0.92;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_hrX, _hrY + 4, 7, 0.8, 0, 0, 6.28); c.fill();
+                // Body — chestnut brown silhouette
+                c.fillStyle = season === 2 ? '#5a3a18' : '#7a5230';
+                c.beginPath(); c.ellipse(_hrX, _hrY, 6.5, 2.3, 0, 0, 6.28); c.fill();
+                // Darker mane along back
+                c.fillStyle = season === 2 ? '#3a2510' : '#5a3f25';
+                c.fillRect(_hrX - 4, _hrY - 2, 8, 0.5);
+                // Four legs (slim brown rectangles)
+                c.fillStyle = season === 2 ? '#3a2510' : '#5a3a18';
+                c.fillRect(_hrX - 5, _hrY + 1.5, 0.8, 4);
+                c.fillRect(_hrX - 2.5, _hrY + 1.5, 0.8, 4);
+                c.fillRect(_hrX + 2, _hrY + 1.5, 0.8, 4);
+                c.fillRect(_hrX + 4.5, _hrY + 1.5, 0.8, 4);
+                // Tail — long flowing
+                c.strokeStyle = season === 2 ? '#3a2510' : '#5a3f25';
+                c.lineWidth = 1.0;
+                c.beginPath();
+                c.moveTo(_hrX + 6.5, _hrY - 1);
+                c.quadraticCurveTo(_hrX + 8.5, _hrY + 1, _hrX + 8, _hrY + 4);
+                c.stroke();
+                // Head + neck — angle depends on grazing/looking up
+                var _hrHeadY = _hrHeadUp ? _hrY - 4 : _hrY + 2;
+                var _hrHeadX = _hrX - 8;
+                c.strokeStyle = season === 2 ? '#5a3a18' : '#7a5230';
+                c.lineWidth = 2;
+                c.beginPath();
+                c.moveTo(_hrX - 5, _hrY - 1);
+                c.lineTo(_hrHeadX + 1.5, _hrHeadY);
+                c.stroke();
+                // Head — oval
+                c.fillStyle = season === 2 ? '#5a3a18' : '#7a5230';
+                c.beginPath(); c.ellipse(_hrHeadX, _hrHeadY, 2, 1.2, _hrHeadUp ? -0.3 : 0.5, 0, 6.28); c.fill();
+                // White blaze down face
+                c.fillStyle = 'rgba(254,243,199,0.8)';
+                c.fillRect(_hrHeadX - 0.3, _hrHeadY - 0.3, 0.3, 1.5);
+                // Two ears
+                c.fillStyle = season === 2 ? '#3a2510' : '#5a3a18';
+                c.beginPath();
+                c.moveTo(_hrHeadX - 0.5, _hrHeadY - 1.3);
+                c.lineTo(_hrHeadX - 0.2, _hrHeadY - 2);
+                c.lineTo(_hrHeadX, _hrHeadY - 1.2);
+                c.closePath(); c.fill();
+                c.beginPath();
+                c.moveTo(_hrHeadX + 0.5, _hrHeadY - 1.3);
+                c.lineTo(_hrHeadX + 0.8, _hrHeadY - 2);
+                c.lineTo(_hrHeadX + 1, _hrHeadY - 1.2);
+                c.closePath(); c.fill();
+                // Eye dot
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_hrHeadX - 0.3, _hrHeadY - 0.3, 0.2, 0, 6.28); c.fill();
+              }
 
               // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
               // Tiny silhouettes in the upper sky add scale and the felt sense
@@ -5949,6 +8743,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     c.beginPath(); c.arc(_dwX - _dwR * 0.35, _dwY - _dwR * 0.4, _dwR * 0.35, 0, 6.28); c.fill();
                   }
                 }
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
+                // First frosts — six-pointed crystals replace the dewdrops on
+                // late-fall dawns (day >= 19 of season 2). Real biology: the
+                // first frost is what pushes a colony into winter-cluster mode.
+                if (season === 2 && (day % 30) >= 19 && _dewDawn > 0.05) {
+                  for (var fr = 0; fr < 18; fr++) {
+                    var _frX = ((fr * 41 + 19) % W) + Math.sin(fr * 1.3) * 5;
+                    var _frY = H * 0.76 - 3 - (fr % 4) * 1.5;
+                    var _frR = 1.1 + (fr % 3) * 0.3;
+                    var _frA = 0.7 * _dewDawn;
+                    c.save();
+                    c.translate(_frX, _frY);
+                    c.strokeStyle = 'rgba(220,240,255,' + _frA.toFixed(3) + ')';
+                    c.lineWidth = 0.35;
+                    for (var frp = 0; frp < 6; frp++) {
+                      var _frpA = (frp / 6) * 6.28;
+                      c.beginPath();
+                      c.moveTo(0, 0);
+                      c.lineTo(Math.cos(_frpA) * _frR, Math.sin(_frpA) * _frR);
+                      c.stroke();
+                      var _frTickX = Math.cos(_frpA) * _frR * 0.6;
+                      var _frTickY = Math.sin(_frpA) * _frR * 0.6;
+                      var _frTickPerp = _frpA + Math.PI / 2;
+                      c.beginPath();
+                      c.moveTo(_frTickX - Math.cos(_frTickPerp) * 0.4, _frTickY - Math.sin(_frTickPerp) * 0.4);
+                      c.lineTo(_frTickX + Math.cos(_frTickPerp) * 0.4, _frTickY + Math.sin(_frTickPerp) * 0.4);
+                      c.stroke();
+                    }
+                    c.fillStyle = 'rgba(255,255,255,' + (0.9 * _dewDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(0, 0, 0.4, 0, 6.28); c.fill();
+                    c.restore();
+                  }
+                }
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               }
               // ── Cloud shadows drifting across the meadow ──
               // Soft dark patches on the ground that drift in sync with the
@@ -6558,6 +9387,584 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Squirrel running along the top of the fence (year-round cameo) ──
+              // Real biology: gray squirrels stay active all winter (no
+              // hibernation), unlike groundhogs and chipmunks. They cache
+              // acorns and visit them through the cold months. Direction is
+              // left→right (counters the rabbit which moves right→left), with
+              // a 4-leg bounding gait and bushy curled tail.
+              (function() {
+                var _sqCycle = ((t2 + 600) % 1500) / 1500; // 0..1 every ~25s, offset from rabbit
+                if (_sqCycle < 0.25 || _sqCycle > 0.85) return;
+                var _sqProgress = (_sqCycle - 0.25) / 0.60;
+                var _sqX = -10 + _sqProgress * (W + 20);
+                // Run along fence top — fenceBaseY is computed below, recompute here
+                var _sqFenceY = H * 0.775 - 2;
+                var _sqBoundPhase = Math.sin(_sqX * 0.15) * 0.5 + 0.5; // 0..1 bound
+                var _sqY = _sqFenceY - 2 - _sqBoundPhase * 3;
+                // Skip when squirrel would overlap the hive
+                if (_sqX > hiveX - 18 && _sqX < hiveX + hiveW + 18) return;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_sqX, _sqFenceY + 0.5, 3.5, 0.8, 0, 0, 6.28); c.fill();
+                // Body — reddish-gray
+                var _sqBody = season === 3 ? '#78716c' : '#8a6a4a';
+                c.fillStyle = _sqBody;
+                c.beginPath(); c.ellipse(_sqX, _sqY, 3.8, 2.4, -0.15, 0, 6.28); c.fill();
+                // Head
+                c.beginPath(); c.arc(_sqX + 3.2, _sqY - 0.6, 1.8, 0, 6.28); c.fill();
+                // Ear tufts (two small triangles)
+                c.fillStyle = season === 3 ? '#57534e' : '#6b5238';
+                c.beginPath();
+                c.moveTo(_sqX + 2.5, _sqY - 2.2);
+                c.lineTo(_sqX + 3.0, _sqY - 3.2);
+                c.lineTo(_sqX + 3.4, _sqY - 2.2);
+                c.closePath(); c.fill();
+                c.beginPath();
+                c.moveTo(_sqX + 3.5, _sqY - 2.2);
+                c.lineTo(_sqX + 4.0, _sqY - 3.0);
+                c.lineTo(_sqX + 4.2, _sqY - 2.0);
+                c.closePath(); c.fill();
+                // Eye dot
+                c.fillStyle = '#0a0a0a';
+                c.beginPath(); c.arc(_sqX + 4, _sqY - 0.9, 0.35, 0, 6.28); c.fill();
+                // Tiny pale belly
+                c.fillStyle = season === 3 ? '#d6d3d1' : '#d4b896';
+                c.beginPath(); c.ellipse(_sqX + 1, _sqY + 1.3, 1.6, 0.7, -0.1, 0, 6.28); c.fill();
+                // Bushy curled tail (S-curve up and over the back)
+                c.strokeStyle = _sqBody;
+                c.lineWidth = 2.6;
+                c.lineCap = 'round';
+                c.beginPath();
+                c.moveTo(_sqX - 3, _sqY);
+                c.quadraticCurveTo(_sqX - 6, _sqY - 4, _sqX - 4, _sqY - 5);
+                c.quadraticCurveTo(_sqX - 1, _sqY - 6, _sqX + 1, _sqY - 4);
+                c.stroke();
+                c.lineCap = 'butt';
+                // Tail darker tip
+                c.fillStyle = season === 3 ? '#57534e' : '#6b5238';
+                c.beginPath(); c.arc(_sqX + 1, _sqY - 3.8, 1, 0, 6.28); c.fill();
+                // Acorn in mouth (fall only, when caching)
+                if (season === 2) {
+                  c.fillStyle = '#8b4513';
+                  c.beginPath(); c.ellipse(_sqX + 4.8, _sqY - 0.2, 0.9, 0.7, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#3a2010';
+                  c.fillRect(_sqX + 4.4, _sqY - 0.7, 0.8, 0.4);
+                }
+                // Legs (visible mid-bound)
+                if (_sqBoundPhase > 0.4) {
+                  c.fillStyle = _sqBody;
+                  c.fillRect(_sqX - 1.5, _sqY + 1.5, 0.8, 1.5);
+                  c.fillRect(_sqX + 1, _sqY + 1.5, 0.8, 1.5);
+                }
+              })();
+
+              // ── Dragonfly zigzagging over the meadow (summer only) ──
+              // Distinct flight pattern from bees/butterflies/hummingbirds —
+              // straight darts with sudden 90° direction changes. Real biology:
+              // dragonflies are visual predators that hunt mosquitoes mid-air
+              // and patrol territories near water (note: spawned near the
+              // birdbath, even though the small ceramic dish doesn't really
+              // attract them — visually it ties the water + dragonfly together).
+              if (season === 1) {
+                var _dfT = ((Date.now() / 80) % 1000) / 1000; // smooth 0..1
+                // 4-waypoint zigzag — turn sharply between segments
+                var _dfWaypoints = [
+                  { x: W * 0.55, y: H * 0.78 },
+                  { x: W * 0.70, y: H * 0.66 },
+                  { x: W * 0.62, y: H * 0.82 },
+                  { x: W * 0.50, y: H * 0.70 }
+                ];
+                var _dfSeg = Math.floor(_dfT * 4);
+                var _dfSegT = (_dfT * 4) - _dfSeg;
+                var _dfA = _dfWaypoints[_dfSeg];
+                var _dfB = _dfWaypoints[(_dfSeg + 1) % 4];
+                var _dfx = _dfA.x + (_dfB.x - _dfA.x) * _dfSegT;
+                var _dfy = _dfA.y + (_dfB.y - _dfA.y) * _dfSegT;
+                var _dfHeading = Math.atan2(_dfB.y - _dfA.y, _dfB.x - _dfA.x);
+                c.save();
+                c.translate(_dfx, _dfy);
+                c.rotate(_dfHeading);
+                // Long thin abdomen — iridescent blue
+                var _dfAbdomenG = c.createLinearGradient(-5, 0, 5, 0);
+                _dfAbdomenG.addColorStop(0, '#0891b2');
+                _dfAbdomenG.addColorStop(0.5, '#06b6d4');
+                _dfAbdomenG.addColorStop(1, '#0e7490');
+                c.fillStyle = _dfAbdomenG;
+                c.fillRect(-5, -0.4, 10, 0.8);
+                // Segment lines on abdomen
+                c.strokeStyle = 'rgba(8,47,73,0.55)';
+                c.lineWidth = 0.3;
+                for (var dfs = 0; dfs < 4; dfs++) {
+                  var _dfsX = -3 + dfs * 2;
+                  c.beginPath(); c.moveTo(_dfsX, -0.4); c.lineTo(_dfsX, 0.4); c.stroke();
+                }
+                // Thorax (slightly thicker, where wings attach)
+                c.fillStyle = '#0e7490';
+                c.beginPath(); c.ellipse(-4.5, 0, 1.4, 0.8, 0, 0, 6.28); c.fill();
+                // Head (big compound eyes)
+                c.fillStyle = '#155e75';
+                c.beginPath(); c.arc(-6, 0, 1.1, 0, 6.28); c.fill();
+                c.fillStyle = '#22d3ee';
+                c.beginPath(); c.arc(-6.4, -0.5, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(-6.4,  0.5, 0.5, 0, 6.28); c.fill();
+                // 4 transparent wings (forewings + hindwings) — blurry from beat speed
+                var _dfWingFlap = Math.abs(Math.sin(t2 * 0.4)) * 0.4;
+                c.fillStyle = 'rgba(220,240,255,0.45)';
+                // Forewings
+                c.beginPath(); c.ellipse(-3, -2.4 + _dfWingFlap, 3.5, 1.0, -0.05, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-3,  2.4 - _dfWingFlap, 3.5, 1.0,  0.05, 0, 6.28); c.fill();
+                // Hindwings (slightly wider)
+                c.beginPath(); c.ellipse(-1, -2.6 + _dfWingFlap, 3.0, 1.2, -0.05, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-1,  2.6 - _dfWingFlap, 3.0, 1.2,  0.05, 0, 6.28); c.fill();
+                // Wing vein hint
+                c.strokeStyle = 'rgba(120,180,210,0.45)';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(-5, -2.2); c.lineTo(-1, -2.2); c.stroke();
+                c.beginPath(); c.moveTo(-5,  2.2); c.lineTo(-1,  2.2); c.stroke();
+                c.restore();
+              }
+
+              // ── Young white-tailed deer at the meadow edge (spring + fall, dawn/dusk) ──
+              // Real Maine wildlife: white-tailed deer are most active at dawn
+              // and dusk, browsing on early greens in spring and apple windfalls
+              // in fall. They freeze when they sense activity. Tan body, white
+              // throat patch, large ears, white tail underside flashing if
+              // alarmed. Static here (not moving) to read as "browsing."
+              if (season === 0 || season === 2) {
+                var _dDusk = (_sunCycle > 0.85 && _sunCycle < 1.05) ? Math.sin((_sunCycle - 0.85) / 0.20 * Math.PI) :
+                              (_sunCycle > 1.85 && _sunCycle < 2.10) ? Math.sin((_sunCycle - 1.85) / 0.25 * Math.PI) : 0;
+                if (_dDusk > 0.10) {
+                  var _dCycle = (t2 % 1800) / 1800;
+                  // Deer stands still 80% of the time, glances up 20%
+                  var _dGlanceUp = _dCycle > 0.65 && _dCycle < 0.85;
+                  var _deerX = W * 0.84, _deerY = H * 0.81;
+                  if (!(_deerX > hiveX - 18 && _deerX < hiveX + hiveW + 18)) {
+                    c.save();
+                    c.globalAlpha = _dDusk;
+                    // Shadow
+                    c.fillStyle = 'rgba(0,0,0,0.22)';
+                    c.beginPath(); c.ellipse(_deerX, _deerY + 4, 7, 0.9, 0, 0, 6.28); c.fill();
+                    // Body — tan/brown
+                    c.fillStyle = season === 2 ? '#8a6238' : '#a07248';
+                    c.beginPath(); c.ellipse(_deerX, _deerY, 6.5, 2.5, 0, 0, 6.28); c.fill();
+                    // Back darker stripe (winter darkening even in fall)
+                    c.fillStyle = season === 2 ? '#6b4a1f' : '#7a5230';
+                    c.fillRect(_deerX - 5, _deerY - 2.2, 10, 0.8);
+                    // White belly + throat patch
+                    c.fillStyle = 'rgba(254,243,199,0.9)';
+                    c.beginPath(); c.ellipse(_deerX, _deerY + 1.5, 4, 0.8, 0, 0, 6.28); c.fill();
+                    // Legs — 4 slim brown rectangles
+                    c.fillStyle = season === 2 ? '#5a3a18' : '#6b4a1f';
+                    c.fillRect(_deerX - 5, _deerY + 2, 0.7, 4);
+                    c.fillRect(_deerX - 3, _deerY + 2, 0.7, 4);
+                    c.fillRect(_deerX + 2.5, _deerY + 2, 0.7, 4);
+                    c.fillRect(_deerX + 4.5, _deerY + 2, 0.7, 4);
+                    // Tail — small triangle (white underside flashing if alarmed)
+                    c.fillStyle = season === 2 ? '#8a6238' : '#a07248';
+                    c.beginPath();
+                    c.moveTo(_deerX + 6.5, _deerY - 0.5);
+                    c.lineTo(_deerX + 7.8, _deerY - 2);
+                    c.lineTo(_deerX + 7, _deerY + 0.5);
+                    c.closePath(); c.fill();
+                    // Tail white tip
+                    c.fillStyle = '#fafaf9';
+                    c.beginPath(); c.arc(_deerX + 7.8, _deerY - 1.8, 0.4, 0, 6.28); c.fill();
+                    // Head — tilted down if browsing, up if glancing
+                    var _dHeadY = _dGlanceUp ? _deerY - 2 : _deerY + 1;
+                    var _dHeadX = _deerX - 6.5;
+                    c.fillStyle = season === 2 ? '#7a5230' : '#8a6238';
+                    c.beginPath(); c.ellipse(_dHeadX, _dHeadY, 1.6, 1.1, _dGlanceUp ? -0.4 : 0.4, 0, 6.28); c.fill();
+                    // Neck connecting head to body
+                    c.strokeStyle = season === 2 ? '#8a6238' : '#a07248';
+                    c.lineWidth = 1.4;
+                    c.beginPath();
+                    c.moveTo(_deerX - 5, _deerY - 0.5);
+                    c.lineTo(_dHeadX + 0.5, _dHeadY);
+                    c.stroke();
+                    // Ears — two upright triangles (alert)
+                    c.fillStyle = season === 2 ? '#7a5230' : '#8a6238';
+                    c.beginPath();
+                    c.moveTo(_dHeadX - 0.5, _dHeadY - 0.8);
+                    c.lineTo(_dHeadX - 1.2, _dHeadY - 2.5);
+                    c.lineTo(_dHeadX, _dHeadY - 1);
+                    c.closePath(); c.fill();
+                    c.beginPath();
+                    c.moveTo(_dHeadX + 0.5, _dHeadY - 0.8);
+                    c.lineTo(_dHeadX + 0.2, _dHeadY - 2.5);
+                    c.lineTo(_dHeadX + 1, _dHeadY - 1);
+                    c.closePath(); c.fill();
+                    // Eye
+                    c.fillStyle = '#1c1917';
+                    c.beginPath(); c.arc(_dHeadX - 0.4, _dHeadY - 0.4, 0.3, 0, 6.28); c.fill();
+                    // Nose
+                    c.beginPath(); c.arc(_dHeadX - 1.5, _dHeadY + 0.3, 0.3, 0, 6.28); c.fill();
+                    c.restore();
+                  }
+                }
+              }
+
+              // ── Red fox cameo crossing the meadow at dusk (fall + winter) ──
+              // Real biology: red foxes are crepuscular hunters most active
+              // at dawn and dusk in colder months. Sleek body, bushy tail,
+              // pointed ears, white throat patch. Visible during dusk/dawn
+              // bands only, every ~45 seconds. Distinct from rabbit (trots
+              // steadily, doesn't hop) and squirrel (ground-level, not fence).
+              if ((season === 2 || season === 3)) {
+                var _fxDusk = (_sunCycle > 0.85 && _sunCycle < 1.10) ? Math.sin((_sunCycle - 0.85) / 0.25 * Math.PI) :
+                              (_sunCycle > 1.85 && _sunCycle < 2.10) ? Math.sin((_sunCycle - 1.85) / 0.25 * Math.PI) : 0;
+                if (_fxDusk > 0.15) {
+                  var _fxCycle = (t2 % 2700) / 2700;
+                  if (_fxCycle > 0.35 && _fxCycle < 0.80) {
+                    var _fxProg = (_fxCycle - 0.35) / 0.45;
+                    var _fxX = W * 1.05 - _fxProg * W * 1.15;
+                    var _fxY = H * 0.84 + Math.sin(_fxProg * 8) * 0.5;
+                    var _fxFacing = -1; // moving right to left
+                    if (_fxX < hiveX - 20 || _fxX > hiveX + hiveW + 20) {
+                      c.save();
+                      c.globalAlpha = _fxDusk;
+                      c.translate(_fxX, _fxY);
+                      c.scale(_fxFacing, 1);
+                      // Shadow
+                      c.fillStyle = 'rgba(0,0,0,0.22)';
+                      c.beginPath(); c.ellipse(0, 2.5, 6, 0.8, 0, 0, 6.28); c.fill();
+                      // Body — rusty orange-red
+                      c.fillStyle = '#c2410c';
+                      c.beginPath(); c.ellipse(0, 0, 5.5, 2, 0, 0, 6.28); c.fill();
+                      // Head + snout
+                      c.fillStyle = '#9a3412';
+                      c.beginPath(); c.ellipse(-4.8, -0.5, 2.2, 1.4, -0.15, 0, 6.28); c.fill();
+                      // Pointed ears (two triangles)
+                      c.beginPath();
+                      c.moveTo(-4.5, -1.5);
+                      c.lineTo(-4.0, -3);
+                      c.lineTo(-3.5, -1.2);
+                      c.closePath(); c.fill();
+                      c.beginPath();
+                      c.moveTo(-5.5, -1.4);
+                      c.lineTo(-5.2, -2.8);
+                      c.lineTo(-4.5, -1.5);
+                      c.closePath(); c.fill();
+                      // White throat patch + belly stripe
+                      c.fillStyle = 'rgba(254,243,199,0.85)';
+                      c.beginPath(); c.ellipse(-3.5, 0.8, 1.8, 0.6, 0, 0, 6.28); c.fill();
+                      c.fillRect(-2.5, 0.8, 3.5, 0.6);
+                      // Eye dot
+                      c.fillStyle = '#1c1917';
+                      c.beginPath(); c.arc(-5.3, -0.6, 0.3, 0, 6.28); c.fill();
+                      // Tiny nose
+                      c.beginPath(); c.arc(-6.4, -0.2, 0.3, 0, 6.28); c.fill();
+                      // Legs (4 visible)
+                      c.fillStyle = '#7c2d12';
+                      c.fillRect(-3, 1.5, 0.6, 2);
+                      c.fillRect(-1, 1.5, 0.6, 2);
+                      c.fillRect(1.5, 1.5, 0.6, 2);
+                      c.fillRect(3, 1.5, 0.6, 2);
+                      // Bushy tail with white tip
+                      c.fillStyle = '#c2410c';
+                      c.beginPath();
+                      c.moveTo(4.5, 0);
+                      c.quadraticCurveTo(7, -1, 8, 1);
+                      c.quadraticCurveTo(7, 2, 4.5, 1);
+                      c.closePath(); c.fill();
+                      // White tip
+                      c.fillStyle = 'rgba(254,243,199,0.95)';
+                      c.beginPath(); c.arc(8, 1, 1.0, 0, 6.28); c.fill();
+                      c.restore();
+                    }
+                  }
+                }
+              }
+
+              // ── Daisy patch at the lower meadow (spring/summer) ──
+              // 8 daisies with white petals + golden centers, clustered in
+              // a low spot near the meadow edge. Each daisy sways with the
+              // coherent wind wave to match the rest of the meadow motion.
+              if (season === 0 || season === 1) {
+                var _dsCx = W * 0.78;
+                var _dsCy = H * 0.86;
+                var _dsCount = 8;
+                for (var ds = 0; ds < _dsCount; ds++) {
+                  var _dsAng = (ds / _dsCount) * 6.28;
+                  var _dsR = 4 + (ds % 3) * 2;
+                  var _dsX = _dsCx + Math.cos(_dsAng) * _dsR + (ds % 2) * 1.5;
+                  var _dsY = _dsCy + Math.sin(_dsAng) * _dsR * 0.5 + (ds % 3) * 0.7;
+                  var _dsWind = Math.sin(t2 * 0.025 - _dsX * 0.015) * 0.8;
+                  // Stem
+                  c.strokeStyle = '#16a34a';
+                  c.lineWidth = 0.5;
+                  c.beginPath();
+                  c.moveTo(_dsX, _dsY + 4);
+                  c.lineTo(_dsX + _dsWind, _dsY);
+                  c.stroke();
+                  // Tiny leaf
+                  c.fillStyle = '#22c55e';
+                  c.beginPath();
+                  c.ellipse(_dsX + _dsWind * 0.5, _dsY + 2, 0.6, 0.3, 0.3, 0, 6.28);
+                  c.fill();
+                  // 8 white petals
+                  c.fillStyle = '#ffffff';
+                  for (var dpc = 0; dpc < 8; dpc++) {
+                    var _dpcA = dpc * 0.785;
+                    var _dpcX = _dsX + _dsWind + Math.cos(_dpcA) * 1.4;
+                    var _dpcY = _dsY + Math.sin(_dpcA) * 1.4;
+                    c.beginPath();
+                    c.ellipse(_dpcX, _dpcY, 0.7, 0.35, _dpcA, 0, 6.28);
+                    c.fill();
+                  }
+                  // Golden center
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_dsX + _dsWind, _dsY, 0.65, 0, 6.28); c.fill();
+                  c.fillStyle = '#a16207';
+                  c.beginPath(); c.arc(_dsX + _dsWind - 0.2, _dsY - 0.2, 0.2, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Wooden walking stick leaning against the Adirondack chair ──
+              // Beloved Maine homestead detail. The keeper's walking stick
+              // rests against the right side of the chair. Slight knot in the
+              // wood. Year-round (the keeper uses it on icy winter walks too).
+              (function() {
+                var _acX = W * 0.55; // matches the Adirondack chair X
+                var _wsBottomX = _acX + 7.5, _wsBottomY = H * 0.89;
+                var _wsTopX = _acX + 6.5, _wsTopY = H * 0.86 - 6;
+                // Shadow
+                c.strokeStyle = 'rgba(0,0,0,0.18)';
+                c.lineWidth = 1;
+                c.beginPath();
+                c.moveTo(_wsBottomX + 0.5, _wsBottomY);
+                c.lineTo(_wsTopX + 0.5, _wsTopY);
+                c.stroke();
+                // Main stick — slightly tapered, varnished pine
+                c.strokeStyle = season === 3 ? '#7a5230' : '#a07248';
+                c.lineWidth = 1.1;
+                c.beginPath();
+                c.moveTo(_wsBottomX, _wsBottomY);
+                c.lineTo(_wsTopX, _wsTopY);
+                c.stroke();
+                // Wood-grain highlight along one side
+                c.strokeStyle = 'rgba(255,255,255,0.3)';
+                c.lineWidth = 0.3;
+                c.beginPath();
+                c.moveTo(_wsBottomX - 0.3, _wsBottomY);
+                c.lineTo(_wsTopX - 0.3, _wsTopY);
+                c.stroke();
+                // Small dark knot 2/3 up
+                c.fillStyle = season === 3 ? '#3a2510' : '#5a3a18';
+                var _wsKnotX = _wsBottomX + (_wsTopX - _wsBottomX) * 0.65;
+                var _wsKnotY = _wsBottomY + (_wsTopY - _wsBottomY) * 0.65;
+                c.beginPath(); c.ellipse(_wsKnotX, _wsKnotY, 0.5, 0.3, 0.5, 0, 6.28); c.fill();
+                // Rounded knob at the top (handle)
+                c.fillStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.beginPath(); c.arc(_wsTopX, _wsTopY, 0.9, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.35)';
+                c.beginPath(); c.arc(_wsTopX - 0.25, _wsTopY - 0.25, 0.3, 0, 6.28); c.fill();
+                // Rubber tip at the bottom (winter ice grip)
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wsBottomX, _wsBottomY, 0.55, 0, 6.28); c.fill();
+              })();
+
+              // ── Barn cat lounging in the sun (year-round homestead detail) ──
+              // Sits curled up near the Adirondack chair, occasionally
+              // twitching its tail. Black-and-white tuxedo coat, eyes
+              // closed mostly, eye-blink animation. Year-round but moves
+              // closer to the keeper home in winter (more shelter).
+              (function() {
+                var _bcX = season === 3 ? W * 0.49 : W * 0.50;
+                var _bcY = season === 3 ? H * 0.91 : H * 0.90;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_bcX, _bcY + 1.5, 6, 0.8, 0, 0, 6.28); c.fill();
+                // Body — curled up oval
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.ellipse(_bcX, _bcY, 5, 2.3, 0, 0, 6.28); c.fill();
+                // White chest/belly patch
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.ellipse(_bcX - 0.5, _bcY + 0.5, 2.5, 1.2, 0, 0, 6.28); c.fill();
+                // White paws
+                c.beginPath(); c.ellipse(_bcX - 2.5, _bcY + 1.5, 0.6, 0.4, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_bcX + 2.5, _bcY + 1.5, 0.6, 0.4, 0, 0, 6.28); c.fill();
+                // Head — slightly tilted
+                var _bcHeadX = _bcX - 3.5;
+                var _bcHeadY = _bcY - 0.5;
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_bcHeadX, _bcHeadY, 1.8, 0, 6.28); c.fill();
+                // White face mark
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.ellipse(_bcHeadX - 0.2, _bcHeadY + 0.3, 0.8, 0.6, 0, 0, 6.28); c.fill();
+                // Triangular ears (pointed up)
+                c.fillStyle = '#1c1917';
+                c.beginPath();
+                c.moveTo(_bcHeadX - 1.4, _bcHeadY - 1.3);
+                c.lineTo(_bcHeadX - 1, _bcHeadY - 2.5);
+                c.lineTo(_bcHeadX - 0.3, _bcHeadY - 1.5);
+                c.closePath(); c.fill();
+                c.beginPath();
+                c.moveTo(_bcHeadX + 0.3, _bcHeadY - 1.5);
+                c.lineTo(_bcHeadX + 1, _bcHeadY - 2.5);
+                c.lineTo(_bcHeadX + 1.4, _bcHeadY - 1.3);
+                c.closePath(); c.fill();
+                // Eyes — closed slits most of the time, occasional blink open
+                var _bcBlink = ((t2 * 0.04) % 30) / 30;
+                var _bcEyesOpen = _bcBlink > 0.85 && _bcBlink < 0.97;
+                if (_bcEyesOpen) {
+                  // Open green-gold eyes
+                  c.fillStyle = '#84cc16';
+                  c.beginPath(); c.ellipse(_bcHeadX - 0.7, _bcHeadY - 0.2, 0.35, 0.25, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bcHeadX + 0.5, _bcHeadY - 0.2, 0.35, 0.25, 0, 0, 6.28); c.fill();
+                  // Pupil slits
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_bcHeadX - 0.75, _bcHeadY - 0.35, 0.1, 0.3);
+                  c.fillRect(_bcHeadX + 0.45, _bcHeadY - 0.35, 0.1, 0.3);
+                } else {
+                  // Closed eye slits
+                  c.strokeStyle = '#3a3025';
+                  c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(_bcHeadX - 1, _bcHeadY - 0.2); c.lineTo(_bcHeadX - 0.4, _bcHeadY - 0.2); c.stroke();
+                  c.beginPath(); c.moveTo(_bcHeadX + 0.2, _bcHeadY - 0.2); c.lineTo(_bcHeadX + 0.8, _bcHeadY - 0.2); c.stroke();
+                }
+                // Pink nose
+                c.fillStyle = '#f472b6';
+                c.beginPath(); c.arc(_bcHeadX - 0.2, _bcHeadY + 0.5, 0.2, 0, 6.28); c.fill();
+                // Whiskers — 3 lines on each side
+                c.strokeStyle = 'rgba(220,220,220,0.7)';
+                c.lineWidth = 0.2;
+                for (var bcw = 0; bcw < 3; bcw++) {
+                  var _bcwY = _bcHeadY + 0.3 + bcw * 0.3;
+                  c.beginPath(); c.moveTo(_bcHeadX - 0.8, _bcwY); c.lineTo(_bcHeadX - 2.5, _bcwY - 0.1); c.stroke();
+                  c.beginPath(); c.moveTo(_bcHeadX + 0.4, _bcwY); c.lineTo(_bcHeadX + 2, _bcwY - 0.1); c.stroke();
+                }
+                // Curled tail with tip flick
+                var _bcTailFlick = Math.sin(t2 * 0.08) * 0.6;
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 1.4;
+                c.lineCap = 'round';
+                c.beginPath();
+                c.moveTo(_bcX + 4, _bcY);
+                c.quadraticCurveTo(_bcX + 7 + _bcTailFlick, _bcY - 1, _bcX + 7 + _bcTailFlick, _bcY + 1.5);
+                c.stroke();
+                c.lineCap = 'butt';
+                // White tail tip
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_bcX + 7 + _bcTailFlick, _bcY + 1.5, 0.5, 0, 6.28); c.fill();
+              })();
+
+              // ── Traditional woven straw bee skep (historical bee artifact) ──
+              // Bee skeps are coiled-straw domed beehives, used by beekeepers
+              // for 2000+ years before modern Langstroth frames replaced them
+              // in the 1850s. Now mostly decorative — but they're THE iconic
+              // bee shape in folk art. Sits on a flat wooden base near the
+              // apiary sign.
+              (function() {
+                var _skX = W * 0.66, _skY = H * 0.84;
+                // Wooden base plank
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_skX - 5, _skY, 10, 1.5);
+                c.fillStyle = '#3a2510';
+                c.fillRect(_skX - 5, _skY + 1.2, 10, 0.3);
+                // Skep body — dome shape with horizontal coiled-straw bands
+                var _skBandColors = ['#a07248', '#8a6238', '#7a5230', '#a07248', '#92703a', '#a07248'];
+                _skBandColors.forEach(function(col, ski) {
+                  var _skBandY = _skY - 1 - ski * 1.5;
+                  var _skBandWidth = ski === 0 ? 4 : ski === 1 ? 3.6 : ski === 2 ? 3.2 : ski === 3 ? 2.6 : ski === 4 ? 1.8 : 0.8;
+                  c.fillStyle = col;
+                  c.beginPath();
+                  c.ellipse(_skX, _skBandY, _skBandWidth, 0.9, 0, 0, 6.28);
+                  c.fill();
+                  // Highlight on upper-left of each band
+                  c.fillStyle = 'rgba(254,243,199,0.35)';
+                  c.beginPath();
+                  c.ellipse(_skX - _skBandWidth * 0.3, _skBandY - 0.3, _skBandWidth * 0.4, 0.3, -0.3, 0, 6.28);
+                  c.fill();
+                  // Dark shadow on lower edge of each band
+                  c.fillStyle = 'rgba(60,40,15,0.4)';
+                  c.beginPath();
+                  c.ellipse(_skX, _skBandY + 0.5, _skBandWidth, 0.2, 0, 0, 6.28);
+                  c.fill();
+                });
+                // Small entrance hole at the bottom
+                c.fillStyle = '#1a1208';
+                c.beginPath(); c.ellipse(_skX, _skY - 1, 0.9, 0.4, 0, 0, 6.28); c.fill();
+                // Bees visiting in spring/summer
+                if (season === 0 || season === 1) {
+                  for (var skb = 0; skb < 2; skb++) {
+                    var _skbT = ((t2 * 0.05 + skb * 30) % 80) / 80;
+                    if (_skbT > 0.5) continue;
+                    var _skbX = _skX - 4 + _skbT * 8 + Math.sin(_skbT * 6) * 1.5;
+                    var _skbY = _skY - 3 - Math.sin(_skbT * 3.14) * 2;
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.ellipse(_skbX, _skbY, 0.8, 0.5, 0, 0, 6.28); c.fill();
+                    c.fillStyle = '#1c1917';
+                    c.fillRect(_skbX - 0.2, _skbY - 0.4, 0.2, 0.8);
+                    c.fillStyle = 'rgba(220,240,255,0.5)';
+                    c.beginPath(); c.ellipse(_skbX, _skbY - 0.5, 0.8, 0.3, 0, 0, 6.28); c.fill();
+                  }
+                }
+                // Tiny "TRADITION" plaque on the base
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 1.4px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('SKEP', _skX, _skY + 1);
+                c.textAlign = 'start';
+              })();
+
+              // ── Basket of fresh-picked apples beside the tree (fall harvest) ──
+              // Woven wicker basket with apples piled inside — late summer
+              // and fall only. Real Maine homestead detail.
+              if (season === 1 && (day % 30) >= 25 || season === 2) {
+                if (hiveX > 40) {
+                  var _baX = hiveX * 0.55 + 18;
+                  var _baY = H * 0.87;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.25)';
+                  c.beginPath(); c.ellipse(_baX, _baY + 2.5, 4.5, 0.9, 0, 0, 6.28); c.fill();
+                  // Basket body — wicker
+                  c.fillStyle = '#a07248';
+                  c.beginPath(); c.ellipse(_baX, _baY + 1, 4, 1.5, 0, 0, 6.28); c.fill();
+                  c.fillRect(_baX - 4, _baY - 1, 8, 2.5);
+                  // Wicker weave pattern — alternating dark vertical lines
+                  c.strokeStyle = '#5a3a18';
+                  c.lineWidth = 0.25;
+                  for (var bw = 0; bw < 6; bw++) {
+                    var _bwX = _baX - 3.5 + bw * 1.4;
+                    c.beginPath(); c.moveTo(_bwX, _baY - 1); c.lineTo(_bwX, _baY + 1.5); c.stroke();
+                  }
+                  // Horizontal weave lines
+                  c.beginPath(); c.moveTo(_baX - 4, _baY - 0.2); c.lineTo(_baX + 4, _baY - 0.2); c.stroke();
+                  c.beginPath(); c.moveTo(_baX - 4, _baY + 0.6); c.lineTo(_baX + 4, _baY + 0.6); c.stroke();
+                  // Top rim (darker band)
+                  c.fillStyle = '#5a3a18';
+                  c.fillRect(_baX - 4, _baY - 1.3, 8, 0.5);
+                  // Apples piled inside (top-down view, visible from above the rim)
+                  var _baApples = [
+                    { dx: -2.5, dy: -1.8, r: 1.0, shade: '#b91c1c' },
+                    { dx:  0,   dy: -2.2, r: 1.1, shade: '#dc2626' },
+                    { dx:  2.5, dy: -1.7, r: 1.0, shade: '#991b1b' },
+                    { dx: -1,   dy: -2.8, r: 0.9, shade: '#b91c1c' },
+                    { dx:  1.4, dy: -2.9, r: 0.85, shade: '#dc2626' }
+                  ];
+                  _baApples.forEach(function(ap) {
+                    var _apX = _baX + ap.dx;
+                    var _apY = _baY + ap.dy;
+                    c.fillStyle = ap.shade;
+                    c.beginPath(); c.arc(_apX, _apY, ap.r, 0, 6.28); c.fill();
+                    // Highlight
+                    c.fillStyle = 'rgba(255,255,255,0.4)';
+                    c.beginPath(); c.arc(_apX - ap.r * 0.3, _apY - ap.r * 0.3, ap.r * 0.25, 0, 6.28); c.fill();
+                    // Stem
+                    c.strokeStyle = '#3a2010';
+                    c.lineWidth = 0.3;
+                    c.beginPath(); c.moveTo(_apX, _apY - ap.r); c.lineTo(_apX + 0.2, _apY - ap.r - 0.6); c.stroke();
+                  });
+                  // Handle arc
+                  c.strokeStyle = '#5a3a18';
+                  c.lineWidth = 0.5;
+                  c.beginPath();
+                  c.arc(_baX, _baY - 1, 4.5, Math.PI * 1.2, Math.PI * 1.8);
+                  c.stroke();
+                }
+              }
+
               // ── Rabbit hopping across the meadow (periodic cameo, every ~20s) ──
               if (season !== 3) {
                 var rbCycle = (t2 % 1200) / 1200; // 0..1 over ~20s
@@ -6620,6 +10027,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              // ── Stone wall segment along the back meadow (classic New England) ──
+              // Real Maine homestead detail: most farms in the Northeast have
+              // a section of dry-stacked stone wall — left behind from when
+              // farmers cleared the fields after the last ice age. Runs along
+              // a stretch on the LEFT side of the meadow, parallel to (but
+              // behind) the wooden fence. ~3 courses tall, mottled gray.
+              (function() {
+                var _swStartX = 4, _swEndX = W * 0.32;
+                var _swBaseY = fenceBaseY + 2;
+                // Skip if it would extend into the hive area
+                if (_swEndX > hiveX - 12) _swEndX = hiveX - 12;
+                // Three courses of stacked stones
+                for (var swc = 0; swc < 3; swc++) {
+                  var _swCourseY = _swBaseY + swc * 1.6;
+                  var _swXi = _swStartX + (swc % 2) * 0.7; // alternate offset (real masonry)
+                  while (_swXi < _swEndX) {
+                    var _swWidth = 1.8 + ((_swXi * 13) % 6) * 0.4;
+                    var _swHeight = 1.5 + ((_swXi * 7) % 4) * 0.15;
+                    var _swShade = ((_swXi * 11) % 4);
+                    var _swCol = _swShade === 0 ? '#78716c' :
+                                  _swShade === 1 ? '#a8a29e' :
+                                  _swShade === 2 ? '#5c5853' :
+                                                   '#92908c';
+                    c.fillStyle = _swCol;
+                    c.fillRect(_swXi, _swCourseY - _swHeight, _swWidth, _swHeight);
+                    // Top highlight on each stone
+                    c.fillStyle = 'rgba(255,255,255,0.18)';
+                    c.fillRect(_swXi, _swCourseY - _swHeight, _swWidth, 0.3);
+                    // Side shadow on each stone
+                    c.fillStyle = 'rgba(0,0,0,0.20)';
+                    c.fillRect(_swXi + _swWidth - 0.3, _swCourseY - _swHeight + 0.3, 0.3, _swHeight - 0.3);
+                    _swXi += _swWidth + 0.2;
+                  }
+                }
+                // Moss patches on a few stones (not winter)
+                if (season !== 3) {
+                  c.fillStyle = 'rgba(101,163,13,0.55)';
+                  for (var sm = 0; sm < 4; sm++) {
+                    var _smX = _swStartX + 8 + sm * 14;
+                    if (_smX > _swEndX - 4) continue;
+                    var _smY = _swBaseY - 0.5 - (sm % 2) * 1.6;
+                    c.beginPath(); c.ellipse(_smX, _smY, 1.2, 0.4, 0.2, 0, 6.28); c.fill();
+                  }
+                }
+                // Snow caps in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.fillRect(_swStartX, _swBaseY - 4.9, _swEndX - _swStartX, 0.7);
+                  // Light drift along the top
+                  c.beginPath();
+                  c.moveTo(_swStartX, _swBaseY - 4.9);
+                  for (var snd = _swStartX; snd <= _swEndX; snd += 3) {
+                    c.lineTo(snd, _swBaseY - 4.9 - Math.abs(Math.sin(snd * 0.3)) * 0.8);
+                  }
+                  c.lineTo(_swEndX, _swBaseY - 4.2);
+                  c.lineTo(_swStartX, _swBaseY - 4.2);
+                  c.closePath(); c.fill();
+                }
+              })();
+
               // ── Wooden garden fence along the ground ──
               c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
               var fenceBaseY = H * 0.775;
@@ -6636,6 +10103,2672 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillStyle = 'rgba(255,255,255,0.2)';
                   c.fillRect(fpx, fenceBaseY - 2, 1, fenceH);
                   c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
+                }
+              }
+
+              // ── Beekeeper footprints in the snow (winter, gate → hive) ──
+              // Real homestead storytelling: the keeper checks the hive every
+              // few days even in winter. Two parallel rows of boot prints from
+              // the fence gate toward the hive entrance, slightly snowed-over
+              // (real fresh-prints would be sharper). Visible the second week
+              // of winter onward (gives the snow time to accumulate first).
+              if (season === 3 && (day % 30) >= 5) {
+                var _bfGateX = W * 0.42; // matches the gate position
+                var _bfHiveX = hiveX + hiveW + 2;
+                var _bfCount = 10;
+                for (var bf = 0; bf < _bfCount; bf++) {
+                  var _bfT = bf / (_bfCount - 1);
+                  var _bfX = _bfGateX + (_bfHiveX - _bfGateX) * _bfT;
+                  var _bfRow = bf % 2 === 0 ? -1 : 1;
+                  var _bfY = H * 0.86 + _bfRow * 1.4;
+                  // Foot oval — slightly elongated
+                  c.fillStyle = 'rgba(220,225,235,0.55)';
+                  c.beginPath(); c.ellipse(_bfX, _bfY, 1.5, 0.85, _bfRow * 0.05, 0, 6.28); c.fill();
+                  // Darker depression inside the print
+                  c.fillStyle = 'rgba(160,175,200,0.45)';
+                  c.beginPath(); c.ellipse(_bfX, _bfY, 1.0, 0.55, _bfRow * 0.05, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Mailbox on a post at the meadow path edge (rural homestead) ──
+              // Standard US-rural mailbox: domed steel body with a red flag, on
+              // a wooden post stuck in the ground at the very right edge.
+              // The flag goes UP when there's outgoing mail (here: rotates
+              // between up + down on a slow ~3 min cycle to suggest someone
+              // dropping off + a carrier picking up).
+              (function() {
+                var _mbX = W * 0.97, _mbY = H * 0.78;
+                // Skip if mailbox would overlap firewood pile
+                if (_mbX > W - 10) _mbX = W - 8;
+                // Post (wooden)
+                c.fillStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.fillRect(_mbX - 0.7, _mbY, 1.4, 14);
+                // Post shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_mbX, _mbY + 14.5, 2.5, 0.6, 0, 0, 6.28); c.fill();
+                // Mailbox body — domed rectangle (silver-blue steel)
+                var _mbBodyG = c.createLinearGradient(_mbX - 4, _mbY - 6, _mbX + 4, _mbY - 6);
+                _mbBodyG.addColorStop(0, '#78716c');
+                _mbBodyG.addColorStop(0.5, '#c2c0ba');
+                _mbBodyG.addColorStop(1, '#57534e');
+                c.fillStyle = _mbBodyG;
+                // Body rectangle
+                c.fillRect(_mbX - 4, _mbY - 4, 8, 4);
+                // Top arch (half-circle)
+                c.beginPath();
+                c.arc(_mbX, _mbY - 4, 4, Math.PI, 2 * Math.PI);
+                c.fill();
+                // Front door + handle
+                c.fillStyle = '#57534e';
+                c.fillRect(_mbX - 3.5, _mbY - 3.5, 0.6, 3);
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_mbX - 3.2, _mbY - 2, 0.3, 0, 6.28); c.fill();
+                // House numbers on the side
+                c.fillStyle = '#1c1917';
+                c.font = 'bold 2px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('14', _mbX, _mbY - 1.5);
+                c.textAlign = 'start';
+                // Red flag — rotates between UP (vertical) and DOWN (horizontal)
+                // every ~3 min cycle. Indicates "mail to send" vs "no mail."
+                var _mbFlagPeriod = 180000;
+                var _mbFlagT = (Date.now() % _mbFlagPeriod) / _mbFlagPeriod;
+                var _mbFlagUp = _mbFlagT < 0.5; // half the time up, half down
+                c.save();
+                c.translate(_mbX + 4, _mbY - 4);
+                if (_mbFlagUp) {
+                  c.rotate(-Math.PI / 2); // flag points up
+                } else {
+                  c.rotate(0); // flag points right (down position)
+                }
+                c.fillStyle = '#dc2626';
+                c.fillRect(0, -0.5, 2.5, 1.5);
+                // Flag pole
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -3.5); c.stroke();
+                c.restore();
+                // Snow cap on top in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.arc(_mbX, _mbY - 4.5, 4, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  c.fillRect(_mbX - 4, _mbY - 4.5, 8, 0.7);
+                }
+              })();
+
+              // ── Bumblebee burrow at the meadow edge (real biology) ──
+              // Real biology: bumblebees nest in abandoned mouse holes or
+              // small ground cavities, NOT in hives like honeybees. They form
+              // small annual colonies (50-400 bees vs honeybee 50,000+).
+              // Show a small ground entrance with a fuzzy bumblebee approaching.
+              if (season === 0 || season === 1) {
+                var _bbnX = W * 0.45, _bbnY = H * 0.88;
+                // Dirt mound around entrance
+                c.fillStyle = 'rgba(120,90,55,0.55)';
+                c.beginPath(); c.ellipse(_bbnX, _bbnY, 5, 1.3, 0, 0, 6.28); c.fill();
+                // Lighter sandy rim
+                c.fillStyle = 'rgba(160,130,80,0.4)';
+                c.beginPath(); c.ellipse(_bbnX, _bbnY - 0.3, 3.8, 0.9, 0, 0, 6.28); c.fill();
+                // Dark entrance hole
+                c.fillStyle = '#1a1208';
+                c.beginPath(); c.ellipse(_bbnX, _bbnY - 0.3, 1.5, 0.7, 0, 0, 6.28); c.fill();
+                // Tuft of dried grass partially covering the hole (camouflage)
+                c.strokeStyle = season === 1 ? '#92702a' : '#a3a36b';
+                c.lineWidth = 0.4;
+                for (var bbb = 0; bbb < 3; bbb++) {
+                  var _bbbX = _bbnX - 1.5 + bbb * 1.5;
+                  c.beginPath();
+                  c.moveTo(_bbbX, _bbnY - 0.5);
+                  c.quadraticCurveTo(_bbbX + 0.5, _bbnY - 3, _bbbX + 1.5, _bbnY - 3.5);
+                  c.stroke();
+                }
+                // A worker bumblebee approaching with pollen (periodic)
+                var _bbnVisitT = ((t2 * 0.04 + 22) % 50) / 50;
+                if (_bbnVisitT < 0.6) {
+                  var _bbnApprX = _bbnX + 8 - _bbnVisitT * 13;
+                  var _bbnApprY = _bbnY - 2 - Math.sin(_bbnVisitT * 4) * 1.5;
+                  // Fuzzy bumblebee — small
+                  c.fillStyle = 'rgba(251,191,36,0.45)';
+                  c.beginPath(); c.ellipse(_bbnApprX, _bbnApprY, 2.0, 1.4, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(_bbnApprX, _bbnApprY, 1.6, 1.1, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_bbnApprX - 0.7, _bbnApprY - 0.9, 0.4, 1.8);
+                  c.fillRect(_bbnApprX + 0.3, _bbnApprY - 0.9, 0.4, 1.8);
+                  // Tiny pollen ball on hind leg
+                  c.fillStyle = '#fde047';
+                  c.beginPath(); c.arc(_bbnApprX + 0.2, _bbnApprY + 1.1, 0.35, 0, 6.28); c.fill();
+                  // Wing blur
+                  c.fillStyle = 'rgba(220,240,255,0.5)';
+                  c.beginPath(); c.ellipse(_bbnApprX, _bbnApprY - 1.2, 1.5, 0.5, 0, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Bear paw prints in winter snow (rare biology cameo) ──
+              // Real beekeeping risk noted in the forest habitat: "Bears
+              // occasionally investigate — consider electric fencing." In
+              // winter (and especially early spring before full hibernation)
+              // a hungry bear may sniff the hive and leave tracks across the
+              // snow. Trail comes from the right meadow edge and stops short
+              // of the hive (the bear approached then turned back). Late-day
+              // 8+ of winter so the snow has had time to set first.
+              if (season === 3 && (day % 30) >= 8) {
+                // Path: 8 prints, from W * 0.85 (right edge) toward hive
+                var _bpEndX = hiveX + hiveW + 22;
+                var _bpStartX = W * 0.85;
+                var _bpCount = 8;
+                for (var bp = 0; bp < _bpCount; bp++) {
+                  var _bpProg = bp / (_bpCount - 1);
+                  var _bpX = _bpStartX + (_bpEndX - _bpStartX) * _bpProg;
+                  // Zigzag step pattern — left/right alternating
+                  var _bpSide = (bp % 2 === 0) ? -2 : 2;
+                  var _bpY = H * 0.84 + _bpSide;
+                  // Paw print — main pad (kidney-shaped)
+                  c.fillStyle = 'rgba(60,45,30,0.55)';
+                  c.beginPath();
+                  c.ellipse(_bpX, _bpY, 2.6, 1.8, -0.15, 0, 6.28);
+                  c.fill();
+                  // Four toe pads above the main pad
+                  for (var bpt = 0; bpt < 4; bpt++) {
+                    var _bptA = -1.2 + bpt * 0.55;
+                    var _bptX = _bpX + Math.sin(_bptA) * 2.2;
+                    var _bptY = _bpY - 1.8 - Math.cos(_bptA) * 0.6;
+                    c.beginPath(); c.ellipse(_bptX, _bptY, 0.7, 0.55, 0, 0, 6.28); c.fill();
+                  }
+                  // Tiny claw marks above each toe (black bear claws are short but visible)
+                  c.strokeStyle = 'rgba(40,30,20,0.5)';
+                  c.lineWidth = 0.3;
+                  for (var bpc = 0; bpc < 4; bpc++) {
+                    var _bpcA = -1.2 + bpc * 0.55;
+                    var _bpcX1 = _bpX + Math.sin(_bpcA) * 2.4;
+                    var _bpcY1 = _bpY - 2.4 - Math.cos(_bpcA) * 0.6;
+                    var _bpcX2 = _bpX + Math.sin(_bpcA) * 2.9;
+                    var _bpcY2 = _bpY - 3.0 - Math.cos(_bpcA) * 0.6;
+                    c.beginPath(); c.moveTo(_bpcX1, _bpcY1); c.lineTo(_bpcX2, _bpcY2); c.stroke();
+                  }
+                }
+                // Small mound of disturbed snow where the bear stopped
+                c.fillStyle = 'rgba(80,65,45,0.30)';
+                c.beginPath(); c.ellipse(_bpEndX - 2, H * 0.85, 5, 1.2, 0, 0, 6.28); c.fill();
+              }
+
+              // ── Crow on a fence post in winter daytime (year-round bird coverage) ──
+              // Counterpart to the songbird (spring/summer/fall day) and the
+              // owl (deep night): a crow takes the day shift in winter when
+              // other birds are gone south. Black silhouette, slightly larger
+              // than the songbird, with occasional "caw" ripple ring.
+              if (season === 3 && _sunCycle > 0.10 && _sunCycle < 0.95) {
+                var _crPostX = 20 + 5 * 70 + 1.25; // same post as owl, no conflict (winter day vs deep night)
+                if (!(_crPostX > hiveX - 18 && _crPostX < hiveX + hiveW + 18)) {
+                  var _crY = fenceBaseY - 2 - 0.5;
+                  var _crBob = Math.sin(t2 * 0.04) * 0.4;
+                  var _crHead = Math.sin(t2 * 0.025) > 0.7 ? 0.5 : (Math.sin(t2 * 0.018) > 0.85 ? -0.4 : 0);
+                  c.save();
+                  c.translate(_crPostX, _crY + _crBob);
+                  // Body — sleek black silhouette, longer than songbird
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.ellipse(0, 0, 4, 2.6, -0.05, 0, 6.28); c.fill();
+                  // Wing-fold accent (slightly darker)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.ellipse(1.2, 0, 1.8, 1.2, -0.1, 0, 6.28); c.fill();
+                  // Head with subtle turn
+                  c.save();
+                  c.translate(-3.2, -1.8);
+                  c.rotate(_crHead);
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(0, 0, 1.7, 0, 6.28); c.fill();
+                  // Strong black beak — pointed
+                  c.fillStyle = '#1c1917';
+                  c.beginPath();
+                  c.moveTo(-1.5, -0.1);
+                  c.lineTo(-3.5, 0.2);
+                  c.lineTo(-1.5, 0.6);
+                  c.closePath(); c.fill();
+                  // Beak gap line
+                  c.strokeStyle = '#3a2510';
+                  c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(-1.5, 0.25); c.lineTo(-3.4, 0.3); c.stroke();
+                  // Eye — beady dark with small white glint
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.arc(-0.4, -0.5, 0.42, 0, 6.28); c.fill();
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(-0.4, -0.5, 0.25, 0, 6.28); c.fill();
+                  c.restore();
+                  // Tail wedge (longer than songbird's, fanned)
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath();
+                  c.moveTo(3.5, -0.5);
+                  c.lineTo(6.5, -1.2);
+                  c.lineTo(6.8, 0);
+                  c.lineTo(6.5, 1.2);
+                  c.lineTo(3.5, 0.5);
+                  c.closePath(); c.fill();
+                  // Feet hooked over post
+                  c.strokeStyle = '#3a2510';
+                  c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(-0.8, 2.5); c.lineTo(-0.8, 3.6); c.stroke();
+                  c.beginPath(); c.moveTo( 0.6, 2.5); c.lineTo( 0.6, 3.6); c.stroke();
+                  c.restore();
+                  // "Caw" ripple ring every ~7 sec (shorter cadence than owl's hoot)
+                  var _cawPeriod = 7000;
+                  var _cawT = (Date.now() % _cawPeriod) / _cawPeriod;
+                  if (_cawT < 0.15) {
+                    var _cawProg = _cawT / 0.15;
+                    var _cawR = 3 + _cawProg * 14;
+                    var _cawA = (1 - _cawProg) * 0.40;
+                    c.strokeStyle = 'rgba(40,40,40,' + _cawA.toFixed(3) + ')';
+                    c.lineWidth = 0.7;
+                    c.beginPath();
+                    c.arc(_crPostX - 3.2, _crY - 1.8 + _crBob, _cawR, 0, 6.28);
+                    c.stroke();
+                  }
+                }
+              }
+
+              // ── Small vegetable garden patch (seasonal crops, real bee-companion biology) ──
+              // A 4-row raised-bed plot in the foreground — tomatoes/beans
+              // depend on pollination. Crops shift with season: bare brown
+              // soil + seedlings (spring) → leafy crops on stakes (summer) →
+              // dried stalks + last red tomatoes (fall) → snow-covered
+              // mounded rows + visible stakes (winter).
+              (function() {
+                var _vgX = W * 0.18, _vgY = H * 0.85;
+                var _vgW = 36, _vgH = 7;
+                // Raised-bed wooden frame
+                c.fillStyle = season === 3 ? '#5a3f25' : '#6b4a1f';
+                c.fillRect(_vgX - _vgW / 2, _vgY - 2, _vgW, 2);
+                c.fillRect(_vgX - _vgW / 2, _vgY + _vgH, _vgW, 2);
+                c.fillRect(_vgX - _vgW / 2 - 1, _vgY - 2, 1.5, _vgH + 4);
+                c.fillRect(_vgX + _vgW / 2 - 0.5, _vgY - 2, 1.5, _vgH + 4);
+                // Soil interior
+                var _vgSoil = season === 3 ? '#3a2d1f' : '#4a3525';
+                c.fillStyle = _vgSoil;
+                c.fillRect(_vgX - _vgW / 2, _vgY, _vgW, _vgH);
+                // Two raised soil rows (slight mounds)
+                c.fillStyle = season === 3 ? '#2d2418' : '#3a2918';
+                c.fillRect(_vgX - _vgW / 2, _vgY + 2, _vgW, 1);
+                c.fillRect(_vgX - _vgW / 2, _vgY + 5, _vgW, 1);
+                // Snow cap on the bed in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.fillRect(_vgX - _vgW / 2, _vgY - 0.5, _vgW, 1.5);
+                  // Snow drifts on the soil
+                  c.beginPath();
+                  c.moveTo(_vgX - _vgW / 2, _vgY + 1);
+                  for (var snw = 0; snw <= _vgW; snw += 4) {
+                    c.lineTo(_vgX - _vgW / 2 + snw, _vgY + 1 + Math.sin(snw * 0.4) * 0.6);
+                  }
+                  c.lineTo(_vgX + _vgW / 2, _vgY + 2);
+                  c.lineTo(_vgX - _vgW / 2, _vgY + 2);
+                  c.closePath(); c.fill();
+                }
+                // Stakes — visible all year (overwintered)
+                c.strokeStyle = season === 3 ? '#a8a29e' : '#8a6238';
+                c.lineWidth = 0.6;
+                var _vgStakes = [-12, -4, 4, 12];
+                _vgStakes.forEach(function(stX, sti) {
+                  var _vgStTopY = _vgY - 10;
+                  c.beginPath(); c.moveTo(_vgX + stX, _vgY + 2); c.lineTo(_vgX + stX, _vgStTopY); c.stroke();
+                  // Tomato cage horizontals (just in summer when in use)
+                  if (season === 1) {
+                    c.strokeStyle = '#8a8a8a';
+                    c.lineWidth = 0.35;
+                    c.beginPath(); c.moveTo(_vgX + stX - 3, _vgStTopY + 2); c.lineTo(_vgX + stX + 3, _vgStTopY + 2); c.stroke();
+                    c.beginPath(); c.moveTo(_vgX + stX - 3, _vgStTopY + 5); c.lineTo(_vgX + stX + 3, _vgStTopY + 5); c.stroke();
+                    c.strokeStyle = '#8a6238';
+                    c.lineWidth = 0.6;
+                  }
+                });
+                // Seasonal plants on each stake
+                if (season === 0) {
+                  // Spring — small green seedlings
+                  c.fillStyle = '#65a30d';
+                  _vgStakes.forEach(function(stX) {
+                    c.beginPath(); c.ellipse(_vgX + stX, _vgY - 1, 1.4, 1, 0, 0, 6.28); c.fill();
+                    c.beginPath(); c.ellipse(_vgX + stX - 1.3, _vgY - 0.5, 0.8, 0.5, -0.3, 0, 6.28); c.fill();
+                    c.beginPath(); c.ellipse(_vgX + stX + 1.3, _vgY - 0.5, 0.8, 0.5,  0.3, 0, 6.28); c.fill();
+                  });
+                } else if (season === 1) {
+                  // Summer — leafy plants climbing the stakes, with tomatoes
+                  c.fillStyle = '#15803d';
+                  _vgStakes.forEach(function(stX, sti) {
+                    // Vine of leaves
+                    for (var lf = 0; lf < 5; lf++) {
+                      var _vgLfY = _vgY - 1 - lf * 2;
+                      var _vgLfSide = (lf + sti) % 2 === 0 ? -1 : 1;
+                      c.beginPath();
+                      c.ellipse(_vgX + stX + _vgLfSide * 1.6, _vgLfY, 1.5, 0.9, _vgLfSide * 0.3, 0, 6.28);
+                      c.fill();
+                    }
+                    // Ripe tomatoes (2-3 small red orbs)
+                    if (sti % 2 === 0) {
+                      c.fillStyle = '#dc2626';
+                      c.beginPath(); c.arc(_vgX + stX + 0.8, _vgY - 4, 0.9, 0, 6.28); c.fill();
+                      c.beginPath(); c.arc(_vgX + stX - 0.5, _vgY - 7, 0.85, 0, 6.28); c.fill();
+                      c.fillStyle = 'rgba(255,255,255,0.4)';
+                      c.beginPath(); c.arc(_vgX + stX + 0.6, _vgY - 4.2, 0.25, 0, 6.28); c.fill();
+                      c.fillStyle = '#15803d';
+                    }
+                  });
+                } else if (season === 2) {
+                  // Fall — drying yellowing stalks + last red tomatoes
+                  c.fillStyle = '#a16207';
+                  _vgStakes.forEach(function(stX, sti) {
+                    for (var dr = 0; dr < 3; dr++) {
+                      var _dryY = _vgY - 1 - dr * 2.5;
+                      var _drySide = (dr + sti) % 2 === 0 ? -1 : 1;
+                      c.beginPath();
+                      c.ellipse(_vgX + stX + _drySide * 1.4, _dryY, 1.1, 0.65, _drySide * 0.3, 0, 6.28);
+                      c.fill();
+                    }
+                    // Last lingering tomato (only on 1 stake — most have been picked)
+                    if (sti === 1) {
+                      c.fillStyle = '#b91c1c';
+                      c.beginPath(); c.arc(_vgX + stX + 0.6, _vgY - 4.5, 0.8, 0, 6.28); c.fill();
+                      c.fillStyle = '#a16207';
+                    }
+                  });
+                }
+                // ── A bee visiting a tomato flower (summer only) — buzz-pollination cameo
+                if (season === 1) {
+                  var _vgBeeT = ((t2 * 0.06) % 100) / 100;
+                  if (_vgBeeT < 0.5) {
+                    var _vgBeeX = _vgX - 4 + Math.sin(_vgBeeT * 8) * 1.2;
+                    var _vgBeeY = _vgY - 5 + Math.cos(_vgBeeT * 6) * 0.8;
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.ellipse(_vgBeeX, _vgBeeY, 1.4, 0.9, 0, 0, 6.28); c.fill();
+                    c.fillStyle = '#1c1917';
+                    c.fillRect(_vgBeeX - 0.3, _vgBeeY - 0.8, 0.4, 1.6);
+                    c.fillStyle = 'rgba(220,240,255,0.5)';
+                    c.beginPath(); c.ellipse(_vgBeeX, _vgBeeY - 0.7, 1.0, 0.4, 0, 0, 6.28); c.fill();
+                  }
+                }
+              })();
+
+              // ── Compost pile beside the vegetable garden (decomposer biology) ──
+              // Real biology: microbial decomposition releases heat — a working
+              // compost pile can hold 130-160°F at its core, visible as steam
+              // rising on cool mornings. Tilts the bee-friendly homestead
+              // toward whole-system biology (bees + garden + decomposers).
+              (function() {
+                var _cpX = W * 0.10, _cpY = H * 0.87;
+                // Three-bin wooden frame (simplified — just the visible front bin)
+                c.fillStyle = season === 3 ? '#3a2510' : '#5a3a18';
+                c.fillRect(_cpX - 11, _cpY - 2, 22, 5);
+                // Vertical posts
+                c.fillRect(_cpX - 12, _cpY - 4, 1.5, 8);
+                c.fillRect(_cpX +  10.5, _cpY - 4, 1.5, 8);
+                c.fillRect(_cpX - 1, _cpY - 4, 1.2, 8);
+                // Slat gaps (visible openings between front planks)
+                c.fillStyle = season === 3 ? '#1a1208' : '#2a1808';
+                c.fillRect(_cpX - 10.5, _cpY - 0.5, 22, 0.6);
+                c.fillRect(_cpX - 10.5, _cpY + 1.5, 22, 0.6);
+                // Compost contents inside — heap shape (brown organic matter)
+                var _cpContents = season === 3 ? '#5a4225' : season === 2 ? '#7a5530' : '#8a6028';
+                c.fillStyle = _cpContents;
+                c.beginPath();
+                c.moveTo(_cpX - 10, _cpY - 1);
+                c.quadraticCurveTo(_cpX, _cpY - 6, _cpX + 10, _cpY - 1);
+                c.lineTo(_cpX + 10, _cpY + 3);
+                c.lineTo(_cpX - 10, _cpY + 3);
+                c.closePath(); c.fill();
+                // Texture flecks (visible decomposing bits)
+                c.fillStyle = season === 3 ? '#7a5a3a' : '#a87a48';
+                for (var cpf = 0; cpf < 18; cpf++) {
+                  var _cpfX = _cpX - 9 + (cpf * 31) % 18;
+                  var _cpfY = _cpY - 4 + (cpf * 19) % 6;
+                  c.beginPath(); c.arc(_cpfX, _cpfY, 0.5, 0, 6.28); c.fill();
+                }
+                // Bits of green (kitchen scraps) on top
+                if (season !== 3) {
+                  c.fillStyle = '#65a30d';
+                  c.beginPath(); c.ellipse(_cpX - 3, _cpY - 5, 1.2, 0.6, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_cpX + 4, _cpY - 4.5, 0.9, 0.5, -0.2, 0, 6.28); c.fill();
+                  // Tiny apple core / banana peel hint
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(_cpX + 2, _cpY - 5.2, 0.8, 0.3, 0.4, 0, 6.28); c.fill();
+                }
+                // Snow cap in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_cpX - 10, _cpY - 1);
+                  c.quadraticCurveTo(_cpX, _cpY - 6.5, _cpX + 10, _cpY - 1);
+                  c.quadraticCurveTo(_cpX, _cpY - 4.5, _cpX - 10, _cpY - 1);
+                  c.closePath(); c.fill();
+                }
+                // ── Microbial steam (rising on cool mornings) ──
+                // Real biology: a hot pile (sometimes 130-160°F core) gives off
+                // visible water vapor when air is colder than the pile. Stronger
+                // at dawn (largest temp differential), gone at midday.
+                var _cpDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                var _cpCool = season === 2 || season === 3 ? 1 : 0.5; // colder seasons = more steam
+                var _cpSteamStr = (_cpDawn + 0.15) * _cpCool;
+                if (_cpSteamStr > 0.1) {
+                  c.save();
+                  for (var cps = 0; cps < 4; cps++) {
+                    var _cpsPhase = ((t2 * 0.12 + cps * 18) % 80) / 80;
+                    var _cpsX = _cpX + Math.sin(t2 * 0.02 + cps) * 4 + (cps - 1.5) * 3;
+                    var _cpsY = _cpY - 6 - _cpsPhase * 20;
+                    var _cpsR = 2.5 + _cpsPhase * 3;
+                    var _cpsA = _cpSteamStr * Math.sin(_cpsPhase * Math.PI) * 0.45;
+                    if (_cpsA < 0.02) continue;
+                    c.fillStyle = 'rgba(240,245,250,' + _cpsA.toFixed(3) + ')';
+                    c.beginPath();
+                    c.ellipse(_cpsX, _cpsY, _cpsR, _cpsR * 0.85, 0, 0, 6.28);
+                    c.fill();
+                  }
+                  c.restore();
+                }
+              })();
+
+              // ── Grasshopper hopping across the meadow (summer cameo) ──
+              // Real biology: green grasshoppers are a major sound of a summer
+              // meadow. Slim long-legged silhouette, bouncing flight pattern,
+              // characteristic stridulation invisible but implied by the hop
+              // cadence. Periodic cameo every ~22 seconds in summer.
+              if (season === 1) {
+                var _ghPeriod = 22000;
+                var _ghPhase = ((Date.now() % _ghPeriod) / _ghPeriod);
+                if (_ghPhase > 0.20 && _ghPhase < 0.75) {
+                  var _ghProg = (_ghPhase - 0.20) / 0.55;
+                  // Movement: left to right across the meadow
+                  var _ghX = -8 + _ghProg * (W + 16);
+                  // Bounding hop — each hop arcs up and down
+                  var _ghHopFreq = 0.08;
+                  var _ghHopPhase = (_ghX * _ghHopFreq) % Math.PI;
+                  var _ghHopHeight = Math.abs(Math.sin(_ghHopPhase * 2.5)) * 6;
+                  var _ghY = H * 0.83 - _ghHopHeight;
+                  // Skip if overlapping major elements
+                  if (_ghX > hiveX - 15 && _ghX < hiveX + hiveW + 15) {
+                    // hidden by hive
+                  } else {
+                    // Shadow
+                    c.fillStyle = 'rgba(0,0,0,0.22)';
+                    c.beginPath(); c.ellipse(_ghX, H * 0.835, 2.5, 0.6, 0, 0, 6.28); c.fill();
+                    // Slim body — grass-green
+                    c.fillStyle = '#65a30d';
+                    c.beginPath(); c.ellipse(_ghX, _ghY, 2.6, 1.1, -0.08, 0, 6.28); c.fill();
+                    // Wing patch (folded)
+                    c.fillStyle = '#84cc16';
+                    c.beginPath(); c.ellipse(_ghX + 0.4, _ghY - 0.3, 1.7, 0.6, -0.05, 0, 6.28); c.fill();
+                    // Head — slightly larger oval
+                    c.fillStyle = '#4d7c0f';
+                    c.beginPath(); c.arc(_ghX - 2.6, _ghY - 0.2, 1.0, 0, 6.28); c.fill();
+                    // Long antennae
+                    c.strokeStyle = '#1c1917';
+                    c.lineWidth = 0.3;
+                    c.beginPath();
+                    c.moveTo(_ghX - 3.2, _ghY - 0.8);
+                    c.lineTo(_ghX - 5.5, _ghY - 2.5);
+                    c.stroke();
+                    c.beginPath();
+                    c.moveTo(_ghX - 3.0, _ghY - 0.5);
+                    c.lineTo(_ghX - 4.8, _ghY - 2.0);
+                    c.stroke();
+                    // Long folded back legs (signature grasshopper "Z" shape)
+                    c.strokeStyle = '#4d7c0f';
+                    c.lineWidth = 0.6;
+                    c.beginPath();
+                    c.moveTo(_ghX + 1.5, _ghY + 0.5);
+                    c.lineTo(_ghX + 3.5, _ghY - 1.5);
+                    c.lineTo(_ghX + 2.5, _ghY + 1.5);
+                    c.stroke();
+                    // Eye dot
+                    c.fillStyle = '#0a0a0a';
+                    c.beginPath(); c.arc(_ghX - 3.2, _ghY - 0.4, 0.35, 0, 6.28); c.fill();
+                  }
+                }
+              }
+
+              // ── Clothesline with laundry (wind-driven, spring/summer/fall) ──
+              // Strung between two posts in the meadow background — three items
+              // hang and SWAY with the same coherent wind wave that already
+              // animates grass, flowers, and the wind chime. Visible cue that
+              // ties yet another foreground element into the wind system.
+              if (season !== 3) {
+                var _clX1 = W * 0.50, _clY = H * 0.66;
+                var _clX2 = W * 0.66;
+                // Posts holding the line
+                c.fillStyle = '#5a3f25';
+                c.fillRect(_clX1 - 0.8, _clY, 1.6, 18);
+                c.fillRect(_clX2 - 0.8, _clY, 1.6, 18);
+                c.fillStyle = '#3a2510';
+                c.fillRect(_clX1 - 1.2, _clY, 2.4, 1);
+                c.fillRect(_clX2 - 1.2, _clY, 2.4, 1);
+                // The line itself — slight catenary sag, drawn as a curve
+                c.strokeStyle = 'rgba(60,45,30,0.7)';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_clX1, _clY + 1);
+                c.quadraticCurveTo((_clX1 + _clX2) / 2, _clY + 3, _clX2, _clY + 1);
+                c.stroke();
+                // Three items hanging on the line, each pinned with 2 clips
+                var _clItems = [
+                  { tFrac: 0.20, w: 7,  h: 8, col: '#fef3c7', shape: 'kerchief' },
+                  { tFrac: 0.50, w: 9,  h: 11, col: '#3b82f6', shape: 'shirt' },
+                  { tFrac: 0.78, w: 6,  h: 10, col: '#e7e5e4', shape: 'towel' }
+                ];
+                _clItems.forEach(function(it, ci) {
+                  var _clItX = _clX1 + (_clX2 - _clX1) * it.tFrac;
+                  var _clSagY = _clY + 1 + Math.sin(it.tFrac * 3.14) * 2.2;
+                  // Wind sway from the coherent wave — match grass/flowers
+                  var _clWind = Math.sin(t2 * 0.025 - _clItX * 0.015) * 1.8;
+                  // Item-specific jitter (lighter items wobble more)
+                  var _clJit = Math.sin(t2 * 0.04 + ci * 0.9) * 0.4;
+                  var _clShiftX = _clWind + _clJit;
+                  // Two clothespin clips at the top
+                  c.fillStyle = '#92400e';
+                  c.fillRect(_clItX - it.w / 2 - 0.5, _clSagY - 1, 1, 1.6);
+                  c.fillRect(_clItX + it.w / 2 - 0.5, _clSagY - 1, 1, 1.6);
+                  c.save();
+                  c.translate(_clItX, _clSagY);
+                  // Slight rotation in the wind (heavier items tilt less)
+                  var _clRot = (_clWind * 0.04) / (it.w / 6);
+                  c.rotate(_clRot);
+                  c.translate(_clShiftX, 0);
+                  if (it.shape === 'shirt') {
+                    // T-shirt silhouette
+                    c.fillStyle = it.col;
+                    // Sleeves
+                    c.fillRect(-it.w / 2, 0.5, 2, 4);
+                    c.fillRect( it.w / 2 - 2, 0.5, 2, 4);
+                    // Body
+                    c.fillRect(-it.w / 2 + 1.5, 0, it.w - 3, it.h);
+                    // Collar dip
+                    c.fillStyle = '#1e3a8a';
+                    c.beginPath();
+                    c.moveTo(-1.2, 0); c.lineTo(1.2, 0); c.lineTo(0, 1.2);
+                    c.closePath(); c.fill();
+                    // Highlight
+                    c.fillStyle = 'rgba(255,255,255,0.25)';
+                    c.fillRect(-it.w / 2 + 2, 1, 1, it.h - 2);
+                  } else if (it.shape === 'kerchief') {
+                    // Yellow handkerchief — square with hem stitching
+                    c.fillStyle = it.col;
+                    c.fillRect(-it.w / 2, 0.4, it.w, it.h);
+                    // Hem stitch
+                    c.strokeStyle = '#ca8a04';
+                    c.lineWidth = 0.3;
+                    c.strokeRect(-it.w / 2 + 0.4, 0.8, it.w - 0.8, it.h - 0.8);
+                    // Tiny printed dots
+                    c.fillStyle = '#ca8a04';
+                    c.beginPath(); c.arc(-1.5, 3, 0.3, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 1.5, 5, 0.3, 0, 6.28); c.fill();
+                  } else {
+                    // Towel — pale rectangle with horizontal stripes
+                    c.fillStyle = it.col;
+                    c.fillRect(-it.w / 2, 0.4, it.w, it.h);
+                    c.fillStyle = '#0284c7';
+                    c.fillRect(-it.w / 2, it.h * 0.3, it.w, 0.6);
+                    c.fillRect(-it.w / 2, it.h * 0.6, it.w, 0.6);
+                    // Frayed bottom edge
+                    c.strokeStyle = it.col;
+                    c.lineWidth = 0.4;
+                    for (var fb = 0; fb < it.w; fb += 0.8) {
+                      c.beginPath();
+                      c.moveTo(-it.w / 2 + fb, it.h + 0.4);
+                      c.lineTo(-it.w / 2 + fb, it.h + 1);
+                      c.stroke();
+                    }
+                  }
+                  c.restore();
+                });
+              }
+
+              // ── Wooden ladder leaning against the apple tree (year-round) ──
+              // Real beekeepers + orchardists keep a small ladder out for
+              // pruning + harvest. Leans against the apple-tree trunk on the
+              // left side. Made of two parallel rails + 5 rungs.
+              if (hiveX > 40) {
+                var _ldAtX = hiveX * 0.55;
+                var _ldX1 = _ldAtX - 12;
+                var _ldY1 = H * 0.86;  // ladder foot
+                var _ldX2 = _ldAtX - 4; // ladder top (against trunk)
+                var _ldY2 = H * 0.76 - 32; // ~2/3 up trunk
+                // Rail 1 (left side, viewer's perspective)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.lineWidth = 1.4;
+                c.beginPath(); c.moveTo(_ldX1, _ldY1); c.lineTo(_ldX2, _ldY2); c.stroke();
+                // Rail 2 (offset right ~3px to suggest depth)
+                c.beginPath(); c.moveTo(_ldX1 + 3, _ldY1); c.lineTo(_ldX2 + 3, _ldY2); c.stroke();
+                // 5 rungs
+                c.lineWidth = 1;
+                for (var ldr = 0; ldr < 5; ldr++) {
+                  var _ldRT = (ldr + 1) / 6; // 0.16..0.83 along the ladder
+                  var _ldRX1 = _ldX1 + (_ldX2 - _ldX1) * _ldRT;
+                  var _ldRY1 = _ldY1 + (_ldY2 - _ldY1) * _ldRT;
+                  var _ldRX2 = _ldX1 + 3 + (_ldX2 + 3 - _ldX1 - 3) * _ldRT;
+                  var _ldRY2 = _ldY1 + (_ldY2 - _ldY1) * _ldRT;
+                  c.beginPath(); c.moveTo(_ldRX1, _ldRY1); c.lineTo(_ldRX2, _ldRY2); c.stroke();
+                }
+                // Foot of ladder shadow on grass
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_ldX1 + 1.5, _ldY1 + 0.5, 4, 0.8, 0, 0, 6.28); c.fill();
+                // Snow accumulated on rungs in winter
+                if (season === 3) {
+                  c.strokeStyle = '#ffffff';
+                  c.lineWidth = 0.7;
+                  for (var lds = 0; lds < 5; lds++) {
+                    var _ldsT = (lds + 1) / 6;
+                    var _ldsX1 = _ldX1 + (_ldX2 - _ldX1) * _ldsT;
+                    var _ldsY1 = _ldY1 + (_ldY2 - _ldY1) * _ldsT - 0.6;
+                    var _ldsX2 = _ldX1 + 3 + (_ldX2 + 3 - _ldX1 - 3) * _ldsT;
+                    c.beginPath(); c.moveTo(_ldsX1, _ldsY1); c.lineTo(_ldsX2, _ldsY1); c.stroke();
+                  }
+                }
+              }
+
+              // ── Bird feeder hanging from a fence post (year-round, chickadee cameo) ──
+              // Small wooden hopper feeder with seed inside. A chickadee
+              // (or junco in winter) periodically flies in to grab a seed.
+              // Pairs with the existing songbird+owl+crow fence-post coverage.
+              (function() {
+                var _bdPostX = 20 + 7 * 70 + 1.25; // 8th post from left
+                if (_bdPostX > W - 20) return;
+                if (_bdPostX > hiveX - 18 && _bdPostX < hiveX + hiveW + 18) return;
+                var _bdHookY = fenceBaseY - 4;
+                var _bdY = _bdHookY + 6;
+                // Hook
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.5;
+                c.beginPath();
+                c.moveTo(_bdPostX, _bdHookY);
+                c.quadraticCurveTo(_bdPostX + 2, _bdHookY + 1, _bdPostX + 2, _bdHookY + 3);
+                c.stroke();
+                // Hanging chain (3 small links)
+                c.beginPath();
+                for (var bdl = 0; bdl < 3; bdl++) {
+                  var _bdlY = _bdHookY + 3 + bdl * 0.8;
+                  c.moveTo(_bdPostX + 1.7, _bdlY); c.lineTo(_bdPostX + 2.3, _bdlY + 0.5);
+                  c.moveTo(_bdPostX + 2.3, _bdlY + 0.4); c.lineTo(_bdPostX + 1.7, _bdlY + 0.9);
+                }
+                c.stroke();
+                // Roof — angled triangular wooden top
+                c.fillStyle = '#5a3a18';
+                c.beginPath();
+                c.moveTo(_bdPostX - 3, _bdY - 1);
+                c.lineTo(_bdPostX + 2, _bdY - 3);
+                c.lineTo(_bdPostX + 7, _bdY - 1);
+                c.lineTo(_bdPostX + 7, _bdY);
+                c.lineTo(_bdPostX - 3, _bdY);
+                c.closePath(); c.fill();
+                // Roof highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.beginPath();
+                c.moveTo(_bdPostX - 3, _bdY - 1);
+                c.lineTo(_bdPostX + 2, _bdY - 3);
+                c.lineTo(_bdPostX + 2, _bdY - 2.5);
+                c.lineTo(_bdPostX - 2.5, _bdY - 0.8);
+                c.closePath(); c.fill();
+                // Glass hopper (clear w/ seed silhouette inside)
+                c.fillStyle = 'rgba(220,240,255,0.35)';
+                c.fillRect(_bdPostX - 2.5, _bdY, 9, 5);
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.3;
+                c.strokeRect(_bdPostX - 2.5, _bdY, 9, 5);
+                // Seed inside (yellow/brown specks)
+                c.fillStyle = '#a16207';
+                for (var bds = 0; bds < 8; bds++) {
+                  var _bdsX = _bdPostX - 2 + (bds * 1.1) % 8;
+                  var _bdsY = _bdY + 1 + (bds * 0.7) % 3.5;
+                  c.beginPath(); c.arc(_bdsX, _bdsY, 0.35, 0, 6.28); c.fill();
+                }
+                // Perch tray at the bottom
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_bdPostX - 3.5, _bdY + 5, 11, 1.2);
+                c.fillRect(_bdPostX - 1, _bdY + 5.5, 4, 1.5);
+                // Seed scattered on the ground beneath
+                c.fillStyle = '#a16207';
+                for (var bdg = 0; bdg < 6; bdg++) {
+                  var _bdgX = _bdPostX - 4 + (bdg * 1.7) % 9;
+                  c.beginPath();
+                  c.arc(_bdgX, fenceBaseY + 4 + (bdg % 2) * 0.5, 0.3, 0, 6.28);
+                  c.fill();
+                }
+                // Chickadee/junco visiting periodically (~every 15s) — daytime only
+                if (_sunCycle < 0.95) {
+                  var _bdBirdT = ((t2 + 200) % 900) / 900;
+                  if (_bdBirdT > 0.45 && _bdBirdT < 0.70) {
+                    var _bdBirdProg = (_bdBirdT - 0.45) / 0.25;
+                    var _bdBirdX = _bdPostX + 3 + Math.sin(_bdBirdProg * Math.PI) * 2;
+                    var _bdBirdY = _bdY + 4 - Math.sin(_bdBirdProg * Math.PI) * 1.5;
+                    // Body — chickadee black+white in non-winter, junco gray in winter
+                    var _bdBird = season === 3 ? '#57534e' : '#1c1917';
+                    c.fillStyle = _bdBird;
+                    c.beginPath(); c.ellipse(_bdBirdX, _bdBirdY, 1.8, 1.3, 0, 0, 6.28); c.fill();
+                    // White breast
+                    c.fillStyle = season === 3 ? '#d6d3d1' : '#fafaf9';
+                    c.beginPath(); c.ellipse(_bdBirdX + 0.6, _bdBirdY + 0.5, 1, 0.8, 0, 0, 6.28); c.fill();
+                    // Head + black cap (chickadee signature)
+                    c.fillStyle = _bdBird;
+                    c.beginPath(); c.arc(_bdBirdX - 1.3, _bdBirdY - 0.4, 0.9, 0, 6.28); c.fill();
+                    // Eye dot
+                    c.fillStyle = '#fafaf9';
+                    c.beginPath(); c.arc(_bdBirdX - 1.5, _bdBirdY - 0.6, 0.2, 0, 6.28); c.fill();
+                    // Tiny beak
+                    c.fillStyle = '#1c1917';
+                    c.beginPath();
+                    c.moveTo(_bdBirdX - 2.1, _bdBirdY - 0.3);
+                    c.lineTo(_bdBirdX - 2.7, _bdBirdY - 0.2);
+                    c.lineTo(_bdBirdX - 2.1, _bdBirdY);
+                    c.closePath(); c.fill();
+                  }
+                }
+              })();
+
+              // ── Wooden trellis with morning glory vines (year-round structure, seasonal vines) ──
+              // A traditional pyramid trellis (3 angled stakes meeting at a top
+              // collar) with morning glory vines climbing in spring + summer,
+              // dried tangles in fall, bare structure in winter. Morning glories
+              // open at dawn and close by midafternoon — real biology.
+              (function() {
+                var _trX = W * 0.13, _trY = H * 0.85;
+                var _trTopY = _trY - 18;
+                // Three stakes forming an A-frame teepee silhouette
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.lineWidth = 1.2;
+                c.beginPath(); c.moveTo(_trX - 5, _trY); c.lineTo(_trX,     _trTopY); c.stroke();
+                c.beginPath(); c.moveTo(_trX + 5, _trY); c.lineTo(_trX,     _trTopY); c.stroke();
+                c.beginPath(); c.moveTo(_trX + 2, _trY); c.lineTo(_trX,     _trTopY); c.stroke();
+                // Top collar where stakes meet
+                c.fillStyle = '#3a2510';
+                c.beginPath(); c.arc(_trX, _trTopY, 1, 0, 6.28); c.fill();
+                // Horizontal twine wraps (3 levels)
+                c.strokeStyle = season === 3 ? '#a8a29e' : '#d6d3d1';
+                c.lineWidth = 0.3;
+                [0.30, 0.55, 0.80].forEach(function(_trLT) {
+                  var _trLY = _trTopY + (_trY - _trTopY) * _trLT;
+                  var _trLeftX  = _trX - 5 * _trLT;
+                  var _trRightX = _trX + 5 * _trLT;
+                  c.beginPath(); c.moveTo(_trLeftX, _trLY); c.lineTo(_trRightX, _trLY); c.stroke();
+                });
+                // Morning glory vines (spring + summer in lush green; fall in brown tangles)
+                if (season !== 3) {
+                  var _trVineCol = season === 2 ? '#7a5530' : '#16a34a';
+                  c.strokeStyle = _trVineCol;
+                  c.lineWidth = 0.6;
+                  for (var trv = 0; trv < 3; trv++) {
+                    // Each vine spirals up one stake
+                    var _trvStakeSide = trv === 0 ? -1 : trv === 1 ? 1 : 0.4;
+                    var _trvFreq = 4 + trv * 0.3;
+                    c.beginPath();
+                    for (var trvP = 0; trvP <= 18; trvP += 0.5) {
+                      var _trvT = trvP / 18; // 0..1
+                      var _trvX = _trX + _trvStakeSide * 5 * (1 - _trvT) + Math.sin(_trvT * _trvFreq * Math.PI) * 1.2;
+                      var _trvY = _trY - trvP;
+                      if (trvP === 0) c.moveTo(_trvX, _trvY);
+                      else c.lineTo(_trvX, _trvY);
+                    }
+                    c.stroke();
+                  }
+                  // Heart-shaped leaves along the vines (spring + summer only)
+                  if (season !== 2) {
+                    var _trLeafCol = '#22c55e';
+                    c.fillStyle = _trLeafCol;
+                    var _trLeaves = [
+                      { side: -1, t: 0.25 }, { side: -1, t: 0.55 }, { side: -1, t: 0.80 },
+                      { side:  1, t: 0.30 }, { side:  1, t: 0.60 }, { side:  1, t: 0.85 },
+                      { side: 0.4, t: 0.40 }, { side: 0.4, t: 0.70 }
+                    ];
+                    _trLeaves.forEach(function(lf) {
+                      var _lfPT = lf.t * 18;
+                      var _lfX = _trX + lf.side * 5 * (1 - lf.t) + Math.sin(lf.t * 4 * Math.PI) * 1.2;
+                      var _lfY = _trY - _lfPT;
+                      // Subtle wind sway
+                      var _lfSway = Math.sin(t2 * 0.025 - _lfX * 0.015) * 0.7;
+                      c.beginPath();
+                      c.ellipse(_lfX + _lfSway + lf.side * 1.5, _lfY, 1.4, 1.0, lf.side * 0.4, 0, 6.28);
+                      c.fill();
+                    });
+                  }
+                  // Morning glory flowers — open at dawn/morning, closed by afternoon
+                  // (real biology: morning glory blossoms open at sunrise, close by ~noon)
+                  if (season === 0 || season === 1) {
+                    var _mgOpen = _sunCycle < 0.4 ? Math.max(0, 1 - _sunCycle / 0.4) :
+                                  _sunCycle > 1.8 ? Math.max(0, (_sunCycle - 1.8) / 0.2) : 0;
+                    if (_mgOpen > 0.15) {
+                      var _mgFlowers = [
+                        { side: -1,  t: 0.40, hue: '#8b5cf6' }, // violet
+                        { side:  1,  t: 0.55, hue: '#6366f1' }, // indigo
+                        { side:  0,  t: 0.85, hue: '#a78bfa' }  // pale violet
+                      ];
+                      _mgFlowers.forEach(function(mf) {
+                        var _mfPT = mf.t * 18;
+                        var _mfX = _trX + mf.side * 5 * (1 - mf.t) + Math.sin(mf.t * 4 * Math.PI) * 1.2;
+                        var _mfY = _trY - _mfPT;
+                        var _mfSway = Math.sin(t2 * 0.025 - _mfX * 0.015) * 0.7;
+                        // Trumpet outer
+                        c.fillStyle = mf.hue;
+                        c.globalAlpha = _mgOpen;
+                        c.beginPath();
+                        c.ellipse(_mfX + _mfSway, _mfY, 2.5, 2.0, 0, 0, 6.28);
+                        c.fill();
+                        // White center
+                        c.fillStyle = '#fafaf9';
+                        c.beginPath();
+                        c.arc(_mfX + _mfSway, _mfY, 0.6, 0, 6.28);
+                        c.fill();
+                        // Yellow stigma dot
+                        c.fillStyle = '#facc15';
+                        c.beginPath();
+                        c.arc(_mfX + _mfSway, _mfY, 0.25, 0, 6.28);
+                        c.fill();
+                        c.globalAlpha = 1;
+                      });
+                    }
+                  }
+                }
+                // Snow drift on the bottom of the trellis in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_trX - 7, _trY + 0.5);
+                  c.quadraticCurveTo(_trX, _trY - 2, _trX + 7, _trY + 0.5);
+                  c.lineTo(_trX + 7, _trY + 1.5);
+                  c.lineTo(_trX - 7, _trY + 1.5);
+                  c.closePath(); c.fill();
+                }
+              })();
+
+              // ── Wooden crate of HONEY jars (late summer + fall — harvest aftermath) ──
+              // Sits to the left of the honey extractor. Appears from day 22
+              // of summer (peak harvest week) through fall. 6 jars in a 3x2
+              // grid inside a slatted wooden crate; jars have amber gradient
+              // contents and small white "HONEY" labels.
+              if ((season === 1 && (day % 30) >= 22) || season === 2) {
+                var _hcX = W * 0.74, _hcY = H * 0.86;
+                var _hcW = 12, _hcH = 7;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(_hcX, _hcY + 4, _hcW * 0.7, 1.2, 0, 0, 6.28); c.fill();
+                // Crate body — wood
+                c.fillStyle = '#7a5230';
+                c.fillRect(_hcX - _hcW / 2, _hcY - _hcH, _hcW, _hcH);
+                // Slat gaps (3 vertical dark lines)
+                c.fillStyle = '#3a2510';
+                for (var hcs = 0; hcs < 3; hcs++) {
+                  c.fillRect(_hcX - _hcW / 2 + 3 + hcs * 3, _hcY - _hcH, 0.6, _hcH);
+                }
+                // Top rim
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_hcX - _hcW / 2 - 0.5, _hcY - _hcH - 0.5, _hcW + 1, 1.2);
+                // Jars — 3 visible at the front (the front row of a 3x2 grid)
+                for (var hcj = 0; hcj < 3; hcj++) {
+                  var _hcjX = _hcX - 4 + hcj * 4;
+                  var _hcjY = _hcY - _hcH - 4;
+                  // Glass jar with amber honey gradient
+                  var _hcjG = c.createLinearGradient(_hcjX - 1.5, _hcjY, _hcjX + 1.5, _hcjY);
+                  _hcjG.addColorStop(0, 'rgba(254,243,199,0.9)');
+                  _hcjG.addColorStop(0.5, 'rgba(217,119,6,0.92)');
+                  _hcjG.addColorStop(1, 'rgba(154, 76, 5, 0.85)');
+                  c.fillStyle = _hcjG;
+                  c.fillRect(_hcjX - 1.5, _hcjY, 3, 4);
+                  // Brass lid
+                  c.fillStyle = '#a16207';
+                  c.fillRect(_hcjX - 1.6, _hcjY - 0.8, 3.2, 1);
+                  c.fillStyle = '#5a3a08';
+                  c.fillRect(_hcjX - 1.6, _hcjY - 0.5, 3.2, 0.3);
+                  // White label band
+                  c.fillStyle = 'rgba(255,255,255,0.9)';
+                  c.fillRect(_hcjX - 1.3, _hcjY + 1, 2.6, 1.4);
+                  c.fillStyle = '#3a2510';
+                  c.font = 'bold 1.4px sans-serif';
+                  c.textAlign = 'center';
+                  c.fillText('HONEY', _hcjX, _hcjY + 2);
+                  c.textAlign = 'start';
+                  // Glass highlight strip
+                  c.fillStyle = 'rgba(255,255,255,0.4)';
+                  c.fillRect(_hcjX - 1.2, _hcjY + 0.3, 0.4, 3);
+                }
+                // Tiny chalk price tag dangling from one jar
+                if (Math.sin(t2 * 0.018) > 0) {
+                  c.fillStyle = '#fafaf9';
+                  c.fillRect(_hcX - 6, _hcY - _hcH - 6, 3, 1.6);
+                  c.fillStyle = '#3a2510';
+                  c.font = 'bold 1.2px sans-serif';
+                  c.textAlign = 'center';
+                  c.fillText('$12', _hcX - 4.5, _hcY - _hcH - 4.8);
+                  c.textAlign = 'start';
+                  // String connecting tag to jar
+                  c.strokeStyle = 'rgba(60,40,20,0.6)';
+                  c.lineWidth = 0.3;
+                  c.beginPath();
+                  c.moveTo(_hcX - 3, _hcY - _hcH - 5.2);
+                  c.lineTo(_hcX - 4, _hcY - _hcH - 4.4);
+                  c.stroke();
+                }
+              }
+
+              // ── Honey-extractor barrel near the keeper home (beekeeping equipment) ──
+              // Real beekeeping: an extractor is a metal drum that spins frames
+              // to fling honey out by centrifugal force. Hobbyist extractors
+              // are ~24-30 inches tall, stainless steel with a hand crank on
+              // top. Visible spring/summer/fall (brought indoors in winter).
+              if (season !== 3) {
+                var _exX = W * 0.78, _exY = H * 0.85;
+                // Shadow base
+                c.fillStyle = 'rgba(0,0,0,0.28)';
+                c.beginPath(); c.ellipse(_exX, _exY + 3.5, 7, 1.2, 0, 0, 6.28); c.fill();
+                // Barrel body — stainless steel cylinder
+                var _exBodyG = c.createLinearGradient(_exX - 5, _exY, _exX + 5, _exY);
+                _exBodyG.addColorStop(0, '#78716c');
+                _exBodyG.addColorStop(0.4, '#d6d3d1');
+                _exBodyG.addColorStop(0.7, '#a8a29e');
+                _exBodyG.addColorStop(1, '#57534e');
+                c.fillStyle = _exBodyG;
+                c.beginPath(); c.ellipse(_exX, _exY + 3, 5, 1.2, 0, 0, 6.28); c.fill();
+                c.fillRect(_exX - 5, _exY - 8, 10, 11);
+                c.fillStyle = _exBodyG;
+                c.beginPath(); c.ellipse(_exX, _exY - 8, 5, 1.2, 0, 0, 6.28); c.fill();
+                // Ribbed bands (3 horizontal lines around the barrel — structural rings)
+                c.strokeStyle = 'rgba(40,30,20,0.55)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_exX - 5, _exY - 5); c.lineTo(_exX + 5, _exY - 5); c.stroke();
+                c.beginPath(); c.moveTo(_exX - 5, _exY - 2); c.lineTo(_exX + 5, _exY - 2); c.stroke();
+                c.beginPath(); c.moveTo(_exX - 5, _exY + 1); c.lineTo(_exX + 5, _exY + 1); c.stroke();
+                // Spigot at the bottom (where honey flows out)
+                c.fillStyle = '#a8732a';
+                c.fillRect(_exX - 0.8, _exY + 3.5, 1.6, 2);
+                c.fillStyle = '#5a3a08';
+                c.fillRect(_exX - 1.2, _exY + 5, 2.4, 0.8);
+                // Top lid with crank gear housing
+                c.fillStyle = '#57534e';
+                c.fillRect(_exX - 5, _exY - 9, 10, 1.5);
+                // Crank handle — vertical post + horizontal L-bar
+                c.fillStyle = '#3a2510';
+                c.fillRect(_exX - 0.5, _exY - 14, 1, 5);
+                c.fillStyle = '#1c1917';
+                c.fillRect(_exX - 0.5, _exY - 14, 4, 0.8);
+                // Crank grip (small dark dot)
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.arc(_exX + 3.5, _exY - 13.6, 0.6, 0, 6.28); c.fill();
+                // Slow rotation animation on the crank when summer (harvest season)
+                if (season === 1) {
+                  var _exRotAng = Math.sin(t2 * 0.015) * 0.15;
+                  c.save();
+                  c.translate(_exX, _exY - 9.5);
+                  c.rotate(_exRotAng);
+                  c.fillStyle = '#3a2510';
+                  c.fillRect(-0.5, -4.5, 1, 5);
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-0.5, -4.5, 4, 0.8);
+                  c.fillStyle = '#5a3a18';
+                  c.beginPath(); c.arc(3.5, -4.1, 0.6, 0, 6.28); c.fill();
+                  c.restore();
+                }
+                // Tiny honey puddle beneath the spigot (summer/fall, harvest active)
+                if (season === 1 || season === 2) {
+                  c.fillStyle = 'rgba(217,119,6,0.85)';
+                  c.beginPath(); c.ellipse(_exX, _exY + 5.8, 2.2, 0.6, 0, 0, 6.28); c.fill();
+                  c.fillStyle = 'rgba(254,243,199,0.6)';
+                  c.beginPath(); c.ellipse(_exX - 0.5, _exY + 5.7, 0.7, 0.2, 0, 0, 6.28); c.fill();
+                }
+                // Small "HONEY" label on the side
+                c.font = 'bold 2.4px sans-serif';
+                c.fillStyle = '#3a2510';
+                c.textAlign = 'center';
+                c.fillText('HONEY', _exX, _exY - 3.5);
+                c.textAlign = 'start';
+              }
+
+              // ── Dew-laden spider webs strung between fence posts at dawn ──
+              // Two small webs in the gaps between fence posts, only visible
+              // during the dawn window. Each shows a small grid pattern of
+              // dew droplets reflecting first light. Complements the corner
+              // web already drawn at upper-left.
+              (function() {
+                var _dwDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.18);
+                if (_dwDawn < 0.08) return;
+                if (season === 3) return; // bare snow webs in winter, skip
+                var _dwWebs = [
+                  { x: 90 + 35 + 1.25, y: fenceBaseY - 1 },
+                  { x: 20 + 4 * 70 + 35, y: fenceBaseY - 1 }
+                ];
+                _dwWebs.forEach(function(web, wi) {
+                  var _dwL = 25; // span
+                  var _dwH = 6;  // hanging depth
+                  // Skip if web spans hive area
+                  if (web.x > hiveX - 25 && web.x < hiveX + hiveW + 25) return;
+                  c.save();
+                  c.strokeStyle = 'rgba(220,225,240,' + (0.55 * _dwDawn).toFixed(3) + ')';
+                  c.lineWidth = 0.25;
+                  // Upper anchor line
+                  c.beginPath(); c.moveTo(web.x - _dwL / 2, web.y); c.lineTo(web.x + _dwL / 2, web.y); c.stroke();
+                  // Vertical strands (4 of them)
+                  for (var dws = 0; dws < 4; dws++) {
+                    var _dwsX = web.x - _dwL / 2 + (_dwL / 3) * dws;
+                    c.beginPath(); c.moveTo(_dwsX, web.y); c.lineTo(_dwsX + 1, web.y + _dwH); c.stroke();
+                  }
+                  // Hanging anchor strands at the bottom
+                  for (var dwa = 0; dwa < 4; dwa++) {
+                    var _dwaX = web.x - _dwL / 2 + (_dwL / 3) * dwa + 1;
+                    c.beginPath();
+                    c.moveTo(_dwaX, web.y + _dwH);
+                    c.lineTo(_dwaX + 1, web.y + _dwH + 2);
+                    c.stroke();
+                  }
+                  // Horizontal cross-strands (3 levels)
+                  for (var dwh = 1; dwh < 4; dwh++) {
+                    var _dwhY = web.y + (_dwH / 4) * dwh;
+                    c.beginPath();
+                    c.moveTo(web.x - _dwL / 2 + dwh, _dwhY);
+                    c.lineTo(web.x + _dwL / 2 - dwh * 0.5, _dwhY);
+                    c.stroke();
+                  }
+                  // Dew drops at junctions
+                  for (var dwd = 0; dwd < 8; dwd++) {
+                    var _dwdX = web.x - _dwL / 2 + 2 + dwd * 2.8 + (dwd % 2);
+                    var _dwdY = web.y + 1.5 + (dwd % 3) * 1.4;
+                    var _dwdR = 0.45 + (dwd % 3) * 0.1;
+                    c.fillStyle = 'rgba(220,240,255,' + (0.75 * _dwDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwdX, _dwdY, _dwdR, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(255,255,255,' + (0.95 * _dwDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwdX - 0.15, _dwdY - 0.2, _dwdR * 0.3, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                });
+              })();
+
+              // ── Snowman in the winter meadow ──
+              // A small classic three-ball snowman with carrot nose, twig
+              // arms, coal eyes, and a red scarf that flutters with the
+              // same coherent wind wave as the rest of the meadow.
+              if (season === 3) {
+                var _smX = W * 0.26, _smY = H * 0.86;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_smX, _smY + 3, 7, 1, 0, 0, 6.28); c.fill();
+                // Bottom snowball (largest)
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_smX, _smY, 5.5, 0, 6.28); c.fill();
+                // Slight cool shadow on right side
+                c.fillStyle = 'rgba(190,210,225,0.55)';
+                c.beginPath(); c.arc(_smX + 1.5, _smY + 0.5, 5, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.5, _smY - 0.5, 5, 0, 6.28); c.fill();
+                // Three coal buttons on the bottom
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_smX, _smY - 2, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX, _smY, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX, _smY + 2, 0.5, 0, 6.28); c.fill();
+                // Middle snowball
+                var _smMy = _smY - 7;
+                c.fillStyle = 'rgba(190,210,225,0.55)';
+                c.beginPath(); c.arc(_smX + 1, _smMy + 0.4, 4, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.4, _smMy - 0.4, 4, 0, 6.28); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_smX, _smMy, 4, 0, 6.28); c.fill();
+                // Twig arms — slightly raked back by the wind
+                var _smArmWind = Math.sin(t2 * 0.025 - _smX * 0.015) * 0.5;
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.6;
+                c.beginPath();
+                c.moveTo(_smX - 3, _smMy);
+                c.lineTo(_smX - 6.5 + _smArmWind, _smMy - 2.5);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX - 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX - 7.5 + _smArmWind, _smMy - 4);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX - 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX - 6 + _smArmWind, _smMy - 4);
+                c.stroke();
+                // Right arm
+                c.beginPath();
+                c.moveTo(_smX + 3, _smMy);
+                c.lineTo(_smX + 6.5 + _smArmWind, _smMy - 2.5);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX + 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX + 7.5 + _smArmWind, _smMy - 4);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX + 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX + 6 + _smArmWind, _smMy - 4);
+                c.stroke();
+                // Red scarf — flutters with wind
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.ellipse(_smX, _smMy - 3.5, 4.2, 1, 0, 0, 6.28);
+                c.fill();
+                // Scarf stripes
+                c.strokeStyle = '#fafaf9';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_smX - 3.5, _smMy - 3.5); c.lineTo(_smX + 3.5, _smMy - 3.7); c.stroke();
+                // Trailing scarf tail fluttering in the wind
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(_smX + 3, _smMy - 3.5);
+                c.lineTo(_smX + 7 + _smArmWind * 3, _smMy - 2 + _smArmWind);
+                c.lineTo(_smX + 6.5 + _smArmWind * 3, _smMy - 0.5 + _smArmWind);
+                c.lineTo(_smX + 3, _smMy - 3);
+                c.closePath(); c.fill();
+                // Top snowball (head)
+                var _smHy = _smMy - 6;
+                c.fillStyle = 'rgba(190,210,225,0.55)';
+                c.beginPath(); c.arc(_smX + 0.7, _smHy + 0.4, 2.8, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.4, _smHy - 0.4, 2.8, 0, 6.28); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_smX, _smHy, 2.8, 0, 6.28); c.fill();
+                // Coal eyes
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_smX - 0.9, _smHy - 0.5, 0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX + 0.9, _smHy - 0.5, 0.4, 0, 6.28); c.fill();
+                // Eye glints
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.8, _smHy - 0.6, 0.15, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX + 1.0, _smHy - 0.6, 0.15, 0, 6.28); c.fill();
+                // Carrot nose
+                c.fillStyle = '#f97316';
+                c.beginPath();
+                c.moveTo(_smX, _smHy);
+                c.lineTo(_smX + 2.5, _smHy);
+                c.lineTo(_smX + 0.3, _smHy + 0.7);
+                c.closePath(); c.fill();
+                c.strokeStyle = '#c2410c';
+                c.lineWidth = 0.2;
+                c.beginPath(); c.moveTo(_smX + 1, _smHy + 0.2); c.lineTo(_smX + 1.5, _smHy + 0.3); c.stroke();
+                // Smile (5 coal dots in an arc)
+                c.fillStyle = '#1c1917';
+                for (var smm = 0; smm < 5; smm++) {
+                  var _smmA = -0.8 + smm * 0.4;
+                  c.beginPath();
+                  c.arc(_smX + Math.sin(_smmA) * 1.6, _smHy + 1 + Math.cos(_smmA) * 0.6, 0.18, 0, 6.28);
+                  c.fill();
+                }
+                // Top hat
+                c.fillStyle = '#1c1917';
+                c.fillRect(_smX - 2.5, _smHy - 3, 5, 0.7); // brim
+                c.fillRect(_smX - 1.8, _smHy - 5.5, 3.6, 2.5); // crown
+                // Hat band (red)
+                c.fillStyle = '#dc2626';
+                c.fillRect(_smX - 1.8, _smHy - 3.5, 3.6, 0.6);
+                // Snowflakes drifting around the snowman
+                c.fillStyle = 'rgba(255,255,255,0.7)';
+                for (var sf = 0; sf < 4; sf++) {
+                  var _sfX = _smX - 8 + ((sf * 19 + t2 * 0.4) % 16);
+                  var _sfY = _smHy - 8 + ((sf * 11 + t2 * 0.5) % 14);
+                  c.beginPath(); c.arc(_sfX, _sfY, 0.6, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Fairy mushroom ring in fall meadow (folklore + real biology) ──
+              // Real biology: "fairy rings" form when a single mushroom mycelium
+              // grows outward in a circle through soil, fruiting bodies emerging
+              // at the radius edge. Common in late autumn. 8 small russet
+              // mushrooms in a ring near the back fence.
+              if (season === 2 && (day % 30) >= 12) {
+                var _frCx = W * 0.06, _frCy = H * 0.84;
+                var _frR = 4.5;
+                for (var fri = 0; fri < 8; fri++) {
+                  var _frA = (fri / 8) * 6.28;
+                  var _frX = _frCx + Math.cos(_frA) * _frR;
+                  var _frY = _frCy + Math.sin(_frA) * _frR * 0.55;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.18)';
+                  c.beginPath(); c.ellipse(_frX, _frY + 1, 1.3, 0.4, 0, 0, 6.28); c.fill();
+                  // Stem (cream)
+                  c.fillStyle = '#fde68a';
+                  c.fillRect(_frX - 0.4, _frY - 1.8, 0.8, 1.8);
+                  // Cap (russet) — half ellipse dome
+                  c.fillStyle = fri % 2 === 0 ? '#a16207' : '#92400e';
+                  c.beginPath();
+                  c.ellipse(_frX, _frY - 1.6, 1.4, 0.9, 0, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Cap highlight
+                  c.fillStyle = 'rgba(254,243,199,0.45)';
+                  c.beginPath();
+                  c.ellipse(_frX - 0.4, _frY - 2.0, 0.7, 0.3, -0.2, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Tiny white speckles on cap
+                  c.fillStyle = 'rgba(255,250,235,0.9)';
+                  c.beginPath(); c.arc(_frX + 0.4, _frY - 1.8, 0.15, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_frX - 0.2, _frY - 1.5, 0.1, 0, 6.28); c.fill();
+                }
+                // Faint mycelium glow ring on the ground inside the ring (folklore touch)
+                c.strokeStyle = 'rgba(254,215,170,0.18)';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.ellipse(_frCx, _frCy, _frR, _frR * 0.55, 0, 0, 6.28); c.stroke();
+              }
+
+              // ── Small wooden picnic table beside the Adirondack chair w/ honey jar ──
+              // A folding side table where the keeper can set tea + a HONEY
+              // jar to taste-test the season's batch. Year-round but stripped
+              // in winter.
+              (function() {
+                var _ptX = W * 0.51, _ptY = H * 0.88;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_ptX, _ptY + 1.8, 5, 0.7, 0, 0, 6.28); c.fill();
+                // Crossed leg base
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.lineWidth = 0.7;
+                c.beginPath();
+                c.moveTo(_ptX - 3, _ptY + 1.5);
+                c.lineTo(_ptX + 2, _ptY - 4);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_ptX + 3, _ptY + 1.5);
+                c.lineTo(_ptX - 2, _ptY - 4);
+                c.stroke();
+                // Round wooden tabletop
+                c.fillStyle = season === 3 ? '#7a5230' : '#a07248';
+                c.beginPath(); c.ellipse(_ptX, _ptY - 4, 4, 1.2, 0, 0, 6.28); c.fill();
+                // Top highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.beginPath(); c.ellipse(_ptX, _ptY - 4.3, 4, 0.4, 0, 0, 6.28); c.fill();
+                // Tabletop edge shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_ptX, _ptY - 3.6, 4, 0.3, 0, 0, 6.28); c.fill();
+                // Honey jar on table (always there)
+                var _ptJX = _ptX - 0.5, _ptJY = _ptY - 5.5;
+                var _ptJG = c.createLinearGradient(_ptJX - 0.8, _ptJY, _ptJX + 0.8, _ptJY);
+                _ptJG.addColorStop(0, 'rgba(254,243,199,0.92)');
+                _ptJG.addColorStop(0.5, 'rgba(217,119,6,0.92)');
+                _ptJG.addColorStop(1, 'rgba(154,76,5,0.85)');
+                c.fillStyle = _ptJG;
+                c.fillRect(_ptJX - 0.8, _ptJY - 1.5, 1.6, 2.5);
+                // Brass lid
+                c.fillStyle = '#a16207';
+                c.fillRect(_ptJX - 0.9, _ptJY - 1.9, 1.8, 0.5);
+                // Tiny "HONEY" label
+                c.fillStyle = 'rgba(255,255,255,0.9)';
+                c.fillRect(_ptJX - 0.7, _ptJY - 0.5, 1.4, 0.6);
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 0.8px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('HONEY', _ptJX, _ptJY - 0.05);
+                c.textAlign = 'start';
+                // A small spoon resting on the tabletop (spring/summer/fall)
+                if (season !== 3) {
+                  c.strokeStyle = '#a8a29e';
+                  c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(_ptX + 1.5, _ptY - 4.2); c.lineTo(_ptX + 3, _ptY - 4); c.stroke();
+                  c.fillStyle = '#a8a29e';
+                  c.beginPath(); c.ellipse(_ptX + 3.2, _ptY - 4, 0.5, 0.3, 0.3, 0, 6.28); c.fill();
+                }
+              })();
+
+              // ── Small pumpkin patch beside the vegetable garden (fall only) ──
+              // 4 pumpkins clustered together in varying sizes — homestead
+              // staple right before Halloween. Real bee biology: pumpkin
+              // blossoms are heavily pollinated by squash bees and bumblebees
+              // earlier in the season; what we see now is the ripened fruit.
+              if (season === 2) {
+                var _ppX = W * 0.13, _ppY = H * 0.88;
+                var _pumpkins = [
+                  { dx:  0, dy:  0, r: 4.5 },
+                  { dx:  7, dy:  1, r: 3.5 },
+                  { dx: -5, dy:  2, r: 3.0 },
+                  { dx:  3, dy: -2, r: 2.4 }
+                ];
+                _pumpkins.forEach(function(pk, pki) {
+                  var _pkx = _ppX + pk.dx;
+                  var _pky = _ppY + pk.dy;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.25)';
+                  c.beginPath(); c.ellipse(_pkx, _pky + pk.r * 0.7, pk.r * 1.1, pk.r * 0.25, 0, 0, 6.28); c.fill();
+                  // Body — round with vertical rib gradient
+                  var _pkG = c.createRadialGradient(_pkx - pk.r * 0.3, _pky - pk.r * 0.3, 0.5, _pkx, _pky, pk.r);
+                  _pkG.addColorStop(0, '#fb923c');
+                  _pkG.addColorStop(0.7, '#ea580c');
+                  _pkG.addColorStop(1, '#c2410c');
+                  c.fillStyle = _pkG;
+                  c.beginPath(); c.ellipse(_pkx, _pky, pk.r, pk.r * 0.85, 0, 0, 6.28); c.fill();
+                  // Vertical rib lines (3 darker arcs)
+                  c.strokeStyle = 'rgba(120,40,15,0.40)';
+                  c.lineWidth = 0.4;
+                  for (var pkr = -1; pkr <= 1; pkr++) {
+                    var _pkrX = _pkx + pkr * pk.r * 0.4;
+                    c.beginPath();
+                    c.moveTo(_pkrX, _pky - pk.r * 0.7);
+                    c.quadraticCurveTo(_pkrX + pkr * pk.r * 0.15, _pky, _pkrX, _pky + pk.r * 0.7);
+                    c.stroke();
+                  }
+                  // Brown stem
+                  c.fillStyle = '#4a3014';
+                  c.fillRect(_pkx - 0.4, _pky - pk.r - 1.2, 0.8, 1.5);
+                  // Small green leaf curl (one per pumpkin, alternate sides)
+                  c.fillStyle = '#65a30d';
+                  var _pkLfSide = pki % 2 === 0 ? 1 : -1;
+                  c.beginPath();
+                  c.ellipse(_pkx + _pkLfSide * 1, _pky - pk.r - 0.5, 0.8, 0.4, _pkLfSide * 0.5, 0, 6.28);
+                  c.fill();
+                  // Highlight on upper-left of body
+                  c.fillStyle = 'rgba(254,215,170,0.4)';
+                  c.beginPath(); c.ellipse(_pkx - pk.r * 0.45, _pky - pk.r * 0.35, pk.r * 0.4, pk.r * 0.2, -0.3, 0, 6.28); c.fill();
+                });
+              }
+
+              // ── Mason jar lantern hanging from the apple-tree branch (lit at night) ──
+              // A glass mason jar with a candle inside, suspended from a wire
+              // hook. Glows warm amber at night, transparent during day.
+              if (hiveX > 40) {
+                var _mjAtX = hiveX * 0.55;
+                var _mjX = _mjAtX + 22;
+                var _mjBranchY = H * 0.76 - 36;
+                var _mjY = _mjBranchY + 8;
+                // Wire hook from branch
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 0.3;
+                c.beginPath();
+                c.moveTo(_mjX, _mjBranchY);
+                c.lineTo(_mjX, _mjY - 3);
+                c.stroke();
+                // Jar lid + threaded ring
+                c.fillStyle = '#78716c';
+                c.fillRect(_mjX - 1.5, _mjY - 3, 3, 0.8);
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_mjX - 1.5, _mjY - 2.2, 3, 0.5);
+                // Jar body — glass with subtle gradient
+                var _mjBodyG = c.createLinearGradient(_mjX - 1.5, _mjY, _mjX + 1.5, _mjY);
+                _mjBodyG.addColorStop(0, 'rgba(180,210,230,0.4)');
+                _mjBodyG.addColorStop(0.5, 'rgba(220,240,255,0.55)');
+                _mjBodyG.addColorStop(1, 'rgba(120,150,180,0.35)');
+                c.fillStyle = _mjBodyG;
+                c.fillRect(_mjX - 1.6, _mjY - 1.7, 3.2, 4);
+                // Glass outline
+                c.strokeStyle = 'rgba(100,130,160,0.5)';
+                c.lineWidth = 0.25;
+                c.strokeRect(_mjX - 1.6, _mjY - 1.7, 3.2, 4);
+                // Glass highlight strip
+                c.fillStyle = 'rgba(255,255,255,0.45)';
+                c.fillRect(_mjX - 1.3, _mjY - 1.4, 0.4, 3.4);
+                // Bottom rim (slightly darker)
+                c.fillStyle = 'rgba(80,100,130,0.4)';
+                c.fillRect(_mjX - 1.6, _mjY + 2, 3.2, 0.3);
+                // Candle inside — visible dark stub
+                c.fillStyle = '#3a2510';
+                c.fillRect(_mjX - 0.4, _mjY + 0.5, 0.8, 1.5);
+                // Wick + flame at night
+                var _mjNight = Math.max(0, Math.min(1,
+                  _sunCycle > 1.05 && _sunCycle < 1.95 ?
+                    Math.sin((_sunCycle - 1.05) / 0.90 * Math.PI) : 0
+                ));
+                if (_mjNight > 0.1) {
+                  // Warm glow halo around the whole jar
+                  var _mjGlow = c.createRadialGradient(_mjX, _mjY + 0.5, 1, _mjX, _mjY + 0.5, 14);
+                  _mjGlow.addColorStop(0, 'rgba(254,215,80,' + (0.45 * _mjNight).toFixed(3) + ')');
+                  _mjGlow.addColorStop(0.5, 'rgba(251,146,60,' + (0.18 * _mjNight).toFixed(3) + ')');
+                  _mjGlow.addColorStop(1, 'rgba(251,146,60,0)');
+                  c.fillStyle = _mjGlow;
+                  c.beginPath(); c.arc(_mjX, _mjY + 0.5, 14, 0, 6.28); c.fill();
+                  // Bright filling inside the jar (candle illuminates glass)
+                  c.fillStyle = 'rgba(254,215,80,' + (0.55 * _mjNight).toFixed(3) + ')';
+                  c.fillRect(_mjX - 1.5, _mjY - 1.5, 3, 3.5);
+                  // Flame with flicker
+                  var _mjFlick = 1 + Math.sin(t2 * 0.5) * 0.2 + Math.sin(t2 * 0.8 + 1) * 0.1;
+                  c.fillStyle = 'rgba(254,243,150,' + (0.95 * _mjNight).toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_mjX, _mjY + 0 + Math.sin(t2 * 0.3) * 0.1, 0.4, 0.7 * _mjFlick, 0, 0, 6.28);
+                  c.fill();
+                  c.fillStyle = 'rgba(255,255,255,' + (0.65 * _mjNight).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_mjX, _mjY + 0.2, 0.2 * _mjFlick, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Old wagon wheel propped against the fence (rustic decor) ──
+              // Classic New England farmhouse decoration — a retired wooden
+              // wheel leaning against a fence post. Real homestead detail.
+              (function() {
+                var _wwX = W * 0.34, _wwY = fenceBaseY - 6;
+                var _wwR = 5.5;
+                // Outer rim (weathered wood)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.lineWidth = 0.8;
+                c.beginPath(); c.arc(_wwX, _wwY, _wwR, 0, 6.28); c.stroke();
+                // Inner rim (darker)
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.arc(_wwX, _wwY, _wwR - 0.5, 0, 6.28); c.stroke();
+                // 8 wooden spokes
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.lineWidth = 0.5;
+                for (var ws = 0; ws < 8; ws++) {
+                  var _wsA = (ws / 8) * 6.28;
+                  c.beginPath();
+                  c.moveTo(_wwX + Math.cos(_wsA) * 1, _wwY + Math.sin(_wsA) * 1);
+                  c.lineTo(_wwX + Math.cos(_wsA) * (_wwR - 0.5), _wwY + Math.sin(_wsA) * (_wwR - 0.5));
+                  c.stroke();
+                }
+                // Central hub
+                c.fillStyle = '#3a2510';
+                c.beginPath(); c.arc(_wwX, _wwY, 1.1, 0, 6.28); c.fill();
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.arc(_wwX, _wwY, 0.6, 0, 6.28); c.fill();
+                // Faint highlight on the upper-left rim
+                c.strokeStyle = 'rgba(255,255,255,0.25)';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.arc(_wwX, _wwY, _wwR, Math.PI * 1.0, Math.PI * 1.6); c.stroke();
+                // Tiny vine creeping over the wheel in spring/summer
+                if (season === 0 || season === 1) {
+                  c.strokeStyle = '#22c55e';
+                  c.lineWidth = 0.35;
+                  c.beginPath();
+                  c.moveTo(_wwX + _wwR - 1, _wwY + _wwR - 1);
+                  c.quadraticCurveTo(_wwX, _wwY + _wwR, _wwX - _wwR + 1, _wwY + _wwR - 0.5);
+                  c.stroke();
+                  // Leaves on the vine
+                  c.fillStyle = '#16a34a';
+                  c.beginPath(); c.ellipse(_wwX + _wwR - 1.5, _wwY + _wwR - 0.5, 0.6, 0.4, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_wwX - 0.5, _wwY + _wwR - 0.2, 0.6, 0.4, -0.2, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_wwX - _wwR + 1, _wwY + _wwR - 1, 0.6, 0.4, 0.3, 0, 6.28); c.fill();
+                }
+                // Wheel cast shadow against the fence
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(_wwX, _wwY + _wwR + 1, _wwR, 0.6, 0, 0, 6.28); c.fill();
+              })();
+
+              // ── Wheelbarrow with tools (homestead realism, year-round) ──
+              // Tipped slightly to one side as if just set down. A coiled
+              // garden hose loops over the rim. Reads as "lived-in apiary."
+              (function() {
+                var _wbX = W * 0.30, _wbY = H * 0.86;
+                // Shadow under wheel
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(_wbX - 5, _wbY + 3.5, 3, 0.8, 0, 0, 6.28); c.fill();
+                // Wheel
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wbX - 5, _wbY + 2, 2.4, 0, 6.28); c.fill();
+                // Wheel hub
+                c.fillStyle = '#78716c';
+                c.beginPath(); c.arc(_wbX - 5, _wbY + 2, 0.7, 0, 6.28); c.fill();
+                // Spokes (3 visible)
+                c.strokeStyle = '#57534e';
+                c.lineWidth = 0.4;
+                for (var wbs = 0; wbs < 3; wbs++) {
+                  var _wbsA = wbs * 2.09 + t2 * 0.001;
+                  c.beginPath();
+                  c.moveTo(_wbX - 5, _wbY + 2);
+                  c.lineTo(_wbX - 5 + Math.cos(_wbsA) * 2.2, _wbY + 2 + Math.sin(_wbsA) * 2.2);
+                  c.stroke();
+                }
+                // Barrow body — green/red tray
+                c.fillStyle = season === 3 ? '#7a3a18' : '#a83e1d';
+                c.beginPath();
+                c.moveTo(_wbX - 9, _wbY + 1);
+                c.lineTo(_wbX + 7, _wbY - 2);
+                c.lineTo(_wbX + 6, _wbY + 2);
+                c.lineTo(_wbX - 8, _wbY + 3);
+                c.closePath(); c.fill();
+                // Rim highlight
+                c.fillStyle = 'rgba(255,255,255,0.25)';
+                c.beginPath();
+                c.moveTo(_wbX - 9, _wbY + 1);
+                c.lineTo(_wbX + 7, _wbY - 2);
+                c.lineTo(_wbX + 7, _wbY - 1.3);
+                c.lineTo(_wbX - 9, _wbY + 1.7);
+                c.closePath(); c.fill();
+                // Handles extending right (tilted up)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.lineWidth = 1;
+                c.beginPath();
+                c.moveTo(_wbX + 6, _wbY + 1.5);
+                c.lineTo(_wbX + 14, _wbY - 0.5);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_wbX + 7, _wbY - 1);
+                c.lineTo(_wbX + 14, _wbY - 2);
+                c.stroke();
+                // Handle grip dots
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wbX + 14, _wbY - 0.5, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_wbX + 14, _wbY - 2, 0.5, 0, 6.28); c.fill();
+                // Cargo inside barrow — varies by season
+                if (season === 0) {
+                  // Spring — bag of soil + a small trowel handle
+                  c.fillStyle = '#3a2510';
+                  c.beginPath(); c.ellipse(_wbX - 2, _wbY - 0.5, 3.5, 1.5, 0.1, 0, 6.28); c.fill();
+                  c.strokeStyle = '#8a6238';
+                  c.lineWidth = 0.8;
+                  c.beginPath(); c.moveTo(_wbX + 2, _wbY - 2.5); c.lineTo(_wbX + 4, _wbY - 4); c.stroke();
+                } else if (season === 1) {
+                  // Summer — green clipped grass / hay
+                  c.fillStyle = '#65a30d';
+                  c.beginPath(); c.ellipse(_wbX - 1, _wbY - 0.8, 4, 1.5, 0, 0, 6.28); c.fill();
+                  c.strokeStyle = '#84cc16';
+                  c.lineWidth = 0.35;
+                  for (var wbg = 0; wbg < 5; wbg++) {
+                    c.beginPath();
+                    c.moveTo(_wbX - 3 + wbg * 1.5, _wbY - 1);
+                    c.lineTo(_wbX - 3 + wbg * 1.5 + 0.3, _wbY - 2.2);
+                    c.stroke();
+                  }
+                } else if (season === 2) {
+                  // Fall — autumn leaves
+                  c.fillStyle = '#a16207';
+                  c.beginPath(); c.ellipse(_wbX - 2, _wbY - 0.5, 3, 1.2, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#b91c1c';
+                  c.beginPath(); c.arc(_wbX, _wbY - 1.5, 0.8, 0, 6.28); c.fill();
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_wbX + 2, _wbY - 1, 0.7, 0, 6.28); c.fill();
+                } else {
+                  // Winter — covered in snow
+                  c.fillStyle = '#ffffff';
+                  c.beginPath(); c.ellipse(_wbX - 1, _wbY - 1.5, 4, 1.2, 0, 0, 6.28); c.fill();
+                }
+              })();
+
+              // ── Chopping log w/ axe stuck in it (beside firewood, year-round) ──
+              // Real Maine homestead: the wood-splitting block where logs get
+              // halved before being stacked. Always has the axe stuck in the
+              // top of the block, ready for the next splitting session.
+              (function() {
+                var _clX = W * 0.88, _clY = H * 0.87;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(_clX, _clY + 2.5, 4.5, 0.7, 0, 0, 6.28); c.fill();
+                // Log stump body — side view (cylindrical)
+                c.fillStyle = '#8a6238';
+                c.fillRect(_clX - 3.5, _clY - 3, 7, 5);
+                // End-grain top (oval — growth rings visible from above)
+                c.fillStyle = '#a07248';
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 3.5, 1.2, 0, 0, 6.28); c.fill();
+                // Growth rings on top
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 2.5, 0.85, 0, 0, 6.28); c.stroke();
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 1.5, 0.5, 0, 0, 6.28); c.stroke();
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 0.7, 0.25, 0, 0, 6.28); c.stroke();
+                // Bark texture on side (vertical streaks)
+                c.strokeStyle = 'rgba(60,40,15,0.5)';
+                c.lineWidth = 0.3;
+                for (var clb = 0; clb < 4; clb++) {
+                  var _clbX = _clX - 2.5 + clb * 1.7;
+                  c.beginPath(); c.moveTo(_clbX, _clY - 2); c.lineTo(_clbX + 0.2, _clY + 1.5); c.stroke();
+                }
+                // Hatchet/splitting axe stuck in the top
+                var _axBladeX = _clX - 0.3, _axBladeY = _clY - 3.8;
+                // Wooden handle — leaning slightly to the right
+                c.strokeStyle = '#a07248';
+                c.lineWidth = 0.9;
+                c.beginPath();
+                c.moveTo(_axBladeX + 0.5, _axBladeY - 0.5);
+                c.lineTo(_axBladeX + 4, _axBladeY - 9);
+                c.stroke();
+                // Handle grip stripes
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_axBladeX + 2, _axBladeY - 4); c.lineTo(_axBladeX + 2.5, _axBladeY - 4.5); c.stroke();
+                c.beginPath(); c.moveTo(_axBladeX + 2.5, _axBladeY - 5); c.lineTo(_axBladeX + 3, _axBladeY - 5.5); c.stroke();
+                // Axe head — silver wedge embedded
+                c.fillStyle = '#78716c';
+                c.beginPath();
+                c.moveTo(_axBladeX - 1, _axBladeY);
+                c.lineTo(_axBladeX + 2, _axBladeY - 1);
+                c.lineTo(_axBladeX + 2.5, _axBladeY + 0.5);
+                c.lineTo(_axBladeX, _axBladeY + 0.8);
+                c.closePath(); c.fill();
+                // Axe head highlight
+                c.fillStyle = '#d6d3d1';
+                c.beginPath();
+                c.moveTo(_axBladeX - 0.8, _axBladeY - 0.1);
+                c.lineTo(_axBladeX + 0.5, _axBladeY - 0.7);
+                c.lineTo(_axBladeX + 0.5, _axBladeY - 0.4);
+                c.lineTo(_axBladeX - 0.8, _axBladeY + 0.3);
+                c.closePath(); c.fill();
+                // Wood chips scattered on the ground
+                c.fillStyle = '#a07248';
+                c.beginPath(); c.ellipse(_clX - 5, _clY + 1.5, 0.6, 0.3, 0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_clX + 4, _clY + 1.8, 0.5, 0.2, -0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_clX - 3, _clY + 2.2, 0.4, 0.2, 0.5, 0, 6.28); c.fill();
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.ellipse(_clX + 5, _clY + 2, 0.35, 0.15, 0, 0, 6.28); c.fill();
+              })();
+
+              // ── Stacked firewood pile (right edge, winter survival prep) ──
+              // Roundhouse-cut wood logs stacked in a 3-row pile. Spring is
+              // the smallest stack (used through winter), fall is the tallest
+              // (newly split + stacked for the coming winter).
+              (function() {
+                var _fwX = W * 0.91, _fwY = H * 0.83;
+                var _fwRows = season === 0 ? 2 : season === 1 ? 3 : season === 2 ? 4 : 3;
+                var _fwLogsPerRow = 6;
+                // Wooden back-frame posts holding the stack vertical
+                c.fillStyle = '#3a2510';
+                c.fillRect(_fwX - 11, _fwY - 4 * 2 - 4, 1.2, 4 * 2 + 6);
+                c.fillRect(_fwX + 11, _fwY - 4 * 2 - 4, 1.2, 4 * 2 + 6);
+                // Stack of logs
+                for (var fwr = 0; fwr < _fwRows; fwr++) {
+                  for (var fwl = 0; fwl < _fwLogsPerRow; fwl++) {
+                    var _fwLx = _fwX - 9 + fwl * 3.2 + (fwr % 2) * 0.6;
+                    var _fwLy = _fwY - fwr * 2.5;
+                    // Log circle — end-grain view
+                    c.fillStyle = '#a07810';
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 1.5, 0, 6.28); c.fill();
+                    // Inner growth rings
+                    c.strokeStyle = '#7a5808';
+                    c.lineWidth = 0.25;
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 1.0, 0, 6.28); c.stroke();
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 0.6, 0, 6.28); c.stroke();
+                    // Center dot
+                    c.fillStyle = '#5a3a08';
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 0.25, 0, 6.28); c.fill();
+                    // Bark edge (darker outer)
+                    c.strokeStyle = '#3a2510';
+                    c.lineWidth = 0.35;
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 1.5, 0, 6.28); c.stroke();
+                  }
+                }
+                // Snow cap on top in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.fillRect(_fwX - 11, _fwY - _fwRows * 2.5 - 1.5, 22, 1.5);
+                  c.beginPath();
+                  c.moveTo(_fwX - 11, _fwY - _fwRows * 2.5 - 1.5);
+                  for (var fws = 0; fws <= 22; fws += 3) {
+                    c.lineTo(_fwX - 11 + fws, _fwY - _fwRows * 2.5 - 1.5 - Math.abs(Math.sin(fws * 0.4)) * 1);
+                  }
+                  c.lineTo(_fwX + 11, _fwY - _fwRows * 2.5 - 1.5);
+                  c.closePath(); c.fill();
+                }
+              })();
+
+              // ── Sugar-syrup feeder jar at hive entrance (summer dearth biology) ──
+              // Real beekeeping: between spring tree bloom (~day 5-15) and the
+              // late-summer goldenrod flow (~day 18+ of summer + all of fall),
+              // there's often a 2-3 week "dearth" with little nectar flow.
+              // Workers may rob other hives unless fed. Beekeepers invert a
+              // mason jar with tiny holes in the lid at the entrance so syrup
+              // drips down for the colony. Visible day 22-28 of season 1.
+              if (season === 1 && (day % 30) >= 22 && (day % 30) <= 28) {
+                var _fjX = hiveX + hiveW * 0.5 - 4;
+                var _fjY = hiveY + hiveH - 4;
+                // Inverted jar shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_fjX, _fjY + 6, 4, 0.8, 0, 0, 6.28); c.fill();
+                // Jar body — glass mason jar with sugar syrup inside (amber)
+                var _fjGrad = c.createLinearGradient(_fjX - 2.5, _fjY, _fjX + 2.5, _fjY);
+                _fjGrad.addColorStop(0, 'rgba(254,243,199,0.92)');
+                _fjGrad.addColorStop(0.5, 'rgba(251,191,36,0.78)');
+                _fjGrad.addColorStop(1, 'rgba(217,119,6,0.55)');
+                c.fillStyle = _fjGrad;
+                c.fillRect(_fjX - 2.5, _fjY - 4, 5, 8);
+                // Glass highlight
+                c.fillStyle = 'rgba(255,255,255,0.45)';
+                c.fillRect(_fjX - 2.2, _fjY - 3.5, 0.6, 6);
+                // Threaded neck (narrower band at the bottom — jar is INVERTED so threads at bottom)
+                c.fillStyle = 'rgba(180,140,40,0.6)';
+                c.fillRect(_fjX - 2.5, _fjY + 3, 5, 1);
+                c.strokeStyle = 'rgba(120,80,20,0.7)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_fjX - 2.5, _fjY + 3.3); c.lineTo(_fjX + 2.5, _fjY + 3.3); c.stroke();
+                c.beginPath(); c.moveTo(_fjX - 2.5, _fjY + 3.7); c.lineTo(_fjX + 2.5, _fjY + 3.7); c.stroke();
+                // Perforated lid (at the bottom, since inverted) — small dark dots
+                c.fillStyle = '#3a2510';
+                c.fillRect(_fjX - 2.5, _fjY + 4, 5, 1.2);
+                c.fillStyle = '#1c1917';
+                for (var fjd = 0; fjd < 5; fjd++) {
+                  c.beginPath();
+                  c.arc(_fjX - 2 + fjd * 1, _fjY + 4.6, 0.18, 0, 6.28);
+                  c.fill();
+                }
+                // Tiny syrup drip — slow drop every few seconds
+                var _fjDripT = ((t2 * 0.04) % 100) / 100;
+                if (_fjDripT < 0.4) {
+                  var _fjDy = _fjY + 5.2 + _fjDripT * 4;
+                  c.fillStyle = 'rgba(251,191,36,' + (0.9 * (1 - _fjDripT * 0.5)).toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_fjX, _fjDy, 0.4, 0.7, 0, 0, 6.28);
+                  c.fill();
+                }
+                // 3 bees clustering at the perforated lid (feeding)
+                for (var fjb = 0; fjb < 3; fjb++) {
+                  var _fjbX = _fjX - 1.5 + fjb * 1.5;
+                  var _fjbY = _fjY + 5.5 + Math.sin(t2 * 0.06 + fjb * 1.7) * 0.2;
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.ellipse(_fjbX, _fjbY, 1.0, 0.6, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_fjbX - 0.2, _fjbY - 0.5, 0.3, 1.0);
+                }
+              }
+
+              // ── Spare Langstroth super box stacked beside the hive (equipment realism) ──
+              // Beekeepers always have spare supers ready for honey flow — this
+              // empty box sits to the right of the working hive, half-tucked
+              // behind the stand. The box only appears in spring/summer/fall
+              // (in winter the beekeeper brings everything indoors to avoid
+              // wax-moth + water damage).
+              if (season !== 3 && hiveX + hiveW < W * 0.30) {
+                var _ssX = hiveX + hiveW + 8;
+                var _ssY = hiveY + hiveH - 8;
+                var _ssW = 14, _ssH = 12;
+                // Box body
+                c.fillStyle = '#a07810';
+                c.fillRect(_ssX, _ssY, _ssW, _ssH);
+                c.fillStyle = '#7a5808';
+                c.fillRect(_ssX, _ssY + _ssH - 2, _ssW, 2);
+                // Inner shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.fillRect(_ssX + 1, _ssY + 1, 2, _ssH - 2);
+                // Side highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.fillRect(_ssX, _ssY, 1, _ssH);
+                // Frame slots visible at the top
+                c.strokeStyle = '#5a3a08';
+                c.lineWidth = 0.4;
+                for (var fs = 0; fs < 5; fs++) {
+                  c.beginPath();
+                  c.moveTo(_ssX + 2 + fs * 2.4, _ssY);
+                  c.lineTo(_ssX + 2 + fs * 2.4, _ssY + 2);
+                  c.stroke();
+                }
+                // Tiny side handle indent (the cut-out grip)
+                c.fillStyle = 'rgba(60,40,5,0.6)';
+                c.fillRect(_ssX + _ssW * 0.35, _ssY + _ssH * 0.5, _ssW * 0.3, 1.2);
+                // Faded "B2" hand-painted label (matches the main hive plaque)
+                c.fillStyle = 'rgba(254,243,199,0.7)';
+                c.fillRect(_ssX + 3, _ssY + 4, 4, 3);
+                c.fillStyle = '#1c1917';
+                c.font = 'bold 3.5px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('B2', _ssX + 5, _ssY + 6.5);
+                c.textAlign = 'start';
+              }
+
+              // ── Wooden "Bees Quiet Please" sign stuck in the ground (year-round) ──
+              // Real beekeeping etiquette + visual cue. A hand-painted wooden
+              // sign on a stake stuck into the ground between the meadow path
+              // and the hive, so visitors approaching the hive area see it.
+              (function() {
+                var _bsX = W * 0.50, _bsY = H * 0.83;
+                // Stake (in ground)
+                c.fillStyle = season === 3 ? '#5a4225' : '#8a6238';
+                c.fillRect(_bsX - 0.7, _bsY, 1.4, 8);
+                // Sign board — slightly tilted
+                c.save();
+                c.translate(_bsX, _bsY - 3);
+                c.rotate(-0.04);
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.fillRect(-8, -5 + 1, 17, 8);
+                // Board
+                c.fillStyle = season === 3 ? '#a07a48' : '#d2a574';
+                c.fillRect(-8, -5, 17, 8);
+                // Wood grain lines
+                c.strokeStyle = 'rgba(80,55,25,0.45)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(-7.5, -3); c.lineTo(8, -3); c.stroke();
+                c.beginPath(); c.moveTo(-7.5,  0); c.lineTo(8,  0); c.stroke();
+                c.beginPath(); c.moveTo(-7.5,  2); c.lineTo(8,  2); c.stroke();
+                // Border
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.4;
+                c.strokeRect(-8, -5, 17, 8);
+                // Hand-painted text
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 2.6px sans-serif';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText('BEES', 0, -2);
+                c.font = 'bold 2.0px sans-serif';
+                c.fillText('quiet please', 0, 1.5);
+                c.textAlign = 'start';
+                c.textBaseline = 'alphabetic';
+                // Tiny bee silhouette at the top-left corner of the board
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.ellipse(-6.5, -3.5, 0.8, 0.45, 0.2, 0, 6.28); c.fill();
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(-6.5, -3.5, 0.55, 0.3, 0.2, 0, 6.28); c.fill();
+                c.restore();
+              })();
+
+              // ── Pair of garden boots upside-down on a fence post (drying after use) ──
+              // Whimsical homestead detail: gardeners flip muddy boots upside
+              // down on fence posts to drain + dry. Mounted on the 2nd-to-last
+              // post from the right side.
+              (function() {
+                var _btPostX = 20 + 10 * 70 + 1.25;
+                if (_btPostX > W - 10) return;
+                if (_btPostX > hiveX - 18 && _btPostX < hiveX + hiveW + 18) return;
+                var _btTopY = fenceBaseY - 2 - 0.5;
+                // Two boots — slightly tilted, hanging upside-down
+                for (var bt = 0; bt < 2; bt++) {
+                  var _btX = _btPostX - 2 + bt * 4;
+                  var _btTilt = bt === 0 ? -0.12 : 0.12;
+                  c.save();
+                  c.translate(_btX, _btTopY);
+                  c.rotate(_btTilt);
+                  // Boot body — dark green rubber
+                  c.fillStyle = season === 3 ? '#365314' : '#4d7c0f';
+                  c.fillRect(-1.4, -5, 2.8, 5);
+                  // Boot tongue/opening (down because inverted)
+                  c.fillStyle = '#1a2a08';
+                  c.fillRect(-1.4, -0.4, 2.8, 0.6);
+                  // Boot sole (now on top — dark)
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-1.6, -6, 3.2, 1);
+                  // Treads on sole
+                  c.fillStyle = '#3a3325';
+                  for (var btt = 0; btt < 3; btt++) {
+                    c.fillRect(-1.4 + btt * 1.1, -5.8, 0.7, 0.3);
+                  }
+                  // Highlight stripe
+                  c.fillStyle = 'rgba(255,255,255,0.18)';
+                  c.fillRect(-1.2, -4.5, 0.4, 3.5);
+                  // Small drip of water beneath (in non-winter)
+                  if (season !== 3 && bt === 0) {
+                    c.fillStyle = 'rgba(160,200,230,0.6)';
+                    c.beginPath();
+                    c.ellipse(0, 1.5, 0.4, 0.6, 0, 0, 6.28);
+                    c.fill();
+                  }
+                  c.restore();
+                }
+              })();
+
+              // ── Wooden swing hanging from an apple-tree branch ──
+              // Real homestead childhood touch. A simple plank seat on two
+              // ropes hanging from a strong tree branch. The whole assembly
+              // sways gently with the coherent wind wave.
+              if (hiveX > 40) {
+                var _swAtX = hiveX * 0.55;
+                var _swBranchX = _swAtX + 18;
+                var _swBranchY = H * 0.76 - 38;
+                var _swSeatY = H * 0.83;
+                var _swWind2 = Math.sin(t2 * 0.025 - _swBranchX * 0.015) * 0.8;
+                // Branch — small darker line attaching to canopy
+                c.strokeStyle = '#4a2f1a';
+                c.lineWidth = 1.2;
+                c.beginPath();
+                c.moveTo(_swAtX + 14, _swBranchY - 4);
+                c.lineTo(_swBranchX + 4, _swBranchY);
+                c.stroke();
+                // Ropes — two parallel lines from branch to seat (with sway)
+                var _swSeatX = _swBranchX + _swWind2;
+                c.strokeStyle = 'rgba(140,110,70,0.85)';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_swBranchX - 2.5, _swBranchY);
+                c.lineTo(_swSeatX - 3, _swSeatY);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_swBranchX + 2.5, _swBranchY);
+                c.lineTo(_swSeatX + 3, _swSeatY);
+                c.stroke();
+                // Seat plank
+                c.fillStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.fillRect(_swSeatX - 4, _swSeatY, 8, 1.5);
+                // Plank highlight
+                c.fillStyle = 'rgba(255,255,255,0.25)';
+                c.fillRect(_swSeatX - 4, _swSeatY, 8, 0.4);
+                // Plank shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.fillRect(_swSeatX - 4, _swSeatY + 1.2, 8, 0.4);
+                // Tiny rope knots at the seat corners
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.arc(_swSeatX - 3, _swSeatY + 0.5, 0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_swSeatX + 3, _swSeatY + 0.5, 0.4, 0, 6.28); c.fill();
+                // Branch tie-knots
+                c.fillStyle = '#3a2510';
+                c.beginPath(); c.arc(_swBranchX - 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_swBranchX + 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
+              }
+
+              // ── Beekeeper tool rack mounted on a fence post (year-round) ──
+              // Real beekeeping kit hanging from a wall-mounted rack: hive
+              // tool, bee brush, smoker fuel can. Mounted on the 3rd post
+              // from the left.
+              (function() {
+                var _trPostX = 20 + 2 * 70 + 1.25;
+                if (_trPostX > hiveX - 18 && _trPostX < hiveX + hiveW + 18) return;
+                var _trBackY = fenceBaseY - 8;
+                // Wooden mounting board
+                c.fillStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.fillRect(_trPostX - 5, _trBackY, 10, 6);
+                // Board grain
+                c.strokeStyle = 'rgba(60,40,15,0.5)';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(_trPostX - 5, _trBackY + 2); c.lineTo(_trPostX + 5, _trBackY + 2); c.stroke();
+                c.beginPath(); c.moveTo(_trPostX - 5, _trBackY + 4); c.lineTo(_trPostX + 5, _trBackY + 4); c.stroke();
+                // 3 nail hooks across the top
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_trPostX - 3, _trBackY + 0.5, 0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_trPostX,     _trBackY + 0.5, 0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_trPostX + 3, _trBackY + 0.5, 0.3, 0, 6.28); c.fill();
+                // Hive tool — flat metal pry bar (left hook)
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_trPostX - 3.5, _trBackY + 1, 1, 4);
+                c.fillStyle = '#57534e';
+                c.fillRect(_trPostX - 3.5, _trBackY + 4.5, 1, 0.5);
+                // Bee brush — wooden handle + bristles (center hook)
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_trPostX - 0.4, _trBackY + 1, 0.8, 2.5);
+                // Bristles (white tuft)
+                c.fillStyle = '#fef3c7';
+                c.fillRect(_trPostX - 0.8, _trBackY + 3.3, 1.6, 1.5);
+                // Bristle texture lines
+                c.strokeStyle = '#d4a574';
+                c.lineWidth = 0.15;
+                for (var trb = 0; trb < 4; trb++) {
+                  c.beginPath();
+                  c.moveTo(_trPostX - 0.7 + trb * 0.4, _trBackY + 3.5);
+                  c.lineTo(_trPostX - 0.7 + trb * 0.4, _trBackY + 4.8);
+                  c.stroke();
+                }
+                // Smoker fuel can (small) — right hook
+                c.fillStyle = '#78716c';
+                c.fillRect(_trPostX + 2.3, _trBackY + 1.5, 1.4, 3);
+                c.fillStyle = '#3a3025';
+                c.fillRect(_trPostX + 2.3, _trBackY + 1.5, 1.4, 0.5);
+                // Can label
+                c.fillStyle = '#fbbf24';
+                c.fillRect(_trPostX + 2.4, _trBackY + 2.5, 1.2, 0.8);
+                c.fillStyle = '#1c1917';
+                c.font = 'bold 0.7px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('FUEL', _trPostX + 3, _trBackY + 3.1);
+                c.textAlign = 'start';
+              })();
+
+              // ── Worn watering can beside the vegetable garden (spring/summer) ──
+              // Tilted galvanized-metal can with the spout pointing into the
+              // garden. Drips a tiny water bead at dawn when the keeper
+              // recently used it. Brought indoors for winter.
+              if (season !== 3) {
+                var _wcnX = W * 0.04, _wcnY = H * 0.88;
+                if (_wcnX < hiveX + hiveW + 8) {
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.22)';
+                  c.beginPath(); c.ellipse(_wcnX, _wcnY + 2, 5, 0.7, 0, 0, 6.28); c.fill();
+                  // Can body — galvanized gray gradient
+                  var _wcnBodyG = c.createLinearGradient(_wcnX - 3, _wcnY, _wcnX + 3, _wcnY);
+                  _wcnBodyG.addColorStop(0, '#78716c');
+                  _wcnBodyG.addColorStop(0.5, '#d6d3d1');
+                  _wcnBodyG.addColorStop(1, '#57534e');
+                  c.fillStyle = _wcnBodyG;
+                  c.fillRect(_wcnX - 2.5, _wcnY - 4, 5, 5);
+                  // Top rim
+                  c.fillStyle = '#57534e';
+                  c.fillRect(_wcnX - 2.7, _wcnY - 4.2, 5.4, 0.5);
+                  // Handle arc (top + side)
+                  c.strokeStyle = '#57534e';
+                  c.lineWidth = 0.6;
+                  c.beginPath();
+                  c.arc(_wcnX, _wcnY - 5.5, 1.8, Math.PI * 1.1, Math.PI * 1.9);
+                  c.stroke();
+                  // Side handle (vertical)
+                  c.strokeStyle = '#57534e';
+                  c.lineWidth = 0.5;
+                  c.beginPath();
+                  c.moveTo(_wcnX - 3, _wcnY - 3);
+                  c.lineTo(_wcnX - 3.5, _wcnY - 0.5);
+                  c.lineTo(_wcnX - 2.5, _wcnY);
+                  c.stroke();
+                  // Long spout
+                  c.fillStyle = '#a8a29e';
+                  c.beginPath();
+                  c.moveTo(_wcnX + 2.5, _wcnY - 3);
+                  c.lineTo(_wcnX + 6.5, _wcnY - 4);
+                  c.lineTo(_wcnX + 6.5, _wcnY - 3);
+                  c.lineTo(_wcnX + 2.5, _wcnY - 2);
+                  c.closePath(); c.fill();
+                  // Spout rose (perforated end)
+                  c.fillStyle = '#3a3025';
+                  c.beginPath(); c.ellipse(_wcnX + 6.5, _wcnY - 3.5, 0.7, 1, 0, 0, 6.28); c.fill();
+                  // Spout holes (tiny lighter dots)
+                  c.fillStyle = '#a8a29e';
+                  c.beginPath(); c.arc(_wcnX + 6.5, _wcnY - 4, 0.1, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_wcnX + 6.5, _wcnY - 3.5, 0.1, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_wcnX + 6.5, _wcnY - 3, 0.1, 0, 6.28); c.fill();
+                  // Surface highlights on body
+                  c.fillStyle = 'rgba(255,255,255,0.35)';
+                  c.fillRect(_wcnX - 2, _wcnY - 3.5, 0.4, 4);
+                  // Water drip at dawn
+                  var _wcnDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                  if (_wcnDawn > 0.2) {
+                    c.fillStyle = 'rgba(160,200,230,' + (0.8 * _wcnDawn).toFixed(3) + ')';
+                    var _wcnDripT = ((t2 * 0.08) % 30) / 30;
+                    var _wcnDripY = _wcnY - 3 + _wcnDripT * 5;
+                    c.beginPath(); c.ellipse(_wcnX + 6.5, _wcnDripY, 0.3, 0.55, 0, 0, 6.28); c.fill();
+                  }
+                  // Small dirt smudge on the side
+                  c.fillStyle = 'rgba(80,55,25,0.45)';
+                  c.beginPath(); c.ellipse(_wcnX - 0.5, _wcnY + 0, 1, 0.4, 0.3, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Mason bee hotel mounted on a fence post (year-round fixture) ──
+              // Real beekeeping accessory: a wooden block drilled with 4-8 mm
+              // holes where solitary mason bees lay eggs. Closes the "honeybees
+              // aren't the only pollinator" story alongside butterflies, hummers,
+              // and the dragonfly. Mason bees pollinate apples ~120× more
+              // efficiently per individual than honeybees do — referenced in
+              // the quiz and the bee-vision tab; here it gets a visible artifact.
+              (function() {
+                // Mount on the 4th fence post from left to keep it visible
+                var _mbPostX = 20 + 3 * 70 + 1.25; // matches fence post stride
+                var _mbY = fenceBaseY - 7;
+                // Wooden block back
+                c.fillStyle = season === 2 ? '#7a5230' : season === 3 ? '#5a3f25' : '#8a6238';
+                c.fillRect(_mbPostX - 5, _mbY - 6, 10, 6);
+                // Block top (lighter wood-grain accent)
+                c.fillStyle = season === 3 ? '#7a5a3a' : '#a87a50';
+                c.fillRect(_mbPostX - 5, _mbY - 6, 10, 1);
+                // Side shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.fillRect(_mbPostX + 3.5, _mbY - 6, 1.5, 6);
+                // Drilled bee tubes — 4x3 grid of small dark circles
+                c.fillStyle = '#1c1917';
+                for (var mby = 0; mby < 3; mby++) {
+                  for (var mbx = 0; mbx < 4; mbx++) {
+                    var _mbHoleX = _mbPostX - 3.5 + mbx * 2.2;
+                    var _mbHoleY = _mbY - 4.8 + mby * 1.6;
+                    c.beginPath(); c.arc(_mbHoleX, _mbHoleY, 0.55, 0, 6.28); c.fill();
+                  }
+                }
+                // A few tubes capped with mud (mason bees seal their tubes!)
+                // Only in spring + summer (the active season for mason bees)
+                if (season === 0 || season === 1) {
+                  c.fillStyle = '#a8745a'; // mud-cap color
+                  // Hole [0,0], [2,1], [3,2]
+                  c.beginPath(); c.arc(_mbPostX - 3.5 + 0 * 2.2, _mbY - 4.8 + 0 * 1.6, 0.55, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_mbPostX - 3.5 + 2 * 2.2, _mbY - 4.8 + 1 * 1.6, 0.55, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_mbPostX - 3.5 + 3 * 2.2, _mbY - 4.8 + 2 * 1.6, 0.55, 0, 6.28); c.fill();
+                  // A tiny mason bee approaching (spring only when nesting peaks)
+                  if (season === 0) {
+                    var _mbApT = ((t2 * 0.05) % 80) / 80; // 0..1 approach
+                    if (_mbApT < 0.5) {
+                      var _mbBeeX = _mbPostX + 8 - _mbApT * 16;
+                      var _mbBeeY = _mbY - 3 + Math.sin(_mbApT * 8) * 1.2;
+                      // Body — mason bees are dark blue-black metallic
+                      c.fillStyle = '#0c4a6e';
+                      c.beginPath(); c.ellipse(_mbBeeX, _mbBeeY, 1.6, 0.9, 0, 0, 6.28); c.fill();
+                      // Iridescent sheen
+                      c.fillStyle = 'rgba(56,189,248,0.4)';
+                      c.beginPath(); c.ellipse(_mbBeeX - 0.3, _mbBeeY - 0.3, 0.7, 0.4, 0, 0, 6.28); c.fill();
+                      // Tiny wing blur
+                      c.fillStyle = 'rgba(220,240,255,0.5)';
+                      c.beginPath(); c.ellipse(_mbBeeX, _mbBeeY - 1, 1.4, 0.5, 0, 0, 6.28); c.fill();
+                    }
+                  }
+                }
+                // Tiny "Mason Bees" label sliver below the block (only on closer zoom; tiny here)
+                c.strokeStyle = season === 3 ? '#3a2510' : '#5a3a1a';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_mbPostX - 5, _mbY);
+                c.lineTo(_mbPostX + 5, _mbY);
+                c.stroke();
+              })();
+
+              // ── Barred owl on a fence post at night (winter especially) ──
+              // Counter to the dawn-chorus songbird — at deep night a silent
+              // hunter takes the perch. Real biology: barred owls are common in
+              // the Northeast year-round and frequently hunt mice that come for
+              // hive debris under beehives. Subtle head-turn animation, rare
+              // hoot ripple visualization.
+              if (_sunCycle > 1.15 && _sunCycle < 1.85) {
+                var _owlVis = _sunCycle < 1.5 ? (_sunCycle - 1.15) / 0.20 : Math.min(1, (1.85 - _sunCycle) / 0.20);
+                _owlVis = Math.max(0, Math.min(1, _owlVis));
+                if (_owlVis > 0.1) {
+                  // Sit on the 6th post from left (further from songbird position)
+                  var _owlPostX = 20 + 5 * 70 + 1.25;
+                  // Skip if owl post overlaps hive
+                  if (!(_owlPostX > hiveX - 18 && _owlPostX < hiveX + hiveW + 18)) {
+                    var _owlY = fenceBaseY - 2 - 1;
+                    var _owlHeadTurn = Math.sin(t2 * 0.008) > 0.7 ? 0.4 : (Math.sin(t2 * 0.012) > 0.85 ? -0.4 : 0);
+                    c.save();
+                    c.globalAlpha = _owlVis;
+                    // Body — pear-shaped silhouette
+                    c.fillStyle = '#1f2937';
+                    c.beginPath(); c.ellipse(_owlPostX, _owlY - 1, 3.2, 4.5, 0, 0, 6.28); c.fill();
+                    // Subtle plumage striping (horizontal — "barred" owl)
+                    c.strokeStyle = 'rgba(60,70,85,0.6)';
+                    c.lineWidth = 0.3;
+                    for (var pl = 0; pl < 3; pl++) {
+                      c.beginPath();
+                      c.moveTo(_owlPostX - 2.5, _owlY + 0.5 + pl * 1.2);
+                      c.lineTo(_owlPostX + 2.5, _owlY + 0.5 + pl * 1.2);
+                      c.stroke();
+                    }
+                    // Head — round, sits on the body
+                    c.save();
+                    c.translate(_owlPostX, _owlY - 4.8);
+                    c.rotate(_owlHeadTurn);
+                    c.fillStyle = '#1f2937';
+                    c.beginPath(); c.arc(0, 0, 2.8, 0, 6.28); c.fill();
+                    // Facial disc (lighter ring around the eyes)
+                    c.fillStyle = '#374151';
+                    c.beginPath(); c.ellipse(0, 0.3, 2.5, 2.2, 0, 0, 6.28); c.fill();
+                    // Two huge yellow-gold eyes
+                    c.fillStyle = '#fde047';
+                    c.beginPath(); c.arc(-1.0, -0.2, 0.85, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 1.0, -0.2, 0.85, 0, 6.28); c.fill();
+                    // Pupils
+                    c.fillStyle = '#0a0a0a';
+                    c.beginPath(); c.arc(-1.0, -0.2, 0.45, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 1.0, -0.2, 0.45, 0, 6.28); c.fill();
+                    // Eye highlight
+                    c.fillStyle = 'rgba(255,255,255,0.7)';
+                    c.beginPath(); c.arc(-1.2, -0.5, 0.15, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 0.8, -0.5, 0.15, 0, 6.28); c.fill();
+                    // Beak — tiny downward triangle
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath();
+                    c.moveTo(-0.4, 0.7);
+                    c.lineTo( 0.4, 0.7);
+                    c.lineTo( 0,   1.5);
+                    c.closePath(); c.fill();
+                    // Ear tufts (barred owls have minimal tufts vs great horneds — small bumps)
+                    c.fillStyle = '#1f2937';
+                    c.beginPath();
+                    c.moveTo(-1.8, -2.0);
+                    c.lineTo(-1.3, -2.8);
+                    c.lineTo(-1.0, -2.0);
+                    c.closePath(); c.fill();
+                    c.beginPath();
+                    c.moveTo( 1.8, -2.0);
+                    c.lineTo( 1.3, -2.8);
+                    c.lineTo( 1.0, -2.0);
+                    c.closePath(); c.fill();
+                    c.restore();
+                    // Talons gripping post
+                    c.strokeStyle = '#fbbf24';
+                    c.lineWidth = 0.4;
+                    c.beginPath();
+                    c.moveTo(_owlPostX - 1.5, _owlY + 3.2); c.lineTo(_owlPostX - 1.5, _owlY + 4.4);
+                    c.moveTo(_owlPostX + 1.5, _owlY + 3.2); c.lineTo(_owlPostX + 1.5, _owlY + 4.4);
+                    c.stroke();
+                    c.restore();
+                    // Occasional silent "hoot" ripple — a thin expanding circle every ~9 sec
+                    var _hootPeriod = 9000;
+                    var _hootT = (Date.now() % _hootPeriod) / _hootPeriod;
+                    if (_hootT < 0.18) {
+                      var _hootProg = _hootT / 0.18;
+                      var _hootR = 4 + _hootProg * 18;
+                      var _hootA = (1 - _hootProg) * 0.45 * _owlVis;
+                      c.strokeStyle = 'rgba(254,243,199,' + _hootA.toFixed(3) + ')';
+                      c.lineWidth = 0.8;
+                      c.beginPath();
+                      c.arc(_owlPostX, _owlY - 4.8, _hootR, 0, 6.28);
+                      c.stroke();
+                    }
+                  }
+                }
+              }
+
+              // ── Solar string lights strung along the fence (charge by day, glow at night) ──
+              // Real homestead touch — those Edison-bulb-style outdoor strings.
+              // Visible all year, but the bulbs only GLOW after dusk. They
+              // catenary-sag between every other fence post.
+              (function() {
+                var _slY = fenceBaseY - 2;
+                // Determine night-glow strength
+                var _slNight = 0;
+                if (_sunCycle > 0.95 && _sunCycle < 1.95) {
+                  if (_sunCycle < 1.5) _slNight = (_sunCycle - 0.95) / 0.45;
+                  else _slNight = (1.95 - _sunCycle) / 0.45;
+                }
+                _slNight = Math.max(0, Math.min(1, _slNight));
+                // Wire — continuous catenary across the fence
+                c.strokeStyle = 'rgba(40,30,20,0.55)';
+                c.lineWidth = 0.3;
+                c.beginPath();
+                for (var slX = 12; slX <= W - 8; slX += 14) {
+                  if (slX > hiveX - 25 && slX < hiveX + hiveW + 25) continue;
+                  var _slDip = Math.sin((slX % 70) / 70 * Math.PI) * 1.5;
+                  var _slY2 = _slY - 1 + _slDip;
+                  if (slX === 12) c.moveTo(slX, _slY2);
+                  else c.lineTo(slX, _slY2);
+                }
+                c.stroke();
+                // Bulbs along the wire — every ~14 pixels
+                for (var sb = 12; sb <= W - 8; sb += 14) {
+                  if (sb > hiveX - 25 && sb < hiveX + hiveW + 25) continue;
+                  var _sbDip = Math.sin((sb % 70) / 70 * Math.PI) * 1.5;
+                  var _sbY = _slY - 1 + _sbDip;
+                  // Bulb glass — small pear shape
+                  if (_slNight > 0.05) {
+                    // Glow halo when lit
+                    var _slGlow = c.createRadialGradient(sb, _sbY + 1.2, 0.3, sb, _sbY + 1.2, 5);
+                    _slGlow.addColorStop(0, 'rgba(254,243,199,' + (0.85 * _slNight).toFixed(3) + ')');
+                    _slGlow.addColorStop(0.5, 'rgba(251,191,36,' + (0.4 * _slNight).toFixed(3) + ')');
+                    _slGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                    c.fillStyle = _slGlow;
+                    c.beginPath(); c.arc(sb, _sbY + 1.2, 5, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(255,237,150,' + (0.95 * _slNight).toFixed(3) + ')';
+                  } else {
+                    c.fillStyle = 'rgba(217,200,150,0.55)';
+                  }
+                  c.beginPath(); c.ellipse(sb, _sbY + 1.2, 0.85, 1.1, 0, 0, 6.28); c.fill();
+                  // Tiny brass socket cap above
+                  c.fillStyle = '#78716c';
+                  c.fillRect(sb - 0.4, _sbY + 0.2, 0.8, 0.5);
+                }
+              })();
+
+              // ── Adirondack chair beside the apiary (weathered Maine homestead detail) ──
+              // The beekeeper's favorite resting spot — angled-back wooden chair
+              // visible just to the right of the BEES sign, tucked partly into
+              // the meadow grass. Year-round, weathered in winter.
+              (function() {
+                var _acX = W * 0.55, _acY = H * 0.86;
+                // Chair color (weathered grey-brown by season)
+                var _acCol = season === 3 ? '#5a5048' : season === 2 ? '#6b5d50' : '#8a7a68';
+                var _acColDark = season === 3 ? '#3a3028' : season === 2 ? '#4a3d30' : '#5a4d40';
+                // Shadow base
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_acX, _acY + 3, 11, 1.2, 0, 0, 6.28); c.fill();
+                // Back legs (vertical, slightly behind)
+                c.fillStyle = _acColDark;
+                c.fillRect(_acX - 5, _acY - 4, 1.4, 7);
+                c.fillRect(_acX + 4, _acY - 4, 1.4, 7);
+                // Front legs (visible from this angle)
+                c.fillStyle = _acCol;
+                c.fillRect(_acX - 4, _acY - 1, 1.2, 4);
+                c.fillRect(_acX + 3, _acY - 1, 1.2, 4);
+                // Wide seat (slanted, classic Adirondack)
+                c.beginPath();
+                c.moveTo(_acX - 5, _acY - 1.5);
+                c.lineTo(_acX + 6, _acY - 2);
+                c.lineTo(_acX + 6, _acY - 0.5);
+                c.lineTo(_acX - 5, _acY);
+                c.closePath(); c.fill();
+                // Tall back-rest with 5 vertical slats — the iconic Adirondack profile
+                var _acBackY = _acY - 12;
+                // Back frame
+                c.fillStyle = _acColDark;
+                c.fillRect(_acX - 5, _acBackY, 1, 11);
+                c.fillRect(_acX + 4, _acBackY - 1, 1, 12);
+                // Top crossbar (slight curve up at top)
+                c.fillStyle = _acCol;
+                c.beginPath();
+                c.moveTo(_acX - 4.5, _acBackY);
+                c.quadraticCurveTo(_acX - 0.5, _acBackY - 2, _acX + 4, _acBackY - 1);
+                c.lineTo(_acX + 4, _acBackY);
+                c.lineTo(_acX - 4.5, _acBackY + 1);
+                c.closePath(); c.fill();
+                // Five vertical slats
+                for (var acs = 0; acs < 5; acs++) {
+                  var _acsX = _acX - 4 + acs * 1.8;
+                  c.fillRect(_acsX, _acBackY, 0.6, 11);
+                }
+                // Two wide flat armrests — Adirondack signature
+                c.fillStyle = _acCol;
+                c.fillRect(_acX - 6, _acY - 4.5, 4, 1.2);
+                c.fillRect(_acX + 2, _acY - 5, 4, 1.2);
+                // Armrest shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.fillRect(_acX - 6, _acY - 3.5, 4, 0.4);
+                c.fillRect(_acX + 2, _acY - 4, 4, 0.4);
+                // Snow on the seat + armrests in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_acX - 5, _acY - 2);
+                  c.lineTo(_acX + 6, _acY - 2.5);
+                  c.lineTo(_acX + 6, _acY - 1.7);
+                  c.lineTo(_acX - 5, _acY - 1.2);
+                  c.closePath(); c.fill();
+                  c.fillRect(_acX - 6, _acY - 5, 4, 0.7);
+                  c.fillRect(_acX + 2, _acY - 5.5, 4, 0.7);
+                }
+                // Tiny coffee mug on the right armrest in spring/summer (the keeper's break spot)
+                if (season === 0 || season === 1) {
+                  c.fillStyle = '#a8a29e';
+                  c.fillRect(_acX + 3.5, _acY - 6.5, 1.4, 1.5);
+                  c.fillStyle = '#3a2510';
+                  c.fillRect(_acX + 3.7, _acY - 6.2, 1, 0.5);
+                  // Tiny steam wisp from the mug (dawn only)
+                  var _acDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                  if (_acDawn > 0.2) {
+                    c.fillStyle = 'rgba(240,245,250,' + (0.5 * _acDawn).toFixed(3) + ')';
+                    var _acSt = (t2 * 0.1) % 8;
+                    c.beginPath();
+                    c.ellipse(_acX + 4.2 + Math.sin(_acSt * 0.5) * 0.5, _acY - 8 - _acSt * 0.6, 0.8, 0.5, 0, 0, 6.28);
+                    c.fill();
+                  }
+                }
+              })();
+
+              // ── Rose-covered wooden archway above the gate ──
+              // Classic New England touch — a curved wooden arbor straddling
+              // the gate, with climbing pink roses in spring/summer, hips +
+              // bare canes in fall, and just the wooden arch + snow in winter.
+              (function() {
+                var _arX = W * 0.42; // matches gate X
+                if (_arX > hiveX - 20 && _arX < hiveX + hiveW + 20) return;
+                var _arBaseY = fenceBaseY + 4;
+                var _arTopY = fenceBaseY - 18;
+                var _arHalfW = 9;
+                // Two vertical posts beside the gate posts
+                c.fillStyle = season === 3 ? '#5a3f25' : season === 2 ? '#7a5230' : '#8a6238';
+                c.fillRect(_arX - _arHalfW - 1, _arTopY + 3, 1.4, _arBaseY - _arTopY - 3);
+                c.fillRect(_arX + _arHalfW - 0.4, _arTopY + 3, 1.4, _arBaseY - _arTopY - 3);
+                // Top curved arch — bezier curve from one post to the other
+                c.strokeStyle = season === 3 ? '#5a3f25' : season === 2 ? '#7a5230' : '#8a6238';
+                c.lineWidth = 1.4;
+                c.beginPath();
+                c.moveTo(_arX - _arHalfW, _arTopY + 3);
+                c.quadraticCurveTo(_arX, _arTopY - 1, _arX + _arHalfW, _arTopY + 3);
+                c.stroke();
+                // 4 crossbar slats inside the arch
+                c.lineWidth = 0.4;
+                for (var arc = 1; arc < 5; arc++) {
+                  var _arcY = _arTopY + 3 + arc * ((_arBaseY - _arTopY - 3) / 5);
+                  c.beginPath();
+                  c.moveTo(_arX - _arHalfW + 0.5, _arcY);
+                  c.lineTo(_arX + _arHalfW - 0.5, _arcY);
+                  c.stroke();
+                }
+                // Climbing vine along the arch — green in spring/summer, brown in fall, bare winter
+                if (season !== 3) {
+                  var _arVineCol = season === 2 ? '#7a5530' : '#15803d';
+                  c.strokeStyle = _arVineCol;
+                  c.lineWidth = 0.7;
+                  c.beginPath();
+                  c.moveTo(_arX - _arHalfW - 0.3, _arBaseY - 2);
+                  for (var arv = 0; arv <= 1; arv += 0.04) {
+                    var _arvAng = Math.PI + arv * Math.PI; // π to 2π
+                    var _arvX = _arX + Math.cos(_arvAng) * _arHalfW + Math.sin(arv * 12) * 0.6;
+                    var _arvY = _arTopY + 3 + Math.sin(_arvAng) * 4;
+                    c.lineTo(_arvX, _arvY);
+                  }
+                  c.lineTo(_arX + _arHalfW + 0.3, _arBaseY - 2);
+                  c.stroke();
+                  // Leaves dotted along the vine
+                  if (season === 0 || season === 1) {
+                    c.fillStyle = '#22c55e';
+                    for (var arl = 0; arl < 12; arl++) {
+                      var _arlAng = Math.PI + (arl / 11) * Math.PI;
+                      var _arlX = _arX + Math.cos(_arlAng) * (_arHalfW + 1);
+                      var _arlY = _arTopY + 3 + Math.sin(_arlAng) * 5;
+                      c.beginPath();
+                      c.ellipse(_arlX, _arlY, 1.0, 0.5, _arlAng + 1.5, 0, 6.28);
+                      c.fill();
+                    }
+                    // Pink roses scattered along the arch (5-petal flat circles)
+                    var _arRoses = [
+                      { angT: 0.15, col: '#ec4899' },
+                      { angT: 0.30, col: '#f472b6' },
+                      { angT: 0.50, col: '#ec4899' },
+                      { angT: 0.70, col: '#f9a8d4' },
+                      { angT: 0.85, col: '#ec4899' }
+                    ];
+                    _arRoses.forEach(function(rs) {
+                      var _rsAng = Math.PI + rs.angT * Math.PI;
+                      var _rsX = _arX + Math.cos(_rsAng) * (_arHalfW + 0.4);
+                      var _rsY = _arTopY + 3 + Math.sin(_rsAng) * 4.5;
+                      // 5 petal dots arranged in a pentagon
+                      c.fillStyle = rs.col;
+                      for (var rsp = 0; rsp < 5; rsp++) {
+                        var _rspA = (rsp / 5) * 6.28;
+                        c.beginPath();
+                        c.arc(_rsX + Math.cos(_rspA) * 0.7, _rsY + Math.sin(_rspA) * 0.7, 0.6, 0, 6.28);
+                        c.fill();
+                      }
+                      // Yellow center stamen
+                      c.fillStyle = '#facc15';
+                      c.beginPath(); c.arc(_rsX, _rsY, 0.35, 0, 6.28); c.fill();
+                    });
+                  } else {
+                    // Fall — rose hips instead (red-orange berries)
+                    c.fillStyle = '#dc2626';
+                    for (var arh = 0; arh < 5; arh++) {
+                      var _arhAngT = 0.15 + arh * 0.18;
+                      var _arhAng = Math.PI + _arhAngT * Math.PI;
+                      var _arhX = _arX + Math.cos(_arhAng) * (_arHalfW + 0.3);
+                      var _arhY = _arTopY + 3 + Math.sin(_arhAng) * 4.5;
+                      c.beginPath(); c.arc(_arhX, _arhY, 0.7, 0, 6.28); c.fill();
+                      // Brown stem cap
+                      c.fillStyle = '#3a2510';
+                      c.beginPath(); c.arc(_arhX, _arhY - 0.6, 0.3, 0, 6.28); c.fill();
+                      c.fillStyle = '#dc2626';
+                    }
+                  }
+                }
+                // Snow on top of the arch in winter
+                if (season === 3) {
+                  c.strokeStyle = '#ffffff';
+                  c.lineWidth = 2;
+                  c.beginPath();
+                  c.moveTo(_arX - _arHalfW + 0.5, _arTopY + 2);
+                  c.quadraticCurveTo(_arX, _arTopY - 2, _arX + _arHalfW - 0.5, _arTopY + 2);
+                  c.stroke();
+                }
+              })();
+
+              // ── Wooden gate in the fence (homestead detail) ──
+              // Breaks up the long horizontal fence with a hinged gate.
+              // Placed off-center on the right side so it doesn't conflict with
+              // the BEES sign or the apiary fixtures.
+              (function() {
+                var _gtX = W * 0.42;
+                if (_gtX > hiveX - 20 && _gtX < hiveX + hiveW + 20) return;
+                var _gtTopY = fenceBaseY - 4;
+                var _gtBotY = fenceBaseY + 8;
+                var _gtW = 14;
+                // Hinge posts (slightly thicker than fence posts)
+                c.fillStyle = season === 3 ? '#5a3f25' : season === 2 ? '#7a5230' : '#8a6238';
+                c.fillRect(_gtX - _gtW / 2 - 1, _gtTopY - 1, 2, _gtBotY - _gtTopY + 1);
+                c.fillRect(_gtX + _gtW / 2 - 1, _gtTopY - 1, 2, _gtBotY - _gtTopY + 1);
+                // Three horizontal slat boards (the gate panel)
+                c.fillStyle = season === 3 ? '#7a5a3a' : season === 2 ? '#a07a4a' : '#b59060';
+                c.fillRect(_gtX - _gtW / 2, _gtTopY, _gtW, 2);
+                c.fillRect(_gtX - _gtW / 2, _gtTopY + 4, _gtW, 2);
+                c.fillRect(_gtX - _gtW / 2, _gtBotY - 2, _gtW, 2);
+                // Diagonal brace (Z-pattern — iconic farm gate)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#6b4a1f';
+                c.lineWidth = 1.4;
+                c.beginPath();
+                c.moveTo(_gtX - _gtW / 2 + 1, _gtBotY - 1);
+                c.lineTo(_gtX + _gtW / 2 - 1, _gtTopY + 1);
+                c.stroke();
+                // Iron hinges (left side, dark)
+                c.fillStyle = '#1c1917';
+                c.fillRect(_gtX - _gtW / 2 - 0.8, _gtTopY + 0.5, 2, 1);
+                c.fillRect(_gtX - _gtW / 2 - 0.8, _gtTopY + 5, 2, 1);
+                c.fillRect(_gtX - _gtW / 2 - 0.8, _gtBotY - 1.5, 2, 1);
+                // Hinge bolt highlights
+                c.fillStyle = '#78716c';
+                c.beginPath(); c.arc(_gtX - _gtW / 2, _gtTopY + 1, 0.25, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_gtX - _gtW / 2, _gtTopY + 5.5, 0.25, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_gtX - _gtW / 2, _gtBotY - 1, 0.25, 0, 6.28); c.fill();
+                // Small metal latch on the right side
+                c.fillStyle = '#57534e';
+                c.fillRect(_gtX + _gtW / 2 - 1.5, _gtTopY + 3.5, 2, 1);
+                // Latch handle (loop)
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.arc(_gtX + _gtW / 2 - 0.5, _gtTopY + 4.2, 0.6, 0, 6.28);
+                c.stroke();
+                // Worn ground path through the gate (slight dirt patch)
+                c.fillStyle = 'rgba(120,90,55,0.30)';
+                c.beginPath(); c.ellipse(_gtX, fenceBaseY + 5, _gtW * 0.6, 1.2, 0, 0, 6.28); c.fill();
+              })();
+
+              // ── Rooster crowing on a fence post at dawn (year-round) ──
+              // Real Maine farm: roosters crow at dawn from a high perch.
+              // Visible all year, prominent at dawn — head tilted up + open
+              // beak forming a "cawing" silhouette during the sunrise window.
+              (function() {
+                var _rsPostX = 20 + 1 * 70 + 1.25; // 2nd post from left (different from songbird)
+                if (_rsPostX > hiveX - 18 && _rsPostX < hiveX + hiveW + 18) return;
+                var _rsY = fenceBaseY - 2 - 0.5;
+                // Detect dawn for crowing pose
+                var _rsDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                var _rsCrowing = _rsDawn > 0.3;
+                var _rsBob = Math.sin(t2 * 0.04) * 0.3;
+                // Body — rusty red-brown rooster
+                c.fillStyle = '#9a3412';
+                c.beginPath(); c.ellipse(_rsPostX, _rsY + _rsBob, 3.2, 2.5, -0.05, 0, 6.28); c.fill();
+                // Lighter wing feathers
+                c.fillStyle = '#c2410c';
+                c.beginPath(); c.ellipse(_rsPostX + 1, _rsY + _rsBob, 2.2, 1.6, -0.1, 0, 6.28); c.fill();
+                // Iridescent green tail (rooster's signature long curved tail feathers)
+                c.fillStyle = '#15803d';
+                c.beginPath();
+                c.moveTo(_rsPostX + 2.5, _rsY + _rsBob - 0.5);
+                c.quadraticCurveTo(_rsPostX + 6, _rsY + _rsBob - 4, _rsPostX + 5, _rsY + _rsBob - 5);
+                c.quadraticCurveTo(_rsPostX + 4, _rsY + _rsBob - 3, _rsPostX + 2.5, _rsY + _rsBob + 0.5);
+                c.closePath(); c.fill();
+                c.fillStyle = '#166534';
+                c.beginPath();
+                c.moveTo(_rsPostX + 2.5, _rsY + _rsBob);
+                c.quadraticCurveTo(_rsPostX + 5, _rsY + _rsBob - 2.5, _rsPostX + 4.5, _rsY + _rsBob - 4);
+                c.quadraticCurveTo(_rsPostX + 3.5, _rsY + _rsBob - 2, _rsPostX + 2.5, _rsY + _rsBob + 1);
+                c.closePath(); c.fill();
+                // Head — angled UP when crowing, level otherwise
+                var _rsHeadAng = _rsCrowing ? -0.6 : -0.1;
+                var _rsHeadX = _rsPostX - 2.5;
+                var _rsHeadY = _rsY + _rsBob - 1.5;
+                c.save();
+                c.translate(_rsHeadX, _rsHeadY);
+                c.rotate(_rsHeadAng);
+                c.fillStyle = '#9a3412';
+                c.beginPath(); c.arc(0, 0, 1.5, 0, 6.28); c.fill();
+                // Red comb on top
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(-0.6, -1.2);
+                c.lineTo(-0.4, -2.2);
+                c.lineTo(0.2, -1.5);
+                c.lineTo(0.7, -2.3);
+                c.lineTo(1.1, -1.3);
+                c.lineTo(0.8, -0.8);
+                c.closePath(); c.fill();
+                // Wattle (red flap below beak)
+                c.fillStyle = '#b91c1c';
+                c.beginPath(); c.ellipse(-0.5, 1.2, 0.5, 0.7, 0, 0, 6.28); c.fill();
+                // Beak — yellow triangle, open if crowing
+                c.fillStyle = '#facc15';
+                if (_rsCrowing) {
+                  c.beginPath();
+                  c.moveTo(-1.5, -0.2);
+                  c.lineTo(-3.5, -0.6);
+                  c.lineTo(-1.5, 0.3);
+                  c.closePath(); c.fill();
+                  // Lower beak
+                  c.beginPath();
+                  c.moveTo(-1.5, 0.3);
+                  c.lineTo(-3, 0.6);
+                  c.lineTo(-1.5, 0.5);
+                  c.closePath(); c.fill();
+                } else {
+                  c.beginPath();
+                  c.moveTo(-1.4, -0.2);
+                  c.lineTo(-2.5, 0.1);
+                  c.lineTo(-1.4, 0.4);
+                  c.closePath(); c.fill();
+                }
+                // Eye
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(-0.5, -0.3, 0.25, 0, 6.28); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(-0.45, -0.35, 0.1, 0, 6.28); c.fill();
+                c.restore();
+                // Yellow chicken-feet hooked over the post
+                c.strokeStyle = '#facc15';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.moveTo(_rsPostX - 0.8, _rsY + 2); c.lineTo(_rsPostX - 0.8, _rsY + 3.2); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX + 0.6, _rsY + 2); c.lineTo(_rsPostX + 0.6, _rsY + 3.2); c.stroke();
+                // Toe details
+                c.beginPath(); c.moveTo(_rsPostX - 0.8, _rsY + 3.2); c.lineTo(_rsPostX - 1.4, _rsY + 3.6); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX - 0.8, _rsY + 3.2); c.lineTo(_rsPostX - 0.5, _rsY + 3.6); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX + 0.6, _rsY + 3.2); c.lineTo(_rsPostX + 1.2, _rsY + 3.6); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX + 0.6, _rsY + 3.2); c.lineTo(_rsPostX + 0.3, _rsY + 3.6); c.stroke();
+                // "Cock-a-doodle-doo" musical note motes during dawn
+                if (_rsCrowing) {
+                  for (var rsm = 0; rsm < 3; rsm++) {
+                    var _rsmT = ((t2 * 0.05 + rsm * 25) % 80) / 80;
+                    if (_rsmT > 0.85) continue;
+                    var _rsmX = _rsHeadX - 4 - _rsmT * 8;
+                    var _rsmY = _rsHeadY - 2 - _rsmT * 6;
+                    var _rsmA = (1 - _rsmT) * 0.8 * _rsDawn;
+                    c.fillStyle = 'rgba(254,243,150,' + _rsmA.toFixed(3) + ')';
+                    c.beginPath(); c.arc(_rsmX, _rsmY, 0.6, 0, 6.28); c.fill();
+                    c.strokeStyle = 'rgba(254,243,150,' + _rsmA.toFixed(3) + ')';
+                    c.lineWidth = 0.3;
+                    c.beginPath();
+                    c.moveTo(_rsmX + 0.3, _rsmY);
+                    c.lineTo(_rsmX + 0.3, _rsmY - 2);
+                    c.stroke();
+                  }
+                }
+              })();
+
+              // ── Songbird perched on a fence post (spring/summer/fall day) ──
+              // Tiny robin-style silhouette with seasonal plumage. Sits on the
+              // top of a fence post and occasionally tilts its head; during
+              // the dawn window it emits three rising "warble" notes that
+              // float upward and fade — visual cue for dawn-chorus song.
+              if (season !== 3 && _sunCycle < 0.95) {
+                var _sbPostX = 90 + 2.5;  // 2nd post from left (fp=1: 20 + 70 = 90)
+                var _sbPerchY = fenceBaseY - 2 - 0.5; // sit on top of post
+                var _sbBobT = Math.sin(t2 * 0.05) * 0.5; // gentle body bob
+                var _sbHeadAng = Math.sin(t2 * 0.018) > 0.85 ? 0.35 : (Math.sin(t2 * 0.024) > 0.85 ? -0.35 : 0);
+                var _sbBreast = season === 0 ? '#ea580c' :        // robin orange
+                                 season === 1 ? '#ca8a04' :        // goldfinch yellow
+                                                '#9a3412';          // muted fall russet
+                var _sbBody = season === 1 ? '#365314' :          // olive-green summer
+                                              '#44403c';            // dark gray-brown
+                c.save();
+                c.translate(_sbPostX, _sbPerchY + _sbBobT);
+                // Body — small egg-shaped silhouette
+                c.fillStyle = _sbBody;
+                c.beginPath(); c.ellipse(0, 0, 3, 2.3, 0.05, 0, 6.28); c.fill();
+                // Breast
+                c.fillStyle = _sbBreast;
+                c.beginPath(); c.ellipse(-0.5, 0.4, 1.8, 1.4, 0.2, 0, 6.28); c.fill();
+                // Head (with tilt)
+                c.save();
+                c.translate(-2.4, -1.4);
+                c.rotate(_sbHeadAng);
+                c.fillStyle = _sbBody;
+                c.beginPath(); c.arc(0, 0, 1.6, 0, 6.28); c.fill();
+                // Tiny beak (yellow-orange triangle)
+                c.fillStyle = '#fbbf24';
+                c.beginPath();
+                c.moveTo(-1.4, -0.1);
+                c.lineTo(-2.5, 0);
+                c.lineTo(-1.4, 0.5);
+                c.closePath(); c.fill();
+                // Eye dot
+                c.fillStyle = '#0a0a0a';
+                c.beginPath(); c.arc(-0.3, -0.5, 0.35, 0, 6.28); c.fill();
+                c.restore();
+                // Wing fold (slightly darker arc)
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(0.6, 0, 1.6, 1.2, -0.1, 0, 6.28); c.fill();
+                // Tail (small dark wedge pointing back-right)
+                c.fillStyle = _sbBody;
+                c.beginPath();
+                c.moveTo(2.5, 0);
+                c.lineTo(4.5, -0.5);
+                c.lineTo(4.5, 0.5);
+                c.closePath(); c.fill();
+                // Tiny feet (two thin lines hooked over the post top)
+                c.strokeStyle = '#1c1917'; c.lineWidth = 0.35;
+                c.beginPath(); c.moveTo(-0.6, 2.2); c.lineTo(-0.6, 3.2); c.stroke();
+                c.beginPath(); c.moveTo(0.4,  2.2); c.lineTo(0.4,  3.2); c.stroke();
+                c.restore();
+                // Dawn-chorus warble notes — three rising musical motes
+                var _sbDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                if (_sbDawn > 0.1) {
+                  for (var sbn = 0; sbn < 3; sbn++) {
+                    var _sbnT = ((t2 * 0.06 + sbn * 40) % 120) / 120; // 0..1 rise cycle
+                    if (_sbnT > 0.85) continue;
+                    var _sbnY = _sbPerchY - 4 - _sbnT * 24;
+                    var _sbnX = _sbPostX + 6 + Math.sin(_sbnT * 6) * 3;
+                    var _sbnA = (1 - _sbnT) * 0.85 * _sbDawn;
+                    c.fillStyle = 'rgba(254,243,199,' + _sbnA.toFixed(3) + ')';
+                    c.beginPath(); c.arc(_sbnX, _sbnY, 0.9, 0, 6.28); c.fill();
+                    // Little eighth-note flag
+                    c.strokeStyle = 'rgba(254,243,199,' + _sbnA.toFixed(3) + ')';
+                    c.lineWidth = 0.4;
+                    c.beginPath();
+                    c.moveTo(_sbnX + 0.5, _sbnY);
+                    c.lineTo(_sbnX + 0.5, _sbnY - 2.5);
+                    c.stroke();
+                  }
                 }
               }
 
@@ -6901,6 +13034,358 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#4b5563';
               c.beginPath(); c.arc(signX - 20, signY - 6, 0.7, 0, 6.28); c.fill();
               c.beginPath(); c.arc(signX + 24, signY - 6, 0.7, 0, 6.28); c.fill();
+              // ── Analog thermometer mounted on the apiary post (seasonal mercury level) ──
+              // Real homestead detail: a wall thermometer near the apiary so
+              // the keeper can spot-check temperature before opening the hive.
+              // Mercury level rises/falls with the simulated season — winter
+              // dips well below 0°C, summer pushes 30°C+.
+              (function() {
+                var _tmAnchorX = signX - 8;
+                var _tmTopY = signY + 9;
+                // Background plate — pale cream
+                c.fillStyle = '#fef3c7';
+                c.fillRect(_tmAnchorX - 1.5, _tmTopY, 3, 15);
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.3;
+                c.strokeRect(_tmAnchorX - 1.5, _tmTopY, 3, 15);
+                // Tick marks — 6 evenly spaced
+                for (var tk = 0; tk < 7; tk++) {
+                  var _tkY = _tmTopY + 1 + tk * 2;
+                  c.beginPath(); c.moveTo(_tmAnchorX - 1.5, _tkY); c.lineTo(_tmAnchorX - 0.8, _tkY); c.stroke();
+                }
+                // Glass tube — thin clear strip
+                c.fillStyle = 'rgba(200,220,240,0.55)';
+                c.fillRect(_tmAnchorX - 0.4, _tmTopY + 1, 0.8, 13);
+                // Mercury (red) — height depends on season + day variation
+                // Spring/fall: midrange, summer: high, winter: very low
+                var _tmHeight = season === 0 ? 7 + Math.sin(t2 * 0.001) * 0.5 :
+                                 season === 1 ? 11 + Math.sin(t2 * 0.001) * 0.5 :
+                                 season === 2 ? 6 + Math.sin(t2 * 0.001) * 0.5 :
+                                                2.5 + Math.sin(t2 * 0.001) * 0.3;
+                c.fillStyle = '#dc2626';
+                c.fillRect(_tmAnchorX - 0.4, _tmTopY + 14 - _tmHeight, 0.8, _tmHeight);
+                // Bulb at the bottom (mercury reservoir)
+                c.fillStyle = '#b91c1c';
+                c.beginPath(); c.arc(_tmAnchorX, _tmTopY + 14.8, 1, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.4)';
+                c.beginPath(); c.arc(_tmAnchorX - 0.3, _tmTopY + 14.5, 0.3, 0, 6.28); c.fill();
+                // Tiny °F/°C labels
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 1.6px sans-serif';
+                c.textAlign = 'left';
+                c.fillText('°F', _tmAnchorX + 1.6, _tmTopY + 3);
+                c.fillText('100', _tmAnchorX + 1.6, _tmTopY + 6);
+                c.fillText('50', _tmAnchorX + 1.6, _tmTopY + 10);
+                c.fillText('0', _tmAnchorX + 1.6, _tmTopY + 14);
+                c.textAlign = 'start';
+              })();
+
+              // ── Wooden birdhouse mounted on the apple tree trunk (year-round) ──
+              // Small pitched-roof birdhouse with a circular entrance hole and
+              // a perch beneath. Occasional bird (blue/orange flash) visits.
+              if (hiveX > 40) {
+                var _bhAtX = hiveX * 0.55;
+                var _bhX = _bhAtX - 6;
+                var _bhY = H * 0.76 - 32; // upper-trunk position
+                // Mount bracket
+                c.fillStyle = '#3a2510';
+                c.fillRect(_bhX + 3, _bhY, 1.2, 2);
+                // House body — pale wood
+                c.fillStyle = season === 3 ? '#a07a48' : '#c9a072';
+                c.fillRect(_bhX - 3, _bhY - 5, 6, 5);
+                // Wood grain
+                c.strokeStyle = 'rgba(80,55,25,0.5)';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(_bhX - 3, _bhY - 3); c.lineTo(_bhX + 3, _bhY - 3); c.stroke();
+                c.beginPath(); c.moveTo(_bhX - 3, _bhY - 1); c.lineTo(_bhX + 3, _bhY - 1); c.stroke();
+                // Triangular roof — dark
+                c.fillStyle = season === 3 ? '#3a2510' : '#5a3a18';
+                c.beginPath();
+                c.moveTo(_bhX - 3.5, _bhY - 5);
+                c.lineTo(_bhX, _bhY - 8);
+                c.lineTo(_bhX + 3.5, _bhY - 5);
+                c.closePath(); c.fill();
+                // Roof edge highlight
+                c.fillStyle = 'rgba(255,255,255,0.2)';
+                c.beginPath();
+                c.moveTo(_bhX - 3.5, _bhY - 5);
+                c.lineTo(_bhX, _bhY - 8);
+                c.lineTo(_bhX - 2.5, _bhY - 7);
+                c.closePath(); c.fill();
+                // Circular entrance hole
+                c.fillStyle = '#1a1208';
+                c.beginPath(); c.arc(_bhX, _bhY - 3, 0.9, 0, 6.28); c.fill();
+                // Wooden perch below the hole
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_bhX - 0.3, _bhY - 1.8, 0.6, 1);
+                // Snow cap on roof in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_bhX - 3.5, _bhY - 5);
+                  c.lineTo(_bhX, _bhY - 8.5);
+                  c.lineTo(_bhX + 3.5, _bhY - 5);
+                  c.lineTo(_bhX + 3.5, _bhY - 4.5);
+                  c.lineTo(_bhX, _bhY - 7.8);
+                  c.lineTo(_bhX - 3.5, _bhY - 4.5);
+                  c.closePath(); c.fill();
+                }
+                // Occasional resident peeking out (daytime, spring/summer)
+                if ((season === 0 || season === 1) && _sunCycle < 0.95) {
+                  var _bhPeekT = ((t2 + 400) % 1100) / 1100;
+                  if (_bhPeekT > 0.55 && _bhPeekT < 0.75) {
+                    // Bluebird beak/head poking out
+                    c.fillStyle = '#0284c7';
+                    c.beginPath(); c.arc(_bhX, _bhY - 3, 0.55, 0, 6.28); c.fill();
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath();
+                    c.moveTo(_bhX, _bhY - 3);
+                    c.lineTo(_bhX - 1.2, _bhY - 2.8);
+                    c.lineTo(_bhX, _bhY - 2.6);
+                    c.closePath(); c.fill();
+                  }
+                }
+              }
+
+              // ── Rabbit tracks in winter snow (week 1+ of winter) ──
+              // Real biology: rabbits leave a distinctive print pattern —
+              // two large back-feet prints AHEAD of two smaller front-feet
+              // prints (they push off with the back legs in a hop). Tracks
+              // run diagonally across the meadow.
+              if (season === 3 && (day % 30) >= 3) {
+                var _rtCount = 6;
+                var _rtStartX = W * 0.65;
+                var _rtStartY = H * 0.83;
+                var _rtEndX = W * 0.20;
+                var _rtEndY = H * 0.87;
+                for (var rt = 0; rt < _rtCount; rt++) {
+                  var _rtT = rt / (_rtCount - 1);
+                  var _rtCx = _rtStartX + (_rtEndX - _rtStartX) * _rtT;
+                  var _rtCy = _rtStartY + (_rtEndY - _rtStartY) * _rtT;
+                  // Skip if track set overlaps hive
+                  if (_rtCx > hiveX - 15 && _rtCx < hiveX + hiveW + 15) continue;
+                  // Two large back-feet prints (ahead in direction of motion)
+                  c.fillStyle = 'rgba(180,200,225,0.65)';
+                  c.beginPath(); c.ellipse(_rtCx - 1, _rtCy - 1, 0.9, 1.6, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_rtCx + 1, _rtCy - 1, 0.9, 1.6, 0, 0, 6.28); c.fill();
+                  // Two small front-feet prints (behind)
+                  c.beginPath(); c.ellipse(_rtCx - 0.5, _rtCy + 1.5, 0.5, 0.8, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_rtCx + 0.5, _rtCy + 1.5, 0.5, 0.8, 0, 0, 6.28); c.fill();
+                  // Darker depression centers
+                  c.fillStyle = 'rgba(140,165,200,0.45)';
+                  c.beginPath(); c.ellipse(_rtCx - 1, _rtCy - 1, 0.45, 1.0, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_rtCx + 1, _rtCy - 1, 0.45, 1.0, 0, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Bee-shaped weathervane on a tall pole (wind direction indicator) ──
+              // Rotates to point into the wind. Uses the same coherent wind
+              // wave as the rest of the meadow so it always "agrees" with the
+              // grass + flower + wind chime motion. The pointer is a stylized
+              // metal bee with stripes + wings, in classic black silhouette
+              // against the sky. Compass-points (N/E/S/W) fixed below.
+              (function() {
+                var _wvX = signX - 15;
+                var _wvTopY = signY - 15;
+                var _wvBaseY = signY + 18;
+                // Tall metal pole
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.6;
+                c.beginPath(); c.moveTo(_wvX, _wvTopY); c.lineTo(_wvX, _wvBaseY); c.stroke();
+                // Tiny ball cap at top
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wvX, _wvTopY, 0.7, 0, 6.28); c.fill();
+                // Fixed compass cross (N/E/S/W rods) just below the pivot
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.35;
+                var _wvCrossY = _wvTopY + 8;
+                c.beginPath();
+                c.moveTo(_wvX - 3, _wvCrossY); c.lineTo(_wvX + 3, _wvCrossY);
+                c.moveTo(_wvX, _wvCrossY - 3); c.lineTo(_wvX, _wvCrossY + 3);
+                c.stroke();
+                // Compass letters
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 1.6px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('N', _wvX, _wvCrossY - 3.7);
+                c.fillText('S', _wvX, _wvCrossY + 4.5);
+                c.fillText('W', _wvX - 4, _wvCrossY + 0.6);
+                c.fillText('E', _wvX + 4, _wvCrossY + 0.6);
+                c.textAlign = 'start';
+                // Wind direction from the coherent wave (positive = blowing right)
+                var _wvWind = Math.sin(t2 * 0.025);
+                // Rotation: bee points INTO the wind (head-into-wind, like a real vane)
+                var _wvRot = -_wvWind * 0.6;
+                c.save();
+                c.translate(_wvX, _wvTopY + 3);
+                c.rotate(_wvRot);
+                // Bee body — black silhouette
+                c.fillStyle = '#1c1917';
+                c.beginPath();
+                c.ellipse(0, 0, 3, 1.3, 0, 0, 6.28);
+                c.fill();
+                // Yellow stripes (visible at silhouette scale)
+                c.fillStyle = '#facc15';
+                c.fillRect(-0.5, -1.2, 0.4, 2.4);
+                c.fillRect(1, -1.1, 0.3, 2.2);
+                // Head (smaller circle at one end)
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(-2.5, 0, 0.9, 0, 6.28); c.fill();
+                // Stinger tail point
+                c.beginPath();
+                c.moveTo(3, 0);
+                c.lineTo(4, -0.4);
+                c.lineTo(4, 0.4);
+                c.closePath(); c.fill();
+                // Tiny antennae
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(-3, -0.5); c.lineTo(-3.8, -1.5); c.stroke();
+                c.beginPath(); c.moveTo(-3, 0.5); c.lineTo(-3.8, 1.5); c.stroke();
+                // Wing — semi-transparent gray
+                c.fillStyle = 'rgba(200,210,220,0.7)';
+                c.beginPath(); c.ellipse(-0.5, -1.6, 1.8, 0.7, -0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-0.5,  1.6, 1.8, 0.7,  0.3, 0, 6.28); c.fill();
+                c.restore();
+              })();
+
+              // ── Small chalkboard with daily hive notes (mounted beside apiary sign) ──
+              // Real beekeeping practice: keepers chalk inspection observations
+              // on a slate at the apiary. Shows current day count + honey
+              // weight + colony health note. Updates live with the colony.
+              (function() {
+                var _cbX = signX + 20, _cbY = signY + 12;
+                // Frame
+                c.fillStyle = '#3a2510';
+                c.fillRect(_cbX - 8, _cbY - 5, 16, 11);
+                // Chalkboard surface
+                c.fillStyle = '#1a3530';
+                c.fillRect(_cbX - 7.2, _cbY - 4.2, 14.4, 9.4);
+                // Chalk header line
+                c.fillStyle = '#fafaf9';
+                c.font = 'bold 2px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('HIVE LOG', _cbX, _cbY - 2.3);
+                // Header underline
+                c.strokeStyle = '#fafaf9';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(_cbX - 5, _cbY - 1.8); c.lineTo(_cbX + 5, _cbY - 1.8); c.stroke();
+                // Day count
+                c.font = 'bold 1.5px sans-serif';
+                c.fillStyle = '#fde047';
+                c.textAlign = 'left';
+                c.fillText('Day ' + (day || 0), _cbX - 6.5, _cbY);
+                // Honey weight
+                c.fillStyle = '#fafaf9';
+                c.fillText('Honey: ' + Math.round(honey || 0) + ' lb', _cbX - 6.5, _cbY + 1.6);
+                // Colony health code
+                var _healthLetter = (colonyHealth || 50) >= 70 ? 'A' : (colonyHealth || 50) >= 50 ? 'B' : (colonyHealth || 50) >= 30 ? 'C' : 'D';
+                var _healthCol = _healthLetter === 'A' ? '#4ade80' : _healthLetter === 'B' ? '#facc15' : _healthLetter === 'C' ? '#fb923c' : '#dc2626';
+                c.fillStyle = _healthCol;
+                c.fillText('Grade: ' + _healthLetter, _cbX - 6.5, _cbY + 3.2);
+                // Tiny chalk dust on the bottom rim
+                c.fillStyle = 'rgba(250,250,249,0.45)';
+                c.fillRect(_cbX - 6, _cbY + 5.5, 12, 0.4);
+                // Piece of chalk resting on the rim
+                c.fillStyle = '#fafaf9';
+                c.fillRect(_cbX + 4, _cbY + 5.2, 2.5, 0.7);
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_cbX + 6.3, _cbY + 5.2, 0.4, 0.7);
+                c.textAlign = 'start';
+              })();
+
+              // ── Yarrow flower patch (medicinal herb, real beekeeping plant) ──
+              // Real biology: yarrow (Achillea millefolium) is a major nectar
+              // source AND has propolis-like antibiotic compounds bees collect
+              // for hive sanitation. White flat-topped umbel clusters on tall
+              // ferny stems. Bloom: summer + early fall.
+              if (season === 1 || (season === 2 && (day % 30) <= 12)) {
+                var _yrCx = W * 0.55, _yrCy = H * 0.84;
+                for (var yr = 0; yr < 6; yr++) {
+                  var _yrX = _yrCx + (yr - 2.5) * 2.5;
+                  var _yrY = _yrCy + (yr % 2) * 1;
+                  var _yrWind = Math.sin(t2 * 0.025 - _yrX * 0.015) * 1.2;
+                  // Stem
+                  c.strokeStyle = '#65a30d';
+                  c.lineWidth = 0.4;
+                  c.beginPath();
+                  c.moveTo(_yrX, _yrY + 1);
+                  c.quadraticCurveTo(_yrX + _yrWind * 0.5, _yrY - 3, _yrX + _yrWind, _yrY - 7);
+                  c.stroke();
+                  // Ferny side leaves (3 pairs)
+                  c.strokeStyle = 'rgba(101,163,13,0.7)';
+                  c.lineWidth = 0.25;
+                  for (var yrl = 0; yrl < 3; yrl++) {
+                    var _yrlY = _yrY - 1 - yrl * 1.8;
+                    var _yrlX = _yrX + _yrWind * (yrl / 3);
+                    c.beginPath(); c.moveTo(_yrlX, _yrlY); c.lineTo(_yrlX - 1.5, _yrlY - 0.3); c.stroke();
+                    c.beginPath(); c.moveTo(_yrlX, _yrlY); c.lineTo(_yrlX + 1.5, _yrlY - 0.3); c.stroke();
+                  }
+                  // Flat-topped umbel cluster — many tiny white florets
+                  var _yrFlowerX = _yrX + _yrWind;
+                  var _yrFlowerY = _yrY - 7;
+                  c.fillStyle = '#fafaf9';
+                  for (var yrf = 0; yrf < 9; yrf++) {
+                    var _yrfA = (yrf / 9) * 6.28;
+                    var _yrfR = (yrf % 3) * 0.6 + 0.2;
+                    var _yrfX = _yrFlowerX + Math.cos(_yrfA) * _yrfR;
+                    var _yrfY = _yrFlowerY + Math.sin(_yrfA) * _yrfR * 0.6;
+                    c.beginPath(); c.arc(_yrfX, _yrfY, 0.35, 0, 6.28); c.fill();
+                  }
+                  // Yellow center dot per cluster
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_yrFlowerX, _yrFlowerY, 0.25, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Wind chime hanging off the apiary post (visual wind indicator) ──
+              // Suspended from a small bracket on the right of the post,
+              // beneath the sign. The chime swings in the same coherent wind
+              // wave that moves the grass and flowers (so the whole scene
+              // "agrees" about which way the wind is blowing). Subtle metallic
+              // glints catch the sun on the tubes.
+              (function() {
+                var _wcAnchorX = signX + 8;
+                var _wcAnchorY = signY + 10;
+                // Bracket arm
+                c.fillStyle = '#3a2510';
+                c.fillRect(signX + 2.5, signY + 8, 6, 1.2);
+                // Suspending string
+                c.strokeStyle = 'rgba(40,30,20,0.7)';
+                c.lineWidth = 0.4;
+                // Wind sway from same wave as grass — sign post X * 0.015
+                var _wcSway = Math.sin(t2 * 0.025 - signX * 0.015) * 1.8;
+                c.beginPath();
+                c.moveTo(_wcAnchorX, _wcAnchorY - 0.5);
+                c.lineTo(_wcAnchorX + _wcSway, _wcAnchorY + 4);
+                c.stroke();
+                // Center disc — the "wind catcher"
+                c.fillStyle = '#a8732a';
+                c.beginPath(); c.arc(_wcAnchorX + _wcSway, _wcAnchorY + 5, 1.4, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,235,180,0.6)';
+                c.beginPath(); c.arc(_wcAnchorX + _wcSway - 0.4, _wcAnchorY + 4.7, 0.5, 0, 6.28); c.fill();
+                // 5 tubes hanging beneath at staggered lengths
+                var _wcTubeLens = [6, 7, 8, 7, 6];
+                _wcTubeLens.forEach(function(_wcLen, wci) {
+                  var _wcTubeX = _wcAnchorX + _wcSway - 3 + wci * 1.5;
+                  // Per-tube extra sway (lighter tubes wobble more)
+                  var _wcTubeSway = Math.sin(t2 * 0.04 + wci * 0.7) * 0.4 + _wcSway * 0.3;
+                  // Suspension line
+                  c.strokeStyle = 'rgba(60,40,20,0.5)';
+                  c.lineWidth = 0.25;
+                  c.beginPath();
+                  c.moveTo(_wcTubeX, _wcAnchorY + 5.5);
+                  c.lineTo(_wcTubeX + _wcTubeSway, _wcAnchorY + 7);
+                  c.stroke();
+                  // Tube body — thin metallic rectangle
+                  var _wcGrad = c.createLinearGradient(_wcTubeX + _wcTubeSway - 0.6, _wcAnchorY + 7, _wcTubeX + _wcTubeSway + 0.6, _wcAnchorY + 7);
+                  _wcGrad.addColorStop(0, '#78716c');
+                  _wcGrad.addColorStop(0.5, '#d6d3d1');
+                  _wcGrad.addColorStop(1, '#57534e');
+                  c.fillStyle = _wcGrad;
+                  c.fillRect(_wcTubeX + _wcTubeSway - 0.6, _wcAnchorY + 7, 1.2, _wcLen);
+                });
+              })();
 
               // ── Apple tree near the hive (classic beekeeping companion plant) ──
               if (hiveX > 40) {
@@ -6948,6 +13433,267 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   blossoms.forEach(function(bl) {
                     c.beginPath(); c.arc(atX + bl[0], canopyY + bl[1], 1.3, 0, 6.28); c.fill();
                   });
+                }
+                // ── Fallen + falling apples (late fall, day 20+) ──
+                // Real-world cue: ripe fruit gives up the branch. A few apples
+                // sit on the ground around the trunk (long-fallen, dulled red);
+                // one is in mid-fall (cycles every ~12 sec).
+                if (season === 2 && (day % 30) >= 20) {
+                  // Settled apples on the ground beneath the canopy
+                  var _faSettled = [
+                    { dx:  -4, dy: 1,   shade: '#b91c1c' },
+                    { dx:   6, dy: 0.5, shade: '#dc2626' },
+                    { dx: -10, dy: 2,   shade: '#991b1b' },
+                    { dx:  12, dy: 1.5, shade: '#b91c1c' },
+                    { dx:   2, dy: 3,   shade: '#7f1d1d' }  // bruised
+                  ];
+                  _faSettled.forEach(function(fa) {
+                    var _faX = atX + fa.dx, _faY = atY + fa.dy;
+                    // Shadow
+                    c.fillStyle = 'rgba(0,0,0,0.28)';
+                    c.beginPath(); c.ellipse(_faX, _faY + 1.5, 2.2, 0.6, 0, 0, 6.28); c.fill();
+                    // Apple body
+                    c.fillStyle = fa.shade;
+                    c.beginPath(); c.arc(_faX, _faY, 1.6, 0, 6.28); c.fill();
+                    // Highlight
+                    c.fillStyle = 'rgba(255,255,255,0.3)';
+                    c.beginPath(); c.arc(_faX - 0.5, _faY - 0.5, 0.4, 0, 6.28); c.fill();
+                    // Tiny brown stem flick
+                    c.strokeStyle = '#3a2010';
+                    c.lineWidth = 0.4;
+                    c.beginPath(); c.moveTo(_faX, _faY - 1.5); c.lineTo(_faX + 0.4, _faY - 2.2); c.stroke();
+                  });
+                  // One apple in mid-fall — cycles every ~12 sec
+                  var _faPeriod = 12000;
+                  var _faFallT = (Date.now() % _faPeriod) / _faPeriod;
+                  if (_faFallT < 0.40) {
+                    var _faProg = _faFallT / 0.40;
+                    var _faX = atX + 8;
+                    // Quadratic fall — accelerating
+                    var _faY = canopyY + 4 + (atY - canopyY - 6) * (_faProg * _faProg);
+                    var _faRot = _faProg * 4; // tumbling
+                    c.save();
+                    c.translate(_faX, _faY);
+                    c.rotate(_faRot);
+                    c.fillStyle = '#dc2626';
+                    c.beginPath(); c.arc(0, 0, 1.6, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(255,255,255,0.35)';
+                    c.beginPath(); c.arc(-0.5, -0.5, 0.4, 0, 6.28); c.fill();
+                    c.strokeStyle = '#3a2010';
+                    c.lineWidth = 0.4;
+                    c.beginPath(); c.moveTo(0, -1.5); c.lineTo(0.3, -2.2); c.stroke();
+                    c.restore();
+                  }
+                  // Impact puff when an apple just landed
+                  if (_faFallT >= 0.40 && _faFallT < 0.46) {
+                    var _faPuffT = (_faFallT - 0.40) / 0.06;
+                    var _faPuffA = (1 - _faPuffT) * 0.5;
+                    c.fillStyle = 'rgba(200,160,100,' + _faPuffA.toFixed(3) + ')';
+                    c.beginPath(); c.ellipse(atX + 8, atY + 1, 3 + _faPuffT * 2, 1, 0, 0, 6.28); c.fill();
+                  }
+                }
+                // ── Empty bird nest in upper branch (early spring) ──
+                // Real biology: in early spring before leaves fully emerge,
+                // last year's nests are still visible. Old nests sometimes
+                // hold a clutch of small pale-blue eggs (robin, bluebird).
+                // Visible day 4-15 of spring (before canopy fills in fully).
+                if (season === 0 && (day % 30) >= 4 && (day % 30) <= 15) {
+                  var _bnX = atX - 16;
+                  var _bnY = canopyY - 8;
+                  // Nest shadow
+                  c.fillStyle = 'rgba(0,0,0,0.25)';
+                  c.beginPath(); c.ellipse(_bnX, _bnY + 1.5, 3.5, 0.8, 0, 0, 6.28); c.fill();
+                  // Nest base — woven twigs
+                  c.fillStyle = '#5a3a18';
+                  c.beginPath(); c.ellipse(_bnX, _bnY, 3.2, 1.5, 0, 0, 6.28); c.fill();
+                  // Lighter rim weave
+                  c.fillStyle = '#7a5230';
+                  c.beginPath(); c.ellipse(_bnX, _bnY - 0.4, 3.2, 1.0, 0, 0, 6.28); c.fill();
+                  // Dark interior cup
+                  c.fillStyle = '#3a2510';
+                  c.beginPath(); c.ellipse(_bnX, _bnY - 0.3, 2.0, 0.6, 0, 0, 6.28); c.fill();
+                  // Twig texture (3 visible strands)
+                  c.strokeStyle = '#3a2510';
+                  c.lineWidth = 0.25;
+                  c.beginPath(); c.moveTo(_bnX - 3, _bnY + 0.5); c.lineTo(_bnX + 3, _bnY + 0.7); c.stroke();
+                  c.beginPath(); c.moveTo(_bnX - 2.8, _bnY); c.lineTo(_bnX + 2.8, _bnY - 0.2); c.stroke();
+                  // Three small pale-blue robin eggs in the cup
+                  c.fillStyle = '#7dd3fc'; // robin-egg blue
+                  c.beginPath(); c.ellipse(_bnX - 0.7, _bnY - 0.5, 0.55, 0.4, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bnX + 0.2, _bnY - 0.6, 0.55, 0.4, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bnX + 1, _bnY - 0.4, 0.55, 0.4, 0, 0, 6.28); c.fill();
+                  // Tiny white speckles on each egg
+                  c.fillStyle = 'rgba(255,255,255,0.5)';
+                  c.beginPath(); c.arc(_bnX - 0.8, _bnY - 0.65, 0.13, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_bnX + 0.1, _bnY - 0.75, 0.13, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_bnX + 0.9, _bnY - 0.55, 0.13, 0, 6.28); c.fill();
+                  // Short branch under the nest
+                  c.strokeStyle = '#4a2f1a';
+                  c.lineWidth = 0.7;
+                  c.beginPath(); c.moveTo(_bnX - 4, _bnY + 1.4); c.lineTo(_bnX + 4, _bnY + 1.4); c.stroke();
+                }
+
+                // ── Swarm cluster hanging from an apple-tree branch ──
+                // Real biology: in late spring (day 18+), an overcrowded colony
+                // produces a new queen. The OLD queen leaves with about half
+                // the workers — they hang in a temporary "bivouac" cluster on
+                // a nearby branch for 1-3 days while scout bees waggle-dance
+                // candidate nest sites until quorum is reached. This is a
+                // healthy reproductive event, not a failure.
+                if (season === 0 && (day % 30) >= 18 && (day % 30) <= 25) {
+                  var _swCx = atX + 16;
+                  var _swCy = canopyY + 8;
+                  var _swSway = Math.sin(t2 * 0.012) * 1.2;
+                  // Teardrop cluster outline — slight rocking sway
+                  c.save();
+                  c.translate(_swCx + _swSway, _swCy);
+                  // Shadow base
+                  c.fillStyle = 'rgba(40,25,10,0.55)';
+                  c.beginPath();
+                  c.moveTo(0, -6);
+                  c.bezierCurveTo(-7, -2, -8, 4, -5, 8);
+                  c.bezierCurveTo(-2, 12, 2, 12, 5, 8);
+                  c.bezierCurveTo(8, 4, 7, -2, 0, -6);
+                  c.closePath(); c.fill();
+                  // Bee bodies — tightly packed dots in the cluster
+                  for (var sw = 0; sw < 38; sw++) {
+                    var _swA = (sw / 38) * 6.28 + (sw % 7) * 0.4;
+                    var _swR = ((sw % 5) + 1) * 1.3;
+                    var _swPx = Math.cos(_swA) * _swR;
+                    var _swPy = Math.sin(_swA) * _swR * 1.4 + 2; // elongate downward
+                    if (Math.abs(_swPx) > 7 || _swPy < -5 || _swPy > 11) continue;
+                    var _swCol = sw % 3 === 0 ? '#fbbf24' : sw % 3 === 1 ? '#92400e' : '#1c1917';
+                    c.fillStyle = _swCol;
+                    c.beginPath(); c.arc(_swPx, _swPy, 0.7, 0, 6.28); c.fill();
+                  }
+                  // The queen at the center (slightly brighter, larger)
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(0, 2, 1.2, 0.7, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#92400e';
+                  c.fillRect(-0.4, 1.5, 0.3, 1);
+                  c.restore();
+                  // Scout bees flying in and out (3 of them, looping)
+                  for (var sc = 0; sc < 3; sc++) {
+                    var _scT = ((t2 * 0.04 + sc * 40) % 60) / 60; // 0..1
+                    var _scAng = sc * 2.1 + t2 * 0.02;
+                    var _scR = 18 + _scT * 22;
+                    var _scX = _swCx + _swSway + Math.cos(_scAng) * _scR;
+                    var _scY = _swCy + Math.sin(_scAng) * _scR * 0.5;
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.arc(_scX, _scY, 0.8, 0, 6.28); c.fill();
+                    // Wing blur
+                    c.fillStyle = 'rgba(220,240,255,0.5)';
+                    c.beginPath(); c.ellipse(_scX, _scY - 0.5, 1.2, 0.4, 0, 0, 6.28); c.fill();
+                  }
+                }
+              }
+
+              // ── Native ground-bee nesting holes (real biology) ──
+              // 70% of native bees nest in bare soil, not in hives. Show a
+              // small cluster of darker pinhole openings in the meadow with
+              // a tiny mound of excavated dirt around each. Spring + summer
+              // only (active nesting season). One hole occasionally hosts a
+              // tiny dark blue mining-bee silhouette entering or leaving.
+              if (season === 0 || season === 1) {
+                var _gbCx = W * 0.30, _gbCy = H * 0.85;
+                var _gbHoles = [
+                  { dx:  0, dy:  0, r: 0.9 },
+                  { dx:  6, dy:  2, r: 0.7 },
+                  { dx: -5, dy:  3, r: 0.8 },
+                  { dx:  3, dy: -2, r: 0.65 },
+                  { dx: -7, dy: -1, r: 0.7 },
+                  { dx: 10, dy: -1, r: 0.6 }
+                ];
+                _gbHoles.forEach(function(gh) {
+                  var _ghX = _gbCx + gh.dx;
+                  var _ghY = _gbCy + gh.dy;
+                  // Mound of excavated dirt (lighter ring)
+                  c.fillStyle = season === 2 ? 'rgba(140,100,60,0.55)' : 'rgba(120,90,50,0.50)';
+                  c.beginPath(); c.ellipse(_ghX, _ghY, gh.r * 2.2, gh.r * 1.1, 0, 0, 6.28); c.fill();
+                  // Hole itself (dark pinhole)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(_ghX, _ghY, gh.r, 0, 6.28); c.fill();
+                });
+                // Mining bee at one hole (returns every ~6s)
+                var _gbT = ((t2 * 0.04) % 60) / 60;
+                if (_gbT > 0.30 && _gbT < 0.55) {
+                  var _gbAt = (_gbT - 0.30) / 0.25;
+                  var _gbBeeX = _gbCx + 6 - _gbAt * 2;
+                  var _gbBeeY = _gbCy + 2 - _gbAt * 0.5;
+                  c.fillStyle = '#1e3a8a'; // mining bee dark blue
+                  c.beginPath(); c.ellipse(_gbBeeX, _gbBeeY, 1.2, 0.7, 0, 0, 6.28); c.fill();
+                  // Tiny wing blur
+                  c.fillStyle = 'rgba(220,240,255,0.4)';
+                  c.beginPath(); c.ellipse(_gbBeeX, _gbBeeY - 0.8, 1.1, 0.4, 0, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Bumblebee cameo (spring + summer, distinct from honeybees) ──
+              // Real biology: bumblebees (Bombus spp.) are larger, fuzzier, can
+              // forage at lower temperatures than honeybees, and "buzz-pollinate"
+              // (vibrating to release pollen) on tomatoes/blueberries/cranberries.
+              // Visually distinguished here by 1.6× size, fuzzier body outline,
+              // bolder yellow/black banding, slower flight than honeybees.
+              if ((season === 0 || season === 1) && flowers.length > 3) {
+                var _bbT = ((t2 * 0.04) % 100) / 100; // 0..1 visit cycle
+                if (_bbT < 0.8) {
+                  var _bbTargetA = flowers[(season === 1 ? 2 : 5) % flowers.length];
+                  var _bbTargetB = flowers[(season === 1 ? 7 : 10) % flowers.length];
+                  var _bbVisitT = _bbT / 0.8;
+                  var _bbX, _bbY, _bbHovering = false;
+                  if (_bbVisitT < 0.30) {
+                    var _bbU = _bbVisitT / 0.30;
+                    _bbX = -8 + _bbU * (_bbTargetA.x + 8);
+                    _bbY = H * 0.65 + _bbU * (_bbTargetA.y - 8 - H * 0.65);
+                  } else if (_bbVisitT < 0.50) {
+                    _bbX = _bbTargetA.x + Math.sin(t2 * 0.08) * 1.8;
+                    _bbY = _bbTargetA.y - 6 + Math.cos(t2 * 0.06) * 1.2;
+                    _bbHovering = true;
+                  } else if (_bbVisitT < 0.70) {
+                    var _bbU2 = (_bbVisitT - 0.50) / 0.20;
+                    _bbX = _bbTargetA.x + (_bbTargetB.x - _bbTargetA.x) * _bbU2;
+                    _bbY = (_bbTargetA.y - 6) + (_bbTargetB.y - 6 - (_bbTargetA.y - 6)) * _bbU2;
+                  } else if (_bbVisitT < 0.85) {
+                    _bbX = _bbTargetB.x + Math.sin(t2 * 0.08 + 1) * 1.8;
+                    _bbY = _bbTargetB.y - 6 + Math.cos(t2 * 0.06 + 1) * 1.2;
+                    _bbHovering = true;
+                  } else {
+                    var _bbU3 = (_bbVisitT - 0.85) / 0.15;
+                    _bbX = _bbTargetB.x + _bbU3 * 60;
+                    _bbY = (_bbTargetB.y - 6) + _bbU3 * (H * 0.60 - (_bbTargetB.y - 6));
+                  }
+                  c.save();
+                  c.translate(_bbX, _bbY);
+                  // Fuzzy outline (extra-soft glow because bumblebees are HAIRY)
+                  c.fillStyle = 'rgba(251,191,36,0.4)';
+                  c.beginPath(); c.ellipse(0, 0, 4.5, 3, 0, 0, 6.28); c.fill();
+                  // Body — bold yellow with two thick black bands
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(0, 0, 3.6, 2.4, 0, 0, 6.28); c.fill();
+                  // Black bands (3 thick stripes — wider than honeybee's)
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-1.6, -2, 0.9, 4);
+                  c.fillRect(-0.1, -2, 0.9, 4);
+                  c.fillRect( 1.4, -2, 0.7, 4);
+                  // Fuzzy head (darker)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(-3, 0, 1.3, 0, 6.28); c.fill();
+                  // Pollen baskets — bright yellow lumps on the hind legs (loaded)
+                  if (_bbHovering) {
+                    c.fillStyle = '#fde047';
+                    c.beginPath(); c.ellipse(0.5, 2.3, 0.6, 0.9, 0.2, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(202,138,4,0.6)';
+                    c.beginPath(); c.arc(0.5, 2.3, 0.3, 0, 6.28); c.fill();
+                  }
+                  // Wings — broader than honeybee, more visible
+                  c.fillStyle = 'rgba(220,240,255,0.55)';
+                  c.beginPath(); c.ellipse(0, -2.6, 3.0, 1.0, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(0,  2.6, 3.0, 1.0, 0, 0, 6.28); c.fill();
+                  // Wing blur — bumblebees buzz at ~200 Hz, less than honeybees but visible
+                  c.strokeStyle = 'rgba(255,255,255,0.25)';
+                  c.lineWidth = 0.3;
+                  c.beginPath(); c.ellipse(0, -2.6, 3.4, 1.2, 0, 0, 6.28); c.stroke();
+                  c.restore();
                 }
               }
 
@@ -7068,6 +13814,258 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
 
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
+              // ── Row of sunflowers (late summer + fall — major bee pollen plant) ──
+              // Real biology: sunflowers (Helianthus annuus) produce more
+              // pollen per acre than almost any other flower. Bees pack it
+              // into bright orange-yellow leg-baskets. Each disk-floret in
+              // the central head is a separate flower. Heads track the sun
+              // when young (heliotropism); fully bloomed heads face east.
+              if ((season === 1 && (day % 30) >= 14) || (season === 2 && (day % 30) <= 18)) {
+                var _sfRow = [
+                  W * 0.24, W * 0.28, W * 0.32
+                ];
+                _sfRow.forEach(function(_sfFootX, sfi) {
+                  if (_sfFootX > hiveX - 18 && _sfFootX < hiveX + hiveW + 18) return;
+                  var _sfFootY = H * 0.78;
+                  var _sfHeight = 22 + (sfi * 3);
+                  var _sfWind = Math.sin(t2 * 0.025 - _sfFootX * 0.015) * 1.5;
+                  var _sfTopX = _sfFootX + _sfWind;
+                  var _sfTopY = _sfFootY - _sfHeight;
+                  // Stalk (thick green)
+                  c.strokeStyle = '#365314';
+                  c.lineWidth = 1.6;
+                  c.beginPath();
+                  c.moveTo(_sfFootX, _sfFootY);
+                  c.quadraticCurveTo(_sfFootX + _sfWind * 0.5, _sfFootY - _sfHeight / 2, _sfTopX, _sfTopY + 3);
+                  c.stroke();
+                  // Two big leaves down the stalk
+                  c.fillStyle = '#4d7c0f';
+                  c.beginPath();
+                  c.ellipse(_sfFootX + _sfWind * 0.3 - 3, _sfFootY - _sfHeight * 0.4, 3.5, 1.4, -0.6, 0, 6.28);
+                  c.fill();
+                  c.beginPath();
+                  c.ellipse(_sfFootX + _sfWind * 0.5 + 3, _sfFootY - _sfHeight * 0.65, 3, 1.2, 0.5, 0, 6.28);
+                  c.fill();
+                  // Outer petals — bright yellow ring
+                  c.fillStyle = '#facc15';
+                  for (var sfp = 0; sfp < 16; sfp++) {
+                    var _sfpA = (sfp / 16) * 6.28;
+                    var _sfpX = _sfTopX + Math.cos(_sfpA) * 4.5;
+                    var _sfpY = _sfTopY + Math.sin(_sfpA) * 4.5;
+                    c.beginPath();
+                    c.ellipse(_sfpX, _sfpY, 1.4, 0.7, _sfpA, 0, 6.28);
+                    c.fill();
+                  }
+                  // Darker outer-petal accents (a few orange streaks)
+                  c.fillStyle = '#ea580c';
+                  for (var sfp2 = 0; sfp2 < 16; sfp2 += 3) {
+                    var _sfp2A = (sfp2 / 16) * 6.28;
+                    var _sfp2X = _sfTopX + Math.cos(_sfp2A) * 4.5;
+                    var _sfp2Y = _sfTopY + Math.sin(_sfp2A) * 4.5;
+                    c.beginPath();
+                    c.ellipse(_sfp2X, _sfp2Y, 0.8, 0.4, _sfp2A, 0, 6.28);
+                    c.fill();
+                  }
+                  // Central disk (brown — packed with thousands of disk-florets)
+                  c.fillStyle = '#7c2d12';
+                  c.beginPath(); c.arc(_sfTopX, _sfTopY, 3.2, 0, 6.28); c.fill();
+                  // Disk-floret texture: small dot pattern
+                  c.fillStyle = '#3a1808';
+                  for (var sfd = 0; sfd < 20; sfd++) {
+                    var _sfdA = (sfd / 20) * 6.28 + sfi * 0.3;
+                    var _sfdR = ((sfd % 4) + 1) * 0.55;
+                    c.beginPath();
+                    c.arc(_sfTopX + Math.cos(_sfdA) * _sfdR, _sfTopY + Math.sin(_sfdA) * _sfdR, 0.2, 0, 6.28);
+                    c.fill();
+                  }
+                  // Bee visiting the disk — periodic
+                  if (sfi === 1 && season === 1) {
+                    var _sfBeeT = ((t2 * 0.06) % 70) / 70;
+                    if (_sfBeeT < 0.5) {
+                      var _sfBeeX = _sfTopX + Math.cos(_sfBeeT * 6) * 2.2;
+                      var _sfBeeY = _sfTopY + Math.sin(_sfBeeT * 6) * 2.2;
+                      c.fillStyle = '#fbbf24';
+                      c.beginPath(); c.ellipse(_sfBeeX, _sfBeeY, 1.0, 0.6, 0, 0, 6.28); c.fill();
+                      c.fillStyle = '#1c1917';
+                      c.fillRect(_sfBeeX - 0.2, _sfBeeY - 0.5, 0.3, 1);
+                      c.fillStyle = 'rgba(220,240,255,0.5)';
+                      c.beginPath(); c.ellipse(_sfBeeX, _sfBeeY - 0.6, 0.9, 0.3, 0, 0, 6.28); c.fill();
+                      // Orange pollen ball on the bee's leg!
+                      c.fillStyle = '#ea580c';
+                      c.beginPath(); c.arc(_sfBeeX, _sfBeeY + 0.7, 0.3, 0, 6.28); c.fill();
+                    }
+                  }
+                });
+              }
+
+              // ── Goldenrod plumes (late summer + fall) ──
+              // Tall stalks with bushy yellow plume tops — the most important
+              // late-season nectar source in the Northeast, accounting for the
+              // bulk of fall honey stores. Real biology: when goldenrod is
+              // flowing, the hive smells faintly of sweat-socks (geraniol from
+              // the nectar fermenting). Appears in late summer (day >= 18 of
+              // season 1) and all of fall, fades as winter approaches.
+              if ((season === 1 && (day % 30) >= 18) || season === 2) {
+                var _grIntensity = season === 2 ? 1 : Math.min(1, ((day % 30) - 18) / 8);
+                var _grCount = Math.floor(12 * _grIntensity);
+                for (var gr = 0; gr < _grCount; gr++) {
+                  var _grBaseX = (gr * 67 + 23) % W;
+                  // Skip if too close to the hive/keeper area
+                  if (_grBaseX > hiveX - 25 && _grBaseX < hiveX + hiveW + 20) continue;
+                  var _grBaseY = H * 0.78 + (gr % 3) * 1.5;
+                  var _grHeight = 16 + (gr % 5) * 3;
+                  var _grWind = Math.sin(t2 * 0.025 - _grBaseX * 0.015) * 2.5;
+                  var _grTopX = _grBaseX + _grWind;
+                  var _grTopY = _grBaseY - _grHeight;
+                  // Stem (slim olive-green)
+                  c.strokeStyle = season === 2 ? '#65a30d' : '#84cc16';
+                  c.lineWidth = 1;
+                  c.beginPath();
+                  c.moveTo(_grBaseX, _grBaseY);
+                  c.quadraticCurveTo(_grBaseX + _grWind * 0.5, _grBaseY - _grHeight * 0.5, _grTopX, _grTopY);
+                  c.stroke();
+                  // Side leaves (small lance-shaped)
+                  c.fillStyle = season === 2 ? 'rgba(101,163,13,0.7)' : 'rgba(132,204,22,0.7)';
+                  c.beginPath();
+                  c.ellipse(_grBaseX + _grWind * 0.3, _grBaseY - _grHeight * 0.6, 1.2, 3.5, 0.4, 0, 6.28); c.fill();
+                  c.beginPath();
+                  c.ellipse(_grBaseX + _grWind * 0.5 + 1, _grBaseY - _grHeight * 0.35, 1.0, 3, -0.3, 0, 6.28); c.fill();
+                  // Plume — multiple small yellow florets clustered at the top
+                  var _grPlumeColor = season === 2 ? '#ca8a04' : '#facc15'; // duller in fall
+                  c.fillStyle = _grPlumeColor;
+                  for (var grf = 0; grf < 14; grf++) {
+                    var _grAng = (grf / 14) * 6.28 + gr * 0.5;
+                    var _grR = 0.55 + (grf % 3) * 0.15;
+                    var _grPx = _grTopX + Math.cos(_grAng) * (2 + (grf % 4) * 0.7);
+                    var _grPy = _grTopY + Math.sin(_grAng) * (3 + (grf % 4) * 0.5) - (grf % 5) * 0.4;
+                    c.beginPath(); c.arc(_grPx, _grPy, _grR, 0, 6.28); c.fill();
+                  }
+                  // Tiny highlight on plume's upper-left
+                  c.fillStyle = 'rgba(255,250,200,0.6)';
+                  c.beginPath(); c.arc(_grTopX - 1.5, _grTopY - 1.5, 0.9, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Drone eviction cameo (late fall biology) ──
+              // In late fall, female workers literally drag the now-useless
+              // drones (male bees) out of the hive and let them die — a stark
+              // resource-allocation behavior to preserve winter stores. Two
+              // workers pull a larger drone across the landing board. Plays
+              // briefly every ~35 sec during late fall (day >= 22 of season 2).
+              if (season === 2 && (day % 30) >= 22) {
+                var _evPeriod = 35000;
+                var _evPhase = ((Date.now() % _evPeriod) / _evPeriod);
+                if (_evPhase > 0.55 && _evPhase < 0.85) {
+                  var _evT = (_evPhase - 0.55) / 0.30; // 0..1
+                  var _evStartX = hiveX + hiveW * 0.5;
+                  var _evEndX = hiveX + hiveW + 14;
+                  var _evX = _evStartX + (_evEndX - _evStartX) * _evT;
+                  var _evY = hiveY + hiveH + 1.5;
+                  c.save();
+                  // The drone (larger, darker — male bee anatomy is bulkier)
+                  c.fillStyle = '#92400e';
+                  c.beginPath(); c.ellipse(_evX, _evY, 3.6, 2.3, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_evX - 0.5, _evY - 1.8, 0.8, 3.6);
+                  c.fillRect(_evX + 1.2, _evY - 1.5, 0.6, 3);
+                  // Big drone eyes (drones have huge wraparound eyes for finding queens)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(_evX - 2.8, _evY - 0.5, 0.8, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_evX - 2.8, _evY + 0.5, 0.8, 0, 6.28); c.fill();
+                  // Two worker bees flanking, pulling the drone outward
+                  for (var ev = 0; ev < 2; ev++) {
+                    var _wkrX = _evX + (ev === 0 ? -4.5 : -3.2);
+                    var _wkrY = _evY + (ev === 0 ? -1.4 : 1.4);
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.ellipse(_wkrX, _wkrY, 2, 1.3, ev === 0 ? -0.3 : 0.3, 0, 6.28); c.fill();
+                    c.fillStyle = '#1c1917';
+                    c.fillRect(_wkrX - 0.3, _wkrY - 1, 0.4, 2);
+                    // Worker head dot
+                    c.beginPath(); c.arc(_wkrX - 1.5, _wkrY + (ev === 0 ? -0.5 : 0.5), 0.5, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                }
+              }
+
+              // ── Hummingbird darting at flowers (spring + summer) ──
+              // Real biology: hummingbirds visit similar nectar sources as bees
+              // and are an important non-bee pollinator. Their motion is very
+              // distinct from bees and butterflies — fast straight darts to a
+              // flower, hover, then dart away. Iridescent green back, blurry
+              // wing-fan disc on each side. One bird at a time, periodic visits.
+              if ((season === 0 || season === 1) && flowers.length > 6) {
+                var _hbPeriod = 18000;
+                var _hbPhase = ((Date.now() % _hbPeriod) / _hbPeriod);
+                if (_hbPhase < 0.7) {
+                  // Visit cycle: 4 segments — approach, hover-flower-A, dart, hover-flower-B
+                  var _hbT = _hbPhase / 0.7; // 0..1 within visit
+                  var _hbTargetA = flowers[(season === 1 ? 4 : 7) % flowers.length];
+                  var _hbTargetB = flowers[(season === 1 ? 9 : 12) % flowers.length];
+                  var _hbStart = { x: W + 20, y: H * 0.55 };
+                  var _hbEnd = { x: -20, y: H * 0.60 };
+                  var _hbX, _hbY, _hbHovering;
+                  if (_hbT < 0.20) {
+                    var _hbU = _hbT / 0.20;
+                    _hbX = _hbStart.x + (_hbTargetA.x - _hbStart.x) * _hbU;
+                    _hbY = _hbStart.y + (_hbTargetA.y - 14 - _hbStart.y) * _hbU;
+                    _hbHovering = false;
+                  } else if (_hbT < 0.40) {
+                    _hbX = _hbTargetA.x + Math.sin(t2 * 0.4) * 1.5;
+                    _hbY = _hbTargetA.y - 14 + Math.cos(t2 * 0.3) * 1;
+                    _hbHovering = true;
+                  } else if (_hbT < 0.60) {
+                    var _hbU2 = (_hbT - 0.40) / 0.20;
+                    _hbX = _hbTargetA.x + (_hbTargetB.x - _hbTargetA.x) * _hbU2;
+                    _hbY = (_hbTargetA.y - 14) + (_hbTargetB.y - 14 - (_hbTargetA.y - 14)) * _hbU2;
+                    _hbHovering = false;
+                  } else if (_hbT < 0.80) {
+                    _hbX = _hbTargetB.x + Math.sin(t2 * 0.4 + 1) * 1.5;
+                    _hbY = _hbTargetB.y - 14 + Math.cos(t2 * 0.3 + 1) * 1;
+                    _hbHovering = true;
+                  } else {
+                    var _hbU3 = (_hbT - 0.80) / 0.20;
+                    _hbX = _hbTargetB.x + (_hbEnd.x - _hbTargetB.x) * _hbU3;
+                    _hbY = (_hbTargetB.y - 14) + (_hbEnd.y - (_hbTargetB.y - 14)) * _hbU3;
+                    _hbHovering = false;
+                  }
+                  // Direction-aware orientation
+                  var _hbFacing = (_hbT > 0.40 && _hbT < 0.60) || _hbT >= 0.80 ? -1 : 1;
+                  c.save();
+                  c.translate(_hbX, _hbY);
+                  c.scale(_hbFacing, 1);
+                  // Iridescent green back
+                  c.fillStyle = '#15803d';
+                  c.beginPath(); c.ellipse(0, 0, 2.5, 1.4, 0.05, 0, 6.28); c.fill();
+                  // Ruby throat patch (ruby-throated hummer is most common in Maine)
+                  c.fillStyle = '#dc2626';
+                  c.beginPath(); c.ellipse(-1.4, 0.3, 0.7, 0.5, 0, 0, 6.28); c.fill();
+                  // Pale belly
+                  c.fillStyle = 'rgba(254,243,199,0.85)';
+                  c.beginPath(); c.ellipse(0.3, 0.6, 1.6, 0.7, 0, 0, 6.28); c.fill();
+                  // Long needle beak
+                  c.strokeStyle = '#1c1917';
+                  c.lineWidth = 0.5;
+                  c.beginPath(); c.moveTo(-2.2, -0.1); c.lineTo(-5.5, -0.1); c.stroke();
+                  // Eye dot
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(-1.6, -0.4, 0.3, 0, 6.28); c.fill();
+                  // Wing fans — blurry semi-transparent ellipses (50-80 wingbeats/sec)
+                  c.fillStyle = 'rgba(255,255,255,0.35)';
+                  c.beginPath(); c.ellipse(0, -1.6, 2.8, 1.2, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(0,  1.6, 2.8, 1.2, -0.3, 0, 6.28); c.fill();
+                  // Slight motion blur when hovering (wing-induced air ripple)
+                  if (_hbHovering) {
+                    c.strokeStyle = 'rgba(255,255,255,0.25)';
+                    c.lineWidth = 0.3;
+                    c.beginPath(); c.arc(0, 2.5, 1.5 + Math.sin(t2 * 0.3) * 0.3, 0, Math.PI); c.stroke();
+                  }
+                  c.restore();
+                }
+              }
+
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               // ── Frozen birdbath in winter (ice + frost rim) ──
               // Closes the seasonal arc for the water station: the bath doesn't
               // disappear when winter hits, it freezes. Hexagonal frost cracks
@@ -7202,6 +14200,379 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
+              // ── Dappled sunlight under the apple tree (spring + summer day) ──
+              // Sub-canopy leaf-shadow play: real-world phenomenon where
+              // sunlight filtering through leaves creates moving bright spots
+              // on the ground. Each "spot" subtly drifts as if leaves above
+              // are stirred by wind. Only spring + summer (canopy is full)
+              // and gated to high sun (no spots at dawn/dusk).
+              if ((season === 0 || season === 1) && hiveX > 40) {
+                var _dpAtX = hiveX * 0.55;
+                var _dpDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                if (_dpDay > 0.15) {
+                  var _dpSpots = [
+                    { dx: -10, dy: 3,  r: 2.6 },
+                    { dx:  -4, dy: 5,  r: 2.0 },
+                    { dx:   6, dy: 4,  r: 2.3 },
+                    { dx:  12, dy: 2,  r: 1.8 },
+                    { dx:  -8, dy: 8,  r: 1.5 },
+                    { dx:   3, dy: 9,  r: 2.1 },
+                    { dx:  -1, dy: 7,  r: 1.7 },
+                    { dx:  10, dy: 7,  r: 1.9 }
+                  ];
+                  c.save();
+                  _dpSpots.forEach(function(sp, spi) {
+                    // Each spot drifts on its own slow phase (leaves moving)
+                    var _spJX = Math.sin(t2 * 0.008 + spi * 0.7) * 1.5;
+                    var _spJY = Math.cos(t2 * 0.006 + spi * 0.9) * 0.8;
+                    var _spA = (0.32 + Math.sin(t2 * 0.012 + spi) * 0.08) * _dpDay;
+                    var _spGrad = c.createRadialGradient(
+                      _dpAtX + sp.dx + _spJX, H * 0.76 + sp.dy + _spJY, 0.3,
+                      _dpAtX + sp.dx + _spJX, H * 0.76 + sp.dy + _spJY, sp.r
+                    );
+                    _spGrad.addColorStop(0, 'rgba(255,250,200,' + _spA.toFixed(3) + ')');
+                    _spGrad.addColorStop(1, 'rgba(255,250,200,0)');
+                    c.fillStyle = _spGrad;
+                    c.beginPath();
+                    c.arc(_dpAtX + sp.dx + _spJX, H * 0.76 + sp.dy + _spJY, sp.r, 0, 6.28);
+                    c.fill();
+                  });
+                  c.restore();
+                }
+              }
+
+              // ── Jack-o'-lantern in the fall meadow (day = pumpkin, night = lit) ──
+              // Maine autumn touch. During day it's just a carved orange pumpkin
+              // sitting on the meadow. At night the carved face glows warm
+              // orange and casts a soft pool of light on the ground around it.
+              // Only fall (season === 2), late month so it's near Halloween.
+              if (season === 2 && (day % 30) >= 15) {
+                var _jlX = W * 0.36, _jlY = H * 0.85;
+                // Pumpkin body — round with vertical segment ribs
+                var _jlBodyG = c.createRadialGradient(_jlX - 1.5, _jlY - 2, 0.5, _jlX, _jlY, 7);
+                _jlBodyG.addColorStop(0, '#fb923c');
+                _jlBodyG.addColorStop(1, '#c2410c');
+                c.fillStyle = _jlBodyG;
+                c.beginPath(); c.ellipse(_jlX, _jlY, 6.5, 5, 0, 0, 6.28); c.fill();
+                // Vertical rib segments (3 darker arcs)
+                c.strokeStyle = 'rgba(120,40,15,0.45)';
+                c.lineWidth = 0.6;
+                for (var jl = 0; jl < 3; jl++) {
+                  var _jlR = -3.5 + jl * 2.3;
+                  c.beginPath();
+                  c.moveTo(_jlX + _jlR, _jlY - 4.5);
+                  c.quadraticCurveTo(_jlX + _jlR * 1.2, _jlY, _jlX + _jlR, _jlY + 4.5);
+                  c.stroke();
+                }
+                // Brown stem on top
+                c.fillStyle = '#4a3014';
+                c.fillRect(_jlX - 0.7, _jlY - 6.5, 1.4, 2.2);
+                // Small green leaf curl off the stem
+                c.fillStyle = '#65a30d';
+                c.beginPath(); c.ellipse(_jlX + 1.2, _jlY - 6, 1, 0.5, -0.4, 0, 6.28); c.fill();
+                // Shadow base
+                c.fillStyle = 'rgba(0,0,0,0.28)';
+                c.beginPath(); c.ellipse(_jlX, _jlY + 3.5, 7, 0.9, 0, 0, 6.28); c.fill();
+                // Carved face (visible all day; glows at night)
+                var _jlNight = Math.max(0, Math.min(1,
+                  _sunCycle > 1.0 && _sunCycle < 2.0 ? Math.sin((_sunCycle - 1.0) * Math.PI) : 0
+                ));
+                var _jlFaceCol = _jlNight > 0.05
+                  ? 'rgba(254,215,80,' + (0.75 + 0.25 * _jlNight).toFixed(3) + ')'
+                  : 'rgba(60,15,5,0.85)';
+                c.fillStyle = _jlFaceCol;
+                // Triangle eye left
+                c.beginPath();
+                c.moveTo(_jlX - 2.8, _jlY - 1);
+                c.lineTo(_jlX - 1.2, _jlY - 1);
+                c.lineTo(_jlX - 2.0, _jlY + 0.5);
+                c.closePath(); c.fill();
+                // Triangle eye right
+                c.beginPath();
+                c.moveTo(_jlX + 1.2, _jlY - 1);
+                c.lineTo(_jlX + 2.8, _jlY - 1);
+                c.lineTo(_jlX + 2.0, _jlY + 0.5);
+                c.closePath(); c.fill();
+                // Triangle nose
+                c.beginPath();
+                c.moveTo(_jlX - 0.6, _jlY + 0.6);
+                c.lineTo(_jlX + 0.6, _jlY + 0.6);
+                c.lineTo(_jlX, _jlY + 1.7);
+                c.closePath(); c.fill();
+                // Jagged mouth (3-tooth grin)
+                c.beginPath();
+                c.moveTo(_jlX - 2.6, _jlY + 2.3);
+                c.lineTo(_jlX - 1.7, _jlY + 2.3);
+                c.lineTo(_jlX - 1.7, _jlY + 3.2);
+                c.lineTo(_jlX - 0.8, _jlY + 3.2);
+                c.lineTo(_jlX - 0.8, _jlY + 2.3);
+                c.lineTo(_jlX + 0.1, _jlY + 2.3);
+                c.lineTo(_jlX + 0.1, _jlY + 3.2);
+                c.lineTo(_jlX + 1.0, _jlY + 3.2);
+                c.lineTo(_jlX + 1.0, _jlY + 2.3);
+                c.lineTo(_jlX + 1.9, _jlY + 2.3);
+                c.lineTo(_jlX + 1.9, _jlY + 3.2);
+                c.lineTo(_jlX + 2.8, _jlY + 3.2);
+                c.lineTo(_jlX + 2.8, _jlY + 3.6);
+                c.lineTo(_jlX - 2.6, _jlY + 3.6);
+                c.closePath(); c.fill();
+                // Glow pool on the ground at night
+                if (_jlNight > 0.1) {
+                  var _jlGlow = c.createRadialGradient(_jlX, _jlY + 4, 1, _jlX, _jlY + 4, 22);
+                  _jlGlow.addColorStop(0, 'rgba(254,215,80,' + (0.55 * _jlNight).toFixed(3) + ')');
+                  _jlGlow.addColorStop(0.5, 'rgba(251,146,60,' + (0.25 * _jlNight).toFixed(3) + ')');
+                  _jlGlow.addColorStop(1, 'rgba(251,146,60,0)');
+                  c.fillStyle = _jlGlow;
+                  c.beginPath(); c.ellipse(_jlX, _jlY + 4, 22, 9, 0, 0, 6.28); c.fill();
+                  // Candle flicker — slight intensity wobble
+                  var _jlFlick = 1 + Math.sin(t2 * 0.4) * 0.15 + Math.sin(t2 * 0.7 + 1) * 0.08;
+                  c.fillStyle = 'rgba(255,237,150,' + (0.7 * _jlNight * _jlFlick).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_jlX, _jlY + 0.5, 1.6 * _jlFlick, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Coiled garden hose near the birdbath (homestead detail) ──
+              // Real bee-keeping: water IS the apiary's most critical resource
+              // in summer. The hose stays coiled out for refilling the bath.
+              // Visible in spring/summer/fall (drained + stored for winter).
+              if (season !== 3) {
+                var _ghCx = W * 0.66, _ghCy = H * 0.89;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_ghCx + 1, _ghCy + 0.8, 8, 1, 0, 0, 6.28); c.fill();
+                // Three concentric coils of hose — fading from outer to inner
+                var _ghCoils = [
+                  { r: 7,   sw: 1.3 },
+                  { r: 5,   sw: 1.1 },
+                  { r: 3.2, sw: 0.9 }
+                ];
+                _ghCoils.forEach(function(coil) {
+                  c.strokeStyle = '#16a34a';
+                  c.lineWidth = coil.sw;
+                  c.beginPath(); c.ellipse(_ghCx, _ghCy, coil.r, coil.r * 0.35, 0, 0, 6.28); c.stroke();
+                  // Highlight on upper-left of each coil
+                  c.strokeStyle = 'rgba(74,222,128,0.6)';
+                  c.lineWidth = coil.sw * 0.35;
+                  c.beginPath(); c.ellipse(_ghCx, _ghCy - 0.1, coil.r, coil.r * 0.35, 0, Math.PI * 1.1, Math.PI * 1.7); c.stroke();
+                });
+                // Brass nozzle/fitting at one end
+                c.fillStyle = '#a16207';
+                c.fillRect(_ghCx + 7, _ghCy - 0.4, 2, 0.8);
+                c.fillStyle = '#ca8a04';
+                c.beginPath(); c.arc(_ghCx + 9, _ghCy, 0.8, 0, 6.28); c.fill();
+                // Tail of hose snaking off toward the birdbath
+                c.strokeStyle = '#16a34a';
+                c.lineWidth = 0.9;
+                c.beginPath();
+                c.moveTo(_ghCx - 7, _ghCy + 0.2);
+                c.quadraticCurveTo(_ghCx - 12, _ghCy - 1, _ghCx - 14, _ghCy + 0.5);
+                c.stroke();
+              }
+
+              // ── Roadside "FRESH HONEY $12" sandwich-board sign (harvest season) ──
+              // Hobbyist beekeepers' classic — a folding wooden A-frame at the
+              // gate during harvest with the price chalked on. Late summer +
+              // fall only (matches the honey crate availability).
+              if ((season === 1 && (day % 30) >= 22) || season === 2) {
+                var _hsX = W * 0.42 + 14;
+                var _hsY = H * 0.88;
+                // A-frame back/front board (visible front)
+                c.fillStyle = '#a07248';
+                c.beginPath();
+                c.moveTo(_hsX - 7, _hsY);
+                c.lineTo(_hsX - 4.5, _hsY - 12);
+                c.lineTo(_hsX + 4.5, _hsY - 12);
+                c.lineTo(_hsX + 7, _hsY);
+                c.closePath(); c.fill();
+                // Wood-grain lines
+                c.strokeStyle = 'rgba(80,55,25,0.55)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_hsX - 6, _hsY - 3); c.lineTo(_hsX + 6, _hsY - 3); c.stroke();
+                c.beginPath(); c.moveTo(_hsX - 5.5, _hsY - 6); c.lineTo(_hsX + 5.5, _hsY - 6); c.stroke();
+                c.beginPath(); c.moveTo(_hsX - 5, _hsY - 9); c.lineTo(_hsX + 5, _hsY - 9); c.stroke();
+                // Border
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_hsX - 7, _hsY);
+                c.lineTo(_hsX - 4.5, _hsY - 12);
+                c.lineTo(_hsX + 4.5, _hsY - 12);
+                c.lineTo(_hsX + 7, _hsY);
+                c.closePath();
+                c.stroke();
+                // Hand-chalked text
+                c.fillStyle = '#fafaf9';
+                c.font = 'bold 2.4px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('FRESH', _hsX, _hsY - 9);
+                c.fillText('HONEY', _hsX, _hsY - 6.5);
+                c.font = 'bold 3px sans-serif';
+                c.fillStyle = '#fde047';
+                c.fillText('$12', _hsX, _hsY - 3);
+                c.font = 'bold 1.8px sans-serif';
+                c.fillStyle = '#fafaf9';
+                c.fillText('/jar', _hsX, _hsY - 1);
+                c.textAlign = 'start';
+                // Tiny honey-pot icon at the top of the sign
+                c.fillStyle = '#d97706';
+                c.beginPath(); c.arc(_hsX, _hsY - 11.2, 0.7, 0, 6.28); c.fill();
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(_hsX, _hsY - 11.2, 0.5, 0, 6.28); c.fill();
+                // Visible second board edge (showing the A-frame is folded)
+                c.strokeStyle = 'rgba(0,0,0,0.35)';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_hsX + 7, _hsY);
+                c.lineTo(_hsX + 5.5, _hsY - 12);
+                c.stroke();
+                // Side shadow on ground
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_hsX, _hsY + 1.3, 7.5, 0.7, 0, 0, 6.28); c.fill();
+              }
+
+              // ── Outdoor picnic table with red-checkered cloth (spring/summer/fall) ──
+              // Classic wooden picnic table with attached benches and a red-
+              // and-white checkered cloth. Bigger than the side table — this
+              // is the family-meal spot. Year-round structure but the cloth
+              // (and a small pitcher of lemonade) only appear in warmer months.
+              if (season !== 3) {
+                var _ptbX = W * 0.50, _ptbY = H * 0.88;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_ptbX, _ptbY + 4, 14, 1.1, 0, 0, 6.28); c.fill();
+                // Bench legs (3 sets: A-frame style)
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_ptbX - 11, _ptbY + 1, 1, 5);
+                c.fillRect(_ptbX - 11, _ptbY + 1, 6, 0.7);
+                c.fillRect(_ptbX + 10, _ptbY + 1, 1, 5);
+                c.fillRect(_ptbX + 5, _ptbY + 1, 6, 0.7);
+                // Bench seat planks (left + right)
+                c.fillStyle = '#7a5230';
+                c.fillRect(_ptbX - 12, _ptbY, 6, 1.2);
+                c.fillRect(_ptbX + 6, _ptbY, 6, 1.2);
+                // Table top — wooden planks
+                c.fillStyle = '#8a6238';
+                c.fillRect(_ptbX - 13, _ptbY - 4, 26, 2);
+                // Plank seam lines
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_ptbX - 13, _ptbY - 3); c.lineTo(_ptbX + 13, _ptbY - 3); c.stroke();
+                // Top edge highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.fillRect(_ptbX - 13, _ptbY - 4, 26, 0.4);
+                // Red-and-white checkered cloth — drapes over the table
+                var _ptbCloth = [
+                  { x: -13, y: -4, w: 26, h: 5, draped: false } // tabletop part
+                ];
+                // Draw the cloth with checker pattern
+                c.save();
+                for (var ptr = 0; ptr < 4; ptr++) {
+                  for (var ptc = 0; ptc < 13; ptc++) {
+                    var _ptcColor = (ptr + ptc) % 2 === 0 ? '#dc2626' : '#fafaf9';
+                    c.fillStyle = _ptcColor;
+                    c.fillRect(_ptbX - 13 + ptc * 2, _ptbY - 4 + ptr * 1.2, 2, 1.2);
+                  }
+                }
+                // Drape on left side (hanging fabric)
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(_ptbX - 13, _ptbY + 0.8);
+                c.lineTo(_ptbX - 10, _ptbY + 0.8);
+                c.lineTo(_ptbX - 10.5, _ptbY + 3);
+                c.lineTo(_ptbX - 13, _ptbY + 2.5);
+                c.closePath(); c.fill();
+                // Checker squares on drape
+                c.fillStyle = '#fafaf9';
+                c.fillRect(_ptbX - 12.5, _ptbY + 1, 1.5, 1);
+                c.fillRect(_ptbX - 11, _ptbY + 1.8, 1.2, 0.8);
+                // Drape on right side
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(_ptbX + 10, _ptbY + 0.8);
+                c.lineTo(_ptbX + 13, _ptbY + 0.8);
+                c.lineTo(_ptbX + 13, _ptbY + 2.5);
+                c.lineTo(_ptbX + 10.5, _ptbY + 3);
+                c.closePath(); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.fillRect(_ptbX + 11, _ptbY + 1, 1.5, 1);
+                c.restore();
+                // Glass pitcher of lemonade in the middle (summer only)
+                if (season === 1) {
+                  var _pjX = _ptbX, _pjY = _ptbY - 5;
+                  // Pitcher body — pale yellow lemonade
+                  c.fillStyle = 'rgba(254,240,138,0.92)';
+                  c.fillRect(_pjX - 1.2, _pjY - 3, 2.4, 4);
+                  // Glass outline
+                  c.strokeStyle = 'rgba(120,140,180,0.5)';
+                  c.lineWidth = 0.3;
+                  c.strokeRect(_pjX - 1.2, _pjY - 3, 2.4, 4);
+                  // Handle
+                  c.beginPath();
+                  c.arc(_pjX + 2, _pjY - 1.5, 1, -Math.PI / 2, Math.PI / 2);
+                  c.stroke();
+                  // Lemon slice on top
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_pjX - 0.3, _pjY - 3.3, 0.6, 0, Math.PI); c.fill();
+                  c.fillStyle = 'rgba(255,255,255,0.55)';
+                  c.fillRect(_pjX - 1.0, _pjY - 2.5, 0.4, 3);
+                }
+              }
+
+              // ── Garter snake slithering between stepping stones (spring/summer) ──
+              // Real biology: garter snakes are the most common Maine snakes —
+              // harmless, beneficial (they eat slugs that munch garden plants),
+              // and active during warm daylight hours. S-curve body silhouette.
+              if ((season === 0 || season === 1) && _sunT_arc > 0.3) {
+                var _gsT = (t2 % 3600) / 3600;
+                if (_gsT > 0.4 && _gsT < 0.65) {
+                  var _gsProg = (_gsT - 0.4) / 0.25;
+                  var _gsHeadX = W * 0.42 + _gsProg * 12;
+                  var _gsHeadY = H * 0.825 - Math.sin(_gsProg * 6) * 0.5;
+                  // Snake body — undulating S-curve trailing the head
+                  c.strokeStyle = '#365314';
+                  c.lineWidth = 0.8;
+                  c.beginPath();
+                  c.moveTo(_gsHeadX, _gsHeadY);
+                  for (var gss = 1; gss < 14; gss++) {
+                    var _gssX = _gsHeadX - gss * 1.1;
+                    var _gssY = _gsHeadY + Math.sin(gss * 1.2 + _gsProg * 4) * 1.1;
+                    c.lineTo(_gssX, _gssY);
+                  }
+                  c.stroke();
+                  // Yellow lateral stripe (garter signature)
+                  c.strokeStyle = '#facc15';
+                  c.lineWidth = 0.3;
+                  c.beginPath();
+                  c.moveTo(_gsHeadX, _gsHeadY - 0.2);
+                  for (var gss2 = 1; gss2 < 14; gss2++) {
+                    var _gss2X = _gsHeadX - gss2 * 1.1;
+                    var _gss2Y = _gsHeadY + Math.sin(gss2 * 1.2 + _gsProg * 4) * 1.1 - 0.2;
+                    c.lineTo(_gss2X, _gss2Y);
+                  }
+                  c.stroke();
+                  // Head — tiny triangular dot
+                  c.fillStyle = '#365314';
+                  c.beginPath(); c.ellipse(_gsHeadX, _gsHeadY, 0.7, 0.5, 0, 0, 6.28); c.fill();
+                  // Eye
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(_gsHeadX + 0.3, _gsHeadY - 0.2, 0.15, 0, 6.28); c.fill();
+                  // Forked tongue flicker
+                  if (Math.sin(t2 * 0.5) > 0.5) {
+                    c.strokeStyle = '#dc2626';
+                    c.lineWidth = 0.2;
+                    c.beginPath();
+                    c.moveTo(_gsHeadX + 0.6, _gsHeadY);
+                    c.lineTo(_gsHeadX + 1.4, _gsHeadY - 0.15);
+                    c.moveTo(_gsHeadX + 0.6, _gsHeadY);
+                    c.lineTo(_gsHeadX + 1.4, _gsHeadY + 0.15);
+                    c.stroke();
+                  }
+                }
+              }
+
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               // ── Stepping stones path leading from meadow to the hive ──
               var stepCount = 7;
               for (var sp = 0; sp < stepCount; sp++) {
@@ -7224,6 +14595,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.arc(spX + 2, spY + 1, 0.9, 0, 6.28); c.fill();
                 }
               }
+
+              // ── Digital hive scale (real beekeeping equipment) ──
+              // Modern beekeepers weigh hives daily — the curve tells you when
+              // honey flow starts, when bees rob, and when winter stores cross
+              // the survival threshold. A small wedge sits under one corner of
+              // the hive stand with a tiny LCD display showing weight in kg.
+              // Weight derived from existing colony stats: brood + honey + bees.
+              (function() {
+                var _hsclX = hiveX + hiveW * 0.85;
+                var _hsclY = hiveY + hiveH + 14;
+                // Scale platform — flat metal pad slightly wider than the hive corner
+                c.fillStyle = '#3a2510';
+                c.fillRect(_hsclX - 6, _hsclY - 2, 12, 2);
+                c.fillStyle = '#78716c';
+                c.fillRect(_hsclX - 5.5, _hsclY - 1.6, 11, 1.2);
+                // Top edge highlight
+                c.fillStyle = 'rgba(255,255,255,0.25)';
+                c.fillRect(_hsclX - 5.5, _hsclY - 1.6, 11, 0.3);
+                // Tiny LCD readout — black panel with cyan-green numbers
+                var _hsclLcdX = _hsclX + 7.5;
+                var _hsclLcdY = _hsclY - 4;
+                c.fillStyle = '#1c1917';
+                c.fillRect(_hsclLcdX - 4, _hsclLcdY - 2, 8, 4);
+                c.strokeStyle = '#57534e';
+                c.lineWidth = 0.3;
+                c.strokeRect(_hsclLcdX - 4, _hsclLcdY - 2, 8, 4);
+                // Compute weight (kg) from live state — brood + honey + workers + drones
+                // Rough conversion: honey lbs to kg ≈ 0.45, workers ~ 0.1g each
+                var _hsclWt = (honey || 0) * 0.45 + (brood || 0) * 0.0005 + ((workers || 0) + (drones || 0)) * 0.0001;
+                _hsclWt = Math.min(99.9, Math.max(0, _hsclWt));
+                var _hsclStr = _hsclWt.toFixed(1) + 'kg';
+                c.fillStyle = '#4ade80';
+                c.font = 'bold 2.6px monospace';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText(_hsclStr, _hsclLcdX, _hsclLcdY);
+                c.textAlign = 'start';
+                c.textBaseline = 'alphabetic';
+                // Tiny solar panel above the LCD (wireless scales are solar-powered in real life)
+                c.fillStyle = '#1e3a8a';
+                c.fillRect(_hsclLcdX - 4, _hsclLcdY - 5, 8, 2);
+                c.strokeStyle = '#0c1d4a';
+                c.lineWidth = 0.2;
+                for (var hp = 0; hp < 4; hp++) {
+                  c.beginPath();
+                  c.moveTo(_hsclLcdX - 4 + hp * 2, _hsclLcdY - 5);
+                  c.lineTo(_hsclLcdX - 4 + hp * 2, _hsclLcdY - 3);
+                  c.stroke();
+                }
+                // Cable from scale to LCD
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_hsclX + 5.5, _hsclY - 1);
+                c.lineTo(_hsclLcdX - 4, _hsclLcdY);
+                c.stroke();
+              })();
 
               // ── Wooden hive stand (elevates hive off ground — protects from ants + damp) ──
               var standY = hiveY + hiveH + 4;
@@ -8538,6 +15966,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
+              // ── Aurora borealis (winter night cameo, rare) ──
+              // Three undulating green-cyan ribbons drift across the upper sky
+              // on rare winter nights only. Cycle: appears for ~30s every ~4min
+              // of sim time, only during deep night (_tdT 1.2–1.8) AND season
+              // is winter. Each ribbon has its own phase + speed so they don't
+              // sync. A magical, almost-never moment that rewards kids who
+              // leave the canvas running long enough to see it.
+              if (season === 3 && _tdT > 1.2 && _tdT < 1.8) {
+                var _auPeriod = 240000; // ms — once every ~4 min
+                var _auEpoch = (Date.now() % _auPeriod) / _auPeriod; // 0..1
+                if (_auEpoch < 0.125) {
+                  var _auT = _auEpoch / 0.125;            // 0..1 across the visible window
+                  var _auVis = Math.sin(_auT * Math.PI);  // bell-curve envelope
+                  c.save();
+                  for (var au = 0; au < 3; au++) {
+                    var _auBaseY = H * (0.08 + au * 0.05);
+                    var _auColor = au === 0 ? 'rgba(74,222,128,' :   // emerald
+                                   au === 1 ? 'rgba(56,189,248,' :   // cyan
+                                              'rgba(167,139,250,';   // violet
+                    var _auBandA = (0.35 - au * 0.05) * _auVis;
+                    if (_auBandA < 0.02) continue;
+                    // Vertical ribbon: build a path that undulates left-to-right
+                    c.fillStyle = _auColor + _auBandA.toFixed(3) + ')';
+                    c.beginPath();
+                    var _auWobble = t2 * 0.012 + au * 1.7;
+                    for (var ax = 0; ax <= W; ax += 18) {
+                      var _auY = _auBaseY + Math.sin(ax * 0.012 + _auWobble) * 7 + Math.sin(ax * 0.027 + _auWobble * 1.4) * 3;
+                      ax === 0 ? c.moveTo(ax, _auY) : c.lineTo(ax, _auY);
+                    }
+                    // Close the ribbon with a downward sweep
+                    for (var ax2 = W; ax2 >= 0; ax2 -= 18) {
+                      var _auY2 = _auBaseY + 18 + Math.sin(ax2 * 0.014 + _auWobble + 0.4) * 6;
+                      c.lineTo(ax2, _auY2);
+                    }
+                    c.closePath(); c.fill();
+                    // Bright top edge — a thin highlight stroke
+                    c.strokeStyle = _auColor + (_auBandA * 1.6).toFixed(3) + ')';
+                    c.lineWidth = 0.8;
+                    c.beginPath();
+                    for (var ax3 = 0; ax3 <= W; ax3 += 12) {
+                      var _auY3 = _auBaseY + Math.sin(ax3 * 0.012 + _auWobble) * 7 + Math.sin(ax3 * 0.027 + _auWobble * 1.4) * 3;
+                      ax3 === 0 ? c.moveTo(ax3, _auY3) : c.lineTo(ax3, _auY3);
+                    }
+                    c.stroke();
+                  }
+                  c.restore();
+                }
+              }
+
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               // ── Moon (visible during the night phase) ──
               // Rises in the east as the sun sets, peaks center-high at
               // midnight, sets in the west as dawn approaches. Drawn AFTER

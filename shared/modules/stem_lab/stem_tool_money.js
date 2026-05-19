@@ -267,7 +267,7 @@ window.StemLab = window.StemLab || {
             var cartGrand = cartTotal + cartTax;
             var storeCat = d.storeCat || 'All';
             var recipeMode = d.recipeMode || false;
-            var activeRecipe = d.activeRecipe || null;
+            var activeRecipe = d.activeRecipe != null ? d.activeRecipe : null;
             var recipeServings = d.recipeServings || 4;
 
             // ── Generate store items based on grade ──
@@ -286,7 +286,7 @@ window.StemLab = window.StemLab || {
                 { name: '\uD83E\uDD66 Broccoli', price: 1.99, cat: 'Produce', pricePer: 'lb' },
                 { name: '\uD83E\uDD55 Carrots', price: 1.29, cat: 'Produce', pricePer: 'lb' },
                 { name: '\uD83C\uDF4B Lemons', price: 0.69, cat: 'Produce', pricePer: 'each' },
-                { name: '\uD83AB Garlic', price: 0.75, cat: 'Produce', pricePer: 'each' },
+                { name: '🧄 Garlic', price: 0.75, cat: 'Produce', pricePer: 'each' },
                 // 🥩 Meat & Fish — per-pound
                 { name: '\uD83C\uDF57 Chicken Breast', price: 3.99, cat: 'Meat', pricePer: 'lb' },
                 { name: '\uD83E\uDD69 Ground Beef', price: 5.49, cat: 'Meat', pricePer: 'lb' },
@@ -366,6 +366,100 @@ window.StemLab = window.StemLab || {
               { name: '\uD83E\uDD6A Grilled Cheese', icon: '\uD83E\uDD6A', serves: 4, ingredients: [
                 { item: 'Bread', qty: 1, unit: 'loaf' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
                 { item: 'Butter', qty: 1, unit: 'stick' }, { item: 'Tomatoes', qty: 0.5, unit: 'lb' }
+              ]},
+              // \u2500\u2500 More recipes (v3 additions) \u2500\u2500
+              { name: '\uD83E\uDDC0 Mac & Cheese', icon: '\uD83E\uDDC0', serves: 4, ingredients: [
+                { item: 'Pasta (1 lb)', qty: 1, unit: 'box' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
+                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Butter', qty: 1, unit: 'stick' },
+                { item: 'Flour (5 lb)', qty: 1, unit: 'bag' }
+              ]},
+              { name: '\uD83C\uDF6A Chocolate Chip Cookies', icon: '\uD83C\uDF6A', serves: 4, ingredients: [
+                { item: 'Flour (5 lb)', qty: 1, unit: 'bag' }, { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' },
+                { item: 'Butter', qty: 1, unit: 'stick' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
+                { item: 'Chocolate Bar', qty: 2, unit: 'bars' }
+              ]},
+              { name: '\uD83C\uDF4C Banana Bread', icon: '\uD83C\uDF4C', serves: 4, ingredients: [
+                { item: 'Bananas', qty: 1, unit: 'lb' }, { item: 'Flour (5 lb)', qty: 1, unit: 'bag' },
+                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
+                { item: 'Butter', qty: 1, unit: 'stick' }
+              ]},
+              { name: '\uD83C\uDF72 Veggie Soup', icon: '\uD83C\uDF72', serves: 4, ingredients: [
+                { item: 'Carrots', qty: 0.5, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
+                { item: 'Potatoes', qty: 1, unit: 'lb' }, { item: 'Broccoli', qty: 0.5, unit: 'lb' },
+                { item: 'Canned Beans', qty: 1, unit: 'can' }
+              ]},
+              { name: '\uD83C\uDF73 Beef Stew', icon: '\uD83C\uDF73', serves: 4, ingredients: [
+                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Carrots', qty: 0.5, unit: 'lb' },
+                { item: 'Potatoes', qty: 1, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
+                { item: 'Tomatoes', qty: 0.5, unit: 'lb' }
+              ]},
+              { name: '\uD83C\uDF2F Burritos', icon: '\uD83C\uDF2F', serves: 4, ingredients: [
+                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Tortillas (10pk)', qty: 1, unit: 'pkg' },
+                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Canned Beans', qty: 1, unit: 'can' },
+                { item: 'Tomatoes', qty: 0.25, unit: 'lb' }
+              ]},
+              { name: '\uD83C\uDF53 Smoothie Bowl', icon: '\uD83C\uDF53', serves: 4, ingredients: [
+                { item: 'Bananas', qty: 1, unit: 'lb' }, { item: 'Yogurt', qty: 1, unit: 'tub' },
+                { item: 'Apples', qty: 1, unit: 'lb' }, { item: 'Granola Bars', qty: 1, unit: 'box' }
+              ]},
+              { name: '\uD83C\uDF5E French Toast', icon: '\uD83C\uDF5E', serves: 4, ingredients: [
+                { item: 'Bread', qty: 1, unit: 'loaf' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
+                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Butter', qty: 1, unit: 'stick' },
+                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }
+              ]},
+              { name: '\uD83E\uDD54 Mashed Potatoes', icon: '\uD83E\uDD54', serves: 4, ingredients: [
+                { item: 'Potatoes', qty: 2, unit: 'lb' }, { item: 'Butter', qty: 1, unit: 'stick' },
+                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Garlic', qty: 2, unit: 'cloves' }
+              ]},
+              { name: '\uD83C\uDF57 Roast Chicken Dinner', icon: '\uD83C\uDF57', serves: 4, ingredients: [
+                { item: 'Chicken Breast', qty: 2, unit: 'lb' }, { item: 'Potatoes', qty: 1.5, unit: 'lb' },
+                { item: 'Carrots', qty: 1, unit: 'lb' }, { item: 'Olive Oil', qty: 1, unit: 'bottle' },
+                { item: 'Garlic', qty: 3, unit: 'cloves' }
+              ]},
+              { name: '\uD83E\uDED3 Quesadillas', icon: '\uD83E\uDED3', serves: 4, ingredients: [
+                { item: 'Tortillas (10pk)', qty: 1, unit: 'pkg' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
+                { item: 'Chicken Breast', qty: 1, unit: 'lb' }, { item: 'Tomatoes', qty: 0.25, unit: 'lb' }
+              ]},
+              { name: '\uD83C\uDF5D Pesto Pasta', icon: '\uD83C\uDF5D', serves: 4, ingredients: [
+                { item: 'Pasta (1 lb)', qty: 1, unit: 'box' }, { item: 'Olive Oil', qty: 1, unit: 'bottle' },
+                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Garlic', qty: 3, unit: 'cloves' },
+                { item: 'Lemons', qty: 1, unit: 'each' }
+              ]},
+              { name: '\uD83E\uDD67 Apple Pie', icon: '\uD83E\uDD67', serves: 4, ingredients: [
+                { item: 'Apples', qty: 2, unit: 'lb' }, { item: 'Flour (5 lb)', qty: 1, unit: 'bag' },
+                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }, { item: 'Butter', qty: 1, unit: 'stick' },
+                { item: 'Lemons', qty: 1, unit: 'each' }
+              ]},
+              { name: '\uD83C\uDF36 Chili', icon: '\uD83C\uDF36', serves: 4, ingredients: [
+                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Canned Beans', qty: 2, unit: 'cans' },
+                { item: 'Tomatoes', qty: 0.5, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
+                { item: 'Garlic', qty: 2, unit: 'cloves' }
+              ]},
+              { name: '\uD83D\uDC1F Salmon Dinner', icon: '\uD83D\uDC1F', serves: 4, ingredients: [
+                { item: 'Salmon Fillet', qty: 1.5, unit: 'lb' }, { item: 'Lemons', qty: 2, unit: 'each' },
+                { item: 'Olive Oil', qty: 1, unit: 'bottle' }, { item: 'Broccoli', qty: 1, unit: 'lb' },
+                { item: 'Potatoes', qty: 1, unit: 'lb' }
+              ]},
+              { name: '\uD83E\uDD5A Egg Salad Sandwich', icon: '\uD83E\uDD5A', serves: 4, ingredients: [
+                { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' }, { item: 'Bread', qty: 1, unit: 'loaf' },
+                { item: 'Lettuce', qty: 1, unit: 'head' }, { item: 'Tomatoes', qty: 0.25, unit: 'lb' }
+              ]},
+              { name: '\uD83C\uDF6F Yogurt Parfait', icon: '\uD83C\uDF6F', serves: 4, ingredients: [
+                { item: 'Yogurt', qty: 2, unit: 'tubs' }, { item: 'Bananas', qty: 0.5, unit: 'lb' },
+                { item: 'Granola Bars', qty: 1, unit: 'box' }, { item: 'Apples', qty: 0.5, unit: 'lb' }
+              ]},
+              { name: '\uD83C\uDF45 Tomato Soup', icon: '\uD83C\uDF45', serves: 4, ingredients: [
+                { item: 'Tomatoes', qty: 2, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
+                { item: 'Garlic', qty: 2, unit: 'cloves' }, { item: 'Butter', qty: 1, unit: 'stick' },
+                { item: 'Bread', qty: 1, unit: 'loaf' }
+              ]},
+              { name: '\uD83C\uDF55 Pizza Night', icon: '\uD83C\uDF55', serves: 4, ingredients: [
+                { item: 'Frozen Pizza', qty: 2, unit: 'pizzas' }, { item: 'Soda (2L)', qty: 1, unit: 'bottle' },
+                { item: 'Ice Cream', qty: 1, unit: 'tub' }
+              ]},
+              { name: '\uD83E\uDD6F Breakfast Sandwich', icon: '\uD83E\uDD6F', serves: 4, ingredients: [
+                { item: 'Bagels (6pk)', qty: 1, unit: 'pkg' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
+                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Bacon (1 lb)', qty: 1, unit: 'lb' }
               ]}
             ];
             var selectedRecipe = activeRecipe != null ? RECIPES[activeRecipe] : null;
@@ -403,6 +497,19 @@ window.StemLab = window.StemLab || {
             var crGameOver = d.crGameOver || false;
             var crPatienceTimer = d.crPatienceTimer || null;
 
+            // ── v3 additions (Cashier Rush canvas + AlloBot Coach + Easy difficulty) ──
+            var crCanvasOn    = d.crCanvasOn    !== false;            // canvas scene vs legacy text receipt (default ON)
+            var crBotCoachOn  = d.crBotCoachOn  !== false;            // AlloBot guidance panel (default ON)
+            var crBotTtsOn    = d.crBotTtsOn    || false;             // speak the bot's lines via TTS (default OFF — shared rooms)
+            var crBotMood     = d.crBotMood     || 'happy';           // 'happy' | 'concerned' | 'cheering'
+            var crBotMessage  = d.crBotMessage  || null;              // { text, kind, ts } — last bot utterance
+            var crSeenIntro   = d.crSeenIntro   || false;             // suppress repeat greetings
+            var crDifficulty  = d.crDifficulty  || 'easy';            // 'easy' | 'standard' | 'challenge'
+            var crWrongInWave = d.crWrongInWave || 0;                 // streak tracker for AlloBot hint triggers
+            var crStreak      = d.crStreak      || 0;                 // consecutive correct (for "nice flow" trigger)
+            // Grocery Store: matching difficulty selector
+            var storeDifficulty = d.storeDifficulty || 'easy';
+
             var CR_CUSTOMERS = [
               { name: 'Mrs. Johnson', emoji: '\uD83D\uDC69\u200D\uD83C\uDFEB' },
               { name: 'Coach Miller', emoji: '\uD83E\uDDD1\u200D\uD83C\uDFEB' },
@@ -422,10 +529,360 @@ window.StemLab = window.StemLab || {
               { name: 'Librarian Wells', emoji: '\uD83E\uDDD1\u200D\uD83D\uDCBB' }
             ];
 
+            // ── v3: Get the price to display/use for grocery store, based on storeDifficulty ──
+            // Cashier Rush has its own genCashierRound rounding tied to crDifficulty;
+            // this helper is for Grocery Store display and cart-add.
+            var getStorePrice = function (rawPrice) {
+              if (storeDifficulty === 'easy') {
+                if (isJPY) return Math.max(100, Math.round(rawPrice / 100) * 100);
+                var r = Math.round(rawPrice * 2) / 2;
+                return r < 0.5 ? 0.5 : r;
+              }
+              return rawPrice;
+            };
+
+            // ══════════════════════════════════════════════════════════
+            // ── v3: Cashier Rush canvas scene ──
+            // Draws the checkout counter, the customer's items lined up on the
+            // counter, the cash register with running total, and the candle (whose
+            // glow radius tracks patience). One static draw per React render — the
+            // candle flicker is handled by a CSS overlay so we don't need an rAF
+            // loop. Item rendering helpers map customer item NAMES (which start
+            // with an emoji) to simple shape compositions on canvas.
+            // ══════════════════════════════════════════════════════════
+            var drawMilkCarton = function (c, x, y, w, h) {
+              c.fillStyle = '#f8fafc'; c.fillRect(x, y, w, h);
+              // Roof peak
+              c.beginPath(); c.moveTo(x, y); c.lineTo(x + w/2, y - h*0.25); c.lineTo(x + w, y); c.closePath();
+              c.fillStyle = '#e2e8f0'; c.fill();
+              c.strokeStyle = '#475569'; c.lineWidth = 1.2; c.stroke();
+              c.strokeRect(x, y, w, h);
+              // Label
+              c.fillStyle = '#1e40af'; c.fillRect(x + 3, y + h*0.4, w - 6, h*0.18);
+              c.fillStyle = '#fff'; c.font = 'bold ' + Math.max(8, w*0.22) + 'px sans-serif';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('MILK', x + w/2, y + h*0.49);
+            };
+            var drawBread = function (c, x, y, w, h) {
+              c.fillStyle = '#c2914b';
+              c.beginPath(); c.ellipse(x + w/2, y + h*0.6, w/2, h*0.45, 0, 0, Math.PI*2); c.fill();
+              c.strokeStyle = '#7c5e2e'; c.lineWidth = 1.2; c.stroke();
+              // Crust lines
+              c.strokeStyle = '#a07840'; c.lineWidth = 0.8;
+              for (var bi = 0; bi < 3; bi++) {
+                c.beginPath();
+                c.moveTo(x + w*0.2 + bi*w*0.18, y + h*0.4);
+                c.lineTo(x + w*0.3 + bi*w*0.18, y + h*0.75);
+                c.stroke();
+              }
+            };
+            var drawApple = function (c, x, y, w, h) {
+              c.fillStyle = '#dc2626';
+              c.beginPath(); c.arc(x + w/2, y + h*0.55, Math.min(w, h)*0.42, 0, Math.PI*2); c.fill();
+              c.strokeStyle = '#7f1d1d'; c.lineWidth = 1; c.stroke();
+              // Stem
+              c.strokeStyle = '#451a03'; c.lineWidth = 1.5;
+              c.beginPath(); c.moveTo(x + w/2, y + h*0.13); c.lineTo(x + w/2 + 2, y + h*0.05); c.stroke();
+              // Leaf
+              c.fillStyle = '#16a34a';
+              c.beginPath(); c.ellipse(x + w/2 + 5, y + h*0.13, 4, 2, -0.5, 0, Math.PI*2); c.fill();
+            };
+            var drawCereal = function (c, x, y, w, h) {
+              c.fillStyle = '#ea580c'; c.fillRect(x, y, w, h);
+              c.strokeStyle = '#7c2d12'; c.lineWidth = 1.2; c.strokeRect(x, y, w, h);
+              c.fillStyle = '#fbbf24'; c.fillRect(x + 2, y + h*0.3, w - 4, h*0.22);
+              c.fillStyle = '#fff'; c.font = 'bold ' + Math.max(7, w*0.18) + 'px sans-serif';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('CEREAL', x + w/2, y + h*0.41);
+              c.fillStyle = 'rgba(255,255,255,0.4)'; c.fillRect(x + 2, y + 2, w - 4, h*0.12);
+            };
+            var drawEggs = function (c, x, y, w, h) {
+              c.fillStyle = '#fef3c7'; c.fillRect(x, y, w, h*0.7);
+              c.strokeStyle = '#92400e'; c.lineWidth = 1.2; c.strokeRect(x, y, w, h*0.7);
+              // Egg cups (2x3 grid)
+              c.fillStyle = '#fef9e7';
+              for (var er = 0; er < 2; er++) for (var ec = 0; ec < 3; ec++) {
+                c.beginPath(); c.ellipse(x + w*(0.2 + ec*0.3), y + h*(0.18 + er*0.32), w*0.1, h*0.1, 0, 0, Math.PI*2); c.fill(); c.stroke();
+              }
+            };
+            var drawJuice = function (c, x, y, w, h) {
+              c.fillStyle = '#fdba74'; c.fillRect(x, y + h*0.1, w, h*0.9);
+              c.strokeStyle = '#7c2d12'; c.lineWidth = 1.2; c.strokeRect(x, y + h*0.1, w, h*0.9);
+              c.fillStyle = '#fff'; c.fillRect(x, y, w, h*0.15);
+              c.strokeRect(x, y, w, h*0.15);
+              c.fillStyle = '#dc2626'; c.fillRect(x + w*0.3, y + h*0.4, w*0.4, h*0.18);
+              c.fillStyle = '#fff'; c.font = 'bold ' + Math.max(7, w*0.18) + 'px sans-serif';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('OJ', x + w/2, y + h*0.5);
+            };
+            var drawChips = function (c, x, y, w, h) {
+              c.fillStyle = '#0891b2';
+              c.beginPath();
+              c.moveTo(x, y + h*0.1); c.lineTo(x + w, y + h*0.1);
+              c.lineTo(x + w*0.95, y + h); c.lineTo(x + w*0.05, y + h); c.closePath();
+              c.fill();
+              c.strokeStyle = '#164e63'; c.lineWidth = 1.2; c.stroke();
+              c.fillStyle = '#fef3c7'; c.font = 'bold ' + Math.max(8, w*0.22) + 'px sans-serif';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('CHIPS', x + w/2, y + h*0.55);
+            };
+            var drawBanana = function (c, x, y, w, h) {
+              c.fillStyle = '#fbbf24';
+              c.beginPath();
+              c.moveTo(x + w*0.2, y + h*0.3);
+              c.quadraticCurveTo(x + w*0.5, y + h*0.05, x + w*0.85, y + h*0.4);
+              c.quadraticCurveTo(x + w*0.95, y + h*0.6, x + w*0.7, y + h*0.85);
+              c.quadraticCurveTo(x + w*0.35, y + h*0.95, x + w*0.15, y + h*0.6);
+              c.quadraticCurveTo(x + w*0.05, y + h*0.45, x + w*0.2, y + h*0.3);
+              c.closePath();
+              c.fill();
+              c.strokeStyle = '#92400e'; c.lineWidth = 1; c.stroke();
+            };
+            var drawGeneric = function (c, x, y, w, h, label) {
+              c.fillStyle = '#94a3b8'; c.fillRect(x, y, w, h);
+              c.strokeStyle = '#475569'; c.lineWidth = 1; c.strokeRect(x, y, w, h);
+              c.fillStyle = '#fff'; c.font = 'bold ' + Math.max(7, w*0.18) + 'px sans-serif';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText(label || '?', x + w/2, y + h/2);
+            };
+
+            // Pick a drawer based on the item name (which starts with an emoji)
+            var pickItemDrawer = function (itemName) {
+              var n = (itemName || '').toLowerCase();
+              if (n.indexOf('milk') >= 0 || n.indexOf('cream') >= 0) return drawMilkCarton;
+              if (n.indexOf('bread') >= 0 || n.indexOf('bagel') >= 0 || n.indexOf('tortilla') >= 0) return drawBread;
+              if (n.indexOf('apple') >= 0 || n.indexOf('tomato') >= 0) return drawApple;
+              if (n.indexOf('cereal') >= 0 || n.indexOf('granola') >= 0 || n.indexOf('rice') >= 0 || n.indexOf('pasta') >= 0 || n.indexOf('sugar') >= 0 || n.indexOf('flour') >= 0) return drawCereal;
+              if (n.indexOf('egg') >= 0) return drawEggs;
+              if (n.indexOf('juice') >= 0 || n.indexOf('orange') >= 0 || n.indexOf('water') >= 0 || n.indexOf('soda') >= 0) return drawJuice;
+              if (n.indexOf('chip') >= 0 || n.indexOf('popcorn') >= 0) return drawChips;
+              if (n.indexOf('banana') >= 0 || n.indexOf('lemon') >= 0) return drawBanana;
+              return drawGeneric;
+            };
+
+            // Draw the entire cashier scene onto a canvas. Called once per React render.
+            var drawCashierScene = function (canvas) {
+              if (!canvas) return;
+              var W = canvas.width = canvas.offsetWidth || 600;
+              var H = canvas.height = 280;
+              var c = canvas.getContext('2d');
+              if (!c) return;
+              c.clearRect(0, 0, W, H);
+
+              // Power-outage backdrop — dark blue-gray with vignette
+              var bgGrad = c.createLinearGradient(0, 0, 0, H);
+              bgGrad.addColorStop(0, '#0f172a');
+              bgGrad.addColorStop(1, '#1e293b');
+              c.fillStyle = bgGrad;
+              c.fillRect(0, 0, W, H);
+
+              // Candle glow centered on the register (right side). Patience drives the radius.
+              var registerX = W * 0.78, registerY = H * 0.55;
+              var glowRadius = (40 + (crPatiencePct / 100) * 120);
+              var glow = c.createRadialGradient(registerX, registerY, 0, registerX, registerY, glowRadius);
+              glow.addColorStop(0, 'rgba(252, 211, 77, 0.55)');
+              glow.addColorStop(0.5, 'rgba(252, 211, 77, 0.18)');
+              glow.addColorStop(1, 'rgba(252, 211, 77, 0)');
+              c.fillStyle = glow;
+              c.fillRect(0, 0, W, H);
+
+              // Counter (wood grain strip at bottom)
+              var counterGrad = c.createLinearGradient(0, H - 50, 0, H);
+              counterGrad.addColorStop(0, '#78350f');
+              counterGrad.addColorStop(1, '#451a03');
+              c.fillStyle = counterGrad;
+              c.fillRect(0, H - 50, W, 50);
+              // Wood grain lines
+              c.strokeStyle = 'rgba(0,0,0,0.2)'; c.lineWidth = 0.5;
+              for (var wg = 0; wg < 5; wg++) {
+                c.beginPath();
+                c.moveTo(0, H - 45 + wg * 8);
+                c.lineTo(W, H - 45 + wg * 8 + (wg % 2 === 0 ? 2 : -2));
+                c.stroke();
+              }
+
+              // Items on counter — line them up left-of-register
+              var items = (crCustomer && crCustomer.items) || [];
+              var itemSlotW = 60;
+              var itemSpacing = Math.min(itemSlotW, (W * 0.7 - 20) / Math.max(1, items.length));
+              var startX = 20;
+              items.forEach(function (it, idx) {
+                var ix = startX + idx * itemSpacing;
+                var iy = H - 50 - 56;
+                var drawer = pickItemDrawer(it.name);
+                drawer(c, ix, iy, itemSlotW * 0.82, 56, it.name);
+                // Quantity / weight badge below
+                if (it.qty > 1 || it.weight) {
+                  c.fillStyle = '#fbbf24';
+                  c.fillRect(ix, H - 50 + 2, itemSlotW * 0.82, 12);
+                  c.fillStyle = '#0f172a';
+                  c.font = 'bold 10px sans-serif';
+                  c.textAlign = 'center'; c.textBaseline = 'middle';
+                  c.fillText(it.weight ? (it.weight + ' lb') : ('x' + it.qty), ix + itemSlotW * 0.41, H - 50 + 8);
+                }
+              });
+
+              // Cash register
+              var rW = 100, rH = 80;
+              var rx = registerX - rW/2, ry = registerY - rH/2;
+              // Body
+              c.fillStyle = '#374151'; c.fillRect(rx, ry, rW, rH);
+              c.strokeStyle = '#1f2937'; c.lineWidth = 2; c.strokeRect(rx, ry, rW, rH);
+              // LCD screen (dim — power outage)
+              c.fillStyle = '#1e1b4b'; c.fillRect(rx + 8, ry + 8, rW - 16, 24);
+              c.strokeStyle = '#3730a3'; c.lineWidth = 1; c.strokeRect(rx + 8, ry + 8, rW - 16, 24);
+              // LCD text — show "OFFLINE" since the power is out
+              c.fillStyle = 'rgba(252, 211, 77, 0.65)';
+              c.font = 'bold 12px monospace';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('OFFLINE', rx + rW/2, ry + 20);
+              // Keypad pattern
+              c.fillStyle = '#4b5563';
+              for (var kr = 0; kr < 3; kr++) for (var kc = 0; kc < 3; kc++) {
+                c.fillRect(rx + 12 + kc * 26, ry + 40 + kr * 12, 22, 8);
+              }
+              // Candle on top of register
+              c.fillStyle = '#fef3c7';
+              c.fillRect(rx + rW/2 - 4, ry - 16, 8, 14);
+              c.strokeStyle = '#92400e'; c.strokeRect(rx + rW/2 - 4, ry - 16, 8, 14);
+              // Flame (animated by CSS overlay below; this is the static base)
+              c.fillStyle = '#fbbf24';
+              c.beginPath();
+              c.moveTo(rx + rW/2, ry - 16);
+              c.quadraticCurveTo(rx + rW/2 + 4, ry - 22, rx + rW/2, ry - 28);
+              c.quadraticCurveTo(rx + rW/2 - 4, ry - 22, rx + rW/2, ry - 16);
+              c.fill();
+              if (crPatiencePct > 0) {
+                c.fillStyle = 'rgba(254, 243, 199, 0.7)';
+                c.beginPath();
+                c.moveTo(rx + rW/2, ry - 18);
+                c.quadraticCurveTo(rx + rW/2 + 2, ry - 22, rx + rW/2, ry - 25);
+                c.quadraticCurveTo(rx + rW/2 - 2, ry - 22, rx + rW/2, ry - 18);
+                c.fill();
+              }
+
+              // Customer silhouette on the far right (beyond register)
+              if (crCustomer) {
+                var cuX = W - 50, cuY = H - 60;
+                c.fillStyle = '#475569';
+                c.beginPath();
+                c.arc(cuX, cuY - 30, 12, 0, Math.PI * 2);  // head
+                c.fill();
+                c.fillRect(cuX - 16, cuY - 18, 32, 36);  // shoulders/torso
+                // Emoji label above
+                c.fillStyle = 'rgba(255,255,255,0.7)';
+                c.font = '11px sans-serif';
+                c.textAlign = 'center'; c.textBaseline = 'bottom';
+                c.fillText(crCustomer.emoji || '🙂', cuX, cuY - 45);
+              }
+
+              // "Code Black" overlay text top-left
+              c.fillStyle = 'rgba(239, 68, 68, 0.8)';
+              c.font = 'bold 11px sans-serif';
+              c.textAlign = 'left'; c.textBaseline = 'top';
+              c.fillText('⚡ CODE BLACK — POWER OUT', 10, 8);
+              c.fillStyle = 'rgba(252, 211, 77, 0.6)';
+              c.font = '10px sans-serif';
+              c.fillText('Wave ' + crWave + ' · ' + items.length + ' items on counter', 10, 24);
+
+              // Scan flash overlay (drawn on top of items when feedback is fresh + correct)
+              if (crFb && crFb.ok) {
+                c.fillStyle = 'rgba(34, 197, 94, 0.18)';
+                c.fillRect(0, 0, W, H);
+              } else if (crFb && !crFb.ok) {
+                c.fillStyle = 'rgba(239, 68, 68, 0.12)';
+                c.fillRect(0, 0, W, H);
+              }
+            };
+
+            // AlloBot avatar (inline, no external dep). Mood drives expression.
+            var drawAlloBotAvatar = function (canvas, mood) {
+              if (!canvas) return;
+              var W = canvas.width = 80;
+              var H = canvas.height = 80;
+              var c = canvas.getContext('2d');
+              if (!c) return;
+              c.clearRect(0, 0, W, H);
+              // Head (rounded square)
+              c.fillStyle = '#6366f1';
+              c.beginPath();
+              if (typeof c.roundRect === 'function') {
+                c.roundRect(10, 14, 60, 50, 12);
+                c.fill();
+              } else {
+                c.fillRect(10, 14, 60, 50);
+              }
+              // Antenna
+              c.strokeStyle = '#a5b4fc'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(40, 14); c.lineTo(40, 6); c.stroke();
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.arc(40, 4, 3, 0, Math.PI * 2); c.fill();
+              // Visor
+              c.fillStyle = '#1e1b4b';
+              if (typeof c.roundRect === 'function') {
+                c.beginPath(); c.roundRect(16, 26, 48, 20, 8); c.fill();
+              } else {
+                c.fillRect(16, 26, 48, 20);
+              }
+              // Eyes — shape by mood
+              c.fillStyle = mood === 'concerned' ? '#fca5a5' : (mood === 'cheering' ? '#fde68a' : '#67e8f9');
+              if (mood === 'cheering') {
+                // Star eyes
+                c.beginPath(); c.arc(28, 36, 4, 0, Math.PI * 2); c.fill();
+                c.beginPath(); c.arc(52, 36, 4, 0, Math.PI * 2); c.fill();
+                c.fillStyle = '#fff';
+                c.beginPath(); c.arc(28, 36, 1.5, 0, Math.PI * 2); c.fill();
+                c.beginPath(); c.arc(52, 36, 1.5, 0, Math.PI * 2); c.fill();
+              } else if (mood === 'concerned') {
+                // Narrow horizontal eyes
+                c.fillRect(24, 35, 9, 2);
+                c.fillRect(47, 35, 9, 2);
+              } else {
+                // Round happy eyes
+                c.beginPath(); c.arc(28, 36, 3, 0, Math.PI * 2); c.fill();
+                c.beginPath(); c.arc(52, 36, 3, 0, Math.PI * 2); c.fill();
+              }
+              // Mouth
+              c.strokeStyle = '#fff'; c.lineWidth = 2; c.lineCap = 'round';
+              c.beginPath();
+              if (mood === 'cheering') {
+                c.arc(40, 52, 8, 0.1, Math.PI - 0.1);
+              } else if (mood === 'concerned') {
+                c.moveTo(34, 55); c.lineTo(46, 55);
+              } else {
+                c.arc(40, 54, 6, 0.2, Math.PI - 0.2);
+              }
+              c.stroke();
+              // Sparkle for cheering
+              if (mood === 'cheering') {
+                c.fillStyle = '#fbbf24';
+                c.font = 'bold 14px sans-serif';
+                c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText('✨', 14, 18);
+                c.fillText('✨', 66, 16);
+              }
+            };
+
+            // ── v3: Price-rounding helper for Easy difficulty ──
+            // Rounds an arbitrary price up to the nearest $0.50 increment, with a
+            // floor of $0.50 and a sensible cap. Used when crDifficulty/storeDifficulty
+            // is 'easy' — gives elementary students round prices to practice clean
+            // addition before graduating to real-world cents-precision math.
+            // For JPY (yen, no cents), rounds to nearest 100¥.
+            var roundEasyPrice = function (rawPrice) {
+              if (isJPY) return Math.max(100, Math.round(rawPrice / 100) * 100);
+              var rounded = Math.round(rawPrice * 2) / 2;  // nearest 0.50
+              if (rounded < 0.50) rounded = 0.50;
+              return rounded;
+            };
+
             var genCashierRound = function () {
-              // Items per wave: wave 1 = 2-3, wave 2 = 3-4, wave 3+ = 4-6
-              var minItems = crWave <= 1 ? 2 : crWave <= 2 ? 3 : 4;
-              var maxItems = crWave <= 1 ? 3 : crWave <= 2 ? 4 : 6;
+              // v3: in 'easy' mode, fewer items per wave too — keeps cognitive load down
+              var isEasy = crDifficulty === 'easy';
+              var isChallenge = crDifficulty === 'challenge';
+              // Items per wave: easy mode caps at 3, standard/challenge use original progression
+              var minItems = isEasy ? 2 : (crWave <= 1 ? 2 : crWave <= 2 ? 3 : 4);
+              var maxItems = isEasy ? (crWave <= 1 ? 2 : 3) : (crWave <= 1 ? 3 : crWave <= 2 ? 4 : 6);
               var numItems = Math.floor(Math.random() * (maxItems - minItems + 1)) + minItems;
               var items = [];
               var usedIndices = [];
@@ -436,19 +893,27 @@ window.StemLab = window.StemLab || {
                 var si = storeItems[idx];
                 var qty, weight;
                 if (si.pricePer === 'lb') {
-                  weight = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3][Math.floor(Math.random() * 8)];
+                  // Easy mode: integer pounds only, otherwise the existing fractional weight list
+                  weight = isEasy
+                    ? [1, 2, 3][Math.floor(Math.random() * 3)]
+                    : [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3][Math.floor(Math.random() * 8)];
                   qty = 1;
-                  items.push({ name: si.name, price: si.price, qty: 1, weight: weight, pricePer: 'lb' });
+                  // Apply easy-mode price quantization (round up to nearest $0.50)
+                  var displayPrice = isEasy ? roundEasyPrice(si.price) : si.price;
+                  items.push({ name: si.name, price: displayPrice, qty: 1, weight: weight, pricePer: 'lb' });
                 } else {
-                  qty = Math.floor(Math.random() * 3) + 1;
-                  items.push({ name: si.name, price: si.price, qty: qty, weight: null, pricePer: 'each' });
+                  // Easy mode: qty 1-2 only (3 things × $2.50 = mental math limit for many elementary)
+                  qty = isEasy ? (Math.random() < 0.6 ? 1 : 2) : (Math.floor(Math.random() * 3) + 1);
+                  var displayPrice2 = isEasy ? roundEasyPrice(si.price) : si.price;
+                  items.push({ name: si.name, price: displayPrice2, qty: qty, weight: null, pricePer: 'each' });
                 }
               }
-              // Tax for middle/high waves 2+
-              var includeTax = grade !== 'elementary' && crWave >= 2;
-              // Coupon for wave 3+ (high school only)
+              // Tax: skipped entirely in easy mode. Standard: middle/high grade waves 2+. Challenge: always.
+              var includeTax = isEasy ? false : (isChallenge || (grade !== 'elementary' && crWave >= 2));
+              // Coupon: skipped in easy. Standard: high grade waves 3+ at 60% chance. Challenge: any wave 2+ at 50% chance.
               var coupon = null;
-              if (grade === 'high' && crWave >= 3 && Math.random() > 0.4) {
+              var couponChance = isEasy ? -1 : (isChallenge && crWave >= 2 ? 0.5 : (grade === 'high' && crWave >= 3 ? 0.6 : -1));
+              if (couponChance > 0 && Math.random() < couponChance) {
                 var couponTypes = [
                   { type: 'pct', val: [10, 15, 20][Math.floor(Math.random() * 3)], label: '' },
                   { type: 'flat', val: [1, 2, 3, 5][Math.floor(Math.random() * 4)], label: '' }
@@ -483,6 +948,18 @@ window.StemLab = window.StemLab || {
               upd('crWave', 1); upd('crScore', 0); upd('crServed', 0);
               upd('crHistory', []); upd('crFb', null); upd('crCustomer', null);
               upd('crPatiencePct', 100); upd('crGameOver', false);
+              // v3: reset bot trackers + greet on session start
+              upd('crStreak', 0); upd('crWrongInWave', 0); upd('crBotMood', 'happy');
+              if (!crSeenIntro && crBotCoachOn) {
+                var greetMsg = crDifficulty === 'easy'
+                  ? { text: 'Power\'s out. Cash register is dead. Customers need you to add the prices up — they\'re all rounded to nice numbers so you can practice clean.', kind: 'intro', ts: Date.now() }
+                  : { text: 'Power\'s out. Cash register is dead. Customers need you to add it up in your head.', kind: 'intro', ts: Date.now() };
+                upd('crBotMessage', greetMsg);
+                upd('crSeenIntro', true);
+                if (crBotTtsOn && typeof ctx.callTTS === 'function') {
+                  try { ctx.callTTS(greetMsg.text); } catch (e) {}
+                }
+              }
             };
 
             var submitCashierAnswer = function () {
@@ -504,6 +981,51 @@ window.StemLab = window.StemLab || {
               // Advance wave every 3 customers
               var newWave = crWave;
               if (newServed % 3 === 0) newWave = crWave + 1;
+
+              // v3: AlloBot trigger state machine
+              var newStreak = perfect ? (crStreak + 1) : 0;
+              var newWrong = perfect ? 0 : (crWrongInWave + 1);
+              var newMood = 'happy';
+              var botMsg = null;
+              if (!perfect && newWrong === 1) {
+                botMsg = { text: 'Try this: ignore the cents. Round each price up. Then estimate.', kind: 'hint', ts: Date.now() };
+                newMood = 'concerned';
+              } else if (!perfect && newWrong >= 2) {
+                // Step-by-step breakdown using the actual items
+                var stepText = 'Step by step: ';
+                var running = 0;
+                crCustomer.items.forEach(function (it, ii) {
+                  var price = it.weight ? Math.round(it.price * it.weight * 100) / 100 : (it.price * it.qty);
+                  running += price;
+                  stepText += (ii > 0 ? ' + ' : '') + fmt(price);
+                });
+                stepText += ' = ' + fmt(Math.round(running * 100) / 100);
+                if (crCustomer.hasTax) stepText += '. Then add ' + (taxRate * 100) + '% tax.';
+                botMsg = { text: stepText, kind: 'breakdown', ts: Date.now() };
+                newMood = 'concerned';
+              } else if (perfect && newStreak === 3) {
+                botMsg = { text: 'Nice flow. You\'re getting fast.', kind: 'praise', ts: Date.now() };
+                newMood = 'happy';
+              } else if (perfect && newStreak >= 5 && newStreak % 5 === 0) {
+                botMsg = { text: newStreak + ' in a row! You\'re running this counter.', kind: 'praise', ts: Date.now() };
+                newMood = 'cheering';
+              }
+              // Wave-complete override (highest priority)
+              if (perfect && newServed % 3 === 0) {
+                botMsg = { text: 'Wave ' + crWave + ' done. The next one has more items.', kind: 'wave', ts: Date.now() };
+                newMood = 'cheering';
+                newWrong = 0;  // reset wave-wrong counter on wave advance
+              }
+              upd('crStreak', newStreak); upd('crWrongInWave', newWrong);
+              upd('crBotMood', newMood);
+              if (botMsg) {
+                upd('crBotMessage', botMsg);
+                // TTS pass-through if enabled
+                if (crBotTtsOn && typeof ctx.callTTS === 'function') {
+                  try { ctx.callTTS(botMsg.text); } catch (e) {}
+                }
+              }
+
               upd('crServed', newServed); upd('crScore', newScore);
               upd('crHistory', newHistory); upd('crBest', newBest);
               upd('crWave', newWave);
@@ -1121,15 +1643,56 @@ window.StemLab = window.StemLab || {
                       "The registers are completely dead. Food is starting to spoil. We need you to manually calculate customer totals as fast as you can. ",
                       React.createElement("span", { className: "text-amber-400 font-bold" }, "Speed and accuracy"), " are everything right now."
                     ),
-                    grade !== 'elementary' ? React.createElement("div", { className: "mb-6 inline-block bg-zinc-800 rounded-lg px-4 py-2 border border-zinc-700 text-left" },
+
+                    // v3: Difficulty selector \u2014 Easy / Standard / Challenge
+                    React.createElement("div", { className: "mb-5 inline-block bg-zinc-800/80 rounded-xl px-4 py-3 border border-zinc-700" },
+                      React.createElement("p", { className: "text-[11px] font-bold text-zinc-400 mb-2 uppercase tracking-wider" }, "Difficulty"),
+                      React.createElement("div", { className: "flex gap-2 justify-center" },
+                        [
+                          { id: 'easy',      label: '\uD83D\uDFE2 Easy',      sub: 'Round prices, no tax' },
+                          { id: 'standard',  label: '\uD83D\uDFE1 Standard',  sub: 'Real prices, tax W2+' },
+                          { id: 'challenge', label: '\uD83D\uDD34 Challenge', sub: 'Coupons + tax' }
+                        ].map(function(dm) {
+                          var active = crDifficulty === dm.id;
+                          return React.createElement("button", {
+                            key: 'crd-' + dm.id,
+                            onClick: function() { upd('crDifficulty', dm.id); },
+                            'aria-pressed': active,
+                            'aria-label': dm.label + ': ' + dm.sub,
+                            className: 'px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                              (active
+                                ? (dm.id === 'easy' ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
+                                  : dm.id === 'standard' ? 'bg-amber-600 text-zinc-900 border-amber-400 shadow-md'
+                                  : 'bg-red-700 text-white border-red-500 shadow-md')
+                                : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500')
+                          },
+                            React.createElement('div', null, dm.label),
+                            React.createElement('div', { className: 'text-[10px] font-normal opacity-80 mt-0.5' }, dm.sub)
+                          );
+                        })
+                      )
+                    ),
+
+                    React.createElement("div", { className: "mb-6" }, null),
+
+                    grade !== 'elementary' && crDifficulty !== 'easy' ? React.createElement("div", { className: "mb-6 inline-block bg-zinc-800 rounded-lg px-4 py-2 border border-zinc-700 text-left" },
                       React.createElement("p", { className: "text-xs text-zinc-400 mb-1" }, "\u26A0\uFE0F Management notes:"),
                       React.createElement("ul", { className: "text-xs text-zinc-300 list-disc list-inside space-y-1" },
                         React.createElement("li", null, "Watch out for per-lb items"),
                         React.createElement("li", null, "Waves 2+: Add " + (taxRate*100) + "% Sales Tax"),
-                        grade === 'high' ? React.createElement("li", null, "Waves 3+: Apply customer coupons FIRST, before tax") : null
+                        (grade === 'high' || crDifficulty === 'challenge') ? React.createElement("li", null, "Waves 3+: Apply customer coupons FIRST, before tax") : null
                       )
                     ) : null,
-                    React.createElement("div", { className: "text-center" }, 
+                    crDifficulty === 'easy' ? React.createElement("div", { className: "mb-6 inline-block bg-emerald-900/30 rounded-lg px-4 py-2 border border-emerald-700/50 text-left" },
+                      React.createElement("p", { className: "text-xs text-emerald-300 mb-1" }, "\uD83D\uDFE2 Easy mode:"),
+                      React.createElement("ul", { className: "text-xs text-emerald-200 list-disc list-inside space-y-1" },
+                        React.createElement("li", null, "All prices in $0.50 increments"),
+                        React.createElement("li", null, "No tax, no coupons"),
+                        React.createElement("li", null, "2-3 items per customer"),
+                        React.createElement("li", null, "Practice clean addition first")
+                      )
+                    ) : null,
+                    React.createElement("div", { className: "text-center" },
                       React.createElement("button", { "aria-label": "I'm Ready", onClick: function() { upd('crIntro', false); genCashierRound(); },
                         className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 hover:scale-105 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)]"
                       }, "I'm Ready \u2192")
@@ -1165,12 +1728,76 @@ window.StemLab = window.StemLab || {
                       ),
                       React.createElement("div", { className: "flex items-center gap-3 mb-4 relative z-0" },
                         React.createElement("div", { className: "w-12 h-12 rounded-full bg-zinc-700 flex items-center justify-center text-3xl shadow-inner border border-zinc-600" }, crCustomer.emoji),
-                        React.createElement("div", null,
+                        React.createElement("div", { className: "flex-1" },
                           React.createElement("p", { className: "text-zinc-200 font-bold text-sm" }, crCustomer.name),
                           React.createElement("p", { className: "text-zinc-500 text-[11px] font-bold" }, "Waiting for total...")
+                        ),
+                        // v3: in-game toggles (canvas + bot) — compact
+                        React.createElement("div", { className: "flex items-center gap-1" },
+                          React.createElement("button", {
+                            onClick: function() { upd('crCanvasOn', !crCanvasOn); },
+                            'aria-pressed': crCanvasOn,
+                            title: crCanvasOn ? 'Hide canvas scene' : 'Show canvas scene',
+                            className: 'text-[10px] font-bold px-2 py-1 rounded ' + (crCanvasOn ? 'bg-amber-500 text-zinc-900' : 'bg-zinc-700 text-zinc-400')
+                          }, '🎨'),
+                          React.createElement("button", {
+                            onClick: function() { upd('crBotCoachOn', !crBotCoachOn); },
+                            'aria-pressed': crBotCoachOn,
+                            title: crBotCoachOn ? 'Hide AlloBot coach' : 'Show AlloBot coach',
+                            className: 'text-[10px] font-bold px-2 py-1 rounded ' + (crBotCoachOn ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-400')
+                          }, '🤖')
                         )
                       ),
-                      
+
+                      // v3: Canvas scene — checkout counter with items + register + candle
+                      crCanvasOn && React.createElement("div", {
+                        className: "mb-4 rounded-lg overflow-hidden border border-zinc-700 relative z-0",
+                        style: { background: '#0f172a' }
+                      },
+                        React.createElement("canvas", {
+                          ref: function (el) { drawCashierScene(el); },
+                          'role': 'img',
+                          'aria-label': 'Cashier counter with ' + crCustomer.items.length + ' items: ' +
+                            crCustomer.items.map(function(it) { return it.name; }).join(', '),
+                          style: { width: '100%', display: 'block', height: 280 }
+                        })
+                      ),
+
+                      // v3: AlloBot Coach panel — avatar + speech bubble with latest hint/praise
+                      crBotCoachOn && crBotMessage && React.createElement("div", {
+                        role: 'region', 'aria-label': 'AlloBot coach',
+                        className: 'mb-4 flex items-start gap-3 bg-indigo-950/40 rounded-lg p-3 border border-indigo-700/50 relative z-0'
+                      },
+                        React.createElement("canvas", {
+                          ref: function (el) { drawAlloBotAvatar(el, crBotMood); },
+                          'aria-hidden': 'true',
+                          style: { width: 64, height: 64, flexShrink: 0 }
+                        }),
+                        React.createElement("div", { className: 'flex-1' },
+                          React.createElement("p", { className: 'text-[11px] font-bold text-indigo-300 mb-0.5 uppercase tracking-wider' },
+                            crBotMessage.kind === 'intro' ? 'AlloBot' :
+                            crBotMessage.kind === 'hint' ? 'AlloBot · Hint' :
+                            crBotMessage.kind === 'breakdown' ? 'AlloBot · Step by step' :
+                            crBotMessage.kind === 'praise' ? 'AlloBot · Nice' :
+                            crBotMessage.kind === 'wave' ? 'AlloBot · Wave done' : 'AlloBot'
+                          ),
+                          React.createElement("p", { className: 'text-sm text-zinc-100 leading-snug', 'aria-live': 'polite' }, crBotMessage.text),
+                          React.createElement("div", { className: 'flex gap-2 mt-2' },
+                            React.createElement("button", {
+                              onClick: function () { upd('crBotTtsOn', !crBotTtsOn); },
+                              'aria-pressed': crBotTtsOn,
+                              title: crBotTtsOn ? 'Stop reading aloud' : 'Read aloud',
+                              className: 'text-[10px] font-bold px-2 py-0.5 rounded ' + (crBotTtsOn ? 'bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700')
+                            }, crBotTtsOn ? '🔊 Voice on' : '🔈 Voice off'),
+                            React.createElement("button", {
+                              onClick: function () { upd('crBotMessage', null); },
+                              title: 'Dismiss',
+                              className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                            }, 'Dismiss')
+                          )
+                        )
+                      ),
+
                       // Receipt / Basket
                       React.createElement("div", { className: "bg-[#fffbc8] text-zinc-800 p-4 rounded-sm shadow-inner font-mono text-sm relative z-0" },
                         // jagged top
@@ -1326,14 +1953,39 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
                   // Store shelves
                   React.createElement("div", { className: "md:col-span-2 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
-                    React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-3 flex-wrap gap-2" },
                       React.createElement("h3", { className: "text-sm font-bold text-orange-800" }, "\uD83D\uDED2 " + cur.flag + " Store Shelves"),
+                      // v3: Difficulty selector (compact, inline next to header)
+                      React.createElement("div", { className: "flex gap-1 items-center bg-white/70 rounded-lg px-2 py-1 border border-orange-200" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-orange-700 mr-1" }, "Prices:"),
+                        [
+                          { id: 'easy',      label: '\uD83D\uDFE2 Round',  title: 'Round prices in $0.50 increments' },
+                          { id: 'standard',  label: '\uD83D\uDFE1 Real',   title: 'Real-world cents-precision prices' },
+                          { id: 'challenge', label: '\uD83D\uDD34 Hard',   title: 'Real prices + harder mental math' }
+                        ].map(function(sd) {
+                          var active = storeDifficulty === sd.id;
+                          return React.createElement("button", {
+                            key: 'sd-' + sd.id,
+                            onClick: function() {
+                              upd('storeDifficulty', sd.id);
+                              // Clear cart on difficulty switch so cart prices match new tier
+                              upd('cart', []);
+                            },
+                            'aria-pressed': active,
+                            title: sd.title,
+                            className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' +
+                              (active ? 'bg-orange-700 text-white shadow-sm' : 'text-orange-600 hover:bg-orange-100')
+                          }, sd.label);
+                        })
+                      ),
                       React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, filteredStoreItems.length + " items")
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[480px] overflow-y-auto pr-1" },
                       filteredStoreItems.map(function (item, ii) {
                         var isWeighed = item.pricePer && item.pricePer !== 'each';
                         var isAdding = d.weightItemIdx === ii && isWeighed;
+                        // v3: apply storeDifficulty-based price rounding for display + cart-add
+                        var displayPrice = getStorePrice(item.price);
                         return React.createElement("div", { key: ii, className: "relative" },
                           React.createElement("button", { onClick: function () {
                               if (isWeighed) {
@@ -1345,7 +1997,7 @@ window.StemLab = window.StemLab || {
                                   var newCart = cart.map(function (c, idx) { return idx === existing ? Object.assign({}, c, { qty: (c.qty || 1) + 1 }) : c; });
                                   upd('cart', newCart);
                                 } else {
-                                  upd('cart', [].concat(cart, [{ name: item.name, price: item.price, qty: 1, pricePer: 'each' }]));
+                                  upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, qty: 1, pricePer: 'each' }]));
                                 }
                                 if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
                               }
@@ -1355,7 +2007,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
                             React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
                             React.createElement("div", { className: "flex items-baseline gap-1" },
-                              React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(item.price)),
+                              React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(displayPrice)),
                               isWeighed && React.createElement("span", { className: "text-[11px] text-orange-500 font-bold" }, "/" + item.pricePer)
                             ),
                             React.createElement("span", { className: "text-[11px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
@@ -1369,10 +2021,10 @@ window.StemLab = window.StemLab || {
                               React.createElement("button", { "aria-label": "Add to Cart", onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
                               React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, item.pricePer)
                             ),
-                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-600" }, "= " + fmt(item.price * (d.weightInput || 1))),
+                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-600" }, "= " + fmt(displayPrice * (d.weightInput || 1))),
                             React.createElement("button", { "aria-label": "Add to Cart", onClick: function () {
                               var w = d.weightInput || 1;
-                              upd('cart', [].concat(cart, [{ name: item.name, price: item.price, weight: w, pricePer: item.pricePer, qty: 1 }]));
+                              upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, weight: w, pricePer: item.pricePer, qty: 1 }]));
                               upd('weightItemIdx', null);
                               if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
                             }, className: "w-full px-3 py-1.5 bg-orange-700 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all" }, "\uD83D\uDED2 Add to Cart")

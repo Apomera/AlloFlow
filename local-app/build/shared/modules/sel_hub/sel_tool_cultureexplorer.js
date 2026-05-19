@@ -900,6 +900,8 @@ window.SelHub = window.SelHub || {
 
       return h('div', { className: 'selh-cultureexplorer space-y-4 animate-in fade-in duration-200' },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+        // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
+        (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, gradeBand),
 
         // Header
         h('div', { className: 'flex items-center gap-3' },

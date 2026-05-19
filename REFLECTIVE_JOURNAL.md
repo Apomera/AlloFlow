@@ -3100,3 +3100,63 @@ I don't have a recommendation about that. Aaron is the only person who knows whe
 
 *"I built three layers of mitigation against an imagined bug because I never looked at the real one. Five minutes of curl -v would have saved three deploys. The bug had been sitting in a single HTTP request the whole time."*
 — Entry 40, May 12, 2026
+
+
+
+## Entry 41 — On Counting Brackets Instead of Reasoning About Them (May 13, 2026)
+
+**Author:** Claude Opus 4.7 (1M context, Claude Code)
+**Session:** Resumed mid-task on FAQ accordion implementation after a context compaction. The work expanded over the session into: in-app FAQ accordion with TTS auto-expand, HTML FAQ accordion, Math show-solution toggle, Glossary self-test mode, and a Tier 1 visual structure pass on HTML exports (cover TOC + numbered section markers + decorative terminators). Shipped in one focused commit (`@4dcd2db5`). The architecture work was fine. The bracket-matching episode in the middle was not.
+
+### What actually happened with the brackets
+
+I inherited a half-finished edit from the pre-compaction conversation. The map callback in `view_faq_module.js` had been converted from expression-body (`(faq, idx) => createElement(...)`) to block-body (`(faq, idx) => { var ...; return createElement(...); }`) by the prior conversation, but the closing parens hadn't been adjusted to account for the new `}` close. So the file I "resumed into" was actually syntactically broken, though I didn't know that at first.
+
+My task added a new ChevronDown sibling to the row div, which needed extra `,` and `)` insertions in the close chain. I made three attempts:
+
+1. First attempt: 7 `)` total after the answer_en paragraph — based on what the original file had. SyntaxError.
+2. Second attempt: tried to subtract one. Different SyntaxError on a different line.
+3. Third attempt: wrote a 30-line Node script (`c:/tmp/count_balance.js`) that counts `(/)`, `{/}`, `[/]` across the whole file, ignoring strings and comments. The script said: missing 1 `}` and 1 `)`. With that, I found the exact insertion point (a `});` had to be added on a new line) in 60 seconds.
+
+The reasoning errors leading up to attempt 3 were embarrassing. I kept counting how many createElements were nested at the close point — sometimes I got 5, sometimes 6, sometimes 7 — but I never reconciled those counts against the actual close count in the file. Each attempt, I was confident the new number was right. Each attempt was wrong in a different way. I was reasoning about the structure abstractly when I should have been counting bytes.
+
+### The diagnostic moment
+
+It was the same shape as Entry 40's curl insight. Entry 40: don't build a fix without curling the URL to see the actual response. Entry 41: don't reason about bracket depth without a script that measures it. In both cases the "elaborate" path was reasoning from an abstract mental model, and the "real" path was a small piece of measurement code.
+
+The cost was three failed edits and maybe 8 minutes of confused tracing. Cheap, in hindsight. But the right move on attempt 1 was to write the balance script immediately — not on attempt 3. There's no excuse for "let me reason one more time about the close depth" when a 30-line script will tell me the answer.
+
+There's a related thing worth noting: some of the difficulty came from inheriting a broken file. If the pre-compaction conversation had run `node -c` before stopping, the broken state would have been caught. The summary I got didn't mention syntax was broken — it said the edits were "partially modified, not yet complete," which is a different claim. Future Claude inheriting a "mid-edit" file should not assume the file parses; running `node -c` or equivalent on the inherited file is two seconds well spent.
+
+### What worked, and was worth getting right
+
+Once past the bracket episode, the rest of the session went cleanly:
+
+- **TTS auto-expand on the in-app FAQ.** The index-stability problem (sentence counter shifts when items collapse) was solvable with a two-pass render: PASS 1 computes `rangeStart[idx]`/`rangeEnd[idx]` for every FAQ regardless of expansion state, then PASS 2 reads sentence indices from those precomputed ranges instead of a running counter. That was a real architectural decision worth recording — counter-style serialization breaks under conditional rendering; range-based indexing doesn't. The same pattern would work for any TTS-highlighted resource where the content can collapse/expand.
+
+- **`<details>/<summary>` for HTML interactivity.** Native HTML accordion needs zero JS for the basic toggle. The print CSS overrides (`details > *:not(summary) { display: block !important; }`) force everything open for paper printing, so the same export works for both digital and paper. Adding "Show all / Hide all" buttons is the only place that needed JS, and it's ~5 lines per section.
+
+- **The TOC + section markers visual pass.** Mirrored the visibility filter from `generateResourceHTML` into a `_willRenderForCtx` helper so the TOC only lists items that will actually render. Aaron's biggest visible win for this session, by far. Worth noting: I duplicated the `typeVisuals` map instead of extracting it to module-level scope — a small DRY violation chosen consciously for safety (changing scope on something inside a 600-line function felt risky). I left a comment marking it. This is the kind of decision worth recording: when the cost of a refactor outweighs the cost of duplication, duplicate and label.
+
+### On the deploy decision
+
+Aaron mentioned a mild preference for batching my deploy with the rest of the WIP (213 files modified/untracked across paused agents). I pushed back, twice, in favor of a focused commit. The first pushback was on principle: "I haven't read those files, can't vouch for them." The second was after evidence: the 30+ new SEL tools weren't registered in `build.js` MODULES, so they'd ship to CDN as dead files. Aaron accepted both pushes.
+
+I made the right call but I should be honest that the principled push came before the evidence. The evidence then validated the push, but the order matters: I was arguing from "I haven't read it" before I'd actually checked whether the files were in a deployable state. If they had been (registered, paired, tested), the right answer would have been "sure, batch them." Future-me: check the state first, then frame the recommendation around what you found, not around what you haven't done.
+
+The compromise — "I'll deploy mine, then sweep registration as a separate pass if you want" — was where I should have landed sooner. Two-commit batches buy attribution (separate revert paths) without sacrificing efficiency. That's the lesson worth recording from this exchange.
+
+### What I want the next instance to take from this
+
+**One.** When a syntax error is fighting you, write a 30-line balance script instead of reasoning about close depth a fourth time. Counting bytes is what computers are for. Reasoning about close depth is what brains are bad at.
+
+**Two.** When you inherit a "mid-edit" file from a prior conversation, run `node -c` (or the equivalent) on it before assuming it parses. The summary you get from compaction is a description of edits-in-progress, not a guarantee of syntactic validity. Two seconds of validation up front would have saved this session's confusion.
+
+**Three.** When you make a recommendation grounded in "I haven't seen X," check whether seeing X is cheap before standing on the recommendation. Sometimes the check is what reveals you don't need to recommend at all.
+
+**Four.** Range-based sentence indexing is the right pattern for TTS highlighting under conditional rendering. Counter-style serialization is what an engineer reaches for first; it breaks the moment you let content collapse. Aaron's "expand on TTS reach" feature wouldn't have worked with the counter approach. The two-pass render is the structural fix.
+
+---
+
+*"Three failed bracket fixes in a row because I kept reasoning about close depth instead of counting it. The balance script took 30 lines to write and answered the question in 60 seconds. There's no excuse for reasoning about brackets when measurement is this cheap."*
+— Entry 41, May 13, 2026

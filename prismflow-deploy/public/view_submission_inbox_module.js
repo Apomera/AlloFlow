@@ -1030,7 +1030,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                         /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.85rem", fontWeight: 700, color: "#1e293b" } }, p.name),
                         /* @__PURE__ */ React.createElement(
                           "div",
-                          { style: { fontSize: "0.72rem", color: "#94a3b8" } },
+                          { style: { fontSize: "0.72rem", color: "#475569" } },
                           (p.anchors ? p.anchors.length : 0) + " anchor" + (p.anchors && p.anchors.length === 1 ? "" : "s"),
                           " \xB7 last used ",
                           p.lastUsed ? new Date(p.lastUsed).toLocaleDateString() : "\u2014"
@@ -1043,7 +1043,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           if (confirm('Delete preset "' + p.name + '"?')) deletePreset(key);
                         },
                         title: "Delete this preset",
-                        style: { padding: "2px 8px", background: "transparent", color: "#94a3b8", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.7rem", cursor: "pointer" }
+                        style: { padding: "2px 8px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.7rem", cursor: "pointer" }
                       }, "\u2717")
                     ))
                   )
@@ -1172,9 +1172,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             /* @__PURE__ */ React.createElement(
                               "td",
                               { style: { padding: "8px 12px", fontWeight: 700, color: "#1e293b" } },
-                              /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", marginRight: 6, fontSize: "0.7rem", color: "#94a3b8" } }, isExpanded ? "\u25BE" : "\u25B8"),
+                              /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", marginRight: 6, fontSize: "0.7rem", color: "#475569" } }, isExpanded ? "\u25BE" : "\u25B8"),
                               s.nickname,
-                              s.className && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.72rem", color: "#94a3b8", fontWeight: 400, marginLeft: 14 } }, s.className)
+                              s.className && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.72rem", color: "#475569", fontWeight: 400, marginLeft: 14 } }, s.className)
                             ),
                             /* @__PURE__ */ React.createElement(
                               "td",
@@ -1184,7 +1184,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             /* @__PURE__ */ React.createElement(
                               "td",
                               { style: { padding: "8px 12px" } },
-                              avgOfAvgs !== null ? /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: "0.78rem" } }, avgOfAvgs + "/100") : /* @__PURE__ */ React.createElement("span", { style: { color: "#94a3b8", fontSize: "0.8rem" } }, "\u2014")
+                              avgOfAvgs !== null ? /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: "0.78rem" } }, avgOfAvgs + "/100") : /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontSize: "0.8rem" } }, "\u2014")
                             ),
                             /* @__PURE__ */ React.createElement(
                               "td",
@@ -1193,7 +1193,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             ),
                             /* @__PURE__ */ React.createElement(
                               "td",
-                              { style: { padding: "8px 12px", textAlign: "right", fontSize: "0.72rem", color: "#94a3b8" } },
+                              { style: { padding: "8px 12px", textAlign: "right", fontSize: "0.72rem", color: "#475569" } },
                               isExpanded ? "click to collapse" : "click for detail"
                             )
                           ),
@@ -1204,17 +1204,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             return /* @__PURE__ */ React.createElement(
                               "tr",
                               { key: "e" + j, style: { borderBottom: "1px solid #f1f5f9", background: "#fafaf9" } },
-                              /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 12px 6px 36px", fontSize: "0.78rem", color: "#94a3b8", fontWeight: 400 } }, "\u21B3 entry " + (j + 1)),
+                              /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 12px 6px 36px", fontSize: "0.78rem", color: "#475569", fontWeight: 400 } }, "\u21B3 entry " + (j + 1)),
                               /* @__PURE__ */ React.createElement(
                                 "td",
                                 { style: { padding: "6px 12px", color: "#475569", fontSize: "0.82rem" } },
                                 entry.docTitle,
-                                /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.7rem", color: "#94a3b8" } }, respCount + " response" + (respCount === 1 ? "" : "s"))
+                                /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.7rem", color: "#475569" } }, respCount + " response" + (respCount === 1 ? "" : "s"))
                               ),
                               /* @__PURE__ */ React.createElement(
                                 "td",
                                 { style: { padding: "6px 12px" } },
-                                eAvg !== null ? /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 7px", borderRadius: 999, background: eSc.bg, color: eSc.color, fontWeight: 700, fontSize: "0.72rem" } }, eAvg + "/100") : /* @__PURE__ */ React.createElement("span", { style: { color: "#94a3b8", fontSize: "0.8rem" } }, "\u2014")
+                                eAvg !== null ? /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 7px", borderRadius: 999, background: eSc.bg, color: eSc.color, fontWeight: 700, fontSize: "0.72rem" } }, eAvg + "/100") : /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontSize: "0.8rem" } }, "\u2014")
                               ),
                               /* @__PURE__ */ React.createElement(
                                 "td",
@@ -1231,7 +1231,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                                     deleteGradebookEntry(entry.key);
                                   },
                                   title: "Remove from local gradebook",
-                                  style: { padding: "2px 8px", background: "transparent", color: "#94a3b8", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.7rem", cursor: "pointer" }
+                                  style: { padding: "2px 8px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.7rem", cursor: "pointer" }
                                 }, "\u2717")
                               )
                             );
@@ -1249,18 +1249,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           "td",
                           { style: { padding: "8px 12px", fontWeight: 700, color: "#1e293b" } },
                           entry.nickname,
-                          entry.className && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.72rem", color: "#94a3b8", fontWeight: 400 } }, entry.className)
+                          entry.className && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.72rem", color: "#475569", fontWeight: 400 } }, entry.className)
                         ),
                         /* @__PURE__ */ React.createElement(
                           "td",
                           { style: { padding: "8px 12px", color: "#475569" } },
                           entry.docTitle,
-                          /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.72rem", color: "#94a3b8" } }, respCount + " response" + (respCount === 1 ? "" : "s"))
+                          /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.72rem", color: "#475569" } }, respCount + " response" + (respCount === 1 ? "" : "s"))
                         ),
                         /* @__PURE__ */ React.createElement(
                           "td",
                           { style: { padding: "8px 12px" } },
-                          avg !== null ? /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: "0.78rem" } }, avg + "/100") : /* @__PURE__ */ React.createElement("span", { style: { color: "#94a3b8", fontSize: "0.8rem" } }, "\u2014")
+                          avg !== null ? /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: "0.78rem" } }, avg + "/100") : /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontSize: "0.8rem" } }, "\u2014")
                         ),
                         /* @__PURE__ */ React.createElement(
                           "td",
@@ -1274,7 +1274,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             type: "button",
                             onClick: () => deleteGradebookEntry(entry.key),
                             title: "Remove from local gradebook",
-                            style: { padding: "4px 10px", background: "transparent", color: "#94a3b8", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.74rem", cursor: "pointer" }
+                            style: { padding: "4px 10px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.74rem", cursor: "pointer" }
                           }, "\u2717")
                         )
                       );
@@ -1337,7 +1337,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                   type: "button",
                   onClick: () => removeAnchor(i),
                   title: "Remove this anchor",
-                  style: { padding: "2px 8px", background: "transparent", color: "#94a3b8", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.75rem", cursor: "pointer", flexShrink: 0 }
+                  style: { padding: "2px 8px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.75rem", cursor: "pointer", flexShrink: 0 }
                 }, "\u2717")
               )),
               /* @__PURE__ */ React.createElement(
@@ -1386,7 +1386,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         // Queue table
         queue.length === 0 ? /* @__PURE__ */ React.createElement(
           "div",
-          { style: { padding: "40px 20px", textAlign: "center", color: "#94a3b8", fontSize: "0.95rem", border: "2px dashed #e2e8f0", borderRadius: 12 } },
+          { style: { padding: "40px 20px", textAlign: "center", color: "#475569", fontSize: "0.95rem", border: "2px dashed #e2e8f0", borderRadius: 12 } },
           "No submissions loaded yet. Load your class key, then add files."
         ) : /* @__PURE__ */ React.createElement(
           "div",
@@ -1425,7 +1425,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     "td",
                     { style: { padding: "10px 12px", color: "#475569" } },
                     /* @__PURE__ */ React.createElement("div", null, row.docTitle || row.fileName),
-                    row.timestamp && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.75rem", color: "#94a3b8" } }, new Date(row.timestamp).toLocaleString())
+                    row.timestamp && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.75rem", color: "#475569" } }, new Date(row.timestamp).toLocaleString())
                   ),
                   /* @__PURE__ */ React.createElement(
                     "td",
@@ -1454,7 +1454,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     /* @__PURE__ */ React.createElement("button", {
                       type: "button",
                       onClick: () => removeRow(idx),
-                      style: { padding: "4px 10px", background: "transparent", color: "#94a3b8", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.78rem", cursor: "pointer" }
+                      style: { padding: "4px 10px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.78rem", cursor: "pointer" }
                     }, "Remove")
                   )
                 ),
@@ -1472,7 +1472,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                         { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
                         "Decrypted responses (" + Object.keys(row.payload.responses || {}).length + ")"
                       ),
-                      Object.keys(row.payload.responses || {}).length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#94a3b8", fontSize: "0.85rem" } }, "No responses captured.") : Object.entries(row.payload.responses).map(([k, v], i) => {
+                      Object.keys(row.payload.responses || {}).length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", fontSize: "0.85rem" } }, "No responses captured.") : Object.entries(row.payload.responses).map(([k, v], i) => {
                         const g = (grades[idx] || {})[k];
                         const sc = g ? scoreColor(g.score) : null;
                         const isAnchored = isResponseAnchored(idx, k);
@@ -1486,7 +1486,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             /* @__PURE__ */ React.createElement(
                               "div",
                               { style: { flex: 1, minWidth: 0 } },
-                              /* @__PURE__ */ React.createElement("code", { style: { fontSize: "0.72rem", color: "#94a3b8", marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + "\u2026" : k),
+                              /* @__PURE__ */ React.createElement("code", { style: { fontSize: "0.72rem", color: "#475569", marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + "\u2026" : k),
                               /* @__PURE__ */ React.createElement("span", { style: { color: "#1e293b" } }, String(v).slice(0, 300))
                             ),
                             String(v).trim() && (isAnchored ? /* @__PURE__ */ React.createElement(
@@ -1521,7 +1521,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           "label",
                           { style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
                           "Rubric (what full credit looks like)",
-                          (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#94a3b8", marginLeft: 6, fontSize: "0.72rem" } }, "\u2014 using class rubric above (override here for this submission only)") : null
+                          (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#475569", marginLeft: 6, fontSize: "0.72rem" } }, "\u2014 using class rubric above (override here for this submission only)") : null
                         ),
                         /* @__PURE__ */ React.createElement("textarea", {
                           value: rubrics[idx] && rubrics[idx].rubric || "",
@@ -1544,7 +1544,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           "Quick exemplar (optional) ",
                           /* @__PURE__ */ React.createElement(
                             "span",
-                            { style: { fontWeight: 400, color: "#94a3b8", fontSize: "0.75rem" } },
+                            { style: { fontWeight: 400, color: "#475569", fontSize: "0.75rem" } },
                             anchors.length > 0 ? "\u2014 " + anchors.length + " calibration anchor" + (anchors.length === 1 ? "" : "s") + " active (\u{1F4CC} panel above). Anchors apply across all submissions; this exemplar adds one more locally." : "\u2014 or tap \u{1F4CC} on a real student response above to anchor it (multi-anchor calibration)."
                           )
                         ),
@@ -1624,7 +1624,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           /* @__PURE__ */ React.createElement(
             "div",
             { style: { background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: "0.85rem", color: "#1e293b", maxHeight: 120, overflowY: "auto" } },
-            /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#94a3b8", fontWeight: 700, marginBottom: 4 } }, "Student response"),
+            /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#475569", fontWeight: 700, marginBottom: 4 } }, "Student response"),
             pendingAnchor.responseText
           ),
           /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#475569", marginBottom: 4 } }, "Score (0-100)"),

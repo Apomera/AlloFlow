@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "generated": "2026-05-19T19:41:12.951Z",
+  "count": 9,
+  "total_keys_expected": 9307,
+  "available": [
+    {
+      "slug": "arabic",
+      "display": "Arabic",
+      "keys": 9296,
+      "bytes": 1251249,
+      "updated": "2026-05-19"
+    },
+    {
+      "slug": "chinese_simplified",
+      "display": "Chinese (Simplified)",
+      "keys": 9296,
+      "bytes": 846843,
+      "updated": "2026-05-19"
+    },
+    {
+      "slug": "french",
+      "display": "French",
+      "keys": 9296,
+      "bytes": 1121527,
+      "updated": "2026-05-18"
+    },
+    {
+      "slug": "haitian_creole",
+      "display": "Haitian Creole",
+      "keys": 925,
+      "bytes": 49293,
+      "updated": "2026-05-17"
+    },
+    {
+      "slug": "hebrew",
+      "display": "Hebrew",
+      "keys": 533,
+      "bytes": 29861,
+      "updated": "2026-05-19"
+    },
+    {
+      "slug": "portuguese_brazil",
+      "display": "Portuguese (Brazil)",
+      "keys": 9296,
+      "bytes": 1053394,
+      "updated": "2026-05-19"
+    },
+    {
+      "slug": "somali",
+      "display": "Somali",
+      "keys": 9291,
+      "bytes": 993589,
+      "updated": "2026-05-19"
+    },
+    {
+      "slug": "spanish_latin_america",
+      "display": "Spanish (Latin America)",
+      "keys": 9295,
+      "bytes": 1100191,
+      "updated": "2026-05-18"
+    },
+    {
+      "slug": "vietnamese",
+      "display": "Vietnamese",
+      "keys": 4730,
+      "bytes": 382043,
+      "updated": "2026-05-19"
+    }
+  ]
+}

@@ -64,6 +64,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ToolCatalog',
+        filename: 'tool_catalog_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'SubmissionCrypto',
         filename: 'submission_crypto_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -91,6 +96,11 @@ const MODULES = [
     {
         name: 'PromptsLibraryModule',
         filename: 'prompts_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AnnotationSuiteModule',
+        filename: 'annotation_suite_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -489,6 +499,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'PromptDialog',
+        filename: 'view_prompt_dialog_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'HintsModal',
         filename: 'view_hints_modal_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -682,6 +697,26 @@ const MODULES = [
         name: 'Export',
         filename: 'export_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LivePolling',
+        filename: 'live_polling_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'NoteTakingTemplatesModule',
+        filename: 'note_taking_templates_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AnchorChartsModule',
+        filename: 'anchor_charts_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ConceptPictionaryModule',
+        filename: 'concept_pictionary_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -710,6 +745,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_rocks.js',
     'stem_lab/stem_tool_dissection.js',
     'stem_lab/stem_tool_behaviorlab.js',
+    'stem_lab/stem_tool_schoolbehaviortoolkit.js',
     'stem_lab/stem_tool_anatomy.js',
     'stem_lab/stem_tool_decomposer.js',
     'stem_lab/stem_tool_companionplanting.js',
@@ -768,6 +804,9 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_skatelab.js',
     'stem_lab/stem_tool_statslab.js',
     'stem_lab/stem_tool_optics.js',
+    'stem_lab/stem_tool_astronomy.js',
+    'stem_lab/stem_tool_bridgelab.js',
+    'stem_lab/stem_tool_microbiology.js',
     // Catch-up batch (Apr 30 2026): tools that were live in AlloFlowANTI/App.jsx
     // toolModules array but missing here, so build.js couldn't bump their CDN
     // hash. Fixed alongside the atcTower casing + playlab/throwlab full wiring.
@@ -782,12 +821,18 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_learning_lab.js',
     'stem_lab/stem_tool_llm_literacy.js',
     'stem_lab/stem_tool_nutritionlab.js',
+    'stem_lab/stem_tool_kitchenlab.js',
+    'stem_lab/stem_tool_cephalopodlab.js',
     'stem_lab/stem_tool_roadready.js',
     'stem_lab/stem_tool_typingpractice.js',
     'stem_lab/stem_tool_weldlab.js',
     'stem_lab/stem_tool_birdlab.js',
+    'stem_lab/stem_tool_raptorhunt.js',
     'stem_lab/stem_tool_swimlab.js',
     'stem_lab/stem_tool_printingpress.js',
+    'stem_lab/stem_tool_aquaculture.js',
+    'stem_lab/stem_tool_fisherlab.js',
+    'stem_lab/stem_tool_atcTower.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
@@ -834,6 +879,7 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_healthyrelationships.js',
     'sel_hub/sel_tool_substancepsychoed.js',
     'sel_hub/sel_tool_identitysupport.js',
+    'sel_hub/sel_tool_disabilityvoices.js',
     'sel_hub/sel_tool_strengths.js',
     'sel_hub/sel_tool_goals.js',
     'sel_hub/sel_tool_community.js',
@@ -849,7 +895,14 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_friendship.js',
     'sel_hub/sel_tool_compassion.js',
     'sel_hub/sel_tool_upstander.js',
-    'sel_hub/sel_tool_conflicttheater.js'
+    'sel_hub/sel_tool_conflicttheater.js',
+    'sel_hub/sel_tool_crisiscompanion.js',
+    'sel_hub/sel_tool_digitalwellbeing.js',
+    'sel_hub/sel_tool_execfunction.js',
+    'sel_hub/sel_tool_peersupport.js',
+    'sel_hub/sel_tool_selfadvocacy.js',
+    'sel_hub/sel_tool_sociallab.js',
+    'sel_hub/sel_tool_voicedetective.js'
 ];
 
 // ── Source → Module compilation ─────────────────────────────────

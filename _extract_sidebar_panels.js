@@ -51,8 +51,8 @@ const BUILD_SCRIPT = path.join(ROOT, '_build_view_sidebar_panels_module.js');
 const MODULE_OUT = path.join(ROOT, 'view_sidebar_panels_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_sidebar_panels_module.js');
 const BUILD_JS = path.join(ROOT, 'build.js');
-const VERIFY_TOOL = path.join(ROOT, '_verify_view_props.cjs');
-const SCOPE_TOOL = 'c:/tmp/enumerate_block_scope_aware.js';
+const VERIFY_TOOL = path.join(ROOT, 'dev-tools', 'verify_view_props.cjs');
+const SCOPE_TOOL = path.join(ROOT, 'dev-tools', 'enumerate_block_scope_aware.js');
 
 const APPLY = process.argv.includes('--apply');
 const COMPILE_ONLY = process.argv.includes('--compile-only');
@@ -496,7 +496,7 @@ if (!buildJsText.includes("name: 'SidebarPanels'")) {
 }
 
 // 12. Run verifier on each component
-console.log('\nVerifying with _verify_view_props.cjs...');
+console.log('\nVerifying with dev-tools/verify_view_props.cjs...');
 let verifierFailures = 0;
 for (const p of auto) {
   try {

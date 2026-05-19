@@ -384,6 +384,320 @@ var d = labToolData || {};
             { term: 'Token Economy', def: 'A system where tokens (conditioned reinforcers) are earned for target behaviors and exchanged for backup reinforcers.' }
           ];
 
+          // === Replacement Behaviors — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var REPLACEMENT_BEHAVIORS_MOVED_TO_TOOLKIT = [
+            {
+              function: 'Attention',
+              functionAbbrev: 'ATT',
+              icon: '👀', color: '#3b82f6',
+              problemEx: 'Calling out, clowning, dramatic falls, "fake" injury reports',
+              replacement: 'Recruit-attention skills: raise hand and wait, tap shoulder, use a "help" card, ask "can you check my work?", request a 1-on-1 conversation at scheduled times.',
+              teaching: 'Plan a daily attention budget the student can spend on appropriate bids — 3 scheduled check-ins per day, no questions asked. Reinforces appropriate seeking and removes the artificial scarcity that drives the problem behavior.',
+              pitfall: 'Don\'t teach a replacement that gets MORE attention than the problem behavior. The replacement has to be efficient — if "raise your hand" gets ignored for 8 minutes while calling out gets a response in 2 seconds, the kid will keep calling out. Honor the bid fast, every time, for several weeks before fading.'
+            },
+            {
+              function: 'Escape / Avoidance',
+              functionAbbrev: 'ESC',
+              icon: '🚪', color: '#ef4444',
+              problemEx: 'Work refusal, ripping the worksheet, eloping from the classroom, aggression to end the demand',
+              replacement: 'Break-request: a single break card the student can hand to the teacher (or tap on the desk, or use AAC) for a known-duration break in a known location. Plus a "need help" signal that pulls a teacher over instead of removing the demand.',
+              teaching: 'Pre-teach when the student is calm. Practice handing the card. Honor it the first 50+ times no matter what — even if the student "abuses" it. Frequency naturally drops as the student trusts the system. Then layer in expectations (finish 3 problems, then break) once the trust is established.',
+              pitfall: 'Don\'t front-load conditions. "You can have a break IF you finish your work" is just a re-skinned demand. The break has to be unconditional first. Counterintuitive, but data consistently shows: contingent breaks at the start kill the system. Earned breaks come later.'
+            },
+            {
+              function: 'Tangible',
+              functionAbbrev: 'TAN',
+              icon: '🎮', color: '#f59e0b',
+              problemEx: 'Grabbing items off others, screaming for a toy, negotiating endlessly for screen time',
+              replacement: 'Functional Communication Training (FCT): a clear request response — vocal ("Can I have it?"), AAC tap, PECS exchange, or sign — taught in tightly controlled sessions until fluent, then generalized.',
+              teaching: 'Model the request, prompt physically if needed, then immediately deliver the item the first dozen+ times. The replacement has to be a more efficient route to the item than grabbing was. Once fluent, layer in waiting tolerance (1 second, then 3, then 10).',
+              pitfall: 'Don\'t teach a replacement that is harder than the problem behavior. If "Please may I have a turn?" requires a long sentence while grabbing requires zero language, you have engineered a failure. Start with the absolute simplest possible request the student can produce, and build complexity later.'
+            },
+            {
+              function: 'Sensory / Automatic',
+              functionAbbrev: 'AUT',
+              icon: '🪀', color: '#8b5cf6',
+              problemEx: 'Hand-flapping, vocal stimming, chewing on shirt collar, head-banging (when self-injurious)',
+              replacement: 'MATCH THE SENSORY MODALITY. Oral input → gum, chewy necklace, crunchy snack. Proprioceptive → weighted lap pad, wall push-ups, heavy work. Tactile → fidget cube, putty. Vestibular → wobble cushion, spinning chair. Auditory → noise-canceling headphones or preferred music.',
+              teaching: 'This is mostly accommodation, not extinction. Most stims serve real regulatory functions and do not need to be replaced — they need to be allowed and supported. The exception is genuinely dangerous self-injury, which needs a sensory-matched alternative AND mental-health consultation, not just a behavior plan.',
+              pitfall: 'Do NOT default to extinguishing harmless stims because they "look weird." That is masking, and the autistic-community research is consistent on long-term cost (anxiety, burnout, identity harm). A flapping kid is regulating — not misbehaving.'
+            }
+          ];
+
+          // === PBIS Three Tiers — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var PBIS_TIERS_MOVED_TO_TOOLKIT = [
+            {
+              tier: 1,
+              name: 'Tier 1 — Universal',
+              icon: '🟢', color: '#22c55e',
+              who: 'All students. Every classroom, every period, every staff member.',
+              percent: '~80% of students need only Tier 1 to be successful.',
+              examples: 'School-wide expectations posted in every space (be safe, be respectful, be responsible). Common-area lessons (cafeteria, hallway, bus). Positive-reinforcement systems (school store, recognition, "caught being kind" cards). Pre-correction before known transition points. Predictable classroom routines, visual schedules, "first/then" boards as default not accommodation.',
+              data: 'Office discipline referrals (ODRs) per 100 students per day. Attendance. Climate surveys. If Tier 1 is working, ODRs should be low and concentrated in a small subset of students.',
+              escalate: 'When a student\'s ODRs cross threshold (often 2+ in a month), or when teachers consistently flag concern, screen for Tier 2. The point of Tier 1 data is to find the kids who need more, before they accumulate failure.'
+            },
+            {
+              tier: 2,
+              name: 'Tier 2 — Targeted',
+              icon: '🟡', color: '#fbbf24',
+              who: 'Students who don\'t respond fully to Tier 1 alone — usually due to consistent attention-seeking, low-grade work avoidance, social skills gaps, or emerging mental health needs.',
+              percent: '~15% of students benefit from Tier 2 added supports.',
+              examples: 'Check-In / Check-Out (CICO) — daily morning + afternoon meeting with a positive adult, with a goal sheet. Social skills small groups. Anxiety or anger-management groups. Targeted mentoring. Daily progress reports home. Pre-teaching content for academic anxiety. Modified seating arrangements.',
+              data: 'CICO daily point sheets (looking for 80%+ goal hit). Goal-attainment scaling. Brief functional screening (Easy as ABC, BIP-Lite). Decision rule: if 4-6 weeks of Tier 2 is not moving the data, do not just "try harder" — escalate to Tier 3 or change the function hypothesis.',
+              escalate: 'When Tier 2 is not producing data movement after a documented trial period, OR when the behavior pattern indicates a clear specific function that needs an FBA — move to Tier 3.'
+            },
+            {
+              tier: 3,
+              name: 'Tier 3 — Intensive',
+              icon: '🔴', color: '#ef4444',
+              who: 'Students whose behavior poses safety concerns, or who have not responded to Tier 1 + Tier 2, or who have specific intensive needs (autism, severe trauma, complex disability).',
+              percent: '~5% of students need Tier 3 individualized supports.',
+              examples: 'Full functional behavior assessment (FBA) by a trained BCBA or school psych. Individualized BIP with replacement behavior, environmental modifications, reinforcement plan, crisis plan. Wraparound team meetings (school + family + outside providers). 1-on-1 paraprofessional support when justified. Therapeutic services (counseling, OT, SLP integration). Sometimes specialized placement.',
+              data: 'Direct observation data (frequency, duration, ABC). Pre/post intervention comparison with clear baseline. IEP goal progress. Behavior decreasing, replacement increasing. Social validity from the student and family.',
+              escalate: 'When a student is in crisis daily, when restraint/seclusion is being used, when the BIP is not moving data after fidelity is verified — bring in district behavior specialist + outside consultation. Stagnation at Tier 3 is a system signal, not a kid signal.'
+            }
+          ];
+
+          // === Restraint and Seclusion — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var RESTRAINT_PRINCIPLES_MOVED_TO_TOOLKIT = [
+            {
+              name: 'What restraint IS (and is NOT)',
+              icon: '⚖️', color: '#fbbf24',
+              content: 'Restraint = physical holding that restricts a student\'s freedom of movement. Three types: physical (staff hands on student), mechanical (devices that restrict — almost never appropriate in schools), chemical (medication used for behavioral control rather than treatment — never appropriate without prescription).',
+              counter: 'NOT restraint: brief holding to prevent immediate injury (e.g., catching a falling kid); routine guidance (gentle hand on shoulder to redirect); typical physical contact in adapted PE or therapy. The line is restriction of freedom of movement.'
+            },
+            {
+              name: 'What seclusion IS (and is NOT)',
+              icon: '🚪', color: '#ef4444',
+              content: 'Seclusion = involuntary confinement of a student alone in a room or area from which the student is physically prevented from leaving. The "physically prevented from leaving" part is what makes it seclusion legally.',
+              counter: 'NOT seclusion: time-out where the student can leave (a "calm corner" with the door open); a quiet space chosen by the student; a sensory room used for regulation. Voluntary use of a separate space is not seclusion.'
+            },
+            {
+              name: 'Maine Chapter 33 — the rule',
+              icon: '🏛️', color: '#a78bfa',
+              content: 'Maine permits emergency physical restraint and seclusion ONLY when there is "imminent danger of serious physical injury" to the student or others. Property destruction alone is not sufficient justification. Documentation, debrief, and parent notification are mandatory within specific time windows. Specific staff training (currently CPI / NCI / Mandt or equivalent) is required for anyone authorized to perform restraint.',
+              counter: 'Other states vary: some prohibit prone restraint outright; some require court-ordered behavior plans for any restraint use; some are far more permissive. Always check current state regulation. Federal guidance (2022) recommends restricting school-based restraint/seclusion to genuine emergencies; some federal legislation has been proposed but not enacted.'
+            },
+            {
+              name: 'Less-restrictive-alternative principle',
+              icon: '🔓', color: '#22c55e',
+              content: 'Every restraint or seclusion use must be the least restrictive option available to manage the immediate safety concern. If a student can be safely de-escalated by clearing the room of others, that comes before restraint. If a student can be safely supported with verbal de-escalation, that comes before clearing the room. The hierarchy is built into law and ethics — not optional.',
+              counter: 'Common misuse: restraint or seclusion used as a consequence ("if you do that again, you will go to the calm room"). That converts an emergency tool into a punishment, which is both unethical and frequently illegal under disability law.'
+            },
+            {
+              name: 'After every incident — the debrief',
+              icon: '📝', color: '#3b82f6',
+              content: 'Within ~24-48 hours: an incident report (what happened, who, when, duration, less-restrictive alternatives tried first). A staff debrief about what could be done differently next time. Parent notification (Maine requires same-day or next-business-day). A team meeting to revise the BIP if the incident reveals a pattern. The student debrief — when the student is fully recovered — to hear their perspective.',
+              counter: 'Common gap: incidents get documented but the BIP never gets revised. Three or more incidents of the same antecedent in a quarter is a system signal that the BIP itself is failing — not a kid signal. Pattern-blindness is the most common documentation problem.'
+            },
+            {
+              name: 'The disability-community position',
+              icon: '✋', color: '#f472b6',
+              content: 'Major disability-rights organizations (ASAN, AAPD, COPAA, Disability Rights Network) have called for substantial federal restriction of school restraint and seclusion. Documented harms include physical injury, psychological trauma (PTSD outcomes are well-documented), and disproportionate use against students of color and students with disabilities. Federal data show students with disabilities account for ~12% of enrollment but ~75% of restraint cases.',
+              counter: 'Some BCBAs and behavior specialists argue restraint is occasionally necessary in genuine safety emergencies. Both positions can be true: emergencies happen AND the system overuses restraint by orders of magnitude. The ethical floor is "every restraint is one too many that should have been prevented earlier in the cycle."'
+            }
+          ];
+
+          // === Acting-Out Cycle — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var ACTING_OUT_CYCLE_MOVED_TO_TOOLKIT = [
+            {
+              phase: 1, name: 'Calm', icon: '🌊', color: '#22c55e',
+              signs: 'Baseline functioning. Engaged, cooperative, on-task. Predictable, regulated.',
+              doThis: 'Build rapport, teach skills, pre-teach upcoming demands, set up environmental supports. This is the phase where preventive work actually happens — every other phase is too late for prevention.',
+              dontDo: 'Don\'t treat calm as nothing-to-do. The work you do at Phase 1 is what determines how short Phase 5 is.'
+            },
+            {
+              phase: 2, name: 'Triggers', icon: '⚡', color: '#fbbf24',
+              signs: 'Setting events stack with an immediate antecedent. Often invisible from the outside — the student notices before staff do.',
+              doThis: 'Reduce demands, offer a choice, allow a regulation break, switch to a known-easy task. Catching it here is the highest-leverage moment in the cycle.',
+              dontDo: 'Don\'t add demands. Don\'t escalate consequences. Don\'t insist on the original task. The trigger is information about threshold, not defiance.'
+            },
+            {
+              phase: 3, name: 'Agitation', icon: '😟', color: '#f97316',
+              signs: 'Early warning signs: off-task, verbal complaints, withdrawal, increased motor activity, darting eye contact, head down. Some students go quiet; some get loud. Both are agitation.',
+              doThis: 'Reduce sensory load, offer the regulation break with no strings attached, validate the feeling without arguing the cause ("This is hard right now"), modify the demand.',
+              dontDo: 'Don\'t lecture. Don\'t reason with logic. Don\'t insist on eye contact. Don\'t escalate your own voice. The thinking brain is already losing access.'
+            },
+            {
+              phase: 4, name: 'Acceleration', icon: '🌪️', color: '#ef4444',
+              signs: 'Provocative behavior aimed at getting a reaction: blame, intimidation, escalating language, threats, refusal to engage with anyone, scripted "I don\'t care" responses.',
+              doThis: 'Stay quiet. Stay close enough to be safe, far enough to give space. Clear the audience if possible — peers in the room raise the stakes. State only what is absolutely necessary, in short sentences.',
+              dontDo: 'Don\'t take the bait. Don\'t match the volume. Don\'t threaten consequences mid-cycle. Don\'t deliver speeches. Most adult mistakes happen here — Phase 4 is the moment teachers get pulled into being part of the escalation.'
+            },
+            {
+              phase: 5, name: 'Peak', icon: '🔥', color: '#dc2626',
+              signs: 'Physical aggression, property destruction, elopement, full meltdown. The student is no longer in cognitive control. The thinking brain has gone offline.',
+              doThis: 'Safety first. Move other students if needed. Use minimal language. Restraint only as a last resort with proper training and policy backing. Most of the work at Peak is just keeping the room safe and waiting.',
+              dontDo: 'Don\'t teach. Don\'t reason. Don\'t process. Don\'t threaten. Don\'t give consequences mid-Peak. Recording the incident for documentation is appropriate; processing is not — yet.'
+            },
+            {
+              phase: 6, name: 'De-escalation', icon: '🌧️', color: '#3b82f6',
+              signs: 'Exhausted, emotional, often quiet or tearful. Student may be embarrassed, dissociated, or sleepy. Sometimes apologizes; sometimes goes silent.',
+              doThis: 'Stay present without demanding interaction. Offer water, a quiet space, a familiar object. Let the body finish processing. This phase is real and takes time — minutes to over an hour for some students.',
+              dontDo: 'Don\'t debrief yet. Don\'t lecture about what happened. Don\'t require apology in this phase — it produces hollow performance, not actual repair.'
+            },
+            {
+              phase: 7, name: 'Recovery', icon: '🌅', color: '#a78bfa',
+              signs: 'Back near baseline. Cognitive functioning returns. Student may have limited memory of the peak.',
+              doThis: 'Now you debrief. Together, with empathy: "What happened? What were the signs you noticed? What would help next time?" Rebuild the relationship explicitly. Repair any damage with the student\'s input. Update the BIP based on what the cycle revealed.',
+              dontDo: 'Don\'t treat recovery as the end of the cycle — it\'s the start of the next Phase 1. The relationship work you do here determines whether the next cycle will be shorter or longer.'
+            }
+          ];
+
+          // === Setting events — MOVED to School Behavior Toolkit ===
+          // The applied-K-12 panels (PBIS Tiers, Setting Events, Acting-
+          // Out Cycle, Replacement Behaviors, Restraint & Seclusion) now
+          // live in stem_tool_schoolbehaviortoolkit.js. BehaviorLab
+          // stays focused on the science of operant conditioning so the
+          // Skinner-box visual frame is not adjacent to "how to handle
+          // a kid in crisis" content. Backlink callout below points
+          // students to the new home. Original constants retained as
+          // tombstone comments to preserve git-blame.
+          /* eslint-disable no-unused-vars */
+          var SETTING_EVENTS_MOVED_TO_TOOLKIT = [
+            {
+              category: 'Biological',
+              icon: '😴', color: '#a78bfa',
+              examples: 'Poor sleep last night · skipped breakfast · medication change · constipation · onset of illness · seasonal allergies flaring · pain (ear infection, headache, dental) · menstrual cycle for adolescents',
+              note: 'A kid who is in pain cannot perform the same way a kid who is not in pain can. Period.'
+            },
+            {
+              category: 'Home / family',
+              icon: '🏠', color: '#22d3ee',
+              examples: 'Witnessed a fight before school · parent left for a deployment or trip · sibling sick · housing change · weekend with the other parent · CPS involvement · loss of pet · move-out of an older sibling',
+              note: 'Schools often see the AFTERMATH of a home event hours later — student is more dysregulated than usual but cannot or will not say why.'
+            },
+            {
+              category: 'Schedule / setting',
+              icon: '🕒', color: '#fbbf24',
+              examples: 'Substitute teacher · changed lunch period · fire drill earlier · pep rally · early-release day · field trip the day before · holiday break ending · daylight-saving-time week',
+              note: 'Predictability is a reinforcer for many learners. Removing it changes thresholds across the whole day, not just the moment.'
+            },
+            {
+              category: 'Peer / social',
+              icon: '🧑‍🤝‍🧑', color: '#f472b6',
+              examples: 'Friendship conflict at recess · being excluded from a group chat · breakup · social media incident · ongoing bullying · best-friend absent · seating change',
+              note: 'Adolescent social events have a half-life of days, not minutes. Behavior on Wednesday may trace to Friday.'
+            },
+            {
+              category: 'Sensory / environmental',
+              icon: '🔊', color: '#4ade80',
+              examples: 'Loud fluorescent buzz · gym next door · cafeteria smell · new perfume on an adult · uniform/clothing change · temperature extreme · construction noise',
+              note: 'For sensory-sensitive learners, the environment itself is a continuous setting event. Reduce input and threshold rises.'
+            },
+            {
+              category: 'Mental health',
+              icon: '💭', color: '#94a3b8',
+              examples: 'Anxiety flare · low mood episode · recent therapy session that opened something · trauma anniversary · sensory overload accumulating across days · burnout from masking',
+              note: 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.'
+            }
+          ];
+
+          // === Voices migrated to SEL Hub ===
+          // The named autistic + disabled voices that were previously
+          // in this tool now live in SEL Hub → "Disability Voices",
+          // intentionally NOT alongside Skinner-box imagery. The
+          // backlink callout below the Beyond Pure ABA panel points
+          // students to the new home. Original constant retained as a
+          // tombstone comment to preserve git-blame and explain why
+          // there's a gap here.
+          /* eslint-disable no-unused-vars */
+          var DISABILITY_VOICES_MOVED_TO_SEL_HUB = [
+            {
+              name: 'Ari Ne\'eman',
+              role: 'Co-founder, Autism Self Advocacy Network (ASAN); first openly autistic appointee to the National Council on Disability (Obama, 2010); now at Harvard School of Public Health.',
+              icon: '🎙️', color: '#3b82f6',
+              quote: 'Nothing about us without us.',
+              source: 'ASAN founding principle, 2006-present; widely echoed across disability-rights work'
+            },
+            {
+              name: 'Temple Grandin',
+              role: 'Professor of animal science, Colorado State; designed humane livestock handling systems used across North American agriculture; among the most-known autistic adults in the world.',
+              icon: '🐄', color: '#fbbf24',
+              quote: 'Different, not less.',
+              source: 'Thinking in Pictures (1995); HBO biopic (2010); decades of public lectures'
+            },
+            {
+              name: 'Damian Milton',
+              role: 'Autistic sociologist, University of Kent; developed the Double Empathy Problem framework that reframes autism social-skill "deficits" as two-way mismatches in mutual understanding.',
+              icon: '⇄', color: '#22d3ee',
+              quote: 'The autistic person and the non-autistic person are equally responsible for the breakdown in mutual understanding. The disability research field has historically located the problem in only one of them.',
+              source: 'Milton 2012, Disability & Society; expanded across his subsequent papers'
+            },
+            {
+              name: 'Henny Kupferstein',
+              role: 'Researcher; published the 2018 survey on PTSD outcomes following ABA exposure that became a major reference point for the autism community critique.',
+              icon: '📊', color: '#a78bfa',
+              quote: 'Adults and children exposed to ABA were significantly more likely to meet PTSD diagnostic criteria than those who were not exposed. This is data, not opinion.',
+              source: 'Kupferstein 2018, Advances in Autism (peer-reviewed). The methodology has been debated; the finding catalyzed industry-wide reckoning regardless.'
+            },
+            {
+              name: 'Kassiane Asasumasu',
+              role: 'Autistic and multiply disabled activist; coined the term "neurodivergent" in the early 2000s as an identity-claim alternative to deficit framings.',
+              icon: '🌈', color: '#f472b6',
+              quote: 'Neurodivergent is not a euphemism. It does not mean "we are all the same." It means our brains diverge from a constructed norm — and divergence is information, not pathology.',
+              source: 'Personal blog and community writing, mid-2000s; widely adopted across disability-justice movements'
+            },
+            {
+              name: 'Mel Baggs (1980–2020)',
+              role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video "In My Language" was the first widely-shared first-person account of nonspeaking autistic experience — viewed millions of times, taught in disability-studies courses since.',
+              icon: '✊', color: '#94a3b8',
+              quote: 'My language is not about designing words or even visual symbols for people to interpret. It is about being in a constant conversation with every aspect of my environment.',
+              source: 'In My Language (2007, YouTube); Ballastexistenz blog; CNN interview 2007'
+            }
+          ];
+
+          // === Beyond Pure ABA — neurodiversity-affirming + trauma-informed ===
+          // The critical lens that's often missing from operant-conditioning
+          // pedagogy. ABA is a powerful set of tools AND has been used in
+          // ways the autistic community has documented as harmful. Modern
+          // school-psych practice holds both truths at once. Sources:
+          // Autism Self Advocacy Network position statements; Damian Milton
+          // 'Double Empathy Problem'; Kupferstein 2018 ABA-PTSD survey;
+          // updated BACB ethical guidance; NDBI research literature.
+          var BEYOND_ABA = [
+            {
+              name: 'The autism community critique',
+              icon: '🌟', color: '#a78bfa',
+              desc: 'Adult autistic advocates — including many who experienced early ABA — have documented serious concerns about historical practice: 40-hour-week intensity, "indistinguishable from peers" as a goal (which trains masking), targeting stimming and eye-contact "deficits" without considering their function, and the use of contingencies that look like coercion when the client cannot meaningfully consent or refuse.',
+              source: 'Autism Self Advocacy Network position statements; Kupferstein 2018 ABA-PTSD survey'
+            },
+            {
+              name: 'Neurodiversity-affirming ABA',
+              icon: '🌱', color: '#22c55e',
+              desc: 'Modern ethical practice has shifted: client assent (not just guardian consent) is required throughout sessions, "normalization" goals are increasingly declined, stimming is recognized as self-regulation rather than a target for reduction, and client-chosen goals replace clinician-imposed ones. The acronym stays; the values inside it have moved.',
+              source: 'Updated BACB ethical guidance (2022+); Schreibman et al. on naturalistic developmental behavioral interventions (NDBI)'
+            },
+            {
+              name: 'Trauma-informed behavior practice',
+              icon: '🤗', color: '#f472b6',
+              desc: 'Some "non-compliance" is a trauma response, not a learning deficit. A child who freezes, flees, or fights at a familiar demand may be telling you the demand has become a threat cue. Regulation comes before reasoning; co-regulation comes before self-regulation. Contingency analysis still matters — it just is not the whole picture.',
+              source: 'Bruce Perry Neurosequential Model; Stuart Shanker self-regulation framework'
+            },
+            {
+              name: 'The Double Empathy Problem',
+              icon: '⇄', color: '#22d3ee',
+              desc: 'Research by autistic scholar Damian Milton reframes "social skill deficits" as a two-way mismatch in mutual understanding between autistic and non-autistic people, not a one-sided deficit located in the autistic person. This changes what we measure as a "behavior problem" — and who needs to do the changing.',
+              source: 'Milton 2012; Crompton et al. 2020 (autistic-to-autistic communication research)'
+            },
+            {
+              name: 'What ABA does well',
+              icon: '✅', color: '#fbbf24',
+              desc: 'Honest accounting matters. Functional communication training for non-speaking learners has changed lives. Reduction of self-injurious or dangerous behavior is sometimes the difference between a kid going to school and a kid getting hospitalized. Self-help skills the client actively wants. Schedules of reinforcement explain real classroom outcomes. The science is real; the application has to be ethical.',
+              source: 'Carr et al. on FCT; CER literature on dangerous-behavior reduction'
+            },
+            {
+              name: 'What ABA cannot do alone',
+              icon: '🧩', color: '#94a3b8',
+              desc: 'Operant conditioning is one tool. It does not replace mental-health treatment for trauma or anxiety. It does not address the sensory environment a building creates. It does not substitute for autistic community and identity. Good practice integrates ABA with OT (sensory), SLP (communication), mental health (regulation), and — crucially — autistic adult mentorship that the child can grow into.',
+              source: 'Autism Self Advocacy Network "Real Communities" framework; OT/SLP integrative-care literature'
+            }
+          ];
+
           // === ABA Ethics Principles ===
           var ABA_ETHICS = [
             { name: 'Benefit Others', icon: '\u2764', desc: 'ABA practitioners have a responsibility to promote the well-being of their clients above all other considerations.' },
@@ -2816,24 +3130,61 @@ var d = labToolData || {};
               // Header
               React.createElement("h2", { id: "behaviorlab-main", className: "sr-only" }, "Behavior Lab — Level " + blLevel),
 
-              React.createElement("div", { className: "flex items-center gap-3 mb-2" },
-
+              // Hero header \u2014 matches the design system shipped on
+              // School Behavior Toolkit, Disability Voices, TypingPractice
+              // drill-intro, PrintingPress hero. Amber accent to signal
+              // "this is the science / Skinner-box space" \u2014 distinct from
+              // the teal of School Behavior Toolkit and the pink of
+              // Disability Voices. Three connected spaces, three accents.
+              React.createElement("div", {
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14, flexWrap: 'wrap',
+                  padding: '14px 16px',
+                  borderRadius: 14,
+                  background: 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(251,191,36,0.10), transparent 70%), rgba(15,23,42,0.45)',
+                  border: '1px solid rgba(251,191,36,0.25)',
+                  borderLeft: '4px solid #fbbf24'
+                }
+              },
                 React.createElement("button", {
-
                   onClick: function () { setStemLabTool(null); },
-
-                  className: "text-2xl hover:scale-110 transition-transform", 'aria-label': 'Back to tools'
-
-                }, "\u2B05"),
-
-                React.createElement("div", null,
-
-                  React.createElement("h2", { className: "text-lg font-extrabold text-white" }, "\uD83D\uDC2D Behavior Shaping Lab"),
-
-                  React.createElement("p", { className: "text-xs text-indigo-300" }, "Level " + blLevel + ": " + currentLevel.title + " \u2014 " + currentLevel.concept)
-
+                  'aria-label': 'Back to STEM Lab',
+                  style: {
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid #334155',
+                    borderRadius: 8, padding: '6px 10px',
+                    cursor: 'pointer', color: '#cbd5e1', fontSize: 14, flexShrink: 0
+                  }
+                }, '\u2190'),
+                // Circular accent hero badge \u2014 56px hero size matches
+                // School Behavior Toolkit + Disability Voices + TypingPractice
+                React.createElement("div", { 'aria-hidden': 'true',
+                  style: {
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: 'rgba(251,191,36,0.18)',
+                    border: '2px solid #fbbf24',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 28, lineHeight: 1, flexShrink: 0,
+                    boxShadow: '0 4px 16px rgba(251,191,36,0.25)'
+                  }
+                }, '\uD83D\uDC2D'),
+                React.createElement("div", { style: { flex: 1, minWidth: 240 } },
+                  React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
+                    React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'BehaviorLab'),
+                    // Level chip \u2014 replaces the old single-line subtitle with
+                    // a tabular-nums chip that reads at a glance
+                    React.createElement("span", { style: {
+                      padding: '2px 8px', borderRadius: 999,
+                      background: 'rgba(251,191,36,0.12)',
+                      border: '1px solid rgba(251,191,36,0.40)',
+                      color: '#fcd34d', fontSize: 10, fontWeight: 700,
+                      fontFamily: 'ui-monospace, Menlo, monospace'
+                    } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
+                  ),
+                  React.createElement("div", { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.5 } },
+                    currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: '#94a3b8', fontStyle: 'italic' } }, currentLevel.concept)
+                  )
                 )
-
               ),
 
               // Level select
@@ -4419,121 +4770,150 @@ var d = labToolData || {};
               )
             ),
 
-            // === FAMOUS BEHAVIORISTS ===
+            // === MIGRATED PANELS NOW LIVE IN SCHOOL BEHAVIOR TOOLKIT ===
+            // PBIS Three Tiers, Replacement Behaviors, Setting Events,
+            // Acting-Out Cycle, and Restraint & Seclusion previously sat
+            // here. They've been moved out of BehaviorLab so the Skinner-
+            // box visual frame is not adjacent to applied K-12 practice
+            // content. The new home is stem_tool_schoolbehaviortoolkit.js.
+            // This callout is the bridge — students who land in BehaviorLab
+            // can find the applied content one click away.
             React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)
+              style: Object.assign({
+                background: 'linear-gradient(135deg, rgba(20,184,166,0.10), rgba(34,211,238,0.06))',
+                borderRadius: 14,
+                padding: '14px 16px',
+                border: '1px solid rgba(20,184,166,0.30)',
+                borderLeft: '4px solid #14b8a6'
+              }, glass)
             },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCDA Famous Behaviorists"),
-                React.createElement("button", { onClick: function() { upd('blShowBehaviorists', !d.blShowBehaviorists); },
-                  className: "text-[11px] text-amber-400 hover:text-amber-300"
-                }, d.blShowBehaviorists ? 'Hide' : 'Explore \u2192')
-              ),
-              d.blShowBehaviorists && React.createElement("div", { className: "relative pl-4 border-l-2 border-amber-700 space-y-2 max-h-64 overflow-y-auto" },
-                FAMOUS_BEHAVIORISTS.map(function(fb, fbi) {
-                  return React.createElement("div", { key: fbi, className: "relative" },
-                    React.createElement("div", { className: "absolute -left-[21px] top-1.5 w-3 h-3 rounded-full bg-amber-500" }),
-                    React.createElement("div", { className: "bg-slate-700/50 rounded-lg p-2 border border-slate-600" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
-                        React.createElement("span", { className: "text-sm" }, fb.icon),
-                        React.createElement("span", { className: "text-[11px] font-bold text-white" }, fb.name),
-                        React.createElement("span", { className: "ml-auto text-[11px] text-amber-400 font-mono" }, fb.year)
-                      ),
-                      React.createElement("div", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-amber-900/40 text-amber-300 inline-block mb-1" }, fb.field),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, fb.contribution)
-                    )
-                  );
-                })
-              )
-            ),
-
-            // === REAL-WORLD ABA APPLICATIONS ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(34,197,94,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83C\uDF0D ABA in the Real World"),
-                React.createElement("button", { onClick: function() { upd('blShowApps', !d.blShowApps); },
-                  className: "text-[11px] text-green-400 hover:text-green-300"
-                }, d.blShowApps ? 'Hide' : 'Explore \u2192')
-              ),
-              d.blShowApps && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "ABA isn't just for the lab \u2014 its principles are used everywhere you look:"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                  ABA_APPLICATIONS.map(function(app, appi) {
-                    return React.createElement("div", { key: appi, className: "bg-slate-700/50 rounded-lg p-2 border border-slate-600" },
-                      React.createElement("div", { className: "text-center mb-1" },
-                        React.createElement("div", { className: "text-lg" }, app.icon),
-                        React.createElement("div", { className: "text-[11px] font-bold text-white" }, app.name)
-                      ),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, app.desc),
-                      React.createElement("div", { className: "text-[11px] text-green-400 mt-1 font-medium" }, "\uD83D\uDCCD " + app.setting)
-                    );
-                  })
+              React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
+                React.createElement("div", {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: 'rgba(20,184,166,0.20)',
+                    border: '1.5px solid #14b8a6',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, lineHeight: 1, flexShrink: 0
+                  }
+                }, '🏫'),
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', lineHeight: 1.2 } }, "Continue in: School Behavior Toolkit"),
+                  React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' } }, "Applied K-12 practice — what school psychs and educators DO with the science")
                 )
-              )
-            ),
-
-            // === BEHAVIOR MEASUREMENT METHODS ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(6,182,212,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Measurement Methods"),
-                React.createElement("button", { onClick: function() { upd('blShowMeasure', !d.blShowMeasure); },
-                  className: "text-[11px] text-cyan-400 hover:text-cyan-300"
-                }, d.blShowMeasure ? 'Hide' : 'Learn \u2192')
               ),
-              d.blShowMeasure && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "How do behavior analysts measure behavior objectively? The measurement method depends on what aspect of the behavior is most important:"),
-                React.createElement("div", { className: "space-y-1.5" },
-                  MEASUREMENT_METHODS.map(function(mm, mmi) {
-                    var isActive = d.blMeasureIdx === mmi;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: mmi,
-                      onClick: function() { upd('blMeasureIdx', isActive ? null : mmi); },
-                      className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-cyan-900/30 border-cyan-600' : 'bg-slate-700/30 border-slate-600 hover:border-slate-500')
-                    },
-                      React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-sm" }, mm.icon),
-                        React.createElement("span", { className: "text-[11px] font-bold text-white" }, mm.name),
-                        React.createElement("span", { className: "ml-auto text-[11px] text-slate-200" }, isActive ? '\u25BC' : '\u25B6')
-                      ),
-                      isActive && React.createElement("div", { className: "mt-1.5 space-y-1" },
-                        React.createElement("div", { className: "text-[11px] text-cyan-300 font-medium" }, mm.def),
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "\uD83D\uDCDD Example: " + mm.example),
-                        React.createElement("div", { className: "text-[11px] text-amber-400" }, "\u2753 When to use: " + mm.when)
-                      )
-                    );
-                  })
-                )
-              )
+              React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+                "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. ",
+                React.createElement("b", null, "We deliberately built that content as a separate tool, not here."),
+                " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33."),
+              React.createElement("div", { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+                "Open STEM Lab → Behavioral Science → ",
+                React.createElement("b", { style: { color: '#5eead4' } }, '"🏫 School Behavior Toolkit."'))
             ),
 
-            // === ABA ETHICS ===
+                        // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
+            // Critical-lens panel that other ABA tools rarely include. Holds
+            // both 'ABA does real work' AND 'ABA has been used in ways
+            // autistic adults document as harmful' as simultaneously true.
+            // School-psych voice.
             React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(168,85,247,0.2)' }, glass)
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(167,139,250,0.25)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\u2696 Ethics in Applied Behavior Analysis"),
-                React.createElement("button", { onClick: function() { upd('blShowEthics', !d.blShowEthics); },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed"),
+                React.createElement("button", { onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
                   className: "text-[11px] text-purple-400 hover:text-purple-300"
-                }, d.blShowEthics ? 'Hide' : 'View \u2192')
+                }, d.blShowBeyond ? 'Hide' : 'View →')
               ),
-              d.blShowEthics && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "With great power comes great responsibility. ABA practitioners follow strict ethical guidelines from the BACB (Behavior Analyst Certification Board):"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                  ABA_ETHICS.map(function(eth, ethi) {
-                    return React.createElement("div", { key: ethi, className: "bg-slate-700/50 rounded-lg p-2 border border-purple-700/30 text-center" },
-                      React.createElement("div", { className: "text-lg mb-0.5" }, eth.icon),
-                      React.createElement("div", { className: "text-[11px] font-bold text-white" }, eth.name),
-                      React.createElement("div", { className: "text-[11px] text-slate-200 mt-0.5" }, eth.desc)
+              d.blShowBeyond && React.createElement("div", null,
+                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                  "Operant conditioning is a powerful set of tools AND has been used in ways the autistic community has documented as harmful. Good modern practice holds both truths at once. School psychs and BCBAs working in K-12 settings need the critical lens to apply ABA ethically — not just the technical mechanics."),
+                React.createElement("div", { className: "space-y-2" },
+                  BEYOND_ABA.map(function(b, bi) {
+                    return React.createElement("div", {
+                      key: 'beyond-' + bi,
+                      style: {
+                        background: 'rgba(15,23,42,0.6)',
+                        borderRadius: 10,
+                        padding: '10px 12px',
+                        border: '1px solid rgba(100,116,139,0.25)',
+                        borderLeft: '3px solid ' + b.color
+                      }
+                    },
+                      React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                        React.createElement("div", {
+                          'aria-hidden': 'true',
+                          style: {
+                            width: 32, height: 32, borderRadius: '50%',
+                            background: b.color + '22',
+                            border: '1.5px solid ' + b.color,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16, lineHeight: 1, flexShrink: 0
+                          }
+                        }, b.icon),
+                        React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: b.color } }, b.name)
+                      ),
+                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, b.desc),
+                      React.createElement("div", { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic', letterSpacing: '0.02em' } },
+                        '📚 ', b.source)
                     );
                   })
-                )
+                ),
+                React.createElement("div", {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(96,165,250,0.06)',
+                    border: '1px solid rgba(96,165,250,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                  }
+                },
+                  "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want.")
               )
             ),
 
-            
+            // === Backlink to Disability Voices (SEL Hub) ===
+            // Named autistic + disabled voices belong in SEL Hub, NOT
+            // alongside Skinner-box imagery. This is the bridge — a
+            // clearly-marked callout that points students who have just
+            // read the critical-frame panels above to the dedicated
+            // tool where the people the field has been done TO are
+            // centered, not relegated to a sidebar in a behavior-
+            // science tool. Tonal/ethical boundary, deliberate.
+            React.createElement("div", {
+              style: Object.assign({
+                background: 'linear-gradient(135deg, rgba(244,114,182,0.10), rgba(167,139,250,0.06))',
+                borderRadius: 14,
+                padding: '14px 16px',
+                border: '1px solid rgba(244,114,182,0.30)',
+                borderLeft: '4px solid #f472b6'
+              }, glass)
+            },
+              React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
+                React.createElement("div", {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: 'rgba(244,114,182,0.20)',
+                    border: '1.5px solid #f472b6',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, lineHeight: 1, flexShrink: 0
+                  }
+                }, '🎙️'),
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4', lineHeight: 1.2 } }, "Continue in: Disability Voices (SEL Hub)"),
+                  React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' } }, "Named autistic and disabled advocates, not behavioral subjects")
+                )
+              ),
+              React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+                "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. ",
+                React.createElement("b", null, "We deliberately built that content in the SEL Hub, not here."),
+                " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list."),
+              React.createElement("div", { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+                "Open SEL Hub → Identity & Care → ",
+                React.createElement("b", { style: { color: '#f9a8d4' } }, '"🎤 Disability Voices."'))
+            ),
+
             // === SCHEDULE COMPARISON CANVAS ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)

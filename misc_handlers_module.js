@@ -155,7 +155,7 @@ const handleFileUpload = async (e, deps) => {
 };
 
 const handleLoadProject = (e, deps) => {
-  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory } = deps;
+  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
@@ -419,6 +419,13 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-roadready-restored'));
                 } catch (e) { warnLog && warnLog('RoadReady restore failed:', e); }
             }
+            // Rehydrate sticker overlays. Stickers are saved into the
+            // project JSON by phase_k_helpers.executeSaveFile so a teacher's
+            // feedback or a student's marks survive reload. Falls back to
+            // empty array if the loaded file pre-dates the stickers field.
+            if (typeof setStickers === 'function') {
+                setStickers(Array.isArray(rawData.stickers) ? rawData.stickers : []);
+            }
             if (Array.isArray(loadedHistory)) {
                 setHistory(hydrateHistory(loadedHistory));
                 if (isStudentSave) {
@@ -440,12 +447,12 @@ const handleLoadProject = (e, deps) => {
                     setActiveView('input');
                 }
             } else {
-                alert(t('errors.project_file_invalid'));
+                if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.project_file_invalid'), 'error'); else alert(t('errors.project_file_invalid'));
                 addToast(t('toasts.invalid_project_file'), "error");
             }
         } catch (err) {
             warnLog("Failed to parse project file", err);
-            alert(t('errors.project_file_load_failed'));
+            if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.project_file_load_failed'), 'error'); else alert(t('errors.project_file_load_failed'));
             addToast(t('toasts.project_load_failed'), "error");
         }
         if (projectFileInputRef.current) projectFileInputRef.current.value = '';

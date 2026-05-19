@@ -486,7 +486,7 @@
       className: "text-xs font-bold text-blue-700"
     }, t('math.show_solution_steps') || 'Show Solution Steps'), /*#__PURE__*/React.createElement(ChevronDown, {
       size: 14,
-      className: "text-blue-400 ml-auto group-open:rotate-180 transition-transform"
+      className: "text-blue-700 ml-auto group-open:rotate-180 transition-transform"
     })), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 space-y-2 pl-2 border-l-3 border-blue-200"
     }, problem.steps.map((step, sIdx) => /*#__PURE__*/React.createElement("div", {

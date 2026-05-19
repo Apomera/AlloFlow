@@ -785,28 +785,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var REGIONS = [
         { id: 'pacific', name: 'Pacific Island Nations', emoji: '\uD83C\uDDEB\uD83C\uDDEF', risk: 'extreme', type: 'Sea level rise, coral bleaching', emPct: 0.03, pop: '12M',
           story: 'Tuvalu, Kiribati, and the Marshall Islands may face severe flooding by 2100, yet produce less than 0.03% of global emissions. Young activists like Litokne Kabua lead advocacy campaigns.',
-          resilience: 'Coral reef restoration, floating architecture, legal sovereignty campaigns' },
+          resilience: 'Coral reef restoration, floating architecture, legal sovereignty campaigns',
+          voice: { name: 'Anote Tong', role: 'Former President of Kiribati', quote: 'We are not just talking about losing land. We are talking about losing our identity, our culture, our home.', source: 'UN General Assembly addresses, 2013\u20132016' } },
         { id: 'arctic', name: 'Arctic Communities', emoji: '\u2744\uFE0F', risk: 'extreme', type: 'Permafrost thaw, habitat loss', emPct: 0.1, pop: '4M',
           story: 'Indigenous Arctic peoples have sustained cultures for millennia. Warming is 3-4\u00D7 faster here. Traditional food systems are changing, but communities lead climate monitoring.',
-          resilience: 'Traditional ecological knowledge, community monitoring networks, ice cellars' },
+          resilience: 'Traditional ecological knowledge, community monitoring networks, ice cellars',
+          voice: { name: 'Sheila Watt-Cloutier', role: 'Inuk activist; Nobel Peace Prize nominee', quote: 'Our right to be cold is a human right.', source: 'The Right to Be Cold (2015) and earlier IPCC briefings' } },
         { id: 'sahel', name: 'Sahel Region (Africa)', emoji: '\uD83C\uDDFF\uD83C\uDDE6', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: 0.5, pop: '400M',
           story: 'The Sahel spans 5,400 km across Africa. Despite minimal emissions, it faces severe drought cycles. The Great Green Wall project aims to restore 100 million hectares.',
-          resilience: 'Great Green Wall reforestation, solar-powered irrigation, drought-resistant crops' },
+          resilience: 'Great Green Wall reforestation, solar-powered irrigation, drought-resistant crops',
+          voice: { name: 'Hindou Oumarou Ibrahim', role: 'Mbororo, Chad; UN Permanent Forum on Indigenous Issues', quote: 'Indigenous peoples are not victims. We are part of the solution.', source: 'UN Climate Action Summit 2019; TED 2019' } },
         { id: 'bangladesh', name: 'Bangladesh & South Asia', emoji: '\uD83C\uDDE7\uD83C\uDDE9', risk: 'extreme', type: 'Flooding, cyclones, displacement', emPct: 0.4, pop: '170M',
           story: 'Bangladesh contributes 0.4% of emissions but faces some of the worst flooding. Millions may be displaced by 2050. Yet Bangladeshi engineers pioneer floating schools and farms.',
-          resilience: 'Floating schools, cyclone shelters, mangrove restoration, early warning systems' },
+          resilience: 'Floating schools, cyclone shelters, mangrove restoration, early warning systems',
+          voice: { name: 'Saleemul Huq (1952\u20132023)', role: 'Bangladeshi climate scientist; founder of ICCCAD; lead architect of the COP27 Loss & Damage Fund', quote: 'Loss and damage is happening now. Adaptation has its limits.', source: 'COP21\u2013COP27 statements; Climate Home News interviews' } },
         { id: 'caribbean', name: 'Caribbean Islands', emoji: '\uD83C\uDDF1\uD83C\uDDE8', risk: 'high', type: 'Hurricanes, coral loss, tourism collapse', emPct: 0.2, pop: '44M',
           story: 'Caribbean nations face intensifying hurricanes. Hurricane Maria (2017) devastated Dominica and Puerto Rico. Islands now lead in renewable energy transitions.',
-          resilience: 'Hurricane-resilient building codes, community solar, coral nurseries' },
+          resilience: 'Hurricane-resilient building codes, community solar, coral nurseries',
+          voice: { name: 'Mia Mottley', role: 'Prime Minister of Barbados', quote: 'We were the people whose ancestors escaped slavery only to find ourselves on the front lines of climate change.', source: 'COP26 plenary, Glasgow, 2021' } },
         { id: 'ej_usa', name: 'US Environmental Justice', emoji: '\uD83C\uDDFA\uD83C\uDDF8', risk: 'high', type: 'Air pollution, heat islands, toxic waste', emPct: 15.0, pop: '~40M affected',
           story: 'In the US, communities of color are 75% more likely to live near polluting facilities. Heat islands in cities can be 10\u00B0F hotter. Environmental justice movements fight for equitable protection.',
-          resilience: 'Community air monitoring, urban tree canopy programs, clean energy access initiatives' },
+          resilience: 'Community air monitoring, urban tree canopy programs, clean energy access initiatives',
+          voice: { name: 'Catherine Coleman Flowers', role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', quote: 'We are not a sacrifice zone.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); Senate testimony 2021' } },
         { id: 'seasia', name: 'Southeast Asia Coastal', emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 4.0, pop: '680M',
           story: 'Vietnam, Philippines, and Indonesia face rising seas and intensifying storms. Jakarta is sinking so fast Indonesia is building a new capital. Communities lead mangrove restoration.',
-          resilience: 'Mangrove planting, floating communities, aquaculture adaptation' },
+          resilience: 'Mangrove planting, floating communities, aquaculture adaptation',
+          voice: { name: 'Yeb Sa\u00F1o', role: 'Filipino climate negotiator; walked out of COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
         { id: 'andes', name: 'Andean Communities', emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
           story: 'Andean glaciers provide drinking water for millions. They have lost 30-50% of volume since the 1970s. Indigenous communities combine traditional and modern water management.',
-          resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation' }
+          resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation',
+          voice: { name: 'Tarcila Rivera Zea', role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); FAO Special Ambassador for Indigenous Peoples', quote: 'We do not inherit the land from our ancestors. We borrow it from our grandchildren \u2014 and the climate crisis is the bill coming due.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
+        { id: 'wabanaki', name: 'Wabanaki Nations (Maine)', emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
+          story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the legal recognition of natural rivers as rights-bearing entities.',
+          resilience: 'Tribal climate adaptation plans (Penobscot Nation 2014, Passamaquoddy 2020), seed-saving of cold-climate brown ash, restoration of the Penobscot River (largest river restoration east of the Mississippi, removed two dams 2012\u20132013), federal recognition as climate-action partners',
+          voice: { name: 'Sherri Mitchell (Weh\u2019na Ha\u2019mu Kwasset)', role: 'Penobscot lawyer, organizer, and author', quote: 'We are taught to consider how our actions today will impact the next seven generations.', source: 'Sacred Instructions: Indigenous Wisdom for Living Spirit-Based Change (2018); TEDx talks' } }
       ];
 
       var riskColors = { extreme: '#ef4444', high: '#f59e0b', moderate: '#3b82f6' };
@@ -926,7 +938,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           cascade: 'Multi-meter sea level rise. Bangladesh, Florida, Pacific island nations face existential threat.' },
         { id: 'boreal', emoji: '\uD83C\uDF32', name: 'Boreal Forest Die-off', threshold: 4.0, status: 'future-risk',
           desc: 'Northern coniferous forests (Russia, Canada, Scandinavia) are stressed by warming, bark beetles, and wildfires. A full transition to grassland could release vast amounts of stored carbon.',
-          cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' }
+          cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' },
+        { id: 'gulfofmaine', emoji: '\uD83E\uDD9E', name: 'Gulf of Maine Rapid Warming', threshold: 1.0, status: 'happening',
+          desc: 'The Gulf of Maine has warmed faster than 99% of the world\u2019s oceans since 1980 \u2014 about 0.5\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.',
+          cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Atlantic cod nearly extinct south of Cape Cod. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show ~7 inches of sea level rise since 1950 with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
       ];
 
       // ══════════════════════════════════════
@@ -1068,7 +1083,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Historical responsibility ──
         { q: 'Which single country is responsible for approximately 25% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'Russia', 'United States', 'India'], a: 2 },
         { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company', 'A pool where high-emitting countries pay vulnerable nations', 'A carbon trading scheme', 'A weather disaster loan'], a: 1 },
-        { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 }
+        { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 },
+        // \u2500\u2500 Per-capita inversion + climate justice deepening \u2500\u2500
+        { q: 'An average American has emitted roughly 1,545 tons of CO\u2082 over their lifetime. An average Bangladeshi has emitted about 13 tons. The American per-capita figure is roughly how many times larger?', opts: ['~12\u00d7', '~50\u00d7', '~120\u00d7', '~1,200\u00d7'], a: 2 },
+        { q: 'Compared to the rest of the world\u2019s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 99% of them'], a: 3 },
+        { q: 'Total pledges to the COP27 Loss & Damage Fund as of COP28 are approximately what fraction of one year of the lower-bound estimated need (~$400B/yr)?', opts: ['About half', 'About 10%', 'About 1%', 'Less than 1% (around 0.16%)'], a: 3 },
+        { q: 'Approximately how many people have been internally displaced by weather disasters since IDMC began tracking in 2008?', opts: ['~3.7 million', '~37 million', '~376 million', '~3.7 billion'], a: 2 },
+        { q: 'The Wabanaki Nations \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least:', opts: ['~500 years', '~2,000 years', '~12,000 years', '~50,000 years'], a: 2 },
+        { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Recognized as refugees with full protections', 'Recognized as climate migrants since 2015', 'Not yet recognized as refugees \u2014 the legal category is still being built', 'Automatically eligible for any country\u2019s asylum'], a: 2 }
       ];
 
       // ═══ CANVAS: Donut Chart ═══
@@ -1236,7 +1258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // adds atmospheric grain so the whole panel reads as planet-and-
       // atmosphere rather than a flat color slab.
       var ceGrainSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" aria-hidden="true">' +
           '<filter id="g">' +
             '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11"/>' +
             '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.85   0 0 0 0 0.7   0 0 0 0.06 0"/>' +
@@ -1248,7 +1270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         'radial-gradient(ellipse 75% 50% at 50% 0%, rgba(96, 165, 250, 0.18), transparent 70%), ' +
         'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
         'url("' + ceGrainSvg + '"), ' +
-        'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)';
+        'linear-gradient(135deg, #0d2922 0%, #0f172a 50%, #0d2922 100%)';
       return el('div', {
         style: {
           background: ceBgLayers,
@@ -1325,7 +1347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '12px 16px', border: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
+              style: { padding: '12px 16px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
               el('span', null, t.icon), t.label);
           })
         ),
@@ -1735,7 +1757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               style: {
                 marginBottom: 16, padding: '10px 14px', borderRadius: 12,
                 background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(245,158,11,0.10) 100%)',
-                border: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e',
+                borderTop: '1px solid rgba(34,197,94,0.30)', borderRight: '1px solid rgba(34,197,94,0.30)', borderBottom: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e',
                 color: '#ecfdf5'
               }
             },
@@ -2227,6 +2249,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 'The communities that contribute the LEAST to climate change often face the GREATEST risks. This is what scientists and advocates call climate injustice.')
             ),
 
+            // \u2500\u2500 Per-capita inversion visual \u2500\u2500
+            // Two-sided horizontal bar chart that puts the "key insight" up
+            // there beyond debate: left bars = per-capita cumulative
+            // emissions since 1850 (responsibility); right bars = climate
+            // vulnerability score (exposure). Countries sorted by emissions
+            // descending \u2014 and the vulnerability bars systematically go the
+            // OTHER way. Visual proof of the inversion in a single panel.
+            // Data sources: Carbon Brief 2023 cumulative analysis + Our
+            // World in Data per-capita historical; vulnerability anchored
+            // to ND-GAIN Country Index (rescaled 0-10).
+            (function() {
+              var INVERSION = [
+                { country: 'United States',     emoji: '\uD83C\uDDFA\uD83C\uDDF8', perCapTons: 1545, vuln: 3,  pop: '330M' },
+                { country: 'Russia',            emoji: '\uD83C\uDDF7\uD83C\uDDFA', perCapTons: 1180, vuln: 5,  pop: '144M' },
+                { country: 'United Kingdom',    emoji: '\uD83C\uDDEC\uD83C\uDDE7', perCapTons: 1150, vuln: 2,  pop: '67M'  },
+                { country: 'Germany',           emoji: '\uD83C\uDDE9\uD83C\uDDEA', perCapTons: 1055, vuln: 2,  pop: '83M'  },
+                { country: 'Japan',             emoji: '\uD83C\uDDEF\uD83C\uDDF5', perCapTons: 540,  vuln: 4,  pop: '125M' },
+                { country: 'Brazil',            emoji: '\uD83C\uDDE7\uD83C\uDDF7', perCapTons: 525,  vuln: 6,  pop: '215M' },
+                { country: 'China',             emoji: '\uD83C\uDDE8\uD83C\uDDF3', perCapTons: 200,  vuln: 5,  pop: '1.41B' },
+                { country: 'India',             emoji: '\uD83C\uDDEE\uD83C\uDDF3', perCapTons: 38,   vuln: 7,  pop: '1.43B' },
+                { country: 'Sahel (avg)',       emoji: '\uD83C\uDF0D', perCapTons: 18,   vuln: 9,  pop: '400M' },
+                { country: 'Bangladesh',        emoji: '\uD83C\uDDE7\uD83C\uDDE9', perCapTons: 13,   vuln: 10, pop: '170M' },
+                { country: 'Pacific Islands',   emoji: '\uD83C\uDFDD\uFE0F', perCapTons: 7,    vuln: 10, pop: '12M'  },
+                { country: 'D.R. Congo',        emoji: '\uD83C\uDDE8\uD83C\uDDE9', perCapTons: 3,    vuln: 9,  pop: '102M' }
+              ];
+              var MAX_TONS = 1600;
+              var MAX_VULN = 10;
+              return el('div', {
+                style: {
+                  padding: 16, marginBottom: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(239,68,68,0.05), rgba(168,85,247,0.05))',
+                  border: '1px solid rgba(168,85,247,0.25)'
+                }
+              },
+                el('div', { style: { textAlign: 'center', marginBottom: 6 } },
+                  el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 900 } }, '\u2696\uFE0F The Inversion \u2014 who caused it vs who pays for it'),
+                  el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                    'Left bars: per-capita CO\u2082 emitted since 1850 (responsibility). Right bars: climate vulnerability score 0\u201310 (exposure). Sorted by emissions. The pattern runs the opposite way down the page \u2014 that is the injustice.')
+                ),
+                // Header row \u2014 column labels
+                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 130px 1fr', alignItems: 'center', gap: 8, padding: '8px 0', marginTop: 10, marginBottom: 4, borderBottom: '1px solid rgba(148,163,184,0.15)' } },
+                  el('div', { style: { textAlign: 'right', color: '#fca5a5', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Caused (tons CO\u2082 / person, cumulative)'),
+                  el('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'Country'),
+                  el('div', { style: { textAlign: 'left', color: '#c4b5fd', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Exposed (vulnerability 0\u201310)')
+                ),
+                // Inversion rows
+                INVERSION.map(function(row, i) {
+                  var emPct = (row.perCapTons / MAX_TONS) * 100;
+                  var vlnPct = (row.vuln / MAX_VULN) * 100;
+                  // Visual cue: rows whose two bars go in opposite directions
+                  // (high-emit + low-vuln OR low-emit + high-vuln) are the
+                  // injustice cases. Highlight them subtly.
+                  var isInverted = (row.perCapTons > 500 && row.vuln <= 4) ||
+                                   (row.perCapTons < 50 && row.vuln >= 8);
+                  return el('div', { key: row.country,
+                    style: {
+                      display: 'grid', gridTemplateColumns: '1fr 130px 1fr',
+                      alignItems: 'center', gap: 8, padding: '4px 0',
+                      background: isInverted ? 'rgba(250,204,21,0.04)' : 'transparent',
+                      borderRadius: 4
+                    }
+                  },
+                    // Left: emissions bar (extends RIGHT-TO-LEFT inside its column)
+                    el('div', { style: { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 } },
+                      el('span', { style: { color: '#fca5a5', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', minWidth: 50, textAlign: 'right' } },
+                        row.perCapTons.toLocaleString() + 't'),
+                      el('div', {
+                        style: {
+                          height: 10, width: emPct + '%', minWidth: 2,
+                          background: 'linear-gradient(270deg, rgba(239,68,68,0.85), rgba(239,68,68,0.4))',
+                          borderRadius: '3px 0 0 3px',
+                          boxShadow: '0 0 6px rgba(239,68,68,0.25)'
+                        }
+                      })
+                    ),
+                    // Center: country label
+                    el('div', { style: { textAlign: 'center', color: '#e2e8f0', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 } },
+                      el('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, row.emoji),
+                      el('span', null, row.country)
+                    ),
+                    // Right: vulnerability bar (extends LEFT-TO-RIGHT)
+                    el('div', { style: { display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 6 } },
+                      el('div', {
+                        style: {
+                          height: 10, width: vlnPct + '%', minWidth: 2,
+                          background: 'linear-gradient(90deg, rgba(168,85,247,0.85), rgba(168,85,247,0.4))',
+                          borderRadius: '0 3px 3px 0',
+                          boxShadow: '0 0 6px rgba(168,85,247,0.25)'
+                        }
+                      }),
+                      el('span', { style: { color: '#c4b5fd', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', minWidth: 32 } },
+                        row.vuln + '/10')
+                    )
+                  );
+                }),
+                // Source line
+                el('div', {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(250,204,21,0.06)', border: '1px solid rgba(250,204,21,0.15)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                  }
+                },
+                  '\uD83D\uDCDA Per-capita cumulative emissions from Our World in Data (1850\u20132022) and Carbon Brief 2023. Vulnerability scores rescaled from the ND-GAIN Country Index (University of Notre Dame). Highlighted rows are the clearest inversion cases: rich countries with the deepest historical responsibility but the most adaptive capacity, paired against countries with negligible per-capita emissions and the highest exposure.')
+              );
+            })(),
+
             // \u2500\u2500 Play-order hint \u2500\u2500
             // The Climate Justice badge unlocks at 5 regions explored,
             // but the grid shows 9 collapsed cards and the badge target
@@ -2302,6 +2431,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   // Expanded detail
                   isOpen && el('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.08)' } },
                     el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.7, marginBottom: 8 } }, r.story),
+                    // Front-line voice \u2014 a documented quote from a named
+                    // advocate/leader from this community. Renders only when
+                    // the region has a `voice` field. Pulled from on-record
+                    // sources cited in the source line so students see who
+                    // is actually speaking, not just what is happening.
+                    r.voice && el('div', {
+                      style: {
+                        marginBottom: 8, padding: 10, borderRadius: 8,
+                        background: 'rgba(96,165,250,0.06)',
+                        borderTop: '1px solid rgba(96,165,250,0.18)', borderRight: '1px solid rgba(96,165,250,0.18)', borderBottom: '1px solid rgba(96,165,250,0.18)', borderLeft: '3px solid #60a5fa'
+                      }
+                    },
+                      el('div', { style: { color: '#60a5fa', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '\uD83C\uDF99\uFE0F Voice from the front line'),
+                      el('div', { style: { color: '#e2e8f0', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55, marginBottom: 4 } },
+                        '\u201C', r.voice.quote, '\u201D'),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 10, fontWeight: 700 } },
+                        '\u2014 ', r.voice.name),
+                      el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } },
+                        r.voice.role),
+                      el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
+                        '\uD83D\uDCDA ', r.voice.source)
+                    ),
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' } },
                       el('div', { style: { color: '#4ade80', fontSize: 10, fontWeight: 800 } }, '\uD83D\uDCAA Community Resilience'),
                       el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.5, marginTop: 2 } }, r.resilience)
@@ -2341,10 +2492,242 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('br'),
                   '• All of Africa (1.4 billion people, ~18% of world): ~3% of historical emissions — but some of the most severe impacts.',
                   el('br'),
-                  '• This is why the 2022 COP27 created the "Loss & Damage" fund — high-emitting countries pay into a pool for vulnerable nations.'
+                  '• This is why the 2022 COP27 created the "Loss & Damage" fund — high-emitting countries pay into a pool for vulnerable nations.',
+                  el('br'),
+                  '• So far, total pledges to that fund are ~0.16% of one year of the lower-bound estimated need (see Loss & Damage Fund tracker below).'
                 )
               )
             ),
+
+            // ═══ LOSS & DAMAGE FUND TRACKER ═══
+            // The COP27 fund was the first international policy mechanism
+            // explicitly designed to address climate injustice — high-emit
+            // countries pay into a pool for "particularly vulnerable"
+            // developing nations. AOSIS (small island states) first
+            // proposed it at COP1 in Berlin (1995). It took 27 years to
+            // create. Pedagogically: shows that policy CAN respond to
+            // inequity, but the gap between pledged and needed is itself
+            // the next chapter of the climate justice story.
+            (function() {
+              var LD_CONTRIB = [
+                { country: 'UAE',         emoji: '🇦🇪', amountUSD: 100,  note: 'COP28 host pledge, Dec 2023' },
+                { country: 'Germany',     emoji: '🇩🇪', amountUSD: 108,  note: '€100M, COP28' },
+                { country: 'Italy',       emoji: '🇮🇹', amountUSD: 108,  note: '€100M, COP28' },
+                { country: 'France',      emoji: '🇫🇷', amountUSD: 108,  note: '€100M, COP28' },
+                { country: 'UK',          emoji: '🇬🇧', amountUSD: 50,   note: '£40M, COP28' },
+                { country: 'Denmark',     emoji: '🇩🇰', amountUSD: 50,   note: 'COP28' },
+                { country: 'Ireland',     emoji: '🇮🇪', amountUSD: 27,   note: 'COP28' },
+                { country: 'EU',          emoji: '🇪🇺', amountUSD: 27,   note: '€25M, COP28' },
+                { country: 'Norway',      emoji: '🇳🇴', amountUSD: 25,   note: 'COP28' },
+                { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: 'COP28 — note: ~25% of all historical CO₂' },
+                { country: 'Japan',       emoji: '🇯🇵', amountUSD: 10,   note: 'COP28' },
+                { country: 'Canada',      emoji: '🇨🇦', amountUSD: 11,   note: 'COP28' }
+              ];
+              var pledgedTotalM = LD_CONTRIB.reduce(function(s, c) { return s + c.amountUSD; }, 0);
+              var pledgedB = pledgedTotalM / 1000;
+              var neededBPerYr = 400;  // SEI low-end estimate, $B/yr by 2030
+              var pledgedPctOfYearOneNeed = (pledgedB / neededBPerYr) * 100;
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(34,197,94,0.06), rgba(96,165,250,0.06))',
+                  border: '1px solid rgba(96,165,250,0.25)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  el('span', { style: { fontSize: 22 } }, '💰'),
+                  el('div', null,
+                    el('div', { style: { color: '#7dd3fc', fontSize: 14, fontWeight: 900 } }, 'Loss & Damage Fund — what the world is doing about it'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
+                      'Proposed by small island states at COP1 (1995). Created at COP27 (2022). Capitalized at COP28 (2023). First disbursements 2024 — 27 years from proposal to first dollar paid.')
+                  )
+                ),
+                // Pledged-vs-needed visual
+                el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: '#cbd5e1', fontSize: 11, fontWeight: 700 } },
+                    el('span', null, 'Pledged so far: ~$' + pledgedTotalM.toFixed(0) + 'M (' + pledgedB.toFixed(2) + 'B)'),
+                    el('span', { style: { color: '#fca5a5' } }, 'Needed: ~$' + neededBPerYr + 'B / year (by 2030, SEI estimate)')
+                  ),
+                  // Bar — pledged is barely visible against the needed
+                  el('div', { style: { height: 18, background: 'rgba(239,68,68,0.18)', borderRadius: 4, overflow: 'hidden', position: 'relative', border: '1px solid rgba(239,68,68,0.35)' } },
+                    el('div', { style: { width: Math.max(0.3, pledgedPctOfYearOneNeed) + '%', height: '100%', background: 'linear-gradient(90deg, #4ade80, #22c55e)', minWidth: 2 } })
+                  ),
+                  el('div', { style: { color: '#fbbf24', fontSize: 10, marginTop: 6, textAlign: 'center', fontStyle: 'italic' } },
+                    'Pledged is roughly ' + pledgedPctOfYearOneNeed.toFixed(2) + '% of the lowest-end estimate of one year of need.')
+                ),
+                // Top contributors
+                el('div', { style: { marginTop: 12 } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top contributors so far'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6 } },
+                    LD_CONTRIB.map(function(c) {
+                      return el('div', { key: c.country,
+                        style: {
+                          padding: '6px 10px', borderRadius: 6,
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(148,163,184,0.10)',
+                          display: 'flex', alignItems: 'center', gap: 8
+                        }
+                      },
+                        el('span', { style: { fontSize: 16 } }, c.emoji),
+                        el('div', { style: { flex: 1, minWidth: 0 } },
+                          el('div', { style: { color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: '#94a3b8', fontSize: 9, lineHeight: 1.3 } }, c.note)
+                        ),
+                        el('div', { style: { color: '#86efac', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
+                          '$' + c.amountUSD + 'M')
+                      );
+                    })
+                  )
+                ),
+                // Cross-link to Saleemul Huq voice
+                el('div', {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                  }
+                },
+                  '🎙️ ',
+                  el('strong', { style: { color: '#7dd3fc' } }, 'Saleemul Huq'),
+                  ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. The fund is sometimes called "the Saleemul Huq fund" by negotiators who worked with him.'),
+                el('div', {
+                  style: {
+                    marginTop: 6, color: '#94a3b8', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                  }
+                },
+                  '📚 Pledges from official COP28 communiqués (Nov–Dec 2023). Need estimate from Stockholm Environment Institute 2023 ($400B/yr lower bound). Contributions converted to USD at end-2023 rates; some pledges remain unfulfilled or extend over multiple years. Updated reporting: UNFCCC Loss and Damage Fund Board minutes.')
+              );
+            })(),
+
+            // ═══ CLIMATE DISPLACEMENT TRACKER ═══
+            // The Internal Displacement Monitoring Centre (IDMC) is the
+            // global authority on this data. Weather-driven displacement
+            // is the most-tracked and most-conservative climate-impact
+            // statistic: it counts actual people forced to move within
+            // their own country (not international refugees, who don't
+            // yet have legal recognition for climate causes). Even on
+            // this conservative measure, ~376 million people have been
+            // displaced since IDMC started tracking in 2008.
+            (function() {
+              var DISP_BY_YEAR = [
+                { year: 2018, millions: 17.2 },
+                { year: 2019, millions: 23.9 },
+                { year: 2020, millions: 30.7 },
+                { year: 2021, millions: 23.7 },
+                { year: 2022, millions: 32.6, note: 'Record year — Pakistan floods alone displaced ~8.2M' },
+                { year: 2023, millions: 26.4 }
+              ];
+              var DISP_BY_COUNTRY_2022_23 = [
+                { country: 'Pakistan',     emoji: '🇵🇰', millions: 8.2, cause: '2022 super-floods' },
+                { country: 'Philippines',  emoji: '🇵🇭', millions: 5.4, cause: 'recurring typhoons' },
+                { country: 'China',        emoji: '🇨🇳', millions: 3.6, cause: 'monsoon flooding' },
+                { country: 'India',        emoji: '🇮🇳', millions: 2.5, cause: 'monsoon + cyclones' },
+                { country: 'Brazil',       emoji: '🇧🇷', millions: 1.7, cause: 'floods + landslides' },
+                { country: 'Bangladesh',   emoji: '🇧🇩', millions: 1.6, cause: 'cyclones + floods' },
+                { country: 'Somalia',      emoji: '🇸🇴', millions: 1.1, cause: 'Horn of Africa drought' },
+                { country: 'Ethiopia',     emoji: '🇪🇹', millions: 1.0, cause: 'drought + floods' }
+              ];
+              var maxYear = DISP_BY_YEAR.reduce(function(m, x) { return Math.max(m, x.millions); }, 0);
+              var cumulative2008to23 = 376;  // IDMC GRID 2024 cumulative figure
+              var projected2050 = 216;       // World Bank Groundswell, internal-only, 6 regions
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(251,146,60,0.07), rgba(239,68,68,0.06))',
+                  border: '1px solid rgba(251,146,60,0.25)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  el('span', { style: { fontSize: 22 } }, '🧳'),
+                  el('div', null,
+                    el('div', { style: { color: '#fdba74', fontSize: 14, fontWeight: 900 } }, 'Climate Displacement — the people already moving'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
+                      'New people forced to flee their homes by weather disasters each year — within their own country. Counted by the Internal Displacement Monitoring Centre since 2008.')
+                  )
+                ),
+                // Year-over-year bar chart
+                el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'New weather-driven displacements per year (millions)'),
+                  el('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 8, height: 110, paddingBottom: 18 } },
+                    DISP_BY_YEAR.map(function(y) {
+                      var pct = (y.millions / maxYear) * 100;
+                      return el('div', { key: y.year, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } },
+                        el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } }, y.millions + 'M'),
+                        el('div', {
+                          title: y.note || (y.year + ': ' + y.millions + 'M displaced'),
+                          style: {
+                            width: '90%', height: pct + '%', minHeight: 4,
+                            background: 'linear-gradient(180deg, #fb923c, #ea580c)',
+                            borderRadius: '3px 3px 0 0',
+                            boxShadow: '0 0 6px rgba(251,146,60,0.3)'
+                          }
+                        }),
+                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', marginTop: 2 } }, y.year)
+                      );
+                    })
+                  )
+                ),
+                // Top countries strip
+                el('div', { style: { marginTop: 12 } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top countries displaced, 2022–2023'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6 } },
+                    DISP_BY_COUNTRY_2022_23.map(function(c) {
+                      return el('div', { key: c.country,
+                        style: {
+                          padding: '6px 10px', borderRadius: 6,
+                          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(148,163,184,0.10)',
+                          display: 'flex', alignItems: 'center', gap: 8
+                        }
+                      },
+                        el('span', { style: { fontSize: 16 } }, c.emoji),
+                        el('div', { style: { flex: 1, minWidth: 0 } },
+                          el('div', { style: { color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: '#94a3b8', fontSize: 9, lineHeight: 1.3 } }, c.cause)
+                        ),
+                        el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
+                          c.millions + 'M')
+                      );
+                    })
+                  )
+                ),
+                // Cumulative + projection callout
+                el('div', {
+                  style: {
+                    marginTop: 12, padding: 12, borderRadius: 10,
+                    background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)',
+                    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10
+                  }
+                },
+                  el('div', { style: { textAlign: 'center' } },
+                    el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, '~' + cumulative2008to23 + 'M'),
+                    el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Cumulative since 2008'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'IDMC tracked total')
+                  ),
+                  el('div', { style: { textAlign: 'center' } },
+                    el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, 'up to ' + projected2050 + 'M'),
+                    el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Projected by 2050'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'World Bank Groundswell — internal only, 6 regions')
+                  )
+                ),
+                // Legal-gap note
+                el('div', {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                  }
+                },
+                  '⚖️ ',
+                  el('strong', { style: { color: '#7dd3fc' } }, 'The legal gap:'),
+                  ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee ruled in Teitiota v. New Zealand that countries cannot deport people back to climate-existential danger — a landmark non-binding step. The legal category of "climate refugee" is still being built.'),
+                el('div', {
+                  style: {
+                    marginTop: 6, color: '#94a3b8', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                  }
+                },
+                  '📚 IDMC Global Report on Internal Displacement 2024 (annual data); World Bank Groundswell Part II report (2021, 216M internal climate displaced by 2050 across 6 world regions on current trajectory). Figures exclude international migration, slow-onset displacement, and most drought-related movement, so they are conservative lower bounds.')
+              );
+            })(),
 
             // ═══ YOUTH CLIMATE LEADERS ═══
             el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(59,130,246,0.06))', border: '1px solid rgba(168,85,247,0.25)' } },
@@ -2374,14 +2757,259 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 '💡 Every movement needs voices across generations. These are just six — Fridays for Future alone has mobilized students in 170+ countries. You don\'t need to be famous to matter. Local action is where almost every one of these leaders started.')
             ),
 
-            // Discussion prompt
-            el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', textAlign: 'center' } },
-              el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, '\uD83D\uDDE3\uFE0F Discussion Questions'),
-              el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.8 } },
-                'Is it fair that the communities least responsible for climate change are most affected?\n' +
-                'What responsibilities do high-emitting countries have?\n' +
-                'How can we support communities building resilience?\n' +
-                'Which of the youth leaders above resonates with you — and why?')
+            // ═══ "YOUR MOVE" ACTION LADDER ═══
+            // Awareness without action is the privilege of the unaffected.
+            // Each rung connects back to one of the panels above so the
+            // tab reads as a single arc — see-the-injustice, then-act-on-
+            // it. Maine-specific organizations are named because Aaron's
+            // King Middle students need real local channels, not generic
+            // "join a movement" hand-waves. Difficulty cues label each
+            // rung so a 7th grader sees the LADDER aspect (some today,
+            // some grow into) rather than a flat to-do list.
+            (function() {
+              var ACTIONS = [
+                {
+                  rung: 1,
+                  title: 'Know your household number',
+                  difficulty: 'Anyone, today',
+                  difficultyColor: '#86efac',
+                  connects: 'Per-capita inversion chart',
+                  why: 'An average American emits ~16 tons CO₂ per year. Average Bangladeshi: ~0.5 tons. Knowing where you actually sit tells you where the leverage is in YOUR life — heating, car, flights, beef are the big four for most US households.',
+                  how: 'Open the Carbon Calculator tab in this tool and walk through the inputs honestly. Print your number. Set one specific reduction goal for your household.'
+                },
+                {
+                  rung: 2,
+                  title: 'Welcome the people the climate is already moving',
+                  difficulty: 'Anyone, ongoing',
+                  difficultyColor: '#86efac',
+                  connects: 'Climate Displacement panel',
+                  why: 'About 376 million people have already been forced to flee weather disasters since 2008. Maine resettles refugees every year — many through Portland — and welcoming them is climate action you can do without leaving your zip code.',
+                  how: 'Volunteer with Catholic Charities Maine, Greater Portland Family Promise, or the Immigrant Resource Center of Maine. Tutoring, food drives, and English-conversation partnerships are the most-asked-for roles.'
+                },
+                {
+                  rung: 3,
+                  title: 'Pressure the Loss & Damage Fund pledge upward',
+                  difficulty: 'Anyone, ~5 minutes',
+                  difficultyColor: '#fbbf24',
+                  connects: 'Loss & Damage Fund tracker',
+                  why: 'The US pledged $17.5M to the fund despite causing ~25% of historical CO₂. A 100× increase would still be a fraction of what proportional responsibility implies. Constituent calls move this kind of number more than people think.',
+                  how: 'Maine has two Senators (Collins, King) and two Representatives (Pingree, Golden), each with constituent comment lines. Call one. Say: "I want to see the US contribution to the COP27 Loss and Damage Fund increased to match our historical responsibility."'
+                },
+                {
+                  rung: 4,
+                  title: 'Read the people you just heard from',
+                  difficulty: 'Anyone, this month',
+                  difficultyColor: '#fbbf24',
+                  connects: 'Front-line voices in the region cards',
+                  why: 'Quotes are starting points. Books are arguments. The voices in this tab are scientists, lawyers, organizers, and elected officials — what they wrote tells you why the quote is true.',
+                  how: 'Portland Public Library carries Sherri Mitchell\'s Sacred Instructions, Sheila Watt-Cloutier\'s The Right to Be Cold, and Catherine Coleman Flowers\' Waste in their environmental and Indigenous-studies sections. Ask the reference desk for the climate-justice reading list.'
+                },
+                {
+                  rung: 5,
+                  title: 'Show up where the decisions actually get made',
+                  difficulty: 'High schooler+, periodic',
+                  difficultyColor: '#fda4af',
+                  connects: 'Youth Climate Leaders + Maine Policy Pathways tab',
+                  why: 'The Maine Climate Council, the Portland City Council climate workgroup, and the Maine Public Utilities Commission all take public comment. This is where the actual policy gets shaped — and youth voices are documented to shift outcomes when they show up.',
+                  how: 'Subscribe to Maine Climate Action Now or Maine Youth for Climate Justice. Both list upcoming public meetings, hearings, and youth-led actions across the state.'
+                }
+              ];
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(34,197,94,0.07), rgba(96,165,250,0.06))',
+                  border: '1px solid rgba(34,197,94,0.30)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 } },
+                  el('span', { style: { fontSize: 22 } }, '🪜'),
+                  el('div', null,
+                    el('div', { style: { color: '#86efac', fontSize: 14, fontWeight: 900 } }, 'Your move — climate justice action ladder'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                      'Awareness without action is the privilege of the unaffected. Each rung connects to a panel above so this is one arc, not five. Some rungs you can do today; some you grow into. Maine-specific channels listed where they exist.')
+                  )
+                ),
+                el('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 } },
+                  ACTIONS.map(function(a) {
+                    return el('div', { key: a.rung,
+                      style: {
+                        padding: 12, borderRadius: 10,
+                        background: 'rgba(0,0,0,0.18)',
+                        borderTop: '1px solid rgba(148,163,184,0.12)', borderRight: '1px solid rgba(148,163,184,0.12)', borderBottom: '1px solid rgba(148,163,184,0.12)', borderLeft: '3px solid ' + a.difficultyColor
+                      }
+                    },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' } },
+                        el('div', {
+                          style: {
+                            width: 26, height: 26, borderRadius: '50%',
+                            background: a.difficultyColor + '25',
+                            border: '1.5px solid ' + a.difficultyColor,
+                            color: a.difficultyColor, fontSize: 12, fontWeight: 900,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0
+                          }
+                        }, a.rung),
+                        el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800, flex: 1, minWidth: 200 } }, a.title),
+                        el('div', {
+                          style: {
+                            padding: '2px 8px', borderRadius: 12,
+                            background: a.difficultyColor + '15',
+                            color: a.difficultyColor, fontSize: 10, fontWeight: 700,
+                            whiteSpace: 'nowrap'
+                          }
+                        }, a.difficulty)
+                      ),
+                      el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2, marginBottom: 6 } },
+                        '↑ connects to: ', a.connects),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55, marginBottom: 6 } },
+                        el('strong', { style: { color: '#7dd3fc' } }, 'Why: '),
+                        a.why),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+                        el('strong', { style: { color: '#86efac' } }, 'How: '),
+                        a.how)
+                    );
+                  })
+                ),
+                el('div', {
+                  style: {
+                    marginTop: 12, padding: 10, borderRadius: 8,
+                    background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic', textAlign: 'center'
+                  }
+                },
+                  'You don\'t need to climb every rung. You need to climb the next one.')
+              );
+            })(),
+
+            // ═══ CLIMATE JUSTICE TIMELINE ═══
+            // A compact temporal frame that shows just how slowly this
+            // policy field moves. Aaron's middle-school students will
+            // notice immediately: the most important wins on this list
+            // are within their lifetime — and the gap between proposal
+            // and implementation is measured in decades. Helps them
+            // calibrate "why hasn't anyone fixed this" with "look how
+            // long it took to get this far." Sources are official COP /
+            // UN documents.
+            (function() {
+              var TIMELINE = [
+                { year: 1990, label: 'IPCC First Assessment Report', what: 'The IPCC tells the world, with scientific consensus for the first time, that human emissions are warming the planet.', tag: 'science', color: '#60a5fa' },
+                { year: 1992, label: 'UN Framework Convention on Climate Change', what: 'The UNFCCC is opened for signature at the Rio Earth Summit. The treaty creates the COP process. 198 countries are now parties.', tag: 'policy', color: '#22c55e' },
+                { year: 1995, label: 'AOSIS proposes Loss & Damage at COP1 Berlin', what: 'The Alliance of Small Island States, led by Vanuatu, formally proposes an international financial mechanism for unavoidable climate damage. Wealthy nations decline.', tag: 'demand', color: '#fbbf24' },
+                { year: 2008, label: 'IDMC begins tracking weather displacement', what: 'The Internal Displacement Monitoring Centre starts the global database that now documents 376M+ cumulative weather displacements.', tag: 'data', color: '#60a5fa' },
+                { year: 2009, label: 'COP15 Copenhagen — $100B/yr finance pledge', what: 'Wealthy nations pledge $100B/yr in climate finance to developing countries by 2020. The pledge is met for the first time, late, in 2022.', tag: 'pledge', color: '#fbbf24' },
+                { year: 2015, label: 'Paris Agreement — Article 8 mentions L&D', what: 'The Paris text formally names "loss and damage associated with climate change impacts" — but explicitly excludes any basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
+                { year: 2020, label: 'UN HRC Teitiota v. New Zealand ruling', what: 'The UN Human Rights Committee rules countries cannot deport people back to climate-existential danger. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
+                { year: 2021, label: 'World Bank Groundswell Part II report', what: 'Projects up to 216M people internally climate-displaced by 2050 across 6 world regions on current trajectory.', tag: 'data', color: '#60a5fa' },
+                { year: 2022, label: 'COP27 Sharm el-Sheikh — L&D Fund created', what: 'After 27 years, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq calls it "the most important COP outcome since Paris."', tag: 'win', color: '#86efac' },
+                { year: 2023, label: 'COP28 Dubai — L&D Fund capitalized', what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; the fund is sometimes informally called by his name.', tag: 'win', color: '#86efac' },
+                { year: 2024, label: 'First L&D Fund disbursements', what: 'The fund makes its first small payments to vulnerable countries. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
+                { year: 2030, label: 'IPCC 1.5°C deadline (target year)', what: 'The Paris Agreement target year for emissions to peak and begin declining. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
+              ];
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(139,92,246,0.06), rgba(96,165,250,0.06))',
+                  border: '1px solid rgba(139,92,246,0.25)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 } },
+                  el('span', { style: { fontSize: 22 } }, '⏳'),
+                  el('div', null,
+                    el('div', { style: { color: '#c4b5fd', fontSize: 14, fontWeight: 900 } }, 'Climate justice timeline — how long it actually takes'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                      'From the first scientific consensus (1990) to the first dollar of Loss & Damage payment (2024) is 34 years. The big wins on this list are inside your lifetime — most are within the last 10 years. Slow does not mean impossible.')
+                  )
+                ),
+                el('div', { style: { marginTop: 12, paddingLeft: 12, borderLeft: '2px solid rgba(139,92,246,0.30)' } },
+                  TIMELINE.map(function(t) {
+                    return el('div', { key: t.year,
+                      style: {
+                        position: 'relative', paddingLeft: 18, paddingBottom: 12, marginLeft: -2
+                      }
+                    },
+                      // Dot
+                      el('div', {
+                        style: {
+                          position: 'absolute', left: -7, top: 4,
+                          width: 12, height: 12, borderRadius: '50%',
+                          background: t.color,
+                          border: '2px solid rgba(15,23,42,0.7)',
+                          boxShadow: '0 0 6px ' + t.color + '55',
+                          opacity: t.future ? 0.7 : 1
+                        }
+                      }),
+                      el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 2, flexWrap: 'wrap' } },
+                        el('span', { style: { color: t.color, fontSize: 13, fontWeight: 900, fontFamily: 'monospace', minWidth: 44 } }, t.year),
+                        el('span', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, t.label),
+                        el('span', {
+                          style: {
+                            padding: '1px 7px', borderRadius: 10,
+                            background: t.color + '20', color: t.color,
+                            fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em'
+                          }
+                        }, t.tag)
+                      ),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } }, t.what)
+                    );
+                  })
+                ),
+                el('div', {
+                  style: {
+                    marginTop: 6, padding: 10, borderRadius: 8,
+                    background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, textAlign: 'center', fontStyle: 'italic'
+                  }
+                },
+                  'The first proposal to the first payment was 29 years. The next 29 are yours.')
+              );
+            })(),
+
+            // Discussion prompts — restructured into two banks. The
+            // original four foundational questions stay (they work as
+            // warm-up). Below them, a deeper bank ties directly to the
+            // new panels (inversion, voices, L&D, displacement, action
+            // ladder) so a teacher running this in class has both an
+            // intro discussion and a critical-thinking discussion ready.
+            el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+              el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDDE3\uFE0F Discussion Questions'),
+              // Foundational bank
+              el('div', { style: { marginBottom: 12 } },
+                el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Warm-up'),
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.7 } },
+                  el('li', null, 'Is it fair that the communities least responsible for climate change are most affected?'),
+                  el('li', null, 'What responsibilities do high-emitting countries have?'),
+                  el('li', null, 'How can we support communities building resilience?'),
+                  el('li', null, 'Which of the youth leaders above resonates with you — and why?')
+                )
+              ),
+              // Deep-dive bank
+              el('div', { style: { paddingTop: 10, borderTop: '1px dashed rgba(99,102,241,0.3)' } },
+                el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Deep-dive — connects to specific panels above'),
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.8 } },
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Inversion chart: '),
+                    'Looking at "Caused vs Exposed", what is the single thing that surprises you most? What story does the chart tell that the historical-totals chart does NOT?'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Loss & Damage Fund: '),
+                    'Total pledges are about 0.16% of one year of estimated need. Is that "the system is working slowly" or "the system is failing"? Take a side and defend it with one piece of evidence from this tab.'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Climate displacement: '),
+                    '~376 million people have been internally displaced since 2008 — almost all within their own country. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Front-line voices: '),
+                    'Sherri Mitchell teaches the principle of considering "the next seven generations." If you make a climate decision now that helps people 200 years from now but costs you something today, is that fair to ask of you? Of your parents? Of your community?'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Action ladder: '),
+                    'Pick one rung of the action ladder. What actually stops most people from climbing it — knowledge, money, time, fear, social cost, or something else? What would it take to remove that block for one specific person you know?'
+                  )
+                )
+              ),
+              el('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } },
+                '\uD83D\uDC69\u200D\uD83C\uDFEB Teacher note: the deep-dive bank is designed for classroom Socratic seminar — every question has multiple defensible answers. The point is the reasoning students show, not the conclusion they reach.')
             )
           ),
 
@@ -2917,7 +3545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                   )
                 ),
-                applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+                applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
                   el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udee0 What you can do for this sector'),
                   applicable.map(function(t, i) {
                     return el('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
@@ -3030,12 +3658,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             function renderPathAIPanel() {
               if (path.aiReadLoading) {
                 return el('div', { role: 'status', 'aria-live': 'polite',
-                  style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                  style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
                   '\u23f3 AI climate-policy educator is reading your campaign state...');
               }
               if (!path.aiReadResponse) return null;
               return el('div', { role: 'region', 'aria-label': 'AI Climate Policy Reading',
-                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                   el('span', { style: { fontSize: 20 } }, '\ud83d\udd0d'),
                   el('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Climate Policy Reading'),
@@ -3047,7 +3675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   )
                 ),
                 el('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, path.aiReadResponse),
-                el('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
                   'AI climate-policy educator. ',
                   el('strong', null, 'It is not a Wabanaki person, not a real climate strategist or policy maker, and does not speak for any Wabanaki nation, agency, or organization.'),
                   ' For authoritative voice on Maine climate policy: Penobscot Nation CHPD, Wabanaki Public Health and Wellness, Maine Climate Council, Maine Department of Environmental Protection, Sunrise Movement Maine, Maine Climate Action Now.'
@@ -3172,7 +3800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '\ud83d\udd01 Replay same conditions')
                 ),
                 el('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
-                  el('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                  el('span', { style: { color: '#94a3b8' } }, 'Campaign seed: '),
                   el('strong', { style: { color: '#cbd5e1' } }, path.seed)
                 )
               );
@@ -3222,7 +3850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             var coachingTip = (path.year === 1 && !path.firstTipDismissed && path.yearActions.length === 0) ? pathwayCoachingTip() : null;
             return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
               pathDeepDive,
-              coachingTip ? el('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              coachingTip ? el('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
                 el('span', { style: { fontSize: 20, flexShrink: 0 } }, '\ud83e\udeb6'),
                 el('div', { style: { flex: 1 } },
                   el('strong', { style: { color: '#a855f7' } }, 'Period 1 priority: '),
@@ -3275,7 +3903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         return el('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
                           el('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
                           el('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          el('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                          el('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'goal ' + st[3])
                         );
                       })
                     ),
@@ -3304,7 +3932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               path.yearActions.length > 0 ? el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
                 el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Period actions'),
                 path.yearActions.map(function(a, ai) { return el('div', { key: ai }, '\u00b7 ' + a.tech + ' \u2192 ' + a.target + ' (' + a.hours + 'h)'); })
-              ) : el('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
+              ) : el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
             );
           })()
         )

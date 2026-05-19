@@ -1163,8 +1163,8 @@ inputText.substring(0, 6000) + '\n' +
     // ── Generating spinner ──
     var renderGenerating = function() {
       return h('div', { className: 'flex-grow flex flex-col items-center justify-center gap-4' },
-        h(Sparkles, { className: 'animate-spin text-purple-400', size: 48 }),
-        h('p', { className: 'text-purple-300 text-lg font-bold' }, t('escape_room.generating')),
+        h(Sparkles, { className: 'animate-spin text-purple-700', size: 48 }),
+        h('p', { className: 'text-purple-700 text-lg font-bold' }, t('escape_room.generating')),
         h('p', { className: 'text-slate-500 text-sm' }, t('escape_room.generating_hint'))
       );
     };
@@ -1197,33 +1197,33 @@ inputText.substring(0, 6000) + '\n' +
         h('h3', { className: 'text-4xl font-black ' + ratingColor },
           t('escape_room.performance_' + rating) || (rating === 'perfect' ? 'Perfect Escape!' : rating === 'great' ? 'Great Job!' : 'Good Effort!')
         ),
-        h('p', { className: 'text-slate-400' }, t('escape_room.escaped_desc')),
+        h('p', { className: 'text-slate-600' }, t('escape_room.escaped_desc')),
         h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-2xl mt-4' },
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\u23F1\uFE0F'),
             h('div', { className: 'text-2xl font-bold text-white' }, minutes + ':' + seconds.toString().padStart(2, '0')),
-            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.time_taken') || 'Time Taken')
+            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.time_taken') || 'Time Taken')
           ),
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\u2705'),
-            h('div', { className: 'text-2xl font-bold text-green-400' }, puzzlesSolved + '/' + totalPuzzles),
-            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.puzzles_solved') || 'Puzzles Solved')
+            h('div', { className: 'text-2xl font-bold text-green-700' }, puzzlesSolved + '/' + totalPuzzles),
+            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.puzzles_solved') || 'Puzzles Solved')
           ),
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\u274C'),
             h('div', { className: 'text-2xl font-bold ' + (wrongAttempts === 0 ? 'text-green-400' : 'text-red-400') }, wrongAttempts),
-            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.wrong_attempts') || 'Wrong Attempts')
+            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.wrong_attempts') || 'Wrong Attempts')
           ),
           h('div', { className: 'bg-slate-800/70 p-4 rounded-xl border border-slate-700' },
             h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCA1'),
             h('div', { className: 'text-2xl font-bold ' + (hintsUsed === 0 ? 'text-green-400' : 'text-amber-400') }, hintsUsed),
-            h('div', { className: 'text-xs text-slate-400 uppercase' }, t('escape_room.hints_used') || 'Hints Used')
+            h('div', { className: 'text-xs text-slate-600 uppercase' }, t('escape_room.hints_used') || 'Hints Used')
           )
         ),
         h('div', { className: 'bg-gradient-to-r from-purple-900/50 to-indigo-900/50 p-4 rounded-xl border border-purple-500/30 w-full max-w-md' },
-          h('div', { className: 'text-lg font-bold text-purple-300 mb-2' }, t('escape_room.xp_earned_label') || 'XP Earned'),
-          h('div', { className: 'text-4xl font-black text-purple-400' }, '+' + totalXP + ' XP'),
-          h('div', { className: 'text-xs text-slate-400 mt-2' },
+          h('div', { className: 'text-lg font-bold text-purple-700 mb-2' }, t('escape_room.xp_earned_label') || 'XP Earned'),
+          h('div', { className: 'text-4xl font-black text-purple-700' }, '+' + totalXP + ' XP'),
+          h('div', { className: 'text-xs text-slate-600 mt-2' },
             baseXP + ' base' + (bonusXP > 0 ? ' + ' + bonusXP + ' bonus' : '') + (hintPenalty > 0 ? ' - ' + hintPenalty + ' hints' : '') + (xpMultiplier !== 1 ? ' \u00D7 ' + xpMultiplier : '')
           )
         ),
@@ -1255,7 +1255,7 @@ inputText.substring(0, 6000) + '\n' +
           key: 'close-btn',
           'aria-label': t('common.close'),
           onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { selectedObject: null }); }); },
-          className: 'absolute top-4 right-4 text-slate-400 hover:text-white'
+          className: 'absolute top-4 right-4 text-slate-600 hover:text-white'
         }, h(X, { size: 24 }))
       );
 
@@ -1311,14 +1311,14 @@ inputText.substring(0, 6000) + '\n' +
       // Show revealed hint
       if (escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzle.id] && (puzzle.hint || (puzzle.hints && puzzle.hints[0]))) {
         questionChildren.push(
-          h('p', { key: 'hint-display', className: 'text-amber-400 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg' },
+          h('p', { key: 'hint-display', className: 'text-amber-700 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg' },
             '\uD83D\uDCA1 ' + (puzzle.hint || puzzle.hints[0]))
         );
       }
       // Show discovered clue
       if (escapeRoomState.discoveredClues && escapeRoomState.discoveredClues[puzzle.id]) {
         questionChildren.push(
-          h('p', { key: 'clue-display', className: 'text-yellow-400 text-sm mt-2 bg-yellow-900/30 p-2 rounded-lg' },
+          h('p', { key: 'clue-display', className: 'text-yellow-700 text-sm mt-2 bg-yellow-900/30 p-2 rounded-lg' },
             '\uD83D\uDD11 ' + t('escape_room.clue') + ': ' + escapeRoomState.discoveredClues[puzzle.id])
         );
       }
@@ -1338,7 +1338,7 @@ inputText.substring(0, 6000) + '\n' +
                 'aria-checked': 'false',
                 className: 'w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400'
               },
-                h('span', { className: 'inline-block w-8 font-bold text-purple-400', 'aria-hidden': 'true' }, String.fromCharCode(65+idx) + '.'),
+                h('span', { className: 'inline-block w-8 font-bold text-purple-700', 'aria-hidden': 'true' }, String.fromCharCode(65+idx) + '.'),
                 h('span', { className: 'sr-only' }, (t('escape_room.option') || 'Option') + ' ' + String.fromCharCode(65+idx) + ': '),
                 opt
               );
@@ -1410,7 +1410,7 @@ inputText.substring(0, 6000) + '\n' +
                 className: 'p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300',
                 'aria-label': (t('escape_room.move_up') || 'Move up') + ': ' + puzzle.items[itemIdx],
                 title: t('escape_room.move_up') || 'Move up'
-              }, h(ChevronUp, { size: 16, className: 'text-slate-400' })),
+              }, h(ChevronUp, { size: 16, className: 'text-slate-600' })),
               h('button', {
                 onClick: function(e) {
                   e.stopPropagation();
@@ -1425,7 +1425,7 @@ inputText.substring(0, 6000) + '\n' +
                 className: 'p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300',
                 'aria-label': (t('escape_room.move_down') || 'Move down') + ': ' + puzzle.items[itemIdx],
                 title: t('escape_room.move_down') || 'Move down'
-              }, h(ChevronDown, { size: 16, className: 'text-slate-400' }))
+              }, h(ChevronDown, { size: 16, className: 'text-slate-600' }))
             ),
             h(GripVertical, { size: 20, className: 'text-slate-500', 'aria-hidden': 'true' }),
             h('span', { className: 'inline-flex w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full items-center justify-center', 'aria-hidden': 'true' }, displayIdx + 1),
@@ -1458,7 +1458,7 @@ inputText.substring(0, 6000) + '\n' +
           h('div', { key: 'cipher-box', className: 'bg-slate-900 p-6 rounded-xl border-2 border-purple-500' },
             h('div', { className: 'flex items-center gap-2 mb-4' },
               h('span', { className: 'text-2xl' }, '\uD83D\uDD2E'),
-              h('p', { className: 'text-purple-300 text-sm font-bold uppercase tracking-wider' }, t('escape_room.riddle_challenge') || 'Riddle Challenge')
+              h('p', { className: 'text-purple-700 text-sm font-bold uppercase tracking-wider' }, t('escape_room.riddle_challenge') || 'Riddle Challenge')
             ),
             h('p', { className: 'text-xl text-white font-medium italic leading-relaxed' }, '"' + (puzzle.encodedText || puzzle.riddle || '') + '"')
           )
@@ -1514,15 +1514,15 @@ inputText.substring(0, 6000) + '\n' +
       if (puzzle.type === 'matching' && puzzle.pairs) {
         var matchChildren = [];
         matchChildren.push(h('p', { key: 'match-instr', className: 'text-slate-500 text-sm' }, t('escape_room.matching_instructions')));
-        matchChildren.push(h('p', { key: 'match-hint', className: 'text-purple-400 text-xs' }, t('escape_room.matching_keyboard_hint') || 'Tip: Use Tab to switch columns, Enter to select'));
+        matchChildren.push(h('p', { key: 'match-hint', className: 'text-purple-700 text-xs' }, t('escape_room.matching_keyboard_hint') || 'Tip: Use Tab to switch columns, Enter to select'));
         // Show matched pairs
         var mp = escapeRoomState.matchingPairs || [];
         if (mp.length > 0) {
           matchChildren.push(
             h('div', { key: 'matched', className: 'space-y-2 mb-4', role: 'status', 'aria-live': 'polite' },
-              h('p', { className: 'text-green-400 text-xs font-bold' }, t('escape_room.matched_pairs')),
+              h('p', { className: 'text-green-700 text-xs font-bold' }, t('escape_room.matched_pairs')),
               mp.map(function(pair, idx) {
-                return h('div', { key: idx, className: 'flex items-center gap-2 p-2 bg-green-900/30 rounded-lg text-green-400 text-sm', role: 'status' },
+                return h('div', { key: idx, className: 'flex items-center gap-2 p-2 bg-green-900/30 rounded-lg text-green-700 text-sm', role: 'status' },
                   h(CheckCircle, { size: 14, 'aria-hidden': 'true' }),
                   h('span', null, pair[0] + ' \u2194 ' + pair[1])
                 );
@@ -1793,12 +1793,12 @@ inputText.substring(0, 6000) + '\n' +
         },
           h('button', {
             onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: false }); }); },
-            className: 'absolute top-4 right-4 text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded',
+            className: 'absolute top-4 right-4 text-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded',
             'aria-label': t('escape_room.close') || 'Close'
           }, h(X, { size: 24, 'aria-hidden': 'true' })),
           h('div', { className: 'text-center mb-8' },
             h('div', { className: 'text-6xl mb-4', 'aria-hidden': 'true' }, '\uD83D\uDEAA'),
-            h('h3', { id: 'final-door-title', className: 'text-2xl font-bold text-yellow-400' }, t('escape_room.final_door_title')),
+            h('h3', { id: 'final-door-title', className: 'text-2xl font-bold text-yellow-700' }, t('escape_room.final_door_title')),
             h('p', { className: 'text-slate-500 text-sm mt-2' }, t('escape_room.final_door_desc'))
           ),
           h('div', { className: 'bg-slate-900 p-6 rounded-xl mb-6 border-2 border-yellow-500/30' },
@@ -1843,7 +1843,7 @@ inputText.substring(0, 6000) + '\n' +
                 ),
                 h('p', { className: 'text-slate-500 text-sm mt-2' }, t('escape_room.start_hint') || 'Start the timer to begin inspecting objects')
               )
-            : h('p', { className: 'text-purple-400 text-sm mt-2' }, t('escape_room.click_to_inspect'))
+            : h('p', { className: 'text-purple-700 text-sm mt-2' }, t('escape_room.click_to_inspect'))
         ),
         h('div', { className: 'flex-grow grid grid-cols-3 md:grid-cols-5 gap-4 place-items-center ' + (!isEscapeTimerRunning ? 'opacity-50 pointer-events-none' : '') },
           (escapeRoomState.objects || []).map(function(obj, idx) {
@@ -1862,8 +1862,8 @@ inputText.substring(0, 6000) + '\n' +
                     : 'bg-slate-800 border-2 border-slate-600 hover:border-purple-400 hover:bg-slate-700 cursor-pointer')
             },
               h('span', { className: 'text-4xl' }, obj.emoji),
-              h('span', { className: 'text-xs text-slate-400 font-medium text-center' }, obj.name),
-              isSolved ? h(CheckCircle, { className: 'absolute top-1 right-1 text-green-400', size: 16 }) : null,
+              h('span', { className: 'text-xs text-slate-600 font-medium text-center' }, obj.name),
+              isSolved ? h(CheckCircle, { className: 'absolute top-1 right-1 text-green-700', size: 16 }) : null,
               !isEscapeTimerRunning && !isSolved ? h(Lock, { className: 'absolute top-1 right-1 text-slate-500', size: 14 }) : null
             );
           })
@@ -1890,7 +1890,7 @@ inputText.substring(0, 6000) + '\n' +
         // Top bar
         h('div', { className: 'flex justify-between items-start mb-6 relative z-10' },
           h('div', { className: 'text-left' },
-            h('h2', { className: 'text-3xl font-black text-purple-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3' },
+            h('h2', { className: 'text-3xl font-black text-purple-700 tracking-widest uppercase drop-shadow-md flex items-center gap-3' },
               h(DoorOpen, { size: 32 }),
               ' ',
               t('escape_room.title')
@@ -1909,7 +1909,7 @@ inputText.substring(0, 6000) + '\n' +
             ),
             // Solved count
             h('div', { className: 'bg-purple-900/50 px-3 py-1.5 rounded-lg flex items-center gap-2' },
-              h(Trophy, { size: 16, className: 'text-yellow-400' }),
+              h(Trophy, { size: 16, className: 'text-yellow-700' }),
               h('span', { className: 'text-white font-bold' }, escapeRoomState.solvedPuzzles.size + '/' + escapeRoomState.totalPuzzles)
             ),
             // Hints remaining

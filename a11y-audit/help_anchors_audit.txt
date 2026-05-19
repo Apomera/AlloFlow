@@ -1,0 +1,45 @@
+===========================================================
+  HELP-ANCHOR COVERAGE AUDIT
+===========================================================
+
+Components scanned (Panel/Modal/Card/View/Overlay in *_source.jsx): 69
+  Help-mode BLIND (zero data-help-key, has interactive controls):   29
+  THIN coverage (<1 help key per ~6 interactive elements):          1
+  Well-covered:                                                     37
+
+--- BLIND components (HIGHEST priority — entire feature is help-mode-invisible) ---
+   sorted by interactive-element count (biggest impact first)
+
+   31 interactive  1073 lines   BridgeSendModal                          (view_gemini_bridge_source.jsx)
+   13 interactive   270 lines   VolumeBuilderView                        (view_misc_panels_source.jsx)
+   12 interactive   140 lines   LabReportView                            (note_taking_templates_source.jsx)
+   12 interactive   416 lines   BridgeMessageModal                       (view_gemini_bridge_source.jsx)
+   11 interactive   273 lines   AIBackendModal                           (view_misc_modals_source.jsx)
+   10 interactive   388 lines   FluencyModePanel                         (view_misc_panels_source.jsx)
+    9 interactive   128 lines   EducatorHubModal                         (view_educator_hub_modal_source.jsx)
+    8 interactive   305 lines   AnchorChartView                          (anchor_charts_source.jsx)
+    8 interactive   110 lines   ReadingResponseView                      (note_taking_templates_source.jsx)
+    7 interactive   204 lines   InteractiveBlueprintCard                 (persona_ui_source.jsx)
+    7 interactive   541 lines   LearnerProgressView                      (teacher_source.jsx)
+    7 interactive    64 lines   LearningHubModal                         (view_learning_hub_modal_source.jsx)
+    6 interactive   305 lines   PerspectiveCrawlOverlay                  (immersive_reader_source.jsx)
+    6 interactive   111 lines   CornellNotesView                         (note_taking_templates_source.jsx)
+    6 interactive   115 lines   PdfAuditView                             (view_pdf_audit_source.jsx)
+    6 interactive   110 lines   SessionModal                             (view_session_modal_source.jsx)
+    5 interactive   123 lines   GoldenThreadPanel                        (persona_ui_source.jsx)
+    5 interactive    76 lines   StudentJoinPanel                         (view_student_join_panel_source.jsx)
+    4 interactive   107 lines   MissionReportCard                        (adventure_source.jsx)
+    4 interactive   214 lines   InfoModal                                (view_info_modal_source.jsx)
+    4 interactive   243 lines   TourOverlay                              (view_misc_panels_source.jsx)
+    3 interactive    69 lines   VisualSupportsModal                      (view_visual_supports_modal_source.jsx)
+    2 interactive    65 lines   AnchorChartCritiqueOverlay               (anchor_charts_source.jsx)
+    2 interactive    40 lines   RecordingOverlay                         (annotation_suite_source.jsx)
+    2 interactive    76 lines   ClozeInteractionPanel                    (view_cloze_interaction_panel_source.jsx)
+    2 interactive    40 lines   KokoroOfferModal                         (view_kokoro_offer_modal_source.jsx)
+    1 interactive    55 lines   DiceOverlay                              (adventure_source.jsx)
+    1 interactive    78 lines   HighlightOverlay                         (annotation_suite_source.jsx)
+    1 interactive    45 lines   GlobalLevelUpModal                       (view_global_level_up_source.jsx)
+
+--- THIN coverage (has some help anchors but ratio is low) ---
+
+  1/32 help/interactive  RosterKeyPanel                           (teacher_source.jsx)

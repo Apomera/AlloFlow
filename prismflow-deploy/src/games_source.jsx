@@ -490,7 +490,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                     {card.type === 'image' ? (
                       <img loading="lazy"
                         src={card.content}
-                        alt="memory card"
+                        alt={t('games.memory.card_alt') || 'memory card'}
                         className="w-full h-full object-contain rounded"
                         decoding="async"
                       />
@@ -1258,13 +1258,13 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
        <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
            <div>
                <h3 className="font-bold text-lg flex items-center gap-2">
-                   <ListOrdered size={20} className="text-yellow-400"/> {t('timeline.game.header')}
+                   <ListOrdered size={20} className="text-yellow-700"/> {t('timeline.game.header')}
                </h3>
                <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
            </div>
            <div className="flex items-center gap-4">
                <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
-                   <Trophy size={14} className="text-yellow-400"/>
+                   <Trophy size={14} className="text-yellow-700"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
                <label className="hidden sm:flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
@@ -1640,7 +1640,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const handleAddItem = async () => {
       if (!newItemText.trim()) return;
       if (!onGenerateItem) {
-          alert(t('common.coming_soon'));
+          if (window.AlloFlowUX) window.AlloFlowUX.toast(t('common.coming_soon'), 'error'); else alert(t('common.coming_soon'));
           return;
       }
       setIsAdding(true);
@@ -1689,6 +1689,25 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       );
     }
     if (onScoreUpdate && correctCount === total) onScoreUpdate(earnedPoints, "Concept Sort Complete");
+    // Capture per-item misplacement details so the teacher dashboard can
+    // aggregate misconceptions across the class ("item X was placed in
+    // category B by N students when it belongs in A"). Always fire — even
+    // on incorrect-but-not-yet-perfect runs — so partial-attempt data
+    // reaches the teacher dashboard, not just perfect-completion runs.
+    const incorrectPlacements = items
+      .filter(it => it.currentContainer !== 'deck' && it.currentContainer !== it.categoryId)
+      .map(it => {
+          const placedCat = (data.categories || []).find(c => c.id === it.currentContainer);
+          const correctCat = (data.categories || []).find(c => c.id === it.categoryId);
+          return {
+              itemId: it.id,
+              itemText: it.text || it.label || '',
+              placedCategoryId: it.currentContainer,
+              placedCategoryLabel: (placedCat && placedCat.label) || it.currentContainer,
+              correctCategoryId: it.categoryId,
+              correctCategoryLabel: (correctCat && correctCat.label) || it.categoryId,
+          };
+      });
     if (correctCount === total) {
         if(playSound) playSound('correct');
         if (onGameComplete) {
@@ -1698,11 +1717,26 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             totalItems: total,
             isPerfect: incorrectCount === 0,
             attempts: attempts + 1,
-            bestScore: Math.max(bestScore, earnedPoints)
+            bestScore: Math.max(bestScore, earnedPoints),
+            incorrectPlacements: [], // empty on perfect runs
           });
         }
     } else {
         if(playSound) playSound('reveal');
+        // Partial-attempt result: fire onGameComplete with attempt data so the
+        // teacher dashboard can detect class-wide misconceptions even when no
+        // single student has reached perfection yet.
+        if (onGameComplete) {
+          onGameComplete('conceptSortAttempt', {
+            score: earnedPoints,
+            correctPlacements: correctCount,
+            totalItems: total,
+            isPerfect: false,
+            attempts: attempts + 1,
+            bestScore: Math.max(bestScore, earnedPoints),
+            incorrectPlacements,
+          });
+        }
     }
   };
   const handleExplainClick = async (item) => {
@@ -1797,7 +1831,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                  <button
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
                    className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
-                   aria-label="Explain why this was incorrect"
+                   aria-label={t('games.explain_incorrect_aria') || 'Explain why this was incorrect'}
                  >
                    {explanations[item.id] === 'loading' ? (t('concept_sort.why_loading') || '…') : (explanations[item.id] ? (t('concept_sort.why_hide') || 'Hide why') : (t('concept_sort.why_label') || 'Why?'))}
                  </button>
@@ -1856,13 +1890,13 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
         <div>
             <h3 className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
-                <Filter size={20} className="text-yellow-400"/> {t('concept_sort.title')}
+                <Filter size={20} className="text-yellow-700"/> {t('concept_sort.title')}
             </h3>
             <p className="text-xs text-indigo-200">{t('concept_sort.subtitle')}</p>
         </div>
         <div className="flex items-center gap-4">
             <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
-                <Trophy size={14} className="text-yellow-400"/>
+                <Trophy size={14} className="text-yellow-700"/>
                 <span className="font-bold text-sm">{score} pts</span>
             </div>
             <GameThemeToggle />
@@ -2033,7 +2067,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
                            }}
                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
-                           aria-label="Scroll deck left"
+                           aria-label={t('games.scroll_deck_left_aria') || 'Scroll deck left'}
                        >
                            ‹
                        </button>
@@ -2045,7 +2079,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
                            }}
                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
-                           aria-label="Scroll deck right to see more cards"
+                           aria-label={t('games.scroll_deck_right_aria') || 'Scroll deck right to see more cards'}
                        >
                            ›
                        </button>
@@ -2197,6 +2231,15 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (gameLang === 'english' && item.translation) return item.translation;
       return item.text;
   };
+  // Returns the BCP-47 lang code for the *currently-displayed* text from getText().
+  // Used to satisfy WCAG 3.1.2 Language of Parts when rendering target-language
+  // vocabulary alongside the English UI.
+  const getTextLang = (item) => {
+      const isEnglish = (gameLang === 'english' && item.translation);
+      if (isEnglish) return 'en';
+      try { return (window.AlloFlowLang && window.AlloFlowLang.bcp47(primaryLanguage)) || 'en'; }
+      catch (_) { return 'en'; }
+  };
   const bothLabel = BOTH_TRANSLATIONS[primaryLanguage] || BOTH_TRANSLATIONS.English;
   const getTitle = (key) => {
       if (key === 'shared') return titles.shared ? (typeof titles.shared === 'string' ? titles.shared : titles.shared.text || bothLabel) : bothLabel;
@@ -2268,6 +2311,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                         ref={moveMenuRef}
                         className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
                         role="dialog"
+                        aria-modal="true"
                         aria-label={t('concept_map.venn.choose_dest_aria')}
                         onClick={e => e.stopPropagation()}
                     >
@@ -2320,7 +2364,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                                 data-help-key="venn_sorted_item" className={`bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 animate-in zoom-in cursor-pointer hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
-                                {getText(item)}
+                                <span lang={getTextLang(item)}>{getText(item)}</span>
                               </div>
                           ))}
                       </div>
@@ -2346,7 +2390,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                                 data-help-key="venn_sorted_item" className={`bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 animate-in zoom-in cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
-                                {getText(item)}
+                                <span lang={getTextLang(item)}>{getText(item)}</span>
                               </div>
                           ))}
                       </div>
@@ -2373,7 +2417,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                                 data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
-                                {getText(item)}
+                                <span lang={getTextLang(item)}>{getText(item)}</span>
                               </div>
                           ))}
                       </div>
@@ -2396,7 +2440,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                           onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
                           data-help-key="venn_bank_item" className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
                       >
-                          {getText(item)}
+                          <span lang={getTextLang(item)}>{getText(item)}</span>
                           <SpeakButton text={getText(item)} size={11} />
                       </div>
                   ))}
@@ -2649,7 +2693,8 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         ref={moveMenuRef}
                         className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto"
                         role="dialog"
-                        aria-label="Choose a zone"
+                        aria-modal="true"
+                        aria-label={t('games.choose_zone_aria') || 'Choose a zone'}
                     >
                         <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a zone above, or pick one here:'}</h4>
                         <div className="grid grid-cols-2 gap-2">
@@ -2702,7 +2747,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                           </div>
                       ))}
                       {causesItems.length === 0 && (
-                          <div className="text-orange-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
+                          <div className="text-orange-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
                       )}
                   </div>
               </div>
@@ -2710,7 +2755,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
               <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
                   <div className="w-0.5 h-full bg-slate-200"></div>
                   <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-                      <ArrowRight size={20} className="text-slate-400" />
+                      <ArrowRight size={20} className="text-slate-600" />
                   </div>
               </div>
               {/* Effects drop zone */}
@@ -2748,7 +2793,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                           </div>
                       ))}
                       {effectsItems.length === 0 && (
-                          <div className="text-teal-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
+                          <div className="text-teal-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
                       )}
                   </div>
               </div>
@@ -3003,7 +3048,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-slate-400 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
+          <div className="text-slate-600 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
         )}
       </div>
     </div>
@@ -3072,7 +3117,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         )}
         {keyboardSelectedItemId && (
           <div className="absolute inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-label="Choose a column">
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-modal="true" aria-label={t('games.choose_column_aria') || 'Choose a column'}>
               <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a column above, or pick one here:'}</h4>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
@@ -3087,7 +3132,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
           <div className="w-0.5 h-full bg-slate-200"></div>
           <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-            <ArrowRight size={20} className="text-slate-400" />
+            <ArrowRight size={20} className="text-slate-600" />
           </div>
         </div>
         {renderColumn('right', rightTitle, rightItems, rightColors)}
@@ -3322,7 +3367,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
               <p className="text-slate-600">{t('games.bucket_sort.victory_desc') || 'You sorted every item correctly!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
-                <button ref={playAgainRef} onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2"><RefreshCw size={14}/> Play Again</button>
+                <button ref={playAgainRef} onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2"><RefreshCw size={14}/> {t('games.memory.play_again') || 'Play Again'}</button>
                 <button onClick={onClose} className="px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors">Close</button>
               </div>
             </div>
@@ -3336,7 +3381,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
         )}
         {keyboardSelectedItemId && (
           <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-label="Choose a destination">
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-modal="true" aria-label={t('games.choose_destination_aria') || 'Choose a destination'}>
               <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a bucket above, or pick one here:'}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {buckets.map(b => (
@@ -3383,7 +3428,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
                       <SpeakButton text={item.text} size={11} />
                     </div>
                   ))}
-                  {placed.length === 0 && <div className="text-slate-400 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
+                  {placed.length === 0 && <div className="text-slate-600 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
                 </div>
               </div>
             );
@@ -3891,7 +3936,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="pipeline-victory-title">
             <div className={`bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
               <h2 id="pipeline-victory-title" className="text-4xl font-black text-indigo-600 mb-2">🏗️ Pipeline Complete!</h2>
-              <p className="text-slate-600">You built the entire process flow correctly!</p>
+              <p className="text-slate-600">{t('games.pipeline.victory_desc') || 'You built the entire process flow correctly!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
                 <button onClick={handleReset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
@@ -3993,9 +4038,9 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   <div
                     onMouseDown={(e) => handleGripDown(e, step.id)}
                     onTouchStart={(e) => handleGripDown(e, step.id)}
-                    className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-300 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
-                    aria-label="Drag to reposition"
-                    title="Drag to reposition"
+                    className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
+                    aria-label={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
+                    title={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
                   >
                     <GripVertical size={14}/>
                   </div>
@@ -4033,7 +4078,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         </li>
                       ))}
                       {step.items.length > 3 && (
-                        <li className="text-slate-400 italic ml-3">+{step.items.length - 3} more</li>
+                        <li className="text-slate-600 italic ml-3">+{step.items.length - 3} more</li>
                       )}
                     </ul>
                   )}
@@ -4386,7 +4431,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          <h2 className="text-xl font-bold flex items-center gap-2"><Gamepad2 /> {t('games.crossword_title')}</h2>
          <div className="flex items-center gap-4">
              {isWon && (
-                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-400 text-sm font-bold border border-indigo-500 animate-in zoom-in">
+                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-700 text-sm font-bold border border-indigo-500 animate-in zoom-in">
                      {t('common.score')}: {score}
                  </div>
              )}
@@ -4462,7 +4507,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
-                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label="Reveal one letter hint"><HelpCircle size={12}/> Hint{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
+                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12}/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
                      <button onClick={checkPuzzle} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('games.crossword.check')}</button>
                      <button onClick={revealPuzzle} className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">{t('games.crossword.reveal')}</button>
                  </div>
@@ -4619,7 +4664,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
         <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
            <h3 className="font-bold text-xl flex items-center gap-2"><Layout size={24}/> {t('games.syntax.title')}</h3>
            <div className="flex items-center gap-4">
-               <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-indigo-500">{t('memory.score')}: {score}</div>
+               <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-700 border border-indigo-500">{t('memory.score')}: {score}</div>
                <GameThemeToggle />
                <button data-help-key="syntax_close" onClick={onClose} className="hover:bg-indigo-500 p-1 rounded-full" aria-label={t('common.close')}><X size={24}/></button>
            </div>
@@ -4841,7 +4886,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 data-help-key="bingo_images_chk" aria-label={t('bingo.include_pictures')}
                             />
                             <div className="flex items-center gap-1">
-                                <ImageIcon size={14} className="text-rose-400"/> {t('bingo.include_pictures')}
+                                <ImageIcon size={14} className="text-rose-700"/> {t('bingo.include_pictures')}
                             </div>
                         </label>
                         <button
@@ -5048,7 +5093,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 ) : (
                     <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64">
                          <div className="flex flex-col items-center gap-3 text-slate-600">
-                             <RefreshCw size={32} className="animate-spin text-rose-400"/>
+                             <RefreshCw size={32} className="animate-spin text-rose-700"/>
                              <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
                          </div>
                     </div>
@@ -5652,8 +5697,8 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                 aria-label={t('games.scramble.input_placeholder')}
                             />
                             <div className="flex gap-2 w-full">
-                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label="Get a hint">
-                                    <HelpCircle size={14}/> Hint
+                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
+                                    <HelpCircle size={14}/> {t('games.scramble.hint_button') || 'Hint'}
                                 </button>
                                 <button data-help-ignore="true"
                                     aria-label={t('common.skip')}
@@ -5679,5 +5724,361 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
             </div>
         </div>
     </div>
+  );
+});
+
+// ── MultiZoneSortGame — shared base for Frayer / See-Think-Wonder / Story Map ──
+// Generic N-zone drag-and-drop sort. Each zone has an id, label, and color.
+// Items in `data.zones[zoneId]` are pre-classified as belonging to that zone;
+// game shuffles them all into a bank, student drags each to the correct zone.
+// Visual layout adapts to layoutMode: 'grid-2x2' (Frayer), 'columns-3' (STW),
+// 'arc-5' (Story Map; rendered as 5-column row since true SVG arc + drag is
+// out of scope for v1).
+const _MultiZoneColorMap = {
+  indigo:  { panel: 'bg-indigo-50/70',  header: 'bg-indigo-600 text-white',  dot: 'text-indigo-500',  ring: 'ring-indigo-300', border: 'border-indigo-200' },
+  emerald: { panel: 'bg-emerald-50/70', header: 'bg-emerald-600 text-white', dot: 'text-emerald-500', ring: 'ring-emerald-300', border: 'border-emerald-200' },
+  amber:   { panel: 'bg-amber-50/70',   header: 'bg-amber-600 text-white',   dot: 'text-amber-500',   ring: 'ring-amber-300',   border: 'border-amber-200' },
+  rose:    { panel: 'bg-rose-50/70',    header: 'bg-rose-600 text-white',    dot: 'text-rose-500',    ring: 'ring-rose-300',    border: 'border-rose-200' },
+  sky:     { panel: 'bg-sky-50/70',     header: 'bg-sky-600 text-white',     dot: 'text-sky-500',     ring: 'ring-sky-300',     border: 'border-sky-200' },
+  violet:  { panel: 'bg-violet-50/70',  header: 'bg-violet-600 text-white',  dot: 'text-violet-500',  ring: 'ring-violet-300',  border: 'border-violet-200' },
+  cyan:    { panel: 'bg-cyan-50/70',    header: 'bg-cyan-600 text-white',    dot: 'text-cyan-500',    ring: 'ring-cyan-300',    border: 'border-cyan-200' },
+  red:     { panel: 'bg-red-50/70',     header: 'bg-red-600 text-white',     dot: 'text-red-500',     ring: 'ring-red-300',     border: 'border-red-200' },
+};
+const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = 'columns', captionText = "" }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [score, setScore] = useState(0);
+  const [isWon, setIsWon] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [activeDropZone, setActiveDropZone] = useState(null);
+  const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
+  const gameContainerRef = useRef(null);
+  const triggerElRef = useRef(null);
+  const playAgainRef = useRef(null);
+  useEffect(() => {
+    triggerElRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
+    if (gameContainerRef.current) gameContainerRef.current.focus();
+    return () => {
+      if (triggerElRef.current && typeof triggerElRef.current.focus === 'function') {
+        try { triggerElRef.current.focus(); } catch (_) {}
+      }
+    };
+  }, []);
+  useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
+  const dataFingerprint = useMemo(() => {
+    if (!data || !data.zones) return '';
+    return JSON.stringify(zoneConfig.map(z => [z.id, data.zones[z.id] || []]));
+  }, [data, zoneConfig]);
+  useEffect(() => {
+    if (!dataFingerprint) return;
+    const all = [];
+    zoneConfig.forEach(zone => {
+      const zoneItems = (data.zones && data.zones[zone.id]) || [];
+      zoneItems.forEach((it, i) => {
+        const text = typeof it === 'object' ? (it?.text || '') : String(it);
+        if (!text.trim()) return;
+        all.push({
+          id: `${gameKey}-${zone.id}-${i}-${Math.random().toString(36).substr(2, 6)}`,
+          text,
+          correctZone: zone.id,
+          currentZone: 'bank',
+        });
+      });
+    });
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    setItems(all);
+    setScore(0);
+    setIsWon(false);
+    setAttempts(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataFingerprint]);
+  const placeItem = (item, targetZone) => {
+    if (targetZone === 'bank') {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
+      if (playSound) playSound('click');
+      setAnnouncement(`Moved "${item.text}" back to the bank.`);
+      return;
+    }
+    const zoneLabel = (zoneConfig.find(z => z.id === targetZone) || {}).label || targetZone;
+    if (item.correctZone === targetZone) {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
+      setScore(s => s + 20);
+      if (playSound) playSound('correct');
+      setAnnouncement(`Correct. "${item.text}" belongs in ${zoneLabel}.`);
+    } else {
+      setAttempts(a => a + 1);
+      setScore(s => Math.max(0, s - 5));
+      if (playSound) playSound('incorrect');
+      setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. Try another zone.`);
+    }
+  };
+  const handleItemKeyDown = (e, item) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); e.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+        setKeyboardSelectedItemId(null);
+        setAnnouncement('Selection cancelled.');
+      } else {
+        setKeyboardSelectedItemId(item.id);
+        const zoneNames = zoneConfig.map(z => z.label).join(', ');
+        setAnnouncement(`Selected: ${item.text}. Choose a zone: ${zoneNames}.`);
+        if (playSound) playSound('click');
+      }
+    }
+  };
+  const handleKeyboardMove = (zone) => {
+    if (!keyboardSelectedItemId) return;
+    const item = items.find(i => i.id === keyboardSelectedItemId);
+    if (!item) return;
+    placeItem(item, zone);
+    setKeyboardSelectedItemId(null);
+  };
+  const handleDragStart = (e, item) => { setDraggedItem(item); e.dataTransfer.effectAllowed = 'move'; };
+  const handleDragOver = (e, zone) => { e.preventDefault(); setActiveDropZone(zone); };
+  const handleDragLeave = () => setActiveDropZone(null);
+  const handleDrop = (e, zone) => {
+    e.preventDefault();
+    setActiveDropZone(null);
+    if (!draggedItem) return;
+    placeItem(draggedItem, zone);
+    setDraggedItem(null);
+  };
+  useEffect(() => {
+    if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
+      const allCorrect = items.every(i => i.currentZone === i.correctZone);
+      if (allCorrect) {
+        setIsWon(true);
+        if (onScoreUpdate) onScoreUpdate(score, gameLabel);
+        if (playSound) playSound('correct');
+        if (onGameComplete) onGameComplete(gameKey, { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, isWon]);
+  const reset = () => {
+    const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setItems(shuffled);
+    setScore(0); setIsWon(false); setAttempts(0);
+  };
+  const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  const zoneCountClass = layoutMode === 'grid-2x2' ? 'grid-cols-2' : (zoneConfig.length === 3 ? 'grid-cols-1 md:grid-cols-3' : zoneConfig.length === 5 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-3');
+  const renderZone = (zone) => {
+    const c = _MultiZoneColorMap[zone.color] || _MultiZoneColorMap.indigo;
+    const zoneItems = items.filter(i => i.currentZone === zone.id);
+    const isActive = activeDropZone === zone.id;
+    const hasSelection = !!keyboardSelectedItemId;
+    return (
+      <div
+        key={zone.id}
+        onDrop={(e) => handleDrop(e, zone.id)}
+        onDragOver={(e) => handleDragOver(e, zone.id)}
+        onDragLeave={handleDragLeave}
+        onClick={hasSelection ? () => handleKeyboardMove(zone.id) : undefined}
+        role={hasSelection ? 'button' : undefined}
+        tabIndex={hasSelection ? 0 : undefined}
+        aria-label={`Drop zone: ${zone.label}`}
+        className={`${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] transition-all ${isActive ? `ring-4 ${c.ring}` : ''} ${hasSelection ? 'cursor-pointer hover:ring-4 hover:' + c.ring : ''}`}
+      >
+        <h4 className={`${c.header} font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2`}>
+          {zone.label}
+        </h4>
+        <div className="space-y-1.5">
+          {zoneItems.map(item => (
+            <div
+              key={item.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, item)}
+              tabIndex={0}
+              onKeyDown={(e) => handleItemKeyDown(e, item)}
+              className={`bg-white border ${c.border} rounded-md px-2 py-1.5 text-xs text-slate-700 cursor-grab active:cursor-grabbing shadow-sm ${keyboardSelectedItemId === item.id ? `ring-2 ${c.ring}` : ''}`}
+            >
+              {item.text}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div
+      ref={gameContainerRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-[200] bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4 outline-none"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${gameLabel} sorting game`}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[92vh] overflow-y-auto p-5">
+        <div className="flex justify-between items-start gap-4 mb-3">
+          <div>
+            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+              <Gamepad2 size={22} className="text-indigo-600" />
+              {gameLabel}
+            </h2>
+            {topicTitle ? <p className="text-xs text-slate-500 mt-0.5">Topic: <strong>{topicTitle}</strong></p> : null}
+            {captionText ? <p className="text-xs text-slate-500 italic mt-1">{captionText}</p> : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="bg-slate-100 px-3 py-1.5 rounded-full text-sm font-bold text-slate-700">Score: <span className="text-indigo-600">{score}</span></div>
+            <button onClick={reset} className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100">Reset</button>
+            <button onClick={onClose} className="px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 rounded-md hover:bg-slate-200">Close</button>
+          </div>
+        </div>
+        <div className="sr-only" aria-live="polite">{announcement}</div>
+        {/* Bank */}
+        <div
+          onDrop={(e) => handleDrop(e, 'bank')}
+          onDragOver={(e) => handleDragOver(e, 'bank')}
+          onDragLeave={handleDragLeave}
+          className={`bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-3 mb-3 ${activeDropZone === 'bank' ? 'ring-4 ring-slate-300' : ''}`}
+        >
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 text-center">
+            Bank ({bankItems.length} item{bankItems.length === 1 ? '' : 's'} remaining)
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center min-h-[50px]">
+            {bankItems.length === 0 ? (
+              <span className="text-xs italic text-slate-600">{t('games.bucket_sort.bank_empty') || 'All items placed.'}</span>
+            ) : (
+              bankItems.map(item => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item)}
+                  tabIndex={0}
+                  onKeyDown={(e) => handleItemKeyDown(e, item)}
+                  className={`bg-white border-2 border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 cursor-grab active:cursor-grabbing shadow-sm hover:border-indigo-400 ${keyboardSelectedItemId === item.id ? 'ring-2 ring-indigo-400' : ''}`}
+                >
+                  {item.text}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        {/* Zones */}
+        <div className={`grid ${zoneCountClass} gap-3`}>
+          {zoneConfig.map(renderZone)}
+        </div>
+        {/* Win modal */}
+        {isWon && (
+          <div className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center">
+              <div className="text-5xl mb-3">🎉</div>
+              <h3 className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
+              <p className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
+              <div className="flex gap-2 justify-center">
+                <button ref={playAgainRef} onClick={reset} className="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700">{t('games.bucket_sort.play_again') || 'Play again'}</button>
+                <button onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+// ── FrayerSortGame — wrapper ──
+const FrayerSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const branches = Array.isArray(data?.branches) ? data.branches : [];
+  const zoneConfig = [
+    { id: 'def',   label: branches[0]?.title || 'Definition',     color: 'indigo' },
+    { id: 'char',  label: branches[1]?.title || 'Characteristics', color: 'emerald' },
+    { id: 'ex',    label: branches[2]?.title || 'Examples',       color: 'amber' },
+    { id: 'nonEx', label: branches[3]?.title || 'Non-Examples',   color: 'rose' },
+  ];
+  const zones = {
+    def:   branches[0]?.items || [],
+    char:  branches[1]?.items || [],
+    ex:    branches[2]?.items || [],
+    nonEx: branches[3]?.items || [],
+  };
+  return (
+    <MultiZoneSortGame
+      data={{ zones }}
+      zoneConfig={zoneConfig}
+      layoutMode="grid-2x2"
+      gameKey="frayerSort"
+      gameLabel="Frayer Model Sort"
+      topicTitle={topicTitle || data?.main || ''}
+      captionText="Drag each item into the correct quadrant: Definition, Characteristics, Examples, or Non-Examples."
+      onClose={onClose}
+      playSound={playSound}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+    />
+  );
+});
+
+// ── SeeThinkWonderSortGame — wrapper ──
+const SeeThinkWonderSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const branches = Array.isArray(data?.branches) ? data.branches : [];
+  const zoneConfig = [
+    { id: 'see',    label: branches[0]?.title || 'See',    color: 'sky' },
+    { id: 'think',  label: branches[1]?.title || 'Think',  color: 'violet' },
+    { id: 'wonder', label: branches[2]?.title || 'Wonder', color: 'amber' },
+  ];
+  const zones = {
+    see:    branches[0]?.items || [],
+    think:  branches[1]?.items || [],
+    wonder: branches[2]?.items || [],
+  };
+  return (
+    <MultiZoneSortGame
+      data={{ zones }}
+      zoneConfig={zoneConfig}
+      layoutMode="columns-3"
+      gameKey="seeThinkWonderSort"
+      gameLabel="See-Think-Wonder Sort"
+      topicTitle={topicTitle || data?.main || ''}
+      captionText="Sort each statement: is it something you can SEE (observation), THINK (inference), or WONDER (open question)?"
+      onClose={onClose}
+      playSound={playSound}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+    />
+  );
+});
+
+// ── StoryMapSortGame — wrapper. v1: classification (which stage does this belong to?). ──
+// v2 (deferred): sequence ordering with arc visualization + drag-to-position.
+const StoryMapSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const branches = Array.isArray(data?.branches) ? data.branches : [];
+  const zoneConfig = [
+    { id: 'exp',  label: branches[0]?.title || 'Exposition',     color: 'cyan' },
+    { id: 'rise', label: branches[1]?.title || 'Rising Action',  color: 'violet' },
+    { id: 'clim', label: branches[2]?.title || 'Climax',         color: 'red' },
+    { id: 'fall', label: branches[3]?.title || 'Falling Action', color: 'violet' },
+    { id: 'res',  label: branches[4]?.title || 'Resolution',     color: 'emerald' },
+  ];
+  const zones = {
+    exp:  branches[0]?.items || [],
+    rise: branches[1]?.items || [],
+    clim: branches[2]?.items || [],
+    fall: branches[3]?.items || [],
+    res:  branches[4]?.items || [],
+  };
+  return (
+    <MultiZoneSortGame
+      data={{ zones }}
+      zoneConfig={zoneConfig}
+      layoutMode="arc-5"
+      gameKey="storyMapSort"
+      gameLabel="Story Map Sort"
+      topicTitle={topicTitle || data?.main || ''}
+      captionText="Sort each event into the correct stage of the narrative arc: Exposition, Rising Action, Climax, Falling Action, or Resolution."
+      onClose={onClose}
+      playSound={playSound}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+    />
   );
 });

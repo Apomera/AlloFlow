@@ -27,7 +27,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, 'sentence-frames': false, brainstorm: false, faq: false, outline: false, adventure: false, 'concept-sort': false, image: false, timeline: false });
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
-  useFocusTrap(panelRef, isOpen);
+  useFocusTrap(panelRef, isOpen, onClose);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
@@ -74,7 +74,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== 'function') {
-      alert('Submission crypto module not loaded yet. Please refresh and try again.');
+      if (window.AlloFlowUX) window.AlloFlowUX.toast('Submission crypto module not loaded yet. Please refresh and try again.', 'error'); else alert('Submission crypto module not loaded yet. Please refresh and try again.');
       return;
     }
     if (rosterKey?.submissionKey?.publicJwk) {
@@ -123,7 +123,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       );
     } catch (err) {
       console.error('handleSetupOfflineSubmissions failed:', err);
-      alert('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'), 'error'); else alert('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'));
     }
   };
   const handleAddGroup = () => {
@@ -215,11 +215,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     </div>
   );
   return (
-    <div ref={panelRef} role="dialog" aria-modal="true" className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="teacher-roster-panel-title" className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <div data-help-key="roster_panel_header">
-            <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+            <h2 id="teacher-roster-panel-title" className="text-lg font-black text-slate-800 flex items-center gap-2">
               <ClipboardList size={20} className="text-indigo-500" /> {isParentMode ? 'Family Learning Profiles' : (isIndependentMode ? 'My Learning Profile' : (t('roster.title') || 'Class Roster & Progress Tracking'))}
             </h2>
             <p className="text-xs text-slate-600 mt-0.5">{isParentMode ? 'Manage family member profiles and track learning progress' : (isIndependentMode ? 'Manage your learning profile and track your progress' : (t('roster.subtitle') || 'Organize student groups with differentiated profiles for instruction'))}</p>
@@ -307,7 +307,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                         {COLORS.map(c => (
                           <button key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
                             className={`w-5 h-5 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
-                            style={{ backgroundColor: c }} />
+                            style={{ backgroundColor: c }}
+                            aria-label={(t('roster.set_group_color') || 'Set group color') + ' ' + c}
+                            aria-pressed={group.color === c} />
                         ))}
                       </div>
                     </div>
@@ -364,7 +366,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               {COLORS.slice(0, 4).map(c => (
                 <button key={c} onClick={() => setNewGroupColor(c)}
                   className={`w-4 h-4 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
-                  style={{ backgroundColor: c }} />
+                  style={{ backgroundColor: c }}
+                  aria-label={(t('roster.new_group_color') || 'New group color') + ' ' + c}
+                  aria-pressed={newGroupColor === c} />
               ))}
             </div>
             <button onClick={handleAddGroup} disabled={!newGroupName.trim()}
@@ -465,7 +469,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
               <span>{getUnassigned().length} unassigned</span>
-              <span className="ml-auto flex items-center gap-1"><ShieldCheck size={10} className="text-green-500" /> Local only</span>
+              <span className="ml-auto flex items-center gap-1"><ShieldCheck size={10} className="text-green-500" /> {t('teacher.local_only') || 'Local only'}</span>
             </div>
           )}
         </div>
@@ -742,7 +746,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     return (
       <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center text-white">
-          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" />
           <p className="text-xl font-bold">{t('escape_room.waiting_host')}</p>
         </div>
       </div>
@@ -753,7 +757,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center">
         <div className="text-center text-white animate-in zoom-in duration-500">
           <div className="text-9xl mb-6 animate-pulse">💀</div>
-          <h2 className="text-5xl font-black mb-4 text-red-400">{t('escape_room.game_over')}</h2>
+          <h2 className="text-5xl font-black mb-4 text-red-600">{t('escape_room.game_over')}</h2>
           <p className="text-2xl text-slate-600 mb-6">{t('escape_room.life_lost')}</p>
           <div className="flex gap-4 justify-center text-lg">
             <span className="px-4 py-2 bg-slate-800 rounded-lg">
@@ -797,7 +801,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <DoorOpen className="text-purple-400" size={24} />
+            <DoorOpen className="text-purple-700" size={24} />
             <span className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</span>
           </div>
           <div className="flex items-center gap-4">
@@ -806,8 +810,8 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               {t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })}
             </div>
             <div className="text-white font-mono" data-help-key="escape_room_progress">
-              <span className="text-purple-400">{solvedPuzzlesSet.size}</span>
-              <span className="text-slate-400">/{puzzles.length}</span>
+              <span className="text-purple-700">{solvedPuzzlesSet.size}</span>
+              <span className="text-slate-600">/{puzzles.length}</span>
             </div>
             {escapeState.maxLives < 99 && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.lives')} data-help-key="escape_room_lives">
@@ -819,11 +823,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               </div>
             )}
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.hints_used')}>
-              <Lightbulb size={14} className="text-yellow-400" />
+              <Lightbulb size={14} className="text-yellow-700" />
               <span className="text-white text-xs font-bold">{escapeState.hintsRemaining || 0}</span>
             </div>
             {(escapeState.streak || 0) >= 3 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-700 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
                 🔥 x{escapeState.streak}
               </div>
             )}
@@ -846,18 +850,18 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             <div key={team} className={`mb-2 ${team === userTeam ? 'ring-2 ring-white/50 rounded-lg p-1' : ''}`}>
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className={`font-bold ${colors.text}`}>{team}</span>
-                <span className="text-slate-400">{solved}/{puzzles.length}</span>
+                <span className="text-slate-600">{solved}/{puzzles.length}</span>
               </div>
               <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div className={`h-full ${colors.bg} transition-all duration-300`} style={{ width: `${percent}%` }} />
               </div>
-              {escaped && <span className="text-xs text-green-400">🏆 {t('escape_room.escaped')}</span>}
+              {escaped && <span className="text-xs text-green-700">🏆 {t('escape_room.escaped')}</span>}
             </div>
           );
         })}
       </div>
       <div className="max-w-4xl mx-auto p-6 mt-4">
-        <p className="text-center text-purple-300 mb-6 italic">{escapeState.room?.description}</p>
+        <p className="text-center text-purple-700 mb-6 italic">{escapeState.room?.description}</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {objects.map((obj, idx) => {
             const puzzle = puzzles.find(p => p.linkedObjectId === obj.id) || puzzles[idx];
@@ -878,7 +882,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               >
                 <span className="text-4xl">{obj.emoji}</span>
                 <span className="text-white text-sm font-bold text-center">{obj.name}</span>
-                {isSolved && <CheckCircle className="text-green-400" size={20} />}
+                {isSolved && <CheckCircle className="text-green-700" size={20} />}
               </button>
             );
           })}
@@ -893,7 +897,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   {currentPuzzle.type || 'mcq'}
                 </span>
               </div>
-              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
+              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
                 <X size={24} />
               </button>
             </div>
@@ -902,7 +906,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               <div className="mb-4">
                 {escapeState.revealedHints?.[currentPuzzle.id] ? (
                   <div className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in">
-                    <Lightbulb size={14} className="inline mr-2 text-yellow-400" />
+                    <Lightbulb size={14} className="inline mr-2 text-yellow-700" />
                     {currentPuzzle.hint}
                   </div>
                 ) : (
@@ -945,7 +949,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     data-help-key="escape_room_mcq_option"
                     className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
                   >
-                    <span className="inline-block w-8 font-bold text-purple-400">{String.fromCharCode(65+idx)}.</span>
+                    <span className="inline-block w-8 font-bold text-purple-700">{String.fromCharCode(65+idx)}.</span>
                     {opt}
                   </button>
                 ))}
@@ -954,7 +958,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             {currentPuzzle.type === 'cipher' && (
               <div className="space-y-4">
                 {currentPuzzle.encodedText && (
-                  <div className="bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center">
+                  <div className="bg-slate-900 p-4 rounded-lg font-mono text-purple-700 text-center">
                     {currentPuzzle.encodedText}
                   </div>
                 )}
@@ -984,7 +988,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                 )}
                 {currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? (
                   <div className="space-y-3">
-                    <p className="text-xs text-slate-400 text-center uppercase font-bold">{t('escape_room.select_word') || 'Select the correct word:'}</p>
+                    <p className="text-xs text-slate-600 text-center uppercase font-bold">{t('escape_room.select_word') || 'Select the correct word:'}</p>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {currentPuzzle.wordbank.map((word, idx) => (
                         <button
@@ -1049,7 +1053,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             )}
             {currentPuzzle.type === 'sequence' && (
               <div className="space-y-4" data-help-key="escape_room_sequence_container">
-                <p className="text-sm text-purple-300 italic mb-2">{t('escape_room.sequence_instructions')}</p>
+                <p className="text-sm text-purple-700 italic mb-2">{t('escape_room.sequence_instructions')}</p>
                 <div className="space-y-2" role="list" aria-label={t('escape_room.sequence_list') || 'Sequence items to order'}>
                   {sequenceOrder.length === 0
                     ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => (
@@ -1117,7 +1121,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             )}
             {currentPuzzle.type === 'matching' && (
               <div className="space-y-4" data-help-key="escape_room_matching_container">
-                <p className="text-sm text-purple-300 italic mb-2">{t('escape_room.matching_instructions')}</p>
+                <p className="text-sm text-purple-700 italic mb-2">{t('escape_room.matching_instructions')}</p>
                 <div className="grid grid-cols-2 gap-4" role="group" aria-label={t('escape_room.matching_columns') || 'Matching columns'}>
                   <div className="space-y-2" role="group" aria-label={t('escape_room.left_column') || 'Left column options'}>
                     {(currentPuzzle.leftColumn || currentPuzzle.pairs?.map(p => p.left) || []).map((item, idx) => {
@@ -1183,7 +1187,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     <p className="text-xs text-slate-600 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
                     <div className="space-y-1">
                       {matchingPairs.map((pair, idx) => (
-                        <div key={idx} role="listitem" className="text-sm text-green-400">✓ {pair.left} ↔ {pair.right}</div>
+                        <div key={idx} role="listitem" className="text-sm text-green-700">✓ {pair.left} ↔ {pair.right}</div>
                       ))}
                     </div>
                   </div>
@@ -1199,7 +1203,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               </div>
             )}
             {currentPuzzle.hint && (
-              <p className="mt-4 text-purple-400 text-sm italic">💡 {currentPuzzle.hint}</p>
+              <p className="mt-4 text-purple-700 text-sm italic">💡 {currentPuzzle.hint}</p>
             )}
           </div>
         </div>
@@ -1209,7 +1213,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
           <div className="text-center text-white animate-pulse">
             <div className="text-8xl mb-6">⏸️</div>
             <h2 className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
-            <p className="text-xl text-slate-400">{t('escape_room.waiting_resume')}</p>
+            <p className="text-xl text-slate-600">{t('escape_room.waiting_resume')}</p>
           </div>
         </div>
       )}
@@ -1397,13 +1401,81 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
   );
 });
 // @section LIVE_QUIZ — Teacher live quiz broadcast controls
-const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup }) => {
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, history = [] }) => {
     const { t } = useContext(LanguageContext);
     const { quizState, roster } = sessionData;
     const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
     const question = generatedContent?.data.questions[currentQuestionIndex];
     const [showLocalStats, setShowLocalStats] = useState(false);
     const [bossDifficulty, setBossDifficulty] = useState('normal');
+    // Phase-2 quiz auto-routing: per-question rules. Mirrored to window
+    // so the App-level useEffect (AlloFlowANTI.txt, near rosterKey
+    // auto-grouping) can read them. Rule schema reused from LivePolling:
+    // { id, when: { predicate, value }, then: { groupId } }.
+    const [quizRoutingRulesByQ, setQuizRoutingRulesByQ] = useState({});
+    const [showQuizRoutingPanel, setShowQuizRoutingPanel] = useState(false);
+    useEffect(() => {
+      if (typeof window !== 'undefined') window.__alloQuizRoutingRules = quizRoutingRulesByQ;
+    }, [quizRoutingRulesByQ]);
+    const groupsForRouting = sessionData?.groups || {};
+    const groupEntriesForRouting = Object.entries(groupsForRouting).filter(([_, g]) => g !== null);
+    const currentRules = quizRoutingRulesByQ[currentQuestionIndex] || [];
+    const addQuizRoutingRule = () => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
+        const firstOption = (question?.options && question.options[0]) || '';
+        const firstGroup = (groupEntriesForRouting[0] && groupEntriesForRouting[0][0]) || '';
+        existing.push({
+          id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 5),
+          when: { predicate: 'eq', value: firstOption },
+          then: { groupId: firstGroup }
+        });
+        next[currentQuestionIndex] = existing;
+        return next;
+      });
+    };
+    const removeQuizRoutingRule = (rid) => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        next[currentQuestionIndex] = (next[currentQuestionIndex] || []).filter(r => r.id !== rid);
+        return next;
+      });
+    };
+    const updateQuizRoutingRule = (rid, patch) => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        next[currentQuestionIndex] = (next[currentQuestionIndex] || []).map(r => {
+          if (r.id !== rid) return r;
+          return {
+            ...r,
+            when: patch.when ? { ...r.when, ...patch.when } : r.when,
+            then: patch.then ? { ...r.then, ...patch.then } : r.then,
+          };
+        });
+        return next;
+      });
+    };
+    // Toggle a single resource ID in/out of rule.then.hiddenResourceIds.
+    // Default-show + rules hide: leaving the list empty means "no resources hidden
+    // for students who match this rule" (back to normal behavior).
+    const toggleQuizRoutingRuleHiddenId = (rid, resourceId) => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        next[currentQuestionIndex] = (next[currentQuestionIndex] || []).map(r => {
+          if (r.id !== rid) return r;
+          const current = Array.isArray(r.then.hiddenResourceIds) ? r.then.hiddenResourceIds : [];
+          const has = current.indexOf(resourceId) !== -1;
+          const updated = has ? current.filter(x => x !== resourceId) : current.concat([resourceId]);
+          return { ...r, then: { ...r.then, hiddenResourceIds: updated } };
+        });
+        return next;
+      });
+    };
+    // Resources teachers can choose to hide via routing. Exclude meta items
+    // (advice, brainstorms, alignment reports) that students never see anyway.
+    const hideableResources = (Array.isArray(history) ? history : [])
+      .filter(item => item && item.id && item.type && !['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type));
     const totalStudents = roster ? Object.keys(roster).length : 0;
     const answeredCount = responses ? Object.keys(responses).length : 0;
     const percentage = totalStudents > 0 ? Math.round((answeredCount / totalStudents) * 100) : 0;
@@ -1678,7 +1750,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     return (
         <div className="bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in slide-in-from-top-4 duration-500">
             <div className="bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4">
-                <h3 className="font-bold flex items-center gap-2"><MonitorPlay size={20} className="text-teal-400"/> {t('quiz.live_control_center')}</h3>
+                <h3 className="font-bold flex items-center gap-2"><MonitorPlay size={20} className="text-teal-700"/> {t('quiz.live_control_center')}</h3>
                 <div className="flex items-center gap-4">
                      <select aria-label={t('common.selection')}
                         value={mode || 'live-pulse'} data-help-key="quiz_mode_select"
@@ -1758,7 +1830,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-bold text-indigo-900">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-[11px] text-red-400 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
+                                            <button onClick={() => handleDeleteGroup(gid)} className="text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -1925,6 +1997,112 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          </span>
                          <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question.question}</h2>
                      </div>
+                     <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                         <button
+                             onClick={() => setShowQuizRoutingPanel(v => !v)}
+                             className="flex items-center gap-2 text-xs font-bold text-amber-800 hover:text-amber-900"
+                             aria-expanded={showQuizRoutingPanel}
+                         >
+                             <span>{showQuizRoutingPanel ? '▾' : '▸'}</span>
+                             <span>📊 Auto-routing rules for this question</span>
+                             <span className="font-normal text-amber-700">({currentRules.length} rule{currentRules.length === 1 ? '' : 's'})</span>
+                         </button>
+                         {showQuizRoutingPanel && (
+                             <div className="mt-2 space-y-2">
+                                 <p className="text-[11px] text-amber-700 leading-snug">
+                                     When a student answers, auto-assign them to a group. Use this for <strong>choice</strong> (e.g., "Pirate Crew vs Space Crew") or <strong>formative-assessment</strong> routing. Group resources can then be staged per group via the Groups panel above.
+                                 </p>
+                                 {groupEntriesForRouting.length === 0 && (
+                                     <p className="text-[11px] text-red-700 italic">{t('teacher.quiz_routing.no_groups_warning') || 'Create at least one group in the Groups panel above before adding routing rules.'}</p>
+                                 )}
+                                 {currentRules.map(rule => {
+                                     const hiddenIds = Array.isArray(rule.then.hiddenResourceIds) ? rule.then.hiddenResourceIds : [];
+                                     return (
+                                     <div key={rule.id} className="bg-white border border-amber-200 rounded p-1.5 text-xs space-y-1">
+                                       <div className="flex flex-wrap items-center gap-1">
+                                         <span className="text-slate-600">{t('teacher.quiz_routing.when_answer_label') || 'When answer'}</span>
+                                         <select
+                                             aria-label="Predicate"
+                                             value={rule.when.predicate}
+                                             onChange={(e) => updateQuizRoutingRule(rule.id, { when: { predicate: e.target.value } })}
+                                             className="px-1 py-0.5 border border-slate-300 rounded text-xs"
+                                         >
+                                             <option value="eq">is</option>
+                                             <option value="in">is one of</option>
+                                         </select>
+                                         <select
+                                             aria-label={t('teacher.quiz_routing.answer_option_aria') || 'Answer option'}
+                                             value={rule.when.predicate === 'in' ? '' : rule.when.value}
+                                             onChange={(e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } })}
+                                             className="px-1 py-0.5 border border-slate-300 rounded text-xs"
+                                         >
+                                             <option value="">— pick option —</option>
+                                             {(question?.options || []).map((opt, oi) => (
+                                                 <option key={oi} value={opt}>{String.fromCharCode(65 + oi)}: {opt}</option>
+                                             ))}
+                                         </select>
+                                         <span className="text-slate-600">→ assign to</span>
+                                         <select
+                                             aria-label={t('teacher.quiz_routing.target_group_aria') || 'Target group'}
+                                             value={rule.then.groupId || ''}
+                                             onChange={(e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } })}
+                                             className="px-1 py-0.5 border border-slate-300 rounded text-xs"
+                                         >
+                                             <option value="">— pick group —</option>
+                                             {groupEntriesForRouting.map(([gid, g]) => (
+                                                 <option key={gid} value={gid}>{g.name || gid}</option>
+                                             ))}
+                                         </select>
+                                         <button
+                                             onClick={() => removeQuizRoutingRule(rule.id)}
+                                             aria-label={t('teacher.quiz_routing.remove_rule_aria') || 'Remove rule'}
+                                             className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+                                         >✕</button>
+                                       </div>
+                                       {/* Conditional resource visibility — fail-open. Checked items hide for
+                                           students whose answer matches this rule. Empty list = no resources hidden. */}
+                                       {hideableResources.length > 0 && (
+                                         <details className="mt-1">
+                                           <summary className="text-[11px] text-slate-600 cursor-pointer hover:text-slate-800">
+                                             {hiddenIds.length > 0
+                                               ? `→ Also hide ${hiddenIds.length} resource${hiddenIds.length === 1 ? '' : 's'}`
+                                               : '→ Also hide resources (optional)'}
+                                           </summary>
+                                           <div className="mt-1 pl-2 pt-1 border-t border-amber-100 space-y-0.5 max-h-32 overflow-y-auto">
+                                             <p className="text-[10px] text-slate-500 italic mb-1">
+                                               Students whose answer matches this rule won't see the checked resources in their history panel. Other students still see everything.
+                                             </p>
+                                             {hideableResources.map(item => {
+                                               const isChecked = hiddenIds.indexOf(item.id) !== -1;
+                                               const label = item.title || (item.data && item.data.title) || item.type || item.id;
+                                               return (
+                                                 <label key={item.id} className="flex items-center gap-1.5 text-[11px] text-slate-700 hover:bg-amber-50 rounded px-1 py-0.5 cursor-pointer">
+                                                   <input
+                                                     type="checkbox"
+                                                     checked={isChecked}
+                                                     onChange={() => toggleQuizRoutingRuleHiddenId(rule.id, item.id)}
+                                                     aria-label={`Hide ${label} from students matching this rule`}
+                                                     className="cursor-pointer"
+                                                   />
+                                                   <span className="text-slate-500 uppercase text-[9px] font-bold min-w-[40px]">{item.type}</span>
+                                                   <span className="truncate flex-1">{label}</span>
+                                                 </label>
+                                               );
+                                             })}
+                                           </div>
+                                         </details>
+                                       )}
+                                     </div>
+                                     );
+                                 })}
+                                 <button
+                                     onClick={addQuizRoutingRule}
+                                     disabled={groupEntriesForRouting.length === 0}
+                                     className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
+                                 >+ Add rule</button>
+                             </div>
+                         )}
+                     </div>
                      <div className="space-y-3 mt-auto">
                          {phase === 'answering' ? (
                              <button aria-label={t('common.toggle_visibility')}
@@ -1985,7 +2163,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              <div className="text-center p-8">
                                                  <div className="text-7xl mb-4">💀</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.class_defeat_msg')}</h2>
-                                                 <p className="text-lg text-red-200">The class has fallen...</p>
+                                                 <p className="text-lg text-red-200">{t('teacher.boss.class_fallen') || 'The class has fallen...'}</p>
                                              </div>
                                          </div>
                                      )}
@@ -2220,7 +2398,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                                  <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                      <div className="bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl">
                                          <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
-                                         <div className="text-yellow-300 font-mono">{l.xp} XP</div>
+                                         <div className="text-yellow-700 font-mono">{l.xp} XP</div>
                                      </div>
                                  </foreignObject>
                              </g>
@@ -2235,6 +2413,1145 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
         </div>
     );
 });
+// ── TEACHER_METRIC_REGISTRY ──────────────────────────────────────────────
+// Single source of truth for per-tool teacher-dashboard metrics.
+//
+// Each entry CAN declare:
+//   id           (required) tool id matching dispatcher type
+//   label        (required) display name
+//   icon         (required) emoji for the tile
+//   color        (required) palette key (see _metricTileColor)
+//   count(s)     (required) per-student count function
+//   qualitySignals(dashboardData)   (optional) returns array of class-wide
+//                                    deterministic quality signals
+//                                    [{ key, label, value, suffix, denom, hint, tone }]
+//   misconceptions(dashboardData)   (optional) returns array of misconception
+//                                    pattern objects (shape varies by category)
+//                                    [{ category, ...categorySpecificFields }]
+//
+// External tool modules can extend the registry by pushing entries to
+// window.AlloModules.TeacherMetricRegistry BEFORE or AFTER teacher_module.js
+// loads — the merge logic at the bottom of this file handles both orders.
+//
+// To add a new tool to the dashboard from within teacher_source.jsx:
+//   1. Push an entry below with id + label + icon + color + count(student)
+//   2. Optionally add qualitySignals and/or misconceptions functions
+//   3. The "All Tool Activity" tile cluster + CSV columns + Class Quality
+//      Signals + Cross-Tool Pattern Detection auto-pick it up — no inline
+//      edits in 5 places.
+//
+// To add a tool from an EXTERNAL CDN module (e.g., sel_hub_module.js):
+//   window.AlloModules = window.AlloModules || {};
+//   window.AlloModules.TeacherMetricRegistry = window.AlloModules.TeacherMetricRegistry || [];
+//   window.AlloModules.TeacherMetricRegistry.push({ id: 'foo', ... });
+//
+// Doesn't replace the specialized panels (probes, fluency, notebook detail)
+// which need richer rendering — this is the uniform "how many of each" layer
+// plus the two extension points (qualitySignals / misconceptions) for any
+// future deterministic per-tool analysis.
+const _BUILTIN_METRIC_REGISTRY = [
+  { id: 'quiz',            label: 'Quizzes',            icon: '📝', color: 'indigo',  count: (s) => (s.history || []).filter(h => h && h.type === 'quiz').length },
+  { id: 'adventure',       label: 'Adventures',         icon: '🗺️', color: 'purple',  count: (s) => (s.history || []).filter(h => h && h.type === 'adventure').length },
+  { id: 'glossary',        label: 'Glossaries',         icon: '📖', color: 'sky',     count: (s) => (s.history || []).filter(h => h && h.type === 'glossary').length },
+  { id: 'simplified',      label: 'Leveled Texts',      icon: '📄', color: 'blue',    count: (s) => (s.history || []).filter(h => h && h.type === 'simplified').length },
+  { id: 'outline',         label: 'Visual Organizers',  icon: '📊', color: 'cyan',    count: (s) => (s.history || []).filter(h => h && h.type === 'outline').length },
+  {
+    id: 'concept-sort', label: 'Concept Sorts', icon: '🃏', color: 'rose',
+    count: (s) => (s.history || []).filter(h => h && h.type === 'concept-sort').length,
+    // Class-wide concept-sort misconception detection: aggregate per-item
+    // misplacement patterns across all student attempts (data captured by
+    // ConceptSortGame's conceptSortAttempt event into gameCompletions).
+    misconceptions: (dashboardData) => {
+      const csKey = (p) => `${(p.itemText || '').toLowerCase().trim()}|${(p.placedCategoryLabel || '').toLowerCase().trim()}|${(p.correctCategoryLabel || '').toLowerCase().trim()}`;
+      const csAgg = new Map();
+      let csTotalAttempts = 0;
+      (dashboardData || []).forEach(s => {
+        const gc = s.gameCompletions || {};
+        const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+        attempts.forEach(att => {
+          csTotalAttempts++;
+          const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+          incPlacements.forEach(p => {
+            if (!p.itemText) return;
+            const key = csKey(p);
+            if (!csAgg.has(key)) {
+              csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+            }
+            csAgg.get(key).count++;
+          });
+        });
+      });
+      return Array.from(csAgg.values())
+        .filter(p => p.count >= 3 && csTotalAttempts > 0 && (p.count / csTotalAttempts) >= 0.20)
+        .sort((a, b) => b.count - a.count)
+        .map(p => ({ category: 'conceptSort', ...p, totalAttempts: csTotalAttempts, missPct: Math.round((p.count / csTotalAttempts) * 100) }));
+    },
+  },
+  { id: 'timeline',        label: 'Timelines',          icon: '🕒', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'timeline').length },
+  {
+    id: 'sentence-frames', label: 'Sentence Frames', icon: '✍️', color: 'teal',
+    count: (s) => (s.history || []).filter(h => h && h.type === 'sentence-frames').length,
+    // Class-wide sentence-frame response-rate detection: flag scaffolds where
+    // students collectively left ≥30% of frames blank (signal of difficulty
+    // with the scaffold OR underlying concept).
+    misconceptions: (dashboardData) => {
+      const sfMap = new Map();
+      const sfTitles = new Map();
+      const sfFrameCounts = new Map();
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const sfItems = hist.filter(h => h && h.type === 'sentence-frames');
+        sfItems.forEach(item => {
+          sfTitles.set(item.id, item.title || 'Sentence Frames');
+          const studentResps = (s.responses && s.responses[item.id]) || {};
+          const items = (item.data && Array.isArray(item.data.items)) ? item.data.items : [];
+          items.forEach((_, idx) => {
+            const responseVal = studentResps[idx];
+            const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
+            sfMap.set(`${s.id}:${item.id}:${idx}`, filled);
+            sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+          });
+        });
+      });
+      const results = [];
+      for (const [genId, frameCount] of sfFrameCounts.entries()) {
+        if (frameCount === 0) continue;
+        let totalStudentFrames = 0, filledFrames = 0;
+        const studentsAttempted = new Set();
+        for (const [key, filled] of sfMap.entries()) {
+          const [studentId, gid] = key.split(':');
+          if (gid !== genId) continue;
+          totalStudentFrames++;
+          if (filled) { filledFrames++; studentsAttempted.add(studentId); }
+        }
+        if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+        const missingPct = Math.round(((totalStudentFrames - filledFrames) / totalStudentFrames) * 100);
+        if (missingPct >= 30) {
+          results.push({ category: 'sentenceFrames', generationTitle: sfTitles.get(genId) || 'Sentence Frames', frameCount, studentsAttempted: studentsAttempted.size, missingPct });
+        }
+      }
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    },
+  },
+  {
+    id: 'note-taking', label: 'Notebooks', icon: '📓', color: 'violet',
+    count: (s) => (s.history || []).filter(h => h && h.type === 'note-taking').length,
+    // Per-template field-completion misconceptions: ≥40% of entries missing
+    // a key field (with ≥2 affected) surfaces as an instructional opportunity.
+    misconceptions: (dashboardData) => {
+      const ntStats = {
+        'cornell-notes':    { fields: ['summary', 'cuesFilled', 'notesFilled'], counts: {}, total: 0 },
+        'lab-report':       { fields: ['hypothesis', 'analysis', 'conclusion', 'procedureFilled'], counts: {}, total: 0 },
+        'reading-response': { fields: ['favoriteLine', 'thinkings', 'connection', 'question'], counts: {}, total: 0 },
+      };
+      Object.keys(ntStats).forEach(tt => ntStats[tt].fields.forEach(f => ntStats[tt].counts[f] = 0));
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const notes = hist.filter(h => h && h.type === 'note-taking');
+        notes.forEach(e => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          if (!ntStats[tt]) return;
+          ntStats[tt].total++;
+          if (tt === 'cornell-notes') {
+            if (!(d.summary || '').trim()) ntStats[tt].counts.summary++;
+            const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+            if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+            const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter(n => n && (n.text || '').trim()).length;
+            if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+          } else if (tt === 'lab-report') {
+            if (!(d.hypothesis || '').trim()) ntStats[tt].counts.hypothesis++;
+            if (!(d.analysis || '').trim()) ntStats[tt].counts.analysis++;
+            if (!(d.conclusion || '').trim()) ntStats[tt].counts.conclusion++;
+            const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter(p => p && (p.text || '').trim()).length;
+            if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+          } else if (tt === 'reading-response') {
+            if (!(d.favoriteLine || '').trim()) ntStats[tt].counts.favoriteLine++;
+            if (!(d.thinkings || '').trim()) ntStats[tt].counts.thinkings++;
+            if (!(d.connection && d.connection.text || '').trim()) ntStats[tt].counts.connection++;
+            if (!(d.question || '').trim()) ntStats[tt].counts.question++;
+          }
+        });
+      });
+      const fieldLabels = {
+        'cornell-notes': {
+          summary: 'Summary box (Pauk: where retention consolidation happens)',
+          cuesFilled: 'Cue column (the metacognitive lever — drives retrieval practice)',
+          notesFilled: 'Notes column (the lesson content itself)',
+        },
+        'lab-report': {
+          hypothesis: 'Hypothesis (testable prediction with reasoning)',
+          analysis: 'Analysis / CER (claim-evidence-reasoning — the science thinking)',
+          conclusion: 'Conclusion (what was learned + sources of error)',
+          procedureFilled: 'Procedure (reproducibility — could another student follow it?)',
+        },
+        'reading-response': {
+          favoriteLine: 'Favorite line (close-reading anchor — direct quote from text)',
+          thinkings: 'What this made me think about (substantive reflection)',
+          connection: 'Connection (text-to-self / text / world — Keene & Zimmermann)',
+          question: 'Open question (genuine inquiry — metacognitive engagement)',
+        },
+      };
+      const templateNames = { 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response' };
+      const results = [];
+      Object.keys(ntStats).forEach(tt => {
+        const stats = ntStats[tt];
+        if (stats.total === 0) return;
+        stats.fields.forEach(field => {
+          const missing = stats.counts[field];
+          const pct = Math.round((missing / stats.total) * 100);
+          if (pct >= 40 && missing >= 2) {
+            results.push({ category: 'noteTaking', template: templateNames[tt], field, fieldLabel: fieldLabels[tt][field], missingCount: missing, totalCount: stats.total, missingPct: pct });
+          }
+        });
+      });
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    },
+    // Note-taking quality signals: 6 deterministic class-wide signals against
+    // research thresholds (Pauk, Kiewra, McNeill & Krajcik, Keene & Zimmermann,
+    // Hattie). Each returns a tone (green/amber/red) for at-a-glance scanning.
+    qualitySignals: (dashboardData) => {
+      const wc = (s) => { const t = String(s || '').trim(); return t ? t.split(/\s+/).length : 0; };
+      let cornellCount = 0, cornellWithSummary = 0;
+      let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+      let cerWordsTotal = 0, cerEntriesCounted = 0;
+      let rrCount = 0, rrWithEvidence = 0;
+      let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+      let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const notes = hist.filter(h => h && h.type === 'note-taking');
+        if (notes.length === 0) return;
+        studentsWithNotebook++;
+        let studentFeedbackCount = 0;
+        const connTypesSeen = new Set();
+        let studentHasRR = false;
+        notes.forEach(e => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          studentFeedbackCount += d.feedbackCount || 0;
+          if (tt === 'cornell-notes') {
+            cornellCount++;
+            if (wc(d.summary) >= 20) cornellWithSummary++;
+            const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+            if (cueCount > 0) { cornellCuesTotal += cueCount; cornellEntriesForCues++; }
+          } else if (tt === 'lab-report') {
+            const cerWords = wc(d.analysis);
+            if (cerWords > 0) { cerWordsTotal += cerWords; cerEntriesCounted++; }
+          } else if (tt === 'reading-response') {
+            rrCount++; studentHasRR = true;
+            if ((d.favoriteLine || '').trim()) rrWithEvidence++;
+            if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          }
+        });
+        if (studentHasRR) { studentsWithRR++; if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++; }
+        if (studentFeedbackCount > 0) studentsWithFeedback++;
+      });
+      const signals = [];
+      const _tone = (v, h, p) => v >= h ? 'green' : v >= p ? 'amber' : 'red';
+      if (cornellCount > 0) {
+        const v = Math.round((cornellWithSummary / cornellCount) * 100);
+        signals.push({ key: 'summaryFillRate', label: 'Cornell summary rate', value: v, suffix: '%', denom: `${cornellWithSummary}/${cornellCount}`, hint: '% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)', tone: _tone(v, 70, 40) });
+      }
+      if (cornellEntriesForCues > 0) {
+        const v = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+        signals.push({ key: 'avgCues', label: 'Cornell cue density', value: v, denom: `avg / ${cornellEntriesForCues} entries`, hint: 'Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density', tone: _tone(parseFloat(v), 5, 3) });
+      }
+      if (cerEntriesCounted > 0) {
+        const v = Math.round(cerWordsTotal / cerEntriesCounted);
+        signals.push({ key: 'avgCerWords', label: 'Lab CER length', value: v, suffix: ' wd', denom: `avg / ${cerEntriesCounted} reports`, hint: 'Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)', tone: _tone(v, 30, 15) });
+      }
+      if (rrCount > 0) {
+        const v = Math.round((rrWithEvidence / rrCount) * 100);
+        signals.push({ key: 'rrEvidenceRate', label: 'Reading evidence rate', value: v, suffix: '%', denom: `${rrWithEvidence}/${rrCount}`, hint: '% of Reading Responses with a favorite line filled (close-reading anchor)', tone: _tone(v, 70, 40) });
+      }
+      if (studentsWithRR > 0) {
+        const v = Math.round((studentsWith2PlusConnTypes / studentsWithRR) * 100);
+        signals.push({ key: 'connectionVariety', label: 'Connection variety', value: v, suffix: '%', denom: `${studentsWith2PlusConnTypes}/${studentsWithRR} students`, hint: '% of students using ≥2 of 3 connection types (text-to-self/text/world)', tone: _tone(v, 50, 25) });
+      }
+      if (studentsWithNotebook > 0) {
+        const v = Math.round((studentsWithFeedback / studentsWithNotebook) * 100);
+        signals.push({ key: 'selfAssessment', label: 'Self-assessment use', value: v, suffix: '%', denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)', tone: _tone(v, 50, 25) });
+      }
+      return signals;
+    },
+  },
+  { id: 'anchor-chart',    label: 'Anchor Charts',      icon: '📋', color: 'orange',  count: (s) => (s.history || []).filter(h => h && h.type === 'anchor-chart').length },
+  { id: 'dbq',             label: 'DBQs',               icon: '⚖️', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'dbq').length },
+  { id: 'persona',         label: 'Personas',           icon: '🎭', color: 'fuchsia', count: (s) => (s.history || []).filter(h => h && h.type === 'persona').length },
+  { id: 'math',            label: 'STEM Lab',           icon: '🧪', color: 'emerald', count: (s) => (s.history || []).filter(h => h && h.type === 'math').length },
+  { id: 'faq',             label: 'FAQs',               icon: '❓', color: 'slate',   count: (s) => (s.history || []).filter(h => h && h.type === 'faq').length },
+  { id: 'image',           label: 'Generated Images',   icon: '🖼️', color: 'pink',    count: (s) => (s.history || []).filter(h => h && h.type === 'image').length },
+  { id: 'brainstorm',      label: 'Brainstorms',        icon: '💡', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'brainstorm').length },
+  { id: 'fluency-record',  label: 'Fluency Records',    icon: '🎙️', color: 'green',   count: (s) => (s.history || []).filter(h => h && h.type === 'fluency-record').length },
+];
+
+// Publish registry on window.AlloModules so external modules can self-register
+// metrics by pushing entries. Merges any pre-existing entries (external module
+// loaded before teacher_module.js) with the built-in registry.
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  const preExisting = Array.isArray(window.AlloModules.TeacherMetricRegistry)
+    ? window.AlloModules.TeacherMetricRegistry
+    : [];
+  // Dedupe by id; built-in wins on conflict (intentional — external overrides
+  // would silently change dashboard math)
+  const builtinIds = new Set(_BUILTIN_METRIC_REGISTRY.map(e => e.id));
+  const externalEntries = preExisting.filter(e => e && e.id && !builtinIds.has(e.id));
+  window.AlloModules.TeacherMetricRegistry = [..._BUILTIN_METRIC_REGISTRY, ...externalEntries];
+}
+// Live getter — always returns the current registry, including entries added
+// by other modules AFTER teacher_module.js loaded.
+function getTeacherMetricRegistry() {
+  if (typeof window !== 'undefined' && Array.isArray(window.AlloModules && window.AlloModules.TeacherMetricRegistry)) {
+    return window.AlloModules.TeacherMetricRegistry;
+  }
+  return _BUILTIN_METRIC_REGISTRY;
+}
+// Backwards-compat alias — older code paths still reference this constant.
+const TEACHER_METRIC_REGISTRY = _BUILTIN_METRIC_REGISTRY;
+const _metricTileColor = (color) => ({
+  indigo:  'bg-indigo-50 border-indigo-200 text-indigo-700',
+  purple:  'bg-purple-50 border-purple-200 text-purple-700',
+  sky:     'bg-sky-50 border-sky-200 text-sky-700',
+  blue:    'bg-blue-50 border-blue-200 text-blue-700',
+  cyan:    'bg-cyan-50 border-cyan-200 text-cyan-700',
+  rose:    'bg-rose-50 border-rose-200 text-rose-700',
+  amber:   'bg-amber-50 border-amber-200 text-amber-700',
+  teal:    'bg-teal-50 border-teal-200 text-teal-700',
+  violet:  'bg-violet-50 border-violet-200 text-violet-700',
+  orange:  'bg-orange-50 border-orange-200 text-orange-700',
+  fuchsia: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700',
+  emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  slate:   'bg-slate-50 border-slate-200 text-slate-700',
+  pink:    'bg-pink-50 border-pink-200 text-pink-700',
+  green:   'bg-green-50 border-green-200 text-green-700',
+})[color] || 'bg-slate-50 border-slate-200 text-slate-700';
+
+// Registry-driven "All Tool Activity" tile cluster.
+// Renders one tile per registry entry whose count(student) > 0 (so we don't
+// flood the panel with empty tiles for tools the student hasn't touched).
+// Drops into the per-student detail view alongside the existing specialized
+// tile clusters.
+const AllToolActivityPanel = React.memo(({ student, t }) => {
+  if (!student) return null;
+  // Read from the LIVE registry so externally-registered tools also surface
+  const active = getTeacherMetricRegistry()
+    .map(entry => ({ ...entry, n: entry.count(student) }))
+    .filter(e => e.n > 0)
+    .sort((a, b) => b.n - a.n);
+  if (active.length === 0) return null;
+  return (
+    <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6" data-help-key="dashboard_all_tool_activity">
+      <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+        🧰 {t('dashboard.all_tool_activity') || 'All Tool Activity'}
+        <span className="text-[10px] font-normal italic text-slate-500 normal-case">({active.length} tool{active.length === 1 ? '' : 's'} used)</span>
+      </h4>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+        {active.map(e => (
+          <div key={e.id} className={`${_metricTileColor(e.color)} border rounded-lg p-3 text-center`}>
+            <div className="text-2xl font-black">{e.n}</div>
+            <div className="text-[10px] font-bold uppercase mt-1 leading-tight">{e.icon} {e.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ── Class Quality Signals (registry-driven orchestrator) ────────────────
+// Iterates the metric registry and flat-maps each tool's qualitySignals()
+// contribution. Tools with no qualitySignals function contribute nothing.
+// Replaces the previous hand-rolled _computeNotebookQualitySignals which
+// hardcoded note-taking specifics.
+function _computeAllQualitySignals(dashboardData) {
+  const out = [];
+  getTeacherMetricRegistry().forEach(entry => {
+    if (typeof entry.qualitySignals !== 'function') return;
+    try {
+      const signals = entry.qualitySignals(dashboardData) || [];
+      signals.forEach(s => out.push({ ...s, _toolId: entry.id, _toolLabel: entry.label }));
+    } catch (e) { console.warn('[qualitySignals] tool', entry.id, 'failed', e); }
+  });
+  return out;
+}
+// Kept for any callers that referenced the old function name (defensive shim).
+function _computeNotebookQualitySignals(dashboardData) {
+  // Returns a shape-compatible object so any external/legacy callers still work.
+  // New code should use _computeAllQualitySignals() instead.
+  const flat = _computeAllQualitySignals(dashboardData);
+  const out = {
+    summaryFillRate: { value: null, count: 0, total: 0 },
+    avgCues: { value: null, total: 0, n: 0 },
+    avgCerWords: { value: null, total: 0, n: 0 },
+    rrEvidenceRate: { value: null, count: 0, total: 0 },
+    connectionVariety: { value: null, count: 0, total: 0 },
+    selfAssessment: { value: null, count: 0, total: 0 },
+  };
+  flat.forEach(s => { if (out[s.key]) out[s.key].value = s.value; });
+  return out;
+}
+function _wordCount(str) {
+  if (!str) return 0;
+  const trimmed = String(str).trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+// Deprecated — quality signals now live inside note-taking's registry entry.
+// This function body is preserved so any old external callers that may have
+// referenced it as a module-level helper still parse, but new code paths use
+// the registry-driven flow above. Returns an empty result; the new flow's
+// _computeAllQualitySignals delivers the real signals.
+// (Legacy body removed — note-taking quality signals now live in the
+// 'note-taking' registry entry's qualitySignals() function above. The thin
+// _computeNotebookQualitySignals shim above maps the registry output back to
+// the legacy object shape any old caller might still expect.)
+function _DEAD_LEGACY_DO_NOT_CALL(dashboardData) {
+  // Unreachable dead code below — kept inside an unreferenced function so
+  // the parser still accepts the file. This block will be deleted in the
+  // next cleanup pass when we verify no external code references it.
+  const out = {};
+  let cornellCount = 0, cornellWithSummary = 0;
+  let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+  let cerWordsTotal = 0, cerEntriesCounted = 0;
+  let rrCount = 0, rrWithEvidence = 0;
+  let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+  let studentsWithNotebook = 0, studentsWithFeedback = 0;
+
+  (dashboardData || []).forEach(s => {
+    const hist = s.history || [];
+    const notes = hist.filter(h => h && h.type === 'note-taking');
+    if (notes.length === 0) return;
+    studentsWithNotebook++;
+    let studentFeedbackCount = 0;
+    const connTypesSeen = new Set();
+    let studentHasRR = false;
+    notes.forEach(e => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      studentFeedbackCount += d.feedbackCount || 0;
+      if (tt === 'cornell-notes') {
+        cornellCount++;
+        // Summary >= 20 words is the Cornell research threshold for "meaningful summary"
+        // (Pauk / Kiewra: 1-2 word fragment doesn't drive retention; ~20+ word
+        // summary in own words is where consolidation happens).
+        if (_wordCount(d.summary) >= 20) cornellWithSummary++;
+        const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+        if (cueCount > 0) { cornellCuesTotal += cueCount; cornellEntriesForCues++; }
+      } else if (tt === 'lab-report') {
+        const cerWords = _wordCount(d.analysis);
+        if (cerWords > 0) { cerWordsTotal += cerWords; cerEntriesCounted++; }
+      } else if (tt === 'reading-response') {
+        rrCount++;
+        studentHasRR = true;
+        if ((d.favoriteLine || '').trim()) rrWithEvidence++;
+        const connType = d.connection && d.connection.type;
+        if (connType) connTypesSeen.add(connType);
+      }
+    });
+    if (studentHasRR) {
+      studentsWithRR++;
+      if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++;
+    }
+    if (studentFeedbackCount > 0) studentsWithFeedback++;
+  });
+
+  if (cornellCount > 0) {
+    out.summaryFillRate.count = cornellWithSummary;
+    out.summaryFillRate.total = cornellCount;
+    out.summaryFillRate.value = Math.round((cornellWithSummary / cornellCount) * 100);
+  }
+  if (cornellEntriesForCues > 0) {
+    out.avgCues.total = cornellCuesTotal;
+    out.avgCues.n = cornellEntriesForCues;
+    out.avgCues.value = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+  }
+  if (cerEntriesCounted > 0) {
+    out.avgCerWords.total = cerWordsTotal;
+    out.avgCerWords.n = cerEntriesCounted;
+    out.avgCerWords.value = Math.round(cerWordsTotal / cerEntriesCounted);
+  }
+  if (rrCount > 0) {
+    out.rrEvidenceRate.count = rrWithEvidence;
+    out.rrEvidenceRate.total = rrCount;
+    out.rrEvidenceRate.value = Math.round((rrWithEvidence / rrCount) * 100);
+  }
+  if (studentsWithRR > 0) {
+    out.connectionVariety.count = studentsWith2PlusConnTypes;
+    out.connectionVariety.total = studentsWithRR;
+    out.connectionVariety.value = Math.round((studentsWith2PlusConnTypes / studentsWithRR) * 100);
+  }
+  if (studentsWithNotebook > 0) {
+    out.selfAssessment.count = studentsWithFeedback;
+    out.selfAssessment.total = studentsWithNotebook;
+    out.selfAssessment.value = Math.round((studentsWithFeedback / studentsWithNotebook) * 100);
+  }
+  return out;
+}
+// Cross-tool misconception / completion-gap detection — registry-driven.
+// Iterates the metric registry and flat-maps each tool's misconceptions()
+// contribution into category-keyed buckets. Tools with no misconceptions()
+// function contribute nothing. Each pattern carries a 'category' field
+// (e.g. 'noteTaking', 'sentenceFrames', 'conceptSort') that the rendering
+// section uses to group + style the patterns.
+function _computeCrossToolMisconceptions(dashboardData) {
+  const out = { noteTaking: [], sentenceFrames: [], conceptSort: [] };
+  getTeacherMetricRegistry().forEach(entry => {
+    if (typeof entry.misconceptions !== 'function') return;
+    try {
+      const patterns = entry.misconceptions(dashboardData) || [];
+      patterns.forEach(p => {
+        const cat = p && p.category;
+        if (cat && Array.isArray(out[cat])) out[cat].push(p);
+        else if (!out._other) (out._other = []).push(p); // future-proof for new categories
+        else out._other.push(p);
+      });
+    } catch (e) { console.warn('[misconceptions] tool', entry.id, 'failed', e); }
+  });
+  return out;
+}
+// Legacy body retained inside a dead function so the parser still accepts the
+// file. Will be removed in next cleanup pass after verifying no external refs.
+function _DEAD_LEGACY_CROSS_TOOL_DO_NOT_CALL(dashboardData) {
+  const out = {
+    noteTaking: [],
+    sentenceFrames: [],
+    conceptSort: [],
+  };
+
+  // ── Concept-sort per-item misplacement aggregation ──────────────────
+  // Reads conceptSortAttempt entries from gameCompletions (added May 2026 —
+  // captured even on non-perfect runs so we have real misconception data).
+  // Aggregates per (itemText, placedCategory→correctCategory) pair.
+  const csKey = (p) => `${(p.itemText || '').toLowerCase().trim()}|${(p.placedCategoryLabel || '').toLowerCase().trim()}|${(p.correctCategoryLabel || '').toLowerCase().trim()}`;
+  const csAgg = new Map(); // key -> { itemText, placedLabel, correctLabel, count }
+  let csTotalAttempts = 0;
+  (dashboardData || []).forEach(s => {
+    const gc = s.gameCompletions || {};
+    const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+    attempts.forEach(att => {
+      csTotalAttempts++;
+      const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+      incPlacements.forEach(p => {
+        if (!p.itemText) return;
+        const key = csKey(p);
+        if (!csAgg.has(key)) {
+          csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+        }
+        csAgg.get(key).count++;
+      });
+    });
+  });
+  // Surface misplacements that occurred ≥3 times AND in ≥20% of attempts
+  // (signal of a systematic class misconception, not a one-off mistake).
+  out.conceptSort = Array.from(csAgg.values())
+    .filter(p => p.count >= 3 && csTotalAttempts > 0 && (p.count / csTotalAttempts) >= 0.20)
+    .sort((a, b) => b.count - a.count)
+    .map(p => ({ ...p, totalAttempts: csTotalAttempts, missPct: Math.round((p.count / csTotalAttempts) * 100) }));
+
+  // ── Note-taking field-completion gaps ───────────────────────────────
+  // For each template type, count how often each KEY field is missing or
+  // empty across all entries in the class. Surface fields with >= 40%
+  // missing rate as actionable signals.
+  const ntStats = {
+    'cornell-notes': { fields: ['summary', 'cuesFilled', 'notesFilled'], counts: {}, total: 0 },
+    'lab-report':    { fields: ['hypothesis', 'analysis', 'conclusion', 'procedureFilled'], counts: {}, total: 0 },
+    'reading-response': { fields: ['favoriteLine', 'thinkings', 'connection', 'question'], counts: {}, total: 0 },
+  };
+  Object.keys(ntStats).forEach(tt => ntStats[tt].fields.forEach(f => ntStats[tt].counts[f] = 0));
+
+  (dashboardData || []).forEach(s => {
+    const hist = s.history || [];
+    const notes = hist.filter(h => h && h.type === 'note-taking');
+    notes.forEach(e => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      if (!ntStats[tt]) return;
+      ntStats[tt].total++;
+      if (tt === 'cornell-notes') {
+        if (!(d.summary || '').trim()) ntStats[tt].counts.summary++;
+        const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+        if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+        const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter(n => n && (n.text || '').trim()).length;
+        if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+      } else if (tt === 'lab-report') {
+        if (!(d.hypothesis || '').trim()) ntStats[tt].counts.hypothesis++;
+        if (!(d.analysis || '').trim()) ntStats[tt].counts.analysis++;
+        if (!(d.conclusion || '').trim()) ntStats[tt].counts.conclusion++;
+        const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter(p => p && (p.text || '').trim()).length;
+        if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+      } else if (tt === 'reading-response') {
+        if (!(d.favoriteLine || '').trim()) ntStats[tt].counts.favoriteLine++;
+        if (!(d.thinkings || '').trim()) ntStats[tt].counts.thinkings++;
+        if (!(d.connection && d.connection.text || '').trim()) ntStats[tt].counts.connection++;
+        if (!(d.question || '').trim()) ntStats[tt].counts.question++;
+      }
+    });
+  });
+
+  const fieldLabels = {
+    'cornell-notes': {
+      summary: 'Summary box (Pauk: where retention consolidation happens)',
+      cuesFilled: 'Cue column (the metacognitive lever — drives retrieval practice)',
+      notesFilled: 'Notes column (the lesson content itself)',
+    },
+    'lab-report': {
+      hypothesis: 'Hypothesis (testable prediction with reasoning)',
+      analysis: 'Analysis / CER (claim-evidence-reasoning — the science thinking)',
+      conclusion: 'Conclusion (what was learned + sources of error)',
+      procedureFilled: 'Procedure (reproducibility — could another student follow it?)',
+    },
+    'reading-response': {
+      favoriteLine: 'Favorite line (close-reading anchor — direct quote from text)',
+      thinkings: 'What this made me think about (substantive reflection)',
+      connection: 'Connection (text-to-self / text / world — Keene & Zimmermann)',
+      question: 'Open question (genuine inquiry — metacognitive engagement)',
+    },
+  };
+  const templateNames = {
+    'cornell-notes': 'Cornell Notes',
+    'lab-report': 'Lab Report',
+    'reading-response': 'Reading Response',
+  };
+
+  Object.keys(ntStats).forEach(tt => {
+    const stats = ntStats[tt];
+    if (stats.total === 0) return;
+    stats.fields.forEach(field => {
+      const missing = stats.counts[field];
+      const pct = Math.round((missing / stats.total) * 100);
+      // Only surface as a misconception signal if >= 40% missing AND >= 2 affected
+      if (pct >= 40 && missing >= 2) {
+        out.noteTaking.push({
+          template: templateNames[tt],
+          field,
+          fieldLabel: fieldLabels[tt][field],
+          missingCount: missing,
+          totalCount: stats.total,
+          missingPct: pct,
+        });
+      }
+    });
+  });
+  out.noteTaking.sort((a, b) => b.missingPct - a.missingPct);
+
+  // ── Sentence-frames completion gaps ─────────────────────────────────
+  // For each sentence-frames artifact, count how many students responded
+  // to each frame. Surface frames with low response rates (signal of student
+  // struggle with the scaffold or with the underlying concept).
+  const sfMap = new Map(); // key: "{studentId}:{generationId}:{frameIndex}" -> filled? (boolean)
+  const sfTitles = new Map(); // generationId -> title
+  const sfFrameCounts = new Map(); // generationId -> max frame index seen
+  (dashboardData || []).forEach(s => {
+    const hist = s.history || [];
+    const sfItems = hist.filter(h => h && h.type === 'sentence-frames');
+    sfItems.forEach(item => {
+      sfTitles.set(item.id, item.title || 'Sentence Frames');
+      const studentResps = (s.responses && s.responses[item.id]) || {};
+      const items = (item.data && Array.isArray(item.data.items)) ? item.data.items : [];
+      items.forEach((_, idx) => {
+        const responseVal = studentResps[idx];
+        const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
+        sfMap.set(`${s.id}:${item.id}:${idx}`, filled);
+        sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+      });
+    });
+  });
+  // Aggregate per generation
+  for (const [genId, frameCount] of sfFrameCounts.entries()) {
+    if (frameCount === 0) continue;
+    let totalStudentFrames = 0;
+    let filledFrames = 0;
+    let studentsAttempted = new Set();
+    for (const [key, filled] of sfMap.entries()) {
+      const [studentId, gid] = key.split(':');
+      if (gid !== genId) continue;
+      totalStudentFrames++;
+      if (filled) { filledFrames++; studentsAttempted.add(studentId); }
+    }
+    if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+    const missingPct = Math.round(((totalStudentFrames - filledFrames) / totalStudentFrames) * 100);
+    if (missingPct >= 30) {
+      out.sentenceFrames.push({
+        generationTitle: sfTitles.get(genId) || 'Sentence Frames',
+        frameCount,
+        studentsAttempted: studentsAttempted.size,
+        missingPct,
+      });
+    }
+  }
+  out.sentenceFrames.sort((a, b) => b.missingPct - a.missingPct);
+
+  return out;
+}
+
+// Color-code each signal: green (healthy), amber (partial), red (weak), gray (no data).
+function _signalTone(signalKey, value) {
+  if (value === null || value === undefined) return 'gray';
+  const thresholds = {
+    summaryFillRate:    { healthy: 70, partial: 40 }, // %
+    avgCues:            { healthy: 5,  partial: 3 },  // count
+    avgCerWords:        { healthy: 30, partial: 15 }, // words
+    rrEvidenceRate:     { healthy: 70, partial: 40 }, // %
+    connectionVariety:  { healthy: 50, partial: 25 }, // %
+    selfAssessment:     { healthy: 50, partial: 25 }, // %
+  };
+  const t = thresholds[signalKey];
+  if (!t) return 'gray';
+  const v = parseFloat(value);
+  if (v >= t.healthy) return 'green';
+  if (v >= t.partial) return 'amber';
+  return 'red';
+}
+const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
+  const palette = ({
+    green:  { bg: 'bg-emerald-50',  border: 'border-emerald-300',  text: 'text-emerald-800',  num: 'text-emerald-700'  },
+    amber:  { bg: 'bg-amber-50',    border: 'border-amber-300',    text: 'text-amber-800',    num: 'text-amber-700'    },
+    red:    { bg: 'bg-rose-50',     border: 'border-rose-300',     text: 'text-rose-800',     num: 'text-rose-700'     },
+    gray:   { bg: 'bg-slate-50',    border: 'border-slate-300',    text: 'text-slate-600',    num: 'text-slate-500'    },
+  })[tone];
+  return (
+    <div className={`${palette.bg} ${palette.border} border rounded-lg p-3`} title={hint}>
+      <div className="flex items-baseline justify-between mb-1">
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${palette.text}`}>{label}</span>
+        {denom ? <span className="text-[10px] text-slate-500 font-mono">{denom}</span> : null}
+      </div>
+      <div className={`text-2xl font-black ${palette.num}`}>{value === null || value === undefined ? '—' : value}{suffix || ''}</div>
+      {hint ? <div className="text-[10px] text-slate-600 mt-1 leading-snug">{hint}</div> : null}
+    </div>
+  );
+};
+
+// ── CrossToolMisconceptionsSection ───────────────────────────────────────
+// Surfaces non-quiz misconception signals (note-taking field-completion gaps
+// + sentence-frames frame-completion gaps) on the Insights tab. Complements
+// the existing quiz misconceptions panel which only looks at quiz items.
+// Hidden when no signals trigger their thresholds (avoids noise).
+const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
+  const signals = React.useMemo(() => _computeCrossToolMisconceptions(dashboardData), [dashboardData]);
+  if (signals.noteTaking.length === 0 && signals.sentenceFrames.length === 0 && signals.conceptSort.length === 0) return null;
+  return (
+    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400" data-help-key="dashboard_cross_tool_misconceptions">
+      <h3 className="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+        <AlertCircle size={20} className="text-orange-500"/>
+        {t('dashboard.cross_misconceptions.title') || 'Cross-Tool Pattern Detection'}
+      </h3>
+      <p className="text-xs text-slate-600 mb-4 italic">{t('dashboard.cross_misconceptions.subtitle') || 'Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity.'}</p>
+      {signals.noteTaking.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2">📓 {t('dashboard.cross_misconceptions.notebook_label') || 'Note-taking field gaps'}</h4>
+          <ul className="space-y-2">
+            {signals.noteTaking.slice(0, 6).map((s, i) => (
+              <li key={i} className="bg-orange-50 border-l-4 border-orange-400 rounded-r-md p-3">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-sm font-bold text-orange-900">{s.template}: {s.fieldLabel}</span>
+                  <span className="text-xs font-bold text-orange-700 bg-white border border-orange-300 px-2 py-0.5 rounded whitespace-nowrap">{s.missingPct}% missing</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-1">{s.missingCount} of {s.totalCount} entries across the class have this field empty.</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {signals.sentenceFrames.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2">✍️ {t('dashboard.cross_misconceptions.frames_label') || 'Sentence-frame response gaps'}</h4>
+          <ul className="space-y-2">
+            {signals.sentenceFrames.slice(0, 5).map((s, i) => (
+              <li key={i} className="bg-indigo-50 border-l-4 border-indigo-400 rounded-r-md p-3">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-sm font-bold text-indigo-900 truncate">{s.generationTitle}</span>
+                  <span className="text-xs font-bold text-indigo-700 bg-white border border-indigo-300 px-2 py-0.5 rounded whitespace-nowrap">{s.missingPct}% blank</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-1">{s.frameCount} frame{s.frameCount === 1 ? '' : 's'} · {s.studentsAttempted} student{s.studentsAttempted === 1 ? '' : 's'} attempted</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {signals.conceptSort.length > 0 && (
+        <div>
+          <h4 className="text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-2">🃏 {t('dashboard.cross_misconceptions.concept_sort_label') || 'Concept Sort misplacement patterns'}</h4>
+          <ul className="space-y-2">
+            {signals.conceptSort.slice(0, 6).map((s, i) => (
+              <li key={i} className="bg-rose-50 border-l-4 border-rose-400 rounded-r-md p-3">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-sm font-bold text-rose-900 truncate">"{s.itemText}" → placed in "{s.placedLabel}"</span>
+                  <span className="text-xs font-bold text-rose-700 bg-white border border-rose-300 px-2 py-0.5 rounded whitespace-nowrap">{s.count}× ({s.missPct}%)</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-1">Correct category: <span className="font-bold">"{s.correctLabel}"</span>. Likely conflation between these two concepts.</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+});
+
+// ── TeacherCommentThread ─────────────────────────────────────────────────
+// Inline thread of teacher-private comments on a single student resource.
+// Teacher's annotations persist in localStorage on the dashboard side; never
+// synced back to the student (dashboard is one-way upload). Useful for:
+//   - per-resource feedback notes the teacher wants to remember for IEP team
+//   - tracking observations across multiple review passes
+//   - bundling comments into Research/Notebook PDF exports (future)
+const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAdd, onDelete, t }) => {
+  const [draft, setDraft] = React.useState('');
+  const [expanded, setExpanded] = React.useState(false);
+  const list = comments || [];
+  const handleSubmit = (e) => {
+      if (e) e.preventDefault();
+      if (!draft.trim()) return;
+      onAdd(studentId, resourceId, draft);
+      setDraft('');
+  };
+  if (list.length === 0 && !expanded) {
+      return (
+          <button
+              onClick={() => setExpanded(true)}
+              className="mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors"
+              data-help-key="dashboard_teacher_comment_add"
+              aria-label={t('dashboard.comments.add_aria') || 'Add a private teacher comment to this resource'}
+          >
+              💬 {t('dashboard.comments.add_btn') || 'Add private note'}
+          </button>
+      );
+  }
+  return (
+      <div className="mt-3 border-t border-slate-200 pt-3" data-help-key="dashboard_teacher_comment_thread">
+          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              💬 {t('dashboard.comments.label') || 'Teacher notes'}
+              {list.length > 0 && <span className="text-slate-600 normal-case font-normal">({list.length})</span>}
+              <span className="ml-auto text-slate-500 normal-case font-normal italic">{t('dashboard.comments.privacy_note') || 'Private to you — never shared with student'}</span>
+          </div>
+          {list.length > 0 && (
+              <ul className="space-y-2 mb-3">
+                  {list.map(c => (
+                      <li key={c.id} className="bg-amber-50/50 border-l-4 border-amber-400 rounded-r-md p-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                              <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap flex-1">{c.text}</div>
+                              <button
+                                  onClick={() => onDelete(studentId, resourceId, c.id)}
+                                  className="text-slate-600 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                  aria-label={t('dashboard.comments.delete_aria') || 'Delete this comment'}
+                                  title={t('dashboard.comments.delete_tooltip') || 'Delete this comment'}
+                              >✕</button>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1 font-mono">{new Date(c.timestamp).toLocaleString()}</div>
+                      </li>
+                  ))}
+              </ul>
+          )}
+          <form onSubmit={handleSubmit} className="flex gap-2 items-start">
+              <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit(); }}
+                  placeholder={t('dashboard.comments.placeholder') || 'Note to yourself about this resource (Cmd/Ctrl+Enter to save)'}
+                  className="flex-1 text-sm bg-white border border-slate-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]"
+                  rows={2}
+                  aria-label={t('dashboard.comments.textarea_aria') || 'New teacher comment'}
+              />
+              <div className="flex flex-col gap-1.5">
+                  <button
+                      type="submit"
+                      disabled={!draft.trim()}
+                      className="px-3 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >{t('dashboard.comments.save_btn') || 'Save'}</button>
+                  {list.length === 0 && (
+                      <button
+                          type="button"
+                          onClick={() => setExpanded(false)}
+                          className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700"
+                      >{t('common.cancel') || 'Cancel'}</button>
+                  )}
+              </div>
+          </form>
+      </div>
+  );
+});
+
+// ── ClassNotebookSection ─────────────────────────────────────────────────
+// Class-wide aggregate of note-taking + anchor-chart activity, with an AI
+// button that surfaces patterns across the roster (parallel to the per-
+// student Note-Taking Insights but cross-classroom: "12 of your 22 students
+// consistently skip CER Reasoning — consider a mini-lesson").
+//
+// Drops into the Insights tab. Shows nothing if the roster has no notebook
+// activity at all (avoids a useless empty section for classes that haven't
+// adopted note-taking templates yet).
+const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, t }) => {
+  const [insights, setInsights] = React.useState(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+
+  // Deterministic notebook quality signals — computed from data alone (no AI).
+  // Surfaced as a color-coded card grid for at-a-glance class diagnostics.
+  const qualitySignals = React.useMemo(() => _computeNotebookQualitySignals(dashboardData), [dashboardData]);
+
+  // Aggregate notebook activity across the whole roster.
+  const agg = React.useMemo(() => {
+    const out = {
+      studentsWithNotebook: 0,
+      totalEntries: 0,
+      cornell: 0,
+      labReport: 0,
+      readingResponse: 0,
+      anchorChart: 0,
+      feedbackRequests: 0,
+      byStudent: [], // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+    };
+    (dashboardData || []).forEach(s => {
+      const hist = s.history || [];
+      const notes = hist.filter(h => h && h.type === 'note-taking');
+      const anchors = hist.filter(h => h && h.type === 'anchor-chart');
+      if (notes.length === 0 && anchors.length === 0) return;
+      out.studentsWithNotebook++;
+      const sCornell = notes.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
+      const sLab = notes.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
+      const sReading = notes.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+      const sFeedback = notes.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+      out.cornell += sCornell;
+      out.labReport += sLab;
+      out.readingResponse += sReading;
+      out.anchorChart += anchors.length;
+      out.feedbackRequests += sFeedback;
+      out.totalEntries += notes.length + anchors.length;
+      out.byStudent.push({
+        name: s.studentNickname || 'Anonymous',
+        total: notes.length + anchors.length,
+        cornell: sCornell, labReport: sLab, readingResponse: sReading, anchorChart: anchors.length,
+        feedbackRequests: sFeedback,
+      });
+    });
+    return out;
+  }, [dashboardData]);
+
+  const handleGenerateClassInsights = React.useCallback(async () => {
+    if (typeof callGemini !== 'function') {
+      addToast(t('dashboard.class_notebook.no_ai') || 'AI is not available right now.', 'warning');
+      return;
+    }
+    if (agg.studentsWithNotebook < 2) {
+      addToast(t('dashboard.class_notebook.need_more_students') || 'Need at least 2 students with notebook entries to surface class patterns.', 'info');
+      return;
+    }
+    setInsightsLoading(true);
+    setInsights(null);
+    try {
+      // Compact per-student summary (don't ship full note bodies — too large).
+      // We sample up to 3 entries per student and serialize headline fields only.
+      const sampleEntries = [];
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const notes = hist.filter(h => h && h.type === 'note-taking').slice(0, 3);
+        notes.forEach(n => {
+          const d = n.data || {};
+          const tt = d.templateType || 'cornell-notes';
+          const headline = ({
+            'cornell-notes': () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || '').length}`,
+            'lab-report': () => `hyp_len=${(d.hypothesis || '').length}, analysis_len=${(d.analysis || '').length}, conclusion_len=${(d.conclusion || '').length}`,
+            'reading-response': () => `evidence_len=${(d.favoriteLine || '').length}, thinking_len=${(d.thinkings || '').length}, connection_type=${(d.connection && d.connection.type) || 'none'}`,
+          })[tt];
+          sampleEntries.push(`${s.studentNickname || 'Anon'} (${tt}): ${headline ? headline() : 'no data'}`);
+        });
+      });
+      const prompt = `
+You are a teaching coach analyzing patterns ACROSS a class's note-taking work. Your goal is to surface 2-4 class-wide patterns that would inform the teacher's next mini-lesson, not individual student feedback.
+
+CLASS COMPOSITION:
+- Total students: ${dashboardData.length}
+- Students using notebook tools: ${agg.studentsWithNotebook}
+- Total Cornell Notes entries: ${agg.cornell}
+- Total Lab Reports: ${agg.labReport}
+- Total Reading Responses: ${agg.readingResponse}
+- Total Anchor Charts: ${agg.anchorChart}
+- Total AI feedback requests across class: ${agg.feedbackRequests}
+
+PER-STUDENT ENTRY HEADLINES (sample of up to 3 entries per student):
+${sampleEntries.slice(0, 80).join('\n')}
+
+Surface 2-4 patterns the teacher can act on. Examples of useful patterns:
+- "Cornell summary boxes are consistently 1-2 sentences across the class (avg estimated <20 words). Consider a mini-lesson on summary writing."
+- "12 of 22 students have not yet tried Lab Report mode. If you have a lab coming up, model the template explicitly."
+- "AI feedback requests are concentrated in 4 students. Consider explicitly inviting reluctant students to use the Get AI Feedback button."
+
+DO NOT name individual students unless flagging an equity / engagement disparity that needs attention.
+
+Return ONLY JSON:
+{
+  "classSummary": "1-2 sentence overview of the class's notebook engagement.",
+  "patterns": [
+    { "title": "Short label (4-8 words)", "observation": "1-2 sentences describing the pattern.", "miniLesson": "1 sentence suggesting a concrete next step or mini-lesson." }
+  ],
+  "celebration": "1 sentence naming a class-wide strength worth acknowledging."
+}
+`.trim();
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
+      setInsights(parsed);
+    } catch (e) {
+      console.warn('[ClassNotebookInsights] failed', e);
+      addToast(t('dashboard.class_notebook.error') || 'Could not generate class insights right now. Try again in a moment.', 'error');
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [callGemini, dashboardData, agg, addToast, t]);
+
+  if (agg.totalEntries === 0) return null;
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-400" data-help-key="dashboard_class_notebook_section">
+      <div className="flex items-start justify-between mb-4">
+        <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2">
+          📓 {t('dashboard.class_notebook.title') || 'Class Notebook Activity'}
+        </h4>
+        <button
+          onClick={handleGenerateClassInsights}
+          disabled={insightsLoading || agg.studentsWithNotebook < 2}
+          className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          aria-label={t('dashboard.class_notebook.ai_button_aria') || 'Generate AI insights on class-wide note-taking patterns'}
+          title={agg.studentsWithNotebook < 2 ? (t('dashboard.class_notebook.need_more_short') || 'Need 2+ students with notebook') : (t('dashboard.class_notebook.ai_button_tooltip') || 'AI looks for class-wide patterns and suggests mini-lessons')}
+          data-help-key="dashboard_class_notebook_ai_btn"
+        >
+          {insightsLoading ? '⏳' : '✨'} {t('dashboard.class_notebook.ai_button') || 'AI Class Insights'}
+        </button>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div className="bg-violet-50 rounded-xl p-3 text-center border border-violet-200">
+          <div className="text-2xl font-black text-violet-700">{agg.studentsWithNotebook}</div>
+          <div className="text-[10px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.class_notebook.students_with') || 'Students using'}</div>
+        </div>
+        {agg.cornell > 0 && <div className="bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200">
+          <div className="text-2xl font-black text-indigo-700">{agg.cornell}</div>
+          <div className="text-[10px] font-bold text-indigo-600 uppercase mt-1">📓 Cornell</div>
+        </div>}
+        {agg.labReport > 0 && <div className="bg-sky-50 rounded-xl p-3 text-center border border-sky-200">
+          <div className="text-2xl font-black text-sky-700">{agg.labReport}</div>
+          <div className="text-[10px] font-bold text-sky-600 uppercase mt-1">🧪 Lab Report</div>
+        </div>}
+        {agg.readingResponse > 0 && <div className="bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200">
+          <div className="text-2xl font-black text-fuchsia-700">{agg.readingResponse}</div>
+          <div className="text-[10px] font-bold text-fuchsia-600 uppercase mt-1">📖 Reading</div>
+        </div>}
+        {agg.anchorChart > 0 && <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-200">
+          <div className="text-2xl font-black text-amber-700">{agg.anchorChart}</div>
+          <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">📋 Anchor Chart</div>
+        </div>}
+      </div>
+      {agg.feedbackRequests > 0 && (
+        <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm">
+          <span className="font-bold text-emerald-800">💬 {agg.feedbackRequests} AI-feedback request{agg.feedbackRequests === 1 ? '' : 's'}</span>
+          <span className="text-emerald-700"> across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).</span>
+        </div>
+      )}
+      {/* Deterministic quality signals — no AI required, color-coded against research thresholds */}
+      {(qualitySignals.summaryFillRate.value !== null
+        || qualitySignals.avgCerWords.value !== null
+        || qualitySignals.rrEvidenceRate.value !== null
+        || qualitySignals.selfAssessment.value !== null) && (
+        <div className="mb-4" data-help-key="dashboard_class_notebook_quality_signals">
+          <div className="flex items-center justify-between mb-2">
+            <h5 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('dashboard.class_notebook.quality_signals_label') || 'Quality Signals (research thresholds)'}</h5>
+            <span className="text-[10px] text-slate-500 italic">{t('dashboard.class_notebook.quality_signals_legend') || 'green = healthy · amber = partial · red = needs attention'}</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {qualitySignals.summaryFillRate.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('summaryFillRate', qualitySignals.summaryFillRate.value)}
+                label={t('dashboard.class_notebook.signal_summary_fill') || 'Cornell summary rate'}
+                value={qualitySignals.summaryFillRate.value}
+                suffix="%"
+                denom={`${qualitySignals.summaryFillRate.count}/${qualitySignals.summaryFillRate.total}`}
+                hint={t('dashboard.class_notebook.signal_summary_fill_hint') || '% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)'}
+              />
+            )}
+            {qualitySignals.avgCues.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('avgCues', qualitySignals.avgCues.value)}
+                label={t('dashboard.class_notebook.signal_avg_cues') || 'Cornell cue density'}
+                value={qualitySignals.avgCues.value}
+                denom={`avg / ${qualitySignals.avgCues.n} entries`}
+                hint={t('dashboard.class_notebook.signal_avg_cues_hint') || 'Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density'}
+              />
+            )}
+            {qualitySignals.avgCerWords.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('avgCerWords', qualitySignals.avgCerWords.value)}
+                label={t('dashboard.class_notebook.signal_cer_length') || 'Lab CER length'}
+                value={qualitySignals.avgCerWords.value}
+                suffix=" wd"
+                denom={`avg / ${qualitySignals.avgCerWords.n} reports`}
+                hint={t('dashboard.class_notebook.signal_cer_length_hint') || 'Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)'}
+              />
+            )}
+            {qualitySignals.rrEvidenceRate.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('rrEvidenceRate', qualitySignals.rrEvidenceRate.value)}
+                label={t('dashboard.class_notebook.signal_rr_evidence') || 'Reading evidence rate'}
+                value={qualitySignals.rrEvidenceRate.value}
+                suffix="%"
+                denom={`${qualitySignals.rrEvidenceRate.count}/${qualitySignals.rrEvidenceRate.total}`}
+                hint={t('dashboard.class_notebook.signal_rr_evidence_hint') || '% of Reading Responses with a favorite line filled (close-reading anchor)'}
+              />
+            )}
+            {qualitySignals.connectionVariety.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('connectionVariety', qualitySignals.connectionVariety.value)}
+                label={t('dashboard.class_notebook.signal_conn_variety') || 'Connection variety'}
+                value={qualitySignals.connectionVariety.value}
+                suffix="%"
+                denom={`${qualitySignals.connectionVariety.count}/${qualitySignals.connectionVariety.total} students`}
+                hint={t('dashboard.class_notebook.signal_conn_variety_hint') || '% of students using ≥2 of 3 connection types (text-to-self/text/world)'}
+              />
+            )}
+            {qualitySignals.selfAssessment.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('selfAssessment', qualitySignals.selfAssessment.value)}
+                label={t('dashboard.class_notebook.signal_self_assess') || 'Self-assessment use'}
+                value={qualitySignals.selfAssessment.value}
+                suffix="%"
+                denom={`${qualitySignals.selfAssessment.count}/${qualitySignals.selfAssessment.total} students`}
+                hint={t('dashboard.class_notebook.signal_self_assess_hint') || '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)'}
+              />
+            )}
+          </div>
+        </div>
+      )}
+      {insightsLoading ? (
+        <div className="text-center py-8">
+          <div className="text-4xl mb-2 animate-pulse">📓</div>
+          <p className="text-sm text-slate-600 font-bold">{t('dashboard.class_notebook.loading') || 'AI is reading across the class...'}</p>
+        </div>
+      ) : insights ? (
+        <div className="space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200">
+          {insights.classSummary && (
+            <div className="bg-white border border-slate-200 rounded-md p-3">
+              <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">{t('dashboard.class_notebook.overview_label') || 'Class overview'}</div>
+              <div className="text-sm text-slate-700 leading-relaxed">{insights.classSummary}</div>
+            </div>
+          )}
+          {Array.isArray(insights.patterns) && insights.patterns.map((p, i) => (
+            <div key={i} className="bg-white border-l-4 border-violet-400 rounded-r-md p-3">
+              <div className="text-sm font-black text-violet-800 mb-1">{p.title}</div>
+              <div className="text-sm text-slate-700 leading-relaxed mb-2">{p.observation}</div>
+              <div className="text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900">
+                <span className="font-bold">{t('dashboard.class_notebook.mini_lesson_label') || 'Try a mini-lesson:'}</span> {p.miniLesson}
+              </div>
+            </div>
+          ))}
+          {insights.celebration && (
+            <div className="bg-emerald-50 border-2 border-emerald-300 rounded-md p-3">
+              <div className="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">🌱 {t('dashboard.class_notebook.celebration_label') || 'Class strength'}</div>
+              <div className="text-sm text-slate-700 leading-relaxed">{insights.celebration}</div>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+});
+
 // @section LEARNER_PROGRESS — Student learning journey view
 const LearnerProgressView = React.memo(({
     globalPoints = 0, globalLevel = 1, globalProgress = 0, currentLevelXP = 0, globalXPNext = 100,
@@ -2284,7 +3601,7 @@ const LearnerProgressView = React.memo(({
         ? (selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey")
         : "My Learning Progress";
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500" data-help-key="learner_progress_panel">
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
@@ -2306,6 +3623,7 @@ const LearnerProgressView = React.memo(({
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                         title={showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics"}
+                        data-help-key="learner_progress_details_toggle"
                     >
                         <BarChart3 size={14} />
                         {showDiagnostics ? 'Details On' : 'Details'}
@@ -2318,7 +3636,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             </div>
             {isParentMode && childProfiles.length > 0 && (
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100">
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100" data-help-key="learner_progress_family_filter">
                     <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Users size={14} /> Family Members
                     </h3>
@@ -2355,7 +3673,7 @@ const LearnerProgressView = React.memo(({
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative">
                             <Trophy size={28} className="text-indigo-900 fill-current" />
-                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-400 text-[11px] font-black px-2 py-0.5 rounded-full border border-white">
+                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-700 text-[11px] font-black px-2 py-0.5 rounded-full border border-white">
                                 Lvl {globalLevel}
                             </div>
                         </div>
@@ -2389,7 +3707,7 @@ const LearnerProgressView = React.memo(({
                                     <span className="text-lg">🔥</span>
                                     <div>
                                         <div className="text-sm font-black text-orange-600">{wordSoundsScore.streak} Streak</div>
-                                        <div className="text-[11px] text-orange-400 font-bold uppercase">{t('learner.current_run')}</div>
+                                        <div className="text-[11px] text-orange-700 font-bold uppercase">{t('learner.current_run')}</div>
                                     </div>
                                 </div>
                             )}
@@ -2410,7 +3728,7 @@ const LearnerProgressView = React.memo(({
                                         <span className="text-lg">📅</span>
                                         <div>
                                             <div className="text-sm font-black text-red-600">{dayStreak} Days</div>
-                                            <div className="text-[11px] text-red-400 font-bold uppercase">{t('learner.daily_streak')}</div>
+                                            <div className="text-[11px] text-red-600 font-bold uppercase">{t('learner.daily_streak')}</div>
                                         </div>
                                     </div>
                                 ) : null;
@@ -2431,7 +3749,7 @@ const LearnerProgressView = React.memo(({
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_activities_card">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <Activity size={14} /> Activities Completed
                     </h3>
@@ -2450,7 +3768,7 @@ const LearnerProgressView = React.memo(({
                         ))}
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_skills_chart">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Target size={14} /> Skills Progress
                     </h3>
@@ -2578,15 +3896,15 @@ const LearnerProgressView = React.memo(({
                         <div className="grid grid-cols-3 gap-3 mb-3">
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayXP.reduce((s,e) => s + (e.points || 0), 0)}</div>
-                                <div className="text-[11px] font-bold text-blue-400 uppercase">{t('learner.xp_earned')}</div>
+                                <div className="text-[11px] font-bold text-blue-700 uppercase">{t('learner.xp_earned')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayXP.length}</div>
-                                <div className="text-[11px] font-bold text-blue-400 uppercase">Activities</div>
+                                <div className="text-[11px] font-bold text-blue-700 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayWords.filter(w => w.correct).length}/{todayWords.length}</div>
-                                <div className="text-[11px] font-bold text-blue-400 uppercase">{t('learner.words_today')}</div>
+                                <div className="text-[11px] font-bold text-blue-700 uppercase">{t('learner.words_today')}</div>
                             </div>
                         </div>
                         {todayXP.length > 0 && (
@@ -2625,7 +3943,7 @@ const LearnerProgressView = React.memo(({
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekTotalXP}</div>
-                                <div className="text-[11px] font-bold text-emerald-400 uppercase">{t('learner.xp_this_week')}</div>
+                                <div className="text-[11px] font-bold text-emerald-700 uppercase">{t('learner.xp_this_week')}</div>
                                 {xpDelta !== 0 && (
                                     <div className={`text-[11px] font-bold mt-0.5 ${xpDelta > 0 ? 'text-green-500' : 'text-red-400'}`}>
                                         {xpDelta > 0 ? '↑' : '↓'} {Math.abs(xpDelta)} vs last week
@@ -2634,15 +3952,15 @@ const LearnerProgressView = React.memo(({
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekXP.length}</div>
-                                <div className="text-[11px] font-bold text-emerald-400 uppercase">Activities</div>
+                                <div className="text-[11px] font-bold text-emerald-700 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekWords.filter(w => w.correct).length}/{weekWords.length}</div>
-                                <div className="text-[11px] font-bold text-emerald-400 uppercase">{t('learner.words_this_week')}</div>
+                                <div className="text-[11px] font-bold text-emerald-700 uppercase">{t('learner.words_this_week')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekAccuracy !== null ? weekAccuracy + '%' : '—'}</div>
-                                <div className="text-[11px] font-bold text-emerald-400 uppercase">Accuracy</div>
+                                <div className="text-[11px] font-bold text-emerald-700 uppercase">Accuracy</div>
                             </div>
                         </div>
                         {weekGames.length > 0 && (
@@ -2654,7 +3972,7 @@ const LearnerProgressView = React.memo(({
                 );
             })()}
             {studentProgressLog.length >= 2 && (
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_growth_chart">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <TrendingUp size={14} /> Growth Over Time
                     </h3>
@@ -2662,7 +3980,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             )}
             {showDiagnostics && (
-                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300" data-help-key="learner_progress_diagnostics_panel">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                         <BarChart3 size={14} /> Detailed Metrics
                     </h3>
@@ -2770,6 +4088,7 @@ const LearnerProgressView = React.memo(({
                         if (w) { w.document.write(html); w.document.close(); }
                     }}
                     className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                    data-help-key="learner_progress_print_report_btn"
                 >
                     <Printer size={16} /> Print Progress Report
                 </button>
@@ -2777,6 +4096,7 @@ const LearnerProgressView = React.memo(({
                     <button
                         onClick={onShareWithTeacher}
                         className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                        data-help-key="learner_progress_share_teacher_btn"
                     >
                         <Share2 size={16} /> Share Progress with Teacher
                     </button>
@@ -2786,11 +4106,54 @@ const LearnerProgressView = React.memo(({
     );
 });
 // @section TEACHER_DASHBOARD — Main teacher dashboard
-const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens }) => {
+const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
-  useFocusTrap(modalRef, true);
+  useFocusTrap(modalRef, true, onClose);
   const [gradedIds, setGradedIds] = useState(new Set());
+  // Teacher comment threads per (student, resource). Persisted to localStorage
+  // since the dashboard is a one-way student→teacher upload and the comments
+  // are the teacher's PRIVATE annotations, not shared with the student.
+  // Shape: Map<string "{studentId}:{resourceId}", Array<{ id, text, timestamp }>>
+  const [teacherComments, setTeacherComments] = useState(() => {
+      try {
+          const stored = localStorage.getItem('allo_teacher_comments');
+          if (stored) return new Map(JSON.parse(stored));
+      } catch (_) {}
+      return new Map();
+  });
+  React.useEffect(() => {
+      try {
+          localStorage.setItem('allo_teacher_comments', JSON.stringify(Array.from(teacherComments.entries())));
+      } catch (_) {}
+  }, [teacherComments]);
+  const _commentKey = (studentId, resourceId) => `${studentId || 'unknown'}:${resourceId || 'unknown'}`;
+  const getCommentsFor = React.useCallback((studentId, resourceId) => {
+      return teacherComments.get(_commentKey(studentId, resourceId)) || [];
+  }, [teacherComments]);
+  const addComment = (studentId, resourceId, text) => {
+      const trimmed = (text || '').trim();
+      if (!trimmed) return;
+      setTeacherComments(prev => {
+          const next = new Map(prev);
+          const key = _commentKey(studentId, resourceId);
+          const list = next.get(key) || [];
+          next.set(key, [...list, { id: 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), text: trimmed, timestamp: new Date().toISOString() }]);
+          return next;
+      });
+      if (addToast) addToast(t('dashboard.comments.saved') || 'Comment saved.', 'success');
+  };
+  const deleteComment = (studentId, resourceId, commentId) => {
+      setTeacherComments(prev => {
+          const next = new Map(prev);
+          const key = _commentKey(studentId, resourceId);
+          const list = next.get(key) || [];
+          const updated = list.filter(c => c.id !== commentId);
+          if (updated.length === 0) next.delete(key);
+          else next.set(key, updated);
+          return next;
+      });
+  };
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -2818,6 +4181,199 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           }
           return next;
       });
+  };
+  // ── Bulk teacher actions ────────────────────────────────────────────────
+  // Apply an action to whichever student set is currently visible (after the
+  // student-filter chip — "All / Has Probes / Has Notebook / Graded / etc").
+  // Lets a teacher mark a whole group reviewed in one click, export their
+  // notebooks to a single PDF, or generate AI feedback messages for all of
+  // them in batch.
+  const getCurrentFilteredStudents = React.useCallback(() => {
+      return (dashboardData || []).filter(s => {
+          if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
+          if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+          if (studentFilter === 'notebook') return (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
+          if (studentFilter === 'graded') return gradedIds.has(s.id);
+          if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
+          return true;
+      });
+  }, [dashboardData, studentFilter, gradedIds]);
+  const handleBulkMarkGraded = () => {
+      const students = getCurrentFilteredStudents();
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_students_in_filter') || 'No students in the current filter.', 'info');
+          return;
+      }
+      const ids = students.map(s => s.id);
+      setGradedIds(prev => {
+          const next = new Set(prev);
+          let added = 0;
+          ids.forEach(id => { if (!next.has(id)) { next.add(id); added++; } });
+          if (addToast) addToast((t('dashboard.bulk.marked_graded', { count: added }) || `Marked ${added} student${added === 1 ? '' : 's'} graded.`), 'success');
+          return next;
+      });
+  };
+  const handleBulkUnmarkGraded = () => {
+      const students = getCurrentFilteredStudents();
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_students_in_filter') || 'No students in the current filter.', 'info');
+          return;
+      }
+      const ids = new Set(students.map(s => s.id));
+      setGradedIds(prev => {
+          const next = new Set(prev);
+          let removed = 0;
+          ids.forEach(id => { if (next.has(id)) { next.delete(id); removed++; } });
+          if (addToast) addToast((t('dashboard.bulk.unmarked_graded', { count: removed }) || `Cleared graded flag on ${removed} student${removed === 1 ? '' : 's'}.`), 'info');
+          return next;
+      });
+  };
+  const handleBulkExportNotebooksPDF = async () => {
+      const students = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')));
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_notebook_students') || 'No students in the current filter have notebook entries.', 'info');
+          return;
+      }
+      if (!window.jspdf) {
+          if (addToast) addToast(t('dashboard.bulk.pdf_unavailable') || 'PDF library not loaded.', 'error');
+          return;
+      }
+      if (addToast) addToast((t('dashboard.bulk.generating_notebooks_pdf', { count: students.length }) || `Generating notebook PDF for ${students.length} student${students.length === 1 ? '' : 's'}...`), 'info');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const renderCommentsBlock = (studentId, resourceId) => {
+          const list = getCommentsFor(studentId, resourceId);
+          if (!list || list.length === 0) return '';
+          const items = list.map(c => `
+              <li style="margin-bottom:8px; padding:8px 10px; background:#fffbeb; border-left:3px solid #f59e0b; border-radius:4px;">
+                  <div style="font-size:0.85em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(c.text)}</div>
+                  <div style="font-size:0.7em; color:#92400e; font-style:italic; margin-top:4px;">📝 ${new Date(c.timestamp).toLocaleString()}</div>
+              </li>
+          `).join('');
+          return `
+              <div style="margin-top:12px;">
+                  <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">💬 Teacher notes (${list.length})</div>
+                  <ul style="list-style:none; padding:0; margin:0;">${items}</ul>
+              </div>
+          `;
+      };
+      const studentSections = students.map((student, sidx) => {
+          const notebookEntries = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
+          const entriesHtml = notebookEntries.map((item) => {
+              try {
+                  const body = generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : '';
+                  const comments = renderCommentsBlock(student.id, item.id);
+                  return body + comments;
+              } catch (_) { return ''; }
+          }).filter(Boolean).join('<hr style="margin:30px 0; border:0; border-top:1px dashed #cbd5e1;" />');
+          // Count any teacher comments on this student for the header badge
+          const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(student.id, item.id).length, 0);
+          return `
+              <div style="margin-bottom:40px; ${sidx > 0 ? 'page-break-before:always;' : ''}">
+                  <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
+                      ${(student.studentNickname || 'Anonymous')} — Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? 'entry' : 'entries'})${commentCount > 0 ? ` <span style="font-size:11px; font-weight:normal; color:#92400e;">· ${commentCount} teacher note${commentCount === 1 ? '' : 's'}</span>` : ''}
+                  </h2>
+                  ${entriesHtml || '<p style="color:#64748b; font-style:italic;">No notebook entries.</p>'}
+              </div>
+          `;
+      }).join('');
+      const reportHtml = `
+          <div style="font-family:Helvetica,sans-serif; padding:30px; color:#1e293b; font-size:11px; line-height:1.5;">
+              <h1 style="font-size:20px; color:#4f46e5; border-bottom:2px solid #4f46e5; padding-bottom:8px; margin-bottom:4px;">Class Notebook Export</h1>
+              <p style="font-size:11px; color:#64748b; margin-top:0;">${students.length} students · ${new Date().toLocaleDateString()} · Generated by AlloFlow</p>
+              ${studentSections}
+          </div>
+      `;
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.innerHTML = reportHtml;
+      document.body.appendChild(container);
+      try {
+          await doc.html(container, {
+              callback: (d) => { d.save(`class_notebooks_${new Date().toISOString().split('T')[0]}.pdf`); if (addToast) addToast(t('dashboard.bulk.notebooks_pdf_saved') || 'Class notebooks PDF saved.', 'success'); },
+              x: 8, y: 8, width: 195,
+              windowWidth: 800,
+          });
+      } catch (err) {
+          if (addToast) addToast('PDF error: ' + err.message, 'error');
+      }
+      document.body.removeChild(container);
+  };
+  const handleBulkGenerateFeedback = async () => {
+      const students = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && h.type === 'note-taking'));
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_notebook_students') || 'No students with note-taking entries in the current filter.', 'info');
+          return;
+      }
+      if (typeof callGemini !== 'function') {
+          if (addToast) addToast(t('dashboard.bulk.no_ai') || 'AI is not available.', 'warning');
+          return;
+      }
+      if (addToast) addToast((t('dashboard.bulk.generating_feedback', { count: students.length }) || `Generating feedback messages for ${students.length} student${students.length === 1 ? '' : 's'}...`), 'info');
+      // Generate one teacher-facing summary feedback per student. Strengths-first
+      // framing per the existing per-instance pattern. Output goes into a PDF
+      // bundle so the teacher can print + hand back individual sheets.
+      const results = [];
+      for (const student of students) {
+          const notes = (student.history || []).filter(h => h && h.type === 'note-taking').slice(0, 3);
+          const sample = notes.map(n => {
+              const d = n.data || {};
+              const tt = d.templateType || 'cornell-notes';
+              return `${tt}: ${JSON.stringify(d).slice(0, 600)}`;
+          }).join('\n---\n');
+          const prompt = `
+You are a teacher writing a short hand-back feedback note to ONE student about their note-taking work this week. Lead with one specific strength (quote their work). Then ONE concrete growth nudge. Keep it under 80 words total. Warm, direct, growth-focused. No grades or numbers.
+
+STUDENT WORK SAMPLE:
+${sample}
+
+Return ONLY the feedback text (no JSON, no headers, just the paragraph).
+`.trim();
+          try {
+              const txt = await callGemini(prompt, false);
+              results.push({ name: student.studentNickname || 'Anonymous', feedback: (txt || '').trim() });
+          } catch (e) {
+              results.push({ name: student.studentNickname || 'Anonymous', feedback: '(could not generate)' });
+          }
+      }
+      if (!window.jspdf) {
+          if (addToast) addToast('PDF library not loaded.', 'error');
+          return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const sections = results.map((r, i) => `
+          <div style="margin-bottom:30px; padding:15px; background:#fffbeb; border-left:4px solid #f59e0b; ${i > 0 && i % 3 === 0 ? 'page-break-before:always;' : ''}">
+              <div style="font-size:13px; font-weight:bold; color:#92400e; margin-bottom:6px;">📨 ${r.name}</div>
+              <div style="font-size:11px; color:#1e293b; line-height:1.5;">${(r.feedback || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>')}</div>
+          </div>
+      `).join('');
+      const reportHtml = `
+          <div style="font-family:Helvetica,sans-serif; padding:30px; color:#1e293b; font-size:11px;">
+              <h1 style="font-size:18px; color:#4f46e5; margin-bottom:4px;">Class Feedback Sheets</h1>
+              <p style="font-size:10px; color:#64748b;">Cut along the dashed lines and hand back to each student. ${new Date().toLocaleDateString()}</p>
+              ${sections}
+          </div>
+      `;
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.innerHTML = reportHtml;
+      document.body.appendChild(container);
+      try {
+          await doc.html(container, {
+              callback: (d) => { d.save(`class_feedback_${new Date().toISOString().split('T')[0]}.pdf`); if (addToast) addToast((t('dashboard.bulk.feedback_pdf_saved') || 'Feedback PDF saved.'), 'success'); },
+              x: 8, y: 8, width: 195,
+              windowWidth: 800,
+          });
+      } catch (err) {
+          if (addToast) addToast('PDF error: ' + err.message, 'error');
+      }
+      document.body.removeChild(container);
   };
   const calculateScore = (history) => {
       if (!history || !Array.isArray(history)) return t('dashboard.status.zero_activities');
@@ -2929,10 +4485,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     const totalFidelity = dashboardData.reduce((s, st) => s + (st.fidelityLog ? st.fidelityLog.length : 0), 0);
     const reportHtml = `
         <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto;">
-            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">AlloFlow UDL Platform — Research Data Report</h1>
+            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">${t('teacher.research.report_title') || 'AlloFlow UDL Platform — Research Data Report'}</h1>
             <p style="text-align: center; font-size: 12px; color: #666; margin-bottom: 30px;">Generated: ${date} | N = ${dashboardData.length} students</p>
             <hr style="border: 1px solid #333; margin-bottom: 25px;">
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 1. TAM Survey Construct Descriptives</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t('teacher.research.table1_heading') || 'Table 1. TAM Survey Construct Descriptives'}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -2967,7 +4523,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                     </tr>
                 </tbody>
             </table>
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 2. Oral Reading Fluency Probe Descriptives</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t('teacher.research.table2_heading') || 'Table 2. Oral Reading Fluency Probe Descriptives'}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -2979,26 +4535,26 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </thead>
                 <tbody>
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 6px 8px;">Words Correct Per Minute (WCPM)</td>
+                        <td style="padding: 6px 8px;">${t('teacher.research.measure_wcpm') || 'Words Correct Per Minute (WCPM)'}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.sd}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 6px 8px;">Digits Correct Per Minute (DCPM)</td>
+                        <td style="padding: 6px 8px;">${t('teacher.research.measure_dcpm') || 'Digits Correct Per Minute (DCPM)'}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.sd}</td>
                     </tr>
                     <tr style="border-bottom: 2px solid #333;">
-                        <td style="padding: 6px 8px;">Accuracy (%)</td>
+                        <td style="padding: 6px 8px;">${t('teacher.research.measure_accuracy_pct') || 'Accuracy (%)'}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.sd}</td>
                     </tr>
                 </tbody>
             </table>
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 3. Implementation Fidelity Summary</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t('teacher.research.table3_heading') || 'Table 3. Implementation Fidelity Summary'}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -3015,10 +4571,11 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </tbody>
             </table>
             <div style="page-break-before: always;"></div>
-            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">Appendix A: Individual Student Data</h2>
+            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">${t('teacher.research.appendix_a_heading') || 'Appendix A: Individual Student Data'}</h2>
             ${dashboardData.filter(s => {
                                           if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
                                           if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+                                          if (studentFilter === 'notebook') return (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
                                           if (studentFilter === 'graded') return gradedIds.has(s.id);
                                           if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
                                           return true;
@@ -3030,6 +4587,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 const sSessions = student.sessionCounter || 0;
                 const sProbeWcpm = sProbes.filter(p => p.wcpm !== undefined);
                 const avgWcpm = sProbeWcpm.length > 0 ? (sProbeWcpm.reduce((s,p) => s + p.wcpm, 0) / sProbeWcpm.length).toFixed(1) : "N/A";
+                // Notebook activity (note-taking templates + anchor charts)
+                const sNotes = (student.history || []).filter(h => h.type === "note-taking");
+                const sAnchorCharts = (student.history || []).filter(h => h.type === "anchor-chart");
+                const sNotebookFeedback = sNotes.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
                 return `
                 <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; ${idx > 0 ? "page-break-before: auto;" : ""}">
                     <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333;">Student ${idx + 1}: ${student.studentNickname}</h3>
@@ -3054,21 +4615,33 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             <td style="padding: 4px 6px; color: #666;">${t('research.explore_challenges')}</td>
                             <td style="padding: 4px 6px; font-weight: bold;">${sExplore.length}</td>
                         </tr>
+                        ${(sNotes.length + sAnchorCharts.length) > 0 ? `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">Notebook Activity (notes + charts)</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sNotes.length + sAnchorCharts.length}</td>
+                        </tr>
+                        ${sNotebookFeedback > 0 ? `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">AI feedback requests on notes</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sNotebookFeedback}</td>
+                        </tr>
+                        ` : ''}
+                        ` : ''}
                     </table>
                     ${sProbeWcpm.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Probe History (WCPM):</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.probe_history_wcpm_label') || 'Probe History (WCPM):'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
                         ${sProbeWcpm.map(p => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: ${p.wcpm >= 100 ? "#d1fae5" : p.wcpm >= 60 ? "#fef3c7" : "#fee2e2"}; color: ${p.wcpm >= 100 ? "#065f46" : p.wcpm >= 60 ? "#92400e" : "#991b1b"}; font-weight: bold;">${p.wcpm}${p.date ? " (" + new Date(p.date).toLocaleDateString("en", {month: "short", day: "numeric"}) + ")" : ""}</span>`).join("")}
                     </div>
                     ` : ""}
                     ${sQuizzes.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Quiz Scores:</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.quiz_scores_label') || 'Quiz Scores:'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
                         ${sQuizzes.map(q => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #ede9fe; color: #5b21b6; font-weight: bold;">${q.score !== undefined ? q.score : "—"}${q.label ? " " + q.label : ""}</span>`).join("")}
                     </div>
                     ` : ""}
                     ${sSurveys.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Survey Responses:</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.survey_responses_label') || 'Survey Responses:'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                         ${sSurveys.map(s => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${s.construct || "—"}: ${s.score !== undefined ? s.score + "/5" : "—"}</span>`).join("")}
                     </div>
@@ -3078,7 +4651,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             }).join("")}
                         <div style="margin-top: 40px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
                 <p><em>Note.</em> TAM = Technology Acceptance Model (Davis, 1989). WCPM = Words Correct Per Minute. DCPM = Digits Correct Per Minute.</p>
-                <p>Generated by AlloFlow UDL Platform — Research Export Module</p>
+                <p>${t('teacher.research.export_footer') || 'Generated by AlloFlow UDL Platform — Research Export Module'}</p>
             </div>
         </div>
     `;
@@ -3224,13 +4797,17 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   };
   const handleExportCSV = () => {
     if (!dashboardData || dashboardData.length === 0) return;
+    // Registry-driven per-tool count columns. Auto-extends when new tools
+    // get registered (incl. externally-registered tools via window.AlloModules
+    // .TeacherMetricRegistry.push()) — no manual column-list updates needed.
+    const registryHeaders = getTeacherMetricRegistry().map(e => e.label);
     const headers = [
         t('dashboard.csv.header_name'),
         t('dashboard.csv.header_date'),
         t('dashboard.csv.header_level'),
         t('dashboard.csv.header_quiz_avg'),
         t('dashboard.csv.header_total_xp')
-    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions'];
+    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
     const rows = dashboardData.map(student => {
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
@@ -3263,7 +4840,18 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         const avgWcpm = wcpmProbes.length > 0 ? (wcpmProbes.reduce((sum,x) => sum + x.wcpm, 0) / wcpmProbes.length).toFixed(0) : 'N/A';
         const surveyCount = s.surveyResponses ? s.surveyResponses.length : 0;
         const sessionCount = s.sessionCounter || 0;
-        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}"`;
+        // Notebook activity columns
+        const hist = student.history || [];
+        const noteEntries = hist.filter(h => h && h.type === 'note-taking');
+        const cornellCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
+        const labCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
+        const readingCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+        const anchorCount = hist.filter(h => h && h.type === 'anchor-chart').length;
+        const feedbackCount = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+        // Registry-driven per-tool counts (extends with each new registry entry,
+        // including externally-registered tools)
+        const registryCounts = getTeacherMetricRegistry().map(entry => entry.count(student));
+        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3281,49 +4869,49 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         ref={modalRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="teacher-grading-dashboard-title"
         className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
     >
       <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col">
-          <div className="p-4 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-                <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+          <div className="p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0">
                     <Layout size={24} />
                 </div>
-                <h2 className="text-xl font-black text-slate-800">{t('dashboard.grading_dashboard')}</h2>
+                <h2 id="teacher-grading-dashboard-title" className="text-base sm:text-xl font-black text-slate-800 truncate">{t('dashboard.grading_dashboard')}</h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                 {dashboardData.length > 0 && (<>
                     <button
                         onClick={handleExportCSV} data-help-key="dashboard_export_csv_btn"
-                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-green-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-green-200 shadow-sm flex items-center gap-1"
                         title={t('dashboard.export_csv_tooltip')}
                         aria-label={t('dashboard.export_csv_tooltip')}
                     >
-                        <FileDown size={14} /> {t('dashboard.export_csv')}
-                    
+                        <FileDown size={14} /> <span className="hidden sm:inline">{t('dashboard.export_csv')}</span><span className="sm:hidden">CSV</span>
                     </button>
                     <button
                         onClick={handleExportResearchPDF} data-help-key="dashboard_export_research_btn"
-                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-purple-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-purple-200 shadow-sm flex items-center gap-1"
                         title={t('research.export_apa_title')}
-                        aria-label="Export Research Report"
+                        aria-label={t('teacher.research.export_btn_aria') || 'Export Research Report'}
                     >
-                        <FileDown size={14} /> 📊 Research PDF
+                        <FileDown size={14} /> <span className="hidden sm:inline">📊 Research PDF</span><span className="sm:hidden">📊 PDF</span>
                     </button>
                 </>)}
                 {dashboardData.length > 0 && (
                     <button
                         onClick={handleClearAll} data-help-key="dashboard_clear_all_btn"
-                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-transparent hover:border-red-100"
+                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-transparent hover:border-red-100"
                         title={t('dashboard.reset_tooltip')}
                         aria-label={t('dashboard.reset_tooltip')}
                     >
-                        {t('dashboard.clear_all')}
+                        <span className="hidden sm:inline">{t('dashboard.clear_all')}</span><span className="sm:hidden">Clear</span>
                     </button>
                 )}
                 <button
                 onClick={onClose}
-                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shrink-0"
                 autoFocus
                 aria-label={t('common.close_dashboard')}
                 >
@@ -3332,28 +4920,28 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             </div>
           </div>
           {dashboardData.length > 0 && dashboardView === 'list' && (
-              <div className="flex px-6 gap-6">
+              <div className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
                   <button
                       onClick={() => setActiveTab('students')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_students')} ({dashboardData.length})
                   </button>
                   <button
                       onClick={() => setActiveTab('insights')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_insights')}
                   </button>
                   <button
                       onClick={() => setActiveTab('behavior')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔍 {t('behavior_lens.hub.title') || 'Behavior'}
                   </button>
                   <button
                       onClick={() => setActiveTab('stems')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔬 STEM Stations
                   </button>
@@ -3363,28 +4951,28 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       <div className="flex-grow p-6 overflow-y-auto bg-slate-100">
          {dashboardView === 'detail' && selectedStudent ? (
              <div className="max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300">
-                 <div className="flex items-center justify-between gap-6 mb-6 border-b border-slate-200 pb-6 sticky top-0 bg-slate-50 z-10 pt-2">
-                     <div className="flex items-center gap-6">
+                 <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-6 mb-6 border-b border-slate-200 pb-4 sm:pb-6 sticky top-0 bg-slate-50 z-10 pt-2">
+                     <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
                          <button
                              aria-label={t('common.check')}
                             onClick={() => setDashboardView('list')}
-                            className="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0"
+                            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0 text-xs sm:text-sm"
                          >
-                             <ArrowDown className="rotate-90" size={16}/> {t('dashboard.back_button')}
+                             <ArrowDown className="rotate-90" size={16}/> <span className="hidden sm:inline">{t('dashboard.back_button')}</span>
                          </button>
-                         <div>
-                             <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-                                <div className="relative">
-                                    <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md border-4 border-indigo-100">
+                         <div className="min-w-0 flex-1">
+                             <h2 className="text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-2 sm:gap-3 min-w-0">
+                                <div className="relative shrink-0">
+                                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base sm:text-xl shadow-md border-2 sm:border-4 border-indigo-100">
                                         {selectedStudent.studentNickname.charAt(0).toUpperCase()}
                                     </div>
                                     {gradedIds.has(selectedStudent.id) && (
                                         <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
-                                            <CheckCircle2 size={14} />
+                                            <CheckCircle2 size={12} />
                                         </div>
                                     )}
                                 </div>
-                                {selectedStudent.studentNickname}
+                                <span className="truncate">{selectedStudent.studentNickname}</span>
                              </h2>
                              <div className="flex items-center gap-3 mt-2 flex-wrap">
                                  <p className="text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-400">
@@ -3457,12 +5045,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                         </div>
                     </div>
                  </div>
+                 <AllToolActivityPanel student={selectedStudent} t={t} />
                  {(selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && (
-                     <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6">
+                     <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6">
                          <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                              📊 Assessment & Research Data
                          </h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                              {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
                                      <div className="text-2xl font-black text-amber-700">{Object.values(selectedStudent.probeHistory).flat().length}</div>
@@ -3503,6 +5092,35 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                      )}
                                  </div>
                              )}
+                             {(() => {
+                                 // Notebook activity tile: counts of Cornell / Lab / Reading / Anchor Chart
+                                 // entries, plus AI-feedback request count rolled up across all entries.
+                                 const hist = selectedStudent.history || [];
+                                 const noteEntries = hist.filter(h => h && h.type === 'note-taking');
+                                 const anchorEntries = hist.filter(h => h && h.type === 'anchor-chart');
+                                 const totalNotebook = noteEntries.length + anchorEntries.length;
+                                 if (totalNotebook === 0) return null;
+                                 const byType = {
+                                     'cornell-notes': noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length,
+                                     'lab-report': noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length,
+                                     'reading-response': noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length,
+                                     'anchor-chart': anchorEntries.length,
+                                 };
+                                 const feedbackEvents = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+                                 return (
+                                     <div className="bg-violet-50 rounded-xl p-4 border border-violet-200" data-help-key="dashboard_notebook_activity_tile">
+                                         <div className="text-2xl font-black text-violet-700">{totalNotebook}</div>
+                                         <div className="text-[11px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.notebook_activity') || 'Notebook Activity'}</div>
+                                         <div className="text-[11px] text-slate-600 mt-2 space-y-0.5">
+                                             {byType['cornell-notes'] > 0 && <div className="flex justify-between"><span>📓 Cornell</span><span className="font-bold">{byType['cornell-notes']}</span></div>}
+                                             {byType['lab-report'] > 0 && <div className="flex justify-between"><span>🧪 Lab Report</span><span className="font-bold">{byType['lab-report']}</span></div>}
+                                             {byType['reading-response'] > 0 && <div className="flex justify-between"><span>📖 Reading</span><span className="font-bold">{byType['reading-response']}</span></div>}
+                                             {byType['anchor-chart'] > 0 && <div className="flex justify-between"><span>📋 Anchor Chart</span><span className="font-bold">{byType['anchor-chart']}</span></div>}
+                                             {feedbackEvents > 0 && <div className="flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200"><span>💬 AI feedback</span><span>{feedbackEvents}×</span></div>}
+                                         </div>
+                                     </div>
+                                 );
+                             })()}
                          </div>
                          {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                              <div className="mt-4 space-y-2">
@@ -3570,6 +5188,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             }}
                         />
                     </div>
+                    <TeacherCommentThread
+                        studentId={selectedStudent.id}
+                        resourceId={item.id}
+                        comments={getCommentsFor(selectedStudent.id, item.id)}
+                        onAdd={addComment}
+                        onDelete={deleteComment}
+                        t={t}
+                    />
                 </div>
                 ))}
                 {selectedStudent.history.length === 0 && (
@@ -3629,11 +5255,47 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                  </div>
                              </div>
                          </div>
+                         {/* Bulk actions toolbar — operates on whichever students are currently visible (after the filter chip). */}
+                         {(() => {
+                             const filteredCount = getCurrentFilteredStudents().length;
+                             const filteredNotebookCount = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && h.type === 'note-taking')).length;
+                             if (filteredCount === 0) return null;
+                             return (
+                                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2" data-help-key="dashboard_bulk_actions_toolbar">
+                                     <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto">
+                                         {t('dashboard.bulk.label') || 'Bulk actions'} ({filteredCount}):
+                                     </span>
+                                     <button
+                                         onClick={handleBulkMarkGraded}
+                                         className="text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors"
+                                         title={t('dashboard.bulk.mark_graded_tooltip') || 'Mark all currently-filtered students as graded'}
+                                     ><span className="hidden sm:inline">✅ Mark all graded</span><span className="sm:hidden">✅ Mark</span></button>
+                                     <button
+                                         onClick={handleBulkUnmarkGraded}
+                                         className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors"
+                                         title={t('dashboard.bulk.unmark_graded_tooltip') || 'Clear graded flag on all currently-filtered students'}
+                                     ><span className="hidden sm:inline">⬜ Clear graded</span><span className="sm:hidden">⬜ Clear</span></button>
+                                     <button
+                                         onClick={handleBulkExportNotebooksPDF}
+                                         disabled={filteredNotebookCount === 0}
+                                         className="text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.export_notebooks_tooltip') || 'Export all filtered students\' notebooks as one PDF (cut-apart classroom set)')}
+                                     ><span className="hidden sm:inline">📓 Export notebooks ({filteredNotebookCount})</span><span className="sm:hidden">📓 PDF ({filteredNotebookCount})</span></button>
+                                     <button
+                                         onClick={handleBulkGenerateFeedback}
+                                         disabled={filteredNotebookCount === 0}
+                                         className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.feedback_tooltip') || 'AI generates one short feedback note per student, ready to print + hand back')}
+                                     ><span className="hidden sm:inline">💬 AI feedback sheets ({filteredNotebookCount})</span><span className="sm:hidden">💬 AI ({filteredNotebookCount})</span></button>
+                                 </div>
+                             );
+                         })()}
                          <div className="flex items-center gap-2 flex-wrap">
                              {[
                                  ["all", "👥 All", dashboardData.length],
                                  ["probes", "📊 Has Probes", dashboardData.filter(s => s.probeHistory && Object.keys(s.probeHistory).length > 0).length],
                                  ["surveys", "📝 Has Surveys", dashboardData.filter(s => s.surveyResponses && s.surveyResponses.length > 0).length],
+                                 ["notebook", "📓 Has Notebook", dashboardData.filter(s => (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'))).length],
                                  ["graded", "✅ Graded", dashboardData.filter(s => gradedIds.has(s.id)).length],
                                  ["ungraded", "⬜ Ungraded", dashboardData.filter(s => !gradedIds.has(s.id)).length],
                              ].map(([key, label, count]) => (
@@ -3676,6 +5338,15 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                       {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
                                                       {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
                                                       {student.sessionCounter > 0 && <span className="text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
+                                                      {(() => {
+                                                          const noteCount = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
+                                                          return noteCount > 0 ? <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200" title={noteCount + ' notebook entries (notes + anchor charts)'}>📓</span> : null;
+                                                      })()}
+                                                      {(() => {
+                                                          // Count teacher comments across all this student's resources
+                                                          const commentCount = Array.from(teacherComments.keys()).filter(k => k.startsWith(`${student.id}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
+                                                          return commentCount > 0 ? <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={commentCount + ' private teacher notes on this student\'s work'}>💬</span> : null;
+                                                      })()}
                                                   </td>
                                                  <td className="p-4 text-slate-600 font-mono text-xs">
                                                      {new Date(student.timestamp).toLocaleDateString()} <span className="hidden sm:inline">{new Date(student.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
@@ -3784,6 +5455,12 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                     </div>
                                 )}
                             </div>
+                            {/* Cross-tool misconception / completion-gap detection (non-quiz tools) */}
+                            <CrossToolMisconceptionsSection dashboardData={dashboardData} t={t} />
+
+                            {/* Class Notebook Activity — note-taking + anchor-chart aggregated across roster */}
+                            <ClassNotebookSection dashboardData={dashboardData} callGemini={callGemini} addToast={addToast} t={t} />
+
                             {/* Research & Assessment Analytics */}
                             {(() => {
                                 const allProbes = dashboardData.flatMap(s => 
@@ -3933,10 +5610,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                         </div>
                      )}
                      {activeTab === 'behavior' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
-                             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
-                                 <div className="text-5xl mb-4">🔍</div>
-                                 <h3 className="text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                             <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
+                                 <div className="text-4xl sm:text-5xl mb-4">🔍</div>
+                                 <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
                                  <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
                                  <button
                                      onClick={() => { if (onOpenBehaviorLens) onOpenBehaviorLens(); }}
@@ -3948,10 +5625,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                          </div>
                      )}
                      {activeTab === 'stems' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
-                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-400">
-                                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
-                                     🔬 STEM Station Activity
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                             <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400">
+                                 <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
+                                     {t('teacher.stem_stations.section_title') || '🔬 STEM Station Activity'}
                                  </h3>
                                  {(() => {
                                      const stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
@@ -3960,46 +5637,46 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                          return (
                                              <div className="text-center py-8">
                                                  <div className="text-4xl mb-3">📌</div>
-                                                 <p className="text-sm text-slate-600">No STEM Stations created yet.</p>
-                                                 <p className="text-xs text-slate-600 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
+                                                 <p className="text-sm text-slate-600">{t('teacher.stem_stations.empty_title') || 'No STEM Stations created yet.'}</p>
+                                                 <p className="text-xs text-slate-600 mt-1">{t('teacher.stem_stations.empty_hint') || 'Generate a lesson plan to get AI-recommended STEM tools.'}</p>
                                              </div>
                                          );
                                      }
                                      return (
                                          <div className="space-y-4">
-                                             <div className="grid grid-cols-3 gap-4 mb-4">
-                                                 <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
-                                                     <div className="text-2xl font-black text-emerald-700">{stations.length}</div>
-                                                     <div className="text-xs text-emerald-600 font-bold mt-1">Stations Created</div>
+                                             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
+                                                 <div className="bg-emerald-50 rounded-xl p-3 sm:p-4 text-center border border-emerald-100">
+                                                     <div className="text-xl sm:text-2xl font-black text-emerald-700">{stations.length}</div>
+                                                     <div className="text-[10px] sm:text-xs text-emerald-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.stations_created') || 'Stations Created'}</div>
                                                  </div>
-                                                 <div className="bg-teal-50 rounded-xl p-4 text-center border border-teal-100">
-                                                     <div className="text-2xl font-black text-teal-700">
+                                                 <div className="bg-teal-50 rounded-xl p-3 sm:p-4 text-center border border-teal-100">
+                                                     <div className="text-xl sm:text-2xl font-black text-teal-700">
                                                          {new Set(stations.flatMap(s => s.tools)).size}
                                                      </div>
-                                                     <div className="text-xs text-teal-600 font-bold mt-1">Unique Tools Used</div>
+                                                     <div className="text-[10px] sm:text-xs text-teal-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.unique_tools_used') || 'Unique Tools Used'}</div>
                                                  </div>
-                                                 <div className="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
-                                                     <div className="text-2xl font-black text-indigo-700">
+                                                 <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 text-center border border-indigo-100">
+                                                     <div className="text-xl sm:text-2xl font-black text-indigo-700">
                                                          {xpLog.filter(e => e.stationId).length}
                                                      </div>
-                                                     <div className="text-xs text-indigo-600 font-bold mt-1">Station XP Events</div>
+                                                     <div className="text-[10px] sm:text-xs text-indigo-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.station_xp_events') || 'Station XP Events'}</div>
                                                  </div>
                                              </div>
                                              {stations.map((st) => {
                                                  const stationXP = xpLog.filter(e => e.stationId === st.id);
                                                  const totalXP = stationXP.reduce((s, e) => s + (e.xp || 0), 0);
                                                  return (
-                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-4 border border-slate-400 hover:border-emerald-300 transition-all">
-                                                         <div className="flex items-center justify-between mb-2">
-                                                             <div className="flex items-center gap-2">
-                                                                 <span className="text-lg">📌</span>
-                                                                 <h4 className="font-bold text-sm text-slate-800">{st.name}</h4>
-                                                                 <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all">
+                                                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                                             <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                                 <span className="text-lg shrink-0">📌</span>
+                                                                 <h4 className="font-bold text-sm text-slate-800 truncate">{st.name}</h4>
+                                                                 <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
                                                                      {st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}
                                                                  </span>
                                                              </div>
-                                                             <div className="flex items-center gap-3">
-                                                                 <span className="text-xs text-slate-600">
+                                                             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                                                                 <span className="text-xs text-slate-600 hidden sm:inline">
                                                                      {new Date(st.createdAt).toLocaleDateString()}
                                                                  </span>
                                                                  <span className="bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
@@ -4037,10 +5714,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       </div>
       {showClearConfirm && (
           <div role="button" tabIndex={0} className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setShowClearConfirm(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200" role="dialog" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="teacher-clear-confirm-title" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 mb-4">
                       <div className="bg-red-100 p-3 rounded-full"><Trash2 size={24} className="text-red-600"/></div>
-                      <h3 className="text-lg font-bold text-slate-800">{t('dashboard.clear_all')}</h3>
+                      <h3 id="teacher-clear-confirm-title" className="text-lg font-bold text-slate-800">{t('dashboard.clear_all')}</h3>
                   </div>
                   <p className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
                   <div className="flex gap-3">

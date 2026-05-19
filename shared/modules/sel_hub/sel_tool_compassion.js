@@ -641,7 +641,7 @@ window.SelHub = window.SelHub || {
       var printContent = null;
       if (activeTab === 'print') {
         printContent = h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: PL, border: '1px solid #ddd6fe', borderLeft: '3px solid ' + PURPLE, marginBottom: 12, fontSize: 12.5, color: PD, lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: PL, borderTop: '1px solid #ddd6fe', borderRight: '1px solid #ddd6fe', borderBottom: '1px solid #ddd6fe', borderLeft: '3px solid ' + PURPLE, marginBottom: 12, fontSize: 12.5, color: PD, lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Self-compassion script. '),
             'A one-page reference: the three pillars (Neff), what kindness-to-self sounds like in your own words, and your saved kind letter if you wrote one. Carry it for the moments the inner critic shows up.'
           ),

@@ -1522,6 +1522,26 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             case 'Problem Solution':
                 promptInstructions = "Identify the core problem discussed and list the solutions or steps taken to resolve it.";
                 break;
+            case 'Frayer Model':
+                promptInstructions = "Create a Frayer Model for a single key vocabulary term from the source text. The 'main' field is the vocabulary term itself. Return exactly 4 branches in this order: 1. 'Definition' (a single student-friendly definition as the only item, 1 short sentence), 2. 'Characteristics' (3-5 key features or attributes of the term), 3. 'Examples' (3-5 concrete examples drawn from the text or its domain), 4. 'Non-Examples' (3-5 things that are NOT examples, ideally with a brief reason why each is excluded).";
+                structureHint = "CRITICAL FOR FRAYER MODEL: Return exactly 4 branches with titles Definition / Characteristics / Examples / Non-Examples in that order. 'Definition' branch should have exactly one item.";
+                break;
+            case 'KWL Chart':
+                promptInstructions = "Create a KWL Chart anchored to the topic of the source text. The 'main' field is the topic. Return exactly 3 branches: 1. 'Know' (4-6 prior knowledge items students at the target grade are likely to bring), 2. 'Want to Know' (4-6 anticipated student questions about the topic), 3. 'Learned' (return an empty items array OR 1-2 placeholder items like '___' since students fill this in after the lesson).";
+                structureHint = "CRITICAL FOR KWL CHART: Return exactly 3 branches with titles Know / Want to Know / Learned in that order. The Learned column should be sparse (empty array or placeholder) because students complete it after the lesson.";
+                break;
+            case 'Claim-Evidence-Reasoning':
+                promptInstructions = "Create a Claim-Evidence-Reasoning template anchored to a key scientific question or phenomenon from the source text. The 'main' field is the central question or phenomenon. Return exactly 3 branches: 1. 'Claim' (a single declarative answer to the question, as the only item), 2. 'Evidence' (3-5 specific pieces of data, observations, or quotations from the source that support the claim), 3. 'Reasoning' (2-4 statements connecting the evidence to the claim via scientific principles or logical inference).";
+                structureHint = "CRITICAL FOR CER: Return exactly 3 branches with titles Claim / Evidence / Reasoning in that order. 'Claim' should be a single declarative item. Evidence items should be specific (quotation marks for direct quotes, or specific data points), not generic.";
+                break;
+            case 'Story Map':
+                promptInstructions = "Create a Story Map (plot diagram) for the source narrative text. The 'main' field is the story title or central narrative summary. Return exactly 5 branches in narrative order: 1. 'Exposition' (setting, main characters, initial situation), 2. 'Rising Action' (3-4 key events that build tension), 3. 'Climax' (the turning point or moment of highest tension, typically a single item), 4. 'Falling Action' (events that follow the climax and lead toward resolution), 5. 'Resolution' (how the story concludes and any final state).";
+                structureHint = "CRITICAL FOR STORY MAP: Return exactly 5 branches with titles Exposition / Rising Action / Climax / Falling Action / Resolution in that order. If the source text is non-narrative, return a single branch noting this is not applicable.";
+                break;
+            case 'See-Think-Wonder':
+                promptInstructions = "Create a See-Think-Wonder routine (Harvard Project Zero Visible Thinking) for the source artifact (text, image, phenomenon, or concept). The 'main' field describes what the student is observing. Return exactly 3 branches: 1. 'See' (3-5 concrete, observable details students might notice, no inferences), 2. 'Think' (3-5 inferences or interpretations grounded explicitly in the observations from See), 3. 'Wonder' (3-5 open-ended questions the observation provokes). Maintain strict separation between observation (See), interpretation (Think), and questioning (Wonder).";
+                structureHint = "CRITICAL FOR SEE-THINK-WONDER: Return exactly 3 branches with titles See / Think / Wonder in that order. See items must be observations only (what is visible/readable); Think items must be inferences; Wonder items must be open questions phrased as questions.";
+                break;
             default:
                 promptInstructions = "Create a structured summary.";
         }
@@ -3742,6 +3762,164 @@ Return ONLY JSON:
           } finally {
               setIsGeneratingPersona(false);
           }
+      } else if (type === 'note-taking') {
+          // Note-Taking Templates (Cornell Notes / Lab Report / Reading Response).
+          // Generates a lesson-aware scaffolded template. Per architectural
+          // directive, the actual template rendering lives in
+          // note_taking_templates_module.js; this dispatcher just builds the
+          // initial data object with lesson-aware pre-population.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('note-taking');
+          const templateType = (configOverride && configOverride.templateType) || (deps.noteTakingTemplateType) || 'cornell-notes';
+          const lessonRef = {
+              sourceTextSnippet: (textToProcess || '').substring(0, 200),
+              generatedAt: new Date().toISOString(),
+              gradeLevel: effectiveGrade,
+              language: effectiveLanguage,
+          };
+          if (templateType === 'cornell-notes') {
+              // Pre-fill cues column with 5-8 key terms / anticipated questions from source.
+              const prompt = `
+                  Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a ${effectiveGrade} student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', cues: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Cornell Notes scaffold parse failed:', parseErr);
+              }
+              const cuesArr = Array.isArray(scaffolded.cues) ? scaffolded.cues : [];
+              content = {
+                  templateType: 'cornell-notes',
+                  title: scaffolded.title || sourceTopic || 'Cornell Notes',
+                  cues: cuesArr.slice(0, 8).map((text, i) => ({ id: `cue-${Date.now()}-${i}`, text: String(text || '') })),
+                  notes: cuesArr.slice(0, 8).map((_, i) => ({ id: `note-${Date.now()}-${i}`, text: '' })),
+                  summary: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'lab-report') {
+              const prompt = `
+                  Analyze the following science-related source text. Extract: 1) a research question this text raises that a student could investigate, 2) a list of likely materials needed (if the source describes any experimental setup), and 3) a relevant title for the experiment. Target audience: ${effectiveGrade} student.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', question: '', materials: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Lab Report scaffold parse failed:', parseErr);
+              }
+              const matsArr = Array.isArray(scaffolded.materials) ? scaffolded.materials : [];
+              content = {
+                  templateType: 'lab-report',
+                  title: scaffolded.title || sourceTopic || 'Lab Report',
+                  question: scaffolded.question || '',
+                  hypothesis: '',
+                  materials: matsArr.map((text, i) => ({ id: `mat-${Date.now()}-${i}`, text: String(text || '') })),
+                  procedure: [],
+                  data: '',
+                  analysis: '',
+                  conclusion: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'reading-response') {
+              const prompt = `
+                  Analyze the following source text. Extract the title and author (if present in the text or its metadata). If not explicit, infer the best title from the content.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Reading title", "author": "Author name or empty string" }
+              `;
+              let scaffolded = { title: sourceTopic || '', author: '' };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Reading Response scaffold parse failed:', parseErr);
+              }
+              content = {
+                  templateType: 'reading-response',
+                  title: scaffolded.title || sourceTopic || 'Reading Response',
+                  author: scaffolded.author || '',
+                  pageRange: '',
+                  favoriteLine: '',
+                  thinkings: '',
+                  connection: { type: 'text-to-self', text: '' },
+                  question: '',
+                  lessonRef,
+              };
+          } else {
+              content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
+          }
+          metaInfo = `${effectiveGrade} - ${templateType}`;
+      } else if (type === 'anchor-chart') {
+          // Anchor Charts — EL Education classroom-staple visual reference.
+          // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('anchor-chart');
+          const chartType = (configOverride && configOverride.chartType) || (deps.anchorChartType) || 'reference';
+          const lessonRef = {
+              sourceTextSnippet: (textToProcess || '').substring(0, 200),
+              generatedAt: new Date().toISOString(),
+              gradeLevel: effectiveGrade,
+              language: effectiveLanguage,
+          };
+          const chartTypeGuide = {
+              process: 'a multi-step process (e.g., the writing process, the scientific method). Sections should be sequential steps. Use 4-6 sections.',
+              'concept-map': 'a concept and its components (e.g., parts of a cell, branches of government). Sections should be parallel sub-parts. Use 3-6 sections.',
+              reference: 'a reference list of features, conventions, or norms (e.g., features of a good argument, classroom norms). Sections should be parallel categories. Use 3-6 sections.',
+              comparison: 'a comparison across two or more categories (e.g., similes vs metaphors, mitosis vs meiosis). Sections should be the categories being compared. Use 2-4 sections.',
+          };
+          const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
+          const prompt = `
+              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || textToProcess.substring(0, 200) || 'reference'}". Chart type: ${chartType} — ${chartTypeHint}.
+
+              An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
+
+              For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
+
+              Source text for context (may be empty): "${(textToProcess || '').substring(0, 2500)}"
+
+              Return ONLY a JSON object with this exact shape:
+              {
+                "title": "Short, memorable title (3-6 words, can be all-caps if punchy)",
+                "sections": [
+                  {
+                    "label": "SECTION LABEL (1-3 words, often a verb or category)",
+                    "bullets": ["Short bullet 1", "Short bullet 2", "Short bullet 3"],
+                    "iconPrompt": "simple object that represents this section"
+                  }
+                ]
+              }
+          `;
+          let scaffolded = { title: sourceTopic || 'Anchor Chart', sections: [] };
+          try {
+              const result = await callGemini(prompt, true);
+              scaffolded = JSON.parse(cleanJson(result));
+          } catch (parseErr) {
+              warnLog('Anchor chart scaffold parse failed:', parseErr);
+          }
+          const rawSections = Array.isArray(scaffolded.sections) ? scaffolded.sections : [];
+          const sections = rawSections.slice(0, 6).map((s, i) => ({
+              id: `sec-${Date.now()}-${i}`,
+              label: String((s && s.label) || `Section ${i + 1}`),
+              bullets: Array.isArray(s && s.bullets) ? s.bullets.map(b => String(b || '')) : [],
+              iconPrompt: String((s && s.iconPrompt) || ''),
+              iconUrl: '',
+          }));
+          content = {
+              title: scaffolded.title || sourceTopic || 'Anchor Chart',
+              chartType,
+              sections,
+              annotations: [],
+              lessonRef,
+          };
+          metaInfo = `${effectiveGrade} - ${chartType}`;
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {

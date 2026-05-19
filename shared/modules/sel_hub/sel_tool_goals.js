@@ -1174,6 +1174,8 @@ window.SelHub = window.SelHub || {
         // ═══════════════════════════════════════════════════════════
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
 
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #312e81, #4338ca)', borderBottom: '1px solid rgba(99,102,241,0.3)' } },
@@ -1193,7 +1195,7 @@ window.SelHub = window.SelHub || {
           h('div', { role: 'tablist', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
             [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
               var active = tab === tb.id;
-              return h('button', { 'aria-label': 'nowrap', key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
+              return h('button', { 'aria-label': 'nowrap', key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
             })
           ),
 

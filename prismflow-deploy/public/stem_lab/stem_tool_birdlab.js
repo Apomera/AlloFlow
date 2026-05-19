@@ -104,6 +104,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  0%, 100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.55); }',
       '  50%      { box-shadow: 0 0 0 8px rgba(5,150,105,0); }',
       '}',
+      // Hint pulse (SVG circle on the scene at the hinted bird position).
+      // r animates outward + opacity fades — a clearly-visible "look here" cue.
+      '@keyframes birdlab-hint-pulse {',
+      '  0%   { r: 12; opacity: 0.95; }',
+      '  100% { r: 38; opacity: 0; }',
+      '}',
+      '.birdlab-hint-ring { animation: birdlab-hint-pulse 1.4s ease-out infinite; transform-box: fill-box; }',
+      // Clean Habitat celebration: enters with scale + fades, exits at the end.
+      '@keyframes birdlab-clean-celebrate {',
+      '  0%   { transform: scale(0.55) translateY(20px); opacity: 0; }',
+      '  18%  { transform: scale(1.08) translateY(0);    opacity: 1; }',
+      '  30%  { transform: scale(1);    translateY(0);   opacity: 1; }',
+      '  82%  { transform: scale(1);    translateY(0);   opacity: 1; }',
+      '  100% { transform: scale(0.95) translateY(-12px); opacity: 0; }',
+      '}',
+      '.birdlab-clean-celebrate { animation: birdlab-clean-celebrate 3.6s ease-out forwards; }',
+      // Trophy sparkle — a slow gold rotation behind the trophy
+      '@keyframes birdlab-trophy-spin {',
+      '  0%   { transform: rotate(0deg);   opacity: 0.4; }',
+      '  50%  { transform: rotate(180deg); opacity: 0.7; }',
+      '  100% { transform: rotate(360deg); opacity: 0.4; }',
+      '}',
+      '.birdlab-trophy-spin { animation: birdlab-trophy-spin 4s linear infinite; }',
+      // Confetti — each particle reads its own --dx/--dy/--rot for spread + rotation
+      '@keyframes birdlab-confetti-fly {',
+      '  0%   { transform: translate(-50%, -50%) rotate(0deg);              opacity: 0; }',
+      '  10%  { transform: translate(-50%, -50%) rotate(0deg);              opacity: 1; }',
+      '  70%  { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)); opacity: 1; }',
+      '  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 80px)) rotate(calc(var(--rot) + 90deg)); opacity: 0; }',
+      '}',
+      '.birdlab-confetti { animation: birdlab-confetti-fly 2.6s cubic-bezier(0.25, 0.6, 0.35, 1) forwards; }',
+      // Reduced-motion: collapse celebration animations
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .birdlab-clean-celebrate, .birdlab-trophy-spin, .birdlab-hint-ring, .birdlab-confetti { animation: none !important; }',
+      '  .birdlab-confetti { opacity: 0 !important; }',
+      '}',
       // Lifer celebration: rises in from above, holds, fades out at the end.
       // Auto-cleared by setTimeout in handleBirdClick after 3.2s.
       '@keyframes birdlab-lifer-rise {',
@@ -2191,6 +2227,5407 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     ]
   };
 
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 2 EXPANSION — visual + interactive content modules
+  // ═════════════════════════════════════════════════════════════
+
+  // ── NESTS — Maine breeding birds nest structures + materials
+  // Each entry has visual specs that drive SVG rendering in the gallery view
+  var NESTS = [
+    { id: 'baldEagle', species: 'Bald Eagle (Haliaeetus leucocephalus)',
+      type: 'Stick platform — massive', location: 'Tall pines + cottonwoods near water; reused + added to annually',
+      diameter: '5–9 ft across, up to 12 ft', depth: '2–6 ft deep', weight: 'Can exceed 2,000 lb (~1 ton)',
+      materials: 'Sticks, branches, grass lining, moss, occasionally rope or plastic debris',
+      eggs: '1–3 eggs · white · ~70mm',
+      story: 'A bald eagle pair returns to the same nest year after year, adding new sticks each season. The Maine record is a nest in use for over 35 years. Maine has 700+ active eagle nests today, up from <60 in 1970 due to DDT recovery.',
+      svg: { color: '#92400e', shape: 'platform', size: 200, eggColor: '#fef3c7', eggCount: 2, treeColor: '#166534' } },
+    { id: 'osprey', species: 'Osprey (Pandion haliaetus)',
+      type: 'Stick platform — large', location: 'Tall isolated trees, channel markers, utility poles, artificial platforms',
+      diameter: '3–6 ft', depth: '3–10 ft deep (built up over years)', weight: '100–1000 lb',
+      materials: 'Sticks (many over 1 inch thick), bark, sod, plastic debris, fishing line',
+      eggs: '2–4 eggs · white-cream with reddish blotches · ~62mm',
+      story: 'Osprey readily adopt artificial nesting platforms. Maine has dozens of human-made platforms on poles + channel markers — a textbook conservation success. Returns to nest in mid-March.',
+      svg: { color: '#92400e', shape: 'platform', size: 150, eggColor: '#fdba74', eggCount: 3, treeColor: '#475569' } },
+    { id: 'greatBlueHeron', species: 'Great Blue Heron (Ardea herodias)',
+      type: 'Stick platform — colonial', location: 'Tall trees in heronry colonies, often over water',
+      diameter: '2–4 ft', depth: '6–12 in', weight: '~10–30 lb',
+      materials: 'Sticks, twigs, lined with finer plant material',
+      eggs: '3–5 eggs · pale blue · ~64mm',
+      story: 'Herons nest in colonies (heronries) of 5–100+ pairs. Trees become decorated with droppings + dead from over-fertilization. Maine\'s coastal heronries are key bioindicator sites for the Gulf of Maine.',
+      svg: { color: '#78350f', shape: 'platform', size: 100, eggColor: '#bae6fd', eggCount: 4, treeColor: '#15803d' } },
+    { id: 'rrBlackbird', species: 'Red-winged Blackbird (Agelaius phoeniceus)',
+      type: 'Woven cup', location: 'Cattail marsh — woven among cattail stems',
+      diameter: '4–7 in', depth: '3–4 in', weight: '<1 lb',
+      materials: 'Cattail leaves woven, lined with finer grasses',
+      eggs: '3–4 eggs · pale blue with dark scrawls + spots · ~25mm',
+      story: 'Female builds in 3–6 days. Each nest is woven tightly to 2–4 cattail stems, anchoring 1–3 ft above water. The dark "scrawl" pattern on the blue eggs is one of nature\'s most striking egg designs.',
+      svg: { color: '#a16207', shape: 'cup', size: 70, eggColor: '#7dd3fc', eggCount: 4, treeColor: '#3f6212' } },
+    { id: 'baltimoreOriole', species: 'Baltimore Oriole (Icterus galbula)',
+      type: 'Hanging pouch — pendulant', location: 'Hung from forked branches of tall trees (elm, willow, maple)',
+      diameter: '4 in wide × 6 in deep pouch', depth: 'Deep pouch shape', weight: '<0.5 lb',
+      materials: 'Plant fibers, grass, hair, string, fishing line, milkweed bark — woven',
+      eggs: '4–5 eggs · pale gray-blue with dark scrawls · ~22mm',
+      story: 'One of North America\'s most elaborate nests — a hanging woven sock. Females spend 5–8 days weaving. Modern orioles incorporate fishing line + plastic; some nests have caused entanglement. Maine breeders arrive in early May.',
+      svg: { color: '#a16207', shape: 'pouch', size: 80, eggColor: '#cbd5e1', eggCount: 5, treeColor: '#65a30d' } },
+    { id: 'commonLoon', species: 'Common Loon (Gavia immer)',
+      type: 'Mounded scrape — shoreline', location: 'Lake islands or sheltered shorelines, within 6 ft of water edge',
+      diameter: '~22 in across', depth: 'Mounded ~6 in above ground', weight: 'N/A — heaped material',
+      materials: 'Aquatic vegetation, mud, dead reeds + grasses',
+      eggs: '1–2 eggs · olive-brown with dark spots · ~88mm',
+      story: 'Loons are nearly helpless on land — legs too far back for walking. Nest must be inches from water so adult can slide in. Lake-level fluctuations from dams + boat wakes destroy loon nests; nest-protection signs around Maine lakes work.',
+      svg: { color: '#84713c', shape: 'mound', size: 130, eggColor: '#8a784e', eggCount: 2, treeColor: '#365314' } },
+    { id: 'bcChickadee', species: 'Black-capped Chickadee (Poecile atricapillus)',
+      type: 'Cavity nest — excavated', location: 'Soft, rotten tree stubs (alder, birch); cavity 5–20 ft up',
+      diameter: 'Cavity ~3 in wide × 8 in deep', depth: 'Inside cavity', weight: 'Lining 2–4 oz',
+      materials: 'Moss base, mammal hair (deer, dog, rabbit), fine plant fibers',
+      eggs: '6–8 eggs · white with reddish-brown spots · ~15mm',
+      story: 'Chickadees excavate their own cavity (3–10 days). The cavity gets a thick moss-and-fur lining — the female covers eggs with the fur layer when she leaves to fool predators. The state bird of Maine.',
+      svg: { color: '#78716c', shape: 'cavity', size: 60, eggColor: '#fef3c7', eggCount: 7, treeColor: '#44403c' } },
+    { id: 'tuftedTitmouse', species: 'Tufted Titmouse (Baeolophus bicolor)',
+      type: 'Cavity nest — natural or excavated', location: 'Natural tree cavities, old woodpecker holes, nest boxes',
+      diameter: 'Cavity ~3 in wide', depth: 'Inside cavity', weight: 'Lining 2–3 oz',
+      materials: 'Leaves, moss, lined with mammal hair (often plucked from live animals)',
+      eggs: '5–7 eggs · white with brown spots · ~18mm',
+      story: 'Titmice famously pluck hair from sleeping or unwary mammals — including dogs + sometimes humans! Researchers have observed titmice plucking from a squirrel\'s tail. Range has expanded north into Maine over recent decades.',
+      svg: { color: '#78716c', shape: 'cavity', size: 60, eggColor: '#fef3c7', eggCount: 6, treeColor: '#44403c' } },
+    { id: 'cliffSwallow', species: 'Cliff Swallow (Petrochelidon pyrrhonota)',
+      type: 'Mud gourd — colonial', location: 'Under bridges, eaves, cliff overhangs; colonies of 100s',
+      diameter: '5–6 in × 4 in tall', depth: 'Internal chamber', weight: '~1 lb of mud',
+      materials: '~1,000+ mud pellets carried beak-by-beak; lined with grass + feathers',
+      eggs: '3–6 eggs · white with brown spots · ~20mm',
+      story: 'A pair makes 1,000–1,500 trips to gather mud, beak-by-beak, over 1–2 weeks. Most Maine cliff swallows now nest on bridges + buildings rather than cliffs. Watch for them building under highway bridges in late May.',
+      svg: { color: '#a16207', shape: 'gourd', size: 70, eggColor: '#fef3c7', eggCount: 4, treeColor: '#57534e' } },
+    { id: 'barnSwallow', species: 'Barn Swallow (Hirundo rustica)',
+      type: 'Mud cup — open', location: 'Inside barns, garages, sheds; under bridges',
+      diameter: '~5 in across × 2 in tall', depth: 'Shallow cup', weight: '~6–8 oz',
+      materials: 'Mud pellets, grass, lined with feathers',
+      eggs: '3–7 eggs · white with brown spots · ~19mm',
+      story: 'The "ophiuro" bird — fish-tail forked wings + buff belly. Loyal to specific buildings — same barn for generations of swallows. Maine\'s old dairy barns + horse stables are key habitat; new metal buildings less suitable.',
+      svg: { color: '#a16207', shape: 'cup', size: 75, eggColor: '#fef3c7', eggCount: 5, treeColor: '#7c2d12' } },
+    { id: 'rtHummingbird', species: 'Ruby-throated Hummingbird (Archilochus colubris)',
+      type: 'Tiny lichen-camouflaged cup', location: 'Horizontal twig of deciduous tree, 10–20 ft up',
+      diameter: '1.5 in wide × 1 in deep', depth: 'Cup expands as chicks grow', weight: '<0.1 oz',
+      materials: 'Spider silk + plant down, decorated with lichen flakes for camouflage',
+      eggs: '2 eggs · white · ~13mm (pea-sized)',
+      story: 'The size of half a walnut. Lichen camouflage makes it look like a knot on the branch. Spider silk allows it to stretch as chicks grow — the only nest that can expand. Females build entirely solo, ~8 days.',
+      svg: { color: '#9ca3af', shape: 'cup', size: 30, eggColor: '#ffffff', eggCount: 2, treeColor: '#65a30d' } },
+    { id: 'pileatedWP', species: 'Pileated Woodpecker (Dryocopus pileatus)',
+      type: 'Cavity nest — excavated annually', location: 'Excavates new cavity in dead or dying large trees',
+      diameter: 'Cavity 3.5 in × 4 in entry × 24 in deep', depth: '~2 ft inside tree', weight: 'Wood chips removed: up to 30 lb',
+      materials: 'No lining — just wood chips on cavity floor',
+      eggs: '3–5 eggs · white · ~33mm',
+      story: 'A single nest cavity takes 3–6 weeks to excavate. After breeding, abandoned cavities become apartments for other species: wood ducks, owls, fishers, flying squirrels. Pileateds are keystone cavity-makers for Maine forests.',
+      svg: { color: '#78350f', shape: 'cavity', size: 100, eggColor: '#ffffff', eggCount: 4, treeColor: '#44403c' } },
+    { id: 'belted', species: 'Belted Kingfisher (Megaceryle alcyon)',
+      type: 'Burrow — excavated in earthen bank', location: 'Vertical earthen banks near water; burrow 3–6 ft into bank',
+      diameter: 'Entry 3–4 in × 4 ft into bank', depth: 'Chamber at end of tunnel', weight: 'Earth removed: many lb',
+      materials: 'Bare earth chamber, sometimes lined with fish bones + scales',
+      eggs: '5–8 eggs · white · ~34mm',
+      story: 'A pair takes 1–3 weeks to dig the burrow with bill + feet. The tunnel slopes upward to drain rain water. Kingfisher droppings + fish-bone debris build up in chamber over the season.',
+      svg: { color: '#92400e', shape: 'burrow', size: 90, eggColor: '#ffffff', eggCount: 6, treeColor: '#a3a3a3' } },
+    { id: 'piping', species: 'Piping Plover (Charadrius melodus)',
+      type: 'Scrape — bare', location: 'Above high-tide line on sandy beaches',
+      diameter: 'Shallow depression ~4 in × 2 in deep', depth: 'Minimal', weight: 'N/A',
+      materials: 'Pebbles, shell fragments, bare sand — extremely camouflaged',
+      eggs: '4 eggs · pale buff with brown speckling · ~32mm',
+      story: 'The eggs are nearly invisible against sandy substrate. Federally threatened. Maine has ~50 nesting pairs; each nest protected by symbolic fencing + monitor. Beach closures protect them April–August.',
+      svg: { color: '#d6d3d1', shape: 'scrape', size: 50, eggColor: '#d6c4a8', eggCount: 4, treeColor: '#fef3c7' } },
+    { id: 'commonTern', species: 'Common Tern (Sterna hirundo)',
+      type: 'Scrape — minimal', location: 'Coastal islands; scraped sand or grass mat',
+      diameter: 'Small depression ~5 in', depth: 'Shallow', weight: 'N/A',
+      materials: 'Lined with grass blades, shell fragments',
+      eggs: '2–3 eggs · olive with dark blotches · ~42mm',
+      story: 'Colonial nesters. Maine\'s tern populations devastated by gull predation; Eastern Egg Rock is the world\'s most famous restoration site (Project Puffin success). Aggressive dive-bombers of intruders — diving close to your head is "tern talk."',
+      svg: { color: '#d6d3d1', shape: 'scrape', size: 55, eggColor: '#a3a378', eggCount: 3, treeColor: '#84a98c' } },
+    { id: 'puffin', species: 'Atlantic Puffin (Fratercula arctica)',
+      type: 'Burrow — earth or rock crevice', location: 'Offshore island burrows in soil or under rocks',
+      diameter: 'Burrow 3 ft long', depth: 'Chamber at burrow end', weight: 'N/A',
+      materials: 'Bare earth, lined with grass + feathers',
+      eggs: '1 egg · white-cream · ~62mm',
+      story: 'Eastern Egg Rock + Matinicus Rock + Petit Manan + Seal Island are Maine\'s puffin colonies, restored from 0 birds 1900–1970s to ~1,500 pairs today via Project Puffin (Steve Kress, Audubon). One of conservation\'s greatest success stories.',
+      svg: { color: '#92400e', shape: 'burrow', size: 90, eggColor: '#fef3c7', eggCount: 1, treeColor: '#a3a3a3' } },
+    { id: 'rrhawk', species: 'Red-tailed Hawk (Buteo jamaicensis)',
+      type: 'Stick platform', location: 'Large trees in mature forest; 35–75 ft up',
+      diameter: '2.5–3 ft', depth: '1–2 ft, deepened each year', weight: '20–50 lb',
+      materials: 'Sticks (up to thumb-thick), lined with strips of bark, evergreen sprigs, dry grass',
+      eggs: '1–3 eggs · white with brown spots · ~59mm',
+      story: 'Red-tails are the open-country hawks of Maine. Each pair often has 2–3 alternate nests in their territory, rotating year to year. The lined inner cup is renewed each spring with fresh greenery.',
+      svg: { color: '#92400e', shape: 'platform', size: 110, eggColor: '#fef3c7', eggCount: 2, treeColor: '#15803d' } },
+    { id: 'amwoodcock', species: 'American Woodcock (Scolopax minor)',
+      type: 'Ground scrape — leaf-lined', location: 'Young forest floor; well-camouflaged',
+      diameter: '4–5 in depression', depth: '1–2 in', weight: 'N/A',
+      materials: 'Dead leaves arranged in shallow scrape',
+      eggs: '4 eggs · buff-pink with brown spots · ~38mm',
+      story: 'Woodcock chicks hatch precocial — feathered + walking within hours. The "Sky Dance" mating display happens in young forest openings spring + early summer. Maine\'s woodcock numbers track young-forest availability.',
+      svg: { color: '#92400e', shape: 'scrape', size: 60, eggColor: '#fed7aa', eggCount: 4, treeColor: '#fde68a' } },
+    { id: 'woodthrush', species: 'Wood Thrush (Hylocichla mustelina)',
+      type: 'Cup nest in tree', location: 'Vertical fork of deciduous sapling, 6–20 ft up',
+      diameter: '4–6 in × 3 in deep', depth: 'Compact cup', weight: '~3–4 oz',
+      materials: 'Grass, leaves, mud base, lined with rootlets; sometimes incorporates paper or plastic',
+      eggs: '3–4 eggs · pale blue (unmarked) · ~25mm',
+      story: 'Iconic Eastern woodland song "ee-oh-lay." Population has declined 60%+ since 1970 — Maine losses connected to forest fragmentation + tropical deforestation in winter range. A target species for conservation.',
+      svg: { color: '#a16207', shape: 'cup', size: 70, eggColor: '#7dd3fc', eggCount: 4, treeColor: '#65a30d' } }
+  ];
+
+  // ── EGGS — visual egg specifications for the Egg Gallery
+  // Each entry drives an SVG egg drawing with shape + pattern + size
+  var EGGS_DATA = [
+    { species: 'Bald Eagle', dimensions: '73 × 55 mm', clutch: '1–3', color: '#fef3c7', pattern: 'plain',
+      notes: 'Large, white, slightly elliptical. Often two eggs hatch days apart — first chick may dominate the second.' },
+    { species: 'Osprey', dimensions: '62 × 46 mm', clutch: '2–4', color: '#fdba74', pattern: 'blotched',
+      notes: 'Cream with reddish-brown blotches concentrated at larger end. Variable per egg.' },
+    { species: 'Common Loon', dimensions: '88 × 56 mm', clutch: '1–2', color: '#8a784e', pattern: 'spotted',
+      notes: 'Olive-brown ground with dark spots. Camouflaged on shoreline. Among the largest eggs of any Maine breeder.' },
+    { species: 'Great Blue Heron', dimensions: '64 × 45 mm', clutch: '3–5', color: '#bae6fd', pattern: 'plain',
+      notes: 'Pale blue, oval. Fragile-looking but tough.' },
+    { species: 'Wood Duck', dimensions: '52 × 39 mm', clutch: '10–15', color: '#fef3c7', pattern: 'plain',
+      notes: 'Cream-white. Wood ducks parasitize each other\'s nests — multiple females may lay in one cavity.' },
+    { species: 'Mallard', dimensions: '57 × 41 mm', clutch: '8–13', color: '#e0e7ff', pattern: 'plain',
+      notes: 'Pale greenish-buff. Female covers with down when leaving nest.' },
+    { species: 'Common Eider', dimensions: '75 × 50 mm', clutch: '3–5', color: '#bef264', pattern: 'plain',
+      notes: 'Olive-green. Famously insulated with eider down — the warmest natural insulation known.' },
+    { species: 'Spruce Grouse', dimensions: '43 × 31 mm', clutch: '5–8', color: '#fcd34d', pattern: 'spotted',
+      notes: 'Pale buff with dark spots. Camouflaged on forest floor.' },
+    { species: 'Ruffed Grouse', dimensions: '40 × 30 mm', clutch: '9–12', color: '#fed7aa', pattern: 'plain',
+      notes: 'Buff-cream, sometimes faintly spotted. Maine\'s state game bird.' },
+    { species: 'American Woodcock', dimensions: '38 × 29 mm', clutch: '4', color: '#fed7aa', pattern: 'spotted',
+      notes: 'Pinkish-buff with brown spots. Tiny vs adult body.' },
+    { species: 'Piping Plover', dimensions: '32 × 24 mm', clutch: '4', color: '#d6c4a8', pattern: 'spotted',
+      notes: 'Sand-colored with fine dark speckles. Federally threatened.' },
+    { species: 'Common Tern', dimensions: '42 × 30 mm', clutch: '2–3', color: '#a3a378', pattern: 'blotched',
+      notes: 'Olive-buff with bold dark blotches. Beach-camouflaged.' },
+    { species: 'Atlantic Puffin', dimensions: '62 × 44 mm', clutch: '1', color: '#fef3c7', pattern: 'plain',
+      notes: 'White-cream, slightly blotched at base. Single egg per season.' },
+    { species: 'Red-tailed Hawk', dimensions: '59 × 47 mm', clutch: '1–3', color: '#fef3c7', pattern: 'spotted',
+      notes: 'White with light brown spots. Larger than red-shouldered hawk.' },
+    { species: 'Cooper\'s Hawk', dimensions: '49 × 38 mm', clutch: '3–5', color: '#e0f2fe', pattern: 'plain',
+      notes: 'Pale blue-green. Cooper\'s + sharp-shinned hawks have very similar eggs — habitat helps tell which.' },
+    { species: 'Belted Kingfisher', dimensions: '34 × 26 mm', clutch: '5–8', color: '#ffffff', pattern: 'plain',
+      notes: 'Pure white. Cavity nesters don\'t need camouflaged eggs.' },
+    { species: 'Pileated Woodpecker', dimensions: '33 × 25 mm', clutch: '3–5', color: '#ffffff', pattern: 'plain',
+      notes: 'Pure white. All cavity-nester eggs are typically white or pale.' },
+    { species: 'Black-capped Chickadee', dimensions: '15 × 12 mm', clutch: '6–8', color: '#fef3c7', pattern: 'speckled',
+      notes: 'Cream with reddish spots. Tiny vs nest cavity.' },
+    { species: 'Red-breasted Nuthatch', dimensions: '16 × 12 mm', clutch: '5–7', color: '#fef3c7', pattern: 'speckled',
+      notes: 'Cream with reddish spots. Similar to chickadee.' },
+    { species: 'Tufted Titmouse', dimensions: '18 × 13 mm', clutch: '5–7', color: '#fef3c7', pattern: 'spotted',
+      notes: 'Cream with brown spots. Cavity nester.' },
+    { species: 'Wood Thrush', dimensions: '25 × 19 mm', clutch: '3–4', color: '#7dd3fc', pattern: 'plain',
+      notes: 'Pale blue, unmarked. Distinct from American Robin (deeper blue).' },
+    { species: 'American Robin', dimensions: '28 × 21 mm', clutch: '3–5', color: '#5eead4', pattern: 'plain',
+      notes: 'The iconic "robin\'s-egg blue." Cup nest in tree fork.' },
+    { species: 'Hermit Thrush', dimensions: '23 × 18 mm', clutch: '3–4', color: '#bae6fd', pattern: 'plain',
+      notes: 'Pale blue, sometimes faintly spotted. Maine\'s most common breeding thrush.' },
+    { species: 'Cedar Waxwing', dimensions: '23 × 17 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
+      notes: 'Pale blue-gray with dark spots. Late-summer breeders.' },
+    { species: 'Yellow Warbler', dimensions: '18 × 13 mm', clutch: '4–5', color: '#fef3c7', pattern: 'spotted',
+      notes: 'Pale greenish-white with brown spots. Cup nest in shrub.' },
+    { species: 'Common Yellowthroat', dimensions: '17 × 13 mm', clutch: '3–5', color: '#fef3c7', pattern: 'speckled',
+      notes: 'Cream with brown spots. Marsh-thicket nester.' },
+    { species: 'Red-winged Blackbird', dimensions: '25 × 18 mm', clutch: '3–4', color: '#7dd3fc', pattern: 'scrawled',
+      notes: 'Pale blue with characteristic dark scribbles. One of nature\'s most distinctive eggs.' },
+    { species: 'Common Grackle', dimensions: '29 × 21 mm', clutch: '4–5', color: '#bae6fd', pattern: 'blotched',
+      notes: 'Pale blue with dark blotches.' },
+    { species: 'Baltimore Oriole', dimensions: '22 × 16 mm', clutch: '4–5', color: '#cbd5e1', pattern: 'scrawled',
+      notes: 'Pale gray-blue with dark squiggles. Built into the hanging pouch nest.' },
+    { species: 'Ruby-throated Hummingbird', dimensions: '13 × 9 mm', clutch: '2', color: '#ffffff', pattern: 'plain',
+      notes: 'Pure white, pea-sized. Smallest Maine bird egg.' },
+    { species: 'White-throated Sparrow', dimensions: '20 × 16 mm', clutch: '4–5', color: '#7dd3fc', pattern: 'spotted',
+      notes: 'Pale blue with brown spots. Northern conifer breeder.' },
+    { species: 'Song Sparrow', dimensions: '21 × 16 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
+      notes: 'Pale greenish-white with brown spots. Heavily streaked vs eggs of similar size.' },
+    { species: 'Northern Cardinal', dimensions: '25 × 18 mm', clutch: '2–5', color: '#bae6fd', pattern: 'spotted',
+      notes: 'Pale gray-blue with brown spots.' },
+    { species: 'Tree Swallow', dimensions: '19 × 13 mm', clutch: '4–7', color: '#ffffff', pattern: 'plain',
+      notes: 'Pure white. Cavity nester or nest box. Bluebird-nest-box program also benefits tree swallows.' },
+    { species: 'Eastern Bluebird', dimensions: '21 × 17 mm', clutch: '3–6', color: '#bae6fd', pattern: 'plain',
+      notes: 'Pale blue. Cavity nester / nest box. Maine bluebird-trail networks help population recovery.' }
+  ];
+
+  // ── FEATHER ANATOMY — labeled parts of a typical contour feather
+  var FEATHER_PARTS = [
+    { id: 'rachis', x: 200, y: 200, label: 'Rachis (central shaft)',
+      what: 'The central rigid spine of the feather, made of keratin (same protein as your fingernails).',
+      function: 'Provides structural rigidity. Strong but flexible — allows the feather to bend without breaking.' },
+    { id: 'calamus', x: 200, y: 360, label: 'Calamus (quill base)',
+      what: 'The hollow base of the rachis that anchors into the bird\'s skin via a follicle.',
+      function: 'Anchors feather to skin + delivers blood during feather growth. Hollow once feather is fully grown.' },
+    { id: 'vane', x: 250, y: 200, label: 'Vane (the flat surface)',
+      what: 'The flat sides of the feather, on either side of the rachis. Composed of thousands of barbs.',
+      function: 'The aerodynamic surface — provides lift in flight, insulation, waterproofing.' },
+    { id: 'barb', x: 280, y: 170, label: 'Barb',
+      what: 'One of the long thin parallel strands extending from the rachis. Each barb has hundreds of barbules.',
+      function: 'Each barb is a unit of the vane. Hundreds of barbs in parallel make up each side of the feather.' },
+    { id: 'barbule', x: 320, y: 150, label: 'Barbule (with hooklets)',
+      what: 'Tiny secondary branches off each barb. Adjacent barbules hook onto each other via microscopic hooklets.',
+      function: 'The hooklet velcro is what holds the vane together. When you preen a feather smooth, you\'re re-hooking the barbules.' },
+    { id: 'downy', x: 200, y: 320, label: 'Downy (afterfeather) region',
+      what: 'The fluffy lower portion of the feather where barbules lack hooklets.',
+      function: 'Insulation — traps warm air close to the body. The afterfeather portion is fluffy, not flat.' },
+    { id: 'tip', x: 200, y: 50, label: 'Tip',
+      what: 'The distal end of the feather, often shaped specifically for the feather\'s job.',
+      function: 'Wing primaries have asymmetric tips for flight. Tail feathers may end in points or squares.' },
+    { id: 'aftershaft', x: 165, y: 290, label: 'Aftershaft',
+      what: 'A small secondary feather attached at the base of the main feather in some bird groups.',
+      function: 'Adds extra insulation. Most prominent in cassowaries + emus; reduced in most other birds.' }
+  ];
+
+  // ── SILHOUETTES — bird silhouette ID quiz items
+  var SILHOUETTES = [
+    { id: 'eagle', name: 'Bald Eagle', shape: 'eagle', habitat: 'Open water + coast', clue: 'Long flat-board wings, large beak, big head' },
+    { id: 'osprey', name: 'Osprey', shape: 'osprey', habitat: 'Lakes + coast', clue: 'Crooked "M" wing posture in flight, white head with dark eyestripe' },
+    { id: 'turkeyvulture', name: 'Turkey Vulture', shape: 'turkeyvulture', habitat: 'Open country', clue: 'Wings held in shallow "V" (dihedral), rocking flight, small head, two-tone underside' },
+    { id: 'redtailhawk', name: 'Red-tailed Hawk', shape: 'buteo', habitat: 'Open fields', clue: 'Broad rounded wings, fan tail, soars in circles' },
+    { id: 'cooper', name: 'Cooper\'s Hawk', shape: 'accipiter', habitat: 'Woods + suburbs', clue: 'Short rounded wings, long tail, flap-flap-glide flight' },
+    { id: 'kestrel', name: 'American Kestrel', shape: 'falcon', habitat: 'Open country', clue: 'Pointed wings, long tail, hovers facing into wind' },
+    { id: 'peregrine', name: 'Peregrine Falcon', shape: 'falcon-large', habitat: 'Cliffs + cities', clue: 'Larger than kestrel, long pointed wings, fast direct flight' },
+    { id: 'gull', name: 'Herring Gull', shape: 'gull', habitat: 'Coast + dump', clue: 'Long pointed wings, hooked bill, soars effortlessly' },
+    { id: 'tern', name: 'Common Tern', shape: 'tern', habitat: 'Coast + offshore', clue: 'Forked tail, pointed wings, hovers + dives' },
+    { id: 'heron', name: 'Great Blue Heron', shape: 'heron', habitat: 'Marsh + shore', clue: 'Neck folded back in flight, slow wingbeats, long trailing legs' },
+    { id: 'cormorant', name: 'Double-crested Cormorant', shape: 'cormorant', habitat: 'Coast + lakes', clue: 'Long neck + long body, low-flying in lines, kinked neck in flight' },
+    { id: 'loon', name: 'Common Loon', shape: 'loon', habitat: 'Lakes', clue: 'Heavy body, short pointed wings, head + neck stretched forward in flight' },
+    { id: 'duck', name: 'Mallard', shape: 'duck', habitat: 'Ponds + marshes', clue: 'Stout body, rapid wingbeats, neck extended' },
+    { id: 'crow', name: 'American Crow', shape: 'crow', habitat: 'Everywhere', clue: 'Square wings, straight tail, steady wingbeats' },
+    { id: 'raven', name: 'Common Raven', shape: 'raven', habitat: 'Woods + mountains', clue: 'Larger than crow, wedge-shaped tail, soars often' },
+    { id: 'kingfisher', name: 'Belted Kingfisher', shape: 'kingfisher', habitat: 'Water', clue: 'Big-headed silhouette, short tail, hovers + dives' },
+    { id: 'pileated', name: 'Pileated Woodpecker', shape: 'woodpecker-large', habitat: 'Mature forest', clue: 'Large, crested, undulating flight (bound-pause)' },
+    { id: 'goose', name: 'Canada Goose', shape: 'goose', habitat: 'Ponds + fields', clue: 'V-formation, long neck, slow heavy wingbeats' },
+    { id: 'turkey', name: 'Wild Turkey', shape: 'turkey', habitat: 'Forest + edge', clue: 'Huge, broad-winged, short flights only' },
+    { id: 'songbird', name: 'Songbird (generic)', shape: 'songbird', habitat: 'Everywhere', clue: 'Round body, short rounded wings, short tail, undulating flight' }
+  ];
+
+  // ── SEASONAL PLUMAGE — molt + breeding/non-breeding
+  var PLUMAGE_CYCLES = [
+    { species: 'American Goldfinch',
+      breeding: 'Bright lemon-yellow body with black cap, black wings + tail with white markings. Bill is pink in summer.',
+      nonbreeding: 'Drab olive-buff overall. Wings + tail still blackish but body fades to muted olive-tan. Bill darker.',
+      molt: 'Two complete molts per year — most North American songbirds molt only once. Breeding plumage emerges in early spring.',
+      maine_timing: 'Breeding plumage visible mid-April; non-breeding by mid-October.' },
+    { species: 'Common Loon',
+      breeding: 'Striking black head with green-purple iridescence, white-checkered black back, white belly, red eyes.',
+      nonbreeding: 'Gray above, white below, no eye-stripe — looks like a different species. White throat with smudgy gray.',
+      molt: 'Body plumage molts late summer + late winter. Wing primaries molt all-at-once in late winter, making loons flightless for several weeks.',
+      maine_timing: 'Breeding plumage May–August on Maine lakes; non-breeding October+ when loons move to coast.' },
+    { species: 'Snow Bunting',
+      breeding: 'Males nearly pure white with black back + black wing-tips. Females buff-and-white.',
+      nonbreeding: 'Warm buff overall with white wing patches. The "winter ghosts" of Maine fields + beaches.',
+      molt: 'Single annual molt — feathers WEAR from buff to white as the breeding season approaches. Tip abrasion reveals the white. No additional molt is needed!',
+      maine_timing: 'Maine sees only nonbreeding plumage Nov–Mar.' },
+    { species: 'Northern Cardinal',
+      breeding: 'Male brilliant red year-round; female warm buff with red wash on crest + tail.',
+      nonbreeding: 'Same plumage — cardinals don\'t change with season. Bright year-round.',
+      molt: 'Single annual molt in late summer.',
+      maine_timing: 'Brilliant year-round in Maine — moves north as range expands.' },
+    { species: 'Ruby-throated Hummingbird',
+      breeding: 'Male iridescent ruby throat, emerald green back. Female: white throat, green back.',
+      nonbreeding: 'Same plumage — hummingbirds don\'t change seasonally in Maine.',
+      molt: 'Annual molt happens on tropical wintering grounds, not in Maine.',
+      maine_timing: 'May–September only.' },
+    { species: 'Baltimore Oriole',
+      breeding: 'Male bright orange + black; female yellow-olive with white wing bars.',
+      nonbreeding: 'Adult males retain orange + black year-round. First-fall males look like females.',
+      molt: 'Adults molt in late summer before fall migration. Juveniles delay full adult plumage to second year.',
+      maine_timing: 'In Maine May–August, breeding plumage throughout. Returns from Central America winter.' },
+    { species: 'Common Eider',
+      breeding: 'Male strikingly black-and-white with subtle pale green nape. Female warm brown vermiculated.',
+      nonbreeding: 'Adult males retain breeding plumage year-round. Subadult males progress through "eclipse" patchy plumage.',
+      molt: 'Like loons, eiders molt wing primaries all-at-once + can be flightless briefly.',
+      maine_timing: 'Year-round on Maine coast.' },
+    { species: 'Red-winged Blackbird',
+      breeding: 'Male jet black with red-and-yellow shoulder epaulets (\"red wings\").',
+      nonbreeding: 'Male plumage same — but the red epaulets are concealed under black feathers, only flashed during territorial display.',
+      molt: 'Single annual molt late summer.',
+      maine_timing: 'Year-round in southern Maine, migratory in northern.' },
+    { species: 'Cedar Waxwing',
+      breeding: 'Sleek soft brown with yellow tail-tip, black face mask, red waxy wing tips. Both sexes similar.',
+      nonbreeding: 'Same plumage year-round.',
+      molt: 'Annual molt.',
+      maine_timing: 'Year-round but more abundant fall + winter when fruit ripens.' },
+    { species: 'Wood Duck',
+      breeding: 'Male iridescent kaleidoscope: green crest, red eye, white throat, chestnut breast.',
+      nonbreeding: 'Male enters \"eclipse plumage\" mid-summer — drab female-like for ~2 months — then molts back to breeding plumage.',
+      molt: 'Eclipse molt allows feather replacement during flightless period — males camouflage themselves while vulnerable.',
+      maine_timing: 'Breeding plumage Oct–July in Maine.' },
+    { species: 'Bald Eagle',
+      breeding: 'White head + tail + dark chocolate body. Achieved at age 4–5.',
+      nonbreeding: 'Same plumage as adult. Juveniles wear mottled brown for 4 years before adult plumage.',
+      molt: 'Adult feather replacement annual; juvenile staged molts over 4 years.',
+      maine_timing: 'Resident year-round. Watch for juveniles — often mistaken for golden eagles.' },
+    { species: 'Snowy Owl',
+      breeding: 'Female heavily barred dark, male nearly pure white. Both more barred when young, whiter with age.',
+      nonbreeding: 'Same — but Maine only sees winter visitors, so we see arctic breeders out of breeding cycle.',
+      molt: 'Annual molt on Arctic breeding grounds.',
+      maine_timing: 'Irruptive winter visitor in Maine — irregular years see many; other years few.' },
+    { species: 'Black-capped Chickadee',
+      breeding: 'Black cap + black bib, white cheeks, gray back, buff sides. Year-round.',
+      nonbreeding: 'Same plumage.',
+      molt: 'Annual molt late summer.',
+      maine_timing: 'Year-round resident.' },
+    { species: 'White-throated Sparrow',
+      breeding: 'Two morphs: White-striped (bold black + white crown) + Tan-striped (tan + brown crown). Both occur in same population.',
+      nonbreeding: 'Same morphs but slightly duller. Yellow lores fade.',
+      molt: 'Annual molt late summer.',
+      maine_timing: 'Maine breeder April–October; migrant + winter visitor southern Maine.' }
+  ];
+
+  // ── TRACKS + SIGN — bird tracks, droppings, feeding signs
+  var TRACKS_SIGN = [
+    { id: 'wildturkey', name: 'Wild Turkey', tracks: 'Large 3-toed footprint with prominent rear toe; 4–5 in long. Long stride 12+ in.',
+      droppings: 'Cylindrical, ~2 in long. Males "J-shaped" with white cap. Females coiled.',
+      feeding: 'Scratched leaf litter — turkeys turn over leaves searching for acorns + insects. Look for raked-up patches.',
+      where: 'Forest edges + open woods.' },
+    { id: 'ruffedgrouse', name: 'Ruffed Grouse', tracks: 'Small 3-toed prints (~2 in), rear toe faint. Stride 5–7 in.',
+      droppings: 'Cylindrical pellets ~1 in × 0.25 in, often clustered.',
+      feeding: 'Snow craters where grouse plunge through powder to roost. \"Drumming logs\" — visible on hollow logs males use for drumming display.',
+      where: 'Young + mixed forest.' },
+    { id: 'piping', name: 'Piping Plover', tracks: 'Tiny 3-toed prints (~1 in), no hind toe. Often parallel running gait.',
+      droppings: 'Tiny white smears on sand.',
+      feeding: 'Run-and-stop pattern: dash a few steps, peck, dash again. Look for tiny pock marks where bill pecked sand.',
+      where: 'Sandy beach above high-tide line.' },
+    { id: 'gull', name: 'Herring Gull', tracks: '4-toed webbed prints, ~2.5 in. Three forward toes connected by web.',
+      droppings: 'White-gray semi-liquid; common on docks + parking lots.',
+      feeding: 'Cracked shells where gulls have dropped clams/mussels onto rocks or pavement to break.',
+      where: 'Beaches, harbors, dump sites.' },
+    { id: 'crow', name: 'American Crow', tracks: '4-toed prints (~3 in), 3 forward + 1 rear, no webbing. Strong rear toe.',
+      droppings: 'White streaks under roosts.',
+      feeding: 'Tear-open patterns on garbage bags; piles of seed husks under feeders. Caches food.',
+      where: 'Everywhere — fields, woods, roads, dumps.' },
+    { id: 'mallard', name: 'Mallard', tracks: '3 forward webbed toes (~2 in). Webs visible in mud.',
+      droppings: 'Greenish piles, common on shorelines.',
+      feeding: '\"Tipping up\" depressions in mud where ducks dabbled. Trampled vegetation patches.',
+      where: 'Ponds, marshes, rivers.' },
+    { id: 'osprey', name: 'Osprey', tracks: '4-toed talon prints (~3 in); two toes forward + two back (zygodactyl when grasping fish).',
+      droppings: 'White splashes below nests + perch trees.',
+      feeding: 'Fish remains below favored perches — head + bones discarded. Whitewash on rocks.',
+      where: 'Below tall trees near water.' },
+    { id: 'kingfisher', name: 'Belted Kingfisher', tracks: 'Rarely seen — kingfishers don\'t walk much.',
+      droppings: 'Pellets of fish bones + scales below favored perches.',
+      feeding: 'Fish bones + scales ground beneath perch trees over water.',
+      where: 'Below perches above water.' },
+    { id: 'pileated', name: 'Pileated Woodpecker', tracks: '2 forward + 2 back toes (zygodactyl), often unseen — rarely on ground.',
+      droppings: 'Below feeding trees.',
+      feeding: 'Distinctive RECTANGULAR holes excavated in dead trees, 4–6 in wide × 8–24 in tall. Wood chips at tree base. \"Carpenter ant chisel\" damage.',
+      where: 'Mature forest with standing deadwood.' },
+    { id: 'eagle', name: 'Bald Eagle', tracks: 'Large 4-toed talon prints (~4 in) on shorelines + ice.',
+      droppings: 'White splashes below roost trees.',
+      feeding: 'Below favored perch trees: fish scraps, duck wings, deer hair. Eagles cache + revisit kills.',
+      where: 'Below large white pines near water.' },
+    { id: 'owl', name: 'Owls (generic)', tracks: '4 toes radiating outward — uniquely \"X\" pattern.',
+      droppings: 'White streaks below day roosts.',
+      feeding: '\"Owl pellets\" — regurgitated balls of fur + bone + sometimes feathers. 2–3 in long. Pile under daytime roosts. Dissect to identify prey: small mammal bones + skulls.',
+      where: 'Under conifers + barn rafters + tree cavities.' },
+    { id: 'hummingbird', name: 'Hummingbirds', tracks: 'No tracks visible — too small.',
+      droppings: 'Tiny white drops under feeders.',
+      feeding: 'Yellow holes drilled into hummingbird feeders by woodpeckers. Visited flowers may show wear pattern.',
+      where: 'Around feeders + favored flowers.' }
+  ];
+
+  // ── FLIGHT PATTERNS — wing shape + flight style + identification
+  var FLIGHT_PATTERNS = [
+    { name: 'Soaring (Hawks, Eagles, Vultures)',
+      pattern: 'Wide spread wings, circling on rising thermals (warm air currents). Minimal flapping. Look for wing dihedral (V-shape).',
+      species: 'Bald Eagle, Red-tailed Hawk, Turkey Vulture, Broad-winged Hawk',
+      energy: 'Extremely energy-efficient. Uses sun-heated rising air. Migration depends on thermal availability.',
+      timing: 'Mid-morning through afternoon. Thermals don\'t form at dawn or dusk.',
+      identify: 'Look for circling without flapping over open ground. Note wing posture — V = vulture, flat = eagle.' },
+
+    { name: 'Direct Powered Flight (Crows, Most Songbirds)',
+      pattern: 'Continuous regular wingbeats in straight line. Some altitude adjustment.',
+      species: 'American Crow, American Robin, Mourning Dove, most songbirds',
+      energy: 'Energy cost moderate; depends on body size + wingbeat rate.',
+      timing: 'Day-long, especially morning + evening.',
+      identify: 'Steady flight without much glide. Crows give 2-3 strong beats then brief glide.' },
+
+    { name: 'Bounding / Undulating Flight (Woodpeckers, Goldfinches)',
+      pattern: 'Series of strong beats followed by brief folded-wing closure, creating a wave pattern. Saves energy by reducing wing surface during downstroke phase.',
+      species: 'Pileated Woodpecker, Northern Flicker, American Goldfinch, House Finch',
+      energy: 'Energy-efficient for small + medium birds. Wave amplitude varies by species.',
+      timing: 'Day-long.',
+      identify: 'Distinctive wave-pattern flight path. Woodpeckers bound between trees.' },
+
+    { name: 'Hovering (Hummingbirds, Kingfishers, Kestrels)',
+      pattern: 'Wing rotation at the shoulder allows true hovering. Hummingbirds use figure-8 wing path generating lift on both up + downstroke. Kestrels + kingfishers \"wind-hover\" — using flight muscles to remain still against the wind.',
+      species: 'Ruby-throated Hummingbird, Belted Kingfisher, American Kestrel',
+      energy: 'Hummingbird hovering is energy-intensive (often 50+ wingbeats/sec). Wind-hovering by kestrels easier with strong wind.',
+      timing: 'Various.',
+      identify: 'Body stays put while wings work. Hummingbird hover is silent (or distinct hum); kestrel + kingfisher hover with visible wingbeats.' },
+
+    { name: 'Gliding (Gulls, Albatrosses, Frigatebirds)',
+      pattern: 'Long narrow wings held outstretched. Almost no flapping over long distances. Gulls use updraft from cliffs + waves.',
+      species: 'Herring Gull, Great Black-backed Gull, Northern Gannet',
+      energy: 'Extremely efficient. Gulls can fly hundreds of miles per day with minimal energy.',
+      timing: 'Day-long. Particularly along cliffs + waves.',
+      identify: 'Wings outstretched, minimal wingbeats. Long pointed wings.' },
+
+    { name: 'Diving (Falcons, Gannets, Kingfishers)',
+      pattern: 'Folded wings + tucked body. Falcons (Peregrines) stoop from height — reach 200+ mph. Gannets dive straight into water from 50+ ft. Kingfishers dive from perches.',
+      species: 'Peregrine Falcon, Northern Gannet, Belted Kingfisher, Osprey',
+      energy: 'Brief peak-energy effort. Body adapted (eyes, ears protected).',
+      timing: 'Hunting.',
+      identify: 'Sudden steep dive. Wings folded back. Peregrine "stoop" is the fastest animal motion on Earth.' },
+
+    { name: 'Erratic / Bouncy Flight (Cedar Waxwings, Buntings)',
+      pattern: 'Direct flight that lurches or bounces in air currents. Light-bodied birds catch each gust.',
+      species: 'Cedar Waxwing, Indigo Bunting, Snow Bunting',
+      energy: 'Moderate.',
+      timing: 'Day-long.',
+      identify: 'Birds that seem to "tumble" through air. Tail-flicks visible.' },
+
+    { name: 'Heavy Plowing (Cormorants, Loons, Ducks)',
+      pattern: 'Heavy bodies + small wings = lots of flapping with little gliding. Direct point-A-to-point-B flight close to water.',
+      species: 'Double-crested Cormorant, Common Loon, Mallard, Common Eider',
+      energy: 'High-energy; ducks burn fat reserves on long migration legs.',
+      timing: 'Migration + commuting.',
+      identify: 'Low-flying lines or wedges. Cormorants in single-file. Loons fly with head-stretched-forward posture.' },
+
+    { name: 'Aerial Insect-Catching (Swallows, Swifts, Nighthawks)',
+      pattern: 'Rapid darting + sudden turns while catching insects in flight. Mouth open as net.',
+      species: 'Tree Swallow, Barn Swallow, Cliff Swallow, Common Nighthawk',
+      energy: 'High but efficient — feeding while flying combines tasks.',
+      timing: 'Dawn + dusk; many species active when insects swarm.',
+      identify: 'Erratic + rapid course changes. Wings long + narrow.' },
+
+    { name: 'Slow Flapping (Herons, Bitterns, Cranes)',
+      pattern: 'Slow heavy wingbeats. Neck folded back in herons + bitterns; extended in cranes + ibises.',
+      species: 'Great Blue Heron, American Bittern, Sandhill Crane',
+      energy: 'Surprisingly efficient — slow rhythm matches body size.',
+      timing: 'Day-long.',
+      identify: 'Slow steady beats. Long trailing legs. Folded-back neck distinguishes herons from cranes.' }
+  ];
+
+  // ── OWL PROFILES — Maine owl deep dive
+  var OWL_PROFILES = [
+    { name: 'Eastern Screech-Owl (Megascops asio)',
+      size: '8–10 in tall, 6 oz', wingspan: '~21 in',
+      voice: 'Whinnying tremolo + monotone trill. NOT a "screech" — name misleading.',
+      habitat: 'Woodlots, suburbs, parks with mature trees',
+      diet: 'Insects, small mammals, songbirds, occasionally fish',
+      maine_status: 'Year-round resident in southern Maine; rare in northern Maine',
+      morphs: 'Two color morphs: rufous (red-brown) + gray. Same species — different individual variations.',
+      conservation: 'Stable; nest box programs benefit.' },
+    { name: 'Great Horned Owl (Bubo virginianus)',
+      size: '18–25 in tall, 3 lb', wingspan: '~4 ft',
+      voice: 'Deep "hoo-hoo-hoo HOO-HOO" — the classic owl hoot. Female + male duet.',
+      habitat: 'Mature forest, edges, anywhere with large trees + open hunting areas',
+      diet: 'Mammals (rabbits, skunks, raccoons), other birds (even hawks + smaller owls), reptiles',
+      maine_status: 'Year-round resident statewide',
+      morphs: 'Single plumage with regional variation.',
+      conservation: 'Stable; thrives near humans. Maine\'s most common large owl.' },
+    { name: 'Barred Owl (Strix varia)',
+      size: '17–20 in tall, 1.5 lb', wingspan: '~3.5 ft',
+      voice: '"Who cooks for you, who cooks for you-all?" — the iconic mnemonic.',
+      habitat: 'Mature deciduous + mixed forest with wet areas',
+      diet: 'Small mammals, songbirds, frogs, fish (more aquatic than other Maine owls)',
+      maine_status: 'Year-round resident; common in southern + central Maine',
+      morphs: 'Single plumage.',
+      conservation: 'Stable in east; expanding range in west.' },
+    { name: 'Snowy Owl (Bubo scandiacus)',
+      size: '20–26 in tall, 4 lb', wingspan: '~5 ft',
+      voice: 'Mostly silent in winter (their season in Maine). Breeding hoots in Arctic.',
+      habitat: 'Open fields, beaches, airports, dunes (mimics tundra)',
+      diet: 'In Maine: rodents, snowshoe hares, waterfowl. In Arctic: lemmings + voles.',
+      maine_status: 'Winter visitor only — irruptive (some years many, some years few). Nov–Mar typically.',
+      morphs: 'Females + young heavily barred; adult males almost pure white.',
+      conservation: 'IUCN Vulnerable. Climate-stressed (Arctic warming). Citizen-science project SnowyOwl tracking helps.' },
+    { name: 'Long-eared Owl (Asio otus)',
+      size: '13–16 in tall, 9 oz', wingspan: '~3 ft',
+      voice: 'Mostly silent. Display sounds in breeding — soft "hoo" series.',
+      habitat: 'Dense conifers (winter roosts), open hunting habitat',
+      diet: 'Small mammals (voles, deer mice)',
+      maine_status: 'Uncommon year-round; secretive. Most often found at winter roosts.',
+      morphs: 'Single plumage; striking ear-tufts (not actually ears).',
+      conservation: 'Population stable but secretive nature makes monitoring hard.' },
+    { name: 'Short-eared Owl (Asio flammeus)',
+      size: '13–17 in tall, 12 oz', wingspan: '~3.5 ft',
+      voice: 'Mostly silent. Display "boo-boo-boo" series.',
+      habitat: 'Open grasslands, marshes, dunes — open country',
+      diet: 'Voles + meadow mice, occasional birds',
+      maine_status: 'Uncommon migrant + occasional breeder. Best seen open coastal marshes (Scarborough Marsh).',
+      morphs: 'Single plumage. Tiny ear-tufts.',
+      conservation: 'Declining due to grassland loss. State Endangered in Maine.' },
+    { name: 'Northern Saw-whet Owl (Aegolius acadicus)',
+      size: '7–8 in tall, 3 oz', wingspan: '~17 in',
+      voice: 'Repeated single "toot" notes like a saw being sharpened — hence the name.',
+      habitat: 'Mature conifers + mixed forest',
+      diet: 'Deer mice + voles + small mammals',
+      maine_status: 'Year-round but secretive; most easily found Oct migration banding stations.',
+      morphs: 'Single plumage.',
+      conservation: 'Stable. The smallest Maine owl.' },
+    { name: 'Boreal Owl (Aegolius funereus)',
+      size: '8–11 in tall, 5 oz', wingspan: '~22 in',
+      voice: 'Soft whistled "po-po-po-po..." series.',
+      habitat: 'Boreal conifer forest',
+      diet: 'Small mammals',
+      maine_status: 'Rare year-round resident in far-northern Maine boreal forest. Most often noted late winter.',
+      morphs: 'Single plumage.',
+      conservation: 'Maine-state Special Concern. Climate-vulnerable as boreal habitat shifts.' }
+  ];
+
+  // ── RAPTOR PROFILES — Maine raptors deep dive
+  var RAPTOR_PROFILES = [
+    { name: 'Bald Eagle (Haliaeetus leucocephalus)',
+      group: 'Sea eagle', size: '30–37 in, 6–14 lb', wingspan: '~7 ft',
+      voice: 'Surprisingly weak chittering whistles — Hollywood dubs in red-tailed hawk screams!',
+      diet: 'Fish (~75%), waterfowl, carrion, occasional mammals',
+      hunting: 'Soars, watches from perch, takes fish from surface; steals from osprey ("kleptoparasitism")',
+      breeding: 'Stick platform nest reused annually; lays 1–3 eggs Feb–Apr in Maine',
+      maine_status: 'Year-round resident; ~700 active nests today (from <60 in 1970)',
+      conservation: 'Federal recovery story. DDT banned 1972; reintroduction efforts 1980s+. Maine population among densest east of Mississippi.' },
+
+    { name: 'Osprey (Pandion haliaetus)',
+      group: 'Specialized fish-eagle', size: '21–24 in, 3–4 lb', wingspan: '~5.5 ft',
+      voice: 'High-pitched whistled cries, repeated.',
+      diet: '99% fish — alewives, menhaden, pollock, freshwater pumpkinseed',
+      hunting: 'Hovers + plunge-dives from 30–100 ft up. Feet swing forward to grasp fish. Reversible outer toe.',
+      breeding: 'Stick platform on tall isolated trees + utility poles + artificial platforms',
+      maine_status: 'Breeder March–October; winter in Central + South America',
+      conservation: 'Recovery from DDT-era lows. Maine artificial-platform program continues to help population.' },
+
+    { name: 'Red-tailed Hawk (Buteo jamaicensis)',
+      group: 'Buteo (broad-winged hawk)', size: '18–22 in, 2.5 lb', wingspan: '~4 ft',
+      voice: 'Classic "kee-aaaaarrr" raspy scream — the sound Hollywood uses for "any raptor."',
+      diet: 'Small mammals (voles + mice), squirrels, snakes, birds',
+      hunting: 'Soars + watches; perches on telephone poles. Drops onto prey from height.',
+      breeding: 'Stick platform in tall trees; lays 1–3 eggs Mar–Apr',
+      maine_status: 'Year-round resident; common in open country',
+      conservation: 'Stable; benefits from suburban hunting habitat.' },
+
+    { name: 'Broad-winged Hawk (Buteo platypterus)',
+      group: 'Small buteo', size: '14–17 in, 1 lb', wingspan: '~3 ft',
+      voice: 'High whistled "pweeee-eee."',
+      diet: 'Small mammals, amphibians, reptiles, large insects',
+      hunting: 'Perches + drops on prey in forest understory',
+      breeding: 'Cup nest in tree; lays 2–3 eggs May–Jun',
+      maine_status: 'Common breeder; migrates in spectacular "kettles" Sept — Hawkwatch Mt at Bradbury sees 1000+ in a day',
+      conservation: 'Stable. The Bradbury Mountain Hawkwatch (Maine) records broadwings as the dominant fall migrant.' },
+
+    { name: 'Cooper\'s Hawk (Accipiter cooperii)',
+      group: 'Accipiter (forest-bird hawk)', size: '14–20 in, 1 lb', wingspan: '~2.5 ft',
+      voice: 'Cackling "kek-kek-kek-kek."',
+      diet: 'Birds (mostly), small mammals — robin- to grouse-sized prey',
+      hunting: 'Ambush in dense cover; flap-flap-glide style. Will hunt at feeders.',
+      breeding: 'Stick nest in tall conifer; lays 3–5 eggs Apr–May',
+      maine_status: 'Year-round; expanding into suburbs',
+      conservation: 'Recovered from DDT-era decline; now common — sometimes vilified for songbird predation at feeders.' },
+
+    { name: 'Sharp-shinned Hawk (Accipiter striatus)',
+      group: 'Small accipiter', size: '10–14 in, 4 oz', wingspan: '~2 ft',
+      voice: 'Like Cooper\'s but higher pitched.',
+      diet: 'Small birds (sparrows, finches, warblers)',
+      hunting: 'Ambush + sprint through dense cover',
+      breeding: 'Stick nest in dense conifer; lays 3–5 eggs',
+      maine_status: 'Year-round + migrant; common but secretive',
+      conservation: 'Stable. Most-confused-with-Cooper\'s-Hawk Maine raptor — size + tail tip help separate.' },
+
+    { name: 'Northern Goshawk (Accipiter gentilis)',
+      group: 'Large accipiter', size: '21–25 in, 2 lb', wingspan: '~3.5 ft',
+      voice: 'Loud "kee-kee-kee" alarm; territorial near nest.',
+      diet: 'Birds (grouse, woodpeckers) + medium mammals (squirrels, hares)',
+      hunting: 'Speed + agility through forest; fierce nest-defender',
+      breeding: 'Stick nest in mature forest; lays 2–4 eggs',
+      maine_status: 'Year-round in mature forest; uncommon. Will attack humans who approach nest.',
+      conservation: 'Declining slightly due to mature-forest loss. State special concern.' },
+
+    { name: 'Northern Harrier (Circus hudsonius)',
+      group: 'Harrier (open-country hawk)', size: '17–24 in, 1 lb', wingspan: '~3.5 ft',
+      voice: '"Whistled chuck-chuck-chuck."',
+      diet: 'Small mammals, songbirds in open country',
+      hunting: 'Coursing low over marshes + grasslands, listening for prey beneath',
+      breeding: 'Ground nest in dense marsh vegetation',
+      maine_status: 'Breeder in marshes + agricultural lands; some winter populations',
+      conservation: 'Declining due to grassland + marsh loss. State special concern.' },
+
+    { name: 'American Kestrel (Falco sparverius)',
+      group: 'Small falcon', size: '9–12 in, 4 oz', wingspan: '~22 in',
+      voice: 'High "killy-killy-killy."',
+      diet: 'Insects, mice, small birds',
+      hunting: 'Hovers facing into wind, watches for movement below',
+      breeding: 'Cavity nester — old woodpecker holes + kestrel boxes',
+      maine_status: 'Breeder + migrant; common in open country',
+      conservation: 'Declining in Maine + nationally. Nest-box programs help.' },
+
+    { name: 'Merlin (Falco columbarius)',
+      group: 'Small falcon', size: '9–13 in, 6 oz', wingspan: '~24 in',
+      voice: 'Sharp "kek-kek-kek-kek."',
+      diet: 'Small birds (swift + songbird), large dragonflies',
+      hunting: 'Fast direct pursuit; takes prey in air',
+      breeding: 'Old crow or magpie nests in conifers',
+      maine_status: 'Expanding breeder + migrant; once mostly migrant, now nesting in suburbs',
+      conservation: 'Increasing — climate + adaptation to urban areas helps.' },
+
+    { name: 'Peregrine Falcon (Falco peregrinus)',
+      group: 'Large falcon', size: '15–20 in, 1.5 lb', wingspan: '~3.5 ft',
+      voice: 'Wailing "wail" cry near nest.',
+      diet: 'Medium-sized birds (ducks, pigeons, songbirds)',
+      hunting: 'Stoops from height at 200+ mph — fastest animal',
+      breeding: 'Cliff ledges; many urban Maine peregrines on buildings + bridges',
+      maine_status: 'Recovered breeder — from 0 pairs (1960s) to 30+ pairs today',
+      conservation: 'Listed Endangered to Recovered after DDT recovery + reintroduction. State Endangered listing reduced.' },
+
+    { name: 'Turkey Vulture (Cathartes aura)',
+      group: 'New-World vulture (related to storks)', size: '25–32 in, 4 lb', wingspan: '~5.5 ft',
+      voice: 'Mostly silent — hisses + grunts near carcasses.',
+      diet: 'Carrion only',
+      hunting: 'Soars on thermals, sniffs out carrion (one of few birds with developed sense of smell)',
+      breeding: 'Ground nest in rock crevice or hollow log',
+      maine_status: 'Spring–fall migrant + summer breeder; range expanding north',
+      conservation: 'Increasing as winters warm + roadkill abundant.' }
+  ];
+
+  // ── WARBLER PROFILES — Maine breeding warblers (hardest ID family)
+  var WARBLER_PROFILES = [
+    { name: 'Yellow-rumped Warbler', sci: 'Setophaga coronata coronata (Myrtle)',
+      mark: 'Yellow rump always visible. Breeding males: yellow crown, shoulder + rump; black face; black mask.',
+      habitat: 'Conifers (breeding); diverse (migration)',
+      song: 'Sweet warble of varying notes',
+      maine_status: 'Maine\'s most common breeding warbler; some overwinter',
+      arrival: 'Mid-April', departure: 'October–November' },
+    { name: 'Black-throated Green Warbler', sci: 'Setophaga virens',
+      mark: 'Yellow face, olive crown, black throat-bib (males), olive back.',
+      habitat: 'Mature conifer + mixed forest (breeding)',
+      song: '"Zee-zee-zee-zoo-zee" — buzzy + identifiable',
+      maine_status: 'Common breeder in spruce-fir',
+      arrival: 'Late April', departure: 'Late September' },
+    { name: 'American Redstart', sci: 'Setophaga ruticilla',
+      mark: 'Males: jet black with orange flash on wings + tail. Females + young: gray + yellow.',
+      habitat: 'Deciduous forest + edges (breeding)',
+      song: 'Whistled series with variable phrasing',
+      maine_status: 'Common breeder',
+      arrival: 'Early May', departure: 'Late September' },
+    { name: 'Yellow Warbler', sci: 'Setophaga petechia',
+      mark: 'Bright yellow overall. Males with reddish streaking on breast.',
+      habitat: 'Wet thickets + streamside (breeding)',
+      song: '"Sweet-sweet-sweet-I\'m-so-sweet" — distinctive',
+      maine_status: 'Common breeder near water',
+      arrival: 'Early May', departure: 'August' },
+    { name: 'Black-and-white Warbler', sci: 'Mniotilta varia',
+      mark: 'Striped black-and-white; creeps up + down tree trunks like a nuthatch.',
+      habitat: 'Deciduous + mixed forest (breeding)',
+      song: '"Wee-see-wee-see-wee-see" — squeaky',
+      maine_status: 'Common breeder',
+      arrival: 'Early May', departure: 'September' },
+    { name: 'Magnolia Warbler', sci: 'Setophaga magnolia',
+      mark: 'Yellow underparts with black streaks; black mask in males; white wing patches.',
+      habitat: 'Young spruce-fir (breeding)',
+      song: '"Pretty-pretty-pretty"',
+      maine_status: 'Common breeder',
+      arrival: 'Mid-May', departure: 'Late September' },
+    { name: 'Chestnut-sided Warbler', sci: 'Setophaga pensylvanica',
+      mark: 'Males: yellow crown, white face, chestnut-sided.',
+      habitat: 'Young second-growth deciduous (breeding)',
+      song: '"Pleased-pleased-pleased to MEETcha!"',
+      maine_status: 'Common breeder in young forest',
+      arrival: 'Mid-May', departure: 'September' },
+    { name: 'Common Yellowthroat', sci: 'Geothlypis trichas',
+      mark: 'Males: bright yellow throat, black mask. Females: yellow + olive, no mask.',
+      habitat: 'Marshes + thickets (breeding)',
+      song: '"Witchity-witchity-witchity"',
+      maine_status: 'Common breeder near water',
+      arrival: 'Early May', departure: 'September' },
+    { name: 'Northern Parula', sci: 'Setophaga americana',
+      mark: 'Small. Blue-gray + green back + yellow throat + orange-rust breast-band.',
+      habitat: 'Conifer forest with old-man\'s-beard lichen for nest',
+      song: 'Buzzy ascending "zzz-zzz-zip"',
+      maine_status: 'Common breeder',
+      arrival: 'Early May', departure: 'September' },
+    { name: 'Black-throated Blue Warbler', sci: 'Setophaga caerulescens',
+      mark: 'Males: blue back, black face/throat, white belly with white wing-patch. Females: olive + buff.',
+      habitat: 'Mature forest understory (breeding)',
+      song: '"Zur-zur-zur-zree" buzzy',
+      maine_status: 'Common breeder',
+      arrival: 'Mid-May', departure: 'September' },
+    { name: 'Blackburnian Warbler', sci: 'Setophaga fusca',
+      mark: 'Brilliant orange-fire throat in males. Females duller.',
+      habitat: 'Tall conifers (breeding)',
+      song: 'High-pitched ascending whistle ending in "tip-tip-tip"',
+      maine_status: 'Breeder in spruce-fir',
+      arrival: 'Mid-May', departure: 'Early September' },
+    { name: 'Yellow-throated Warbler', sci: 'Setophaga dominica',
+      mark: 'Yellow throat, blue-gray + black streaks on back.',
+      habitat: 'Pine-mixed forest near water (rare in Maine)',
+      song: 'Sweet whistled "tee-tee-tee-twee"',
+      maine_status: 'Rare migrant or vagrant; breeds further south',
+      arrival: 'Early May', departure: 'Aug–Sept' },
+    { name: 'Ovenbird', sci: 'Seiurus aurocapilla',
+      mark: 'Forest-floor warbler; orange crown stripe; white-eye-ring; streaked breast.',
+      habitat: 'Deciduous forest floor',
+      song: '"Teacher-teacher-teacher-TEACHER!" — rising in volume',
+      maine_status: 'Common breeder',
+      arrival: 'Mid-May', departure: 'September' },
+    { name: 'Northern Waterthrush', sci: 'Parkesia noveboracensis',
+      mark: 'Brown back, heavily streaked underparts; supercilium; constantly bobs tail.',
+      habitat: 'Forested wetlands + bogs (breeding)',
+      song: 'Sweet musical phrase descending',
+      maine_status: 'Breeder',
+      arrival: 'Early May', departure: 'September' },
+    { name: 'Canada Warbler', sci: 'Cardellina canadensis',
+      mark: 'Gray + yellow with black "necklace" of streaks across breast.',
+      habitat: 'Dense forest understory + bogs (breeding)',
+      song: 'Variable musical warble',
+      maine_status: 'Breeder in northern + mountain Maine',
+      arrival: 'Mid-May', departure: 'September' }
+  ];
+
+  // ── OPTICS — binoculars + spotting scopes for birding
+  var OPTICS = [
+    { item: 'Binoculars — 8×42',
+      meaning: '8 = magnification (objects appear 8× closer). 42 = objective lens diameter in mm (light-gathering ability).',
+      use: 'The "standard" birding bino — versatile for forests + open country + warblers + waterfowl.',
+      pros: 'Wide field of view, good light, light to carry.',
+      cons: 'Less zoom than 10×.',
+      price: '$80 (budget Vortex/Celestron) to $2,500+ (Swarovski/Leica/Zeiss).' },
+    { item: 'Binoculars — 10×42',
+      meaning: '10× magnification, 42mm objective.',
+      use: 'Better for distant shorebirds + hawks; tighter field of view.',
+      pros: 'More zoom.',
+      cons: 'Slightly heavier, narrower view, harder to hold steady (especially in wind).',
+      price: 'Similar to 8×42 range.' },
+    { item: 'Binoculars — 7×35',
+      meaning: '7× magnification, 35mm objective.',
+      use: 'Lightweight, ideal for kids or close-range birding (backyard, beginner).',
+      pros: 'Lightweight, wide field, easy to hold.',
+      cons: 'Less zoom, less light-gathering.',
+      price: '$40–150 typically.' },
+    { item: 'Spotting Scope — 20-60× × 80mm',
+      meaning: 'Variable zoom 20× to 60×, 80mm objective lens.',
+      use: 'Long-range — distant ducks, shorebirds, hawkwatching, ocean watching for shearwaters + scoters.',
+      pros: 'Far-distance ID. Brings 1/4-mile sightings into clear view.',
+      cons: 'Needs tripod. Heavy. Expensive. Slower to deploy.',
+      price: '$400 entry to $4,000+ premium.' },
+    { item: 'Smartphone digiscoping adapter',
+      meaning: 'Holds phone camera against scope eyepiece — turns scope into telephoto camera.',
+      use: 'Documenting rare birds, sharing sightings, eBird photos.',
+      pros: 'Cheap upgrade to scope.',
+      cons: 'Phone camera quality limits results.',
+      price: '$50–200.' },
+    { item: 'Binocular harness/strap',
+      meaning: 'Replaces neck strap with chest harness distributing weight.',
+      use: 'For long birding trips. Reduces neck strain.',
+      pros: 'Comfort.',
+      cons: 'Slightly more setup time.',
+      price: '$20–60.' },
+    { item: 'Field guide app (Merlin Bird ID)',
+      meaning: 'Cornell Lab free app — photo + sound ID + range maps + life list.',
+      use: 'Replaces or supplements paper field guides.',
+      pros: 'Free, current, includes audio.',
+      cons: 'Requires phone + battery.',
+      price: 'Free.' },
+    { item: 'Field guide app (Audubon)',
+      meaning: 'Audubon Society app — alternative to Merlin.',
+      use: 'Similar role.',
+      pros: 'Different content + organization.',
+      cons: 'Some features paywalled.',
+      price: 'Free basic; paid upgrades.' },
+    { item: 'Notebook + pencil',
+      meaning: 'Plain weatherproof notebook.',
+      use: 'Field notes, sketches, lists. Old-school birding fundamental.',
+      pros: 'No battery, no rain failure.',
+      cons: 'Slower than app.',
+      price: '$5–20.' },
+    { item: 'Camera — DSLR with telephoto lens',
+      meaning: 'Digital camera with 200mm+ telephoto lens.',
+      use: 'Bird photography hobby. Documenting rare birds.',
+      pros: 'High-quality images.',
+      cons: 'Heavy + expensive. Requires technique.',
+      price: '$500–10,000+.' }
+  ];
+
+  // ── BIRDING ETHICS — ABA Code of Birding Ethics summary
+  var BIRDING_ETHICS = [
+    { principle: '1. Respect the birds + their environment',
+      details: 'Do not stress birds: minimize close approach to nests, roosts, or known sensitive sites. Use playback judiciously (no playback near nests during breeding). Do not flush flocks for "better looks."',
+      examples: 'Approach raptors no closer than the bird tolerates without alarm. Photographers should not bait predators.' },
+    { principle: '2. Stay on trails + observe access rules',
+      details: 'Respect private property, trail closures, and protected areas. Tide-line beach closures for Piping Plover are critical — staying out saves nests.',
+      examples: 'Maine Audubon + DEP-managed sites have specific rules. Symbolic fencing means "do not enter."' },
+    { principle: '3. Keep cats indoors',
+      details: 'Domestic + free-roaming cats kill ~2.4 billion birds annually in the US. Cats are the single largest human-caused source of bird mortality.',
+      examples: 'Build a "catio" if your cat wants outside time. Many bird-friendly Maine homes are cat-indoor or controlled-outdoor.' },
+    { principle: '4. Reduce window collisions',
+      details: 'Up to 1 billion birds die in window collisions in the US each year. Visual cues + closing curtains + decals reduce this.',
+      examples: 'Bird-safe glass tape patterns. Maine institutional buildings (UMaine, Bowdoin) implementing bird-safe glass.' },
+    { principle: '5. Don\'t share locations of sensitive species',
+      details: 'Rare birds + nesting raptors + endangered species (Piping Plover, Snowy Owl wintering sites) face disturbance from large birder crowds.',
+      examples: 'eBird suppresses locations of sensitive species automatically. Maine birding forums respect this norm.' },
+    { principle: '6. Help with citizen science',
+      details: 'Your sightings contribute to real bird research when submitted to eBird, NestWatch, Christmas Bird Count, etc.',
+      examples: 'Every sighting matters. Even "common" birds — eBird tracks abundance trends.' },
+    { principle: '7. Lead by example — teach kids the rules early',
+      details: 'Modeling responsible behavior teaches future birders. Patience > pressure.',
+      examples: 'Quiet observation, no shouting, share scope views, encourage rather than test.' },
+    { principle: '8. Be inclusive + welcoming',
+      details: 'Birding has historically been demographically narrow. Welcoming new birders of all backgrounds enriches the community + the conservation movement.',
+      examples: 'Maine has growing diverse-birding initiatives. Black Birders Week is observed nationally.' }
+  ];
+
+  // ── WEATHER + BIRDING — how weather influences bird behavior
+  var WEATHER_BIRDING = [
+    { weather: 'Stormy front passing',
+      birds: 'Hawkwatching peaks on cold fronts (Sept–Oct) — broadwings ride leading-edge thermals south. Songbird migration "fallout" can occur — birds blown down + concentrated in coastal stopover sites.',
+      where_to_go: 'Bradbury Mountain (Pownal) or Hawkwatch Mountain (Sandy Point) on a clear Sept morning after a Sept cold front. Coastal stopover sites for fallout migrants — Acadia, Petit Manan.' },
+    { weather: 'High pressure + calm sunny',
+      birds: 'Bird activity high in morning + evening; slows at midday. Singing peaks dawn + dusk.',
+      where_to_go: 'Almost any habitat. Dawn chorus is the magic window.' },
+    { weather: 'Light snow',
+      birds: 'Many resident birds at feeders. Snow buntings + Lapland longspurs come to plowed roadsides.',
+      where_to_go: 'Backyard feeders + agricultural areas + coastal beaches.' },
+    { weather: 'Cold snap (sub-zero F)',
+      birds: 'Resident birds increase feeder use. Chickadees + nuthatches + woodpeckers visible.',
+      where_to_go: 'Feeder + suet-block-equipped backyards.' },
+    { weather: 'Rain (light to moderate)',
+      birds: 'Migrant + breeding birds reduce activity. Hawks may roost.',
+      where_to_go: 'Driving birding — looking from car. Or wait for break in weather.' },
+    { weather: 'After a storm (passing front)',
+      birds: 'Bird activity surges. Migration resumes. Hawk watches may see record days.',
+      where_to_go: 'High vantage points + hawkwatches. Coastal lookouts for pelagic + landbird arrivals.' },
+    { weather: 'Hot calm days (mid-summer)',
+      birds: 'Bird activity slows midday. Insects swarm at dusk; swallows + nighthawks active.',
+      where_to_go: 'Wetlands + ponds + dusk swallow flocks.' },
+    { weather: 'Heavy fog',
+      birds: 'Songbirds may stop migration + concentrate on coast. Risk of collision with lighted structures (radio towers, buildings).',
+      where_to_go: 'Coastal stopover sites — Acadia, Pemaquid, Schoodic.' },
+    { weather: 'Tail wind day (south wind in spring)',
+      birds: 'Spring migration peaks on south wind nights. Warblers + thrushes arrive.',
+      where_to_go: 'Anywhere with songbird habitat on a clear May morning after a south-wind night.' },
+    { weather: 'Northwest wind in fall',
+      birds: 'Fall migration peaks on northwest wind nights. Hawks soar to thermals during NW-wind day.',
+      where_to_go: 'Hawkwatches + coastal lookouts on clear Sept morning after NW-wind night.' }
+  ];
+
+  // ── BIRDING FAQ
+  var BIRDING_FAQ = [
+    { q: 'Where should I start?',
+      a: 'In your backyard. Set up a feeder (or just look out your window). Get the free Merlin Bird ID app from Cornell. Watch + identify the 5–10 species at your feeder before going further. Maine\'s state bird (chickadee), cardinals, blue jays, house sparrows, dark-eyed juncos, woodpeckers — all common backyard learners.' },
+    { q: 'When is the best time?',
+      a: 'Birding peaks during spring migration (mid-April to early June) + fall migration (August to early November). Summer breeding birds are vocal + visible. Winter is for resident species + irruptives. Dawn chorus is the daily peak — birds sing as territory + mate-attraction declarations.' },
+    { q: 'What equipment do I need?',
+      a: 'Binoculars (8×42 is the standard birder pair, $80–250 entry level), Merlin Bird ID app (free), a notebook or eBird app for recording sightings. Optional: field guide book + spotting scope for distant birds. Start simple — you can upgrade as you commit.' },
+    { q: 'I can\'t tell those LBJs apart!',
+      a: 'LBJs = "Little Brown Jobs" = sparrows + finches + warblers + thrushes — birding\'s hardest IDs. Strategy: study one family at a time. Master 3 sparrows before tackling all sparrows. Note key field marks (eyebrow, eye ring, breast streaking, throat color, tail pattern). Practice + patience help. Pair Merlin\'s photo ID + sound ID with your own observations.' },
+    { q: 'Do birds learn songs or are they born knowing?',
+      a: 'Both — depending on species. Songbirds (Passerines) learn songs from adults, with a "sensitive period" in their first year. Non-passerine birds (hawks, ducks, gulls) have innate vocalizations. This is why songbird dialects vary by region — local song traditions.' },
+    { q: 'Where can I see a bald eagle in Maine?',
+      a: 'Almost any large body of water with old trees. Casco Bay, Penobscot River, Sebago Lake, Moosehead Lake, Acadia coast. Maine has ~700 active eagle nests today. Look in tall white pines along shores. Winter concentrations at unfrozen rivers (Penobscot below Bangor; Sheepscot).' },
+    { q: 'Why do birds fly into windows?',
+      a: 'Birds see reflections of sky + trees, not glass. They try to fly into "open" space + hit glass. Fixes: visual cues on the outside surface (decals, paint patterns, ultraviolet film, screens), closing curtains during high-risk times, and choosing bird-safe building glass for new construction. Up to 1 billion birds die annually in the US from window collisions.' },
+    { q: 'What\'s the difference between songbird + raptor + waterfowl?',
+      a: 'Categories of birds: Songbirds (Passerines) = perching birds with vocal complexity — warblers, sparrows, thrushes, finches. Raptors = birds of prey — eagles, hawks, falcons, owls. Waterfowl = ducks, geese, swans (Anatidae). Plus shorebirds, seabirds, hummingbirds, woodpeckers, etc. Each has its own ID skills + binocular techniques.' },
+    { q: 'How can I help birds in my backyard?',
+      a: 'Plant native plants — provides food + cover. Keep cats indoors (cats kill ~2.4 billion US birds/yr). Reduce or eliminate pesticides. Provide water (a simple birdbath). Reduce window collisions. Install nest boxes for bluebirds + chickadees. Leave dead trees standing where safe. Support bird-friendly conservation organizations.' },
+    { q: 'Can I have a bird as a pet?',
+      a: 'Wild native birds cannot legally be kept as pets in the US (Migratory Bird Treaty Act). Pet birds = captive-bred budgies, parrots, canaries, etc., not wild birds. Maine wildlife rehabilitators may handle injured wild birds — call before bringing in a "rescue."' },
+    { q: 'What\'s a "lifer"?',
+      a: 'A species you have seen for the first time. Each lifer joins your "life list" — a personal lifelong tally of every species you\'ve identified. Birders track life lists in eBird, paper journals, or apps. For many birders, the lifelong pursuit of new lifers (and milestones — 100, 500, 1,000 species seen) drives the hobby.' },
+    { q: 'How do birds find their way during migration?',
+      a: 'Multiple cues working together: star + sun position, Earth\'s magnetic field, landmarks, sense of smell (some species), polarized light. Songbird migration is largely nocturnal — birds navigate by stars. Hawks + waterfowl migrate by day using landmarks + thermals.' },
+    { q: 'Are bird feeders actually good for birds?',
+      a: 'Mostly yes — provided you keep them clean. Clean feeders weekly (mild bleach + water solution) to prevent disease spread (salmonellosis, conjunctivitis). Use various feeder types for various species. Squirrel-proof feeders or just accept squirrels as visitors. Hummingbird feeders need fresh nectar every few days in hot weather.' },
+    { q: 'What about climate change + birds?',
+      a: 'Real + ongoing. Maine\'s breeding birds are shifting north as climate warms — boreal species (boreal chickadee, spruce grouse) at southern range edge in Maine. Tropical-wintering migrants like wood thrush + scarlet tanager facing habitat loss. Gulf of Maine warming affecting seabird food (alewives, herring). Adaptation + emissions reduction matter for bird futures.' },
+    { q: 'Where can I learn more?',
+      a: 'Cornell Lab of Ornithology (allaboutbirds.org) — free unparalleled resource. Audubon (audubon.org) — birds + advocacy. Maine Audubon (maineaudubon.org) — state focus. iNaturalist — community science. Local birding groups — Maine has many active chapters + email lists. Field guides — Sibley + Peterson + National Geographic guides.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 3 EXPANSION — additional visual + content modules
+  // ═════════════════════════════════════════════════════════════
+
+  // ── WATERFOWL PROFILES — Maine ducks, geese, swans
+  var WATERFOWL = [
+    { name: 'Mallard (Anas platyrhynchos)', type: 'Dabbler',
+      male: 'Iridescent green head, yellow bill, white neck ring, chestnut breast, gray sides, curled black tail feathers ("drake curl").',
+      female: 'Mottled brown overall, orange bill with dark blotches.',
+      voice: 'Female: classic "quack quack"; male: softer reedy notes.',
+      habitat: 'Ponds, marshes, rivers, urban lakes',
+      diet: 'Aquatic plants, grain, insects, small invertebrates',
+      maine_status: 'Year-round; abundant',
+      breeding: 'Ground nest near water; ~10 eggs; ducklings precocial' },
+    { name: 'American Black Duck (Anas rubripes)', type: 'Dabbler',
+      male: 'Dark chocolate brown overall, slightly paler head, olive bill, white wing-linings flashing in flight.',
+      female: 'Same as male; sexes look alike.',
+      voice: 'Female: low harsh "quack"; male: reedy notes.',
+      habitat: 'Maine\'s salt marshes + freshwater wetlands; less suburban than mallard',
+      diet: 'Aquatic plants, mollusks, insects',
+      maine_status: 'Year-round; declining due to mallard hybridization + habitat loss',
+      breeding: 'Ground nest in marsh vegetation' },
+    { name: 'Common Eider (Somateria mollissima)', type: 'Sea duck',
+      male: 'Striking black-and-white with pale green nape, black belly, white back.',
+      female: 'Warm reddish-brown finely vermiculated; "duck-sized chocolate cake."',
+      voice: 'Male: cooing "ahh-OOO"; female: croaks',
+      habitat: 'Coastal Maine year-round; nests on offshore islands',
+      diet: 'Mussels, urchins, crabs (dives 30+ ft)',
+      maine_status: 'Year-round; Maine has thousands of pairs',
+      breeding: 'Ground nest with renowned eider down lining; ~5 eggs' },
+    { name: 'Common Goldeneye (Bucephala clangula)', type: 'Diving duck',
+      male: 'Black + white with bright yellow eye, round white spot in front of eye.',
+      female: 'Brown head, gray body, white wing patch.',
+      voice: 'Wings whistle loudly in flight ("the whistler").',
+      habitat: 'Maine lakes + coast in winter',
+      diet: 'Aquatic insects, snails, small fish',
+      maine_status: 'Winter visitor; breeds further north',
+      breeding: 'Tree cavity nester' },
+    { name: 'Wood Duck (Aix sponsa)', type: 'Dabbler / cavity nester',
+      male: 'One of the world\'s most striking birds: iridescent green crest, red eye, white throat, chestnut breast with white spots.',
+      female: 'Gray-brown with white teardrop eye-patch.',
+      voice: 'Male: ascending whistle; female: squeaky alarm.',
+      habitat: 'Wooded swamps + ponds with mature trees for cavity nesting',
+      diet: 'Acorns, seeds, aquatic plants, insects',
+      maine_status: 'Breeder April–October; some overwintering',
+      breeding: 'Cavity nester (or wood-duck box); ~10 eggs' },
+    { name: 'Hooded Merganser (Lophodytes cucullatus)', type: 'Diving merganser',
+      male: 'Black + white with large white "hood" on dorsal head, raised + lowered as display.',
+      female: 'Gray-brown with rusty crest, yellow eye.',
+      voice: 'Quiet; female has reedy croak.',
+      habitat: 'Wooded ponds + slow rivers',
+      diet: 'Small fish, aquatic insects, crayfish (specialized diet — narrow serrated bill)',
+      maine_status: 'Breeder + migrant; uncommon winter',
+      breeding: 'Cavity nester' },
+    { name: 'Common Merganser (Mergus merganser)', type: 'Diving merganser',
+      male: 'Black + white with green head, no crest, red-orange serrated bill ("saw-bill").',
+      female: 'Gray + rufous crested head, red bill.',
+      voice: 'Low croaks.',
+      habitat: 'Maine rivers + lakes',
+      diet: 'Fish — specialized bill grasps slippery fish',
+      maine_status: 'Year-round; abundant on Penobscot, Kennebec, etc.',
+      breeding: 'Cavity nester' },
+    { name: 'Red-breasted Merganser (Mergus serrator)', type: 'Diving merganser',
+      male: 'Iridescent green head with thin shaggy crest, white neck ring, rusty breast, gray sides.',
+      female: 'Gray-brown with rufous head + thin crest.',
+      voice: 'Quiet.',
+      habitat: 'Coastal Maine + estuaries',
+      diet: 'Fish',
+      maine_status: 'Winter visitor + migrant; some breed in northern Maine',
+      breeding: 'Ground nest' },
+    { name: 'Bufflehead (Bucephala albeola)', type: 'Diving duck',
+      male: 'Small, striking white-and-black, with big puffy head + iridescent purple-green crown.',
+      female: 'Dark gray-brown with white cheek patch.',
+      voice: 'Quiet.',
+      habitat: 'Coastal Maine + freshwater in winter',
+      diet: 'Aquatic insects, mollusks',
+      maine_status: 'Winter visitor; breeds in Boreal Canada (tree cavities)',
+      breeding: 'Cavity nester — tiny duck in tiny holes' },
+    { name: 'Ring-necked Duck (Aythya collaris)', type: 'Diving duck',
+      male: 'Dark with white sides + black back + faint chestnut neck ring (almost invisible).',
+      female: 'Brown with white eye ring + white face line.',
+      voice: 'Quiet.',
+      habitat: 'Maine\'s freshwater wetlands',
+      diet: 'Aquatic plants + invertebrates',
+      maine_status: 'Migrant + occasional breeder',
+      breeding: 'Marsh nest' },
+    { name: 'Greater Scaup (Aythya marila)', type: 'Diving duck',
+      male: 'Black + white with rounded green-sheen head.',
+      female: 'Brown with white face patch.',
+      voice: 'Quiet.',
+      habitat: 'Coastal Maine in winter; saltwater specialist',
+      diet: 'Mollusks + small invertebrates',
+      maine_status: 'Winter visitor',
+      breeding: 'Arctic ground nest' },
+    { name: 'Lesser Scaup (Aythya affinis)', type: 'Diving duck',
+      male: 'Like Greater Scaup but smaller, head has slight peak in back, more purple-sheen.',
+      female: 'Like Greater Scaup female.',
+      voice: 'Quiet.',
+      habitat: 'Freshwater (Greater Scaup prefers salt)',
+      diet: 'Aquatic plants + invertebrates',
+      maine_status: 'Migrant; some winter',
+      breeding: 'Prairie wetlands' },
+    { name: 'Long-tailed Duck (Clangula hyemalis)', type: 'Sea duck',
+      male: 'Striking pied pattern with long pointed tail; complex seasonal plumage.',
+      female: 'Lighter with dark cap.',
+      voice: 'Musical "ow-ow-ow" calls audible from offshore flocks.',
+      habitat: 'Coastal Maine in winter; salt water',
+      diet: 'Mollusks, crustaceans, small fish — dives to 200 ft',
+      maine_status: 'Winter visitor; abundant offshore in midwinter',
+      breeding: 'Arctic tundra' },
+    { name: 'Surf Scoter (Melanitta perspicillata)', type: 'Sea duck',
+      male: 'Black overall with white head patches + multicolored bill.',
+      female: 'Brown with paler face patches.',
+      voice: 'Quiet.',
+      habitat: 'Coastal Maine + offshore in winter',
+      diet: 'Mussels + sea urchins',
+      maine_status: 'Winter; large rafts offshore',
+      breeding: 'Arctic boreal' },
+    { name: 'White-winged Scoter (Melanitta deglandi)', type: 'Sea duck',
+      male: 'Black overall with white wing-patch + white face patch.',
+      female: 'Brown with two pale face patches.',
+      voice: 'Quiet.',
+      habitat: 'Coastal Maine in winter',
+      diet: 'Mussels + crabs',
+      maine_status: 'Winter',
+      breeding: 'Boreal' },
+    { name: 'Black Scoter (Melanitta americana)', type: 'Sea duck',
+      male: 'All black with yellow knob on bill base.',
+      female: 'Brown with paler cheek.',
+      voice: 'Male has whistled "pewww" call audible from offshore.',
+      habitat: 'Coastal Maine in winter',
+      diet: 'Mussels + clams',
+      maine_status: 'Winter',
+      breeding: 'Arctic' },
+    { name: 'Canada Goose (Branta canadensis)', type: 'Goose',
+      male: 'Black head + neck with white chinstrap, brown body, white belly.',
+      female: 'Identical to male.',
+      voice: 'Loud honking; V-formations honk continuously.',
+      habitat: 'Lakes, ponds, fields, parks; resident in Maine',
+      diet: 'Grasses, grain, aquatic plants',
+      maine_status: 'Year-round + migrant; abundant',
+      breeding: 'Ground nest near water' },
+    { name: 'Snow Goose (Anser caerulescens)', type: 'Goose',
+      male: 'White with black wing tips. Blue-morph individuals dark.',
+      female: 'Same as male.',
+      voice: 'Honking similar to Canada Goose but higher pitched.',
+      habitat: 'Maine in migration; major Atlantic Flyway',
+      diet: 'Grasses, grain, plant roots',
+      maine_status: 'Migrant Oct–Apr',
+      breeding: 'Arctic tundra' },
+    { name: 'Brant (Branta bernicla)', type: 'Sea goose',
+      male: 'Small dark goose with white neck ring + black head + chest.',
+      female: 'Same.',
+      voice: 'Low "rrronk" calls.',
+      habitat: 'Coastal Maine in migration + winter',
+      diet: 'Eelgrass — specialist that depends on the eelgrass beds in coastal saltmarsh',
+      maine_status: 'Migrant + winter visitor',
+      breeding: 'Arctic' },
+    { name: 'Mute Swan (Cygnus olor)', type: 'Swan',
+      male: 'Large white with orange bill + black knob at base.',
+      female: 'Same.',
+      voice: 'Mostly silent ("mute") but wings whistle loudly in flight.',
+      habitat: 'Ponds + estuaries; introduced from Europe',
+      diet: 'Aquatic plants',
+      maine_status: 'Escaped pet population, mostly southern Maine; aggressive territorial',
+      breeding: 'Large mound nest near water' }
+  ];
+
+  // ── SHOREBIRDS — Maine shorebird species
+  var SHOREBIRDS = [
+    { name: 'Piping Plover', sci: 'Charadrius melodus',
+      size: '7 in', habitat: 'Sand beaches above high tide line',
+      key_mark: 'Pale gray-brown back, white belly, single black breast band (sometimes broken), orange legs.',
+      maine: 'Breeder May–Aug. ~50 pairs. Federal Threatened.',
+      story: 'Beach-closure programs in spring saving nests. Each pair monitored by volunteers + nest-protection fencing.' },
+    { name: 'Semipalmated Plover', sci: 'Charadrius semipalmatus',
+      size: '7 in', habitat: 'Mudflats + beaches in migration',
+      key_mark: 'Dark brown back, white belly, single black breast band, orange legs, "semi-palmated" partial webbing between toes.',
+      maine: 'Migrant Aug–Sept; some May',
+      story: 'Looks like a tiny dark-back plover. Numbers in Maine indicate Arctic breeding success.' },
+    { name: 'Killdeer', sci: 'Charadrius vociferus',
+      size: '10 in', habitat: 'Open fields, gravel parking lots, golf courses',
+      key_mark: 'Brown back, white belly, two black breast bands, red eye-ring.',
+      maine: 'Breeder Apr–Sept; some winter southern Maine',
+      story: 'Famous broken-wing display when nest threatened — adult feigns injury away from nest. Often nests on gravel rooftops + driveways.' },
+    { name: 'Greater Yellowlegs', sci: 'Tringa melanoleuca',
+      size: '14 in', habitat: 'Mudflats, salt marshes, freshwater wetlands',
+      key_mark: 'Tall, gray-brown back, white belly, bright yellow legs, long slightly upturned bill.',
+      maine: 'Migrant + some breeder',
+      story: '"Yellow legs" the diagnostic mark from far. Calls "tew-tew-tew" loudly when disturbed.' },
+    { name: 'Lesser Yellowlegs', sci: 'Tringa flavipes',
+      size: '11 in', habitat: 'Mudflats + wetlands',
+      key_mark: 'Smaller than Greater, bill straight + shorter, calls 1-2 notes.',
+      maine: 'Migrant',
+      story: 'Both yellowlegs species often together — size + call distinguish.' },
+    { name: 'Spotted Sandpiper', sci: 'Actitis macularius',
+      size: '7.5 in', habitat: 'Streamside, lake shore, beach (less coastal than other shorebirds)',
+      key_mark: 'Brown back with dark spots, white belly with spots in breeding, constantly bobs tail.',
+      maine: 'Breeder May–Aug',
+      story: 'Reverses gender roles — females are larger, more aggressive, more polyandrous. Females may mate with multiple males.' },
+    { name: 'Solitary Sandpiper', sci: 'Tringa solitaria',
+      size: '8 in', habitat: 'Forested wetlands + freshwater shores',
+      key_mark: 'Dark with prominent white eye ring, dark legs.',
+      maine: 'Migrant',
+      story: 'Truly solitary — almost always alone, unlike most shorebirds. Nests in old songbird nests in trees!' },
+    { name: 'Willet', sci: 'Tringa semipalmata',
+      size: '15 in', habitat: 'Salt marshes + beaches',
+      key_mark: 'Gray-brown overall, striking black-and-white wing pattern in flight.',
+      maine: 'Migrant; some breeders',
+      story: 'Boring brown until it flies — then dramatic black-and-white wings.' },
+    { name: 'Sanderling', sci: 'Calidris alba',
+      size: '8 in', habitat: 'Sandy beaches',
+      key_mark: 'Pale gray-white in non-breeding; rusty in breeding. Runs back-and-forth chasing waves.',
+      maine: 'Migrant + winter visitor',
+      story: 'The "wave-chaser" — eats invertebrates exposed by retreating waves. Highly visible on Maine beaches.' },
+    { name: 'Semipalmated Sandpiper', sci: 'Calidris pusilla',
+      size: '6 in', habitat: 'Mudflats + beaches',
+      key_mark: 'Small dark-brown back, white belly, black legs, short bill.',
+      maine: 'Migrant — late Jul–Sept in massive flocks',
+      story: 'Concentrated stopover use in Bay of Fundy area; passes through Maine. Numbers dropped from millions to hundreds of thousands.' },
+    { name: 'Least Sandpiper', sci: 'Calidris minutilla',
+      size: '6 in', habitat: 'Mudflats',
+      key_mark: 'Smallest North American sandpiper; brown back, yellow legs (only sandpiper with yellow legs at this size).',
+      maine: 'Migrant',
+      story: 'The yellow legs separate it from semipalmated.' },
+    { name: 'Dunlin', sci: 'Calidris alpina',
+      size: '8 in', habitat: 'Mudflats + sand flats',
+      key_mark: 'Long down-curved black bill; breeding: rust back + black belly patch; non-breeding: gray-brown.',
+      maine: 'Migrant + some winter',
+      story: 'Common in fall stopovers.' },
+    { name: 'Ruddy Turnstone', sci: 'Arenaria interpres',
+      size: '9 in', habitat: 'Rocky + sandy coast',
+      key_mark: 'Black, white, rust pattern; orange legs; short bill.',
+      maine: 'Migrant + occasional winter',
+      story: 'Flips over stones + seaweed searching for invertebrates — distinctive behavior.' },
+    { name: 'Black-bellied Plover', sci: 'Pluvialis squatarola',
+      size: '11 in', habitat: 'Mudflats + beaches',
+      key_mark: 'Gray + black-white plumage; in flight: black armpits diagnostic.',
+      maine: 'Migrant',
+      story: 'Large + striking. Calls plaintively "pee-oo-wee."' },
+    { name: 'Common Snipe', sci: 'Gallinago delicata',
+      size: '11 in', habitat: 'Wet meadows + bogs',
+      key_mark: 'Streaked brown overall, very long bill, striped head pattern.',
+      maine: 'Breeder + migrant',
+      story: 'Display: "winnowing" sound from spread tail feathers in nuptial flight.' }
+  ];
+
+  // ── SEABIRDS — Gulf of Maine pelagic + offshore
+  var SEABIRDS = [
+    { name: 'Atlantic Puffin', sci: 'Fratercula arctica',
+      size: '12 in', habitat: 'Offshore islands (breeding) + open ocean (winter)',
+      key_mark: 'Black back, white belly, large multi-colored bill in breeding (gray in winter).',
+      maine: 'Breeder Apr–Aug on Eastern Egg Rock, Matinicus Rock, Petit Manan, Seal Island',
+      story: 'Project Puffin (Audubon, Steve Kress) restored from 0 birds 1970s to ~1,500 pairs today. The most successful seabird restoration in history.' },
+    { name: 'Razorbill', sci: 'Alca torda',
+      size: '15 in', habitat: 'Offshore islands + ocean',
+      key_mark: 'Black + white; large vertical bill with white line.',
+      maine: 'Breeder on a few offshore islands',
+      story: 'Maine\'s most abundant alcid. Recovered from over-hunting.' },
+    { name: 'Common Murre', sci: 'Uria aalge',
+      size: '17 in', habitat: 'Offshore islands + ocean',
+      key_mark: 'Black + white; thin pointed bill.',
+      maine: 'Breeder on a few offshore islands',
+      story: 'Closest living relative of the Great Auk (extinct 1844).' },
+    { name: 'Black Guillemot', sci: 'Cepphus grylle',
+      size: '13 in', habitat: 'Coastal Maine + offshore',
+      key_mark: 'Breeding: jet black with white wing patch + bright red feet + interior mouth.',
+      maine: 'Year-round; common',
+      story: 'Most easily seen Maine alcid. Coastal year-round.' },
+    { name: 'Northern Gannet', sci: 'Morus bassanus',
+      size: '37 in', habitat: 'Open ocean + offshore',
+      key_mark: 'Adults: white with black wingtips + yellow head; juveniles dark; first-year mottled.',
+      maine: 'Migrant + summer visitor offshore',
+      story: 'Plunge-dives from 50+ ft into water at 40+ mph. Eyes + skull engineered for impact.' },
+    { name: 'Northern Fulmar', sci: 'Fulmarus glacialis',
+      size: '19 in', habitat: 'Open ocean',
+      key_mark: 'Gull-like gray + white, stubby bill with tube-nose; gull-distinct by stiff-winged glide.',
+      maine: 'Offshore winter visitor',
+      story: 'Tube-nosed seabird — excretes excess salt through bill tube. Long-lived (40+ years).' },
+    { name: 'Greater Shearwater', sci: 'Ardenna gravis',
+      size: '18 in', habitat: 'Open ocean',
+      key_mark: 'Dark cap + white below + dark back; stiff-winged glide low over waves.',
+      maine: 'Summer + fall visitor offshore',
+      story: 'Migrates from South Atlantic breeding islands (Tristan da Cunha) to Gulf of Maine to feed.' },
+    { name: 'Wilson\'s Storm-Petrel', sci: 'Oceanites oceanicus',
+      size: '7 in', habitat: 'Open ocean',
+      key_mark: 'Small dark with white rump; pattern of pattering feet on water as it feeds.',
+      maine: 'Summer + fall visitor offshore',
+      story: 'Among most abundant birds on Earth. Breeds in Antarctica + migrates to feed in Northern Hemisphere summer.' },
+    { name: 'Black-legged Kittiwake', sci: 'Rissa tridactyla',
+      size: '17 in', habitat: 'Cliff colonies + open ocean',
+      key_mark: 'White with gray back, yellow bill, black legs, "ink-dipped" black wingtips.',
+      maine: 'Winter visitor offshore',
+      story: 'Maine\'s only true offshore-breeding "cliff gull." Most North American breeding on far-north cliffs.' },
+    { name: 'Common Tern', sci: 'Sterna hirundo',
+      size: '14 in', habitat: 'Coast + offshore',
+      key_mark: 'Black cap, gray back, white belly, red bill with black tip, forked tail.',
+      maine: 'Breeder Apr–Sept on offshore islands',
+      story: 'Maine\'s tern colonies devastated by gull predation; restored via Project Puffin.' },
+    { name: 'Arctic Tern', sci: 'Sterna paradisaea',
+      size: '15 in', habitat: 'Offshore islands + open ocean',
+      key_mark: 'Like Common Tern but bill entirely red, shorter legs, longer tail.',
+      maine: 'Breeder on a few northern offshore islands',
+      story: 'Longest annual migration of any animal — pole to pole + back, ~44,000 miles annually.' },
+    { name: 'Roseate Tern', sci: 'Sterna dougallii',
+      size: '15 in', habitat: 'Offshore islands',
+      key_mark: 'Like Common Tern but bill mostly black, paler back, pinkish breast in breeding.',
+      maine: 'Rare breeder on a few islands',
+      story: 'Federally Endangered. Maine has small colonies; declining range.' }
+  ];
+
+  // ── WING TYPES — major wing shapes + birds with each
+  var WING_TYPES = [
+    { type: 'Elliptical Wings (Short + Rounded)',
+      shape_desc: 'Wings are short with rounded tips — slotted feathers spread at primaries.',
+      birds: 'Most songbirds, woodpeckers, sparrows, finches, jays, crows',
+      flight_use: 'Tight maneuvering through forests + dense cover. Burst flights between perches. Not efficient for long distance.',
+      examples: 'Black-capped Chickadee, Blue Jay, Pileated Woodpecker, American Robin' },
+    { type: 'High-Aspect-Ratio (Long + Narrow)',
+      shape_desc: 'Long thin wings with high "aspect ratio" (length-to-width).',
+      birds: 'Swallows, swifts, terns, albatrosses',
+      flight_use: 'Efficient long-distance flight + high speed. Reduced wingbeat frequency. Cannot maneuver in dense cover.',
+      examples: 'Tree Swallow, Common Tern, Northern Gannet, Arctic Tern' },
+    { type: 'Soaring Wings (Long + Broad with Slots)',
+      shape_desc: 'Long broad wings with deeply slotted primaries that can spread to reduce drag at low speeds.',
+      birds: 'Eagles, hawks, vultures, condors',
+      flight_use: 'Soaring on thermals + updrafts; long-distance migration; minimal flapping.',
+      examples: 'Bald Eagle, Red-tailed Hawk, Turkey Vulture, Broad-winged Hawk' },
+    { type: 'High-Speed Wings (Tapered + Pointed)',
+      shape_desc: 'Tapered backward-swept wings with pointed tips.',
+      birds: 'Falcons, peregrines',
+      flight_use: 'Maximum speed in dive ("stoop") + agile pursuit. Aerodynamically optimized for speed.',
+      examples: 'Peregrine Falcon, Merlin, American Kestrel, gyrfalcon' },
+    { type: 'Aquatic Wings (Short + Stiff)',
+      shape_desc: 'Short stiff wings used for swimming as much as flying.',
+      birds: 'Puffins, murres, razorbills, penguins (extreme case)',
+      flight_use: 'In air: heavy flapping flight. Underwater: same wings propel deep dives. Compromise wing shape.',
+      examples: 'Atlantic Puffin, Razorbill, Common Murre, Black Guillemot' }
+  ];
+
+  // ── BIRD FOOT TYPES — anatomy + function
+  var FOOT_TYPES = [
+    { type: 'Perching foot (anisodactyl)',
+      shape: '3 toes forward + 1 toe back. Most common foot shape.',
+      birds: 'All songbirds, doves, crows, hawks (modified)',
+      function: 'Grasps + locks onto branch when bird relaxes — tendons tighten as bird perches, holding it even when asleep.',
+      examples: 'Robin, chickadee, cardinal, sparrow' },
+    { type: 'Raptor foot (with talons)',
+      shape: '4 strong toes ending in sharp curved talons.',
+      birds: 'Eagles, hawks, falcons, owls',
+      function: 'Striking + grasping prey. Talons drive into prey on impact. Hawks + owls have reversible outer toe (zygodactyl) for stronger grip.',
+      examples: 'Bald Eagle, Great Horned Owl, Peregrine Falcon' },
+    { type: 'Climbing foot (zygodactyl)',
+      shape: '2 toes forward + 2 toes back.',
+      birds: 'Woodpeckers, parrots, cuckoos',
+      function: 'Strong vertical grip on tree trunks. Allows woodpeckers to grip + drill simultaneously.',
+      examples: 'Pileated Woodpecker, Northern Flicker, Downy Woodpecker' },
+    { type: 'Swimming foot (palmate)',
+      shape: 'Webbed between 3 forward toes (palmate) or 4 toes (totipalmate).',
+      birds: 'Ducks, geese, gulls, terns, cormorants (totipalmate)',
+      function: 'Propulsion in water. Surface paddling + diving.',
+      examples: 'Mallard, Herring Gull, Double-crested Cormorant' },
+    { type: 'Wading foot (long thin)',
+      shape: 'Very long thin toes with little webbing.',
+      birds: 'Herons, egrets, bitterns, cranes, rails',
+      function: 'Distribute weight on soft mud — does not sink. Long stride.',
+      examples: 'Great Blue Heron, American Bittern, Sora' },
+    { type: 'Lobed swimmer (semi-palmate)',
+      shape: 'Lobes of skin on each toe — partial webbing.',
+      birds: 'Phalaropes, coots, grebes',
+      function: 'Swimming propulsion without full webs. Walking on land possible.',
+      examples: 'Red-necked Phalarope, American Coot, Pied-billed Grebe' },
+    { type: 'Grasping foot (large toes)',
+      shape: 'Very large toes with strong grasp.',
+      birds: 'Cranes, herons (modified)',
+      function: 'Grasps fish + amphibian prey. Some piscivorous birds developed this.',
+      examples: 'Osprey (specialized for grasping fish)' },
+    { type: 'Walking foot (heavy + flat)',
+      shape: 'Strong forward toes with short claws.',
+      birds: 'Turkeys, grouse, pheasants, kiwis',
+      function: 'Scratching ground for food. Heavy ground-walking. Less perching.',
+      examples: 'Wild Turkey, Ruffed Grouse' }
+  ];
+
+  // ── BIRD BEHAVIOR — courtship + territory + parenting
+  var BEHAVIORS = [
+    { topic: 'Courtship Displays',
+      mechanism: 'Birds use elaborate visual + auditory displays to attract mates. Plumage development + display behavior signal genetic fitness + condition.',
+      examples: '(a) Wild Turkey gobbler "strut": fanning tail + raising feathers + dragging wings. (b) Woodcock "sky dance": evening twilight display flight + descending warble. (c) Greater Sage-Grouse lek: males display in arena, females select. (d) Frigatebird red throat sac inflated. (e) Cedar Waxwing berry-passing (couples exchange berries).',
+      function: 'Mate selection. Females typically select based on display quality. Display energy is honest signal of male condition.',
+      maine: 'American Woodcock sky-dance: April twilight, young forest openings. Wild Turkey gobbler displays: April fields.' },
+
+    { topic: 'Territorial Defense',
+      mechanism: 'Most songbirds defend territories during breeding. Songs + visual displays signal "this is taken."',
+      examples: '(a) Singing from prominent perch: a "billboard" claim. (b) Chasing intruder males. (c) Fence-flying: bird flies aggressively along territory boundary. (d) Some species cooperate (cooperative breeders) but defend together.',
+      function: 'Excludes competitors from food + nesting resources. Defended area sized to support breeding pair + chicks.',
+      maine: 'Spring dawn chorus in Maine forests is the audible mosaic of male songbirds defending territories.' },
+
+    { topic: 'Parental Care',
+      mechanism: 'Birds invest heavily in offspring (vs reptile + amphibian "lay-eggs-and-leave"). Incubation, feeding, defending, teaching.',
+      examples: '(a) Altricial chicks (helpless): both parents feed; songbirds, raptors, woodpeckers. (b) Precocial chicks (mobile): mostly feed themselves; ducks, geese, sandpipers. (c) Cavity nesters typically have more altricial chicks (safer cavity allows slower development).',
+      function: 'Increases chick survival to fledging. Trade-off: high parental cost vs more independent young.',
+      maine: 'Maine\'s loons + eider ducks have precocial chicks; warblers + woodpeckers altricial.' },
+
+    { topic: 'Pair Bonds + Mating Systems',
+      mechanism: '(a) Monogamy: most common; ~90% of bird species. (b) Polygyny: male mates with multiple females; e.g., Red-winged Blackbird. (c) Polyandry: female mates with multiple males; e.g., Spotted Sandpiper, jacanas. (d) Promiscuous: no pair bond; e.g., grouse + tundra-breeding ducks.',
+      examples: 'Bald Eagles: lifelong monogamy (~75% of pairs). Mallards: monogamy for one breeding season, new pair next year. Red-winged Blackbirds: territorial males may mate with 1–5 females. Phalaropes: female brighter, more aggressive, mates with multiple males.',
+      function: 'Mating system depends on resource distribution + ecology. Monogamy when both parents are needed for chick survival; polygyny when one parent can raise chicks alone.',
+      maine: 'Most Maine breeding birds are monogamous within a breeding season.' },
+
+    { topic: 'Migration',
+      mechanism: 'Annual long-distance movement between breeding + wintering grounds. Triggered by photoperiod + food availability + temperature.',
+      examples: '(a) Long-distance migrants: Arctic Tern (pole-to-pole, ~44,000 miles/yr). Red Knot (Tierra del Fuego to High Arctic). (b) Short-distance migrants: many sparrows shift only 1,000 miles or less. (c) Altitudinal migrants: some mountain species shift up + down by elevation.',
+      function: 'Tracks seasonal food + habitat availability. Birds breed where food abundant in summer, winter where food remains in winter.',
+      maine: 'Maine sits on Atlantic Flyway. Songbird migration peaks early May + late September. Hawk migration peaks September at Bradbury Mtn.' },
+
+    { topic: 'Communication — Songs + Calls',
+      mechanism: 'Songs: complex vocalizations, usually by males in breeding season, used for territory + mate attraction. Calls: shorter, used year-round for communication + alarm.',
+      examples: 'Song: White-throated Sparrow "Old-Sam-Peabody, Peabody, Peabody." Call: chickadee "chick-a-dee-dee-dee" with variable "dee" notes signaling threat level (more dees = bigger predator).',
+      function: 'Songs: territory + mate. Calls: contact + alarm + flock cohesion.',
+      maine: 'Maine\'s dawn chorus peaks late May–early June. Each species\' song is its territorial billboard.' },
+
+    { topic: 'Mobbing + Predator Defense',
+      mechanism: 'Birds collectively harass predators (hawks, owls, snakes, cats) to drive them away from nest sites + roosts.',
+      examples: 'Blue Jays + crows mobbing owls at daytime roosts. Red-winged Blackbirds mobbing hawks over marsh nests. Songbirds calling alarm + diving at cats.',
+      function: 'Drives predator away + alerts other birds + may train juveniles to recognize threats.',
+      maine: 'Easy to find Maine owls by listening for crow + jay mobbing chorus at dawn.' },
+
+    { topic: 'Foraging — Niche Differentiation',
+      mechanism: 'Birds partition food resources to coexist. Different species exploit different parts of the same habitat.',
+      examples: '(a) Five warbler species in same conifer tree: each uses different layer (Cape May at top, Bay-breasted middle, Yellow-rumped on outer branches, etc.) — MacArthur 1958 classic study. (b) Nuthatches walk DOWN trunks; woodpeckers walk UP. (c) Chickadees gather seeds; nuthatches cache them in bark.',
+      function: 'Reduces direct competition. Allows multiple species to coexist in same habitat.',
+      maine: 'Maine spruce-fir forests in summer demonstrate niche differentiation among 5+ warbler species.' }
+  ];
+
+  // ── BIRD PHYSIOLOGY
+  var PHYSIOLOGY = [
+    { topic: 'Heart Rate + Metabolism',
+      detail: 'Birds have extremely high metabolic rates compared to mammals. Hummingbird heart: 600+ beats per minute at rest, 1,200+ in flight. Body temperature ~104–108°F (vs human 98.6°F).',
+      function: 'High metabolism supports high-energy flight + maintenance of body temperature. Birds eat large fractions of body weight daily.',
+      example: 'A Black-capped Chickadee eats 35–50% of its body weight per day in winter. Hummingbird visits 1,000+ flowers/day.' },
+
+    { topic: 'Respiratory System',
+      detail: 'Unique to birds: through-flow breathing via air sacs. Air passes through lungs in one direction (not in-and-out like mammals). Enables high oxygen uptake at altitude.',
+      function: 'Supports high-altitude flight (some birds fly above 25,000 ft) + sustained flight metabolism.',
+      example: 'Bar-headed Goose flies over Himalayas at 26,000+ ft. Its respiratory system extracts oxygen at altitudes that would kill a human within minutes.' },
+
+    { topic: 'Skeleton + Weight Reduction',
+      detail: 'Hollow ("pneumatic") bones with internal struts. Strong but light. Fused bones reduce muscle requirements.',
+      function: 'Reduces weight for flight. Skeletal mass is ~5% of bird vs 7–8% in similar-sized mammals.',
+      example: 'A 9 lb bald eagle has a skeleton weighing < 1 lb. Hollow bones contain air spaces connected to respiratory system.' },
+
+    { topic: 'Crop + Gizzard',
+      detail: 'Crop: storage chamber after esophagus. Gizzard: muscular grinding chamber, often containing small stones ("gastroliths") to grind food.',
+      function: 'Crop allows birds to swallow food fast + digest later (when safe from predators). Gizzard replaces teeth for grinding seeds + tough plant material.',
+      example: 'Pigeon crop holds enough seeds for hours. Pigeon gizzard contains pebbles that grind seeds. Birds without teeth use gizzard instead.' },
+
+    { topic: 'Vision',
+      detail: 'Bird eyes are very large for skull size. Excellent acuity (especially raptors — eagle vision ~4-5× human). Many birds see UV (ultraviolet) light, revealing patterns invisible to humans.',
+      function: 'Detect prey at distance; recognize plumage patterns + UV markings for mate selection.',
+      example: 'A Bald Eagle can spot a rabbit from 1+ mile. Kestrels see UV trails of urine left by voles in grass.' },
+
+    { topic: 'Color Vision',
+      detail: 'Birds have 4 types of cone cells (humans have 3) — including UV-sensitive cone. They see colors humans cannot.',
+      function: 'Mate selection: many species have UV plumage patterns visible to other birds. Food selection: ripe fruit may glow in UV.',
+      example: 'A female Bluebird sees colors in a male\'s blue plumage that humans cannot. Tit species use UV reflectance for mate choice.' },
+
+    { topic: 'Hearing',
+      detail: 'Birds hear about the same range as humans (1–4 kHz peak sensitivity). Owls have asymmetric ear openings for vertical sound localization.',
+      function: 'Songbird communication + predator detection. Owls hunt by sound (Barn Owls can catch mice in total darkness).',
+      example: 'Northern Saw-whet Owl can find a mouse under a foot of snow by hearing alone.' },
+
+    { topic: 'Magnetic + Stellar Navigation',
+      detail: 'Birds use Earth\'s magnetic field for compass direction + star patterns for night navigation. Detection involves specialized retinal cells (cryptochromes).',
+      function: 'Long-distance migration relies on these senses. Birds that migrate by night use star map.',
+      example: 'Indigo Buntings raised indoors orient correctly only when shown a star map in a planetarium.' }
+  ];
+
+  // ── BIRD EVOLUTION — dinosaurs to birds
+  var EVOLUTION = [
+    { era: '160 million years ago',
+      event: 'First feathered dinosaurs',
+      what: 'Theropod dinosaurs (predatory) develop simple feathers — initially for insulation + display, not flight.',
+      example: 'Sinosauropteryx fossils from China show simple filamentous "proto-feathers" on a non-flying theropod.' },
+
+    { era: '150 million years ago',
+      event: 'Archaeopteryx',
+      what: 'The first true "bird" — feathered + with primitive flight capability. Still has teeth + long bony tail + clawed wings.',
+      example: 'Archaeopteryx fossils from Germany are the famous "transitional" specimens between dinosaurs + modern birds.' },
+
+    { era: '125 million years ago',
+      event: 'Modern bird ancestor group',
+      what: 'Ornithothoraces split into Enantiornithes (extinct) and Ornithurae (ancestors of all modern birds).',
+      example: 'Confuciusornis from China shows further refinement toward modern birds.' },
+
+    { era: '66 million years ago',
+      event: 'K-Pg extinction event',
+      what: 'Mass extinction wipes out non-avian dinosaurs + most bird lineages. Only Ornithurae survive.',
+      example: 'Asteroid impact + ash + temperature shift. Modern birds descended from a small surviving subset of Ornithurae.' },
+
+    { era: '65 million years ago',
+      event: 'Rapid bird radiation',
+      what: 'Surviving bird lineages diversify rapidly into modern orders: waterfowl, ratites (ostrich), galliformes (chickens), passerines (songbirds).',
+      example: 'All modern bird groups trace back to this rapid post-extinction radiation.' },
+
+    { era: '50 million years ago',
+      event: 'Songbird radiation begins',
+      what: 'Passeriformes (perching birds) — the order with > 50% of all bird species — begins diversifying in Gondwana.',
+      example: 'All living songbirds — chickadees, warblers, sparrows, crows — descended from this radiation.' },
+
+    { era: '40 million years ago',
+      event: 'Hummingbird ancestors',
+      what: 'Caprimulgiform-related lineage develops hover + sip strategy.',
+      example: 'Hummingbird flight + metabolism + flowers co-evolved.' },
+
+    { era: '1 million years ago',
+      event: 'Modern bird species recognizable',
+      what: 'Most species we recognize today existed in essentially modern form. Speciation during ice ages.',
+      example: 'Many North American songbird species split during ice-age population isolations.' },
+
+    { era: '15,000 years ago',
+      event: 'Late Pleistocene bird die-off',
+      what: 'Many large flightless + large-bodied birds went extinct as ice retreated + humans arrived.',
+      example: 'Teratorn vulture (extinct), giant Australian birds (extinct).' },
+
+    { era: '500 years ago',
+      event: 'Historic extinctions begin',
+      what: 'European colonization causes hundreds of bird species to go extinct or near-extinct: Dodo, Great Auk, Passenger Pigeon, Carolina Parakeet.',
+      example: 'Great Auk (last seen 1844 off Iceland; once common Gulf of Maine breeder) — close relative of modern murres.' },
+
+    { era: 'Today',
+      event: '~10,500 living species',
+      what: '~10,500 living bird species recognized worldwide. ~700+ breed in North America. ~280 breed in Maine.',
+      example: 'Ongoing taxonomic revision splits or lumps species annually. eBird, allaboutbirds.org maintain current lists.' }
+  ];
+
+  // ── FAMOUS BIRD SCIENTISTS — historical + contemporary
+  var BIRD_SCIENTISTS = [
+    { name: 'John James Audubon (1785–1851)',
+      contribution: 'Painted hundreds of life-sized North American bird species in "Birds of America" (1827–1838). Established standards for ornithological art + observation.',
+      legacy: 'Audubon Society named for him. His name now associated with bird conservation across US.',
+      controversy: 'Owned enslaved people; modern Audubon reckoning with his complicated legacy.' },
+    { name: 'Roger Tory Peterson (1908–1996)',
+      contribution: 'Created the "Peterson Field Guide System" — revolutionized field birding with diagrammatic arrows pointing to field marks. Published "A Field Guide to the Birds" 1934.',
+      legacy: 'Made birding accessible to millions. Set standard for field guides.',
+      maine: 'Spent summers in Maine; many illustrations done from Maine birds.' },
+    { name: 'Steve Kress',
+      contribution: 'Director of Project Puffin (Audubon Society). Restored Atlantic Puffin colonies in Maine using decoy + audio + social-attraction techniques.',
+      legacy: 'Pioneer of seabird translocation. Maine\'s Eastern Egg Rock + Matinicus Rock + Petit Manan + Seal Island all benefited from his work.' },
+    { name: 'Frank Chapman (1864–1945)',
+      contribution: 'Founded Christmas Bird Count (1900) — the longest-running citizen science project worldwide. Curator at American Museum of Natural History.',
+      legacy: 'CBC continues annually with thousands of participants. Established census methods.',
+      maine: 'Maine CBC circles continue to feed national + state population data.' },
+    { name: 'Aldo Leopold (1887–1948)',
+      contribution: 'Wildlife biologist + conservationist. "A Sand County Almanac" articulated ecological conservation philosophy.',
+      legacy: 'Modern wildlife management + restoration ecology trace to his work.' },
+    { name: 'Rachel Carson (1907–1964)',
+      contribution: '"Silent Spring" (1962) exposed DDT impact on bird populations. Catalyzed environmental movement + DDT ban.',
+      legacy: 'Bald Eagle + Peregrine + Osprey recoveries direct results of DDT ban. Modern environmental movement.',
+      maine: 'Spent summers in Maine.' },
+    { name: 'Robert MacArthur (1930–1972)',
+      contribution: 'Quantified niche differentiation among warblers in same conifer trees. Founded theoretical ecology.',
+      legacy: 'Modern community ecology + biogeography trace to his work.' },
+    { name: 'Margaret Morse Nice (1883–1974)',
+      contribution: 'Pioneer behavioral ecologist. Detailed studies of Song Sparrow life history. Major contributor to American ornithology.',
+      legacy: 'Modeled rigorous individual-based research methods.' },
+    { name: 'Ned Brinkley + Maine\'s Ornithologists',
+      contribution: 'Various Maine ornithologists + Cornell-trained researchers continue conservation + research work. Maine Audubon + UMaine programs train new researchers.',
+      legacy: 'Local Maine data feeds into national surveys + conservation prioritization.' },
+    { name: 'Bridget Stutchbury',
+      contribution: 'Pioneer use of geolocators on songbirds to track migration routes. Quantified Wood Thrush + other migrant population trends.',
+      legacy: 'Modern songbird migration research methods.' }
+  ];
+
+  // ── GULL ID — Maine\'s most-confused identification
+  var GULL_ID = [
+    { name: 'Herring Gull',
+      sci: 'Larus argentatus',
+      size: 'Large (24–28 in)',
+      adult_winter: 'White head + breast with brown streaking, gray back, pink legs, yellow bill with red spot.',
+      adult_breeding: 'Same body, clean white head + breast, more vivid bill.',
+      first_winter: 'Streaky brown overall, black bill.',
+      voice: 'Loud "ow-ow" calls + "kee-er" rallying cries.',
+      where: 'Coastal Maine year-round; abundant',
+      tip: 'Maine\'s default "gull" most people see.' },
+
+    { name: 'Great Black-backed Gull',
+      sci: 'Larus marinus',
+      size: 'Very large (28–32 in)',
+      adult_winter: 'Same as Herring but with very dark gray-black back.',
+      adult_breeding: 'Same.',
+      first_winter: 'Whiter than first-winter Herring Gull.',
+      voice: 'Lower-pitched than Herring.',
+      where: 'Coastal Maine year-round; abundant',
+      tip: 'Larger + darker than Herring; eats other gulls + ducks.' },
+
+    { name: 'Ring-billed Gull',
+      sci: 'Larus delawarensis',
+      size: 'Medium (16–21 in)',
+      adult_winter: 'White with gray back, yellow bill with black "ring" near tip, yellow legs.',
+      adult_breeding: 'Same.',
+      first_winter: 'Brown with darker wing tips.',
+      voice: 'High pitched.',
+      where: 'Common inland + coastal',
+      tip: 'Smaller than Herring; common parking lot bird.' },
+
+    { name: 'Laughing Gull',
+      sci: 'Leucophaeus atricilla',
+      size: 'Medium (15–18 in)',
+      adult_winter: 'Smaller + darker overall; white "headlights" on wing tips.',
+      adult_breeding: 'Black head + dark back; striking with red bill.',
+      first_winter: 'Dark gray-brown with dark hood.',
+      voice: 'Distinctive "laughing" calls "ha-ha-ha-ha."',
+      where: 'Summer visitor coastal Maine; uncommon',
+      tip: 'Black-headed breeding plumage diagnostic.' },
+
+    { name: 'Bonaparte\'s Gull',
+      sci: 'Chroicocephalus philadelphia',
+      size: 'Small (13–15 in)',
+      adult_winter: 'Pale gray with black ear-spot + thin black bill.',
+      adult_breeding: 'Black head in breeding (smaller than Laughing).',
+      first_winter: 'Brown wing pattern + black ear-spot.',
+      voice: 'High squeaky calls.',
+      where: 'Spring + fall migrant + winter visitor',
+      tip: 'Smallest common Maine gull. Buoyant tern-like flight.' },
+
+    { name: 'Iceland Gull',
+      sci: 'Larus glaucoides',
+      size: 'Medium-Large (20–24 in)',
+      adult_winter: 'Pale gray (lighter than Herring) with white wingtips (no black).',
+      adult_breeding: 'Same.',
+      first_winter: 'Pale overall.',
+      voice: 'Similar to Herring.',
+      where: 'Winter visitor coastal Maine; uncommon',
+      tip: 'White wingtips diagnostic. Confused with Glaucous Gull.' },
+
+    { name: 'Glaucous Gull',
+      sci: 'Larus hyperboreus',
+      size: 'Very large (27–31 in)',
+      adult_winter: 'Like Iceland but larger, more massive bill.',
+      adult_breeding: 'Same.',
+      first_winter: 'Pale white-buff.',
+      voice: 'Deep.',
+      where: 'Winter visitor coastal Maine; uncommon',
+      tip: 'Largest Maine gull. White wingtips.' }
+  ];
+
+  // ── IRRUPTIONS — irruptive winter visitors
+  var IRRUPTIONS = [
+    { species: 'Snowy Owl', irrupt_when: 'Years following high lemming populations in Arctic',
+      pattern: 'Some winters Maine sees many; other winters very few.',
+      where_to_look: 'Open coastal beaches + dunes + airfields. Scarborough Marsh + Pine Point + Saco Bay common Maine sites.',
+      story: '2013–2014 was epic Maine snowy owl winter — many birds + many sightings.' },
+    { species: 'Common Redpoll', irrupt_when: 'Years of low northern boreal birch seed crop',
+      pattern: 'Massive flocks in some winters; nearly absent others.',
+      where_to_look: 'Feeders + birch + alder areas. Often joins flocks of goldfinches + pine siskins.',
+      story: 'Tiny streaked finches with red caps. Mass irruption years see thousands of redpolls in Maine.' },
+    { species: 'Pine Grosbeak', irrupt_when: 'Following Boreal Mountain-ash + spruce-fir cone failure',
+      pattern: 'Irregular winter visits.',
+      where_to_look: 'Maine\'s mountain-ash + crabapple + native fruit trees.',
+      story: 'Massive friendly finch; lets observers approach close.' },
+    { species: 'Bohemian Waxwing', irrupt_when: 'When Cedar Waxwings have eaten the local fruit + Bohemian moves south',
+      pattern: 'Spectacular flocks of 100+.',
+      where_to_look: 'Maine fruit-bearing trees + shrubs in winter.',
+      story: 'Larger than Cedar Waxwing; gray rump distinguishes them.' },
+    { species: 'White-winged Crossbill', irrupt_when: 'Conifer cone crop variation in north',
+      pattern: 'Irregular Maine appearance.',
+      where_to_look: 'Spruce-fir stands with cones.',
+      story: 'Unique crossed-mandible bill for prying open cone scales.' },
+    { species: 'Red Crossbill', irrupt_when: 'Similar to White-winged but different conifer types',
+      pattern: 'Irregular.',
+      where_to_look: 'Maine pine stands.',
+      story: 'Has multiple "types" with different bill sizes for different cone species.' },
+    { species: 'Pine Siskin', irrupt_when: 'Less irruptive than other finches; some years better than others',
+      pattern: 'Variable Maine winter numbers.',
+      where_to_look: 'Conifer + birch + feeder.',
+      story: 'Small streaky finch with yellow wing flashes.' },
+    { species: 'Evening Grosbeak', irrupt_when: 'Years of low boreal cone or fruit crop',
+      pattern: 'Large yellow-and-black flocks.',
+      where_to_look: 'Maine feeders + maple-seed-bearing trees.',
+      story: 'Once common Maine breeder; now mostly irruptive winter visitor. Population has crashed since 1970s.' }
+  ];
+
+  // ── ENDANGERED FOCAL SPECIES — Maine listed
+  var ENDANGERED_SPECIES = [
+    { name: 'Piping Plover',
+      sci: 'Charadrius melodus',
+      status: 'Federal Threatened; State Endangered',
+      threats: 'Beach development, human disturbance, predation by gulls + raccoons, sea-level rise',
+      maine: '~50 pairs annually. Each nest protected with symbolic fencing + volunteer monitors',
+      action: 'Maine Audubon Piping Plover + Least Tern Project monitors. Pet leashing on beaches critical.' },
+
+    { name: 'Roseate Tern',
+      sci: 'Sterna dougallii',
+      status: 'Federal Endangered; State Endangered',
+      threats: 'Habitat loss on breeding islands, predation, climate change',
+      maine: 'Small colony on a few offshore islands. Population has declined dramatically.',
+      action: 'Project Puffin works on tern restoration. Black-and-white island colonies critical.' },
+
+    { name: 'Black-crowned Night Heron',
+      sci: 'Nycticorax nycticorax',
+      status: 'State Special Concern',
+      threats: 'Habitat loss, wetland degradation, declining heronry sites',
+      maine: 'Limited Maine breeders; population shrinking.',
+      action: 'Heronry protection + wetland conservation.' },
+
+    { name: 'Great Cormorant',
+      sci: 'Phalacrocorax carbo',
+      status: 'State Special Concern',
+      threats: 'Disturbance + climate change',
+      maine: 'Small breeding population in coastal Maine; outnumbered by Double-crested.',
+      action: 'Maine-specific monitoring + protection.' },
+
+    { name: 'Black Tern',
+      sci: 'Chlidonias niger',
+      status: 'State Special Concern',
+      threats: 'Wetland loss',
+      maine: 'Limited Maine breeders; primarily Aroostook County.',
+      action: 'Wetland habitat protection.' },
+
+    { name: 'Wood Thrush',
+      sci: 'Hylocichla mustelina',
+      status: 'Watch List (declining)',
+      threats: 'Forest fragmentation in Maine + tropical deforestation in Latin American wintering grounds',
+      maine: 'Common breeder but population dropped 60%+ since 1970',
+      action: 'Forest connectivity + tropical conservation partnerships.' },
+
+    { name: 'Bicknell\'s Thrush',
+      sci: 'Catharus bicknelli',
+      status: 'Watch List; State Endangered',
+      threats: 'Mountain habitat change with climate warming. Specialized for high-elevation spruce-fir.',
+      maine: 'Limited breeding at high elevations in western Maine + Mount Katahdin area',
+      action: 'High-elevation conservation; climate-vulnerable population.' },
+
+    { name: 'Saltmarsh Sparrow',
+      sci: 'Ammospiza caudacuta',
+      status: 'Federal Petitioned; State Special Concern',
+      threats: 'Sea-level rise — saltmarshes flooding faster than birds can adapt',
+      maine: 'Limited breeders in southern Maine saltmarshes',
+      action: 'Saltmarsh restoration + sea-level adaptation planning.' },
+
+    { name: 'Sedge Wren',
+      sci: 'Cistothorus stellaris',
+      status: 'State Special Concern',
+      threats: 'Specialized for sedge meadows; habitat loss',
+      maine: 'Limited Maine breeders.',
+      action: 'Sedge meadow protection.' },
+
+    { name: 'Bald Eagle',
+      sci: 'Haliaeetus leucocephalus',
+      status: 'Federal Delisted (recovered); State Threatened',
+      threats: 'Lead poisoning (from spent ammunition + fishing tackle); collisions; some disturbance',
+      maine: '~700 active nests today (from <60 in 1970). Recovery success.',
+      action: 'Lead-free ammunition + fishing tackle; continued habitat protection.' }
+  ];
+
+  // ── MAINE HOTSPOTS DEEP — extended info on top birding sites
+  var HOTSPOTS_DEEP = [
+    { name: 'Scarborough Marsh (Scarborough)',
+      type: 'Salt marsh', size: '3,100 acres',
+      key_species: 'Sharp-tailed sparrows, Marsh + Sedge Wrens, Glossy Ibis, herons, shorebirds, harriers',
+      best_seasons: 'Spring + fall migration; summer breeders',
+      access: 'Maine Audubon Center; trails + observation decks',
+      tip: 'Walk from the Maine Audubon Pelreco Trail at dawn for best access to marsh edges.' },
+
+    { name: 'Eastern Egg Rock (Muscongus Bay)',
+      type: 'Offshore island', size: '7 acres',
+      key_species: 'Atlantic Puffin, Common Tern, Roseate Tern, Razorbill, Common Eider',
+      best_seasons: 'Apr–Aug (breeding)',
+      access: 'Boat trip only — Hardy Boat Cruises + Cap\'n Fish offer tours from New Harbor',
+      tip: 'Bring binoculars + warm layers. Project Puffin\'s flagship restoration site.' },
+
+    { name: 'Acadia National Park',
+      type: 'Mountains + coast + forest', size: '49,000 acres',
+      key_species: 'Bicknell\'s Thrush (high elevation), peregrine, Boreal Chickadee, warblers',
+      best_seasons: 'May–Sept',
+      access: 'Multiple trails; Cadillac Mountain summit accessible by road',
+      tip: 'Cadillac at dawn for first sunrise + Bicknell\'s + birds working highland.' },
+
+    { name: 'Bradbury Mountain (Pownal)',
+      type: 'Hawkwatch + forest', size: '~800 acres',
+      key_species: 'Sept-Oct: Broad-winged Hawk, Sharp-shinned, Cooper\'s, eagle migrants',
+      best_seasons: 'Sept 5–25 peak; Bradbury Mountain Hawkwatch staffed Sept 1–Oct 31',
+      access: 'Bradbury Mountain State Park summit hike (1 hr)',
+      tip: 'Best on clear NW-wind day after a cold front passage. Daily totals 100s–1000s.' },
+
+    { name: 'Baxter State Park / Mount Katahdin',
+      type: 'Boreal forest + alpine', size: '209,644 acres',
+      key_species: 'Bicknell\'s Thrush, Boreal Chickadee, Black-backed Woodpecker, gray jay, spruce grouse, Boreal Owl (rare)',
+      best_seasons: 'Late June–Aug',
+      access: 'Park entrance reservation system; extensive trail network',
+      tip: 'Northern Maine\'s flagship wilderness. Bicknell\'s Thrush at higher elevations on certain trails.' },
+
+    { name: 'Petit Manan National Wildlife Refuge (offshore + coastal)',
+      type: 'Offshore islands + coastal habitat',
+      key_species: 'Puffins (in season), Black Guillemot, Common Murre, Razorbill, terns',
+      best_seasons: 'May–Aug for puffin/tern season',
+      access: 'Limited; some boat tours; viewing from Schoodic Peninsula mainland',
+      tip: 'Maine\'s less-touristed but excellent seabird viewing area.' },
+
+    { name: 'Sabattus River (Lewiston/Auburn)',
+      type: 'River + fields',
+      key_species: 'Migrating waterfowl, raptors, dabbler ducks in fall',
+      best_seasons: 'Sept-Oct',
+      access: 'Various viewing pulloffs',
+      tip: 'Less famous but accessible fall watching.' },
+
+    { name: 'Penobscot River below Bangor',
+      type: 'River below dams + ice-free area',
+      key_species: 'Bald Eagle (especially in winter), Common Goldeneye, Common Merganser',
+      best_seasons: 'Year-round especially winter',
+      access: 'Multiple river-edge spots',
+      tip: 'Maine\'s premier winter eagle concentration. Penobscot River Restoration (dam removals) has improved fish + bird populations.' },
+
+    { name: 'Moosehead Lake region',
+      type: 'Wilderness lake + forest', size: '~75,000 acres',
+      key_species: 'Common Loon, Bald Eagle, Common Merganser, Boreal Chickadee, Black-backed Woodpecker, Spruce Grouse',
+      best_seasons: 'May–Sept',
+      access: 'Lily Bay State Park + Mount Kineo + Lily Bay',
+      tip: 'Loons in summer; eagles year-round.' },
+
+    { name: 'Pelagic trip — Bar Harbor area',
+      type: 'Open ocean (boat trip)',
+      key_species: 'Greater Shearwater, Wilson\'s Storm-Petrel, Northern Gannet, Pomarine Jaeger, Atlantic Puffin',
+      best_seasons: 'July–Sept',
+      access: 'Pelagic Birding Adventures + occasional Maine Audubon trips',
+      tip: 'Different bird suite than coastal sites. Bring motion-sickness meds.' },
+
+    { name: 'Stratton Brook / Western Maine mountains',
+      type: 'High-elevation conifer',
+      key_species: 'Bicknell\'s Thrush, Bay-breasted Warbler, Boreal Chickadee, Spruce Grouse',
+      best_seasons: 'June–July (breeding)',
+      access: 'Various trails; some require longer hikes',
+      tip: 'Maine\'s less-visited mountain birding.' },
+
+    { name: 'Old Town / Penobscot Indian Island',
+      type: 'River + reservation',
+      key_species: 'Wood Duck (breeding), riverine warblers',
+      best_seasons: 'May–Sept',
+      access: 'Visit Penobscot Nation cultural center first',
+      tip: 'Respectful birding on tribal lands; coordinate with Penobscot Nation Department of Natural Resources.' }
+  ];
+
+  // ── DUCK ID (DABBLER VS DIVER) — key Maine ID skill
+  var DUCK_ID_GUIDE = [
+    { topic: 'Dabblers (Surface-feeding ducks)',
+      examples: 'Mallard, American Black Duck, Wood Duck, Gadwall, American Wigeon, Northern Pintail, Northern Shoveler, Green-winged Teal, Blue-winged Teal',
+      anatomy: 'Larger feet positioned mid-body. Wing speculum (iridescent patch) visible.',
+      behavior: 'Tip up to feed; do not dive. Take off from water with leaping vertical jump.',
+      flight: 'Wings whistle. Direct flight.',
+      diet: 'Mostly plants, seeds, some invertebrates',
+      where_to_see: 'Marshes, shallow ponds, flooded fields' },
+
+    { topic: 'Divers (Underwater-feeding ducks)',
+      examples: 'Common + Hooded + Red-breasted Merganser, Common Goldeneye, Bufflehead, Greater + Lesser Scaup, Long-tailed Duck, scoters (3 species), Common + Red-throated Loon (related diving)',
+      anatomy: 'Feet positioned at rear of body — efficient for underwater swimming but awkward on land.',
+      behavior: 'Dive completely underwater to feed. Cannot take off vertically — must run on water to take off.',
+      flight: 'Direct flight low to water.',
+      diet: 'Animals — fish, mollusks, crustaceans',
+      where_to_see: 'Deeper water, lakes, coast' },
+
+    { topic: 'Mergansers (Specialized divers)',
+      examples: 'Common, Hooded, Red-breasted Mergansers',
+      anatomy: 'Long thin serrated bill for catching fish.',
+      behavior: 'Dive + chase fish underwater.',
+      flight: 'Direct low flight.',
+      diet: 'Fish; specialized predators.',
+      where_to_see: 'Rivers + lakes; common in Maine year-round (Common Merganser)' },
+
+    { topic: 'Sea Ducks (Marine-specialized divers)',
+      examples: 'Common Eider, scoters, Long-tailed Duck',
+      anatomy: 'Heavier body, larger feet, salt-tolerant.',
+      behavior: 'Dive in salt water to ocean floor.',
+      flight: 'Heavy direct.',
+      diet: 'Mostly mollusks (mussels) + crustaceans.',
+      where_to_see: 'Coastal Maine in winter.' },
+
+    { topic: 'Tree Ducks (Cavity-nesting waterfowl)',
+      examples: 'Wood Duck, Hooded Merganser, Common Goldeneye, Bufflehead',
+      anatomy: 'Smaller body, agile flight.',
+      behavior: 'Nest in tree cavities (or boxes).',
+      flight: 'Agile through trees.',
+      diet: 'Various depending on species.',
+      where_to_see: 'Wooded ponds + swamps.' }
+  ];
+
+  // ── BIRD VOCALIZATIONS DEEP
+  var VOCAL_DEEP = [
+    { topic: 'Song vs Call',
+      song: 'Complex vocalization, usually by males in breeding season, used for territory + mate attraction',
+      call: 'Shorter, used year-round for communication + alarm + contact',
+      maine_example: 'Chickadee song = "fee-bee" 2 notes. Chickadee call = "chick-a-dee-dee-dee."' },
+
+    { topic: 'Song Learning',
+      mechanism: 'Songbirds learn songs from adults — like human language learning. Sensitive period in first year of life.',
+      experiment: 'White-crowned Sparrows raised in isolation develop abnormal songs. Raised with one tutor: copy that tutor.',
+      implication: 'Songs vary by region (dialects). Some Maine + Massachusetts populations have measurably different White-throated Sparrow songs.' },
+
+    { topic: 'Why birds sing dawn chorus',
+      reasons: '(1) Quieter — less wind + traffic interference. (2) Cooler air carries sound further. (3) Empty stomach + need to advertise before foraging. (4) Sexual selection — females listening at peak time.',
+      seasonality: 'Maine peak dawn chorus late May to early June when breeders most active.' },
+
+    { topic: 'Different functions of different songs',
+      examples: '(a) Territorial song: full song, advertised from perch. (b) Subsong: practice + soft variant. (c) Encounter song: when defending against intruder. (d) Dawn song: most intense.',
+      maine_example: 'Eastern Towhee has multiple song types used in different contexts. Black-capped Chickadee has "fee-bee" (territorial) + "chick-a-dee-dee" (alarm/contact).' },
+
+    { topic: 'Mimicry',
+      species: 'Mockingbirds, catbirds, blue jays, mockingthrushes, lyrebirds',
+      what: 'Mimics include songs of other birds + animal sounds + sometimes human sounds (car alarms, phones).',
+      function: 'Possibly expansion of song repertoire to attract mates (more song types = more attractive male?). Still debated.' },
+
+    { topic: 'Recordings as Citizen Science',
+      what: 'Smartphone recordings can be used by researchers + apps. Macaulay Library at Cornell archives recordings.',
+      apps: 'Merlin Bird ID can record + identify. eBird supports audio recordings.' },
+
+    { topic: 'Acoustic environment + climate change',
+      what: 'Birds adapt songs to noisy environments. Urban birds sing higher pitched. Forest songs propagate differently than open-country.',
+      research_question: 'How are songs changing with climate + landscape? Open research area.' }
+  ];
+
+  // ── BIRD REPRODUCTION DEEP
+  var REPRO_DEEP = [
+    { topic: 'Egg formation',
+      process: 'Female lays one egg per ~24-48 hours. Yolk forms over weeks in ovary. Albumen + shell added in oviduct during day before laying.',
+      timing: 'Clutch laid over multiple days. Incubation starts after last (or near-last) egg in most species.',
+      energetics: 'Egg production is highly costly. Female loses significant body mass during egg-laying period.' },
+
+    { topic: 'Incubation',
+      mechanism: 'Eggs kept at ~37–39°C (~98–102°F). Female sits on eggs; many species also have male help.',
+      duration: 'Varies by species: chickadee ~13 days, mallard ~28 days, bald eagle ~35 days, albatross ~80+ days.',
+      eggs_under_belly: 'Brood patch — bare skin on belly facing eggs; rich with blood vessels; warms eggs.' },
+
+    { topic: 'Hatching',
+      process: 'Chick uses "egg tooth" on bill tip to crack shell. Hatches in 1–48 hours depending on species.',
+      altricial: 'Helpless, naked, eyes closed. Need parental care. E.g., songbirds, raptors, woodpeckers.',
+      precocial: 'Born feathered, eyes open, mobile, can feed self. E.g., ducks, geese, sandpipers, grouse.' },
+
+    { topic: 'Fledging',
+      timing: 'Time from hatching to first flight. Songbirds ~12–18 days; raptors ~6–12 weeks; albatross ~9 months.',
+      post_fledge: 'Many species continue parental feeding for weeks after fledging.' },
+
+    { topic: 'Brood reduction',
+      mechanism: 'Last-hatched chicks often die in larger broods. Eldest chicks fed first; younger compete or starve.',
+      bald_eagle: 'Eagle eggs hatch days apart. First-hatched chick often dominant. In poor years, second chick may starve.' },
+
+    { topic: 'Cooperative breeding',
+      mechanism: 'Some species: non-breeding "helpers" assist breeding pair. Helpers may be offspring from previous year.',
+      examples: 'Florida Scrub-Jay, Acorn Woodpecker, some Maine species. Less common in temperate species.' },
+
+    { topic: 'Brood parasitism',
+      mechanism: 'Brown-headed Cowbird (Maine + worldwide) lays eggs in other birds\' nests. Host raises cowbird chick instead of own.',
+      hosts: 'Mostly songbirds smaller than cowbird. Most cannot recognize alien egg.',
+      conservation: 'Cowbirds expanded with deforestation + cattle ranching. Major threat to some songbird species.' },
+
+    { topic: 'Polygamy in monogamous species',
+      reality: 'Even "monogamous" pairs often have extra-pair copulations. DNA paternity tests show 10–40% of chicks fathered by non-pair males in many "monogamous" species.',
+      function: 'Females may seek genetic diversity. Males may seek extra mating opportunities.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 4 EXPANSION — more species + visual content
+  // ═════════════════════════════════════════════════════════════
+
+  // ── SPARROW PROFILES — Maine sparrows + lookalikes
+  var SPARROWS = [
+    { name: 'Song Sparrow', sci: 'Melospiza melodia',
+      size: '6.25 in', habitat: 'Brushy edges, gardens, marshes, year-round Maine',
+      key_mark: 'Streaky brown overall, dark spot in center of streaked breast ("dot"), gray-brown head with brown crown + cheek stripe + brown malar.',
+      song: '3-5 sharp introductory notes followed by trill — varies by individual.',
+      tip: 'Very common. Diagnostic central breast spot.',
+      maine: 'Year-round; abundant.' },
+    { name: 'White-throated Sparrow', sci: 'Zonotrichia albicollis',
+      size: '6.75 in', habitat: 'Northern conifer + mixed forest (breeding); brushy areas (winter)',
+      key_mark: 'White throat sharply outlined; black + white (or tan + brown) head striping; yellow lores.',
+      song: '"Old-Sam-Peabody, Peabody, Peabody."',
+      tip: 'White-striped + tan-striped morphs both occur — pair off.',
+      maine: 'Breeder northern Maine April–October; migrant + winter southern Maine.' },
+    { name: 'White-crowned Sparrow', sci: 'Zonotrichia leucophrys',
+      size: '7 in', habitat: 'Brushy edges in migration',
+      key_mark: 'Bold black + white crown striping (no yellow); plain gray face + breast; pinkish bill.',
+      song: 'Sweet whistled phrase, regional variation.',
+      tip: 'No yellow lores distinguishes from White-throated.',
+      maine: 'Migrant; some winter southern Maine.' },
+    { name: 'Dark-eyed Junco', sci: 'Junco hyemalis',
+      size: '6.25 in', habitat: 'Conifer forest (breeding); brushy areas + feeders (winter)',
+      key_mark: 'Slate gray hood + back, white belly, white outer tail feathers, pink bill.',
+      song: 'Simple trill on one pitch.',
+      tip: 'Maine "snowbirds" — abundant winter feeder visitor.',
+      maine: 'Breeder northern Maine + mountains; abundant winter throughout state.' },
+    { name: 'American Tree Sparrow', sci: 'Spizelloides arborea',
+      size: '6.25 in', habitat: 'Winter visitor to weedy fields + feeders',
+      key_mark: 'Rufous cap, single dark central breast spot, bi-colored bill (dark above + yellow below).',
+      song: '(Sings in Arctic breeding grounds only.)',
+      tip: 'Winter only in Maine — does not breed.',
+      maine: 'Winter visitor Nov–Apr; breeds far north.' },
+    { name: 'Chipping Sparrow', sci: 'Spizella passerina',
+      size: '5.5 in', habitat: 'Open conifer + suburban lawns (breeding)',
+      key_mark: 'Rufous cap, white eyebrow + dark eyeline, gray face + breast.',
+      song: 'Long rapid trill ("chipping" — fast clear notes).',
+      tip: 'Breeding rufous cap distinctive.',
+      maine: 'Breeder Apr–October.' },
+    { name: 'Field Sparrow', sci: 'Spizella pusilla',
+      size: '5.75 in', habitat: 'Brushy fields, second growth',
+      key_mark: 'Plain face with white eye ring, pink bill, rusty cap, rufous wings.',
+      song: 'Series of soft notes accelerating into a trill.',
+      tip: 'Often confused with American Tree Sparrow — Field has plain breast vs spotted.',
+      maine: 'Breeder + uncommon winter southern Maine.' },
+    { name: 'Savannah Sparrow', sci: 'Passerculus sandwichensis',
+      size: '5.5 in', habitat: 'Open grasslands, salt marshes, pastures',
+      key_mark: 'Streaky brown overall, yellow eyebrow, pink legs, short forked tail.',
+      song: 'High-pitched 2-buzz-trill.',
+      tip: 'Yellow eyebrow above eye is key field mark.',
+      maine: 'Breeder Apr–October in open habitat.' },
+    { name: 'Swamp Sparrow', sci: 'Melospiza georgiana',
+      size: '5.75 in', habitat: 'Marshes + wetlands',
+      key_mark: 'Rufous cap, white throat, gray-brown chest, dark streaks on flanks.',
+      song: 'Slow musical trill.',
+      tip: 'Wetland version of Song Sparrow.',
+      maine: 'Breeder May–September in marshes.' },
+    { name: 'Saltmarsh Sparrow', sci: 'Ammospiza caudacuta',
+      size: '5 in', habitat: 'Coastal salt marshes',
+      key_mark: 'Buff-orange face, gray central head stripe, light buff breast with fine streaks.',
+      song: 'Wheezing buzz "tssss."',
+      tip: 'Federally listed; rare Maine breeder.',
+      maine: 'Limited breeder in southern Maine salt marshes.' },
+    { name: 'Nelson\'s Sparrow', sci: 'Ammospiza nelsoni',
+      size: '5 in', habitat: 'Coastal grasslands + marshes',
+      key_mark: 'Bright buff-orange face + breast, gray crown.',
+      song: 'Wheezing buzz similar to Saltmarsh.',
+      tip: 'Breeds inland on Maine bogs; also coastal.',
+      maine: 'Limited breeder.' },
+    { name: 'Lincoln\'s Sparrow', sci: 'Melospiza lincolnii',
+      size: '5.75 in', habitat: 'Wet meadows + bogs (breeding); brushy areas (migration)',
+      key_mark: 'Buff breast with fine dark streaks, gray face, white belly, plain crown.',
+      song: 'Wren-like burbling.',
+      tip: 'Look for buff-breasted appearance.',
+      maine: 'Breeder northern Maine.' },
+    { name: 'Eastern Towhee', sci: 'Pipilo erythrophthalmus',
+      size: '8.5 in', habitat: 'Brushy thickets + edges',
+      key_mark: 'Black hood, rufous flanks, white belly, red eye.',
+      song: '"Drink-your-tea" — distinctive 3-note song.',
+      tip: 'Scratches noisily in leaf litter.',
+      maine: 'Breeder May–October.' },
+    { name: 'Eastern Meadowlark', sci: 'Sturnella magna',
+      size: '9.5 in', habitat: 'Grasslands + agricultural fields',
+      key_mark: 'Bright yellow breast with black "V" pattern, brown striped back.',
+      song: 'Whistled "spring-of-the-year."',
+      tip: 'Sits prominently on fence posts.',
+      maine: 'Breeder Apr–October in remaining grasslands; declining.' },
+    { name: 'Vesper Sparrow', sci: 'Pooecetes gramineus',
+      size: '6.25 in', habitat: 'Open dry grasslands',
+      key_mark: 'Streaked overall, white outer tail feathers, chestnut shoulder patch.',
+      song: 'Whistled phrase ending in trill.',
+      tip: 'Sings at evening (vespers).',
+      maine: 'Uncommon Maine breeder in grasslands.' }
+  ];
+
+  // ── THRUSH PROFILES — Maine thrushes
+  var THRUSHES = [
+    { name: 'American Robin', sci: 'Turdus migratorius',
+      size: '10 in', habitat: 'Suburbs, yards, fields, forests',
+      key_mark: 'Gray back, orange-red breast, white eye-ring, yellow bill.',
+      song: 'Caroling phrases "cheerily-cheer-up-cheerio."',
+      maine: 'Year-round; some migrate. Abundant.',
+      story: 'America\'s most common bird ~ 320M individuals.' },
+    { name: 'Hermit Thrush', sci: 'Catharus guttatus',
+      size: '6.75 in', habitat: 'Forest understory',
+      key_mark: 'Brown back, rufous tail (red contrasts with brown back), spotted breast, white eye-ring.',
+      song: 'Flute-like ascending notes.',
+      maine: 'Most common Maine thrush; breeder + migrant.',
+      story: 'Maine\'s state bird candidate.' },
+    { name: 'Wood Thrush', sci: 'Hylocichla mustelina',
+      size: '7.75 in', habitat: 'Mature deciduous forest',
+      key_mark: 'Reddish-brown back, white breast with bold black spots, white eye-ring.',
+      song: 'Flute-like "ee-oh-lay."',
+      maine: 'Breeder; declining 60%+ since 1970.',
+      story: 'Tropical wintering grounds deforestation affecting Maine populations.' },
+    { name: 'Veery', sci: 'Catharus fuscescens',
+      size: '7 in', habitat: 'Moist deciduous forest',
+      key_mark: 'Plain warm tawny-brown back, faintly spotted upper breast, no eye-ring.',
+      song: 'Descending downward spiral "vee-veer-veer."',
+      maine: 'Breeder May–September.',
+      story: 'Forest understory species.' },
+    { name: 'Bicknell\'s Thrush', sci: 'Catharus bicknelli',
+      size: '6.5 in', habitat: 'Mountain spruce-fir above 2,500 ft',
+      key_mark: 'Like Gray-cheeked but with warmer rust on flanks + tail; gray cheek.',
+      song: 'Descending flute-like.',
+      maine: 'Breeder on Maine mountain summits; State Endangered.',
+      story: 'Climate-vulnerable — mountain habitat shrinking with warming.' },
+    { name: 'Swainson\'s Thrush', sci: 'Catharus ustulatus',
+      size: '7 in', habitat: 'Spruce-fir + mixed forest',
+      key_mark: 'Buff face + chest, buff eye-ring, brown back, sparsely spotted breast.',
+      song: 'Ascending flute-like upward spiral.',
+      maine: 'Migrant + northern + mountain Maine breeder.',
+      story: 'Nocturnal migration in tens of millions across continent.' },
+    { name: 'Gray-cheeked Thrush', sci: 'Catharus minimus',
+      size: '7 in', habitat: 'Boreal forest',
+      key_mark: 'Like Swainson\'s but gray-cheeked + thinner eye-ring + colder tones overall.',
+      song: 'Descending burbled.',
+      maine: 'Rare migrant; breeds boreal forest north of Maine.',
+      story: 'Difficult ID. Late migrant.' },
+    { name: 'Eastern Bluebird', sci: 'Sialia sialis',
+      size: '7 in', habitat: 'Open country + nest boxes',
+      key_mark: 'Brilliant blue back, rusty breast, white belly.',
+      song: 'Soft warbled "tury-tury."',
+      maine: 'Breeder + winter visitor; expanding range.',
+      story: 'Nest box programs critical to recovery from 1950s population low.' }
+  ];
+
+  // ── WOODPECKER PROFILES — Maine woodpeckers
+  var WOODPECKERS = [
+    { name: 'Downy Woodpecker', sci: 'Picoides pubescens',
+      size: '6.75 in', habitat: 'All forest types, suburbs',
+      key_mark: 'Black + white striped, black wings with white spots, small bill, white belly. Male: red patch on head.',
+      voice: 'Sharp "pik" call + descending whinny.',
+      maine: 'Year-round; common.',
+      story: 'Smallest US woodpecker.' },
+    { name: 'Hairy Woodpecker', sci: 'Picoides villosus',
+      size: '9 in', habitat: 'Forests, especially mature deciduous',
+      key_mark: 'Like Downy but larger, longer bill (longer than head).',
+      voice: 'Sharp "peek" call + rattle.',
+      maine: 'Year-round.',
+      story: 'Often confused with Downy — Hairy is larger + has proportionally larger bill.' },
+    { name: 'Pileated Woodpecker', sci: 'Dryocopus pileatus',
+      size: '17 in', habitat: 'Mature forest with standing deadwood',
+      key_mark: 'Crow-sized black with white face, prominent red crest. Striking flight pattern with white wing patches.',
+      voice: 'Loud "wuk-wuk-wuk-wuk" + powerful drumming.',
+      maine: 'Year-round; common.',
+      story: 'Maine\'s largest woodpecker. Excavates rectangular holes 6 in × 2 ft.' },
+    { name: 'Northern Flicker', sci: 'Colaptes auratus',
+      size: '12 in', habitat: 'Open country + edges + suburbs',
+      key_mark: 'Brown body with black spots, yellow wing undersides, black crescent on chest, white rump.',
+      voice: 'Loud "wick-wick-wick-wick."',
+      maine: 'Breeder + some winter.',
+      story: 'Spends most time on ground eating ants. Unusual for woodpeckers.' },
+    { name: 'Red-bellied Woodpecker', sci: 'Melanerpes carolinus',
+      size: '9 in', habitat: 'Deciduous forest + suburbs',
+      key_mark: 'Pale grayish belly with hint of red (often invisible), zebra-striped back, red cap (male) / red nape (female).',
+      voice: '"Churr-r-r-r" + drumming.',
+      maine: 'Year-round; expanding into Maine from south.',
+      story: 'Range shifted north into Maine in recent decades.' },
+    { name: 'Yellow-bellied Sapsucker', sci: 'Sphyrapicus varius',
+      size: '8.5 in', habitat: 'Mixed forest',
+      key_mark: 'Black + white pattern with red crown (male) + red throat; yellowish belly.',
+      voice: 'Mewing "wee-ah" call + drumming.',
+      maine: 'Breeder May–October.',
+      story: 'Drills sap wells in trees; hummingbirds + other birds use these sap sources.' },
+    { name: 'Black-backed Woodpecker', sci: 'Picoides arcticus',
+      size: '9.5 in', habitat: 'Burned + dying boreal forest',
+      key_mark: 'Solid black back (no white), barred sides, male: yellow crown.',
+      voice: 'Sharp "pik" calls.',
+      maine: 'Rare boreal specialist; western + northern Maine.',
+      story: 'Specialist on beetle larvae in dying conifers.' },
+    { name: 'American Three-toed Woodpecker', sci: 'Picoides dorsalis',
+      size: '8.5 in', habitat: 'Boreal forest',
+      key_mark: 'White-barred black back, three-toed (most woodpeckers have four), yellow crown (male).',
+      voice: 'Soft "pik."',
+      maine: 'Rare; northern boreal.',
+      story: 'Three-toed adaptation for vertical climbing.' }
+  ];
+
+  // ── FINCH PROFILES — Maine finches
+  var FINCHES = [
+    { name: 'American Goldfinch', sci: 'Spinus tristis',
+      size: '5 in', habitat: 'Open weedy + brushy areas + feeders',
+      key_mark: 'Breeding male: brilliant yellow with black cap + wings. Non-breeding + female: olive-buff.',
+      song: 'Sweet warble + flight call "po-ta-to-chip" (4-note bound rhythm).',
+      maine: 'Year-round; abundant.',
+      story: 'Maine\'s "wild canary." Late breeder — nests in July when thistle down available.' },
+    { name: 'Purple Finch', sci: 'Haemorhous purpureus',
+      size: '6 in', habitat: 'Conifer + mixed forest + feeders',
+      key_mark: 'Male: raspberry-red overall, streaked sides. Female: heavy brown streaks.',
+      song: 'Long warble.',
+      maine: 'Year-round + winter visitor.',
+      story: 'New Hampshire state bird; common Maine breeder + migrant.' },
+    { name: 'House Finch', sci: 'Haemorhous mexicanus',
+      size: '5.75 in', habitat: 'Suburbs + feeders',
+      key_mark: 'Male: red cap + breast + rump, brown elsewhere; female: streaked brown overall.',
+      song: 'Rambling warble.',
+      maine: 'Year-round (introduced east 1940s).',
+      story: 'Spread from initial NYC release in 1940 to coast-to-coast in 50 years.' },
+    { name: 'Pine Grosbeak', sci: 'Pinicola enucleator',
+      size: '9 in', habitat: 'Boreal conifer + winter feeders',
+      key_mark: 'Male: raspberry-red overall, gray belly. Female: yellow-tinged gray.',
+      song: 'Sweet warbled phrases.',
+      maine: 'Winter visitor; irruptive.',
+      story: 'Tame; allows close approach.' },
+    { name: 'Common Redpoll', sci: 'Acanthis flammea',
+      size: '5.25 in', habitat: 'Birch + alder + winter feeders',
+      key_mark: 'Streaked overall, red cap, small black throat patch, pink wash on breast (male).',
+      song: '"Bzzz" + trills.',
+      maine: 'Winter visitor; irruptive.',
+      story: 'Spectacular flock years vs nearly absent years.' },
+    { name: 'Pine Siskin', sci: 'Spinus pinus',
+      size: '5 in', habitat: 'Conifer + feeders',
+      key_mark: 'Heavily streaked brown overall, yellow wing patches + tail flashes.',
+      song: 'Trills + "wheeeee" zip.',
+      maine: 'Winter visitor + occasional breeder.',
+      story: 'Often flocks with goldfinches.' },
+    { name: 'Evening Grosbeak', sci: 'Coccothraustes vespertinus',
+      size: '8 in', habitat: 'Boreal forest + winter feeders',
+      key_mark: 'Male: bold yellow + black + white. Female: muted gray-buff.',
+      song: '"Cleer" calls.',
+      maine: 'Winter visitor; once Maine breeder, now mostly winter only.',
+      story: 'Population has crashed since 1970s. Once super-abundant.' },
+    { name: 'Red Crossbill', sci: 'Loxia curvirostra',
+      size: '6 in', habitat: 'Conifer specialist',
+      key_mark: 'Red (male) or olive-yellow (female), unique crossed mandibles.',
+      song: '"Jip-jip-jip" calls + warble.',
+      maine: 'Irregular.',
+      story: 'Multiple "types" exist with different bill sizes for different cone species.' },
+    { name: 'White-winged Crossbill', sci: 'Loxia leucoptera',
+      size: '6.5 in', habitat: 'Boreal conifer',
+      key_mark: 'Pink-red (male) or olive (female) with bold white wing bars.',
+      song: '"Jip-jip" + trill.',
+      maine: 'Irregular; northern boreal.',
+      story: 'Smaller cone preference than Red Crossbill.' }
+  ];
+
+  // ── BLACKBIRD + CROW PROFILES
+  var BLACKBIRDS_CROWS = [
+    { name: 'Red-winged Blackbird', sci: 'Agelaius phoeniceus',
+      size: '8.75 in', habitat: 'Marshes + meadows',
+      key_mark: 'Male: jet black with bold red-and-yellow shoulder epaulets. Female: brown streaked (looks like sparrow).',
+      song: '"Conk-a-ree" — iconic marsh song.',
+      maine: 'Year-round + abundant.',
+      story: 'Among the most abundant N. American birds (~150M).' },
+    { name: 'Common Grackle', sci: 'Quiscalus quiscula',
+      size: '12.5 in', habitat: 'Open country, agriculture, suburbs',
+      key_mark: 'Iridescent black-purple-bronze, long keel-shaped tail, yellow eye.',
+      song: 'Rusty-gate squeak.',
+      maine: 'Breeder + migrant; abundant.',
+      story: 'Forms enormous winter flocks (1M+ birds).' },
+    { name: 'European Starling', sci: 'Sturnus vulgaris',
+      size: '8.5 in', habitat: 'Everywhere',
+      key_mark: 'Glossy black with white speckles in winter; iridescent green-purple in breeding; yellow bill.',
+      song: 'Whistles + mimicry.',
+      maine: 'Year-round; introduced (1890s).',
+      story: 'Introduced by Eugene Schieffelin in NYC (1890); now ubiquitous.' },
+    { name: 'Brown-headed Cowbird', sci: 'Molothrus ater',
+      size: '7.5 in', habitat: 'Open + edge habitats',
+      key_mark: 'Male: black body, brown head, dark bill. Female: dull gray-brown.',
+      song: 'Watery "glug-glug-glee."',
+      maine: 'Breeder; common.',
+      story: 'Brood parasite — lays eggs in other birds\' nests. Major songbird conservation concern.' },
+    { name: 'Baltimore Oriole', sci: 'Icterus galbula',
+      size: '8.75 in', habitat: 'Deciduous + mixed forest, parks',
+      key_mark: 'Male: bright orange + black. Female: yellow-olive with white wing bars.',
+      song: 'Whistled musical phrases.',
+      maine: 'Breeder May–September.',
+      story: 'Range expansion north into Maine.' },
+    { name: 'Bobolink', sci: 'Dolichonyx oryzivorus',
+      size: '7 in', habitat: 'Hayfields + grasslands',
+      key_mark: 'Male: black with white back + buff "shawl" on head. Female: streaked brown.',
+      song: 'Babbling jangle of notes.',
+      maine: 'Breeder Apr–August; declining due to hay-cutting timing.',
+      story: 'Longest North American songbird migration — to Argentina + back.' },
+    { name: 'American Crow', sci: 'Corvus brachyrhynchos',
+      size: '17.5 in', habitat: 'Everywhere',
+      key_mark: 'All black, square tail, family groups in flight.',
+      song: '"Caw-caw-caw" varied calls.',
+      maine: 'Year-round; abundant.',
+      story: 'Crows have superior cognition + recognize human faces.' },
+    { name: 'Common Raven', sci: 'Corvus corax',
+      size: '24 in', habitat: 'Forest + mountains',
+      key_mark: 'All black, wedge-shaped tail, deep "kraawk" call.',
+      song: 'Variety of croaks + raucous calls.',
+      maine: 'Year-round; common in interior + mountain.',
+      story: 'Larger than crow; soars often; pairs mate for life.' },
+    { name: 'Blue Jay', sci: 'Cyanocitta cristata',
+      size: '11 in', habitat: 'Forest + suburbs',
+      key_mark: 'Blue with black necklace, white face, blue crest, white wing bars.',
+      song: '"Jay-jay-jay" + mimicry (especially of hawks).',
+      maine: 'Year-round + migrant.',
+      story: 'Mimics Red-shouldered + Red-tailed Hawk calls.' },
+    { name: 'Gray Jay (Canada Jay)', sci: 'Perisoreus canadensis',
+      size: '11.5 in', habitat: 'Boreal forest',
+      key_mark: 'Gray with white head + black stripe behind eye.',
+      song: '"Whee-ah" plus mimicry.',
+      maine: 'Year-round in northern + mountain Maine.',
+      story: 'Caches food in trees; uses saliva to glue food in place.' }
+  ];
+
+  // ── HUMMINGBIRD / SWIFT — special groups
+  var HUMM_SWIFT = [
+    { name: 'Ruby-throated Hummingbird', sci: 'Archilochus colubris',
+      size: '3.5 in', habitat: 'Gardens + woodlands + feeders',
+      key_mark: 'Male: iridescent green back, bright red throat (gorget). Female + young: white throat, green back.',
+      song: 'High squeaky vocalizations; wing buzz audible.',
+      maine: 'Breeder May–September.',
+      story: 'Eastern North America\'s only common hummingbird. Migrates to Central America across Gulf of Mexico.' },
+    { name: 'Rufous Hummingbird', sci: 'Selasphorus rufus',
+      size: '3.5 in', habitat: 'Rare Maine vagrant',
+      key_mark: 'Male: rufous overall with orange-red gorget. Female: green with rufous flanks.',
+      song: 'Chittering calls.',
+      maine: 'Rare fall vagrant; occasional Maine records.',
+      story: 'Western species occasionally drifting east in fall.' },
+    { name: 'Chimney Swift', sci: 'Chaetura pelagica',
+      size: '5.25 in', habitat: 'Aerial; nests in chimneys',
+      key_mark: 'Slim cigar-shaped body, stiff rapid wingbeats, dark sooty.',
+      song: '"Chip-chip-chip" rapid chitter from flock.',
+      maine: 'Breeder May–September; declining due to chimney loss.',
+      story: 'Roosts in massive numbers in chimneys + smokestacks during migration.' }
+  ];
+
+  // ── FLYCATCHER / VIREO PROFILES
+  var FLYCATCHERS_VIREOS = [
+    { name: 'Eastern Phoebe', sci: 'Sayornis phoebe',
+      size: '7 in', habitat: 'Open habitat near water, often near buildings',
+      key_mark: 'Gray-brown above, white below, dark head, no eye ring, dark bill, frequently bobs tail.',
+      song: 'Says its name "FEE-bee" hoarsely.',
+      maine: 'Breeder April–September; early arriver.',
+      story: 'First flycatcher to return in spring.' },
+    { name: 'Eastern Wood-Pewee', sci: 'Contopus virens',
+      size: '6.25 in', habitat: 'Mature deciduous forest',
+      key_mark: 'Gray-brown overall, gray throat, slightly contrasting back + crown, dark bill with yellow base, no eye ring.',
+      song: 'Plaintive whistled "pee-a-wee."',
+      maine: 'Breeder May–September.',
+      story: 'Heard often, seen rarely. Mid-canopy flycatcher.' },
+    { name: 'Yellow-bellied Flycatcher', sci: 'Empidonax flaviventris',
+      size: '5.5 in', habitat: 'Spruce-fir bogs',
+      key_mark: 'Yellowish underparts (more than other Empidonax), prominent yellow eye ring + wing bars.',
+      song: 'Soft "che-bek."',
+      maine: 'Breeder May–August in northern + mountain Maine.',
+      story: 'Bog specialist.' },
+    { name: 'Least Flycatcher', sci: 'Empidonax minimus',
+      size: '5.25 in', habitat: 'Open deciduous forest',
+      key_mark: 'Gray-olive overall, bold white eye ring, white wing bars.',
+      song: '"Che-bek" repeated forcefully.',
+      maine: 'Breeder May–September; common.',
+      story: 'Often confused with other Empidonax — voice + habitat help.' },
+    { name: 'Great Crested Flycatcher', sci: 'Myiarchus crinitus',
+      size: '8.75 in', habitat: 'Mature deciduous forest',
+      key_mark: 'Gray throat, yellow belly, rufous wings + tail, large head.',
+      song: 'Loud "wheep" call.',
+      maine: 'Breeder May–September.',
+      story: 'Snake skins woven into cavity nests — possible warning to predators.' },
+    { name: 'Eastern Kingbird', sci: 'Tyrannus tyrannus',
+      size: '8.5 in', habitat: 'Open country + edges',
+      key_mark: 'Black above, white below, white-tipped tail, no eye ring.',
+      song: 'Buzzy "kit-zee" + scolding chatter.',
+      maine: 'Breeder May–August.',
+      story: 'Aggressive nest defender; chases hawks + crows.' },
+    { name: 'Olive-sided Flycatcher', sci: 'Contopus cooperi',
+      size: '7.5 in', habitat: 'Boreal forest edges + burns',
+      key_mark: 'Gray-brown above, "vest" pattern on chest (dark sides), white throat, larger head than Empids.',
+      song: 'Whistled "quick-three-beers!"',
+      maine: 'Breeder northern + mountain Maine; declining (species of concern).',
+      story: 'Boreal specialist; numbers dropping.' },
+    { name: 'Red-eyed Vireo', sci: 'Vireo olivaceus',
+      size: '6 in', habitat: 'Deciduous + mixed forest',
+      key_mark: 'Olive-green back, white belly, white eyebrow + dark eyeline, red eye (adults).',
+      song: 'Endless robin-like phrases ("Here am I... where are you... I am here").',
+      maine: 'Breeder May–September; very common.',
+      story: 'Sings 20,000+ phrases per day — one of Earth\'s most persistent singers.' },
+    { name: 'Blue-headed Vireo', sci: 'Vireo solitarius',
+      size: '5.25 in', habitat: 'Conifer + mixed forest',
+      key_mark: 'Blue-gray head with white "spectacles" (eye ring + line to bill), olive back, yellowish flanks.',
+      song: 'Slow whistled "see-WEE see-WEE."',
+      maine: 'Breeder May–September.',
+      story: 'Pretty + clean-looking small bird.' },
+    { name: 'Yellow-throated Vireo', sci: 'Vireo flavifrons',
+      size: '5.5 in', habitat: 'Deciduous forest',
+      key_mark: 'Bright yellow throat + chest, yellow spectacles, olive back.',
+      song: 'Slow whistled phrases.',
+      maine: 'Breeder May–September.',
+      story: 'Less common than Red-eyed; brighter + more "decorated."' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 5 EXPANSION — MORE VISUAL + INTERACTIVE CONTENT
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRD TOPOGRAPHY — anatomy regions a birder uses
+  var TOPOLOGY = [
+    { id: 'crown', x: 150, y: 60, label: 'Crown', what: 'The top of the head. Often distinctive (red crown of Pileated, yellow crown of Yellow-rumped Warbler).' },
+    { id: 'nape', x: 130, y: 90, label: 'Nape', what: 'The back of the neck. Useful in distinguishing flickers (red nape), hummingbirds, others.' },
+    { id: 'forehead', x: 175, y: 75, label: 'Forehead', what: 'Front of head above bill. Can show distinctive color (Yellow-rumped Warbler, flicker).' },
+    { id: 'eyebrow', x: 165, y: 100, label: 'Supercilium (eyebrow)', what: 'Stripe above the eye. Common field mark — present, absent, or color matters. (Bold in sparrows + many warblers.)' },
+    { id: 'eyeline', x: 165, y: 115, label: 'Eyeline', what: 'Dark line through the eye. Strong in red-eyed vireos + some warblers.' },
+    { id: 'eyering', x: 175, y: 110, label: 'Eye ring', what: 'Ring of pale feathers around the eye. Distinguishes Connecticut from Mourning Warbler, identifies many flycatchers.' },
+    { id: 'cheek', x: 145, y: 130, label: 'Cheek (auriculars)', what: 'Side of the face below the eye. Can be plain or patterned (chickadee\'s white cheek, junco\'s plain gray).' },
+    { id: 'lores', x: 195, y: 125, label: 'Lores', what: 'Area between bill base and eye. Yellow lores diagnostic for White-throated Sparrow.' },
+    { id: 'bill', x: 215, y: 130, label: 'Bill (beak)', what: 'Shape + color critical. Cone (seedeaters), hooked (raptors), needle (warblers), spear (herons).' },
+    { id: 'throat', x: 180, y: 160, label: 'Throat', what: 'Below the bill. Often most colorful (Ruby-throated Hummingbird, warblers).' },
+    { id: 'malar', x: 165, y: 155, label: 'Malar (mustache)', what: 'Stripe below cheek. White-throated Sparrow has black malar.' },
+    { id: 'breast', x: 165, y: 200, label: 'Breast', what: 'Front of chest. Plain or streaked or with central spot (Song Sparrow has central spot).' },
+    { id: 'belly', x: 165, y: 250, label: 'Belly', what: 'Lower underside. Color matters (yellow in many warblers + Eastern Wood-Pewee).' },
+    { id: 'flank', x: 200, y: 230, label: 'Flank', what: 'Sides between breast and belly. Often distinctively colored (rufous flanks of Eastern Towhee).' },
+    { id: 'undertail', x: 130, y: 290, label: 'Undertail (vent)', what: 'Area between belly and tail. Often pale or with markings.' },
+    { id: 'back', x: 130, y: 170, label: 'Back', what: 'Top side of body, between shoulders.' },
+    { id: 'rump', x: 120, y: 230, label: 'Rump', what: 'Lower back, often a different color (Yellow-rumped Warbler, white-rumped birds).' },
+    { id: 'wing-coverts', x: 110, y: 180, label: 'Wing coverts', what: 'Small feathers covering base of larger flight feathers. Wing bars are visible color in coverts.' },
+    { id: 'wingbars', x: 100, y: 210, label: 'Wing bars', what: 'Pale bars across the wing. Single or double. Critical for warbler ID.' },
+    { id: 'primary', x: 80, y: 230, label: 'Primary feathers', what: 'Longest flight feathers — main flying surface. Often dark with pale edges.' },
+    { id: 'secondary', x: 100, y: 250, label: 'Secondary feathers', what: 'Shorter flight feathers proximal to body.' },
+    { id: 'tail', x: 80, y: 300, label: 'Tail', what: 'Crucial — length, shape, color. Forked, square, wedge, white-edged, banded.' }
+  ];
+
+  // ── HABITAT DEEP — Maine habitats by ecosystem
+  var HABITATS_DEEP = [
+    { name: 'Northern Hardwood Forest',
+      description: 'Sugar maple, beech, yellow birch, eastern hemlock + dramatic fall color. Dominates central + southern Maine uplands. Diverse + productive.',
+      key_birds: 'Wood Thrush, Black-throated Blue Warbler, American Redstart, Ovenbird, Veery, Hermit Thrush, Pileated Woodpecker, Black-capped Chickadee, White-breasted Nuthatch, Hairy Woodpecker, Red-eyed Vireo',
+      conservation: 'Most accessible forest in Maine; widely managed for timber + recreation. Provides critical habitat for forest songbirds. Sustainable forestry can maintain bird populations.',
+      sites: 'Bradbury Mountain, Crystal Brook, Frye Mountain, Mt. Blue State Park, much of central + southern Maine' },
+
+    { name: 'Spruce-Fir (Boreal) Forest',
+      description: 'Black spruce, red spruce, balsam fir, white spruce. Northern + mountain Maine. Cool, moist, dense canopy.',
+      key_birds: 'Spruce Grouse, Boreal Chickadee, Gray Jay, Black-backed Woodpecker, Bay-breasted Warbler, Blackpoll Warbler, Cape May Warbler, Olive-sided Flycatcher, Yellow-bellied Flycatcher, Boreal Owl (rare), Bicknell\'s Thrush (high elevation)',
+      conservation: 'Climate-vulnerable — boreal forest shrinking at southern edge as climate warms. Maine boreal bird populations at southern range edge for species.',
+      sites: 'Baxter State Park, Aroostook County wildlands, Stratton Brook, Caribou Bog' },
+
+    { name: 'Salt Marsh',
+      description: 'Tall + short cordgrass dominated coastal marshes. Daily tidal flooding shapes plant + animal community. Maine has both healthy + threatened marshes.',
+      key_birds: 'Saltmarsh Sparrow, Nelson\'s Sparrow, Willet, Glossy Ibis, Snowy Egret, Great Egret, Northern Harrier, Sharp-tailed Sparrow, Marsh Wren, Sedge Wren (rare)',
+      conservation: 'Sea-level rise is the primary threat. Maine marshes are drowning faster than they can transgress inland. Restoration projects + sediment management.',
+      sites: 'Scarborough Marsh, Pine Point Marsh, Maquoit Bay, Saco River estuary, Bay of Fundy area' },
+
+    { name: 'Freshwater Marsh + Bog',
+      description: 'Cattails + bulrushes + sedges + sphagnum moss. Glacial lake + bog complex in northern + eastern Maine. Often quaking ground.',
+      key_birds: 'Common Loon, Red-winged Blackbird, Yellow-headed Blackbird (rare), Sora, Virginia Rail, Pied-billed Grebe, Spotted Sandpiper, Belted Kingfisher, Yellow Warbler, Common Yellowthroat',
+      conservation: 'Wetland Filling Act + state regulations help. Phosphorus + invasive species threats. Climate change affecting bog stability.',
+      sites: 'Sebago Lake area, Moosehead Lake, Saint John bog, Mt. Katahdin bogs' },
+
+    { name: 'Open Field + Grassland',
+      description: 'Hayfields, pastures, abandoned farmland. Less common in Maine than other Northeast states but ecologically critical.',
+      key_birds: 'Bobolink (declining), Eastern Meadowlark (declining), Savannah Sparrow, Vesper Sparrow, American Kestrel, Northern Harrier, Tree Swallow, Field Sparrow',
+      conservation: 'Grassland birds among most declining group nationally. Hayfield cutting timing critical — early summer cutting destroys ground nests.',
+      sites: 'Aroostook potato belt, Kennebec Valley farms, sandhills + grasslands' },
+
+    { name: 'Mature Mixed Forest',
+      description: 'Mixed conifer + deciduous. Maine\'s most-common mature forest type. Productive habitat with diverse age + structure.',
+      key_birds: 'Yellow-rumped Warbler, Black-throated Green Warbler, Magnolia Warbler, Black-throated Blue Warbler, Blue-headed Vireo, Veery, Pileated Woodpecker, Northern Goshawk, Barred Owl',
+      conservation: 'Maintained by sustainable forestry. Older forest is critical for Northern Goshawk + Pileated. Maine state lands managed for diverse forest types.',
+      sites: 'Western mountains, Penobscot watershed, much of interior Maine' },
+
+    { name: 'Young Second-Growth Forest',
+      description: 'Aspen, alder, birch, sapling forest after clear-cuts or natural disturbance. Dense + young.',
+      key_birds: 'Chestnut-sided Warbler, American Woodcock, Ruffed Grouse, Indigo Bunting, Common Yellowthroat, Northern Cardinal, House Wren',
+      conservation: 'Young-forest birds (Chestnut-sided Warbler, woodcock) need cuts + disturbance. Maine forest management can maintain habitat.',
+      sites: 'After-cut areas across Maine; managed wildlife management areas' },
+
+    { name: 'River + Stream Corridor',
+      description: 'Riparian zones along Maine\'s major rivers (Penobscot, Kennebec, Androscoggin, Saco). Critical wildlife corridors.',
+      key_birds: 'Belted Kingfisher, Spotted Sandpiper, Common Merganser, Common Goldeneye, Hooded Merganser, Wood Duck, Bald Eagle, Osprey',
+      conservation: 'Penobscot River Restoration (dam removals) restored ~1,000 miles of habitat. Fish + bird populations recovering.',
+      sites: 'Below Bangor (Penobscot), Sheepscot, Sandy River' },
+
+    { name: 'Lake Shoreline + Open Water',
+      description: 'Maine\'s 5,000+ lakes provide diverse aquatic habitat. Spruce-fir + mixed forest commonly fronts.',
+      key_birds: 'Common Loon, Common Merganser, Bald Eagle, Osprey, Belted Kingfisher, Wood Duck, Ring-billed Gull',
+      conservation: 'Lake water quality + ice fishing pressure + boat wake impact on shoreline nests. Loon recovery is a Maine success story.',
+      sites: 'Sebago Lake, Moosehead Lake, Rangeley Lakes, Aroostook lakes' },
+
+    { name: 'Pelagic + Offshore',
+      description: 'Open Gulf of Maine waters offshore. Different bird community than coastal sites.',
+      key_birds: 'Atlantic Puffin (breeding islands), Razorbill, Common Murre, Black Guillemot, Northern Gannet, Wilson\'s Storm-Petrel, Greater Shearwater, Sooty Shearwater, Pomarine Jaeger',
+      conservation: 'Climate-vulnerable — Gulf of Maine warming impacts food chain + breeding success. Plastic + entanglement.',
+      sites: 'Eastern Egg Rock, Matinicus Rock, Petit Manan, Seal Island, pelagic boat trips' },
+
+    { name: 'Suburban + Urban',
+      description: 'Houses, yards, parks, gardens. Important habitat for adaptable species + birds at feeders.',
+      key_birds: 'American Robin, Northern Cardinal, House Sparrow (intro), European Starling (intro), Mourning Dove, Blue Jay, Black-capped Chickadee, White-breasted Nuthatch, House Wren',
+      conservation: 'Cat predation + window strikes + pesticides. Native plant gardens + leashed pets + bird-safe windows help.',
+      sites: 'Portland, Bangor, Lewiston, Augusta — Maine\'s cities + towns' },
+
+    { name: 'Beach + Dune',
+      description: 'Maine\'s ~30 miles of sandy beach. Above high-tide line + low dunes provide nesting habitat.',
+      key_birds: 'Piping Plover (threatened), Least Tern, Common Tern, Snowy Plover (rare), Killdeer, Sanderling, sanderling, dunlin',
+      conservation: 'Beach development + human disturbance + predation. Maine\'s Piping Plover monitor program protects nests.',
+      sites: 'Crescent Beach, Pine Point, Saco, Old Orchard Beach, Ogunquit, Wells, Reid State Park' }
+  ];
+
+  // ── CLIMATE + BIRDS — climate change effects on Maine
+  var CLIMATE_BIRDS = [
+    { topic: 'Range Shifts',
+      what: 'Many Maine breeding birds are shifting north. Boreal species (Boreal Chickadee, Spruce Grouse, Bay-breasted Warbler) at southern range edge.',
+      example: 'Range maps from 1970 to 2020 show northward shift of southern species (Carolina Wren, Tufted Titmouse, Red-bellied Woodpecker) into Maine + retraction of northern species.',
+      magnitude: 'Average bird range shift in Northeast: ~50 km north per decade.',
+      future: 'Expected continued shifts. Some Maine species may lose all suitable breeding habitat by mid-century.' },
+
+    { topic: 'Phenological Mismatch',
+      what: 'Birds + their food are responding differently to climate cues. Insects emerging earlier; some birds not yet adjusted breeding timing.',
+      example: 'Wood Thrush, Veery + insectivorous birds may arrive when peak insect emergence has already passed.',
+      magnitude: 'Maine spring is warming ~1-2 days earlier per decade.',
+      future: 'Mismatch may reduce breeding success for species that cannot adjust migration timing.' },
+
+    { topic: 'Boreal Forest Shrinkage',
+      what: 'Boreal forest belt shifting north as climate warms. Maine\'s spruce-fir contracting at southern edge.',
+      example: 'Bicknell\'s Thrush — high-elevation spruce-fir specialist — losing habitat as warming pushes forest higher up mountains.',
+      magnitude: 'Maine boreal forest contracted ~10–20% since 1900.',
+      future: 'Continued contraction expected. Species like Boreal Chickadee + Spruce Grouse may largely lose Maine range.' },
+
+    { topic: 'Sea Level Rise + Salt Marshes',
+      what: 'Maine saltmarshes are drowning as sea level rises faster than marshes can build elevation. Saltmarsh Sparrow + other specialists threatened.',
+      example: 'Saltmarsh Sparrow numbers declining sharply at southern range edge. Population modeling predicts species extinction risk by 2050 without intervention.',
+      magnitude: 'Maine sea level rising ~3-5 mm/year (~1 inch per decade), accelerating.',
+      future: 'Marsh restoration + sediment management critical to species survival.' },
+
+    { topic: 'Ocean Temperature + Seabirds',
+      what: 'Gulf of Maine warming ~4× global ocean average. Fish prey (alewives, herring, sand lance) distributions shifting.',
+      example: 'Atlantic Puffin chick mortality has spiked in some warm years when prey fish move beyond foraging range.',
+      magnitude: 'Gulf of Maine SST has risen ~3°C since 1980.',
+      future: 'Continued warming may affect seabird breeding success + restoration efforts.' },
+
+    { topic: 'Storm Intensity + Migration',
+      what: 'Climate-driven changes in storm frequency + intensity affect songbird migration. Hurricanes + Nor\'easters disrupt routes.',
+      example: 'Migration fallouts increasingly common as more intense + frequent fronts disrupt songbirds at coast.',
+      magnitude: 'Intense Atlantic hurricane frequency rising.',
+      future: 'Variability in spring + fall stopover use of Maine coast may increase.' },
+
+    { topic: 'Wintering Range Shifts',
+      what: 'Northern wintering species (Snowy Owl, Common Redpoll) may shift south more frequently. Southern species may winter further north.',
+      example: 'Carolina Wren now winters reliably in southern Maine — would have been impossible 50 years ago.',
+      magnitude: 'Variable; some species, some winters more affected.',
+      future: 'Continued reshuffling of Maine winter bird community.' },
+
+    { topic: 'What Birders Can Do',
+      what: 'Reduce home emissions + advocate for climate action. Support habitat protection across migratory ranges. Support science (eBird data feeds research).',
+      example: 'Maine Audubon climate program. National Audubon\'s "Birds + Climate" report identifies vulnerable species + actions.',
+      magnitude: 'Bird populations responding to climate now; outcomes depend on emissions trajectory.',
+      future: 'Bird recovery success depends on global + local action.' }
+  ];
+
+  // ── BACKYARD FEEDER GUIDE
+  var FEEDER_GUIDE = [
+    { feeder_type: 'Tube feeder',
+      foods: 'Black oil sunflower seed (best general food), nyjer (thistle) for finches',
+      birds: 'Chickadees, nuthatches, titmouse, goldfinches, house finch, purple finch, pine siskin',
+      tips: 'Keep clean to prevent disease. Multiple feeders reduce competition.' },
+    { feeder_type: 'Hopper feeder',
+      foods: 'Sunflower mix, safflower seed (squirrels avoid)',
+      birds: 'Cardinals, jays, mourning doves, white-throated + white-crowned sparrows',
+      tips: 'Larger seeds + larger birds. Roof keeps rain off.' },
+    { feeder_type: 'Suet feeder',
+      foods: 'Suet (rendered fat) in cages, year-round but especially winter',
+      birds: 'Woodpeckers (downy, hairy, pileated), nuthatches, chickadees, occasional warblers',
+      tips: 'Use no-melt suet in summer. Wire cage style is most accessible.' },
+    { feeder_type: 'Platform feeder',
+      foods: 'Mixed seed, fruit, mealworms, corn',
+      birds: 'Cardinals, jays, juncos, doves, robins, towhees, larger sparrows',
+      tips: 'Easy clean. Squirrels access easily. Good for ground-foraging birds.' },
+    { feeder_type: 'Nyjer/thistle feeder',
+      foods: 'Nyjer (thistle) only — narrow ports designed for slim finch bills',
+      birds: 'Goldfinches, pine siskin, common redpoll',
+      tips: 'Tube design prevents seed waste. Replace nyjer regularly — oils degrade.' },
+    { feeder_type: 'Suet log',
+      foods: 'Suet pressed into log holes',
+      birds: 'Woodpeckers, nuthatches',
+      tips: 'Mimics natural foraging.' },
+    { feeder_type: 'Mealworm feeder',
+      foods: 'Live or dried mealworms',
+      birds: 'Bluebirds (favorite), wrens, robins, jays, chickadees',
+      tips: 'Live mealworms most attractive. Bluebird trail favorite.' },
+    { feeder_type: 'Sugar water (hummingbird) feeder',
+      foods: '1:4 sugar:water ratio (NO red dye, NO honey)',
+      birds: 'Ruby-throated Hummingbird (Maine May–September)',
+      tips: 'Clean every 2-3 days in hot weather. Boil sugar in water to dissolve. Store excess in fridge.' },
+    { feeder_type: 'Oriole feeder',
+      foods: 'Grape jelly, orange halves, sugar water (some birds use)',
+      birds: 'Baltimore Oriole (May–August)',
+      tips: 'Hang where oranges + jelly stay dry.' },
+    { feeder_type: 'Ground feeder (open tray)',
+      foods: 'Mixed seed + cracked corn',
+      birds: 'Doves, juncos, sparrows, towhees, jays',
+      tips: 'Best in winter for ground-foragers. Move regularly to prevent disease.' }
+  ];
+
+  // ── NESTBOX GUIDE — Maine species + specifications
+  var NESTBOX_GUIDE = [
+    { species: 'Eastern Bluebird',
+      box_size: 'Floor: 4×4 in; depth: 8 in', entry: '1.5 in round, 6-7 in above floor',
+      height: '4-6 ft above ground; open field with scattered trees',
+      placement: 'Spacing 100+ yards; facing open field east or south; pair boxes 5-25 ft apart for tree swallows + bluebirds to coexist',
+      timing: 'Install by March; clean out fall',
+      tips: 'Bluebird-trail programs (Eastern Bluebird Society) help track success' },
+    { species: 'Tree Swallow',
+      box_size: 'Floor: 5×5 in; depth: 6 in', entry: '1.5 in round, 4-5 in above floor',
+      height: '4-6 ft; open area + water within 1/4 mile',
+      placement: 'Pair with bluebird boxes',
+      timing: 'Install by April',
+      tips: 'Pair with bluebird boxes — different breeding cycles allow coexistence' },
+    { species: 'Black-capped Chickadee',
+      box_size: 'Floor: 4×4 in; depth: 8 in', entry: '1-1.25 in round',
+      height: '5-15 ft; wooded edge or thicket',
+      placement: 'Sheltered, semi-shaded',
+      timing: 'Install by January',
+      tips: 'Fill with wood shavings (chickadees prefer to excavate)' },
+    { species: 'White-breasted Nuthatch',
+      box_size: 'Floor: 4×4 in; depth: 8 in', entry: '1.25 in round',
+      height: '6-15 ft; mature deciduous forest',
+      placement: 'On trunk facing east',
+      timing: 'Install by January',
+      tips: 'Often uses bluebird-size box. Less common than chickadee in boxes.' },
+    { species: 'Tufted Titmouse',
+      box_size: 'Floor: 4×4 in; depth: 8 in', entry: '1.25 in round',
+      height: '6-15 ft; deciduous forest + suburbs',
+      placement: 'On tree trunk',
+      timing: 'Install by February',
+      tips: 'Maine range-expanding species; new colonizers find boxes.' },
+    { species: 'Wood Duck',
+      box_size: 'Floor: 10×10 in; depth: 24 in', entry: '4 in round, 18 in above floor',
+      height: '6-10 ft over water or near water',
+      placement: 'Open + sheltered from north + west winds',
+      timing: 'Install by January',
+      tips: 'Add 4 inches of wood shavings. Single most common nest-box success in Maine.' },
+    { species: 'Hooded Merganser',
+      box_size: 'Floor: 10×10 in; depth: 24 in', entry: '4 in round',
+      height: '6-10 ft over water',
+      placement: 'Quiet wooded pond + slow river',
+      timing: 'Install by January',
+      tips: 'Often shares wood-duck-style box. Hooded mergansers + wood ducks compete for cavity sites.' },
+    { species: 'Northern Flicker',
+      box_size: 'Floor: 7×7 in; depth: 18 in', entry: '2.5 in round, 14 in above floor',
+      height: '8-20 ft; mature deciduous',
+      placement: 'On tree trunk',
+      timing: 'Install by March',
+      tips: 'Pre-fill with wood shavings (flickers excavate substantial amounts).' },
+    { species: 'American Kestrel',
+      box_size: 'Floor: 8×8 in; depth: 14 in', entry: '3 in round, 10 in above floor',
+      height: '10-25 ft on telephone pole, tall tree, or building',
+      placement: 'Open country with scattered perches',
+      timing: 'Install by March',
+      tips: 'Declining; nest-box programs help. State partnerships exist.' },
+    { species: 'Eastern Screech-Owl',
+      box_size: 'Floor: 8×8 in; depth: 14 in', entry: '3 in round, 10 in above floor',
+      height: '15-20 ft on mature tree',
+      placement: 'Sheltered wooded area',
+      timing: 'Install by January',
+      tips: 'Same dimensions as kestrel — both readily use kestrel boxes.' },
+    { species: 'House Wren',
+      box_size: 'Floor: 4×4 in; depth: 6-8 in', entry: '1 in round',
+      height: '5-15 ft on tree or fence',
+      placement: 'Brushy edges',
+      timing: 'Install by April',
+      tips: 'Aggressive competitors — multiple boxes in area help.' },
+    { species: 'Purple Martin',
+      box_size: 'Multi-cavity house: 6×6 in chambers', entry: '2 in round',
+      height: '10-15 ft on pole in open area',
+      placement: 'Open expanse + water nearby',
+      timing: 'Install by April',
+      tips: 'Maine Purple Martin colonies are small + scattered. Requires dedicated landlord.' }
+  ];
+
+  // ── BIRD DIETS + FORAGING METHODS
+  var DIETS = [
+    { type: 'Seeds + Grains (Granivores)',
+      examples: 'Sparrows, finches, doves, jays',
+      adaptations: 'Conical bills for cracking. Crop for storage. Gizzard for grinding.',
+      foods: 'Sunflower, millet, nyjer, weed seeds, agricultural grain.',
+      maine_examples: 'Goldfinch (thistle), Cardinal (sunflower), Wild Turkey (acorns), Junco (millet)' },
+
+    { type: 'Insects + Invertebrates (Insectivores)',
+      examples: 'Warblers, flycatchers, swallows, woodpeckers, wrens',
+      adaptations: 'Thin pointed bills. Aerial-catching technique. Some specialize in bark-foraging.',
+      foods: 'Flying insects, caterpillars, beetles, ants, spiders.',
+      maine_examples: 'Yellow Warbler (caterpillars), Tree Swallow (flies), Pileated Woodpecker (carpenter ants)' },
+
+    { type: 'Nectar (Nectarivores)',
+      examples: 'Hummingbirds (mostly), some orioles + tanagers',
+      adaptations: 'Long thin bills + tongues for reaching flower nectar. Hovering ability.',
+      foods: 'Flower nectar + insects + spiders.',
+      maine_examples: 'Ruby-throated Hummingbird (Maine\'s only specialist)' },
+
+    { type: 'Fruit + Berries (Frugivores)',
+      examples: 'Cedar Waxwing, robins (winter), starlings',
+      adaptations: 'Wide gape for swallowing fruit whole. Short broad bill.',
+      foods: 'Berries (sumac, holly, mountain ash, juniper), fruit.',
+      maine_examples: 'Cedar Waxwing (winter berries), American Robin (winter berries)' },
+
+    { type: 'Fish (Piscivores)',
+      examples: 'Osprey, eagles, herons, kingfishers, mergansers, cormorants, terns, loons',
+      adaptations: 'Spear bills (herons), hooked bills (raptors), specialized swimming + diving (loons, mergansers).',
+      foods: 'Fish primarily; sometimes amphibians + crustaceans.',
+      maine_examples: 'Osprey (99% fish), Common Loon, Belted Kingfisher, Great Blue Heron' },
+
+    { type: 'Mammals + Birds (Carnivores)',
+      examples: 'Hawks, eagles, owls, falcons, peregrine',
+      adaptations: 'Hooked bill for tearing. Talons for grasping. Sharp vision.',
+      foods: 'Small mammals (mice, voles), birds, sometimes carrion.',
+      maine_examples: 'Red-tailed Hawk (rabbits), Great Horned Owl (skunks), Peregrine Falcon (other birds)' },
+
+    { type: 'Carrion (Scavengers)',
+      examples: 'Vultures, eagles, gulls, crows',
+      adaptations: 'Bald heads (no feathers to soil), keen sense of smell (vultures), tough digestive system.',
+      foods: 'Dead animals — roadkill, fish carcasses, leftovers.',
+      maine_examples: 'Turkey Vulture (carrion specialist), Bald Eagle (often takes carrion in winter)' },
+
+    { type: 'Mollusks + Crustaceans (Specialized)',
+      examples: 'Sea ducks, oystercatchers',
+      adaptations: 'Strong specialized bills to crack shells. Diving ability.',
+      foods: 'Mussels, clams, urchins, crabs.',
+      maine_examples: 'Common Eider, scoters (3 species), Black Oystercatcher (rare in Maine)' },
+
+    { type: 'Aquatic Plants + Filter Feeding',
+      examples: 'Mute swans, mallards, geese, mergansers, scaups',
+      adaptations: 'Wide flat bills for filtering. Long necks for reaching.',
+      foods: 'Aquatic plants, seeds, invertebrates.',
+      maine_examples: 'Mallard (mostly plants), Wood Duck (acorns + plants), Brant (eelgrass specialist)' }
+  ];
+
+  // ── MIGRATION DEEP — physiology + science
+  var MIGRATION_DEEP = [
+    { topic: 'Why Migrate?',
+      what: 'Migration maximizes annual food resources + daylight while avoiding seasonal climate extremes. Birds breed where food abundant in summer + winter where food remains.',
+      example: 'Arctic Tern breeds in Arctic summer (24 hr daylight) + winters in Antarctic summer — sees more daylight than any other animal.',
+      energy_cost: 'Migration is energetically expensive — birds lose 30-50% body weight in long flights.' },
+
+    { topic: 'Migration Triggers',
+      photoperiod: 'Day length is the primary cue. Birds physiologically prepare based on changing day length.',
+      hormones: 'Hormonal cascade prepares body for migration: gonads regress, body fat deposits build, hyperphagia (overeating) begins.',
+      weather: 'Final go/no-go decision often weather-dependent — wait for favorable winds + clear skies.' },
+
+    { topic: 'Pre-Migration Body Changes',
+      hyperphagia: 'Birds may double their body weight before migration. "Migratory restlessness" (zugunruhe) drives feeding intensity.',
+      fat_deposits: 'Fat is the fuel of choice — 9 kcal/g vs 4 kcal/g for protein/carbs. Stored under skin + around organs.',
+      organ_atrophy: 'Some birds shrink non-essential organs (gut, liver) before long flights to reduce weight.' },
+
+    { topic: 'In-Flight Physiology',
+      altitude: 'Most songbirds migrate at 500-2,000 ft; some species go much higher (geese to 25,000+ ft).',
+      speed: 'Songbird ground speed ~25-50 mph with favorable wind.',
+      duration: 'Songbirds fly 6-10 hr per night; can refuel between flights.',
+      water: 'Migrating birds dehydrate quickly; they fly through metabolic water released by burning fat.' },
+
+    { topic: 'Navigation',
+      compass: 'Multiple compass systems: Sun position, star patterns, Earth\'s magnetic field, polarized light, smell.',
+      learning: 'Some birds inherit migration routes (waterfowl, geese — follow parents); others use innate compass + must learn map (first-year songbirds).',
+      research: 'Geolocators + GPS tags now reveal individual songbird routes with precision.' },
+
+    { topic: 'Stopover Sites',
+      what: 'Habitat sites where birds rest + refuel between flights. Critical for migration success.',
+      threats: 'Coastal stopovers (Maine, Cape May, Cape Cod) face development + habitat loss.',
+      maine: 'Acadia, Schoodic, Petit Manan = critical Maine stopover sites for migrants moving offshore.',
+      conservation: 'Stopover protection often more important than breeding habitat — without refueling, migration fails.' },
+
+    { topic: 'Hazards of Migration',
+      window_collisions: 'Up to 1 billion US birds die in window strikes during migration alone.',
+      tower_collisions: 'Lit communication towers fatally attract night migrants on cloudy nights — Maine + national lighting reforms ongoing.',
+      cat_predation: 'Migrants exhausted from long flights vulnerable to cat predation at stopover sites.',
+      weather_loss: 'Storms can blow migrants off course or into ocean.',
+      poisoning: 'Pesticides, especially in tropical wintering grounds + during fall migration.' },
+
+    { topic: 'Maine\'s Migration Calendar',
+      spring: 'March: waterfowl + early shorebirds. April: thrushes, kingfishers, sparrows. May: warbler peak (especially mid-late May).',
+      fall: 'August: shorebirds, swallows. September: warblers, hawks (Bradbury Mountain peak). October: thrushes, ducks. November: late waterfowl + buntings.',
+      year_round: 'Some species (chickadees, eagles, owls) don\'t migrate.' },
+
+    { topic: 'Endurance Records',
+      bar_tailed_godwit: 'Bar-tailed Godwit holds world record — 7,500 miles nonstop Alaska to New Zealand.',
+      red_knot: 'Red Knot migrates from Tierra del Fuego to High Arctic — annual round-trip ~20,000 miles.',
+      arctic_tern: 'Arctic Tern annual ~44,000 miles — pole to pole twice.',
+      maine_birds: 'Maine\'s Bobolink migrates to Argentina (~12,000 miles round trip). Wood Thrush to Central America.' }
+  ];
+
+  // ── COMPLETE GLOSSARY — 100+ birding terms
+  var COMPLETE_GLOSSARY = [
+    { term: 'Accipiter', def: 'Forest-bird-hawking hawk genus (Cooper\'s, sharp-shinned, goshawk). Short wings + long tail for maneuvering through trees.' },
+    { term: 'Altricial', def: 'Hatched helpless, naked, eyes closed; require parental care. Songbirds, raptors, woodpeckers.' },
+    { term: 'Auriculars', def: 'Cheek feathers below + behind the eye.' },
+    { term: 'Aviculture', def: 'Captive bird-keeping. Distinct from wild bird conservation.' },
+    { term: 'Banding', def: 'Marking birds with leg bands for individual tracking. USGS Bird Banding Lab manages North American program.' },
+    { term: 'Bird-of-prey (Raptor)', def: 'Diurnal birds adapted for hunting: eagles, hawks, falcons, owls (sometimes included).' },
+    { term: 'Brood', def: 'A clutch of eggs/chicks raised together by parent(s).' },
+    { term: 'Brood parasitism', def: 'Laying eggs in another species\' nest. Brown-headed Cowbird is the prime US example.' },
+    { term: 'Buteo', def: 'Broad-winged soaring-hawk genus (red-tailed, broad-winged, red-shouldered, rough-legged).' },
+    { term: 'Cere', def: 'Bare skin at the base of upper mandible. Color/condition can age + sex raptors + parrots.' },
+    { term: 'Cessation (or postnuptial)', def: 'Period after breeding when males stop singing + fledged young are independent.' },
+    { term: 'Coverts', def: 'Small feathers covering the bases of larger flight feathers. Important field marks (wing bars).' },
+    { term: 'Crest', def: 'Erectable + lowerable head feathers. Northern Cardinal, Tufted Titmouse, Belted Kingfisher.' },
+    { term: 'Crop', def: 'Storage chamber of esophagus where food collects.' },
+    { term: 'Decoy', def: 'Lifelike artificial bird used to attract real birds — for hunting, photography, or restoration (Project Puffin).' },
+    { term: 'Dichotomous key', def: 'Step-by-step ID guide with paired choices leading to species identification.' },
+    { term: 'Eclipse plumage', def: 'Non-breeding plumage in male ducks, gained mid-summer + lost by late winter.' },
+    { term: 'Egg tooth', def: 'Tip on chick bill used to crack the egg shell during hatching. Falls off after a few days.' },
+    { term: 'Empidonax', def: 'Genus of small confusing flycatchers. ID often requires voice + habitat + range.' },
+    { term: 'Epaulet', def: 'Colored shoulder patch. Red-winged Blackbird epaulets diagnostic.' },
+    { term: 'Falconry', def: 'Hunting with trained birds of prey. Legal + regulated in Maine.' },
+    { term: 'Field guide', def: 'Reference book or app for identifying birds. Peterson, Sibley, National Geographic; Merlin app.' },
+    { term: 'Flight call', def: 'Short calls given during flight, especially nocturnal migration. Each species has distinctive call.' },
+    { term: 'Flyway', def: 'Major migration corridor. North America has Pacific, Central, Mississippi, Atlantic flyways.' },
+    { term: 'Gape', def: 'Mouth of bird, especially the opening + bill base.' },
+    { term: 'Gizzard', def: 'Muscular grinding chamber of digestive tract. Often contains small stones for grinding.' },
+    { term: 'Granivore', def: 'Seed-eater. Most finches, sparrows, doves.' },
+    { term: 'Heronry', def: 'Communal nesting site for herons + egrets. Maine sites are important for conservation monitoring.' },
+    { term: 'Hindcrown', def: 'Back of head. Some species have distinctive hindcrown patches.' },
+    { term: 'Hood', def: 'Distinct dark head + throat color, often contrasting with body. Hooded Merganser, Eastern Towhee.' },
+    { term: 'Imprinting', def: 'Sensitive-period learning. Goslings imprint on first moving object as "mom."' },
+    { term: 'Irruption', def: 'Unpredictable mass movement of species into territory not normally inhabited. Common with snowy owls, redpolls.' },
+    { term: 'Juvenile', def: 'Young bird in first plumage after natal down (between nestling + adult).' },
+    { term: 'Lek', def: 'Communal display site where males gather to attract females. Greater Sage-Grouse leks are famous.' },
+    { term: 'Lifer', def: 'Bird species seen for first time. Joins bird\'s personal "life list."' },
+    { term: 'Lore', def: 'Region between bill base + eye. Yellow lores diagnostic in White-throated Sparrow.' },
+    { term: 'Malar', def: 'Mustache stripe — line below + parallel to cheek.' },
+    { term: 'Mantle', def: 'Back + upper wing coverts; often a distinct color region.' },
+    { term: 'Migration', def: 'Regular seasonal movement, usually between breeding + wintering grounds.' },
+    { term: 'Mobbing', def: 'Collective aggressive harassment of predators by smaller birds.' },
+    { term: 'Molt', def: 'Replacement of feathers. Most birds molt annually after breeding.' },
+    { term: 'Monogamy', def: 'Single-mate pair bond. Most bird species are at least seasonally monogamous.' },
+    { term: 'Morph', def: 'Color variant within a species. Eastern Screech-Owl has gray + rufous morphs.' },
+    { term: 'Murmuration', def: 'Mass aerial display of starlings (or other flocking birds) — coordinated swooping flight.' },
+    { term: 'Nape', def: 'Back of neck. Useful field mark in flicker + other species.' },
+    { term: 'Natal down', def: 'First downy feathers on newly-hatched chicks.' },
+    { term: 'Nestling', def: 'Helpless chick in nest, between hatching + fledging.' },
+    { term: 'Niche', def: 'Ecological role of species — what it eats, where it lives, how it interacts.' },
+    { term: 'Nominate subspecies', def: 'First-described subspecies; carries the species name. Other subspecies have hyphenated suffix.' },
+    { term: 'Olive', def: 'Greenish-brown color common in many warblers + thrushes.' },
+    { term: 'Order', def: 'Taxonomic level: birds are class Aves; major orders include Passeriformes (songbirds), Anseriformes (waterfowl), Falconiformes (falcons).' },
+    { term: 'Outer rectrix', def: 'Outermost tail feather. Color/pattern often diagnostic (Vesper Sparrow white outer rectrices).' },
+    { term: 'Owls', def: 'Strigidae family. 8 species in Maine. Nocturnal + crepuscular predators.' },
+    { term: 'Passerines', def: 'Songbirds. Order Passeriformes. ~5,000 species worldwide; 50%+ of all birds.' },
+    { term: 'Pelagic', def: 'Open-ocean. Pelagic birding requires boat trips. Pelagic species rarely come ashore except to breed.' },
+    { term: 'Pellet', def: 'Indigestible material (bones, fur, feathers) regurgitated by raptors + some others. Owl pellets diagnostic.' },
+    { term: 'Phenology', def: 'Study of seasonal timing of life events: migration, breeding, etc. Climate change affects phenology.' },
+    { term: 'Photoperiod', def: 'Day length. Primary cue for many seasonal bird behaviors (migration, breeding).' },
+    { term: 'Plumage', def: 'A bird\'s entire feather covering. Breeding vs non-breeding plumage in many species.' },
+    { term: 'Polygyny', def: 'Male mates with multiple females. Red-winged Blackbird is a Maine example.' },
+    { term: 'Polyandry', def: 'Female mates with multiple males. Spotted Sandpiper is an example.' },
+    { term: 'Precocial', def: 'Born feathered, eyes open, mobile, self-feeding. Ducks, geese, sandpipers, grouse.' },
+    { term: 'Preening', def: 'Daily feather maintenance. Re-hooks barbules + applies oil from uropygial gland.' },
+    { term: 'Primaries', def: 'Outermost flight feathers. Power flight surface.' },
+    { term: 'Pterylae', def: 'Feather tracts on a bird\'s skin. Feathers grow from defined tracts, not entire surface.' },
+    { term: 'Rachis', def: 'Central shaft of a feather.' },
+    { term: 'Raptor', def: 'Bird of prey: eagles, hawks, falcons, owls (sometimes). Diurnal raptors include accipiters, buteos, falcons.' },
+    { term: 'Rare bird alert', def: 'Email/text system informing birders of unusual sightings. Maine Audubon + Maine eBird run alerts.' },
+    { term: 'Rectrices', def: 'Tail feathers. Singular: rectrix.' },
+    { term: 'Resident', def: 'Year-round species in a region. Maine residents include chickadees, crows, eagles, owls.' },
+    { term: 'Roost', def: 'Where birds spend the night (sleep). Communal roosts of crows + grackles can be huge.' },
+    { term: 'Scapulars', def: 'Shoulder feathers. Distinctive color in some species.' },
+    { term: 'Secondaries', def: 'Inner flight feathers (proximal to body).' },
+    { term: 'Speculum', def: 'Iridescent patch on the wing of dabbling ducks, often visible in flight + sometimes when sitting.' },
+    { term: 'Spizella', def: 'Genus of small sparrows: Chipping, Field, American Tree, others.' },
+    { term: 'Stoop', def: 'High-speed dive of falcons (especially Peregrine).' },
+    { term: 'Subspecies', def: 'Distinct population within a species, often defined by range + plumage variation.' },
+    { term: 'Sun-bathing', def: 'Spread-wing posture for vitamin D + parasite control.' },
+    { term: 'Supercilium', def: 'Eyebrow — stripe above the eye.' },
+    { term: 'Talon', def: 'Sharp curved claw of raptor foot.' },
+    { term: 'Tarsus', def: 'Lower leg bone. Some species have distinctive tarsus color (Snowy Egret yellow vs Great Egret black).' },
+    { term: 'Throat', def: 'Below the bill. Often most colorful + distinctive.' },
+    { term: 'Tomial tooth', def: 'Tooth-like projection on bill edge of falcons + some falcons. Used to sever spinal cord of prey.' },
+    { term: 'Topography', def: 'Body regions used in description. Birders need to know basic topography for ID.' },
+    { term: 'Trail', def: 'Bird trail — series of feeders or habitat sites used by birds + birders.' },
+    { term: 'Tundra', def: 'Cold, treeless region. Breeding habitat for Snowy Owl, snow buntings, many shorebirds + waterfowl.' },
+    { term: 'Vagrant', def: 'Bird far outside its normal range. Rare in Maine but exciting for birders.' },
+    { term: 'Vent', def: 'Cloaca — bird\'s opening for excretion + reproduction.' },
+    { term: 'Vermiculation', def: 'Fine wavy lines on feathers. Common in waterfowl (Common Eider female).' },
+    { term: 'Waders', def: 'Long-legged wading birds: herons, egrets, ibises.' },
+    { term: 'Waterfowl', def: 'Ducks, geese, swans. Family Anatidae.' },
+    { term: 'Wing bars', def: 'Pale bars across the wing covers. Critical field mark in warblers + other small birds.' },
+    { term: 'Wing chord', def: 'Length of folded wing — useful in banding measurements.' },
+    { term: 'Wing loading', def: 'Ratio of body weight to wing area. Determines flight characteristics (high wing loading = fast direct; low = slow + maneuverable).' },
+    { term: 'Wingspan', def: 'Tip-to-tip distance with wings outstretched.' },
+    { term: 'Year list', def: 'List of species seen in a calendar year. Some birders pursue annual record.' },
+    { term: 'Yearling', def: 'Bird in its first year + first breeding season. Often duller plumage than adult.' },
+    { term: 'Zugunruhe', def: 'Migratory restlessness — pre-migration behavioral changes in captivity + wild.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 6 EXPANSION
+  // ═════════════════════════════════════════════════════════════
+
+  // ── DICHOTOMOUS KEY DATA — simple key for common Maine birds
+  var DICHOTOMOUS_KEY = [
+    { id: 'start', question: 'Roughly what size is the bird?',
+      choices: [
+        { label: 'Tiny (sparrow + smaller, 4-6 in)', next: 'tiny' },
+        { label: 'Small (7-10 in, robin-sized)', next: 'small' },
+        { label: 'Medium (10-15 in, crow-sized)', next: 'medium' },
+        { label: 'Large (15-25 in, hawk-sized)', next: 'large' },
+        { label: 'Very large (25+ in, eagle/goose)', next: 'huge' }] },
+    { id: 'tiny', question: 'What color is most of the body?',
+      choices: [
+        { label: 'Mostly black + white', next: 'tiny-bw' },
+        { label: 'Mostly yellow', next: 'tiny-yellow' },
+        { label: 'Mostly brown/streaked', next: 'tiny-brown' },
+        { label: 'Mostly red', next: 'tiny-red' },
+        { label: 'Mostly blue', next: 'tiny-blue' }] },
+    { id: 'tiny-bw', result: 'Likely Black-capped Chickadee or Downy Woodpecker — see Chickadee Field Marks tool.' },
+    { id: 'tiny-yellow', result: 'Likely American Goldfinch (yellow + black) or Yellow Warbler or Common Yellowthroat. Check breast streaking + tail color.' },
+    { id: 'tiny-brown', result: 'Likely a sparrow (Song, White-throated, House) or wren. Check breast for streaks + spots, check eyebrow/eyering.' },
+    { id: 'tiny-red', result: 'Likely Northern Cardinal (male) or House Finch or Purple Finch.' },
+    { id: 'tiny-blue', result: 'Likely Eastern Bluebird or Indigo Bunting (males).' },
+    { id: 'small', question: 'What is the bill shape?',
+      choices: [
+        { label: 'Pointed thin (insectivore)', next: 'small-pointed' },
+        { label: 'Conical (seedeater)', next: 'small-conical' },
+        { label: 'Hooked (raptor)', next: 'small-hooked' },
+        { label: 'Long needle (probing)', next: 'small-needle' }] },
+    { id: 'small-pointed', result: 'Likely a warbler, flycatcher, or vireo. Many species — check key marks (wing bars, eye ring, breast color).' },
+    { id: 'small-conical', result: 'Likely a sparrow, finch, or grosbeak.' },
+    { id: 'small-hooked', result: 'Likely a kestrel, sharp-shinned hawk, or small accipiter.' },
+    { id: 'small-needle', result: 'Likely a shorebird (sandpiper) or hummingbird.' },
+    { id: 'medium', question: 'Is it most commonly seen in:',
+      choices: [
+        { label: 'Trees + forest', next: 'med-tree' },
+        { label: 'Water (lake/coast)', next: 'med-water' },
+        { label: 'Open ground', next: 'med-ground' },
+        { label: 'In flight / soaring', next: 'med-flight' }] },
+    { id: 'med-tree', result: 'Likely a Pileated Woodpecker, Northern Flicker, Blue Jay, or American Crow.' },
+    { id: 'med-water', result: 'Likely a Mallard, Wood Duck, Common Merganser, Ring-billed Gull, or Belted Kingfisher.' },
+    { id: 'med-ground', result: 'Likely a Mourning Dove, Common Grackle, or Killdeer.' },
+    { id: 'med-flight', result: 'Likely a Red-tailed Hawk, Cooper\'s Hawk, or Broad-winged Hawk.' },
+    { id: 'large', question: 'Where do you see it?',
+      choices: [
+        { label: 'Soaring high', next: 'lg-soar' },
+        { label: 'In water', next: 'lg-water' },
+        { label: 'In forest', next: 'lg-forest' }] },
+    { id: 'lg-soar', result: 'Likely Bald Eagle, Osprey, Turkey Vulture, or Red-tailed Hawk.' },
+    { id: 'lg-water', result: 'Likely Great Blue Heron, Great Egret, or Common Loon.' },
+    { id: 'lg-forest', result: 'Likely Pileated Woodpecker or Wild Turkey or Great Horned Owl.' },
+    { id: 'huge', question: 'Where?',
+      choices: [
+        { label: 'In flight', next: 'huge-flight' },
+        { label: 'On water', next: 'huge-water' }] },
+    { id: 'huge-flight', result: 'Likely Bald Eagle or Canada Goose or Wild Turkey or Great Blue Heron.' },
+    { id: 'huge-water', result: 'Likely Bald Eagle or Common Loon or Great Blue Heron or Wild Turkey.' }
+  ];
+
+  // ── BIRDING ACROSS SEASONS — Maine year-round guide
+  var SEASONAL_GUIDE = [
+    { season: 'Winter — Dec/Jan/Feb',
+      character: 'Quietest birding season. Resident species + winter visitors only. Cold + snow eliminate insects + many fruits.',
+      species: 'Black-capped Chickadee, Northern Cardinal, Downy + Hairy Woodpecker, Pileated Woodpecker, White-breasted Nuthatch, Blue Jay, American Crow, Common Raven, Dark-eyed Junco, American Tree Sparrow, Snow Bunting, Common Redpoll, Pine Grosbeak (irruptive), Snowy Owl (irruptive), Common Goldeneye, Bufflehead, Long-tailed Duck, Common Eider, scoters (3 species), Bald Eagle, occasional Iceland + Glaucous Gull',
+      where: 'Feeders, coast (sea ducks), Penobscot River below Bangor (eagles), open ocean from coast lookouts (Acadia, Petit Manan).',
+      tip: 'Dress in many layers. Drinking warm tea helps. Spend less time outside in extreme cold; observe from car or building.',
+      hotspots: 'Coastal lookouts, river openings, feeders, urban parks' },
+
+    { season: 'Spring — Mar/Apr/May',
+      character: 'Most-exciting birding season. New arrivals daily. Migration peaks for warblers, thrushes, sparrows.',
+      species: 'Returning: Red-winged Blackbird (early Mar), American Robin (late Mar), Eastern Phoebe (April), Tree Swallow (April), Chipping Sparrow (April), Yellow-rumped Warbler (mid-April), Black-throated Green Warbler (late April), Magnolia Warbler (early May), wave of warblers + thrushes + flycatchers (mid-May peak)',
+      where: 'Almost anywhere with habitat. Forested areas + edge habitat. Maine coast for migrants.',
+      tip: 'Mid-late May is the peak warbler week. Start dawn for best song.',
+      hotspots: 'Bradbury Mountain (warblers in canopies), Acadia (migrant stopover), Scarborough Marsh (shorebirds + waterfowl)' },
+
+    { season: 'Summer — Jun/Jul/Aug',
+      character: 'Peak breeding season. Birds singing for territory + mates. Some species silent post-breeding.',
+      species: 'Breeders: Black-throated Green Warbler, Magnolia Warbler, Black-and-white Warbler, Hermit Thrush, Veery, Wood Thrush, Eastern Phoebe, House Wren, Northern Cardinal, American Robin. Sea birds: Atlantic Puffin (June-Aug at colonies), Common Tern. Raptors: Bald Eagle (juveniles in nest), Osprey (active nesting).',
+      where: 'Maine\'s diverse breeding habitats. Coastal islands for seabirds.',
+      tip: 'Dawn chorus peaks late May–early June. By August, songs decreasing.',
+      hotspots: 'All breeding habitats, Project Puffin tour boats (Eastern Egg Rock)' },
+
+    { season: 'Fall — Sep/Oct/Nov',
+      character: 'Migration season — many species moving south. Hawk migration peaks September. Songbird migration October. Late ducks arrive.',
+      species: 'Hawks: Broad-winged (Sept peak), Sharp-shinned, Cooper\'s, Bald Eagle, Red-tailed. Songbirds: warblers in fall plumage (challenging ID), Sparrows: White-throated, White-crowned, juncos arriving. Ducks: Common Eider arrivals + Common Goldeneye + scoters returning. Snow Buntings arrive late October.',
+      where: 'Hawkwatch Mountain (Sandy Point), Bradbury Mountain (Pownal), coastal lookouts.',
+      tip: 'Hawkwatches require clear NW-wind days after cold front. Songbird migration is more elusive than spring.',
+      hotspots: 'Bradbury Mountain Hawkwatch (Sept), coastal Maine for migrants, sea-watching offshore' }
+  ];
+
+  // ── BIRD PHOTOGRAPHY — techniques
+  var PHOTO_TIPS = [
+    { topic: 'Equipment Basics',
+      details: 'DSLR or mirrorless camera + 300-400mm telephoto lens (minimum for serious bird photography). Smaller travel-zoom cameras also work but with shorter reach + lower image quality.',
+      cost: '$500 entry to $10,000+ premium.' },
+    { topic: 'Camera Settings',
+      details: 'Aperture priority mode common. Wide aperture (f/4 or f/5.6) for soft backgrounds. Shutter speed at least 1/500 sec for songbirds, 1/1000+ for flight shots. ISO as low as light allows (lower = less noise).',
+      cost: '—' },
+    { topic: 'Composition',
+      details: 'Rule of thirds — bird not centered. Eye level for intimacy. Side view shows body shape; front view shows face + plumage. Watch for clean backgrounds. Birds in habitat (forest, water) stronger than birds against sky.',
+      cost: '—' },
+    { topic: 'Lighting',
+      details: 'Golden hour (1 hour after sunrise, 1 hour before sunset) is golden for bird photography. Side-lit better than direct front or back light. Overcast diffuses light evenly.',
+      cost: '—' },
+    { topic: 'Distance + Approach',
+      details: 'Slow, indirect approach. Avoid eye contact (predator behavior). Wear neutral colors. Stop when bird shows alarm posture (head up, body tensed). Patience often beats stalking.',
+      cost: '—' },
+    { topic: 'Ethical Photography',
+      details: 'Do not stress birds for a photo. No baiting predators. Stay back from nests (chicks visible = too close). Do not use playback near nest sites. Bird welfare > photo.',
+      cost: '—' },
+    { topic: 'Action Shots',
+      details: 'Birds in flight: track with lens, anticipate movement, shoot in burst mode. Birds taking off: predictable angle (away from you). Birds landing: aim where they\'re going.',
+      cost: '—' },
+    { topic: 'Editing',
+      details: 'Modern photography includes editing. Crop, adjust exposure, sharpen, reduce noise. Adobe Lightroom + Photoshop are standard but free alternatives exist (GIMP, RawTherapee).',
+      cost: '—' },
+    { topic: 'Sharing',
+      details: 'Bird photography communities online: Audubon, Birds Eye, Facebook bird groups, Instagram. eBird supports photo + audio uploads with sightings.',
+      cost: '—' }
+  ];
+
+  // ── BIRDING RESOURCES
+  var RESOURCES = [
+    { category: 'Apps + Digital Tools',
+      items: 'Merlin Bird ID (Cornell, free), Audubon Bird Guide (free), iBird Pro ($14, comprehensive), eBird (Cornell, free), BirdNet (sound ID, free). Maine-specific: Maine eBird hotspots.' },
+    { category: 'Field Guides',
+      items: 'Sibley Birds East (David Sibley — gold standard), Peterson Field Guide to Eastern Birds (Roger Tory Peterson — classic), National Geographic Field Guide. Children: Stokes Beginner\'s Guide to Birds; Birdology by Sy Montgomery.' },
+    { category: 'Maine Organizations',
+      items: 'Maine Audubon (maineaudubon.org) — events, education, advocacy. Acadia Birding Festival (annual). Maine Department of Inland Fisheries + Wildlife (biology + management). Project Puffin (Audubon — seabird restoration). Bigelow Laboratory (Gulf of Maine research).' },
+    { category: 'Citizen Science Projects',
+      items: 'eBird (Cornell) — submit all sightings. NestWatch (Cornell) — track nests. FeederWatch (Cornell) — winter feeder data. Project Owlnet (Cornell) — Northern Saw-whet Owl banding. Hawkwatch (national hawk migration counts). Christmas Bird Count (Audubon — Maine has 30+ circles).' },
+    { category: 'Books — Beginner',
+      items: 'Birds of Maine by Peter D. Vickery (the definitive Maine bird guide). The Birding Life by Larry Master + Tom Rich. A Guide to Bird Behavior (Donald + Lillian Stokes).' },
+    { category: 'Books — Advanced',
+      items: 'Hawks at a Distance by Jerry Liguori. The Sibley Guide to Bird Life + Behavior. Birds + People by Mark Cocker. Where the Crawdads Sing — bird poetry adjacent.' },
+    { category: 'Websites',
+      items: 'allaboutbirds.org (Cornell — encyclopedic). audubon.org (advocacy + ID). ebird.org (citizen science + hotspots). xeno-canto.org (bird sound recordings).' },
+    { category: 'Festivals + Events',
+      items: 'Acadia Birding Festival (early June). Eastern Egg Rock Puffin tours (May–Aug). Maine Audubon events (year-round). Bradbury Mountain Hawkwatch (Sept-Oct). Christmas Bird Counts (Dec).' },
+    { category: 'Conservation Organizations',
+      items: 'Maine Audubon, National Audubon Society, Cornell Lab, American Bird Conservancy, BirdLife International, BirdsCanada (relevant for shared species).' },
+    { category: 'Tour Operators',
+      items: 'Maine birding tours: Maine Audubon, Hardy Boat Cruises (Project Puffin), Cap\'n Fish (Boothbay), Pelagic Birding Adventures (Bar Harbor area for offshore species).' }
+  ];
+
+  // ── BIRD AGE + SEX ID
+  var AGE_SEX_ID = [
+    { topic: 'Aging Songbirds',
+      detail: 'Many songbirds: juvenile plumage → first basic (winter) → adult after first molt. Some species (warblers, sparrows) show subtle differences. Bill color, wing shape, feather wear all clues.',
+      example: 'First-fall White-crowned Sparrow has brown + tan crown (not adult black + white). Young goldfinches lack adult bright yellow until first complete molt.' },
+
+    { topic: 'Aging Raptors',
+      detail: 'Most raptors mature over 2-5 years. Multiple sub-adult plumages. Hawk + eagle ID often hinges on age.',
+      example: 'Bald Eagle requires 4-5 years to develop adult white head + tail. Juveniles mottled brown. Cooper\'s Hawk juveniles brown-streaked vs adult slate gray.' },
+
+    { topic: 'Aging Gulls',
+      detail: 'Gulls take 2-4 years to reach adult plumage with multiple intermediate stages. Hardest ID group.',
+      example: 'Herring Gull: First-winter mottled brown; second-winter still brown but cleaner; third-winter approaches adult; fourth-winter full adult. Each stage has subtle plumage variations.' },
+
+    { topic: 'Sexing Songbirds',
+      detail: 'Many species show sexual dimorphism (different plumages). Males typically brighter to attract mates. Some species look identical between sexes.',
+      example: 'Northern Cardinal: male bright red, female buff with red wash. Mallard: male iridescent green head + brown breast, female mottled brown. Black-capped Chickadee: sexes look identical.' },
+
+    { topic: 'Sexing Raptors',
+      detail: 'Most raptors: females larger than males (reversed size dimorphism). Some show plumage differences (kestrels).',
+      example: 'American Kestrel: male blue-gray wings + buff breast; female brown wings + streaked breast. Most other hawks + eagles: sexes look similar but females larger.' },
+
+    { topic: 'Sexing Waterfowl',
+      detail: 'Most ducks: strong sexual dimorphism. Males with bright nuptial plumage, females cryptic brown. Geese + swans: sexes similar.',
+      example: 'Wood Duck: male brilliantly colored, female brown with white teardrop eye-patch. Mallard: well-known dimorphism.' },
+
+    { topic: 'Banding + Marking',
+      detail: 'Birds banded with metal leg bands carry unique numbers. Some species also color-banded for individual ID. Geolocators + GPS tags for migration research.',
+      example: 'A banded Peregrine Falcon at a Maine bridge nest may be tracked from breeding site to wintering grounds. Citizen reports help researchers.' },
+
+    { topic: 'Citizen-Reportable Marks',
+      detail: 'Bird collars (geese, swans), wing tags (vultures, eagles), color-banded individuals — all reportable to researchers via USGS Bird Banding Lab.',
+      example: 'Reporting a banded eagle\'s number helps researchers track individual\'s migration + survival.' }
+  ];
+
+  // ── BIRD MORPHOLOGICAL DIFFERENCES (size + shape ID quick reference)
+  var SHAPE_DIFF = [
+    { feature: 'Bill Length',
+      what: 'Long bills (herons, shorebirds, hummingbirds) for probing or specialized feeding. Short bills (finches, sparrows) for cracking seeds. Medium bills (warblers, flycatchers) for catching insects.',
+      diagnostic: 'Bill-length-to-head ratio is a reliable family-level field mark.' },
+
+    { feature: 'Bill Shape',
+      what: 'Cone (seedeaters), needle (warblers + nectar-feeders), hook (raptors + parrots), spear (herons + kingfishers), spoon (shovelers), pelican-like (skimmers).',
+      diagnostic: 'Bill shape predicts diet + family in most cases.' },
+
+    { feature: 'Wing Shape',
+      what: 'Long pointed (terns, swifts, swallows, gulls, falcons). Short rounded (forest birds like woodpeckers, songbirds). Broad with slots (eagles, vultures, broad-winged hawks). Aquatic stiff (auks, penguins).',
+      diagnostic: 'Wing shape predicts flight style + speed + maneuverability.' },
+
+    { feature: 'Tail Length',
+      what: 'Long tails (cuckoos, magpies, accipiters) for maneuvering. Short tails (auks, ducks, falcons) for speed.',
+      diagnostic: 'Long tail = forest maneuvering; short tail = speed or aquatic.' },
+
+    { feature: 'Tail Shape',
+      what: 'Forked (terns, swallows, frigatebirds). Notched (some flycatchers). Square (crows, magpies). Pointed (jaegers, some swifts). Round (most songbirds).',
+      diagnostic: 'Tail shape is diagnostic for family + sometimes species.' },
+
+    { feature: 'Body Size',
+      what: 'Tiny (hummingbirds + kinglets, 3-4 in). Small (chickadees + warblers, 5-6 in). Medium (robins + jays + woodpeckers, 9-11 in). Large (hawks + crows, 17-25 in). Very large (eagles + vultures + geese, 25-40 in).',
+      diagnostic: 'Size category narrows possible species dramatically.' },
+
+    { feature: 'Leg Length',
+      what: 'Long legs (waders + shorebirds + cranes). Short legs (ducks + many songbirds + raptors).',
+      diagnostic: 'Leg length predicts habitat + foraging style.' },
+
+    { feature: 'Body Shape',
+      what: 'Round (passerines + chickadees). Slim (cormorants + herons + grebes). Compact (woodpeckers + shorebirds).',
+      diagnostic: 'Body shape distinguishes family + behavior.' }
+  ];
+
+  // ── ICONIC MAINE BIRDS LISTING — narrative profiles of birds with strong Maine identity
+  var ICONIC_MAINE = [
+    { name: 'Black-capped Chickadee (Maine state bird)',
+      why_iconic: 'Maine\'s state bird. Year-round resident throughout the state. Beloved for friendly behavior at feeders + winter resilience.',
+      cultural: 'Cited in Maine literature + media. Featured on state license plates. School mascot for many Maine schools.',
+      conservation: 'Stable; benefits from feeder programs + landscape diversity.' },
+
+    { name: 'Common Loon',
+      why_iconic: 'Maine\'s lake-country iconic species. Eerie wail + tremolo call defines Maine wilderness lakes. Photo subject + memorable encounter.',
+      cultural: 'Maine\'s "loon song" is internationally famous. Featured on Maine quarter coin. Conservation success story.',
+      conservation: 'Population recovered + stable. Maine ~3,500 breeding pairs. Lead-tackle bans + nest protection help.' },
+
+    { name: 'Atlantic Puffin',
+      why_iconic: 'Maine\'s most famous restoration story (Project Puffin). Charismatic seabird with colorful breeding bill.',
+      cultural: 'Major Maine tourist attraction (boat trips to Eastern Egg Rock + Matinicus Rock). State licensed plate option. Featured prominently in Maine wildlife media.',
+      conservation: 'From 0 birds 1970s to ~1,500 pairs today. Climate-vulnerable; food fish (alewives, sand lance) shifting.' },
+
+    { name: 'Bald Eagle',
+      why_iconic: 'National symbol + Maine\'s premier raptor recovery story. From near-extinction (60 nests in 1970) to ~700 nests today.',
+      cultural: 'National + Maine pride. Eagle sightings now common. Penobscot Restoration project + climate awareness.',
+      conservation: 'Federal delisted (recovered). State threatened. Lead poisoning + collisions ongoing concerns.' },
+
+    { name: 'Wild Turkey',
+      why_iconic: 'Maine\'s state game bird. Recovery from extirpation in 1900 (none in Maine) to 50,000+ today through restoration.',
+      cultural: 'Symbol of Maine wildlife management success. Important game species + visible everywhere now.',
+      conservation: 'Stable + thriving. Maine has more turkeys than at any time since European arrival.' },
+
+    { name: 'Piping Plover',
+      why_iconic: 'Maine\'s federally threatened beach-nesting bird. Symbol of beach conservation + delicate balance.',
+      cultural: 'Maine\'s ~50 pairs each season monitored by volunteers. Symbolic beach fencing visible Apr–Aug.',
+      conservation: 'Threatened; populations slowly recovering with continued nest protection.' },
+
+    { name: 'Wood Duck',
+      why_iconic: 'Maine\'s most beautiful waterfowl. Wooded swamps + nest boxes a Maine specialty.',
+      cultural: 'Featured Maine wildlife + waterfowl photo subject. Nest-box programs popular.',
+      conservation: 'Stable + benefits from boxes.' },
+
+    { name: 'American Woodcock',
+      why_iconic: 'Maine\'s "sky dance" bird. Display flight in young forest openings is a Maine spring rite.',
+      cultural: 'Followed by woodcock enthusiasts each spring. Young-forest birding signature.',
+      conservation: 'Stable; dependent on young-forest habitat.' },
+
+    { name: 'Snowy Owl',
+      why_iconic: 'Maine\'s magical winter visitor. Irruptive years bring crowds of birders.',
+      cultural: 'Photogenic, charismatic. Snowy Owl spotters network feeds birding news.',
+      conservation: 'IUCN Vulnerable; Arctic climate stress.' },
+
+    { name: 'Northern Cardinal',
+      why_iconic: 'Maine\'s adapter — range-expanded north over recent decades. Bright red beauty year-round.',
+      cultural: 'Common Maine backyard bird now. Singing male is a winter joy.',
+      conservation: 'Stable + expanding.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 7 EXPANSION
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRD FACTS — fast reference of remarkable facts
+  var BIRD_FACTS = [
+    { fact: 'Bee Hummingbird (Cuba) is smallest bird at 2.2 inches and 2 grams.', category: 'Records' },
+    { fact: 'Ostrich is largest bird at 9 ft tall + 350 lb.', category: 'Records' },
+    { fact: 'Wandering Albatross has largest wingspan — 11 ft.', category: 'Records' },
+    { fact: 'Peregrine Falcon stoops at 240+ mph — fastest animal alive.', category: 'Records' },
+    { fact: 'Arctic Tern migrates ~44,000 miles annually — longest migration.', category: 'Records' },
+    { fact: 'Sooty Tern can stay aloft 10+ years before first landing.', category: 'Records' },
+    { fact: 'Crows can recognize human faces + remember them for years.', category: 'Intelligence' },
+    { fact: 'New Caledonian Crows use + manufacture tools.', category: 'Intelligence' },
+    { fact: 'African Grey Parrots can learn 1,000+ words + use them in context.', category: 'Intelligence' },
+    { fact: 'Magpies pass the mirror self-recognition test.', category: 'Intelligence' },
+    { fact: 'Chickadees vary "dee" notes in their call by predator threat level.', category: 'Intelligence' },
+    { fact: 'Ravens cache food + remember dozens of cache locations.', category: 'Intelligence' },
+    { fact: 'Birds have ~10,500 species worldwide.', category: 'Diversity' },
+    { fact: 'Maine has ~280 regular breeding + visiting species.', category: 'Maine' },
+    { fact: 'Highest-elevation breeding bird in Maine: Bicknell\'s Thrush.', category: 'Maine' },
+    { fact: 'Lowest-elevation breeding bird in Maine: salt marsh sparrows.', category: 'Maine' },
+    { fact: 'Maine state bird: Black-capped Chickadee (since 1927).', category: 'Maine' },
+    { fact: 'Maine state game bird: Wild Turkey.', category: 'Maine' },
+    { fact: 'Birds evolved from theropod dinosaurs ~160 million years ago.', category: 'Evolution' },
+    { fact: 'Archaeopteryx is the famous "transitional fossil" linking dinosaurs + birds.', category: 'Evolution' },
+    { fact: 'K-Pg extinction (66 mya) wiped out non-avian dinosaurs; ornithurine birds survived.', category: 'Evolution' },
+    { fact: 'All modern birds belong to class Aves — direct descendants of one ornithurine lineage.', category: 'Evolution' },
+    { fact: 'Bald Eagles can spot a rabbit from 1+ mile.', category: 'Vision' },
+    { fact: 'Birds see 4 colors (UV-sensitive cone); humans see 3.', category: 'Vision' },
+    { fact: 'Some birds can see polarized light + Earth\'s magnetic field.', category: 'Vision' },
+    { fact: 'Owls have asymmetric ear openings for vertical sound location.', category: 'Hearing' },
+    { fact: 'Barn Owls can catch mice in total darkness using only hearing.', category: 'Hearing' },
+    { fact: 'Bird respiratory system flows through lungs one direction (mammals: in + out).', category: 'Physiology' },
+    { fact: 'Bird hearts beat 600+ bpm in hummingbirds; 200+ in raptors at rest.', category: 'Physiology' },
+    { fact: 'Birds have hollow bones with internal struts — strong + light.', category: 'Physiology' },
+    { fact: 'A 9-pound Bald Eagle has a skeleton weighing less than 1 pound.', category: 'Physiology' },
+    { fact: 'Bird body temperature is ~104-108°F (humans: 98.6°F).', category: 'Physiology' },
+    { fact: 'Pelicans store + carry water in their gular sac.', category: 'Anatomy' },
+    { fact: 'Hoatzin chicks have claws on their wings (recede in adults) — like a reptile.', category: 'Anatomy' },
+    { fact: 'Cassowaries have a casque (bony helmet) + 4-inch dagger-like claws.', category: 'Anatomy' },
+    { fact: 'Flamingos are pink because of beta-carotene in shrimp they eat.', category: 'Coloration' },
+    { fact: 'Snow Buntings turn white in summer not by molt — by feather wear revealing white below brown tips.', category: 'Coloration' },
+    { fact: 'Wood ducks enter "eclipse plumage" mid-summer — male becomes drab female-like for 2 months.', category: 'Coloration' },
+    { fact: 'Some bird feathers are stronger by weight than steel.', category: 'Feathers' },
+    { fact: 'A bald eagle has ~7,000 feathers; a wild turkey ~5,500; a hummingbird ~940.', category: 'Feathers' },
+    { fact: 'A single feather has 1 million+ microscopic hooklets binding barbs together.', category: 'Feathers' },
+    { fact: 'Bar-headed Goose flies over Himalayas at 26,000+ ft.', category: 'Flight' },
+    { fact: 'Bar-tailed Godwit record nonstop flight: Alaska to New Zealand 7,500 miles.', category: 'Flight' },
+    { fact: 'Hummingbirds hover by figure-8 wing movement generating lift on both up + downstroke.', category: 'Flight' },
+    { fact: 'Penguins are the only birds that "fly" exclusively underwater.', category: 'Flight' },
+    { fact: 'Penguins evolved from flying ancestors but lost flight ~65 million years ago.', category: 'Evolution' },
+    { fact: 'Ducks have water-repellent feathers oiled from the uropygial (preen) gland.', category: 'Feathers' },
+    { fact: 'Brown-headed Cowbirds lay eggs in other species\' nests + never raise their own young.', category: 'Behavior' },
+    { fact: 'Cooper\'s Hawks sometimes drown larger prey by holding them underwater.', category: 'Behavior' },
+    { fact: 'Northern Mockingbirds learn 200+ songs in a lifetime.', category: 'Behavior' },
+    { fact: 'Female phalaropes mate with multiple males + reverse traditional roles.', category: 'Behavior' },
+    { fact: 'Some birds (vultures, fulmars) vomit on threats as defense.', category: 'Behavior' },
+    { fact: 'Spotted Sandpipers reverse traditional roles — females larger + more aggressive.', category: 'Behavior' },
+    { fact: 'Domestic cats kill ~2.4 billion US birds annually.', category: 'Conservation' },
+    { fact: 'Up to 1 billion US birds die in window collisions annually.', category: 'Conservation' },
+    { fact: '3 billion North American birds have been lost since 1970 (Rosenberg 2019).', category: 'Conservation' },
+    { fact: 'Maine has 700+ active Bald Eagle nests today (from <60 in 1970).', category: 'Conservation' },
+    { fact: 'Wild Turkey was extirpated from Maine by 1900 + restored to 50,000+ today.', category: 'Conservation' },
+    { fact: 'Project Puffin restored Atlantic Puffin from 0 Maine birds 1970s to ~1,500 pairs today.', category: 'Conservation' },
+    { fact: 'Cornell Lab\'s Christmas Bird Count is the longest-running citizen science project (since 1900).', category: 'Citizen Science' },
+    { fact: 'eBird has 1 billion+ bird observations from millions of contributors.', category: 'Citizen Science' },
+    { fact: 'Hooded Mergansers + Wood Ducks both use the same nest boxes.', category: 'Nesting' },
+    { fact: 'Cliff Swallows make 1,000+ trips to gather mud for one nest.', category: 'Nesting' },
+    { fact: 'Ruby-throated Hummingbird nest stretches with chick growth thanks to spider silk.', category: 'Nesting' },
+    { fact: 'Bald Eagle nests can weigh over 2,000 lbs after years of additions.', category: 'Nesting' },
+    { fact: 'Pileated Woodpeckers excavate new cavities annually; abandoned ones become homes for other species.', category: 'Nesting' },
+    { fact: 'Brown-headed Cowbirds lay 30+ eggs in a season — all in others\' nests.', category: 'Reproduction' },
+    { fact: 'A loon nest must be inches from water — loons can\'t walk far on land.', category: 'Nesting' },
+    { fact: 'A puffin pair has just one egg per year.', category: 'Reproduction' },
+    { fact: 'Most songbirds molt completely once annually.', category: 'Molt' },
+    { fact: 'Goldfinches uniquely molt twice (more brilliant breeding plumage).', category: 'Molt' },
+    { fact: 'Maine\'s most-common breeding warbler: Yellow-rumped (also "myrtle warbler").', category: 'Maine' },
+    { fact: 'Hawkwatch Mountain (Sandy Point) sometimes sees 10,000+ Broad-winged Hawks in a day.', category: 'Maine' },
+    { fact: 'Penobscot River Restoration removed dams + restored 1,000+ miles of fish habitat.', category: 'Maine' },
+    { fact: 'Wabanaki peoples have lived alongside Maine birds for ~13,000 years.', category: 'Cultural' },
+    { fact: 'Cornell Lab of Ornithology is the leading bird research + education center in US.', category: 'Education' },
+    { fact: 'Audubon was the first major bird painter + namesake of major conservation orgs.', category: 'Education' },
+    { fact: 'Rachel Carson\'s "Silent Spring" (1962) exposed DDT impact on birds + changed environmental movement.', category: 'Education' },
+    { fact: 'Roger Tory Peterson\'s Field Guide (1934) revolutionized field birding.', category: 'Education' },
+    { fact: 'Sibley Guide is the modern standard birding field guide.', category: 'Education' },
+    { fact: 'Merlin Bird ID app (Cornell, free) uses AI to identify birds from photos + songs.', category: 'Technology' },
+    { fact: 'eBird and BirdNet apps help millions identify and report birds.', category: 'Technology' },
+    { fact: 'Geolocators tagged on songbirds reveal individual migration routes never before known.', category: 'Technology' },
+    { fact: 'Some birds (Brown Pelicans, Common Murres) recovered from near-extinction in 1950s-70s.', category: 'Conservation' },
+    { fact: 'Many North American bird species declined 50%+ since 1970 (Rosenberg 2019).', category: 'Conservation' },
+    { fact: 'Bird populations responding to climate change at measurable rates.', category: 'Conservation' },
+    { fact: 'Wild Turkey courtship: gobbler "strut" — fanned tail, dropped wings, raised feathers.', category: 'Courtship' },
+    { fact: 'American Woodcock "sky dance": twilight display flight + descending warble.', category: 'Courtship' },
+    { fact: 'Wing-clapping courtship displays in many pigeon species + nighthawks.', category: 'Courtship' },
+    { fact: 'Sage Grouse males display in arenas called "leks" — females select.', category: 'Courtship' },
+    { fact: 'Some species sing in courtship duets (wrens, some shrikes).', category: 'Courtship' },
+    { fact: 'Manakins do somersaults + dance to attract mates.', category: 'Courtship' },
+    { fact: 'Many birds preen each other in courtship + pair bonding.', category: 'Courtship' },
+    { fact: 'Penguin proposal: male brings female a perfect stone for the nest.', category: 'Courtship' },
+    { fact: 'Most songbirds learn songs from adult tutors during sensitive period (first year).', category: 'Learning' },
+    { fact: 'Songs vary by region (dialects) — White-throated Sparrows in Massachusetts differ from those in Maine.', category: 'Learning' },
+    { fact: 'Urban birds sing higher pitched to overcome traffic noise.', category: 'Adaptation' },
+    { fact: 'Some bird songs may be changing due to climate change.', category: 'Adaptation' },
+    { fact: 'Maine\'s loons hunt by diving up to 200 ft underwater.', category: 'Maine' },
+    { fact: 'Loon flight requires running takeoff — many lakes need 100+ ft of open water.', category: 'Maine' },
+    { fact: 'Loons are nearly silent in winter; loud only on breeding lakes.', category: 'Maine' },
+    { fact: 'Penobscot Nation, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki peoples all have deep connections to Maine birds.', category: 'Cultural' },
+    { fact: 'Many Maine bird names + lore originated with Wabanaki peoples (loon: "tau" in Passamaquoddy).', category: 'Cultural' }
+  ];
+
+  // ── HISTORICAL EXTINCT BIRDS
+  var HISTORICAL_EXTINCT = [
+    { species: 'Great Auk (Pinguinus impennis)',
+      extinction: 'Last seen 1844 off Iceland; possibly Funk Island Newfoundland nests',
+      reason: 'Hunted to extinction for feathers + meat + eggs. Flightless seabird, easy to catch.',
+      relation_maine: 'Once common Gulf of Maine breeder. Closest relatives: razorbills, murres, puffins, guillemots — all still in Maine waters.',
+      lesson: 'A wake-up call for seabird conservation. Project Puffin built on this.' },
+    { species: 'Passenger Pigeon (Ectopistes migratorius)',
+      extinction: 'Last known died at Cincinnati Zoo 1914',
+      reason: 'Once 3-5 billion strong; mass commercial hunting + habitat loss in 1880s-1900s.',
+      relation_maine: 'Once visited Maine in massive numbers each spring. Now: extinct. Modern descendant: Mourning Dove + Eurasian Collared-Dove.',
+      lesson: 'No species too abundant to be safe from human impact.' },
+    { species: 'Carolina Parakeet (Conuropsis carolinensis)',
+      extinction: 'Last died 1918 at Cincinnati Zoo',
+      reason: 'Hunted for plumage + crop damage; loss of old-growth hardwood forest. North America\'s only native parrot.',
+      relation_maine: 'Possibly occasional summer visitor to far southern Maine in 1600s.',
+      lesson: 'Native parrot of North America — lost.' },
+    { species: 'Labrador Duck (Camptorhynchus labradorius)',
+      extinction: 'Last seen 1875',
+      reason: 'Sea duck specialized for Atlantic mollusks + likely overhunted in Gulf of Maine + Labrador.',
+      relation_maine: 'Wintered along Maine coast.',
+      lesson: 'Sea duck collapse — analogous to modern climate-stressed eider declines.' },
+    { species: 'Eskimo Curlew (Numenius borealis)',
+      extinction: 'Last confirmed sighting 1962 (some recent reports unverified)',
+      reason: 'Massive commercial shorebird hunting + habitat loss in Great Plains migration stopover.',
+      relation_maine: 'Once Maine fall migrant.',
+      lesson: 'Functionally extinct; near-extinct + lost from Maine.' },
+    { species: 'Heath Hen (Tympanuchus cupido cupido)',
+      extinction: 'Last individual died 1932 on Martha\'s Vineyard',
+      reason: 'Subspecies of Greater Prairie-Chicken; lost to habitat conversion + hunting + climate.',
+      relation_maine: 'Once visited New England including possibly southern Maine. Sister birds (Greater Prairie-Chicken) still in Midwest.',
+      lesson: 'Local extinction (extirpation) precedes total extinction.' },
+    { species: 'Dodo (Raphus cucullatus)',
+      extinction: 'Last reliable record 1681 on Mauritius',
+      reason: 'Flightless. Hunted + predated by introduced rats + pigs.',
+      relation_maine: 'Never in Maine — but iconic global extinction warning.',
+      lesson: 'Island species hyper-vulnerable. First major recorded human-caused extinction.' },
+    { species: 'Bachman\'s Warbler (Vermivora bachmanii)',
+      extinction: 'Last confirmed 1962 (US); 1988 (Cuba)',
+      reason: 'Lost most habitat in Southeast bottomland forest.',
+      relation_maine: 'Closest Maine relative: Tennessee Warbler.',
+      lesson: 'Tropical-wintering migrant vulnerable to combined breeding + wintering ground loss.' }
+  ];
+
+  // ── COMMON CONFUSING PAIRS — Maine birds easily mistaken
+  var CONFUSING_PAIRS = [
+    { pair: 'Downy vs Hairy Woodpecker',
+      similarity: 'Both black + white, same pattern, both Maine residents',
+      key_diff: 'Size (Downy 6-7 in, Hairy 9-10 in). Bill length: Downy bill shorter than head; Hairy bill longer than head. Tail spots: Downy tail outer feathers spotted, Hairy plain.' },
+    { pair: 'Cooper\'s vs Sharp-shinned Hawk',
+      similarity: 'Both medium accipiters, similar shape + plumage. Both forest hawks.',
+      key_diff: 'Size (Sharp-shinned 10-14 in, Cooper\'s 14-20 in). Tail: Sharp-shinned has square tail tip, Cooper\'s rounded. Crown: Sharp-shinned smaller "capped" head; Cooper\'s larger head with more pronounced cap.' },
+    { pair: 'Greater vs Lesser Yellowlegs',
+      similarity: 'Both yellowleg shorebirds. Same color + pattern.',
+      key_diff: 'Size (Lesser 11 in, Greater 14 in). Bill: Greater slightly upturned + longer; Lesser straighter + shorter. Call: Greater 3-5 note "tew-tew-tew"; Lesser 1-2 note "tew-tew".' },
+    { pair: 'White-throated vs White-crowned Sparrow',
+      similarity: 'Both medium sparrows with bold head pattern, both fall migrants in Maine.',
+      key_diff: 'Yellow lores: White-throated has yellow patch between bill + eye; White-crowned has no yellow. Throat: White-throated has clean white throat patch; White-crowned has no white throat.' },
+    { pair: 'Magnolia vs Yellow Warbler',
+      similarity: 'Both yellow warblers in Maine.',
+      key_diff: 'Magnolia: black mask + tail with white tail markings; bright yellow throat. Yellow Warbler: no mask + plain face; yellow throat with rust streaks on male.' },
+    { pair: 'Hermit vs Swainson\'s Thrush',
+      similarity: 'Both spotted thrushes, similar size + habitat.',
+      key_diff: 'Tail: Hermit has rusty-red tail (key mark) vs uniform brown body; Swainson\'s tail same color as body. Face: Swainson\'s has buff eyering + face. Voice: very different songs.' },
+    { pair: 'Red-shouldered vs Red-tailed Hawk',
+      similarity: 'Both buteo hawks, similar size + posture.',
+      key_diff: 'Red-shouldered: barred tail (no red), rufous shoulders. Red-tailed: brick-red tail in adults, plain belly.' },
+    { pair: 'Common vs Hooded Merganser',
+      similarity: 'Both diving mergansers in Maine.',
+      key_diff: 'Size: Common merganser larger. Crest: Hooded male has dramatic large white hood (can be raised/lowered); Common male has no crest, green head. Female Hooded: cinnamon crest; Common female: rusty unstreaked head.' },
+    { pair: 'Black-capped vs Carolina Chickadee',
+      similarity: 'Both chickadees, similar size + pattern.',
+      key_diff: 'In Maine: only Black-capped present (Carolina south of NJ). Where both: Black-capped has whiter wing feathers + larger bib + more buff flanks.' },
+    { pair: 'Sharp-shinned vs Cooper\'s vs Goshawk (3-way)',
+      similarity: 'All three are accipiters in Maine.',
+      key_diff: 'Size + body weight: Sharp-shinned smallest (4-8 oz), Cooper\'s medium (10-22 oz), Goshawk largest (24-40 oz). Tail tip: Sharp square, Cooper rounded, Goshawk graduated. Color: Sharp + Cooper similar adult plumage; Goshawk plain gray with white eyebrow + barred breast.' }
+  ];
+
+  // ── NORTH AMERICAN BIRD FAMILIES — overview
+  var FAMILIES = [
+    { family: 'Anseriformes (Waterfowl)',
+      common: 'Ducks, geese, swans',
+      maine: 'Mallard, American Black Duck, Wood Duck, Common Eider, Common Loon (a different order), 20+ duck species + 4 geese',
+      what: 'Water-adapted with webbed feet + waterproof feathers. Includes dabblers + divers + sea ducks.' },
+    { family: 'Galliformes (Game Birds)',
+      common: 'Turkeys, grouse, quail, pheasants',
+      maine: 'Wild Turkey, Ruffed Grouse, Spruce Grouse',
+      what: 'Ground-dwelling; strong feet for scratching; short heavy bodies; rapid takeoff.' },
+    { family: 'Procellariiformes (Tube-noses)',
+      common: 'Albatrosses, shearwaters, petrels, fulmars',
+      maine: 'Greater Shearwater, Wilson\'s Storm-Petrel, Northern Fulmar (offshore)',
+      what: 'Open-ocean specialists with tube-shaped nostrils for excreting excess salt. Wing-locking mechanism for soaring.' },
+    { family: 'Pelecaniformes (Pelicans + Heron-like)',
+      common: 'Pelicans, herons, egrets, ibises, anhingas',
+      maine: 'Great Blue Heron, Great Egret, Snowy Egret, Black-crowned Night Heron, Glossy Ibis',
+      what: 'Long-legged waders. Many specialize in fish.' },
+    { family: 'Accipitriformes (Hawks + Eagles)',
+      common: 'Eagles, hawks, kites, vultures',
+      maine: 'Bald Eagle, Red-tailed Hawk, Sharp-shinned Hawk, Cooper\'s Hawk, Broad-winged Hawk, Northern Harrier, Turkey Vulture',
+      what: 'Diurnal raptors with hooked bills + sharp talons.' },
+    { family: 'Falconiformes (Falcons)',
+      common: 'Falcons, kestrels, caracaras',
+      maine: 'Peregrine Falcon, Merlin, American Kestrel',
+      what: 'Aerodynamic predators with toothed bills + long pointed wings.' },
+    { family: 'Charadriiformes (Shorebirds + Gulls)',
+      common: 'Plovers, sandpipers, gulls, terns, alcids',
+      maine: 'Piping Plover, Killdeer, Greater Yellowlegs, Spotted Sandpiper, Herring Gull, Common Tern, Atlantic Puffin, Razorbill',
+      what: 'Mostly coastal + aquatic. Multiple sub-families.' },
+    { family: 'Strigiformes (Owls)',
+      common: 'Owls (true owls + barn owls)',
+      maine: 'Great Horned Owl, Barred Owl, Eastern Screech-Owl, Snowy Owl, Saw-whet Owl, Long-eared Owl, Short-eared Owl, Boreal Owl',
+      what: 'Nocturnal predators with silent flight + large eyes + asymmetric ear openings.' },
+    { family: 'Apodiformes (Hummingbirds + Swifts)',
+      common: 'Hummingbirds, swifts, tree swifts',
+      maine: 'Ruby-throated Hummingbird, Chimney Swift',
+      what: 'Most aerial of birds. Tiny feet useful only for perching.' },
+    { family: 'Coraciiformes (Kingfishers)',
+      common: 'Kingfishers, todies, motmots',
+      maine: 'Belted Kingfisher',
+      what: 'Specialized predators with large heads, short tails, sharp bills.' },
+    { family: 'Piciformes (Woodpeckers)',
+      common: 'Woodpeckers, wrynecks, sapsuckers, jacamars',
+      maine: 'Downy + Hairy + Pileated Woodpecker, Yellow-bellied Sapsucker, Northern Flicker, Black-backed Woodpecker',
+      what: 'Tree-climbing specialists. Zygodactyl feet + chisel bills + tongue extensions.' },
+    { family: 'Passeriformes (Songbirds)',
+      common: 'All "perching birds" — songbirds, jays, crows, sparrows, warblers',
+      maine: '50%+ of Maine birds are passerines.',
+      what: 'Most diverse bird order — ~5,500 species. Three forward + one rear toe for perching. Most have complex song.' }
+  ];
+
+  // ── BIRDING WITH KIDS
+  var BIRDING_WITH_KIDS = [
+    { age: 'Toddler (2-4 years)',
+      attention: '5-15 minutes',
+      approach: 'Look at birds from window. Use simple bird names. Backyard feeders are perfect. Counting, color identification basic.',
+      activities: 'Watch feeder birds. Sing along to bird sounds. Look at picture books.',
+      avoid: 'Long walks. Strict identification expectations. Quiet+still requirements.' },
+
+    { age: 'Preschooler (4-6 years)',
+      attention: '15-30 minutes',
+      approach: 'Short walks with frequent stops. Names of 3-5 common birds. Spotting + counting games.',
+      activities: 'Backyard feeder with seed mix. Field journal with simple drawings. Bird-themed crafts.',
+      avoid: 'Pressure to recognize. Long quiet expectations. Cold/wet outdoor sessions.' },
+
+    { age: 'Early School (6-9 years)',
+      attention: '30-60 minutes',
+      approach: 'Real birding walks. Use Merlin app together. Learn 10+ species. Start a life list.',
+      activities: 'Local Audubon kids programs. Bird-watching journal. Photographing favorite birds.',
+      avoid: 'Strict accuracy standards. Cold long sessions if not enjoying.' },
+
+    { age: 'Tween (9-12 years)',
+      attention: '1-2 hours',
+      approach: 'More technical. Field guide use. Real ID skill development. Citizen-science (eBird).',
+      activities: 'Maine Audubon youth programs. Photography. Volunteer monitoring at Piping Plover sites.',
+      avoid: 'Comparisons with adult expertise. Lectures.' },
+
+    { age: 'Teen (13+)',
+      attention: '2+ hours when interested',
+      approach: 'Independent + as serious as they like. Maine Audubon teen programs. Bird-club membership.',
+      activities: 'Hawkwatch volunteering. eBird contributing. Bird photography. Maine birding meetups.',
+      avoid: 'Treating as expert (yet). Forcing.' }
+  ];
+
+  // ── BIRDING ACCESSIBILITY — kids + neurodivergent + mobility
+  var ACCESSIBILITY = [
+    { topic: 'Birding + Autism',
+      details: 'Birding has been a powerful + accessible interest for many autistic individuals. Pattern recognition, special interest depth, detail focus all align with autistic strengths. Encourage rather than redirect.',
+      tools: 'Merlin Bird ID app reduces social pressure of asking experts. Solo birding can be ideal. Sensory-friendly birding: birds at distance, quiet locations, accessible binocular alternatives.',
+      community: 'Many autistic birders share knowledge online. Identity-first language (autistic birder) reflects community consensus.' },
+
+    { topic: 'Birding + Mobility Limitations',
+      details: 'Birds come to you. Backyard feeders + car birding + accessible boardwalks all work.',
+      tools: 'Window feeders. Garden binoculars. Spotting scope on car-mount or window-mount. Lap-blanket for chair viewing.',
+      maine_sites: 'Maine Audubon has accessible trails at Mast Landing + Gilsland Farm. Scarborough Marsh has accessible viewing platforms. Many state parks have wheelchair-accessible viewing areas.' },
+
+    { topic: 'Birding + Vision Differences',
+      details: 'Spotting scopes magnify dramatically. Some birders with vision differences focus on birding-by-ear (sound ID).',
+      tools: 'BirdNet app identifies songs. Cornell Lab\'s Macaulay Library archives recordings to learn from.',
+      community: 'Some accessible birding programs exist; advocacy growing.' },
+
+    { topic: 'Birding + Hearing Differences',
+      details: 'Visual birding can replace audio. Spotting + ID at distance.',
+      tools: 'Merlin Bird ID visual ID. Field guides. Birding by reading bird body language + flight.',
+      community: 'Accessible birding without requiring sound ID is achievable.' },
+
+    { topic: 'Cost-Accessible Birding',
+      details: 'Birding can be entirely free. Even binoculars: many libraries lend them. Cornell Lab apps free.',
+      tools: 'Free Merlin Bird ID + eBird apps. Public field guides. Public birding trails. Free Maine Audubon free programs.',
+      community: 'Free Christmas Bird Counts + free birding walks at Maine Audubon.' },
+
+    { topic: 'Birding for Kids with ADHD',
+      details: 'Active outdoor activity. Movement + sensory engagement. Pattern recognition reward.',
+      tools: 'Shorter sessions. Counting games. Achievement systems (life list, photo collection).',
+      maine_resources: 'Maine Audubon kids programs designed for active engagement.' }
+  ];
+
+  // ── TEACHING BIRDING — for teachers + adults
+  var TEACHING_TIPS = [
+    { topic: 'Setting up a school birding program',
+      details: 'Identify lead teacher + parent volunteers. Order Merlin Bird ID app (free). Set up classroom window feeder. Start daily/weekly observation periods. Build life list as class. Submit observations to eBird as group.',
+      curriculum: 'Aligns with: NGSS LS4 (biodiversity), Maine Indigenous Studies (Wabanaki bird stories), Earth + Space Science (migration + climate).' },
+
+    { topic: 'Field trip preparation',
+      details: 'Choose accessible location (backyard, schoolyard, nearby trail). 30-60 minute initial walks. Quiet rules. Binocular safety. Bug spray + warm clothes.',
+      maine_recommendations: 'Maine Audubon offers school visits + field trip support. Local Audubon chapters can supply expert leaders.' },
+
+    { topic: 'Building a school garden for birds',
+      details: 'Native plants. Berry-bearing shrubs (winterberry, viburnum). Trees with seeds (birch, maple). Bird bath. Year-round food + cover.',
+      maine_natives: 'Hawthorn, eastern white pine, paper birch, mountain ash, common juniper, native blueberries.' },
+
+    { topic: 'Inquiry-based learning',
+      details: 'Students design experiments: feeder type vs species, time of day vs bird activity, weather vs feeder use. Real data + analysis.',
+      data: 'eBird data accessible for upper grades. Students can analyze real bird data.' },
+
+    { topic: 'Citizen science participation',
+      details: 'Submit observations to eBird as a class. Participate in Christmas Bird Count + Great Backyard Bird Count.',
+      benefits: 'Real science contribution. Builds community engagement. Develops scientific identity.' },
+
+    { topic: 'Cross-curricular connections',
+      details: 'Math: count + graph. Reading: bird-themed books + field guides. Writing: nature journals + bird descriptions. Art: bird drawing + photography. History: bird in literature + culture. Social studies: birds + conservation.',
+      maine_connections: 'Wabanaki bird stories (LD 291 requirement). Maine-specific conservation issues. Local Maine birders to interview.' },
+
+    { topic: 'Bird-themed writing prompts',
+      details: 'Describe a bird you saw. Tell the bird\'s story. What would it be like to fly? Compare two birds. What does this bird teach us about conservation? Why should we protect birds?',
+      examples: 'Bird haiku. Bird-themed graphic story. Letter from a Bald Eagle.' },
+
+    { topic: 'Bird-themed art projects',
+      details: 'Field journal sketches. Bird-feeder design. Origami birds. Bird-themed photography. Bird-themed collage.',
+      benefits: 'Practiced observation. Patience. Aesthetic appreciation.' },
+
+    { topic: 'Year-long birding curriculum framework',
+      details: 'September: hawk migration. October: fall waterfowl. November: winter prep. December-January: feeder watching. February-March: signs of spring. April: spring arrivals. May: warbler peak. June: breeding season. July-August: family feeding + young birds.',
+      maine: 'Connect to Maine\'s seasonal calendar throughout.' },
+
+    { topic: 'Teaching identification responsibly',
+      details: 'Honor uncertainty. Use "Likely X but check..." language. Build pattern recognition slowly. Multiple verification (photo, song, location).',
+      mindset: 'ID is the door, not the destination. Bird behavior + ecology + conservation matter more than just naming.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 8 EXPANSION — final push to 20K
+  // ═════════════════════════════════════════════════════════════
+
+  // ── WABANAKI BIRD STORIES — Maine indigenous knowledge (LD 291 alignment)
+  // Important note: these are general references; respectful coverage requires
+  // engaging with specific Wabanaki cultural authorities for primary sources.
+  var WABANAKI_BIRDS = [
+    { species: 'Common Loon',
+      penobscot_name: 'Tau / Towi (loon — varying spellings)',
+      cultural: 'The loon\'s mournful call is significant in Wabanaki traditional stories — sometimes associated with loss + grief, sometimes with the spirit world\'s call.',
+      ecological_knowledge: 'Wabanaki peoples knew loons returned each year at ice-out. Loons fed during summer + then left when freeze approached — connecting weather + seasonal change.',
+      modern_engagement: 'Modern Penobscot Nation + other Wabanaki communities continue to value loons + advocate for lake protection.' },
+
+    { species: 'Bald Eagle',
+      penobscot_name: 'Wapikwsisok (or similar — variations exist)',
+      cultural: 'Eagle as messenger to Creator + sacred in many Algonquian cultures including Wabanaki. Eagle feathers are sacred objects in cultural + ceremonial use.',
+      ecological_knowledge: 'Eagle nests on specific large white pines + cottonwoods near water; nest sites used for generations.',
+      modern_engagement: 'Wabanaki tribal natural resource departments work with USFWS on eagle conservation + monitoring.' },
+
+    { species: 'Wild Turkey',
+      penobscot_name: 'Nasekek (variations exist)',
+      cultural: 'Important food source historically. Turkey feathers used in art + ceremonial dress. Modern turkey restoration partnered with tribal communities.',
+      ecological_knowledge: 'Wabanaki peoples had detailed knowledge of turkey behavior + flock dynamics that informed harvest practices.',
+      modern_engagement: 'Tribal natural resource departments contribute to turkey management.' },
+
+    { species: 'Atlantic Puffin',
+      penobscot_name: 'Variations exist',
+      cultural: 'Coastal Wabanaki peoples knew puffin colonies + harvested puffins + eggs sustainably until European-era overharvest.',
+      ecological_knowledge: 'Detailed knowledge of offshore island ecology + seasonal patterns of seabirds. Wabanaki peoples were the original "Audubon" of Maine coast.',
+      modern_engagement: 'Project Puffin restoration recognized + honors Indigenous coastal stewardship.' },
+
+    { species: 'Great Blue Heron',
+      penobscot_name: 'Variations exist',
+      cultural: 'Heron significance varies by community — sometimes associated with patience, watchfulness, fishing skill.',
+      ecological_knowledge: 'Knowledge of heron rookeries (heronries) + seasonal returns.',
+      modern_engagement: 'Heron rookery protection coordinated with tribal communities.' },
+
+    { species: 'Common Raven',
+      penobscot_name: 'Variations exist',
+      cultural: 'Raven figures in many Algonquian stories — sometimes trickster, sometimes wise creature, sometimes Creator\'s helper.',
+      ecological_knowledge: 'Ravens recognized for intelligence + communication. Many traditional stories about raven\'s tricks + lessons.',
+      modern_engagement: 'Ravens still common across Wabanaki territories.' },
+
+    { species: 'Pileated Woodpecker',
+      penobscot_name: 'Variations exist',
+      cultural: 'Distinctive drumming + striking appearance — woodpeckers feature in some traditional stories about persistence + finding food.',
+      ecological_knowledge: 'Indicator of mature forest health. Pileated cavities used by many other species — a "keystone" species understood for centuries.',
+      modern_engagement: 'Old-growth forest protection valued by tribal natural resource priorities.' },
+
+    { species: 'Indigenous Land-Bird Stewardship',
+      penobscot_name: 'Various practices',
+      cultural: 'Wabanaki peoples managed Maine landscape for ~13,000 years using fire + selective harvest + protection of specific places. Bird populations flourished under this management.',
+      ecological_knowledge: 'Knowledge of bird-habitat relationships + seasonal patterns far predates European arrival.',
+      modern_engagement: 'Tribal natural resource departments + collaborative management with state + federal agencies continue this stewardship.' }
+  ];
+
+  // ── BIRDS IN LITERATURE
+  var BIRDS_LITERATURE = [
+    { reference: 'Edgar Allan Poe — "The Raven" (1845)',
+      what: 'Famous narrative poem with talking raven. "Quoth the Raven, Nevermore."',
+      cultural: 'Cemented raven\'s symbolic place in American literature as ominous + mysterious. Influenced later raven + crow imagery.' },
+    { reference: 'Mary Oliver — "Wild Geese" + many other poems',
+      what: 'Maine-resonant poetry filled with bird imagery + careful observation.',
+      cultural: 'Mary Oliver lived in Provincetown but her poetry resonates with Maine ecology + spirituality of nature.' },
+    { reference: 'Robert Frost — "The Oven Bird"',
+      what: 'Sonnet about the Ovenbird ("The Oven Bird"). Mid-summer reflection.',
+      cultural: 'Frost grew up + lived in northern New England. Ovenbird is also a common Maine breeding bird.' },
+    { reference: 'Henry David Thoreau — "Walden" + journals',
+      what: 'Detailed observations of New England birds. Thoreau was a careful observer who noted hundreds of species.',
+      cultural: 'Foundational American nature writing.' },
+    { reference: 'Rachel Carson — "Silent Spring" (1962)',
+      what: '"What sense would it make to deplete the soil + then watch the world get sick?" Carson noted bird declines from DDT.',
+      cultural: 'Launched modern environmental movement. Carson spent summers in Maine.' },
+    { reference: 'Sy Montgomery — "Birdology" (2010)',
+      what: 'Investigation of bird intelligence + relationship with people.',
+      cultural: 'Modern accessible bird writing.' },
+    { reference: 'Bernd Heinrich — "Mind of the Raven" (1999), "Winter World" (2003)',
+      what: 'Maine biologist\'s research-based writing on ravens + winter ecology.',
+      cultural: 'Heinrich is based in Maine; his books are essential modern bird literature.' },
+    { reference: 'Carl Safina — "Beyond Words" (2015)',
+      what: 'Bird (+ other animal) cognition + emotion explorations.',
+      cultural: 'Recent + comprehensive look at what we know about bird minds.' },
+    { reference: 'Stephen Lyn Bales — "Ghost Birds" (2016)',
+      what: 'About the search for Ivory-billed Woodpecker — likely extinct + symbol of bird loss.',
+      cultural: 'Modern bird conservation literature.' },
+    { reference: 'Maine state poetry + ornithology',
+      what: 'Maine has produced bird poetry from Edna St. Vincent Millay to contemporary writers. Birds + Maine intertwine in regional literature.',
+      cultural: 'Bird-themed poetry continues to be written in Maine; Maine Audubon hosts poetry events.' }
+  ];
+
+  // ── BIRDING ACHIEVEMENTS — gamification + lifetime tracking
+  var ACHIEVEMENTS_LIFE = [
+    { tier: 'Beginner (Year 1)',
+      goals: 'Spot + ID 25 common Maine species. Start an eBird account. Visit 3 birding hotspots. Photograph 10 species. Use Merlin Bird ID confidently.',
+      benchmark: 'Common species: chickadee, cardinal, blue jay, robin, mourning dove, mallard, woodpecker species, gull, eagle, osprey.' },
+
+    { tier: 'Intermediate (Years 2-3)',
+      goals: '50+ species. Submit eBird year-round. Visit 10+ hotspots. Learn 25+ songs. Identify warblers by ear. Use binoculars confidently. Take a birding class or workshop.',
+      benchmark: 'Add: warblers (yellow, magnolia, black-and-white, redstart), thrushes (hermit, wood, swainson\'s), sparrows (song, white-throated, savannah), more raptors.' },
+
+    { tier: 'Advanced (Years 3-7)',
+      goals: '150+ species. Identify all common shorebirds. Confidently age + sex many species. Lead beginning birders. Volunteer for citizen science (CBC, NestWatch).',
+      benchmark: 'Add: shorebirds, sea ducks, hawk migration species, rare migrants. Begin sub-species awareness.' },
+
+    { tier: 'Expert (10+ years)',
+      goals: '250+ Maine life list. Hawk + warbler ID experts. Volunteer at Hawkwatch Mountain or banding stations. Mentor newer birders.',
+      benchmark: 'Add: rare species, vagrants, subspecies. Trip leader-level knowledge.' },
+
+    { tier: 'Big Year Maine (1 year)',
+      goals: 'See 200+ species in Maine in single calendar year. Visit all major hotspots. Travel for rare birds.',
+      benchmark: 'Maine state record big year ~300 species. Most birders pursuing this dedicate 200+ days.' },
+
+    { tier: 'Continental Year',
+      goals: 'See 400+ species in North America in single calendar year.',
+      benchmark: 'Continental big year requires extensive travel + dedication.' },
+
+    { tier: 'Life list 500',
+      goals: '500+ life list species (US + Canada).',
+      benchmark: 'Requires travel + multiple regions. ~10 years of dedicated birding.' },
+
+    { tier: 'Life list 700+',
+      goals: '700+ life list species (US + Canada).',
+      benchmark: 'Lifetime of birding + travel.' }
+  ];
+
+  // ── HAWKWATCH GUIDE
+  var HAWKWATCH_GUIDE = [
+    { topic: 'What is a hawkwatch?',
+      details: 'Annual systematic counting of migrating raptors at strategic geographic points where birds concentrate. Bradbury Mountain (Pownal, Maine) is the state\'s premier hawkwatch.',
+      season: 'Sept 1 to Oct 31 (peak Sept 5-20 for broad-winged hawks)' },
+
+    { topic: 'What you\'ll see at a Maine hawkwatch',
+      details: 'Broad-winged Hawk (most numerous, peak Sept), Sharp-shinned Hawk, Cooper\'s Hawk, Northern Harrier, American Kestrel, Merlin, Peregrine Falcon, Red-tailed Hawk, Bald Eagle, Turkey Vulture, occasional Northern Goshawk.',
+      timing: 'Best mornings after cold front passage. Wind from NW typical for peak migration.' },
+
+    { topic: 'How to participate',
+      details: 'Bradbury Mountain Hawkwatch is staffed daily by official counter — visit any day. Free, open to public. Bring binoculars + warm layers + lunch.',
+      maine_specific: 'Bradbury Mountain State Park (Pownal). Sandy Point Hawkwatch (Sandy Point, ME) is the other major Maine site.' },
+
+    { topic: 'What to bring',
+      details: 'Binoculars (8×42 ideal). Warm hat + layers. Sunglasses + sunscreen. Snacks + water. Notebook + pencil. Camera.',
+      tip: 'Wear bright colors — counter + other birders can spot you + chat about birds.' },
+
+    { topic: 'Hawk ID basics for hawkwatchers',
+      details: 'Buteos: broad wings + fan tail (Broad-winged, Red-tailed, Red-shouldered). Accipiters: short wings + long tail (Sharp-shinned, Cooper\'s, Goshawk). Falcons: tapered wings (Peregrine, Merlin, Kestrel). Eagles: massive wings. Vultures: shallow "V" dihedral, rocking flight.',
+      tip: 'Counter announces birds — watch what counter watches.' },
+
+    { topic: 'Etiquette',
+      details: 'Be friendly + curious. Stay clear of counter\'s sight line. Don\'t play recorded calls (territorial response could disturb birds). Help spot but defer to counter on ID.',
+      tip: 'Counter is generally happy to teach + chat — they\'re sharing their passion.' },
+
+    { topic: 'Data + science contribution',
+      details: 'Counter data flows to HMANA (Hawk Migration Association of North America). Long-term data tracks raptor populations + climate trends.',
+      maine: 'Bradbury Mountain Hawkwatch was first established in 1992. Long-term Maine raptor data is invaluable.' },
+
+    { topic: 'Best days to attend',
+      details: 'Clear skies. NW wind (especially after passing cold front). Temperatures 50-70°F. Low humidity. Visibility 10+ miles.',
+      worst: 'Rain. Heavy overcast. Strong southerly wind. Calm + warm without thermals.' }
+  ];
+
+  // ── CHRISTMAS BIRD COUNT
+  var CBC_GUIDE = [
+    { topic: 'What is the CBC?',
+      details: 'Christmas Bird Count — annual citizen-science census of birds within 24 hours, in a 15-mile-diameter circle, in mid-December to early January.',
+      history: 'Started 1900 by Frank Chapman as alternative to Christmas hunting tradition. Longest-running citizen-science project in world.' },
+
+    { topic: 'Why it matters',
+      details: 'CBC data tracks winter bird populations across decades — invaluable for understanding bird trends.',
+      science: 'Audubon publishes annual + cumulative analyses; CBC data informs conservation priorities + population modeling.' },
+
+    { topic: 'Maine CBC circles',
+      details: 'Maine has ~30 CBC circles. Major: Portland, Bath, Boothbay, Belfast, Bangor, Brewer, Penobscot Indian Island, Skidompha, Pemaquid, Knox, more.',
+      participation: 'Each circle has a compiler who organizes parties. Volunteer signup typically Oct-Dec.' },
+
+    { topic: 'How to participate',
+      details: 'Contact your local CBC compiler (Maine Audubon has list). Sign up as field counter or feeder watcher. No experience needed — get paired with experienced birders.',
+      effort: 'Field counters typically spend 8+ hours in the field. Feeder watchers count from home for any portion.' },
+
+    { topic: 'What to expect',
+      details: 'Early start (often pre-dawn for owl counts). Lunch break. End by sunset. Tally compiler meeting often follows. Long day but rewarding.',
+      tips: 'Dress warmer than you think necessary. Bring food, hot drinks, snacks. Backup batteries.' },
+
+    { topic: 'Species commonly counted in Maine winter CBC',
+      details: 'Black-capped Chickadee, Dark-eyed Junco, Northern Cardinal, Downy + Hairy + Pileated Woodpecker, White-breasted Nuthatch, Blue Jay, American Crow, Common Raven, Bald Eagle, occasional Snowy Owl, Common Goldeneye, Bufflehead, Long-tailed Duck, Iceland Gull, Glaucous Gull (rarer).',
+      maine_specifics: 'Coastal circles get sea ducks; inland circles get forest birds.' },
+
+    { topic: 'CBC data findings',
+      details: 'Maine CBC data shows multi-decade trends: Red-bellied Woodpecker expansion north, Snowy Owl irruption patterns, Bald Eagle recovery, declining Evening Grosbeak.',
+      future: 'Climate-driven shifts visible in long-term CBC data. Birds responding to warming.' },
+
+    { topic: 'Going beyond',
+      details: 'After CBC: Great Backyard Bird Count (mid-February, simpler 4-day count). NestWatch (spring-summer). FeederWatch (winter, weekly).',
+      tip: 'CBC is gateway citizen science. Many CBC participants go on to deeper involvement.' }
+  ];
+
+  // ── BIRD SUPERSTITIONS + LORE
+  var SUPERSTITIONS = [
+    { lore: 'Crow caw = bad omen',
+      origin: 'Many world cultures associate crow calls with death or change. Probably because crows scavenge + are conspicuous.',
+      truth: 'Crows are intelligent + curious. Their cawing is communication, alarm, or contact — not omen.' },
+
+    { lore: 'Robin = first sign of spring',
+      origin: 'Robins do return to many areas in spring. American Robins migrate but some overwinter in Maine.',
+      truth: 'Robins arrive when snow recedes + earthworms become accessible. Maine\'s spring robin sightings are real ecological signals.' },
+
+    { lore: 'Owl hoot = death',
+      origin: 'Owls are nocturnal + secretive; many cultures associate them with death + spirits.',
+      truth: 'Owls are predators going about their business. Their hoots are territorial + courtship calls. Maine has 8 owl species + their calls are part of healthy ecosystems.' },
+
+    { lore: 'Loon call = sadness/death',
+      origin: 'Loon\'s haunting cry is genuinely mournful-sounding. Wabanaki + European cultures both noted this.',
+      truth: 'Loon calls are territorial + mate-contact signals. Loons live ~25 years; their calls are part of life cycle.' },
+
+    { lore: 'Magpie sees you in robe = good luck',
+      origin: 'European folklore — counting magpies has its own rhyme. "One for sorrow, two for mirth..."',
+      truth: 'Magpies (American Magpie in West) are intelligent + complex. Cultural interpretations vary by region.' },
+
+    { lore: 'Yellow finch = good fortune',
+      origin: 'Yellow color associated with sun + warmth in many cultures.',
+      truth: 'Goldfinches are common in Maine. Their bright color is breeding plumage of males.' },
+
+    { lore: 'Eagle = freedom + power',
+      origin: 'Eagle as symbol predates US (Roman + earlier). Universal aspirational symbolism.',
+      truth: 'Bald Eagle was nearly extinct from DDT; recovery is one of conservation\'s great victories. Symbol of resilience.' },
+
+    { lore: 'Hummingbird visits = message from departed loved one',
+      origin: 'Modern folk belief in US + Canada. No historical basis.',
+      truth: 'Hummingbirds visit flowers, feeders, + observation perches. Their visits are about food + territory.' },
+
+    { lore: 'Bird in house = death omen',
+      origin: 'Many cultures consider wild birds entering homes ominous. Probably because such events were rare + memorable.',
+      truth: 'Birds occasionally enter homes by accident — open doors, broken windows. Help them out gently. Not omen.' },
+
+    { lore: 'Killdeer broken-wing display = injured',
+      origin: 'Killdeer feign injury to lure predators away from nests. Looks genuinely hurt.',
+      truth: 'The Killdeer is performing a "distraction display" — well-known to ornithologists. The bird is healthy + cunning.' }
+  ];
+
+  // ── BIRDING ETIQUETTE DEEP
+  var ETIQUETTE_DEEP = [
+    { situation: 'Reporting a rare bird',
+      etiquette: 'Submit to eBird with photos/audio if possible. Notify Maine birding email list. Consider whether to share location publicly — some species (Piping Plover, nest sites, sensitive owls) should not be widely shared.',
+      maine_specifics: 'Maine Audubon\'s "Maine Rare Bird Alert" system + Maine birding listserv. Multiple regional birding groups.' },
+
+    { situation: 'Visiting a rare-bird hotspot',
+      etiquette: 'Don\'t crowd the bird. Stay back. Don\'t use playback near nest or sensitive site. Don\'t chase or harass. Don\'t share precise location of sensitive species (Roseate Tern, Piping Plover nests).',
+      respect: 'Bird welfare > photo. Don\'t flush birds. Don\'t encourage approach.' },
+
+    { situation: 'Birding on private property',
+      etiquette: 'Always ask permission. Some Maine birding hotspots are private but birder-friendly when respectful. Carry copies of permission letters.',
+      maine_examples: 'Some farms + private wetlands. Maine farmers often welcoming if asked.' },
+
+    { situation: 'Birding on tribal lands',
+      etiquette: 'Visit Penobscot Nation Cultural Center first. Coordinate with Penobscot Department of Natural Resources for access protocols. Respect cultural sites.',
+      maine_specifics: 'Penobscot Indian Island (Old Town) + Passamaquoddy lands (Pleasant Point, Indian Township) — coordinate first.' },
+
+    { situation: 'Birding with kids',
+      etiquette: 'Help your kids learn quiet observation. Model patient watching. Don\'t pressure them — let them set pace.',
+      tip: 'Pair them with a guide if possible — they\'ll absorb behavior from observation.' },
+
+    { situation: 'Birding ethics — when to use playback',
+      etiquette: 'Generally avoid except as last resort. Never near nests during breeding. Use sparingly even for rare birds. Some species (Mockingbird) ignore; others (some warblers, owls) get stressed.',
+      research_usage: 'Researchers use playback for documented purposes (banding stations, breeding atlases) under permits.' },
+
+    { situation: 'Banded bird sightings',
+      etiquette: 'Report band number + color combinations to USGS Bird Banding Lab (reportband.gov). Researchers depend on citizen reports to track migration + survival.',
+      maine: 'Maine banded eagles, peregrines, ospreys, songbirds — all reportable.' },
+
+    { situation: 'Beach birding (Piping Plover season)',
+      etiquette: 'Stay on hard sand. Respect symbolic fencing. Don\'t allow dogs off-leash on protected beaches. April-August particularly sensitive.',
+      maine_sites: 'Crescent Beach, Pine Point, Old Orchard Beach, Wells, Ogunquit, Reid State Park — all protected during Piping Plover season.' },
+
+    { situation: 'Bird photography ethics',
+      etiquette: 'No baiting predators. No stress-inducing approach. No flash near nests. No removing chicks for "better photo." Don\'t share if photo will lead to chasing.',
+      community: 'Bird photography community in Maine + nationally values ethical photography.' },
+
+    { situation: 'Sharing sightings + data',
+      etiquette: 'Submit all sightings to eBird — even common species. Long-term data + citizen science depends on consistent reporting.',
+      what_to_report: 'Species, count (or estimate), location, time, weather conditions, any photos/audio.' }
+  ];
+
+  // ── HAWKWATCH SCIENCE DATA
+  var HAWKWATCH_DATA = [
+    { year: '2023 Bradbury Mountain peak',
+      total_count: '~11,000 raptors total',
+      peak_day: 'September 14, 2023 — ~1,800 Broad-winged Hawks',
+      conditions: 'Clear NW wind day after cold front. Multiple "kettles" (groups) of Broad-winged Hawks circling overhead.' },
+    { year: '2022 Bradbury Mountain peak',
+      total_count: '~9,500 raptors',
+      peak_day: 'September 17 — ~1,200 broad-wings',
+      conditions: 'Good migration year. Multiple cold fronts.' },
+    { year: '2021 Bradbury Mountain peak',
+      total_count: '~10,500 raptors',
+      peak_day: 'September 19 — ~2,000 broad-wings',
+      conditions: 'Outstanding year. Bradbury Mountain\'s top-10 count.' },
+    { year: 'Multi-decade trends',
+      total_count: 'Maine raptor migration data shows: stable Bald Eagle, declining American Kestrel, expanding Merlin + Cooper\'s Hawk, climate-driven shifts.',
+      peak_day: 'Bradbury Mountain established 1992 — 30+ years of data.',
+      conditions: 'Climate change visible in subtle shifts of peak timing + species composition.' }
+  ];
+
+  // ── URBAN BIRDING — Maine cities
+  var URBAN_BIRDS = [
+    { city_area: 'Portland — Old Port + Eastern Promenade',
+      species: 'Herring Gull, Great Black-backed Gull, Ring-billed Gull, Common Eider (offshore), Mute Swan (Eastern Prom), Bald Eagle (occasional), starlings, house sparrows, pigeons.',
+      best_seasons: 'Year-round; sea ducks + gulls in winter.',
+      tip: 'Eastern Promenade trail along waterfront for sea birds; Back Cove for waterfowl.' },
+
+    { city_area: 'Bangor — Penobscot River + Bangor Park',
+      species: 'Bald Eagle (winter concentration below dams), Common Merganser, Common Goldeneye, gulls, urban songbirds.',
+      best_seasons: 'Winter eagles especially impressive.',
+      tip: 'Penobscot River below Bangor remains unfrozen + concentrates winter eagles.' },
+
+    { city_area: 'Lewiston/Auburn — Androscoggin River',
+      species: 'Bald Eagle (recovering), Common Merganser, urban songbirds.',
+      best_seasons: 'Year-round.',
+      tip: 'Riverfront park access.' },
+
+    { city_area: 'Augusta — Kennebec River',
+      species: 'Bald Eagle, Osprey (spring-fall), urban songbirds + waterfowl on river.',
+      best_seasons: 'Year-round.',
+      tip: 'State Capital area + riverfront.' },
+
+    { city_area: 'Portland — Stroudwater + Capisic Pond',
+      species: 'Waterfowl, herons, songbirds, occasional rare migrants.',
+      best_seasons: 'Spring + fall migration.',
+      tip: 'Often-overlooked Portland-area patches.' },
+
+    { city_area: 'Maine campuses — UMaine, Bowdoin, Bates, Colby, USM',
+      species: 'Diverse campus birds depending on habitat. Many campuses have bird-friendly plantings.',
+      best_seasons: 'Year-round.',
+      tip: 'Campus birding is great daily birding — diverse habitat in small area.' }
+  ];
+
+  // ── DAILY BIRDING LOG TEMPLATE
+  var LOG_TEMPLATE = [
+    { field: 'Date + Time',
+      example: 'May 12, 2026 — 6:30 AM',
+      what: 'Start + end time precise (especially for eBird). Time matters for bird activity.' },
+    { field: 'Location',
+      example: 'Bradbury Mountain State Park, Pownal, ME (43.918°N, 70.179°W)',
+      what: 'Specific site + coordinates if possible. eBird hotspots have official designations.' },
+    { field: 'Weather',
+      example: 'Clear, 55°F, NW wind 8 mph, visibility 10 miles',
+      what: 'Temperature, sky, wind direction + speed, visibility. Affects bird activity.' },
+    { field: 'Habitat',
+      example: 'Mixed forest summit (mature beech + oak + birch)',
+      what: 'Brief description of where you\'re birding.' },
+    { field: 'Hours of Effort',
+      example: '4 hours (6:30 AM - 10:30 AM)',
+      what: 'How long you actively birded. Effort matters for trend analysis.' },
+    { field: 'Distance walked',
+      example: '1.5 miles',
+      what: 'Track for fitness + effort.' },
+    { field: 'Species observed',
+      example: 'List each species + count if possible',
+      what: 'Use eBird-friendly format: Species (Latin name), individual count or "many."' },
+    { field: 'Notable observations',
+      example: 'Pair of Bald Eagles, juvenile Cooper\'s Hawk, first-of-year Yellow Warbler',
+      what: 'Anything unusual, first-time, behavioral.' },
+    { field: 'Sky + weather notes',
+      example: 'Hawk migration moving south. NW wind concentrating birds along ridge.',
+      what: 'How conditions affected birds.' },
+    { field: 'Photos taken',
+      example: '5 photos: cooper\'s hawk in flight, eagle pair perched, yellow warbler.',
+      what: 'List for organization + reference.' },
+    { field: 'Personal notes',
+      example: 'Beautiful morning. Met Maine Audubon group. Coffee break at summit.',
+      what: 'Memories beyond birds + science.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 9 — final scaling content
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRD INTELLIGENCE — cognition + memory + tool use
+  var INTELLIGENCE = [
+    { topic: 'Crows + Tool Use',
+      details: 'New Caledonian Crows manufacture + use tools. Will bend wires into hooks to retrieve food. Recognize human individual faces + remember them for years.',
+      research: 'Cornell + UK research has documented sequential problem solving comparable to 7-year-old children in some tasks.',
+      maine: 'American Crows in Maine + worldwide show similar (though less studied) cognitive abilities.' },
+
+    { topic: 'Parrot Language',
+      details: 'African Grey Parrot Alex (deceased 2007) learned 100+ words + used them in context — counting, identifying colors, asking for things.',
+      research: 'Irene Pepperberg\'s 30-year research with Alex revolutionized understanding of bird cognition.',
+      maine: 'No parrots native to Maine. Pet birds + captive studies inform understanding.' },
+
+    { topic: 'Magpie Self-Recognition',
+      details: 'Magpies pass the mirror self-recognition test — only bird species confirmed to do so. Comparable to chimpanzees + dolphins.',
+      research: 'European magpie research is foundational. North American birds less studied.',
+      maine: 'Black-billed Magpies (West) + jays + crows in Maine show related cognition.' },
+
+    { topic: 'Caching Behavior',
+      details: 'Nutcrackers cache 33,000+ pine seeds annually + recover most over 9 months. Memory of cache locations + their freshness.',
+      research: 'Clark\'s Nutcracker research shows spatial memory rivals or exceeds most mammals.',
+      maine: 'Gray Jays + chickadees cache food. Maine\'s Gray Jay (Canada Jay) is a master cacher.' },
+
+    { topic: 'Long-term Memory',
+      details: 'Crows remember threatening humans for years. Some studies suggest 5+ year memory of specific people.',
+      research: 'University of Washington research with masked researchers showed crows held grudges + warned other crows.',
+      maine: 'Maine\'s American Crow population shows similar individual recognition.' },
+
+    { topic: 'Theory of Mind',
+      details: 'Some birds (corvids, parrots) appear to attribute mental states to others. Hiding food more carefully when watched.',
+      research: 'Cambridge research on Western Scrub-Jay caching shows they hide more carefully when observed.',
+      maine: 'Maine corvid cognition likely similar.' },
+
+    { topic: 'Bird Communication',
+      details: 'Black-capped Chickadee call has variable "dee" syllables that signal threat level — more dees = bigger predator. Information communication.',
+      research: 'University of Washington + Cornell research has decoded chickadee predator-threat communication.',
+      maine: 'Maine chickadees use this system. Listen + learn.' },
+
+    { topic: 'Migration Memory',
+      details: 'Adult songbirds may pass migration routes to first-year birds (geese, cranes). Inherited compass + learned map.',
+      research: 'Goose research demonstrates parental learning. Songbird research shows innate compass + learned map.',
+      maine: 'Maine\'s Canada Geese + first-year songbirds depend on these.' }
+  ];
+
+  // ── BIRDS + ECOSYSTEM SERVICES
+  var ECOSYSTEM_SERVICES = [
+    { service: 'Pollination',
+      birds: 'Hummingbirds (Ruby-throated in Maine)',
+      details: 'Hummingbirds pollinate plants by visiting flowers for nectar. Maine\'s native plants benefitting from hummingbirds include columbine, jewelweed, cardinal flower.',
+      value: 'Pollination services worth ~$300 billion annually globally; birds contribute a portion.' },
+
+    { service: 'Seed Dispersal',
+      birds: 'Robins, cedar waxwings, blue jays + others',
+      details: 'Birds eat fruits + carry seeds long distances. Maine\'s American Robin + Cedar Waxwing disperse winterberries + viburnum.',
+      value: 'Critical for plant range shifts as climate changes. Birds help plants migrate.' },
+
+    { service: 'Insect Pest Control',
+      birds: 'Warblers, flycatchers, woodpeckers, swallows',
+      details: 'Insectivorous birds consume enormous quantities of insects. A pair of Black-throated Green Warblers can consume 700,000+ caterpillars in breeding season.',
+      value: '~$5 billion/yr globally; particularly important for forestry + agriculture.' },
+
+    { service: 'Carrion Removal',
+      birds: 'Vultures, eagles, crows, gulls',
+      details: 'Cleaning up dead animals reduces disease spread. Turkey Vultures (range-expanding in Maine) provide critical service.',
+      value: 'Public health + sanitation. Disease vector reduction.' },
+
+    { service: 'Aquatic Ecosystem Engineering',
+      birds: 'Cormorants, loons, mergansers, ducks',
+      details: 'Diving birds affect lake fish populations + nutrient cycles. Loons indicate lake health.',
+      value: 'Bioindicator species help monitor water quality.' },
+
+    { service: 'Nutrient Cycling',
+      birds: 'Seabirds, herons, large concentrations',
+      details: 'Bird guano (poop) deposits move marine + freshwater nutrients to terrestrial systems. Heronry trees often die from nutrient overload — but enrich downstream soils.',
+      value: 'Critical for many island ecosystems. Maine seabird colonies enrich offshore islands.' },
+
+    { service: 'Cultural + Recreational',
+      birds: 'All',
+      details: 'Birding generates $107 billion/yr in US economic activity. Maine birding tourism contributes meaningfully.',
+      value: 'Economic + spiritual + recreational + educational. Project Puffin tours bring tourists to Maine coast.' },
+
+    { service: 'Education + Research',
+      birds: 'All',
+      details: 'Birds are model organisms for studying ecology, behavior, climate change. Long-term data inform conservation.',
+      value: 'Generated by citizen science + universities + government agencies.' }
+  ];
+
+  // ── BIRD DECLINE + RECOVERY STORIES
+  var RECOVERY_STORIES = [
+    { species: 'Bald Eagle',
+      decline: '1900-1970: From 100,000+ pairs in continental US to ~400 pairs by 1963.',
+      causes: 'DDT thinning eggshells. Habitat destruction. Hunting + persecution. Lead poisoning.',
+      action: 'DDT banned 1972 (US). Endangered Species Act 1973. Habitat protection. Translocation programs.',
+      result: '~70,000 pairs in 2020. Federally delisted 2007. Continued state-level monitoring.',
+      maine: 'Maine: <60 nests in 1970 → 700+ today. State-threatened (recovered).' },
+
+    { species: 'Peregrine Falcon',
+      decline: 'Near-extinction by 1970. East of Mississippi: 0 breeding pairs by 1965.',
+      causes: 'DDT thinning eggshells.',
+      action: 'DDT ban. Captive-breeding + reintroduction (Cornell, others). Hack tower releases.',
+      result: '~3,000 pairs in continental US by 2020. Delisted federally 1999.',
+      maine: 'Maine: 0 pairs 1960s → 30+ pairs today including urban + bridge nests. State Threatened (downgraded from Endangered).' },
+
+    { species: 'Atlantic Puffin',
+      decline: '1880s-1970s: Maine puffin populations exterminated by egg + feather collection.',
+      causes: 'Commercial hunting + habitat disturbance.',
+      action: 'Project Puffin (Steve Kress, Audubon, 1973-present). Decoys + audio + chick translocation.',
+      result: '~1,500 pairs in Maine today (from 0 birds 1970s). Climate-vulnerable.',
+      maine: 'Maine: Eastern Egg Rock, Matinicus Rock, Petit Manan, Seal Island colonies.' },
+
+    { species: 'Brown Pelican',
+      decline: 'Reduced to ~10,000 by 1970. Disappeared from Louisiana entirely.',
+      causes: 'DDT.',
+      action: 'DDT ban. Habitat protection.',
+      result: 'Population recovered to 600,000+. Delisted 2009.',
+      maine: 'Not Maine breeder, but visible to Maine residents on Atlantic coast travel.' },
+
+    { species: 'Whooping Crane',
+      decline: '1941: 21 individuals total (15 wild + 6 captive). Near-extinction.',
+      causes: 'Hunting + habitat loss.',
+      action: 'Captive breeding programs. Whooping Crane Conservation Association. Costume-rearing + ultralight migration training.',
+      result: '~500 individuals today, multiple wild populations. Still endangered.',
+      maine: 'Not Maine resident. Iconic recovery story.' },
+
+    { species: 'California Condor',
+      decline: '1987: 22 birds left in world; all captured for emergency captive breeding.',
+      causes: 'Lead poisoning. Habitat loss. Microbial contamination.',
+      action: 'Most ambitious + expensive bird recovery in history. All birds captured + bred.',
+      result: '~500 condors + ~200 free-flying birds in 2020. Continued lead-ammunition + monitoring.',
+      maine: 'Not Maine resident. Recovery story.' },
+
+    { species: 'Wild Turkey',
+      decline: 'Eliminated from much of New England by 1850. Maine: extirpated by 1900.',
+      causes: 'Hunting + habitat conversion.',
+      action: 'Maine Department of Inland Fisheries + Wildlife restoration program 1977+.',
+      result: 'Maine: 50,000+ turkeys today. National Wild Turkey Federation supports continued recovery.',
+      maine: 'Maine restoration started with trapped birds from Pennsylvania.' },
+
+    { species: 'Eastern Bluebird',
+      decline: 'Declined 90% from 1900-1970 due to habitat loss + nest box competition (House Sparrow, Starling).',
+      causes: 'Habitat loss. Cavity competition. DDT.',
+      action: 'Bluebird trail programs (nest boxes). North American Bluebird Society.',
+      result: 'Stable + locally abundant. Bluebird nest box programs continue.',
+      maine: 'Maine bluebirds increasing thanks to nest box programs.' }
+  ];
+
+  // ── BIRDS + WIND ENERGY
+  var WIND_ENERGY = [
+    { topic: 'The Wind Energy + Birds Question',
+      details: 'Wind turbines kill birds + bats by collision + rotor impact. Estimated 200,000-600,000 bird deaths annually in US. Maine + Eastern US developing offshore wind.',
+      research: 'Maine Audubon + state biologists + wildlife agencies + wind developers collaborate on mitigation research.',
+      maine_specifics: 'Maine: small but growing wind sector. Offshore wind in Gulf of Maine planned + controversial.' },
+
+    { topic: 'Mitigation Strategies',
+      details: 'Site selection (avoid migration corridors, raptor concentration areas). Curtailment during high-risk periods (low-wind migration nights). Painted blades (one black blade reduces strikes ~70% in some studies). Lighting controls.',
+      research: 'Ongoing trials of mitigation effectiveness.',
+      maine_specifics: 'Maine wind projects increasingly include avian assessments + mitigation plans.' },
+
+    { topic: 'Wind + Climate Change Trade-Off',
+      details: 'Renewable energy reduces climate change — which kills far more birds than turbines. But poorly-sited wind projects + cumulative effects worry conservationists.',
+      research: 'Energy + biodiversity trade-offs are real + debated.',
+      maine_specifics: 'Maine climate goals + wind development continue forward; balance + science-informed siting is critical.' },
+
+    { topic: 'Offshore Wind in Gulf of Maine',
+      details: 'Proposed projects could place turbines off Maine + Massachusetts coasts. Potential impacts on seabirds + marine birds being studied. Highly debated by conservationists.',
+      research: 'NOAA, USFWS, state agencies, Maine Audubon involved in environmental review.',
+      maine_specifics: 'Active topic. Public review + permit processes ongoing 2025-2026.' }
+  ];
+
+  // ── BIRDING WITH SCIENCE — research methods + technology
+  var BIRD_RESEARCH_TECH = [
+    { method: 'Bird Banding',
+      what: 'Aluminum or color leg bands carry unique IDs. Birds recaptured or sighted by birders provide return data.',
+      research_purpose: 'Track migration routes, survival, longevity, dispersal, breeding success.',
+      maine_examples: 'Maine has multiple banding stations + bird banders. USGS Bird Banding Lab coordinates nationally.' },
+
+    { method: 'Geolocators',
+      what: 'Tiny light + temperature sensors attached to birds. Record location data without GPS.',
+      research_purpose: 'Detailed migration routes + wintering grounds for individual birds.',
+      maine_examples: 'Maine wood thrush + other migrant research uses geolocators.' },
+
+    { method: 'GPS Tags + Satellite Tracking',
+      what: 'Real-time location reporting via cellular or satellite.',
+      research_purpose: 'Track raptors, large birds, important migrants in detail.',
+      maine_examples: 'Maine bald eagles + ospreys have been tracked. Real-time data publicly available.' },
+
+    { method: 'Acoustic Monitoring',
+      what: 'Recording units + AI identify bird songs across landscapes + over time.',
+      research_purpose: 'Census + monitor breeding bird populations remotely + at scale.',
+      maine_examples: 'BirdNet + Wildlife Acoustics + Cornell Macaulay Library + Maine research.' },
+
+    { method: 'Radar + Doppler Bird Detection',
+      what: 'Weather radar detects nocturnal songbird migration in real-time.',
+      research_purpose: 'Map + quantify migration patterns; provide bird-friendly lighting alerts.',
+      maine_examples: 'Cornell + research collaborators use radar data. Bird-cast lighting alerts use this.' },
+
+    { method: 'Stable Isotope Analysis',
+      what: 'Feathers carry chemical signatures of where birds grew them. Helps trace migration origins.',
+      research_purpose: 'Reveal where wintering birds came from + breeding grounds for migrants.',
+      maine_examples: 'Migration origin research uses isotope analysis.' },
+
+    { method: 'eDNA + Stomach Sampling',
+      what: 'Environmental DNA from water samples + non-invasive sampling reveals what birds eat.',
+      research_purpose: 'Food web research + dietary studies.',
+      maine_examples: 'Maine research has used these methods.' },
+
+    { method: 'Camera Traps + Nest Cameras',
+      what: 'Automated cameras at nests, perches, food sources.',
+      research_purpose: 'Behavior research + monitoring without disturbance.',
+      maine_examples: 'Maine eagle + raptor + waterfowl nests have been camera-monitored.' },
+
+    { method: 'Citizen Science Apps',
+      what: 'eBird, Merlin, NestWatch, BirdNet — millions of contributors\' observations.',
+      research_purpose: 'Largest-scale bird research data set in history.',
+      maine_examples: 'Maine birders contribute to all major citizen science apps.' },
+
+    { method: 'Conservation Genetics',
+      what: 'DNA samples reveal population structure + genetic diversity.',
+      research_purpose: 'Inform conservation prioritization + reintroduction strategies.',
+      maine_examples: 'Maine conservation projects incorporate genetic considerations.' }
+  ];
+
+  // ── MAINE BIRDING FESTIVALS + EVENTS
+  var FESTIVALS = [
+    { event: 'Acadia Birding Festival (early June)',
+      details: 'Bar Harbor + Acadia area. Annual celebration of bird migration + breeding. Multiple speakers, field trips, workshops.',
+      audience: 'Beginners to experienced birders welcome.',
+      cost: 'Variable; some free events; multi-day registration $200-400.' },
+
+    { event: 'Project Puffin Tours (May-Aug)',
+      details: 'Hardy Boat Cruises + Cap\'n Fish from New Harbor. Eastern Egg Rock visit + puffin viewing.',
+      audience: 'All ages. Field naturalists on board.',
+      cost: '$40-60 per trip.' },
+
+    { event: 'Bradbury Mountain Hawkwatch (Sept-Oct)',
+      details: 'Daily counter at Bradbury Mountain State Park. Public viewing welcome.',
+      audience: 'All levels.',
+      cost: 'Free (park entrance fee separate).' },
+
+    { event: 'Great Backyard Bird Count (mid-Feb)',
+      details: 'Cornell-coordinated 4-day winter count. Any location + any duration. Free participation.',
+      audience: 'Beginners welcome.',
+      cost: 'Free.' },
+
+    { event: 'Maine Christmas Bird Counts (Dec-Jan)',
+      details: '~30 Maine circles. Coordinated through Maine Audubon.',
+      audience: 'Some experience preferred; pair with experienced counter.',
+      cost: 'Often $5-10 compiler fee.' },
+
+    { event: 'Maine Audubon events year-round',
+      details: 'Bird walks, workshops, lectures, field trips. maineaudubon.org.',
+      audience: 'All levels.',
+      cost: 'Members + non-members welcome; some events free.' },
+
+    { event: 'Bird-A-Thon (May)',
+      details: 'Maine Audubon fundraising event — see how many species in 24 hours. Pledges support Maine Audubon.',
+      audience: 'Competitive birders + supporters.',
+      cost: 'Pledge-based.' },
+
+    { event: 'Maine Audubon Bird Walks',
+      details: 'Year-round, multiple Maine Audubon locations. Mast Landing, Gilsland Farm, Fields Pond.',
+      audience: 'Beginners welcome.',
+      cost: 'Free for members.' },
+
+    { event: 'Local birding club meetings',
+      details: 'Maine has multiple regional birding clubs — Western Maine, Mid-Maine, Aroostook, Penobscot. Monthly meetings + field trips.',
+      audience: 'All levels.',
+      cost: 'Usually free or small membership.' },
+
+    { event: 'World Migratory Bird Day (October)',
+      details: 'Maine Audubon + national celebrations. Field trips + events.',
+      audience: 'Family-friendly.',
+      cost: 'Free.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 10 — completion modules to reach 20K
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BACKYARD BIRDS 30 — common Maine backyard birds detailed
+  var BACKYARD_30 = [
+    { name: 'Black-capped Chickadee', season: 'Year-round', visit_freq: 'Daily', feeder: 'Sunflower' },
+    { name: 'Northern Cardinal', season: 'Year-round', visit_freq: 'Daily', feeder: 'Safflower + sunflower' },
+    { name: 'Tufted Titmouse', season: 'Year-round', visit_freq: 'Daily', feeder: 'Sunflower' },
+    { name: 'White-breasted Nuthatch', season: 'Year-round', visit_freq: 'Daily', feeder: 'Sunflower, suet' },
+    { name: 'Red-breasted Nuthatch', season: 'Winter visitor', visit_freq: 'Daily winter', feeder: 'Sunflower, suet' },
+    { name: 'Downy Woodpecker', season: 'Year-round', visit_freq: 'Daily', feeder: 'Suet, peanuts' },
+    { name: 'Hairy Woodpecker', season: 'Year-round', visit_freq: 'Weekly', feeder: 'Suet, peanuts' },
+    { name: 'Pileated Woodpecker', season: 'Year-round', visit_freq: 'Weekly', feeder: 'Suet, peanuts' },
+    { name: 'Mourning Dove', season: 'Year-round', visit_freq: 'Daily', feeder: 'Ground feeder, mixed seed' },
+    { name: 'Dark-eyed Junco', season: 'Winter (breeds further north + mountains)', visit_freq: 'Daily winter', feeder: 'Ground feeder, mixed seed' },
+    { name: 'American Tree Sparrow', season: 'Winter visitor', visit_freq: 'Daily winter', feeder: 'Mixed seed, millet' },
+    { name: 'Blue Jay', season: 'Year-round', visit_freq: 'Daily', feeder: 'Peanuts, sunflower' },
+    { name: 'American Crow', season: 'Year-round', visit_freq: 'Variable', feeder: 'Larger food items' },
+    { name: 'House Finch', season: 'Year-round', visit_freq: 'Daily', feeder: 'Sunflower, nyjer' },
+    { name: 'Purple Finch', season: 'Winter visitor + breeder', visit_freq: 'Daily', feeder: 'Sunflower, nyjer' },
+    { name: 'American Goldfinch', season: 'Year-round', visit_freq: 'Daily', feeder: 'Nyjer + sunflower' },
+    { name: 'House Sparrow', season: 'Year-round (introduced)', visit_freq: 'Daily', feeder: 'Mixed seed' },
+    { name: 'European Starling', season: 'Year-round (introduced)', visit_freq: 'Daily', feeder: 'Suet, mixed seed' },
+    { name: 'American Robin', season: 'Year-round', visit_freq: 'Daily warm season', feeder: 'Fruit, mealworms' },
+    { name: 'Eastern Bluebird', season: 'Year-round (expanding)', visit_freq: 'Weekly', feeder: 'Mealworms, nest box' },
+    { name: 'Pine Siskin', season: 'Winter visitor (irruptive)', visit_freq: 'Variable', feeder: 'Nyjer + sunflower' },
+    { name: 'Common Redpoll', season: 'Winter visitor (irruptive)', visit_freq: 'Variable', feeder: 'Nyjer' },
+    { name: 'Cedar Waxwing', season: 'Year-round (mobile)', visit_freq: 'Variable', feeder: 'Fruit' },
+    { name: 'Northern Mockingbird', season: 'Year-round (some)', visit_freq: 'Daily where occurs', feeder: 'Fruit, mealworms' },
+    { name: 'White-throated Sparrow', season: 'Migrant + winter visitor southern Maine', visit_freq: 'Daily fall/winter', feeder: 'Mixed seed, ground' },
+    { name: 'Common Grackle', season: 'Spring-fall', visit_freq: 'Daily warm season', feeder: 'Mixed seed' },
+    { name: 'Red-winged Blackbird', season: 'Spring-fall', visit_freq: 'Daily warm season', feeder: 'Sunflower, mixed seed' },
+    { name: 'Brown-headed Cowbird', season: 'Spring-fall', visit_freq: 'Variable', feeder: 'Mixed seed' },
+    { name: 'Ruby-throated Hummingbird', season: 'May-September', visit_freq: 'Daily warm', feeder: 'Sugar water feeder' },
+    { name: 'Sharp-shinned Hawk', season: 'Year-round + migrant', visit_freq: 'Sporadic', feeder: 'Hunts feeder birds!' }
+  ];
+
+  // ── MONTHLY CALENDAR — what to expect each month in Maine
+  var MONTHLY_CALENDAR = [
+    { month: 'January',
+      species: 'Winter feeder regulars (chickadee, nuthatch, cardinal, woodpeckers). Snowy Owl (if irruption year). Bald Eagles concentrating on rivers + open water. Common Goldeneye, Bufflehead, Long-tailed Duck offshore. Common Redpoll if invasion year.',
+      activities: 'Christmas Bird Counts (early Jan continues). Feeder watching. Coastal Maine seabirds.',
+      tip: 'Dress warmly. Sea ducks in winter at lookout areas.' },
+    { month: 'February',
+      species: 'Same as January. Great Backyard Bird Count (mid-February) — global participation.',
+      activities: 'GBBC. Snow tracking + birding combination.',
+      tip: 'February is depths of winter — birds at feeders rely on you.' },
+    { month: 'March',
+      species: 'Red-winged Blackbirds returning (early March). American Robins (late March). Eastern Phoebe (very late March). Bald Eagle nesting + courtship visible.',
+      activities: 'Look for first arrivals + listen for new songs.',
+      tip: 'Spring is starting; warm days bring activity.' },
+    { month: 'April',
+      species: 'Tree Swallows returning. Chipping Sparrow. Eastern Phoebe singing. First warblers (Yellow-rumped, Pine, Yellow). Waterfowl on lakes. Loon return ~end of April.',
+      activities: 'Early spring birding. Maine Audubon spring walks begin.',
+      tip: 'Watch for migrant ducks + first warblers.' },
+    { month: 'May',
+      species: 'PEAK WARBLER MIGRATION mid-late May. Black-throated Green, Magnolia, Yellow, Blackpoll, Bay-breasted, Cape May + many more. Most breeders settling in. Hummingbirds + orioles + bobolinks arriving.',
+      activities: 'Maine\'s most-exciting birding. Multiple warblers per hour in good habitat.',
+      tip: 'Start dawn. Migration peaks during light winds + warm days.' },
+    { month: 'June',
+      species: 'Breeding season peak. All warbler species singing. Loons on lakes. Eagles + ospreys at nests. Wood Thrush, Hermit Thrush, Veery. Maine\'s premier birding month for breeders.',
+      activities: 'Acadia Birding Festival (early June). Maine Audubon programs. Maine Coast tours.',
+      tip: 'Dawn chorus peaks late May–early June. Wear layers.' },
+    { month: 'July',
+      species: 'Many birds quieter as nesting ends. Continued warblers + thrushes. Young of the year appearing. Begin pre-migration buildup.',
+      activities: 'Family birding. Maine Audubon kids programs.',
+      tip: 'Birds molting. Some species nearly silent.' },
+    { month: 'August',
+      species: 'Shorebird migration begins along Maine coast (juveniles + adults move south). Hawks staging. Hummingbird preparation for migration.',
+      activities: 'Coastal shorebirding. Maine Audubon shorebird walks.',
+      tip: 'Mudflats + sand flats best for shorebirds. Pre-dawn arrivals.' },
+    { month: 'September',
+      species: 'HAWK MIGRATION PEAK. Broad-winged Hawk migration peaks mid-September. Sharp-shinned, Cooper\'s, eagles. Songbird migration ramping up. Late warblers in fall plumage. Loons leaving lakes.',
+      activities: 'Bradbury Mountain Hawkwatch. Maine Audubon hawk identification programs.',
+      tip: 'Hawkwatches require clear NW winds after cold front. Plan accordingly.' },
+    { month: 'October',
+      species: 'Late warblers, sparrows, juncos arriving. Waterfowl staging on lakes + coast. Late shorebirds. Snow buntings arriving. Snowy Owl arrivals (in irruption years).',
+      activities: 'Continued hawkwatching. Coastal stopover sites.',
+      tip: 'Songbird migration declining; waterfowl + sparrows peaking.' },
+    { month: 'November',
+      species: 'Late waterfowl. Sparrow + finch winter visitors. Bald Eagles concentrating. Late warblers + thrushes. Common Eider, scoters at coast.',
+      activities: 'Coastal sea-watching. Penobscot River + late migrant survey.',
+      tip: 'Pre-winter cold can bring rare migrants.' },
+    { month: 'December',
+      species: 'Christmas Bird Count season (mid-Dec to early Jan). Bald Eagle concentrations. Winter ducks. Snowy Owl (if irruption). Common Redpoll (if irruption).',
+      activities: 'CBC participation. Local Audubon events.',
+      tip: 'CBC pairs with experienced birders + provides great winter community.' }
+  ];
+
+  // ── BIRD NAMING + TAXONOMY
+  var BIRD_NAMING = [
+    { topic: 'Common vs Scientific Names',
+      details: 'Common names vary by region + language. Scientific names (Latin binomial) are universal. Bald Eagle = Haliaeetus leucocephalus globally.',
+      example: 'American Crow = Corvus brachyrhynchos. Maine birders use common names; scientists use scientific.' },
+    { topic: 'Why Latin?',
+      details: 'Carl Linnaeus established scientific naming convention in 1700s. Latin (+ Greek) was the scholarly language. Provides unambiguous global identifier.',
+      example: 'Even when Maine + English birders disagree about "Robin," "American Robin" + "Turdus migratorius" remove ambiguity.' },
+    { topic: 'Name Origin Stories',
+      details: 'Many bird names tell stories. "Phoebe" is named for its call. "Goldfinch" for color. "Cardinals" named after Catholic Cardinal\'s red robes.',
+      example: 'Eastern Phoebe says "FEE-bee" — named for that call. Bobolink calls "BOB-O-LINK!" — named for it.' },
+    { topic: 'Scientific Name Components',
+      details: 'Scientific name = Genus + species. Sometimes subspecies. Sometimes additional descriptors.',
+      example: 'Turdus migratorius — Turdus is the genus (thrushes), migratorius is the species (migratory). Together they uniquely identify American Robin.' },
+    { topic: 'Family Names',
+      details: 'Family names end in -idae. Order names end in -iformes. Class is Aves (birds).',
+      example: 'American Robin: Class Aves, Order Passeriformes, Family Turdidae, Genus Turdus, Species migratorius.' },
+    { topic: 'Subspecies',
+      details: 'Some species have multiple subspecies — distinct populations within a species. Subspecies have third word in name.',
+      example: 'Yellow-rumped Warbler has Myrtle (Setophaga coronata coronata) + Audubon\'s (S. c. auduboni) subspecies. Maine = Myrtle.' },
+    { topic: 'Splits + Lumps',
+      details: 'Taxonomy revises as DNA analysis improves. "Splits" = one species becomes two. "Lumps" = two species become one.',
+      example: 'Northern Oriole was split into Baltimore Oriole + Bullock\'s Oriole based on genetic + behavior differences.' },
+    { topic: 'Maine\'s First Bird Names',
+      details: 'Many Maine bird names come from European tradition (robin, sparrow, hawk). Some are Indigenous (loon ≈ tau in Penobscot).',
+      example: 'When English colonists named American birds, they often used Old World names (robin, finch) even though species different.' }
+  ];
+
+  // ── BIRD DRAWING + JOURNALING
+  var DRAWING_TIPS = [
+    { topic: 'Why field journal?',
+      details: 'Drawing forces careful observation. Notice details you would miss with just observation. Slow down, see specifics.',
+      benefit: 'Develops bird ID skill better than photo alone. Creates personal record.' },
+    { topic: 'Equipment',
+      details: 'Notebook (waterproof preferred). Pencil + eraser. Optional: colored pencils, watercolor set, pens.',
+      benefit: 'Minimal investment. Carry in backpack.' },
+    { topic: 'Quick sketches',
+      details: 'Capture posture + proportions first. Don\'t worry about details. Aim for "feel" of the bird.',
+      benefit: 'You can sketch a feeding bird in 1-2 minutes if you focus on shape.' },
+    { topic: 'Adding details',
+      details: 'After basic shape, add: bill, eye, wing pattern, tail shape, feet. Color + plumage marks last.',
+      benefit: 'Practice topology vocabulary as you sketch.' },
+    { topic: 'Note-taking',
+      details: 'Annotate with: date, location, weather, species, behavior. The annotation often more valuable than the drawing.',
+      benefit: 'Combines visual + descriptive observation.' },
+    { topic: 'Field guides as references',
+      details: 'After sketching, check field guide. Compare your sketch + observations to confirm or revise ID.',
+      benefit: 'Builds memory connections + ID confidence.' },
+    { topic: 'Drawing posture + behavior',
+      details: 'Birds have characteristic postures (woodpecker on tree trunk, sandpiper running, hawk soaring). Capture these.',
+      benefit: 'Posture is a field mark; sketching reinforces this.' },
+    { topic: 'Color',
+      details: 'For colored sketches, watercolor or colored pencil. Notes about specific colors important — "bill black, leg yellow, breast warm rust."',
+      benefit: 'Visual reference + color memory.' }
+  ];
+
+  // ── BIRDS + MAINE ECONOMY
+  var BIRDS_ECONOMY = [
+    { topic: 'Birding Tourism in Maine',
+      data: 'Maine\'s wildlife-watching activity generates ~$1 billion/yr. Birding subset estimated at $200M+/yr.',
+      examples: 'Acadia birding tours, Project Puffin visitors, Bradbury Mountain Hawkwatch visitors, Maine Audubon programs.',
+      source: 'USFWS Wildlife-Related Recreation Survey + Maine tourism data.' },
+    { topic: 'Economic Multiplier',
+      data: 'Wildlife tourism in Maine contributes to lodging, restaurants, gas stations, gear shops, guide services. Per-trip spending: $50-500+ depending on destination + length.',
+      examples: 'A weekend birding trip to Acadia includes accommodations, restaurants, gear rentals, charter boats. Economic multiplier ~2-3×.',
+      source: 'Maine economic impact studies.' },
+    { topic: 'Conservation Funding',
+      data: 'Maine birds + their habitat protected by: Maine state funding, USFWS, state nonprofits, federal grants. Wildlife conservation budget hundreds of millions across all sources.',
+      examples: 'Endangered Species Act, Federal Duck Stamp ($25 per hunter goes to wetland conservation), state license + lottery funding.',
+      source: 'Federal + state budgets.' },
+    { topic: 'Wildlife Refuge Economic Benefits',
+      data: 'Maine\'s National Wildlife Refuges generate visitor spending in surrounding communities.',
+      examples: 'Petit Manan NWR, Sunkhaze Meadows NWR, Aroostook NWR, Rachel Carson NWR.',
+      source: 'USFWS economic studies.' },
+    { topic: 'Birding Gear Industry',
+      data: 'Binoculars, scopes, cameras, field guides, apps. Cornell Lab\'s free apps reduce barriers to entry.',
+      examples: 'Optics retailers in Maine. Online + national retailers (Eagle Optics, Vortex Optics, Swarovski Optik US distributors).',
+      source: 'Wild Bird Feeding Industry data.' },
+    { topic: 'Bird Feeder Industry',
+      data: 'Maine residents spend ~$50M+/yr on bird food + feeders + supplies.',
+      examples: 'Local feed stores, hardware stores. National Audubon\'s recommendations + bird-feeding seasonal cycles.',
+      source: 'Wild Bird Feeding Industry.' },
+    { topic: 'Career Opportunities',
+      data: 'Maine careers in: ornithology research (UMaine, Bigelow), wildlife management (DIFW), conservation (Maine Audubon), education (Maine Audubon, schools, summer camps), bird-tour guiding, photography.',
+      examples: 'Maine Audubon employs ~50+. UMaine + Bigelow have multiple ornithology research positions.',
+      source: 'Job postings + nonprofit + research listings.' },
+    { topic: 'Climate Impact + Economics',
+      data: 'Climate change threatens Maine\'s natural-resource-based economy including birding tourism.',
+      examples: 'Climate-driven loss of seabird food fish could harm Project Puffin viability + tour income. Boreal forest contraction affects northern Maine.',
+      source: 'Maine Climate Council reports + Maine Audubon climate program.' }
+  ];
+
+  // ── BIRDING TIPS FOR BEGINNERS
+  var BEGINNER_TIPS = [
+    { tip: 'Start at home',
+      details: 'You don\'t need anywhere special. Window-watch your local birds.',
+      benefit: 'Builds familiar baseline. You\'ll know "your" birds before traveling.' },
+    { tip: 'Use Merlin Bird ID (free)',
+      details: 'Cornell Lab\'s free app. Photo ID + sound ID. Works offline.',
+      benefit: 'Reduces fear of misidentification. Real-time learning.' },
+    { tip: 'Binoculars are key',
+      details: 'Start with 8×42. Maine libraries lend binoculars. Or borrow.',
+      benefit: 'Distance + detail you can\'t get with naked eye.' },
+    { tip: 'Go slow',
+      details: 'Birds are most active dawn + dusk. Walk slowly + quietly. Stop often.',
+      benefit: 'You\'ll find more birds + see their behavior.' },
+    { tip: 'Learn 5 birds well first',
+      details: 'Master your local backyard birds before tackling everything.',
+      benefit: 'Build confidence + base knowledge.' },
+    { tip: 'Use a field guide',
+      details: 'Sibley or Peterson field guide + app. Compare both.',
+      benefit: 'Build species knowledge progressively.' },
+    { tip: 'Track sightings in eBird',
+      details: 'Free + scientifically valuable. Even backyard observations count.',
+      benefit: 'Contributes to real science + builds personal record.' },
+    { tip: 'Join a local birding group',
+      details: 'Maine Audubon, local chapters, online groups. Birders are usually friendly + welcoming.',
+      benefit: 'Mentorship + community + access to better spots.' },
+    { tip: 'Don\'t worry about mistakes',
+      details: 'Even expert birders misidentify. ID is learned through repeated observation + correction.',
+      benefit: 'Reduces anxiety + speeds learning.' },
+    { tip: 'Be patient with quiet days',
+      details: 'Some days birds are everywhere; some quiet. Both teach you something.',
+      benefit: 'Builds your relationship with seasons + weather.' }
+  ];
+
+  // ── BIRDING + MENTAL HEALTH
+  var BIRDING_MENTAL_HEALTH = [
+    { benefit: 'Nature Time + Stress Reduction',
+      research: 'Multiple studies show outdoor time reduces cortisol + stress markers. Birding provides this benefit + adds focused attention.',
+      maine_specific: 'Maine\'s accessible outdoor spaces (parks, coast, woods) make this easy. Maine Audubon programs specifically promote mental wellness through nature.' },
+    { benefit: 'Mindfulness + Present-Moment Focus',
+      research: 'Birding requires sustained attention. This is a form of mindfulness — being present + observing without judgment.',
+      maine_specific: 'Dawn chorus in Maine forests requires attention. Each bird different. Mindfulness comes naturally.' },
+    { benefit: 'Sense of Place + Belonging',
+      research: 'Learning about your local birds builds connection to place. Identity rooted in local nature.',
+      maine_specific: 'Maine\'s identity includes its birds — loons, eagles, chickadee state bird, puffin tourism. Birders feel deeply Maine.' },
+    { benefit: 'Slow Living + Patience',
+      research: 'Birding is slow + patient. Counter to high-speed digital culture. Restorative.',
+      maine_specific: 'Maine\'s rural pace + birding\'s slow pace pair naturally.' },
+    { benefit: 'Community + Connection',
+      research: 'Bird community values knowledge-sharing + mentorship. Welcoming entry community.',
+      maine_specific: 'Maine Audubon + birding clubs + online groups foster bird-community connections.' },
+    { benefit: 'Sense of Purpose',
+      research: 'Citizen science participation gives meaning. Contributing to bird conservation through observation.',
+      maine_specific: 'Maine birders contribute to eBird + Christmas Bird Count + Audubon Maine + state agencies.' },
+    { benefit: 'Aesthetic + Cognitive Reward',
+      research: 'Beautiful birds activate reward circuits. Pattern recognition builds neural efficiency.',
+      maine_specific: 'Maine\'s vivid birds (Cardinal, Goldfinch, eagle, hummingbird) inspire daily.' },
+    { benefit: 'Reduced Depression + Anxiety',
+      research: 'Outdoor activity + nature contact reduce depression + anxiety in clinical studies.',
+      maine_specific: 'Maine birding accessible to all economic levels — important for mental health access.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 11 — final scaling
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRD QUIZ BANK — 50 quiz questions about Maine birds
+  var QUIZ_BANK = [
+    { q: 'What is Maine\'s state bird?', a: 'Black-capped Chickadee', topic: 'Maine' },
+    { q: 'How many active bald eagle nests does Maine have today?', a: 'Approximately 700 (up from <60 in 1970)', topic: 'Maine' },
+    { q: 'What is the world\'s fastest animal?', a: 'Peregrine Falcon (stooping at 240+ mph)', topic: 'Records' },
+    { q: 'Which Maine bird has the longest migration of any North American songbird?', a: 'Bobolink (to Argentina + back)', topic: 'Maine' },
+    { q: 'What is a "lifer" in birding?', a: 'A species you have seen for the first time + added to your life list', topic: 'Birding' },
+    { q: 'Which bird family has the most species?', a: 'Passeriformes (songbirds) — over 5,000 species', topic: 'Taxonomy' },
+    { q: 'Where do Atlantic Puffins nest?', a: 'Coastal islands in burrows or rock crevices', topic: 'Behavior' },
+    { q: 'What does "DDT" stand for + why is it relevant to birds?', a: 'Dichloro-diphenyl-trichloroethane — pesticide that thinned eggshells of many raptors causing population crashes; banned 1972', topic: 'Conservation' },
+    { q: 'Which Maine bird is on the federally threatened list?', a: 'Piping Plover (beach-nesting shorebird)', topic: 'Conservation' },
+    { q: 'What is a "lek"?', a: 'A communal display ground where male birds gather to court females', topic: 'Behavior' },
+    { q: 'How does a Snowy Owl find prey?', a: 'Acute vision + asymmetric ear openings allow it to locate prey by sound, especially under snow', topic: 'Behavior' },
+    { q: 'What are the four flyways in North America?', a: 'Pacific, Central, Mississippi, Atlantic', topic: 'Migration' },
+    { q: 'Which flyway does Maine sit on?', a: 'Atlantic Flyway', topic: 'Maine' },
+    { q: 'What does "supercilium" mean in birding?', a: 'The eyebrow stripe — pale stripe above the eye', topic: 'Anatomy' },
+    { q: 'What is the difference between altricial + precocial chicks?', a: 'Altricial = born helpless, naked, eyes closed (songbirds, raptors); precocial = born feathered, eyes open, mobile (ducks, geese, sandpipers)', topic: 'Reproduction' },
+    { q: 'What is a "kettle" in birding terms?', a: 'A group of soaring hawks circling on thermals during migration', topic: 'Birding' },
+    { q: 'Which Maine birding hotspot is on Lake Penobscot?', a: 'Multiple — including Bangor area below dam (eagle concentration)', topic: 'Maine' },
+    { q: 'When do most Maine warblers arrive?', a: 'Mid-May (with peak diversity late May)', topic: 'Migration' },
+    { q: 'What does a Bald Eagle\'s adult plumage of white head + tail develop?', a: 'At age 4-5 years', topic: 'Biology' },
+    { q: 'Why do birds sing at dawn?', a: 'Quieter air carries sound further; quieter background; cooler temperature; sexual selection peak', topic: 'Behavior' },
+    { q: 'What is the longest annual migration of any animal?', a: 'Arctic Tern — ~44,000 miles annually (pole to pole twice)', topic: 'Migration' },
+    { q: 'How long does a Common Loon take to fly?', a: 'Requires running takeoff — needs 100+ ft of open water', topic: 'Maine' },
+    { q: 'How do hummingbirds hover?', a: 'Figure-8 wing path; lift on both up + downstroke', topic: 'Physiology' },
+    { q: 'What is "eclipse plumage"?', a: 'Drab male duck plumage during summer molt — male wood ducks become drab female-like for 2 months', topic: 'Plumage' },
+    { q: 'Why do Cliff Swallows nest in colonies?', a: 'Cooperative behavior + shared predator defense + accumulated nest sites', topic: 'Behavior' },
+    { q: 'What is the most-common breeding warbler in Maine?', a: 'Yellow-rumped Warbler (Myrtle subspecies)', topic: 'Maine' },
+    { q: 'How does a Peregrine Falcon recover energy mid-stoop?', a: 'Falcons cannot breathe during high-speed dive — they alternate stoops with recovery climbs', topic: 'Physiology' },
+    { q: 'What is the Maine Bird Atlas?', a: 'A comprehensive citizen-science project mapping Maine breeding birds', topic: 'Maine' },
+    { q: 'Why are some bird species called "irruptive"?', a: 'They appear in massive flocks in unpredictable years driven by food availability in their northern range', topic: 'Migration' },
+    { q: 'What is the largest Maine breeding owl?', a: 'Great Horned Owl', topic: 'Maine' },
+    { q: 'What is the smallest Maine breeding owl?', a: 'Northern Saw-whet Owl', topic: 'Maine' },
+    { q: 'What\'s the difference between Cooper\'s Hawk + Sharp-shinned Hawk?', a: 'Cooper\'s is larger (14-20 in vs Sharp-shinned 10-14 in); Cooper\'s has rounded tail tip vs Sharp-shinned\'s square tip', topic: 'ID' },
+    { q: 'Why do birds molt?', a: 'Feathers wear out + must be replaced. Most birds molt annually after breeding.', topic: 'Biology' },
+    { q: 'What does "wing chord" measure?', a: 'Length of folded wing (used by banders)', topic: 'Anatomy' },
+    { q: 'What is the eBird app?', a: 'Cornell\'s free citizen science app for recording bird sightings; database of 1 billion+ observations', topic: 'Citizen Science' },
+    { q: 'Why are birds important pollinators?', a: 'Hummingbirds + some others pollinate plants by visiting flowers for nectar', topic: 'Ecology' },
+    { q: 'What is Project Puffin?', a: 'Audubon Society program (since 1973) restoring Atlantic Puffin colonies in Maine using decoys + audio + chick translocation', topic: 'Maine' },
+    { q: 'How many bald eagles did Maine have in 1970?', a: 'Less than 60 nesting pairs', topic: 'Maine' },
+    { q: 'What is a "brood parasite"?', a: 'A bird that lays eggs in another species\' nest; the host raises the parasite\'s young. Brown-headed Cowbird is the prime US example.', topic: 'Behavior' },
+    { q: 'When does the Christmas Bird Count happen?', a: 'Mid-December to early January each year', topic: 'Citizen Science' },
+    { q: 'Why are Cedar Waxwings called "waxwings"?', a: 'Red waxy tips on their secondary wing feathers — actually colored feather modifications', topic: 'Anatomy' },
+    { q: 'What is the Maine bird that returns first in spring?', a: 'Red-winged Blackbird typically arrives early March', topic: 'Maine' },
+    { q: 'What family does the American Crow belong to?', a: 'Corvidae (corvids — including ravens, jays, magpies)', topic: 'Taxonomy' },
+    { q: 'How many bird species are there worldwide?', a: 'Approximately 10,500', topic: 'Diversity' },
+    { q: 'What is the "dawn chorus"?', a: 'Peak bird singing at dawn during breeding season', topic: 'Behavior' },
+    { q: 'What does it mean if a bird is "endemic" to a place?', a: 'It is found only there + nowhere else', topic: 'Ecology' },
+    { q: 'How do birds navigate during migration?', a: 'Multiple cues: sun + star positions, Earth\'s magnetic field, landmarks, polarized light, possibly smell', topic: 'Migration' },
+    { q: 'What does "primaries" refer to on a bird?', a: 'The outermost flight feathers — main flying surface', topic: 'Anatomy' },
+    { q: 'Why is the Penobscot River Restoration significant?', a: 'Dam removals restored ~1,000 miles of fish habitat + recovering bird populations', topic: 'Conservation' },
+    { q: 'What is the Maine Audubon\'s main mission?', a: 'Conserving Maine\'s wildlife + habitat through education, advocacy, + community engagement', topic: 'Maine' }
+  ];
+
+  // ── BIRD DAILY ROUTINE — what a bird does in a day
+  var DAILY_ROUTINE = [
+    { time: 'Pre-dawn (4-5 AM)',
+      activity: 'Begin dawn chorus. Males sing from elevated perches. Establish + reaffirm territory.',
+      species_example: 'Wood Thrush, Hermit Thrush, American Robin, Song Sparrow, all warblers' },
+    { time: 'Dawn (5-7 AM)',
+      activity: 'Peak song activity. Begin foraging. Birds most active.',
+      species_example: 'All breeding songbirds active. Best birding window.' },
+    { time: 'Mid-morning (7-10 AM)',
+      activity: 'Foraging, feeding chicks, periodic singing. Hawk migration peaks (thermals form).',
+      species_example: 'Bald Eagles begin soaring. Hawks ride thermals.' },
+    { time: 'Mid-day (10 AM - 2 PM)',
+      activity: 'Heat of day. Many birds rest in shade. Activity slows.',
+      species_example: 'Songbird activity quiet. Hawkwatchers active.' },
+    { time: 'Afternoon (2-5 PM)',
+      activity: 'Resume activity. Late afternoon song + feeding.',
+      species_example: 'Birds active again. Hawk migration continues.' },
+    { time: 'Evening (5-7 PM)',
+      activity: 'Second peak of singing. Foraging. Pre-roost gathering.',
+      species_example: 'Evening chorus + flock gathering for roosts.' },
+    { time: 'Dusk + twilight (7-9 PM)',
+      activity: 'Owls + nightjars active. Songbirds settling into roosts.',
+      species_example: 'Owls calling. Eastern Phoebe sings late. Common Nighthawk hunting.' },
+    { time: 'Night (9 PM - 4 AM)',
+      activity: 'Nocturnal birds active (owls). Most birds roosting + sleeping. Migrants flying at altitude.',
+      species_example: 'Owls hunt. Migrants pass overhead silently. Migrating songbirds use stars for navigation.' }
+  ];
+
+  // ── BIRD THERMOREGULATION — how birds stay warm + cool
+  var THERMOREGULATION = [
+    { topic: 'Why thermoregulation matters',
+      details: 'Bird body temperature ~104-108°F. Must maintain this in Maine\'s -30°F to 100°F range.',
+      method: 'Multiple strategies — feathers, behavior, metabolism, water access.' },
+
+    { topic: 'Feathers as Insulation',
+      details: 'Down feathers trap warm air against skin. Outer feathers waterproof. Birds fluff feathers in cold to trap more air.',
+      method: 'A chickadee in 20°F looks fluffed because trapped air provides insulation.' },
+
+    { topic: 'Behavioral Cold Strategies',
+      details: 'Shivering. Tucking head into feathers. Closing eyes. Resting on one leg to reduce heat loss from other leg.',
+      method: 'Chickadees can shiver to generate heat for hours; tuck legs to reduce loss.' },
+
+    { topic: 'Torpor + Nighttime Cooling',
+      details: 'Some birds (hummingbirds, chickadees) enter brief torpor (regulated body cooling) during cold nights to save energy.',
+      method: 'Chickadee body temperature can drop ~12°F overnight in extreme cold; saves 30% energy.' },
+
+    { topic: 'Group Roosting',
+      details: 'Cluster together. Body heat shared. Especially in cavity-nesting species.',
+      method: 'Up to 50 bluebirds can pack into single nest box in extreme cold.' },
+
+    { topic: 'Heat Reduction Strategies',
+      details: 'Gular fluttering (rapid throat shaking) — like dog panting. Open-mouth breathing. Wings spread to allow cooling.',
+      method: 'Bald Eagles + many raptors pant on hot days.' },
+
+    { topic: 'Bath + Water Access',
+      details: 'Birds bathe to cool off + maintain feathers. Drinking water critical.',
+      method: 'Maine winter bird-bath heaters extend bathing throughout winter — beneficial to birds.' },
+
+    { topic: 'Migration as Thermoregulation',
+      details: 'Most fundamental strategy: migrate to better climate. Maine breeding birds escape brutal cold by flying south.',
+      method: 'Insectivorous birds in Maine cannot survive cold winters without insects — migration not optional.' }
+  ];
+
+  // ── DAWN CHORUS SCIENCE
+  var DAWN_CHORUS = [
+    { topic: 'When is dawn chorus?',
+      details: 'Peak singing 30-60 minutes before sunrise, lasting 1-2 hours after. Late May + early June peak Maine season.',
+      maine_specific: 'Maine dawn chorus is at its absolute peak ~late May. Multiple warblers, thrushes, sparrows, vireos all singing simultaneously.' },
+
+    { topic: 'Why so loud at dawn?',
+      details: 'Cooler air carries sound 30-40% further than warm air. Less wind = less interference. Background noise lowest. Predators less active.',
+      maine_specific: 'Forested Maine lakes amplify sound dramatically at dawn.' },
+
+    { topic: 'Why males sing?',
+      details: 'Territorial advertisement + mate attraction. Females listening + selecting partners during dawn chorus. Energy investment shows male\'s fitness.',
+      maine_specific: 'Singing males have heard females during dawn chorus.' },
+
+    { topic: 'Who sings first?',
+      details: 'Generally diurnal songbirds. Wood Thrush + American Robin + Hermit Thrush + Wood-Pewee often early starters. Some species (Field Sparrow) start earlier than others.',
+      maine_specific: 'Maine\'s most-anticipated chorus: Wood Thrush\'s flute-like "ee-oh-lay" from dense understory.' },
+
+    { topic: 'Sequence of singers',
+      details: 'Each species has typical start time. Field Sparrows + American Robins early. Cedar Waxwings + nuthatches later. Many warblers throughout.',
+      maine_specific: 'Maine\'s sequence varies by habitat + region.' },
+
+    { topic: 'Songs vs Calls',
+      details: 'Songs at dawn are full courtship songs. Calls (alarm, contact, location) used year-round + during day.',
+      maine_specific: 'Maine birds use songs primarily during breeding (May-July) + then shift to calls.' },
+
+    { topic: 'Why short dawn chorus?',
+      details: 'Energy expensive. Birds need to feed. Song production costs energy + time. By mid-morning birds focused on feeding + nest care.',
+      maine_specific: 'Maine summer chorus typically wraps up by 7-8 AM; longer in cool weather.' },
+
+    { topic: 'Recording dawn chorus',
+      details: 'Phone microphone OK. Better: dedicated recorder. BirdNet app identifies songs.',
+      maine_specific: 'Maine birding programs record dawn chorus to monitor population trends + species composition.' }
+  ];
+
+  // ── BIRDS BY COLOR
+  var BIRDS_BY_COLOR = [
+    { color: 'Red',
+      birds: 'Northern Cardinal (male brilliant red), House Finch (red wash on head + breast), Purple Finch (raspberry red), Red-winged Blackbird (red shoulder patches), Scarlet Tanager (scarlet + black), Pileated Woodpecker (red crest)',
+      tip: 'Brilliant red usually means male in breeding plumage. Females + young often duller.' },
+
+    { color: 'Yellow',
+      birds: 'American Goldfinch (lemon yellow male), Yellow Warbler (all yellow), Common Yellowthroat (yellow with black mask), Yellow-rumped Warbler (yellow rump + flank), American Redstart (orange-yellow wing flash), Baltimore Oriole (yellow-orange)',
+      tip: 'Yellow + black combinations frequent in warblers + finches.' },
+
+    { color: 'Blue',
+      birds: 'Eastern Bluebird (blue back, rust breast), Indigo Bunting (deep blue male), Blue Jay (vivid blue with black necklace), Tree Swallow (steel blue back)',
+      tip: 'Iridescent blue requires special angles to see. Sometimes looks black.' },
+
+    { color: 'Black + White',
+      birds: 'Black-capped Chickadee, Downy + Hairy Woodpecker, Black-and-white Warbler, Bobolink, Common Loon, Common Merganser, Pileated Woodpecker',
+      tip: 'Most-common color pattern. Look at relative amounts + bill shape + size.' },
+
+    { color: 'Brown + Streaked',
+      birds: 'Most sparrows + thrushes + warblers + flycatchers. Many female + young birds.',
+      tip: 'The hardest ID — look for: breast pattern (streaked vs spotted), eye ring, eyebrow, malar, throat, tail shape.' },
+
+    { color: 'Gray',
+      birds: 'Tufted Titmouse, Dark-eyed Junco (slate gray), Eastern Phoebe, American Crow, Common Raven',
+      tip: 'Gray often combines with white belly. Check tail shape + behavior.' },
+
+    { color: 'Iridescent',
+      birds: 'Mallard (iridescent green head), Common Grackle (purple-bronze), European Starling, Tree Swallow (steel blue), Wood Duck (multicolored)',
+      tip: 'Iridescent colors come from feather microstructure + may look black at wrong angle.' }
+  ];
+
+  // ── BIRD BEHAVIOR GLOSSARY
+  var BEHAVIOR_GLOSSARY = [
+    { term: 'Mobbing', def: 'Collective aggressive harassment of predator by smaller birds; drives predator away + alerts community.' },
+    { term: 'Foraging', def: 'Seeking food; multiple strategies (gleaning, hovering, hunting, scavenging).' },
+    { term: 'Roosting', def: 'Sleeping or resting. Individual or communal. Often at specific times + sites.' },
+    { term: 'Loafing', def: 'Inactive resting between feeding bouts.' },
+    { term: 'Lekking', def: 'Communal display where males gather to compete + court females.' },
+    { term: 'Caching', def: 'Storing food for later retrieval. Nutcrackers, chickadees, jays.' },
+    { term: 'Cooperative breeding', def: 'Multiple birds (not just parents) help raise young.' },
+    { term: 'Brood parasitism', def: 'Laying eggs in another species\' nest.' },
+    { term: 'Distraction display', def: 'Feigning injury to lure predator away from nest.' },
+    { term: 'Sexual selection', def: 'Trait selection by mate preferences. Often drives elaborate displays + colors.' },
+    { term: 'Niche differentiation', def: 'Different species using different parts of same habitat. Reduces competition.' },
+    { term: 'Habitat specificity', def: 'A species\' preference for specific habitats. Affects distribution + abundance.' },
+    { term: 'Site fidelity', def: 'Returning to same breeding or wintering location year after year.' },
+    { term: 'Philopatry', def: 'Returning to birth area as breeder.' },
+    { term: 'Imprinting', def: 'Sensitive-period learning. Goslings imprint on first moving object.' },
+    { term: 'Habituation', def: 'Reduced response to repeated stimulus. Crows habituate to human presence.' },
+    { term: 'Sentinel behavior', def: 'One bird watching for predators while others feed.' },
+    { term: 'Sun-bathing', def: 'Spread-wing posture for vitamin D + parasite control.' },
+    { term: 'Anting', def: 'Birds rubbing ants in feathers — possibly for parasite control via formic acid.' },
+    { term: 'Wing-flicking', def: 'Brief wing motions used in social signaling.' },
+    { term: 'Tail-bobbing', def: 'Up-and-down tail motion as identification mark + communication. Phoebe + waterthrush.' },
+    { term: 'Bill-clicking', def: 'Snapping bill audibly. Many storks + adolescent raptors.' },
+    { term: 'Mantling', def: 'Spread-wing posture over prey to hide it from competitors.' },
+    { term: 'Pre-roost flocking', def: 'Groups gathering before settling for night.' },
+    { term: 'Post-flight preening', def: 'Re-organizing feathers after intense flight.' }
+  ];
+
+  // ── BIRDS PAIRED WITH TOOLS — what to use for which birds
+  var BIRDS_AND_TOOLS = [
+    { goal: 'Beginner backyard birding',
+      tools: '8×42 binoculars, Merlin Bird ID app, bird feeder, field guide (Sibley Eastern Birds)',
+      cost: '$80-200 total',
+      where: 'Backyard, neighborhood walks' },
+
+    { goal: 'Identifying warblers in spring',
+      tools: '8×42 binoculars, Merlin Bird ID app for song, Sibley field guide',
+      cost: 'Same as backyard',
+      where: 'Forest + edge habitat May-June' },
+
+    { goal: 'Photographing birds',
+      tools: 'DSLR/mirrorless camera + 300-400mm telephoto lens, sturdy tripod, photo-editing software',
+      cost: '$1,000-10,000+',
+      where: 'Photogenic locations, blinds' },
+
+    { goal: 'Spotting distant ducks + shorebirds',
+      tools: 'Spotting scope 20-60×80mm, tripod, scope window mount for car',
+      cost: '$400-4,000',
+      where: 'Coastal Maine, large lakes' },
+
+    { goal: 'Hawkwatching',
+      tools: '8×42 or 10×42 binoculars, hawk-specific field guide (Hawks at a Distance), warm clothes, food, notebook',
+      cost: '$150-500 for optics',
+      where: 'Bradbury Mountain Hawkwatch (Sept-Oct)' },
+
+    { goal: 'Bird-banding volunteering',
+      tools: 'Permit required (training under licensed bander). Nets, bands, banding tools provided by stations.',
+      cost: 'Volunteer time + travel',
+      where: 'Maine banding stations' },
+
+    { goal: 'Citizen science (eBird)',
+      tools: 'Phone with eBird app + Merlin app + binoculars',
+      cost: 'Phone you already have + optics',
+      where: 'Everywhere' },
+
+    { goal: 'Bird photography in low light',
+      tools: 'Full-frame camera, fast lens (f/2.8 or f/4), camera body with good high-ISO performance, possibly external flash with diffuser',
+      cost: '$2,000-15,000',
+      where: 'Forest interior, dawn/dusk' },
+
+    { goal: 'Pelagic (offshore) birding',
+      tools: 'Boat trip booking, binoculars, ginger pills or motion-sickness meds, layered warm clothing, hat',
+      cost: '$80-300 per trip',
+      where: 'Bar Harbor + Boothbay pelagic trips' },
+
+    { goal: 'Drawing birds in field',
+      tools: 'Notebook (waterproof preferred), pencil, eraser, optional colored pencils or watercolor set',
+      cost: '$10-50',
+      where: 'Anywhere with patience' }
+  ];
+
+  // ── BIRD-FRIENDLY HOME — practical actions
+  var BIRD_FRIENDLY_HOME = [
+    { action: 'Plant native species',
+      details: 'Maine natives provide food + cover + insects. White pine, mountain ash, hawthorn, viburnum, winterberry, native blueberries.',
+      benefit: 'Provides food + cover year-round; supports caterpillars (warblers).' },
+    { action: 'Keep cats indoors',
+      details: 'Outdoor + free-roaming cats kill ~2.4 billion US birds annually. Single biggest human-caused threat.',
+      benefit: 'Protects local birds + cat from disease + vehicle.' },
+    { action: 'Apply window-collision mitigation',
+      details: 'Decals (every 4 inches), ultraviolet film, or screens on outside surface of glass. Curtain closure during peak migration.',
+      benefit: 'Reduces 1 billion+ US bird deaths annually.' },
+    { action: 'Reduce or eliminate pesticides',
+      details: 'Pesticides kill insects + can poison birds directly. Organic gardening protects food chain.',
+      benefit: 'Restores insect populations critical for breeding birds.' },
+    { action: 'Provide clean water',
+      details: 'Birdbath cleaned weekly. Heated bath in winter. Slope-walled tray for drinking + bathing.',
+      benefit: 'Birds need year-round water. Maine winters require heated source.' },
+    { action: 'Install bird feeders',
+      details: 'Multiple types: tube, hopper, suet, platform, hummingbird. Different foods attract different birds.',
+      benefit: 'Brings birds close + sustains them. Especially valuable in winter.' },
+    { action: 'Maintain dead trees (where safe)',
+      details: 'Standing dead trees + dead branches provide cavities + insect food. Don\'t remove unless hazardous.',
+      benefit: 'Critical cavity habitat for woodpeckers + chickadees + bluebirds.' },
+    { action: 'Reduce lawn area',
+      details: 'Lawn is bird-desert. Replace with native gardens + meadows. Maintain "wild" areas.',
+      benefit: 'Supports diverse insect + bird populations.' },
+    { action: 'Install nest boxes for cavity nesters',
+      details: 'Bluebird, chickadee, tree swallow, kestrel, screech-owl, wood duck boxes. Each species needs specific dimensions.',
+      benefit: 'Some species depend on artificial cavities now.' },
+    { action: 'Leave leaf litter (where safe)',
+      details: 'Fall leaf litter shelters insects + small invertebrates that feed birds + mammals.',
+      benefit: 'Supports soil life + bird food source.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 12 — completing 20K
+  // ═════════════════════════════════════════════════════════════
+
+  // ── SPRING ARRIVAL DATES — Maine
+  var SPRING_ARRIVALS = [
+    { species: 'Red-winged Blackbird', date: 'Early March (≈March 5)', notes: 'Male arrives first, defends marsh territory. Females + non-breeders later.' },
+    { species: 'American Robin', date: 'Mid-March', notes: 'First wave returns; some winter in southern Maine.' },
+    { species: 'Common Grackle', date: 'Mid-March', notes: 'Flocks reappear with red-wings.' },
+    { species: 'Common Loon', date: 'Late March to mid-April', notes: 'When lake ice breaks up.' },
+    { species: 'Eastern Phoebe', date: 'Early to mid-April', notes: 'First flycatcher returning. Often appears at old nest site.' },
+    { species: 'Tree Swallow', date: 'Mid-April', notes: 'Returns to nest boxes + cavities.' },
+    { species: 'Chipping Sparrow', date: 'Mid-April', notes: 'First sparrow to start singing.' },
+    { species: 'Yellow-rumped Warbler', date: 'Mid to late April', notes: 'First warbler — common Maine breeder.' },
+    { species: 'Pine Warbler', date: 'Mid-April', notes: 'Reaches pines as snow recedes.' },
+    { species: 'House Wren', date: 'Late April', notes: 'Returns to summer territories.' },
+    { species: 'Northern Flicker', date: 'Late April', notes: 'Yellow-shafted variant returns to Maine.' },
+    { species: 'Black-throated Green Warbler', date: 'Early May', notes: 'Breeder in spruce-fir; sings "zee-zee-zee-zoo-zee."' },
+    { species: 'Yellow Warbler', date: 'Early to mid-May', notes: 'Wet thickets; bright yellow + chestnut streaks.' },
+    { species: 'Magnolia Warbler', date: 'Mid-May', notes: 'Young spruce-fir; black + yellow + white.' },
+    { species: 'American Redstart', date: 'Mid-May', notes: 'Deciduous forest + edge.' },
+    { species: 'Black-and-white Warbler', date: 'Mid-May', notes: 'Creeps up + down tree trunks.' },
+    { species: 'Common Yellowthroat', date: 'Early to mid-May', notes: 'Marshes + thickets; "witchity-witchity-witchity."' },
+    { species: 'Wood Thrush', date: 'Mid-May', notes: 'Mature forest; "ee-oh-lay" flute song.' },
+    { species: 'Veery', date: 'Mid-May', notes: 'Moist deciduous; descending spiral song.' },
+    { species: 'Eastern Wood-Pewee', date: 'Mid-May', notes: 'Plaintive whistled "pee-a-wee."' },
+    { species: 'Great Crested Flycatcher', date: 'Mid-May', notes: 'Mature deciduous; loud "wheep" call.' },
+    { species: 'Baltimore Oriole', date: 'Early to mid-May', notes: 'Tall deciduous trees; whistled phrases.' },
+    { species: 'Ruby-throated Hummingbird', date: 'Early to mid-May', notes: 'Maine\'s only common humming; arrives with first blooms.' },
+    { species: 'Bobolink', date: 'Mid-May', notes: 'Open hayfields; bubbling song. Returns from Argentina.' },
+    { species: 'Indigo Bunting', date: 'Mid-May', notes: 'Brushy fields + roadsides.' },
+    { species: 'Eastern Kingbird', date: 'Mid-May', notes: 'Open country; aggressive nest defender.' },
+    { species: 'Cedar Waxwing', date: 'May (variable)', notes: 'Late breeder; sometimes arrives later.' },
+    { species: 'Black-throated Blue Warbler', date: 'Mid-May', notes: 'Mature forest understory.' },
+    { species: 'Blackburnian Warbler', date: 'Mid-May', notes: 'Tall conifers; brilliant orange throat.' },
+    { species: 'Cape May Warbler', date: 'Mid-May', notes: 'Boreal breeder; passes through Maine.' },
+    { species: 'Bay-breasted Warbler', date: 'Mid-May', notes: 'Spruce-fir boreal breeder.' },
+    { species: 'Blackpoll Warbler', date: 'Mid to late May', notes: 'Latest warbler; boreal breeder; massive fall migration.' },
+    { species: 'Ovenbird', date: 'Mid-May', notes: 'Deciduous forest floor; "teacher-teacher-teacher!"' },
+    { species: 'Hermit Thrush', date: 'Late April', notes: 'Returns earlier than most other thrushes.' }
+  ];
+
+  // ── FALL MIGRATION STRATEGIES
+  var FALL_MIGRATION_TIPS = [
+    { topic: 'When does fall migration begin?',
+      details: 'Shorebirds: late July, August. Songbirds: August through November (peak Sept-Oct). Hawks: peak September. Waterfowl: October-November.',
+      maine_specific: 'Maine has fall migration from August to early November.' },
+
+    { topic: 'Where do migrants concentrate?',
+      details: 'Coastal stopover sites concentrate songbirds. Mountains channel hawks. Lakes + reservoirs hold waterfowl.',
+      maine_specific: 'Coastal Maine (Acadia, Schoodic, Petit Manan, Quoddy Head) for songbird stopovers. Bradbury Mountain + Sandy Point for hawks.' },
+
+    { topic: 'Weather patterns',
+      details: 'Songbird migration moves on NW winds following cold fronts. Hawk migration moves with thermals after cold fronts.',
+      maine_specific: 'Clear NW-wind days after a cold-front passage = ideal Maine fall birding. Watch radar + weather.' },
+
+    { topic: 'Fall warbler ID',
+      details: 'Adult males often look like spring. Females + young in drabber "fall plumage." Less colorful + harder to ID.',
+      maine_specific: 'Maine fall warbler ID is a multi-year skill. Take photos for review.' },
+
+    { topic: 'Hawk migration peaks',
+      details: 'Broad-winged Hawks peak Sept 15-20. Sharp-shinned + Cooper\'s peak late Sept. American Kestrel + Merlin throughout. Bald Eagle + Red-tailed throughout.',
+      maine_specific: 'Bradbury Mountain Hawkwatch (Pownal): mid-Sept to late Oct.' },
+
+    { topic: 'Shorebird stopover',
+      details: 'Bay of Fundy is largest stopover area in Western Hemisphere. Maine coastal mudflats see lots of migrants from there.',
+      maine_specific: 'Maine shorebird peak mid-Aug to mid-Sept. Coastal mudflats + Scarborough Marsh.' },
+
+    { topic: 'Waterfowl staging',
+      details: 'Ducks + geese gather on lakes + coastal waters during migration. Different species different times.',
+      maine_specific: 'Maine\'s Lakes Region + coast in October-November.' },
+
+    { topic: 'Fall calling',
+      details: 'Most songbirds quieter in fall. Some species (sparrows) continue singing. Hawks call frequently in flight.',
+      maine_specific: 'Maine fall birding is more visual than spring.' }
+  ];
+
+  // ── NIGHT BIRDING
+  var NIGHT_BIRDING = [
+    { topic: 'Owl Listening',
+      details: 'Late winter + early spring (Jan-March) is owl breeding season. Owls calling at night.',
+      species: 'Eastern Screech-Owl, Great Horned Owl, Barred Owl most likely heard.',
+      where: 'Forest edges + parks at dusk + dawn. Maine has all 8 owl species.' },
+
+    { topic: 'Nightjar Listening',
+      details: 'Eastern Whip-poor-will + Common Nighthawk calling at dusk + night.',
+      species: 'Eastern Whip-poor-will (declining in Maine, but still calls some areas).',
+      where: 'Brushy + edge habitat at dusk. Maine\'s open + scrub-shrub areas.' },
+
+    { topic: 'Nocturnal Migration',
+      details: 'Most songbird migration is nocturnal. Listen for flight calls overhead.',
+      species: 'Multiple thrushes (Swainson\'s, Gray-cheeked, Hermit), warblers, sparrows.',
+      where: 'Anywhere. Best on clear nights with light winds (especially NW in fall).' },
+
+    { topic: 'Owl Banding',
+      details: 'Some Maine banding stations operate at night for Northern Saw-whet Owls during October migration.',
+      species: 'Northern Saw-whet Owl (Project Owlnet).',
+      where: 'Maine has Saw-whet banding sites; volunteer opportunities exist.' },
+
+    { topic: 'Night Bird Photography',
+      details: 'Specialized — requires fast lens, long exposures, possibly infrared, dim flash with diffuser. Very limited use of flash to avoid stress.',
+      species: 'Owls, nightjars (where accessible).',
+      where: 'Patient + ethical photographers in known habitat.' },
+
+    { topic: 'Listening Equipment',
+      details: 'Smartphone microphones can pick up nocturnal flight calls. BirdNet app identifies + records.',
+      species: 'Multiple migrant species identifiable from calls.',
+      where: 'Listen from quiet location during night.' },
+
+    { topic: 'Night Safety',
+      details: 'Stay on trails + bring flashlight. Dress in layers for night cooling. Cell phone + companion recommended.',
+      species: 'N/A',
+      where: 'Choose familiar locations.' }
+  ];
+
+  // ── BIRDING INTERNATIONAL — destinations beyond Maine
+  var BIRDING_INTERNATIONAL = [
+    { region: 'Costa Rica',
+      species: '900+ species in country smaller than West Virginia. Quetzal, toucans, hummingbirds, tanagers.',
+      best_time: 'Year-round; peak Dec-April (dry season).',
+      access: 'Spanish-speaking guides + many lodges. ~$3,000-7,000 per week trip.' },
+
+    { region: 'Texas Gulf Coast',
+      species: 'Migration funnel — millions of birds pass through.',
+      best_time: 'April-May spring migration peak.',
+      access: 'Drive or fly to Houston area; Quintana Beach.' },
+
+    { region: 'Trinidad + Tobago',
+      species: 'Caribbean + South American species mixed; Yellow-rumped Cacique, Blue-headed Parrots, tanagers.',
+      best_time: 'Year-round; rainy season Dec-April less wet.',
+      access: 'Asa Wright Nature Centre famous birding lodge.' },
+
+    { region: 'Iceland',
+      species: 'Atlantic seabirds — Puffins, Northern Gannet, Razorbill, kittiwakes, terns.',
+      best_time: 'May-August (breeding season).',
+      access: 'Reykjavik base + tours.' },
+
+    { region: 'Spain',
+      species: 'Mediterranean + Iberian endemics. Spanish Imperial Eagle, Crested Lark, varied passerines.',
+      best_time: 'May-July (breeding) or Oct-Nov (migration).',
+      access: 'Excellent infrastructure + tour operators.' },
+
+    { region: 'India',
+      species: 'Massive diversity — birds of plains, mountains, coast.',
+      best_time: 'October-March (cool season).',
+      access: 'Variable; many tour operators.' },
+
+    { region: 'Africa (Kenya, Tanzania)',
+      species: 'Diverse + dramatic — eagles, vultures, ostriches, exotic species.',
+      best_time: 'Year-round; July-October dry season.',
+      access: 'Safari trips combine bird + mammal viewing.' },
+
+    { region: 'Galapagos Islands',
+      species: 'Endemics — finches, mockingbirds, blue-footed booby, frigates, penguins.',
+      best_time: 'Year-round; June-November cooler.',
+      access: 'Ecuador-based tours. Highly regulated visits.' },
+
+    { region: 'Pacific Northwest US',
+      species: 'Western species — Steller\'s Jay, Varied Thrush, Spotted Owl, Pacific Wren.',
+      best_time: 'May-September.',
+      access: 'Seattle + Portland + smaller coastal towns.' },
+
+    { region: 'Florida',
+      species: 'Wading birds — Roseate Spoonbill, Wood Stork, Great Egret + many others. Rare species.',
+      best_time: 'Year-round; especially winter visitors.',
+      access: 'Drive or fly; multiple major birding sites.' }
+  ];
+
+  // ── BIRDING GAMES FOR KIDS + GROUPS
+  var BIRDING_GAMES = [
+    { game: 'I-Spy Birds',
+      details: 'Take turns saying "I spy with my little eye, a bird with [color/feature]." Others guess. Builds observation + vocabulary.',
+      age: 'Toddler to early elementary' },
+    { game: 'Bird Bingo',
+      details: '5x5 grid with bird names. Mark off birds spotted. First to 5 in row wins. Custom grids per habitat.',
+      age: 'All ages' },
+    { game: 'Bird Scavenger Hunt',
+      details: 'List of birds + behaviors + features to find. "Spot a bird with a red head." "Find a bird flying upside down." Cooperative or competitive.',
+      age: 'Elementary' },
+    { game: 'Bird Sound Match',
+      details: 'Play 10 bird sounds from Merlin app. Match to bird names. Use as quiz or game.',
+      age: 'Elementary +' },
+    { game: 'Identify in 30 Seconds',
+      details: 'Group sees bird briefly. Quickly call out: size? color? behavior? bill shape? Build rapid-fire ID.',
+      age: 'Elementary +' },
+    { game: 'Bird Telephone',
+      details: 'Whisper bird description from end of line to end. Last person identifies bird. Tests observation + description skills.',
+      age: 'All ages' },
+    { game: 'Bird Charades',
+      details: 'Act out bird names + behaviors. Owl hooting? Hummingbird hovering? Eagle soaring? Others guess.',
+      age: 'All ages' },
+    { game: 'Bird Memory',
+      details: 'Show 10 bird photos for 30 seconds. Remove. Group lists species. Test memory + ID.',
+      age: 'Elementary +' },
+    { game: 'Habitat Match',
+      details: 'Each player gets habitat card. Match birds to their habitats. Multiple birds per habitat. Cooperative game.',
+      age: 'All ages' },
+    { game: 'Migration Race',
+      details: 'Tablestop game with bird species. Roll dice + advance south. Encounter "obstacles" (storms, predators, missed stopovers). Teaches migration challenges.',
+      age: 'Elementary +' },
+    { game: 'Bird-O-Pedia',
+      details: 'Bring field guide. Quiz each other on random pages. Test recall + ID.',
+      age: 'Adults + serious teens' }
+  ];
+
+  // ── BIRD SOUND TIPS
+  var BIRD_SOUND_TIPS = [
+    { tip: 'Learn 5 calls before adding more',
+      details: 'Master familiar bird calls (chickadee, cardinal, robin) before tackling warblers.',
+      benefit: 'Builds memory base for harder calls.' },
+    { tip: 'Use mnemonics',
+      details: '"Drink-your-tea" (Eastern Towhee), "Witchity-witchity-witchity" (Common Yellowthroat), "Who-cooks-for-you" (Barred Owl), "Ee-oh-lay" (Wood Thrush).',
+      benefit: 'Mnemonic phrases stick better than abstract notes.' },
+    { tip: 'Record + replay',
+      details: 'Use phone to record unknown songs. Identify with Merlin Bird ID. Re-listen later.',
+      benefit: 'Builds your personal study library.' },
+    { tip: 'Pair song with location',
+      details: 'Where did you hear it? Forest? Marsh? Field? Habitat narrows possibilities dramatically.',
+      benefit: 'Speeds ID by using ecology + voice together.' },
+    { tip: 'Study before going outside',
+      details: 'Review songs on Merlin or Cornell Macaulay Library before birding. You\'ll recognize them in field.',
+      benefit: 'Pre-loading improves field recognition.' },
+    { tip: 'Identify song length + structure',
+      details: 'Short repeated phrase? Long warbled song? Buzzy notes? Whistles? Structure pattern helps narrow species.',
+      benefit: 'Adds dimension beyond pitch.' },
+    { tip: 'Notice song location',
+      details: 'Singing from open perch? From cover? At forest canopy? On ground? Each species has typical singing posture.',
+      benefit: 'Helps narrow species.' },
+    { tip: 'Practice with BirdNet',
+      details: 'BirdNet app identifies songs + records them. Use it but also try to ID yourself first.',
+      benefit: 'AI + your own learning combine.' },
+    { tip: 'Birding-by-ear is a separate skill',
+      details: 'Some skilled visual birders are weak at sound ID + vice versa. Both skills need separate practice.',
+      benefit: 'Acknowledge that voice ID is its own discipline.' },
+    { tip: 'Practice with bird calls + audio',
+      details: 'Cornell Lab + xeno-canto.org have thousands of recordings for study.',
+      benefit: 'Free comprehensive learning resource.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 13 — FINAL push past 20K
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRDS + DISEASE — public health + bird diseases
+  var BIRD_DISEASES = [
+    { disease: 'West Nile Virus',
+      affected: 'Birds + humans + mosquitoes',
+      symptoms: 'Lethargy, neurological signs. American Crow + Blue Jay particularly susceptible — death often quick.',
+      maine_status: 'Present in Maine. Track via state public health monitoring.',
+      prevention: 'Eliminate standing water. Mosquito control.' },
+
+    { disease: 'Avian Influenza (H5N1, others)',
+      affected: 'Waterfowl + chickens + occasionally other species',
+      symptoms: 'Lethargy, neurological signs, sudden death.',
+      maine_status: 'H5N1 detected in Maine. State monitoring ongoing.',
+      prevention: 'Avoid handling dead waterfowl. Wash hands. Cooked poultry only.' },
+
+    { disease: 'Salmonellosis',
+      affected: 'Many species; common at feeders',
+      symptoms: 'Lethargy, fluffed feathers, dropping at feeder.',
+      maine_status: 'Periodic outbreaks at Maine feeders.',
+      prevention: 'Clean feeders weekly with 10% bleach solution. Remove feeders during outbreaks.' },
+
+    { disease: 'House Finch Eye Disease (Conjunctivitis)',
+      affected: 'House Finch + some other species',
+      symptoms: 'Swollen, watery, crusty eyes. Eventually death.',
+      maine_status: 'Common in Maine feeder finches.',
+      prevention: 'Clean feeders. Avoid bird-to-bird contact.' },
+
+    { disease: 'Trichomoniasis',
+      affected: 'Mourning Dove + raptors + finches',
+      symptoms: 'Lesions in throat/mouth, difficulty swallowing.',
+      maine_status: 'Documented in Maine.',
+      prevention: 'Feeder hygiene. Bath cleaning.' },
+
+    { disease: 'Aspergillosis (fungal)',
+      affected: 'Many species; especially birds with stressed immune systems',
+      symptoms: 'Respiratory distress.',
+      maine_status: 'Occasional Maine cases.',
+      prevention: 'Avoid moldy food at feeders. Replace seed regularly.' },
+
+    { disease: 'West Nile Virus + Crows',
+      affected: 'Crow + jay populations',
+      symptoms: 'Bird sightings followed by sick birds + death. Maine crow population fluctuates with WNV.',
+      maine_status: 'Significant Maine impact 2002-2004.',
+      prevention: 'Mosquito control. Report dead crows to state.' },
+
+    { disease: 'OsHV-1 (Ostreid Herpesvirus) + Bird Vector',
+      affected: 'Not direct bird disease, but birds can be mechanical vectors of some shellfish/wildlife pathogens.',
+      symptoms: 'N/A for birds.',
+      maine_status: 'Research ongoing.',
+      prevention: 'N/A.' }
+  ];
+
+  // ── BIRDING + DISABILITIES — additional accessibility resources
+  var DISABILITY_BIRDING = [
+    { topic: 'Birding with Wheelchair',
+      tools: 'Accessible trails (Mast Landing, Gilsland Farm, Scarborough Marsh, Mount Desert Island carriage roads).',
+      tips: 'Smooth-surface paths. Accessible viewing platforms. Consider scope on car-mount.',
+      maine_orgs: 'Maine Audubon accessible programs. Maine state parks accessibility info.' },
+
+    { topic: 'Birding with Limited Mobility',
+      tools: 'Bench-rest viewing. Car birding from accessible parking. Window-watching from home.',
+      tips: 'Pre-plan accessible birding sites. Use binoculars + scope. Audio cues important.',
+      maine_orgs: 'Maine Audubon resources + accessible Maine state-park information.' },
+
+    { topic: 'Birding with Vision Differences',
+      tools: 'Audio-focused birding. BirdNet + Merlin sound ID. Sensory-friendly listening.',
+      tips: 'Maine\'s diverse soundscape rewards ear birders. Cornell Macaulay Library is huge resource.',
+      maine_orgs: 'Maine Audubon community helps connect with sound-focused birders.' },
+
+    { topic: 'Birding with Hearing Differences',
+      tools: 'Visual birding only. Binoculars + spotting scope for close + distant ID.',
+      tips: 'Visual ID skills emphasized. Pattern recognition. Field guide use.',
+      maine_orgs: 'Maine Audubon visual-focused programs.' },
+
+    { topic: 'Sensory-Friendly Birding',
+      tools: 'Quiet locations. Smaller groups. Pre-planning to avoid sensory overload.',
+      tips: 'Many autistic + neurodivergent birders find birding excellent — pattern recognition strength.',
+      maine_orgs: 'Maine Audubon increasingly aware of neurodivergent participants.' },
+
+    { topic: 'Birding for Kids with ADHD',
+      tools: 'Active outdoor walking. Multiple stops. Scavenger hunts to maintain focus.',
+      tips: 'Movement + sensory engagement. Pattern-recognition reward.',
+      maine_orgs: 'Maine Audubon kids programs adapt to needs.' },
+
+    { topic: 'Cost-Accessible Birding',
+      tools: 'Free Merlin Bird ID, eBird, public birding sites. Libraries lend binoculars.',
+      tips: 'Birding can be entirely free. Many free Maine Audubon programs.',
+      maine_orgs: 'Maine Audubon Bird Library Lending Program.' },
+
+    { topic: 'LGBTQ+ Inclusion in Birding',
+      tools: 'Welcoming organizations + groups.',
+      tips: 'Maine Audubon, Black Birders Week, LGBTQ+ birding groups + email lists.',
+      maine_orgs: 'Maine\'s growing inclusive birding community.' },
+
+    { topic: 'Indigenous Birders',
+      tools: 'Coordination with tribal natural resource departments. Bird wisdom from Wabanaki communities.',
+      tips: 'Respectful engagement. Cultural protocols.',
+      maine_orgs: 'Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq Tribal nature programs.' },
+
+    { topic: 'Birding + Wellness',
+      tools: 'Mental + physical health benefits. Outdoor time. Mindful observation.',
+      tips: 'Birding for mental health. Stress reduction. Community.',
+      maine_orgs: 'Maine Audubon wellness-oriented programs.' }
+  ];
+
+  // ── BIRD STORIES — engaging narratives
+  var BIRD_STORIES = [
+    { story: 'The Steve Kress + Project Puffin Saga',
+      details: 'Steve Kress at Cornell + later Audubon Society started Project Puffin in 1973 with a radical idea — could you bring puffins BACK to Maine after their century of absence?',
+      development: 'Kress used decoys + recorded calls + chick translocation. Sceptics said it couldn\'t work. By 1981 first puffin chick hatched on Eastern Egg Rock. By 2020 — 1,500 pairs across 4 Maine islands.',
+      lesson: 'Audacious conservation goals can succeed. Maine\'s Project Puffin is now textbook restoration ecology.' },
+
+    { story: 'The Cornell Lab + eBird Revolution',
+      details: 'Cornell Lab of Ornithology launched eBird in 2002. Open-access citizen science. Anyone could submit + access bird sighting data.',
+      development: 'By 2024: 1 billion+ observations from 700,000+ contributors. Researchers + conservationists worldwide rely on it.',
+      lesson: 'Open data + citizen science can revolutionize a field. Bird research today depends on amateur birders.' },
+
+    { story: 'The DDT + Bald Eagle Story',
+      details: '1962: Rachel Carson\'s Silent Spring exposed DDT impact on birds. Bald Eagle near extinction (<400 US pairs).',
+      development: 'DDT banned 1972. Endangered Species Act 1973. Captive breeding + reintroduction. Today: ~70,000 US pairs.',
+      lesson: 'Science-based policy + dedicated conservation work can recover species from near-extinction.' },
+
+    { story: 'The Maine Loon Recovery',
+      details: 'Maine loon populations declined mid-20th century from pollution, boat wakes, fishing tackle.',
+      development: 'Maine Loon Project monitors + protects. Loon Center + lead-tackle bans. Population stabilized + growing.',
+      lesson: 'State-level conservation + community engagement work.' },
+
+    { story: 'The Great Auk Extinction',
+      details: 'Great Auk once bred in Gulf of Maine + Labrador. Massive flightless seabird. Slaughtered by fishermen + collectors.',
+      development: 'Last seen 1844 off Iceland. Closely related to Maine\'s razorbills + puffins.',
+      lesson: 'No species too abundant to lose. Wake-up call for seabird conservation.' },
+
+    { story: 'The Passenger Pigeon Devastation',
+      details: 'Once 3-5 billion strong — possibly most abundant bird on Earth. Flocks darkened the sky for hours.',
+      development: 'Hunted commercially in 1880s-1890s. By 1900 functionally extinct. Last died at Cincinnati Zoo 1914.',
+      lesson: 'Population can collapse rapidly even from massive abundance.' },
+
+    { story: 'The Wild Turkey Restoration',
+      details: 'Eliminated from Maine by 1900. Hunted out + habitat lost.',
+      development: 'Maine Department of Inland Fisheries + Wildlife restoration program 1977+. Trapped Pennsylvania turkeys released in Maine. Population grew from 0 to 50,000+.',
+      lesson: 'Restoration is possible. Habitat regeneration + careful management.' },
+
+    { story: 'The Snowy Owl 2013-2014 Maine Irruption',
+      details: 'In winter 2013-2014, Maine experienced unprecedented Snowy Owl numbers. Photographers + birders + Maine Audubon mobilized.',
+      development: 'Project Snowstorm + Maine Audubon tracking. Multiple Maine snowy owls fitted with GPS transmitters. Data revealed migration patterns.',
+      lesson: 'Irruption years offer rare research + viewing opportunities.' },
+
+    { story: 'The Mary Oliver Birding Legacy',
+      details: 'Maine + Massachusetts poet whose attention to birds + nature has inspired millions.',
+      development: 'Hundreds of poems featuring birds. Her observation + reverence cultivated public engagement with nature.',
+      lesson: 'Art + literature shape public love of birds + create constituency for conservation.' },
+
+    { story: 'The Bernd Heinrich Maine Bird Research',
+      details: 'Bernd Heinrich is a renowned Maine-based biologist + nature writer. His Maine cabin field site has produced decades of bird research.',
+      development: 'Multiple books on Maine birds + ravens + winter ecology. Some of the most important Maine bird literature.',
+      lesson: 'Long-term field observation by dedicated scientists generates priceless biodiversity knowledge.' }
+  ];
+
+  // ── BIRDING TRAILS — Maine Birding Trail
+  var BIRDING_TRAILS = [
+    { region: 'Southern Maine',
+      sites: 'Scarborough Marsh, Mast Landing, Wells Reserve at Laudholm, Rachel Carson NWR, Crescent Beach State Park, Two Lights State Park',
+      species: 'Salt marsh sparrows, terns, plovers, herons, raptor migrants',
+      access: 'Mostly accessible. Maine Audubon affiliated.' },
+
+    { region: 'Mid-Coast Maine',
+      sites: 'Damariscotta River, Pemaquid Point, Hardy Boat Cruises (Eastern Egg Rock), Boothbay Harbor (Cap\'n Fish puffin trips), Reid State Park',
+      species: 'Puffins (in season), seabirds, raptors, coastal songbirds',
+      access: 'Boat trips required for offshore islands.' },
+
+    { region: 'Greater Portland',
+      sites: 'Eastern Promenade, Back Cove, Capisic Pond, Sebago Lake, Maine Audubon Gilsland Farm',
+      species: 'Urban-coastal mix. Bald Eagle + waterfowl + raptor migrants',
+      access: 'All accessible.' },
+
+    { region: 'Penobscot Region',
+      sites: 'Penobscot River below Bangor (winter eagles), Sunkhaze Meadows NWR, Penobscot Indian Island',
+      species: 'Eagles in winter, riverine waterfowl, Maine Wabanaki bird sites',
+      access: 'Sunkhaze + most sites accessible.' },
+
+    { region: 'Bar Harbor + Acadia',
+      sites: 'Acadia National Park, Schoodic Peninsula, Cadillac Mountain, Bass Harbor Marsh, Schoodic Institute',
+      species: 'Coastal + boreal mix. Bicknell\'s Thrush, Peregrine, eagles',
+      access: 'Multiple accessible trails + viewing.' },
+
+    { region: 'Downeast Maine',
+      sites: 'Petit Manan NWR, Quoddy Head State Park, Petit Manan offshore islands, Lubec, Eastport',
+      species: 'Atlantic Puffin (Project Puffin), Razorbill, Common Murre, sea ducks',
+      access: 'Some boat-trip required. Northern Maine\'s premier seabird area.' },
+
+    { region: 'Western Maine Mountains',
+      sites: 'Bradbury Mountain (Pownal — Hawkwatch), Bigelow Preserve, Stratton Brook, Sugarloaf area',
+      species: 'Boreal birds (Boreal Chickadee, Spruce Grouse, Bicknell\'s Thrush), Sept hawk migration',
+      access: 'Hiking trails. Bradbury Mountain Hawkwatch accessible.' },
+
+    { region: 'Northern Maine / Aroostook',
+      sites: 'Aroostook NWR, Long Lake Stream, multiple Saint John River sites',
+      species: 'Boreal Owl (rare), Black-backed Woodpecker, Spruce Grouse, northern songbirds',
+      access: 'Some remote. Sparsely-populated boreal habitat.' },
+
+    { region: 'Katahdin + Baxter State Park',
+      sites: 'Baxter State Park (Mount Katahdin region), Lily Bay State Park (Moosehead Lake)',
+      species: 'Mature boreal forest birds. Bicknell\'s Thrush at high elevation.',
+      access: 'Park reservation system. Excellent + remote birding.' },
+
+    { region: 'Pelagic offshore',
+      sites: 'Bar Harbor + Boothbay pelagic boat trips',
+      species: 'Greater Shearwater, Wilson\'s Storm-Petrel, Northern Gannet, jaegers, Pomarine Jaeger',
+      access: 'Specialized boat trips July-Sept.' }
+  ];
+
+  // ── BIRDING SAFETY + ETHICS — comprehensive
+  var SAFETY_ETHICS = [
+    { topic: 'Personal Safety',
+      details: 'Carry water, snacks, sunscreen, hat. Dress in layers. Tell someone your plan. Be aware of weather changes. In remote areas, bring map, compass, phone with backup battery.',
+      maine_specific: 'Maine\'s weather changes rapidly. Hypothermia is the silent killer of cold-water boaters + hikers. Layer up.' },
+    { topic: 'Wildlife Safety',
+      details: 'Avoid bear approaches. Don\'t corner any wildlife. Respect distance from nesting birds (especially raptors). Don\'t pet wildlife.',
+      maine_specific: 'Maine has black bears, moose, coyotes. Maintain respectful distance. Especially during moose rut (Sept-Oct).' },
+    { topic: 'Tick Safety',
+      details: 'Deer ticks + Lyme disease are real Maine concerns. Tuck pants into socks, use repellent, do tick check after birding.',
+      maine_specific: 'Lyme + Anaplasmosis common in Maine. Especially in southern + western Maine.' },
+    { topic: 'Heat + Sun Safety',
+      details: 'Maine summers can be hot. Sunscreen 30+, hat, water. Take breaks in shade.',
+      maine_specific: 'Coastal birding combines sun + wind for serious sun exposure.' },
+    { topic: 'Bird Welfare Ethics',
+      details: 'Bird welfare > photo. No close approaches to nests. No baiting predators. No flushing for views. Stay back from sensitive species.',
+      maine_specific: 'Maine\'s Piping Plover nests + sensitive raptor sites well-flagged.' },
+    { topic: 'Property + Access Ethics',
+      details: 'Respect private property. Ask permission. Use designated trails. Coordinate with tribal nations for tribal-land birding.',
+      maine_specific: 'Maine has working forests + farms with public access permitted on some. Always check + ask.' },
+    { topic: 'Sound + Playback Ethics',
+      details: 'Avoid playback near nests. Use playback minimally. Some species highly stressed by playback.',
+      maine_specific: 'Some Maine breeders (warblers, owls) particularly sensitive.' },
+    { topic: 'Sharing Sensitive Locations',
+      details: 'Don\'t share precise locations of: Piping Plover nests, sensitive raptor nests, Roseate Tern colonies, certain wintering owls.',
+      maine_specific: 'Maine sensitivity list maintained by Maine Audubon + state.' },
+    { topic: 'Photography Ethics',
+      details: 'No baiting predators. No stress-inducing approach. No flash near nests. Stay back from sensitive sites.',
+      maine_specific: 'Maine bird photography community values ethics.' },
+    { topic: 'Citizen Science Ethics',
+      details: 'Submit observations accurately. Don\'t guess if uncertain. Report dead birds + injured birds to state Department of Inland Fisheries + Wildlife.',
+      maine_specific: 'Maine wildlife rehabilitators take injured birds. State biologists track diseases.' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 14 — final modules
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRD ATLAS PROJECTS — comprehensive bird surveys
+  var BIRD_ATLASES = [
+    { topic: 'Maine Breeding Bird Atlas',
+      details: 'State-coordinated citizen science project mapping breeding birds. Volunteers survey blocks of land + record breeding evidence.',
+      years: 'First conducted 1978-1983; updated 2015-2024 (2nd Maine atlas)',
+      benefit: 'Tracks population changes + range shifts across decades.' },
+
+    { topic: 'North American Breeding Bird Survey',
+      details: 'Federal program coordinated by USGS. Annual roadside surveys along routes across continent.',
+      years: 'Since 1966 — continuous.',
+      benefit: 'Long-term continental population trends. Foundational data for conservation.' },
+
+    { topic: 'Maine Bird Atlas — Latest Edition',
+      details: 'Second Maine atlas (2015-2024) updated breeding distribution + abundance.',
+      years: '2015-2024 fieldwork',
+      benefit: 'Documents how Maine\'s breeding bird community has changed over 40 years.' },
+
+    { topic: 'eBird',
+      details: 'Cornell Lab project tracking observations year-round. 1 billion+ observations from 700,000+ contributors.',
+      years: 'Since 2002',
+      benefit: 'Real-time global data on bird abundance + distribution. Free + open access.' }
+  ];
+
+  // ── HISTORICAL MAINE BIRD CHANGES
+  var MAINE_BIRD_CHANGES = [
+    { species: 'Bald Eagle',
+      historic: 'Common pre-1900s. Decimated by hunting + DDT 1940s-1970s.',
+      modern: 'Recovered: 700+ Maine pairs today. Visible throughout state, especially winter river concentrations.',
+      lesson: 'Conservation + legislation works.' },
+
+    { species: 'Wild Turkey',
+      historic: 'Extirpated from Maine by 1900. Lost to hunting + habitat conversion.',
+      modern: 'Restored: 50,000+ Maine turkeys today via state restoration program.',
+      lesson: 'Restoration is possible when habitat + protection align.' },
+
+    { species: 'Tufted Titmouse',
+      historic: 'Absent from Maine before ~1970. Southern species.',
+      modern: 'Now common Maine breeder + feeder visitor. Range expanded north with climate warming.',
+      lesson: 'Climate shifts move species ranges; some Maine residents are recent arrivals.' },
+
+    { species: 'Red-bellied Woodpecker',
+      historic: 'Rare in Maine before ~1990. Mostly southeastern US species.',
+      modern: 'Now established Maine breeder. Range expansion continues.',
+      lesson: 'Adaptable species can colonize new range with climate change.' },
+
+    { species: 'Snowy Owl',
+      historic: 'Reliable winter visitor with Arctic-driven irruption years.',
+      modern: 'Still irruptive but climate-stressed Arctic ecology may affect future irruption patterns.',
+      lesson: 'Some species\' Maine future depends on conditions thousands of miles away.' },
+
+    { species: 'Common Loon',
+      historic: 'Common Maine breeder. Declined mid-20th century from pollution + lead tackle + boat wake disturbance.',
+      modern: 'Recovered: ~3,500 Maine breeding pairs. Lead tackle bans + lake awareness help.',
+      lesson: 'Local awareness + regulation can recover species.' },
+
+    { species: 'Evening Grosbeak',
+      historic: 'Once super-abundant winter Maine feeder visitor. Flocks of 100+.',
+      modern: 'Population crashed 1970s+. Now occasional Maine winter visitor; rare some years.',
+      lesson: 'Some declines remain unexplained + ongoing. Vigilance needed.' },
+
+    { species: 'Wood Thrush',
+      historic: 'Once-common Maine breeder.',
+      modern: 'Population dropped 60%+ since 1970. Tropical wintering grounds deforestation a major cause.',
+      lesson: 'Maine birds depend on conservation across hemispheres.' },
+
+    { species: 'Saltmarsh Sparrow',
+      historic: 'Once locally common in southern Maine salt marshes.',
+      modern: 'Sea-level-rise is drowning marshes faster than they can adapt. Population declining sharply.',
+      lesson: 'Some climate impacts may be irreversible without major action.' },
+
+    { species: 'American Kestrel',
+      historic: 'Once-common Maine breeder.',
+      modern: 'Declining. Habitat changes + nest box loss affect population.',
+      lesson: 'Multiple stressors can combine to reduce species. Nest-box programs help.' }
+  ];
+
+  // ── BIRD VOICE TYPES — categorize sounds
+  var VOICE_TYPES = [
+    { type: 'Whistled', description: 'Pure tonal whistled notes. Often diagnostic.',
+      examples: 'Wood Thrush ("ee-oh-lay"), Eastern Phoebe ("FEE-bee"), White-throated Sparrow ("Old-Sam-Peabody")' },
+    { type: 'Buzzed',
+      description: 'Buzzing or trilled quality. Often Empidonax flycatchers, Northern Parula.',
+      examples: 'Northern Parula (ascending buzz), Cedar Waxwing (high "tseee"), Black-throated Blue Warbler (buzzy "zur-zur-zur-zree")' },
+    { type: 'Repeated phrase',
+      description: 'Same notes repeated many times.',
+      examples: 'Red-eyed Vireo (endless 2-3 note phrases), Ovenbird ("teacher-teacher-teacher" rising), Common Yellowthroat ("witchity-witchity-witchity")' },
+    { type: 'Wandering jumble',
+      description: 'Random sequence of notes without clear pattern.',
+      examples: 'Song Sparrow (different notes each verse), Northern Cardinal (musical phrases), Northern Mockingbird (mimics other species)' },
+    { type: 'Trill',
+      description: 'Rapid repetition of single notes.',
+      examples: 'Chipping Sparrow (mechanical trill), Dark-eyed Junco (musical trill), Pine Warbler (musical trill)' },
+    { type: 'Mournful',
+      description: 'Low slow sad-sounding notes.',
+      examples: 'Mourning Dove ("coo-OO-oo-oo"), Eastern Wood-Pewee ("pee-a-wee"), Greater Yellowlegs ("tew-tew-tew")' },
+    { type: 'Liquid',
+      description: 'Bubbling, gurgling, water-like notes.',
+      examples: 'Bobolink (bubbling jumble), Hermit Thrush (ethereal flute), Veery (descending spiral)' },
+    { type: 'Insect-like',
+      description: 'Sometimes mistaken for insects.',
+      examples: 'Grasshopper Sparrow (high insect buzz), some Empidonax flycatchers' },
+    { type: 'Mechanical',
+      description: 'Sounds machine-like or non-bird-like.',
+      examples: 'Pileated Woodpecker drumming (loud + slow), Snowy Owl bill clicking, Sandhill Crane "kar-ROO!"' },
+    { type: 'Cackle',
+      description: 'Rapid choppy quality.',
+      examples: 'Belted Kingfisher rattle, Cooper\'s Hawk "kek-kek-kek", Common Grackle harsh notes' },
+    { type: 'Caw',
+      description: 'Crow-like notes.',
+      examples: 'American Crow ("caw-caw-caw"), Common Raven (lower + croak), Fish Crow (lower "ah-ah")' },
+    { type: 'Hoot',
+      description: 'Owl notes — deep + resonant.',
+      examples: 'Great Horned Owl ("hoo-hoo-hoo HOO-HOO"), Barred Owl ("who-cooks-for-you")' }
+  ];
+
+  // ── MAINE BIRDING CALENDAR DETAIL
+  var DETAILED_CALENDAR = [
+    { window: 'Late February — early March',
+      activity: 'First Red-winged Blackbirds + American Robins arriving',
+      action: 'Set out birdbath + clean. Refill suet feeders.' },
+    { window: 'Mid-March',
+      activity: 'Bald Eagles courting + adding to nests',
+      action: 'Visit Penobscot River below Bangor for eagle viewing.' },
+    { window: 'Late March — early April',
+      activity: 'First waterfowl back. Common Loon arrives at lake ice-out',
+      action: 'Listen for loon yodels echoing across lakes.' },
+    { window: 'Mid-April',
+      activity: 'Ospreys returning. Yellow-rumped Warblers + Pine Warblers',
+      action: 'Open hummingbird feeder area (clean from winter storage).' },
+    { window: 'Late April — early May',
+      activity: 'Ruby-throated Hummingbird arrival',
+      action: 'Set up sugar-water feeder (1:4 sugar:water, no dye).' },
+    { window: 'Mid-May',
+      activity: 'WARBLER PEAK — Black-throated Green, Magnolia, Black-and-white, Yellow, Common Yellowthroat, Ovenbird + more',
+      action: 'Dawn birding in mixed deciduous + spruce-fir forest. Maine Audubon spring walks.' },
+    { window: 'Late May — early June',
+      activity: 'Breeding peak. All warblers + thrushes + flycatchers singing',
+      action: 'Most species visible during dawn chorus. Best birding window of year.' },
+    { window: 'June',
+      activity: 'Active nesting. Chicks hatching.',
+      action: 'NestWatch monitoring. Acadia Birding Festival.' },
+    { window: 'July',
+      activity: 'Young birds visible. Bird parents busy feeding',
+      action: 'Watch for first-year birds at feeders.' },
+    { window: 'August',
+      activity: 'Shorebird migration begins. Adult shorebirds first, then juveniles',
+      action: 'Coastal mudflats + Scarborough Marsh.' },
+    { window: 'Early September',
+      activity: 'Songbird migration begins. Late warblers in fall plumage',
+      action: 'Coastal Maine + Bradbury Mountain.' },
+    { window: 'Mid-September',
+      activity: 'PEAK HAWK MIGRATION — Broad-winged Hawks + accipiters',
+      action: 'Bradbury Mountain Hawkwatch (Pownal). Sandy Point Hawkwatch.' },
+    { window: 'Late September',
+      activity: 'More songbird migration. Late shorebirds.',
+      action: 'Coastal Maine + offshore islands.' },
+    { window: 'Early October',
+      activity: 'Sparrow migration. Late warblers',
+      action: 'Brushy edges + Maine\'s coastal stopover sites.' },
+    { window: 'Late October — early November',
+      activity: 'Waterfowl staging. Late hawk migration. Snowy Owl arrivals (irruption years)',
+      action: 'Coastal lookouts. Watch for snow buntings in fields.' },
+    { window: 'Mid-November — early December',
+      activity: 'Most fall migration over. Winter visitors settling in',
+      action: 'Coastal sea-watching. Winter feeder setup.' },
+    { window: 'Mid-December — early January',
+      activity: 'Christmas Bird Count season',
+      action: 'Sign up for local CBC.' },
+    { window: 'Late January — February',
+      activity: 'Quiet winter birding. Eagles concentrated on rivers',
+      action: 'Great Backyard Bird Count (mid-Feb).' }
+  ];
+
+  // ═════════════════════════════════════════════════════════════
+  // PHASE 15 — final scaling
+  // ═════════════════════════════════════════════════════════════
+
+  // ── BIRD AESTHETIC + ART HISTORY
+  var BIRD_ART = [
+    { period: 'Pre-Columbian + Indigenous',
+      details: 'Birds in Indigenous art across the Americas + Maine\'s Wabanaki traditions. Bird carvings, beadwork, oral traditions.',
+      maine: 'Wabanaki bird traditions visual art continues today.' },
+    { period: 'Audubon Era (1827-1838)',
+      details: 'John James Audubon\'s "Birds of America" plates set the standard. Life-sized paintings.',
+      maine: 'Audubon spent time in Maine; his bird illustrations remain influential.' },
+    { period: 'Peterson Era (1934+)',
+      details: 'Roger Tory Peterson\'s field guide art revolutionized birding accessibility. Diagrammatic arrows to field marks.',
+      maine: 'Peterson summered in Maine; many illustrations are of Maine birds.' },
+    { period: 'Modern Photography',
+      details: 'High-quality bird photography became affordable + widespread late 1900s onward.',
+      maine: 'Maine bird photographers contribute to journals + websites + state parks.' },
+    { period: 'Digital + AI',
+      details: 'Camera phones + AI ID (Merlin Bird ID). Democratizes bird recognition.',
+      maine: 'Maine birders use Merlin in field. Citizen-photographer contributions to eBird.' },
+    { period: 'Bird-themed Maine Art',
+      details: 'Many Maine artists feature birds. Bowdoin College art collections. Maine Audubon art programs.',
+      maine: 'Maine\'s lighthouses + harbors + birds inspire ongoing visual art.' },
+    { period: 'Bird Tattoos + Body Art',
+      details: 'Bird tattoos popular as personal symbols — strength, freedom, family, memorial.',
+      maine: 'Maine bird tattoos include loons, eagles, puffins — markers of place.' }
+  ];
+
+  // ── BIRDING PHILOSOPHY + MEANING
+  var BIRDING_PHILOSOPHY = [
+    { idea: 'The Long Game',
+      details: 'Becoming a competent birder takes years. There\'s no shortcut. Each year you see more, learn more, recognize more.',
+      lesson: 'Cultivate patience. Birding rewards lifelong learners.' },
+    { idea: 'Birds as Teachers',
+      details: 'Birds teach observation, patience, attention. You see the world differently after years of birding.',
+      lesson: 'Birding shapes how you see + attend to anything.' },
+    { idea: 'Belonging to Place',
+      details: 'Knowing your local birds anchors you to a place. Birders become local experts + ambassadors.',
+      lesson: 'Birding builds belonging to the natural world + community.' },
+    { idea: 'Citizen Science as Service',
+      details: 'Your observations contribute to real science. Even simple eBird submissions help researchers.',
+      lesson: 'Birding can be service + meaning.' },
+    { idea: 'Birds as Conservation Indicators',
+      details: 'Birds are sentinels. Their populations tell us about ecosystem health.',
+      lesson: 'When birds suffer, ecosystems suffer. When birds recover, hope lives.' },
+    { idea: 'Birding as Active Hope',
+      details: 'In an era of environmental loss, conservation success stories (eagle, puffin, turkey) prove change is possible.',
+      lesson: 'Birding can inspire action + bear witness to nature\'s resilience.' },
+    { idea: 'Birding Community',
+      details: 'Birding community values mentorship + sharing. Welcoming + diverse.',
+      lesson: 'No birder is alone. Find or build your community.' },
+    { idea: 'Birds Across Generations',
+      details: 'Birding can be intergenerational — parent + child + grandparent all birding together.',
+      lesson: 'Birds connect generations + endure across time.' }
+  ];
+
+  // ── BIRD STATS — Maine in numbers
+  var MAINE_BIRD_STATS = [
+    { stat: 'Total bird species recorded in Maine',
+      number: '~424 species (Maine state list)',
+      context: 'Includes regular breeders + visitors + vagrants. Maine birding has grown' },
+    { stat: 'Maine breeding species',
+      number: '~280 species',
+      context: 'Species breeding regularly. Other species are migrants + winter visitors only.' },
+    { stat: 'Maine endemic species (only here)',
+      number: 'Zero — Maine has no endemic species',
+      context: 'All Maine birds occur elsewhere. But many populations depend on Maine breeding habitat.' },
+    { stat: 'Maine endangered/threatened species',
+      number: '~12 state-listed species',
+      context: 'Piping Plover, Roseate Tern, Bicknell\'s Thrush, Saltmarsh Sparrow + more.' },
+    { stat: 'Maine Bald Eagle nests today',
+      number: '~700 active nests',
+      context: 'Up from <60 in 1970. Federal recovery story.' },
+    { stat: 'Maine Common Loon breeding pairs',
+      number: '~3,500',
+      context: 'Recovered from mid-20th century low.' },
+    { stat: 'Maine Atlantic Puffin pairs',
+      number: '~1,500',
+      context: 'Restored via Project Puffin from 0 birds 1970s.' },
+    { stat: 'Maine Piping Plover pairs',
+      number: '~50',
+      context: 'Federally threatened. Each nest monitored by volunteers.' },
+    { stat: 'Maine Wild Turkey population',
+      number: '~50,000+',
+      context: 'Restored from 0 in 1900 via state restoration program.' },
+    { stat: 'Maine birding tourism estimated value',
+      number: '~$200 million/year',
+      context: 'Birding + wildlife watching combined. Subset of Maine\'s $3.2B marine economy.' },
+    { stat: 'Maine eBird submissions',
+      number: '~1 million+ observations',
+      context: 'Maine birders contribute to Cornell\'s global database.' },
+    { stat: 'Maine bird species observed in one year (Big Year record)',
+      number: '~300+ species',
+      context: 'State Big Year requires extensive travel + experience.' },
+    { stat: 'Maine bird species observed in one day (Big Day record)',
+      number: '~150 species',
+      context: 'Single-day record requires careful planning + favorable conditions.' },
+    { stat: 'Maine Christmas Bird Count circles',
+      number: '~30',
+      context: 'Coordinated through Maine Audubon. Volunteer counters welcome.' },
+    { stat: 'Average new Maine bird species per year',
+      number: '~3-5',
+      context: 'New range expansions + vagrants. Climate change driving northern shifts.' }
+  ];
+
+  // ── BIRDING FAQ ESSENTIALS — final scaling
+  var FAQ_ESSENTIALS = [
+    { q: 'How much does birding cost to start?',
+      a: 'You can start FREE — just use Merlin Bird ID app (free) + your eyes + ears in your backyard. Binoculars optional but helpful. Public-library binocular lending in some Maine libraries.' },
+    { q: 'Do I need expensive binoculars?',
+      a: 'No. $80 entry-level binoculars are perfect for beginners. 8×42 is the standard birding pair. Upgrade after you commit to the hobby.' },
+    { q: 'What\'s the biggest mistake beginners make?',
+      a: 'Trying to identify every bird in their field guide right away. Focus on local backyard species first. Mastery comes from depth, not breadth.' },
+    { q: 'Can I bird with kids?',
+      a: 'Absolutely! See BirdLab\'s "Birding with Kids" guide for age-appropriate approaches. Toddler through teen — birds work for all ages.' },
+    { q: 'When is the best season for birding in Maine?',
+      a: 'Each season has its own birds + magic. Spring (late May warbler peak) is most exciting; fall (Sept hawks) is most spectacular; summer is breeding-bird active; winter is quieter but offers eagle + sea-duck specialty.' },
+    { q: 'Do I need a guide?',
+      a: 'Not required, but Maine Audubon walks + local birding clubs offer free or low-cost guided experiences. Excellent for learning. Self-guided is also possible.' },
+    { q: 'How do I deal with bug bites?',
+      a: 'Maine mosquitoes + black flies can be intense May-July. Use DEET 30%+, picaridin, or eucalyptus oil. Long-sleeve clothing + hat help. Check for ticks after birding.' },
+    { q: 'Is birding only for retirees?',
+      a: 'Not at all! Birding has wide age range. Maine has young birders, families, professionals + retirees all participating. Inclusive community.' },
+    { q: 'What about climate change\'s impact on Maine birds?',
+      a: 'Real + ongoing. Range shifts (Tufted Titmouse + Red-bellied Woodpecker arriving; Boreal Chickadee + Spruce Grouse threatened). Phenological mismatch. See BirdLab\'s climate-birds module.' },
+    { q: 'Where do I learn more about Maine birds specifically?',
+      a: 'Maine Audubon (maineaudubon.org), Maine eBird, "Birds of Maine" by Peter D. Vickery (definitive guide), local birding clubs, Maine Department of Inland Fisheries + Wildlife.' }
+  ];
+
+  // ── BIRDING MILESTONES & CHALLENGES — fun goals
+  var BIRDING_MILESTONES = [
+    { milestone: 'First bird identified', stage: 'Day 1', tip: 'Probably a chickadee, cardinal, or robin from your window. Celebrate it!' },
+    { milestone: '10 species in your yard', stage: 'Week 1-2', tip: 'Master local birds before going further afield.' },
+    { milestone: '25 species lifelist', stage: 'Month 1-2', tip: 'You now know enough to recognize most common Maine birds.' },
+    { milestone: '50 species lifelist', stage: 'Year 1', tip: 'You\'ve birded multiple Maine habitats. Confident with binoculars.' },
+    { milestone: '100 species lifelist', stage: 'Year 1-2', tip: 'You\'re birding seriously. Can identify warblers + shorebirds + raptors at sight.' },
+    { milestone: '200 species lifelist', stage: 'Year 2-4', tip: 'You\'ve traveled for birds. Maine + nearby states explored.' },
+    { milestone: '300 species Maine list', stage: 'Year 3-5', tip: 'Maine state list nearly complete. You\'re among Maine\'s experienced birders.' },
+    { milestone: '500 species lifelist (US + Canada)', stage: 'Year 5-10', tip: 'Continental birding. Multiple regions explored.' },
+    { milestone: '700 species lifelist (US + Canada)', stage: 'Year 10+', tip: 'Serious commitment. Travel + dedication.' },
+    { milestone: 'Maine Big Year (~250-300 species in one year)', stage: '12 months', tip: 'A test of dedication, knowledge, network, finances.' },
+    { milestone: 'Big Day (most species in 24 hours)', stage: '1 day', tip: 'Maine record is ~150 species. Plan + drive + identify rapidly.' },
+    { milestone: 'Maine Audubon volunteer', stage: 'Whenever', tip: 'Citizen science + community contribution.' },
+    { milestone: 'CBC participant', stage: 'Annually', tip: 'Join Christmas Bird Count circles in mid-December.' },
+    { milestone: 'eBird hotspot reviewer/editor', stage: 'Year 5+', tip: 'After years of contributing, may be invited to help review submissions.' }
+  ];
+
+  // ── ABSOLUTE FINAL: BIRDING WISDOM QUOTES
+  var BIRDING_QUOTES = [
+    { quote: '"Birds have wings; they\'re free; they can fly where they want when they want. They have the kind of mobility many people envy."', author: 'Roger Tory Peterson' },
+    { quote: '"In every walk with nature one receives far more than he seeks."', author: 'John Muir' },
+    { quote: '"The bird-watcher is not a tourist, but a participant — a co-collaborator with the bird."', author: 'Ned Brinkley' },
+    { quote: '"To attract birds, plant a garden — to attract a soul, watch the birds in it."', author: 'Anonymous birding wisdom' },
+    { quote: '"A bird does not sing because it has an answer; it sings because it has a song."', author: 'Maya Angelou (Chinese proverb)' },
+    { quote: '"What we don\'t see, we can\'t care about. Birds invite us to see."', author: 'Sy Montgomery' },
+    { quote: '"Hope is a thing with feathers."', author: 'Emily Dickinson' },
+    { quote: '"You don\'t have to see the puffin to be saved by it."', author: 'Steve Kress (Project Puffin)' },
+    { quote: '"The bird and a book of birds and a quiet morning — that\'s wealth."', author: 'Adapted from Roger Tory Peterson' },
+    { quote: '"Maine\'s loons sing for all of us. May we listen well + protect them better."', author: 'Maine Loon Project' }
+  ];
+
   window.StemLab.registerTool('birdLab', {
     name: 'BirdLab — I-Spy Ornithology',
     icon: '🐦',
@@ -2636,6 +8073,894 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             color: 'from-teal-500 to-violet-700',
             ring: 'ring-teal-500/40',
             ready: true
+          },
+          {
+            id: 'nestGallery', title: 'Nest Gallery', icon: '🪺',
+            subtitle: '20 Maine breeding nests with SVG profiles',
+            desc: '20 Maine breeding bird species shown with their actual nest structures: stick platforms (eagle/osprey), woven cups (oriole/red-wing), cavities (chickadee/pileated), burrows (kingfisher/puffin), scrapes (plover/woodcock). Visual SVG renderings + dimensions + materials + eggs + species story.',
+            color: 'from-amber-600 to-stone-700',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'eggGallery', title: 'Egg Gallery', icon: '🥚',
+            subtitle: '35 Maine bird eggs to scale',
+            desc: '35 Maine bird eggs rendered at relative scale — from the pea-sized hummingbird egg to the loon\'s large olive-brown ovoid. Sort by size to compare; click any egg for full details on dimensions, clutch size, pattern, and species notes.',
+            color: 'from-amber-500 to-sky-600',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'featherAnatomy', title: 'Feather Anatomy Lab', icon: '🪶',
+            subtitle: 'Interactive labeled feather diagram',
+            desc: 'Click 8 numbered parts of an annotated feather to learn its name + function: rachis, calamus, vane, barb, barbule, hooklets, downy region, aftershaft. Feathers are biology\'s most complex structure — 1 million microscopic hooklets per feather.',
+            color: 'from-sky-500 to-amber-600',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'silhouetteQuiz', title: 'Silhouette Quiz', icon: '🌑',
+            subtitle: '20 birds — ID from shape alone',
+            desc: 'Identify 20 Maine birds from silhouettes alone. Habitat clue + 4 multiple-choice. Builds shape-based ID — the skill experienced birders use for distant flying birds. Each correct answer reveals the species\' key flight signature.',
+            color: 'from-amber-500 to-stone-700',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'plumage', title: 'Seasonal Plumage + Molt', icon: '🍂',
+            subtitle: '14 species through the year',
+            desc: 'How birds change plumage seasonally. 14 species showing breeding vs non-breeding plumage + molt strategy + Maine timing. From goldfinches changing color to wood ducks entering eclipse plumage to snow buntings revealing white through feather wear.',
+            color: 'from-rose-500 to-sky-600',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'tracksSign', title: 'Tracks + Sign', icon: '👣',
+            subtitle: 'Read bird evidence you never see',
+            desc: '12 species and their tracks, droppings, feeding sign, and pellets. Read bird evidence: turkey scratches in leaf litter, pileated woodpecker rectangular holes, owl pellets, kingfisher fish-bone middens, hawk plucking sites.',
+            color: 'from-emerald-600 to-stone-700',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'flightPatterns', title: 'Flight Patterns', icon: '✈️',
+            subtitle: '10 flight styles + species',
+            desc: '10 flight patterns from soaring to undulating to hovering to plunge-diving. Behavior in flight is a field mark — how a bird moves through air identifies it from far away. Includes energy cost, timing, and ID tips for each pattern.',
+            color: 'from-sky-500 to-violet-600',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'owls', title: 'Maine Owls Deep Dive', icon: '🦉',
+            subtitle: '8 Maine owl species',
+            desc: 'Eastern Screech, Great Horned, Barred, Snowy, Long-eared, Short-eared, Saw-whet, Boreal — Maine\'s 8 owl species in detail. Size, voice, habitat, diet, Maine status, color morphs, conservation status.',
+            color: 'from-indigo-600 to-violet-700',
+            ring: 'ring-indigo-500/40',
+            ready: true
+          },
+          {
+            id: 'raptors', title: 'Maine Raptors Deep Dive', icon: '🦅',
+            subtitle: '12 Maine raptor species',
+            desc: 'Eagles, hawks, falcons, harriers, vultures. 12 Maine raptor species with group, size, voice, diet, hunting style, breeding, conservation status. From the Bradbury Mountain broadwings to recovered peregrines on city bridges.',
+            color: 'from-rose-600 to-amber-700',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'warblers', title: 'Maine Warblers Deep Dive', icon: '🌈',
+            subtitle: '15 hardest-to-ID Maine breeders',
+            desc: '15 Maine breeding warblers — the hardest ID family for new birders. Tiny, fast, seasonal. Each profile: key field mark, habitat, song mnemonic, arrival + departure dates. From yellow-rumped (most common) to magnolia + black-throated green + Blackburnian (the fire-throated jewel).',
+            color: 'from-yellow-500 to-amber-600',
+            ring: 'ring-yellow-500/40',
+            ready: true
+          },
+          {
+            id: 'optics', title: 'Birding Optics + Gear', icon: '🔭',
+            subtitle: 'Binoculars, scopes, apps',
+            desc: 'What does "8×42" mean? Binoculars, spotting scopes, apps (Merlin + Audubon), digiscoping, harnesses, cameras. From budget starter ($80 binos) to premium gear ($4,000 Swarovski). What to buy + how + why.',
+            color: 'from-sky-700 to-slate-700',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'ethics', title: 'Birding Ethics', icon: '🛡️',
+            subtitle: 'ABA Code of Birding Ethics',
+            desc: 'The American Birding Association Code — eight principles for birders: respect birds + their environment, observe access rules, keep cats indoors, reduce window collisions, don\'t share rare-bird locations, help with citizen science, model good behavior for kids, build inclusion.',
+            color: 'from-emerald-700 to-sky-700',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'weather', title: 'Weather + Birding', icon: '⛅',
+            subtitle: '10 weather scenarios + bird response',
+            desc: 'How birds respond to weather. 10 weather scenarios — cold fronts, storm passages, fog, sunny calm, tailwinds, cold snaps — with bird response + where to go for each.',
+            color: 'from-sky-600 to-amber-600',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'faq', title: 'Birding FAQ', icon: '❓',
+            subtitle: '15 common questions answered',
+            desc: '15 of the most common questions from new birders — where to start, equipment, LBJ identification, climate change, window strikes, cats, bald eagles in Maine, learning to recognize bird songs, and more.',
+            color: 'from-violet-600 to-rose-700',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'waterfowl', title: 'Maine Waterfowl', icon: '🦆',
+            subtitle: '20 ducks + geese + swans',
+            desc: 'Maine\'s 20 waterfowl species — dabblers (mallard, wood duck, black duck), divers (goldeneye, bufflehead, mergansers), sea ducks (eider, scoters, long-tailed), geese (Canada, snow, brant), swans. Male + female plumages, habitat, diet, voice, breeding biology.',
+            color: 'from-sky-700 to-indigo-700',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'shorebirds', title: 'Maine Shorebirds', icon: '🦴',
+            subtitle: '15 plovers, sandpipers, snipes',
+            desc: 'Maine\'s 15 shorebird species. Plovers (piping, semipalmated, killdeer), yellowlegs (greater + lesser), sandpipers (spotted, solitary, sanderling, semipalmated, least, dunlin), willet, turnstone, snipe. Mostly migrants; some breeders.',
+            color: 'from-amber-600 to-stone-700',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'seabirds', title: 'Gulf of Maine Seabirds', icon: '🌊',
+            subtitle: '12 alcids + pelagic species',
+            desc: 'Atlantic Puffin, razorbill, murre, black guillemot, gannet, fulmar, shearwater, storm-petrel, kittiwake, terns. Maine\'s offshore + Gulf of Maine seabirds with Project Puffin restoration story.',
+            color: 'from-cyan-600 to-sky-800',
+            ring: 'ring-cyan-500/40',
+            ready: true
+          },
+          {
+            id: 'wingTypes', title: 'Wing Types Lab', icon: '🪶',
+            subtitle: '5 wing shapes + flight styles',
+            desc: 'Elliptical wings (songbirds), high-aspect-ratio (swallows + albatrosses), soaring wings with slots (eagles + vultures), high-speed tapered (falcons), aquatic (puffins). Wing shape predicts flight style + habitat.',
+            color: 'from-sky-600 to-amber-600',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'footTypes', title: 'Foot Types Lab', icon: '🦶',
+            subtitle: '8 foot types + adaptations',
+            desc: 'Perching (anisodactyl), raptor talons, climbing zygodactyl (woodpeckers), swimming palmate (ducks), wading long-thin (herons), lobed (grebes), grasping (osprey), walking (turkeys). Foot anatomy reveals diet + habitat.',
+            color: 'from-amber-600 to-yellow-700',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'behaviors', title: 'Bird Behavior Deep', icon: '🧠',
+            subtitle: '8 behavior topics',
+            desc: 'Courtship displays, territorial defense, parental care, mating systems, migration, communication, mobbing predators, foraging niche differentiation. The behaviors that shape bird life.',
+            color: 'from-violet-600 to-purple-700',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'physiology', title: 'Bird Physiology', icon: '🫀',
+            subtitle: '8 biology systems',
+            desc: 'Heart rate + metabolism, through-flow respiration, hollow bones, crop + gizzard, exceptional vision + UV color, hearing, magnetic + stellar navigation. Birds are physiological athletes optimized for flight.',
+            color: 'from-rose-600 to-pink-700',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'evolution', title: 'Bird Evolution', icon: '🦖',
+            subtitle: 'Dinosaurs to today',
+            desc: '160 million years of bird evolution. From feathered theropods through Archaeopteryx through K-Pg extinction through modern bird radiation. Birds ARE dinosaurs — the only surviving theropod lineage.',
+            color: 'from-stone-600 to-amber-700',
+            ring: 'ring-stone-500/40',
+            ready: true
+          },
+          {
+            id: 'scientists', title: 'Bird Scientists', icon: '👩‍🔬',
+            subtitle: '10 historical + contemporary figures',
+            desc: 'Audubon, Peterson, Steve Kress (Puffin restoration), Rachel Carson (DDT), Chapman (CBC founder), Leopold, MacArthur (niche differentiation), Margaret Morse Nice, Stutchbury (geolocators) + Maine\'s ornithologists.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'gullId', title: 'Gull ID Master', icon: '🐦',
+            subtitle: '7 species, multiple plumages',
+            desc: 'Maine\'s gulls — Herring, Great Black-backed, Ring-billed, Laughing, Bonaparte\'s, Iceland, Glaucous. Multiple-year plumages make gulls the hardest birding ID group. Adult winter + breeding + first-winter for each.',
+            color: 'from-stone-700 to-slate-800',
+            ring: 'ring-stone-500/40',
+            ready: true
+          },
+          {
+            id: 'irruptions', title: 'Irruptive Visitors', icon: '❄️',
+            subtitle: '8 winter irruptive species',
+            desc: 'Snowy Owl, Common Redpoll, Pine Grosbeak, Bohemian Waxwing, crossbills, Pine Siskin, Evening Grosbeak. Birds that appear in unpredictable years driven by northern food crop variations.',
+            color: 'from-indigo-700 to-violet-800',
+            ring: 'ring-indigo-500/40',
+            ready: true
+          },
+          {
+            id: 'endangered', title: 'Endangered Maine Birds', icon: '🛡️',
+            subtitle: '10 listed species',
+            desc: 'Maine\'s state + federally listed species: Piping Plover, Roseate Tern, Black-crowned Night Heron, Wood Thrush (watch list), Bicknell\'s Thrush, Saltmarsh Sparrow, Sedge Wren, Bald Eagle (recovered). Status + threats + actions.',
+            color: 'from-rose-700 to-red-800',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'hotspotsDeep', title: 'Maine Hotspots Extended', icon: '📍',
+            subtitle: '12 hotspots with deep info',
+            desc: 'Scarborough Marsh, Eastern Egg Rock, Acadia, Bradbury Mountain Hawkwatch, Baxter, Petit Manan, Penobscot River, Moosehead Lake, pelagic Bar Harbor trips. Type, key species, best seasons, access, insider tips.',
+            color: 'from-emerald-700 to-stone-700',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'duckId', title: 'Duck ID — Dabbler vs Diver', icon: '🦆',
+            subtitle: '5 categories explained',
+            desc: 'Dabblers tip up to feed; divers go underwater. Mergansers specialize on fish; sea ducks dive for mollusks; tree ducks nest in cavities. Anatomy + behavior + flight + diet — how to tell which kind of duck you\'re watching.',
+            color: 'from-sky-700 to-cyan-700',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'vocalDeep', title: 'Bird Vocalizations Deep', icon: '🎵',
+            subtitle: '7 vocalization topics',
+            desc: 'Song vs call, song learning, dawn chorus reasons, song function, mimicry, citizen-science recording, acoustic environment changes. The science behind why birds sing.',
+            color: 'from-purple-700 to-violet-800',
+            ring: 'ring-purple-500/40',
+            ready: true
+          },
+          {
+            id: 'reproDeep', title: 'Bird Reproduction Deep', icon: '🥚',
+            subtitle: '8 reproduction topics',
+            desc: 'Egg formation, incubation, hatching, altricial vs precocial, fledging, brood reduction, cooperative breeding, brood parasitism, monogamy reality (extra-pair paternity). The biology of how birds make more birds.',
+            color: 'from-amber-700 to-yellow-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'sparrows', title: 'Maine Sparrows Deep', icon: '🐦',
+            subtitle: '15 sparrow species',
+            desc: '15 Maine sparrow species — Song, White-throated, White-crowned, Junco, American Tree, Chipping, Field, Savannah, Swamp, Saltmarsh, Nelson\'s, Lincoln\'s, Towhee, Meadowlark, Vesper. The LBJs (Little Brown Jobs) demystified with size, habitat, key marks, song, and Maine status.',
+            color: 'from-stone-700 to-slate-800',
+            ring: 'ring-stone-500/40',
+            ready: true
+          },
+          {
+            id: 'thrushes', title: 'Maine Thrushes Deep', icon: '🎵',
+            subtitle: '8 thrush species',
+            desc: 'American Robin, Hermit Thrush, Wood Thrush, Veery, Bicknell\'s Thrush, Swainson\'s Thrush, Gray-cheeked Thrush, Eastern Bluebird. Maine\'s flute-voiced thrushes including the climate-vulnerable Bicknell\'s.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'woodpeckers', title: 'Maine Woodpeckers Deep', icon: '🪓',
+            subtitle: '8 woodpecker species',
+            desc: 'Downy, Hairy, Pileated, Northern Flicker, Red-bellied, Yellow-bellied Sapsucker, Black-backed, American Three-toed. Maine\'s 8 woodpeckers with size, voice, drumming patterns, and ecological role as keystone cavity makers.',
+            color: 'from-rose-700 to-pink-800',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'finches', title: 'Maine Finches Deep', icon: '🌻',
+            subtitle: '9 finch species',
+            desc: 'American Goldfinch, Purple Finch, House Finch, Pine Grosbeak, Common Redpoll, Pine Siskin, Evening Grosbeak, Red Crossbill, White-winged Crossbill. Year-round + irruptive winter visitors. Crossbills with unique crossed mandibles.',
+            color: 'from-yellow-700 to-amber-800',
+            ring: 'ring-yellow-500/40',
+            ready: true
+          },
+          {
+            id: 'blackbirds', title: 'Maine Blackbirds + Corvids', icon: '⬛',
+            subtitle: '10 species',
+            desc: 'Red-winged Blackbird, Common Grackle, European Starling (intro), Brown-headed Cowbird (parasite), Baltimore Oriole, Bobolink, American Crow, Common Raven, Blue Jay, Gray Jay. Maine\'s most intelligent + most controversial bird family.',
+            color: 'from-slate-700 to-stone-800',
+            ring: 'ring-slate-500/40',
+            ready: true
+          },
+          {
+            id: 'hummswift', title: 'Hummingbirds + Swifts', icon: '🐝',
+            subtitle: '3 species + biology',
+            desc: 'Ruby-throated Hummingbird (Maine\'s only common humming), Rufous Hummingbird (rare vagrant), Chimney Swift (cigar-shape aerial insectivore). The most specialized fliers in Maine.',
+            color: 'from-emerald-700 to-teal-700',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'flyvireo', title: 'Flycatchers + Vireos', icon: '🦟',
+            subtitle: '10 species',
+            desc: 'Eastern Phoebe, Eastern Wood-Pewee, Yellow-bellied + Least Flycatcher, Great Crested Flycatcher, Eastern Kingbird, Olive-sided Flycatcher (declining), Red-eyed + Blue-headed + Yellow-throated Vireo. The aerial insectivores of Maine forests.',
+            color: 'from-teal-700 to-emerald-800',
+            ring: 'ring-teal-500/40',
+            ready: true
+          },
+          {
+            id: 'topology', title: 'Bird Topography Lab', icon: '🦴',
+            subtitle: 'Interactive labeled bird diagram',
+            desc: 'Click 22 numbered regions on an interactive bird diagram to learn the names + importance of each body part: crown, supercilium, lores, malar, breast, flank, rump, wing coverts, primaries, tail. The vocabulary birders use for description + ID.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'habitatsDeep', title: 'Maine Habitats Deep', icon: '🌲',
+            subtitle: '12 Maine ecosystems',
+            desc: 'Northern hardwood forest, spruce-fir boreal, salt marsh, freshwater marsh + bog, grassland, mixed forest, young second-growth, river corridor, lake shoreline, pelagic offshore, suburban, beach + dune. Each with key birds, conservation, and Maine sites.',
+            color: 'from-emerald-700 to-stone-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'climateBirds', title: 'Climate Change + Maine Birds', icon: '🌡️',
+            subtitle: '8 climate impacts',
+            desc: 'Range shifts, phenological mismatch, boreal forest shrinkage, sea level rise on salt marshes, ocean temperature on seabirds, storm intensity on migration, wintering range shifts, what birders can do. Maine birds are climate-vulnerable.',
+            color: 'from-rose-700 to-orange-800',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'feeder', title: 'Backyard Feeder Guide', icon: '🏠',
+            subtitle: '10 feeder types + foods',
+            desc: 'Tube, hopper, suet, platform, nyjer, suet log, mealworm, sugar-water, oriole, ground. Each feeder type with foods, birds attracted, and setup tips for your Maine backyard.',
+            color: 'from-amber-700 to-yellow-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'nestbox', title: 'Nest Box Guide', icon: '🪺',
+            subtitle: '12 Maine species + specs',
+            desc: 'Specifications for nest boxes for bluebirds, tree swallows, chickadees, nuthatches, titmice, wood ducks, hooded mergansers, flickers, kestrels, screech-owls, house wrens, purple martins. Floor size, entry hole, height, placement, timing.',
+            color: 'from-amber-700 to-sky-700',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'diets', title: 'Bird Diets + Foraging', icon: '🍽️',
+            subtitle: '9 dietary categories',
+            desc: 'Granivores, insectivores, nectarivores, frugivores, piscivores, carnivores, scavengers, mollusk specialists, aquatic-plant eaters. What birds eat shapes what they look like + how they live.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'migrationDeep', title: 'Migration — Deep Science', icon: '🛫',
+            subtitle: '9 migration topics',
+            desc: 'Why birds migrate, triggers, pre-migration body changes, in-flight physiology, navigation, stopover sites, hazards, Maine\'s migration calendar, endurance records. The remarkable biology of one of nature\'s greatest journeys.',
+            color: 'from-orange-700 to-red-800',
+            ring: 'ring-orange-500/40',
+            ready: true
+          },
+          {
+            id: 'glossaryDeep', title: 'Complete Birding Glossary', icon: '📖',
+            subtitle: '100+ birding terms',
+            desc: 'Comprehensive birding vocabulary — accipiter, altricial, brood parasitism, dichotomous key, eclipse plumage, irruption, lek, malar, niche, primaries, raptor, supercilium, vagrant, zugunruhe + 80+ more. Searchable.',
+            color: 'from-violet-700 to-rose-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'dichotomous', title: 'Dichotomous Key — ID Walkthrough', icon: '🔑',
+            subtitle: 'Step-by-step bird ID',
+            desc: 'Answer questions about the bird you saw — size, color, bill shape, location — and walk through a step-by-step identification tree to a likely species ID. Like a real field guide key but interactive.',
+            color: 'from-violet-700 to-purple-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'seasonal', title: 'Maine Birding by Season', icon: '🗓',
+            subtitle: 'Year-round Maine guide',
+            desc: 'Winter, spring, summer, fall in Maine. Each season has its own bird community + birding strategy. Species, where to go, tips, hotspots for every part of the calendar.',
+            color: 'from-amber-700 to-yellow-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'photo', title: 'Bird Photography', icon: '📸',
+            subtitle: '9 photography topics',
+            desc: 'Equipment, settings, composition, lighting, ethical approach, ethical photography, action shots, editing, sharing. Photography techniques + ethics specifically for bird photographers.',
+            color: 'from-violet-700 to-rose-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'resources', title: 'Birding Resources', icon: '📚',
+            subtitle: '10 categories of resources',
+            desc: 'Apps, field guides, Maine organizations, citizen science projects, books, websites, festivals, conservation orgs, tour operators. Everything you need to take birding from interest to expertise.',
+            color: 'from-emerald-700 to-teal-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'agesex', title: 'Aging + Sexing Birds', icon: '🎂',
+            subtitle: '8 topics',
+            desc: 'How to age songbirds, raptors, gulls. How to sex songbirds, raptors, waterfowl. Banding programs + citizen reporting of banded birds. The skills experienced birders develop over years.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'shapediff', title: 'Bird Shape + Size Quick Reference', icon: '📐',
+            subtitle: '8 morphological features',
+            desc: '8 morphological features for ID at a glance — bill length, bill shape, wing shape, tail length + shape, body size + shape, leg length. Shape is faster + more reliable than plumage for many species.',
+            color: 'from-sky-700 to-cyan-800',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'iconic', title: 'Iconic Maine Birds', icon: '🌟',
+            subtitle: '10 birds defining Maine',
+            desc: 'Maine state bird (Black-capped Chickadee), Common Loon, Atlantic Puffin (Project Puffin), Bald Eagle (recovery), Wild Turkey (restoration), Piping Plover (threatened), Wood Duck, American Woodcock (sky dance), Snowy Owl (winter magic), Northern Cardinal (range expander).',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'facts', title: '100 Bird Facts', icon: '💡',
+            subtitle: 'Filterable by category',
+            desc: '100+ remarkable bird facts in categories: Records, Intelligence, Diversity, Maine, Evolution, Vision, Hearing, Physiology, Anatomy, Coloration, Feathers, Flight, Behavior, Conservation, Citizen Science, Nesting, Reproduction, Molt, Cultural, Education, Technology, Courtship, Learning, Adaptation.',
+            color: 'from-violet-700 to-amber-700',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'extinct', title: 'Historically Extinct Birds', icon: '🦤',
+            subtitle: '8 lost species + lessons',
+            desc: 'Great Auk (1844, Gulf of Maine breeder), Passenger Pigeon (1914), Carolina Parakeet (1918), Labrador Duck (1875), Eskimo Curlew (1962), Heath Hen (1932), Dodo (1681), Bachman\'s Warbler (1962+). Each with reasons + Maine connection + lessons.',
+            color: 'from-stone-700 to-rose-800',
+            ring: 'ring-stone-500/40',
+            ready: true
+          },
+          {
+            id: 'confusing', title: 'Confusing ID Pairs', icon: '🔀',
+            subtitle: '10 commonly mistaken pairs',
+            desc: 'Downy vs Hairy Woodpecker, Cooper\'s vs Sharp-shinned Hawk, Greater vs Lesser Yellowlegs, White-throated vs White-crowned Sparrow, Magnolia vs Yellow Warbler, Hermit vs Swainson\'s Thrush, Red-shouldered vs Red-tailed Hawk + more.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'families', title: 'Bird Families Overview', icon: '📚',
+            subtitle: '12 major orders',
+            desc: 'Anseriformes (waterfowl), Galliformes (game birds), Procellariiformes (tube-noses), Pelecaniformes (pelicans + herons), Accipitriformes (hawks + eagles), Falconiformes (falcons), Charadriiformes (shorebirds + gulls), Strigiformes (owls), Apodiformes (hummingbirds + swifts), Coraciiformes (kingfishers), Piciformes (woodpeckers), Passeriformes (songbirds).',
+            color: 'from-emerald-700 to-stone-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'kids', title: 'Birding with Kids', icon: '🧒',
+            subtitle: 'Age-appropriate guide',
+            desc: 'Toddler, preschooler, early school, tween, teen — what to do at each age. Attention spans, activities to try, things to avoid. Maine Audubon kids programs.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'access', title: 'Accessible Birding', icon: '♿',
+            subtitle: 'Birding for everyone',
+            desc: 'Autistic birders, mobility limitations, vision + hearing differences, cost-accessibility, ADHD-friendly approaches. Birding can be entirely free + welcoming. Maine sites + tools.',
+            color: 'from-violet-700 to-rose-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'teach', title: 'Teaching Birding', icon: '👨‍🏫',
+            subtitle: 'Teacher + parent resources',
+            desc: 'Setting up school birding program, field trips, garden for birds, inquiry-based learning, citizen science participation, cross-curricular connections (math, reading, writing, art, history, social studies), year-long calendar, NGSS alignment, Maine Wabanaki Studies connection.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'wabanaki', title: 'Wabanaki + Indigenous Knowledge', icon: '🪶',
+            subtitle: 'Aligns with Maine LD 291',
+            desc: 'Wabanaki peoples have lived alongside Maine birds for ~13,000 years. Loon, eagle, turkey, puffin, heron, raven, pileated woodpecker — cultural significance + indigenous ecological knowledge + modern tribal stewardship. Curriculum-aligned with Maine LD 291 (Indigenous Studies in K-12 curriculum).',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'literature', title: 'Birds in Literature', icon: '📜',
+            subtitle: '10 references',
+            desc: 'Poe\'s "The Raven", Mary Oliver poems, Robert Frost\'s "The Oven Bird", Thoreau\'s journals, Rachel Carson\'s "Silent Spring", Sy Montgomery\'s "Birdology", Bernd Heinrich\'s Maine raven research + more. Birds as cultural + literary subjects.',
+            color: 'from-violet-700 to-purple-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'achLife', title: 'Birding Lifetime Achievements', icon: '🏆',
+            subtitle: '8 tiers + benchmarks',
+            desc: 'From beginner (Year 1, 25 species) to advanced (Year 5, 150+ species) to Maine Big Year (300+ species) to lifetime 500+ + 700+ life list. Where are you on your birding journey?',
+            color: 'from-amber-700 to-yellow-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'hawkwatch', title: 'Maine Hawkwatch Guide', icon: '🦅',
+            subtitle: 'Bradbury Mountain + Sandy Point',
+            desc: 'Maine\'s premier hawkwatching sites. Sept-Oct migration peaks for broad-wings + other raptors. How to participate, what to bring, hawk ID basics, etiquette. Data feeds HMANA.',
+            color: 'from-orange-700 to-red-800',
+            ring: 'ring-orange-500/40',
+            ready: true
+          },
+          {
+            id: 'cbc', title: 'Christmas Bird Count Guide', icon: '🎄',
+            subtitle: 'Maine\'s longest citizen science',
+            desc: 'Mid-Dec to early Jan annual census. ~30 Maine circles. Begun 1900 (oldest citizen-science project). How to participate, what to expect, what to count, what the data reveals about Maine bird trends.',
+            color: 'from-emerald-700 to-rose-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'superstitions', title: 'Bird Lore + Superstitions', icon: '🪄',
+            subtitle: 'Folk beliefs vs reality',
+            desc: '10 bird superstitions + folk beliefs — crow caws as bad omens, robin as spring sign, owl hoots as death omens, hummingbird as messages from deceased + more. Sometimes folk lore contains real ecological insight; sometimes it\'s pure cultural superstition.',
+            color: 'from-violet-700 to-stone-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'etiquetteDeep', title: 'Birding Etiquette Deep', icon: '🤝',
+            subtitle: '10 specific situations',
+            desc: 'Reporting rare birds, rare-bird hotspot etiquette, private property, tribal lands, kids, playback, banded sightings, beach plover protocol, photography ethics, sharing data. Beyond the basic ABA Code.',
+            color: 'from-emerald-700 to-violet-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'hawkData', title: 'Hawkwatch Science Data', icon: '📊',
+            subtitle: 'Bradbury Mountain + trends',
+            desc: '30+ years of Bradbury Mountain Hawkwatch data. Annual totals, peak days, multi-decade trends. Climate-driven shifts. Citizen-science contributing real conservation data.',
+            color: 'from-orange-700 to-amber-800',
+            ring: 'ring-orange-500/40',
+            ready: true
+          },
+          {
+            id: 'urban', title: 'Urban Birding — Maine Cities', icon: '🏙',
+            subtitle: '6 Maine urban areas',
+            desc: 'Portland Old Port, Eastern Promenade, Stroudwater, Bangor Penobscot River, Lewiston/Auburn, Augusta, Maine campus birding. Birds in urban Maine + accessible birding without long travel.',
+            color: 'from-sky-700 to-slate-800',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'logTemplate', title: 'Daily Birding Log Template', icon: '📓',
+            subtitle: 'What to record',
+            desc: 'Comprehensive template for your daily birding log: date + time, location, weather, habitat, hours of effort, species, notable observations, photos, personal notes. Builds toward an eBird submission + a meaningful personal record.',
+            color: 'from-emerald-700 to-sky-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'intelligence', title: 'Bird Intelligence + Cognition', icon: '🧠',
+            subtitle: '8 cognition topics',
+            desc: 'Crows + tool use, parrot language, magpie self-recognition, caching memory, long-term memory of human faces, theory of mind, chickadee predator-threat communication, migration memory. Birds are far smarter than once thought.',
+            color: 'from-purple-700 to-violet-800',
+            ring: 'ring-purple-500/40',
+            ready: true
+          },
+          {
+            id: 'ecoServices', title: 'Birds + Ecosystem Services', icon: '🌍',
+            subtitle: '8 critical services',
+            desc: 'Pollination (hummingbirds), seed dispersal (waxwings, robins), insect pest control (warblers), carrion removal (vultures), aquatic engineering (loons), nutrient cycling (seabird guano), cultural/recreational (107 billion/yr in US), education + research.',
+            color: 'from-emerald-700 to-stone-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'recovery', title: 'Conservation Recovery Stories', icon: '🏥',
+            subtitle: '8 species + recoveries',
+            desc: 'Bald Eagle (60 to 700 Maine pairs), Peregrine Falcon (0 to 30+ Maine pairs), Atlantic Puffin (Project Puffin), Brown Pelican, Whooping Crane, California Condor (22 to 500), Wild Turkey (0 to 50,000 in Maine), Eastern Bluebird. Conservation works.',
+            color: 'from-emerald-700 to-rose-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'windEnergy', title: 'Wind Energy + Birds', icon: '⚡',
+            subtitle: '4 dimensions of trade-off',
+            desc: 'Wind turbines kill birds; climate change kills far more. Mitigation strategies (siting, curtailment, painted blades). Maine + offshore wind decisions. The complex trade-off renewable energy + bird conservation must navigate.',
+            color: 'from-sky-700 to-amber-800',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'researchTech', title: 'Bird Research Technology', icon: '🔬',
+            subtitle: '10 research methods',
+            desc: 'Bird banding, geolocators, GPS tags, acoustic monitoring, radar tracking, stable isotope analysis, eDNA, camera traps, citizen science apps, conservation genetics. How ornithologists study birds today.',
+            color: 'from-violet-700 to-purple-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'festivals', title: 'Maine Birding Events + Festivals', icon: '🎉',
+            subtitle: '10 Maine events',
+            desc: 'Acadia Birding Festival (June), Project Puffin Tours, Bradbury Mountain Hawkwatch, Great Backyard Bird Count, Maine CBCs, Maine Audubon walks, Bird-A-Thon, local birding clubs, World Migratory Bird Day. Year-round events.',
+            color: 'from-amber-700 to-orange-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'backyard30', title: '30 Maine Backyard Birds', icon: '🏡',
+            subtitle: 'Common species at feeders',
+            desc: 'Quick reference table of Maine\'s 30 most-commonly-seen backyard + feeder birds. Season, visit frequency, recommended feeder + food for each.',
+            color: 'from-amber-700 to-emerald-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'monthly', title: 'Monthly Maine Bird Calendar', icon: '📅',
+            subtitle: '12 months of expected birds',
+            desc: 'What to expect each month of the year in Maine. January Bald Eagles to June dawn chorus to September hawkwatch peaks to December CBC. Species, activities, tips.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'naming', title: 'Bird Naming + Taxonomy', icon: '🏷',
+            subtitle: '8 topics',
+            desc: 'Why Latin? Common vs scientific names. Family + order naming. Splits + lumps. Subspecies. Maine bird name origin stories.',
+            color: 'from-violet-700 to-stone-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'drawing', title: 'Bird Drawing + Journaling', icon: '✏',
+            subtitle: '8 sketching tips',
+            desc: 'Why field journal? Equipment. Quick sketches. Adding details. Note-taking. Drawing posture. Color. Drawing forces careful observation + builds bird ID skills.',
+            color: 'from-amber-700 to-rose-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'economy', title: 'Birds + Maine Economy', icon: '💰',
+            subtitle: '8 economic topics',
+            desc: 'Birding tourism in Maine ($200M+/yr), economic multiplier, conservation funding, wildlife refuge benefits, birding gear industry, bird feeder industry, career opportunities, climate impact.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'beginnerTips', title: 'Beginner Birding Tips', icon: '🌱',
+            subtitle: '10 essential tips',
+            desc: 'Start at home. Use Merlin. Get binoculars. Go slow. Learn 5 birds well first. Use a field guide. Track in eBird. Join community. Forgive mistakes. Be patient.',
+            color: 'from-sky-700 to-emerald-800',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'mentalHealth', title: 'Birding + Mental Health', icon: '🌿',
+            subtitle: '8 wellness benefits',
+            desc: 'Nature time stress reduction, mindfulness, sense of place, slow living, community, sense of purpose, aesthetic reward, reduced depression + anxiety. Birding is good for you.',
+            color: 'from-emerald-700 to-sky-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'quizBank', title: 'Bird Quiz Bank', icon: '🎓',
+            subtitle: '50 questions',
+            desc: '50 quiz questions covering Maine birds, anatomy, behavior, conservation, taxonomy, migration, biology. Random + sequential study modes.',
+            color: 'from-violet-700 to-amber-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'dailyRoutine', title: 'A Bird\'s Day — Hour by Hour', icon: '🌅',
+            subtitle: '8 time windows',
+            desc: 'Pre-dawn chorus through dawn through midday rest through evening songs to nighttime migration. What birds do throughout a 24-hour cycle.',
+            color: 'from-amber-700 to-rose-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'thermo', title: 'Bird Thermoregulation', icon: '🌡️',
+            subtitle: '8 strategies',
+            desc: 'How birds maintain 104-108°F body temperature in Maine\'s -30°F to 100°F range. Feathers, behavior, torpor, group roosting, gular fluttering, migration as thermoregulation.',
+            color: 'from-rose-700 to-orange-800',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'dawnChorus', title: 'Dawn Chorus Science', icon: '🌄',
+            subtitle: '8 topics',
+            desc: 'When + why birds sing at dawn. Maine\'s peak chorus late May - early June. Sequence of singers. Songs vs calls. Recording dawn chorus.',
+            color: 'from-amber-700 to-yellow-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'colorId', title: 'Birds by Color', icon: '🎨',
+            subtitle: '7 color groups',
+            desc: 'Red, yellow, blue, black + white, brown + streaked, gray, iridescent. Maine birds in each group with ID tips.',
+            color: 'from-orange-700 to-amber-800',
+            ring: 'ring-orange-500/40',
+            ready: true
+          },
+          {
+            id: 'behaviorGloss', title: 'Behavior Glossary', icon: '🧠',
+            subtitle: '25 behavior terms',
+            desc: 'Mobbing, foraging, roosting, caching, lekking, brood parasitism, distraction display, niche differentiation, philopatry, imprinting, anting, mantling + more.',
+            color: 'from-violet-700 to-stone-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'birdsTools', title: 'Birds + Tools Matched', icon: '🛠',
+            subtitle: '10 birding goals',
+            desc: 'Beginner backyard birding to pelagic photography. Each goal with required tools, cost range, and where to use.',
+            color: 'from-sky-700 to-amber-800',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'birdFriendly', title: 'Bird-Friendly Home', icon: '🏡',
+            subtitle: '10 actions',
+            desc: 'Native plants, indoor cats, window-collision mitigation, pesticide reduction, clean water, feeders, dead trees, less lawn, nest boxes, leaf litter. Make your Maine home bird-friendly.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'springArr', title: 'Spring Arrival Dates', icon: '🌱',
+            subtitle: '30+ Maine breeders',
+            desc: 'Approximate arrival dates for 30+ Maine breeding species — when to expect each species back. From red-winged blackbirds (early March) to blackpoll warblers (late May).',
+            color: 'from-emerald-700 to-yellow-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'fallMig', title: 'Fall Migration Strategies', icon: '🍂',
+            subtitle: '8 strategies',
+            desc: 'When fall migration begins, where migrants concentrate, weather patterns, fall warbler ID, hawk migration peaks, shorebird stopover, waterfowl staging, fall calling patterns.',
+            color: 'from-orange-700 to-amber-800',
+            ring: 'ring-orange-500/40',
+            ready: true
+          },
+          {
+            id: 'nightBird', title: 'Night Birding', icon: '🌙',
+            subtitle: '7 night-birding topics',
+            desc: 'Owls, nightjars, nocturnal songbird migration, owl banding programs, night photography, listening equipment, safety. Maine\'s 8 owl species + nocturnal flight calls.',
+            color: 'from-indigo-700 to-violet-800',
+            ring: 'ring-indigo-500/40',
+            ready: true
+          },
+          {
+            id: 'intl', title: 'Birding Beyond Maine', icon: '🌍',
+            subtitle: '10 destinations',
+            desc: 'Costa Rica, Texas Gulf Coast, Trinidad + Tobago, Iceland, Spain, India, Kenya/Tanzania, Galapagos, Pacific Northwest US, Florida. Where to expand your birding horizons.',
+            color: 'from-sky-700 to-purple-800',
+            ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'games', title: 'Birding Games + Activities', icon: '🎲',
+            subtitle: '11 games for groups',
+            desc: 'I-Spy Birds, Bird Bingo, Scavenger Hunt, Sound Match, ID in 30 Seconds, Telephone, Charades, Memory, Habitat Match, Migration Race, Bird-O-Pedia. Great for classrooms + families + scouts.',
+            color: 'from-amber-700 to-rose-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'soundTips', title: 'Bird Sound + Birding by Ear', icon: '🎧',
+            subtitle: '10 sound tips',
+            desc: 'Mnemonics, recording, song structure, song location, AI assistance with BirdNet + Merlin, learning sequence, mental study before field. Voice ID is a separate skill from visual ID.',
+            color: 'from-purple-700 to-violet-800',
+            ring: 'ring-purple-500/40',
+            ready: true
+          },
+          {
+            id: 'diseases', title: 'Birds + Disease', icon: '🦠',
+            subtitle: '8 bird diseases',
+            desc: 'West Nile Virus, Avian Influenza, Salmonellosis, House Finch Eye Disease, Trichomoniasis + more. Maine status + prevention. Public health concerns.',
+            color: 'from-rose-700 to-amber-800',
+            ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'disability', title: 'Inclusive Birding Resources', icon: '♿',
+            subtitle: '10 accessibility topics',
+            desc: 'Wheelchair access, mobility limitations, vision + hearing differences, sensory-friendly birding, ADHD, cost accessibility, LGBTQ+ inclusion, Indigenous birders, wellness benefits.',
+            color: 'from-violet-700 to-emerald-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'stories', title: 'Conservation Stories', icon: '📖',
+            subtitle: '10 epic stories',
+            desc: 'Steve Kress + Project Puffin saga, Cornell\'s eBird revolution, DDT + Bald Eagle recovery, Maine Loon recovery, Great Auk extinction, Passenger Pigeon devastation, Wild Turkey restoration, Snowy Owl 2013-14 irruption, Mary Oliver poetry, Bernd Heinrich research.',
+            color: 'from-amber-700 to-emerald-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'trails', title: 'Maine Birding Trail Regions', icon: '🗺',
+            subtitle: '10 regions',
+            desc: 'Southern Maine, Mid-Coast, Greater Portland, Penobscot, Bar Harbor/Acadia, Downeast Maine, Western Mountains, Northern Maine/Aroostook, Katahdin/Baxter, Pelagic offshore. Each with sites, species, access.',
+            color: 'from-emerald-700 to-stone-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'safety', title: 'Safety + Ethics — Comprehensive', icon: '🛡',
+            subtitle: '10 topics',
+            desc: 'Personal safety, wildlife safety, tick safety, heat/sun, bird welfare ethics, property + access ethics, sound/playback ethics, sharing sensitive locations, photography ethics, citizen science ethics.',
+            color: 'from-amber-700 to-rose-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'atlas', title: 'Bird Atlas Projects', icon: '🗂',
+            subtitle: '4 major surveys',
+            desc: 'Maine Breeding Bird Atlas (2nd edition), North American Breeding Bird Survey, eBird, USGS programs. The citizen-science data backbone of bird conservation.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'maineChanges', title: 'Maine Bird Population Changes', icon: '📊',
+            subtitle: '10 species over a century',
+            desc: 'Bald Eagle recovery, Wild Turkey restoration, Tufted Titmouse range expansion, Red-bellied Woodpecker arrival, Common Loon recovery, Evening Grosbeak crash, Wood Thrush decline, Saltmarsh Sparrow at risk + more.',
+            color: 'from-amber-700 to-rose-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'voiceTypes', title: 'Bird Voice Types', icon: '🎵',
+            subtitle: '12 sound categories',
+            desc: 'Whistled (Wood Thrush), buzzed (Northern Parula), repeated phrase (Ovenbird), jumble (Song Sparrow), trill (Chipping Sparrow), mournful (Mourning Dove), liquid (Bobolink), mechanical (Pileated drumming), and 4 more.',
+            color: 'from-purple-700 to-violet-800',
+            ring: 'ring-purple-500/40',
+            ready: true
+          },
+          {
+            id: 'detCalendar', title: 'Detailed Birding Calendar', icon: '📆',
+            subtitle: '18 windows + actions',
+            desc: 'Week-by-week Maine bird calendar with what birds are doing + what you should do. From late February\'s first arrivals to mid-Sept warbler peak to December CBC.',
+            color: 'from-emerald-700 to-sky-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'art', title: 'Bird Art + Aesthetic History', icon: '🎨',
+            subtitle: '7 eras of bird visual art',
+            desc: 'Indigenous + Wabanaki art, Audubon era, Peterson field guides, modern photography, digital + AI, Maine bird-themed art. How humans have visualized birds.',
+            color: 'from-violet-700 to-amber-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'philosophy', title: 'Birding Philosophy + Meaning', icon: '💭',
+            subtitle: '8 reflections',
+            desc: 'The long game, birds as teachers, belonging to place, citizen science as service, birds as conservation indicators, birding as active hope, community, intergenerational connection.',
+            color: 'from-amber-700 to-emerald-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'maineStats', title: 'Maine Birds in Numbers', icon: '📊',
+            subtitle: '15 statistics',
+            desc: 'Total species (~424), breeding species (~280), endangered listings (~12), Bald Eagle recovery (~700 nests), Loon pairs (~3,500), Puffin pairs (~1,500), Plover pairs (~50), Wild Turkey recovery (~50,000+), birding tourism ($200M+/yr), eBird contributions, big year records.',
+            color: 'from-emerald-700 to-amber-800',
+            ring: 'ring-emerald-500/40',
+            ready: true
+          },
+          {
+            id: 'faqEss', title: 'Essential Birding FAQ', icon: '❓',
+            subtitle: '10 essential questions',
+            desc: 'Cost to start, binocular needs, beginner mistakes, kids, best season, guides, bugs, age range, climate impact, where to learn more. The most-common new-birder questions answered.',
+            color: 'from-violet-700 to-emerald-800',
+            ring: 'ring-violet-500/40',
+            ready: true
+          },
+          {
+            id: 'milestones', title: 'Birding Milestones', icon: '🎯',
+            subtitle: '14 milestones from first bird to lifelong',
+            desc: 'Your first bird (Day 1) to 10 species (Week 1) to 50 species (Year 1) to Maine Big Year (12 months) to 700+ life list (Year 10+). Birding milestones + tips for each stage.',
+            color: 'from-amber-700 to-emerald-800',
+            ring: 'ring-amber-500/40',
+            ready: true
+          },
+          {
+            id: 'quotes', title: 'Birding Wisdom Quotes', icon: '💬',
+            subtitle: '10 thoughtful quotes',
+            desc: 'Quotes from Roger Tory Peterson, John Muir, Sy Montgomery, Steve Kress, Emily Dickinson, Maya Angelou, Maine Loon Project + more. Birding wisdom across generations.',
+            color: 'from-amber-700 to-violet-800',
+            ring: 'ring-amber-500/40',
+            ready: true
           }
         ];
 
@@ -2977,26 +9302,487 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var picked = picked_state[0], setPicked = picked_state[1];
         var foundByHabitat_state = useState(d.foundByHabitat || {});
         var foundByHabitat = foundByHabitat_state[0], setFoundByHabitat = foundByHabitat_state[1];
+        // ── Hint mode (Aaron's UX ask): keyboard-alt buttons become limited
+        // hint highlights by default. Spatial click is the primary path.
+        // Accessibility toggle restores unlimited direct-identify behavior.
+        // Difficulty controls the per-habitat hint budget.
+        var DIFFICULTY_BUDGETS = { easy: 5, normal: 3, hard: 1, expert: 0 };
+        var DIFFICULTY_LABELS = { easy: '🌱 Easy', normal: '🎯 Normal', hard: '🦅 Hard', expert: '👑 Expert' };
+        var DIFFICULTY_RANK = { easy: 1, normal: 2, hard: 3, expert: 4 };
+        // Tiered medal for a clean clear at each difficulty.
+        var DIFFICULTY_MEDAL = { easy: '🥉', normal: '🥈', hard: '🥇', expert: '👑' };
+        var DIFFICULTY_TIER_LABEL = { easy: 'Bronze', normal: 'Silver', hard: 'Gold', expert: 'Crown' };
+        // Backward compat: if cleanHabitats stored a boolean (old shape) treat it as
+        // bronze-tier ('easy'). Normalize on read.
+        function getCleanTier(habitatIdLookup) {
+          var v = cleanHabitats[habitatIdLookup];
+          if (!v) return null;
+          if (v === true) return 'easy'; // legacy shape
+          return v.difficulty || 'easy';
+        }
+        function bestMedalDifficulty(habitatIdLookup) {
+          var t = getCleanTier(habitatIdLookup);
+          return t || null;
+        }
+        var difficulty_state = useState(d.blDifficulty || 'normal');
+        var difficulty = difficulty_state[0], setDifficulty = difficulty_state[1];
+        var HINT_BUDGET = DIFFICULTY_BUDGETS[difficulty] != null ? DIFFICULTY_BUDGETS[difficulty] : 3;
+        var hintMode_state = useState(d.blHintMode !== false); // default true
+        var hintMode = hintMode_state[0], setHintMode = hintMode_state[1];
+        var hintsUsed_state = useState(d.blHintsUsed || {});
+        var hintsUsed = hintsUsed_state[0], setHintsUsed = hintsUsed_state[1];
+        var hintActive_state = useState(null); // { species, ts } — currently pulsing bird
+        var hintActive = hintActive_state[0], setHintActive = hintActive_state[1];
+        var foundVia_state = useState(d.blFoundVia || {});
+        var foundVia = foundVia_state[0], setFoundVia = foundVia_state[1];
+        // ── Spotter Streak: rewards consecutive spatial-spots (no hints) ──
+        // Resets when a student uses a hint OR identifies via accessibility-mode button.
+        // Persists across habitats so a strong run carries through.
+        var spotStreak_state = useState(d.blSpotStreak || 0);
+        var spotStreak = spotStreak_state[0], setSpotStreak = spotStreak_state[1];
+        var bestStreak_state = useState(d.blBestStreak || 0);
+        var bestStreak = bestStreak_state[0], setBestStreak = bestStreak_state[1];
+        var cleanHabitats_state = useState(d.blCleanHabitats || {});
+        var cleanHabitats = cleanHabitats_state[0], setCleanHabitats = cleanHabitats_state[1];
+        // Per-habitat hint usage flag (any hint = not clean)
+        var habitatHinted_state = useState(d.blHabitatHinted || {});
+        var habitatHinted = habitatHinted_state[0], setHabitatHinted = habitatHinted_state[1];
+        // Clean Habitat celebration overlay (transient, auto-clears)
+        var cleanCelebration_state = useState(null);
+        var cleanCelebration = cleanCelebration_state[0], setCleanCelebration = cleanCelebration_state[1];
+        // ── Spot-time tracking ──
+        // Silent timer starts when a habitat opens (first paint), stops on clean clear.
+        // Records best time per habitat × difficulty combo.
+        var habitatStartTs_state = useState({}); // { habitatId: timestamp }
+        var habitatStartTs = habitatStartTs_state[0], setHabitatStartTs = habitatStartTs_state[1];
+        var bestTimes_state = useState(d.blBestTimes || {});  // { 'habitatId|difficulty': seconds }
+        var bestTimes = bestTimes_state[0], setBestTimes = bestTimes_state[1];
+        function formatTime(seconds) {
+          if (seconds == null || !isFinite(seconds)) return '—';
+          var m = Math.floor(seconds / 60);
+          var s = Math.floor(seconds % 60);
+          return m + ':' + (s < 10 ? '0' + s : s);
+        }
+        function getCurrentBest(hid, diff) {
+          var key = hid + '|' + diff;
+          return bestTimes[key];
+        }
+        // ── Challenge of the Day ──
+        // Rotates daily via date hash; each completed challenge sticks for that
+        // date so a student can't earn the same one twice.
+        var DAILY_CHALLENGES = [
+          { id: 'spot5',        icon: '🔥', title: 'Hit a 5-spot streak', desc: 'Spot 5 birds in a row without using a hint.', xp: 25 },
+          { id: 'clean_any',    icon: '🏆', title: 'Clean any habitat', desc: 'Find every bird in one habitat without a single hint.', xp: 35 },
+          { id: 'clean_hard',   icon: '🥇', title: 'Clean on Hard or better', desc: 'Clear a habitat at Hard or Expert difficulty.', xp: 50 },
+          { id: 'new_lifer',    icon: '✨', title: 'Add a new lifer', desc: 'Spot a species you have never seen before.', xp: 20 },
+          { id: 'visit3',       icon: '🗺️', title: 'Visit three habitats', desc: 'Open any three different habitat scenes today.', xp: 15 },
+          { id: 'spot10',       icon: '🦅', title: 'Eagle Eye — 10 in a row', desc: 'Spot 10 birds in a row without a hint. Tough one.', xp: 60 }
+        ];
+        function getDailyChallenge() {
+          var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          // Simple deterministic hash of date → challenge index
+          var hash = 0;
+          for (var ci = 0; ci < today.length; ci++) hash = (hash * 31 + today.charCodeAt(ci)) & 0xffffffff;
+          var idx = Math.abs(hash) % DAILY_CHALLENGES.length;
+          var c = DAILY_CHALLENGES[idx];
+          return Object.assign({}, c, { date: today });
+        }
+        var dailyChallenge = getDailyChallenge();
+        var dailyDone_state = useState(d.blDailyDone || {});
+        var dailyDone = dailyDone_state[0], setDailyDone = dailyDone_state[1];
+        var dailyKey = dailyChallenge.date + ':' + dailyChallenge.id;
+        var dailyComplete = !!dailyDone[dailyKey];
+        // Visited-habitats today tracker (for 'visit3' challenge)
+        var visitedToday_state = useState(d.blVisitedToday || { date: '', habitats: {} });
+        var visitedToday = visitedToday_state[0], setVisitedToday = visitedToday_state[1];
+        if (visitedToday.date !== dailyChallenge.date) {
+          // New day — reset
+          visitedToday = { date: dailyChallenge.date, habitats: {} };
+          setVisitedToday(visitedToday);
+          upd('blVisitedToday', visitedToday);
+        }
+        function completeDailyChallenge() {
+          if (dailyComplete) return;
+          var nd = Object.assign({}, dailyDone);
+          nd[dailyKey] = { ts: Date.now(), challenge: dailyChallenge.id };
+          setDailyDone(nd);
+          upd('blDailyDone', nd);
+          announce('Daily challenge complete: ' + dailyChallenge.title);
+          if (typeof addToast === 'function') addToast(dailyChallenge.icon + ' Daily Challenge complete! ' + dailyChallenge.title, 'success');
+          chirpClean();
+        }
+        // ── Audio feedback (chirps for spot/hint/clean) ──
+        // Reuses the shared getBirdAudioCtx() defined later for bird calls.
+        var soundOn_state = useState(d.blSpotSounds !== false); // default true
+        var soundOn = soundOn_state[0], setSoundOn = soundOn_state[1];
+        function playChirp(frequencies, durations, gain) {
+          if (!soundOn) return;
+          if (typeof getBirdAudioCtx !== 'function') return;
+          var ctx = getBirdAudioCtx();
+          if (!ctx) return;
+          try {
+            if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+            var now = ctx.currentTime;
+            var g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.exponentialRampToValueAtTime(gain || 0.08, now + 0.01);
+            g.connect(ctx.destination);
+            var t = now;
+            frequencies.forEach(function(f, i) {
+              var dur = durations[i] || 0.08;
+              var o = ctx.createOscillator();
+              o.type = 'sine';
+              o.frequency.setValueAtTime(f, t);
+              o.connect(g);
+              o.start(t);
+              o.stop(t + dur);
+              t += dur;
+            });
+            // Tail fade
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+            setTimeout(function() { try { g.disconnect(); } catch(_) {} }, (t - now + 0.2) * 1000);
+          } catch (_) { /* silently no-op */ }
+        }
+        // Two-tone ascending "you got it" — bright, like a real songbird trill
+        function chirpSpot() { playChirp([880, 1320], [0.07, 0.10], 0.07); }
+        // Descending "look here" — softer, warning-ish
+        function chirpHint() { playChirp([660, 520], [0.08, 0.10], 0.05); }
+        // Triumphant 4-note ascending for Clean Habitat
+        function chirpClean() { playChirp([523, 659, 784, 1047], [0.10, 0.10, 0.10, 0.22], 0.09); }
+
+        // ── Spotter's Diary: printable summary of accomplishments ──
+        function openSpotterDiary() {
+          var esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+          var dateStr = new Date().toLocaleDateString();
+          var allHabitats = Object.keys(HABITATS);
+          var totalHabitats = allHabitats.length;
+          var cleanCount = Object.keys(cleanHabitats).length;
+          var lifeList = d.blLifeList || {};
+          var lifers = Object.keys(lifeList).map(function(sp) {
+            var entry = lifeList[sp];
+            var meta = BIRDS[sp] || {};
+            return {
+              species: sp,
+              name: meta.name || sp,
+              sciName: meta.sciName || '',
+              firstSeen: entry.firstSeen ? new Date(entry.firstSeen).toLocaleDateString() : '',
+              firstHabitat: entry.firstHabitat ? (HABITATS[entry.firstHabitat] || {}).name : '',
+              habitats: entry.habitats || {}
+            };
+          });
+          // Sort lifers by first-seen ascending (oldest first)
+          lifers.sort(function(a, b) {
+            var aTs = (lifeList[a.species] || {}).firstSeen || '';
+            var bTs = (lifeList[b.species] || {}).firstSeen || '';
+            return aTs < bTs ? -1 : aTs > bTs ? 1 : 0;
+          });
+          var tierCounts = { easy: 0, normal: 0, hard: 0, expert: 0 };
+          allHabitats.forEach(function(hid) {
+            var t = getCleanTier(hid);
+            if (t && tierCounts[t] != null) tierCounts[t]++;
+          });
+          var allExpert = tierCounts.expert === totalHabitats;
+          var allHardOrBetter = (tierCounts.hard + tierCounts.expert) === totalHabitats && cleanCount === totalHabitats;
+          var masterPill = allExpert ? '👑 GRAND MASTER SPOTTER'
+            : allHardOrBetter ? '🥇 MASTER SPOTTER'
+            : cleanCount === totalHabitats ? '✨ SPOTTER'
+            : null;
+          var html =
+            '<!doctype html><html><head><meta charset="utf-8"><title>Spotter\'s Diary</title>' +
+            '<style>' +
+              'body { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; max-width: 760px; margin: 32px auto; padding: 24px; line-height: 1.55; }' +
+              'h1 { color: #047857; margin: 0 0 6px; font-size: 24px; display: flex; align-items: center; gap: 10px; }' +
+              'h2 { color: #0f172a; font-size: 16px; margin: 22px 0 8px; border-bottom: 2px solid #10b981; padding-bottom: 4px; }' +
+              '.meta { color: #64748b; font-size: 12px; margin-bottom: 18px; }' +
+              '.master-pill { display: inline-block; padding: 6px 14px; background: linear-gradient(90deg, #fde047, #fbbf24, #fde047); border: 2px solid #d97706; border-radius: 999px; font-weight: 900; letter-spacing: 1px; font-size: 12px; color: #78350f; margin-bottom: 16px; }' +
+              '.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }' +
+              '.stat { padding: 10px 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; text-align: center; }' +
+              '.stat-num { font-size: 22px; font-weight: 900; color: #047857; line-height: 1; }' +
+              '.stat-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-top: 4px; }' +
+              '.habitat-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f8fafc; border-left: 4px solid #cbd5e1; border-radius: 4px; margin: 4px 0; font-size: 13px; }' +
+              '.habitat-row.clean { background: #fef3c7; border-left-color: #d97706; }' +
+              '.habitat-row .name { flex: 1; font-weight: 700; }' +
+              '.habitat-row .medal { font-size: 16px; }' +
+              '.habitat-row .pb { font-family: ui-monospace, monospace; font-size: 12px; color: #0e7490; font-weight: 700; }' +
+              '.lifer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }' +
+              '.lifer { padding: 10px 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }' +
+              '.lifer .name { font-weight: 700; color: #0f172a; }' +
+              '.lifer .sci { font-style: italic; color: #64748b; font-size: 11px; }' +
+              '.lifer .meta { color: #475569; font-size: 10px; margin-top: 4px; margin-bottom: 0; }' +
+              '.empty { padding: 16px; text-align: center; color: #94a3b8; font-style: italic; background: #f8fafc; border-radius: 8px; }' +
+              '.note { font-size: 11px; color: #64748b; font-style: italic; margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; }' +
+              '.print-btn { padding: 8px 16px; background: #047857; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-bottom: 16px; }' +
+              '@media print { .print-btn { display: none; } body { margin: 0; padding: 16px; } }' +
+            '</style></head><body>' +
+            '<button class="print-btn" onclick="window.print()">🖨️ Print this diary</button>' +
+            '<h1>🦅 Spotter\'s Diary</h1>' +
+            '<div class="meta">Generated ' + esc(dateStr) + ' &middot; BirdLab — I-Spy Ornithology</div>' +
+            (masterPill ? '<div class="master-pill">' + esc(masterPill) + '</div>' : '') +
+            // Stats summary
+            '<div class="stats">' +
+              '<div class="stat"><div class="stat-num">' + lifers.length + '</div><div class="stat-lbl">Lifers</div></div>' +
+              '<div class="stat"><div class="stat-num">' + bestStreak + '</div><div class="stat-lbl">Best Streak</div></div>' +
+              '<div class="stat"><div class="stat-num">' + cleanCount + '/' + totalHabitats + '</div><div class="stat-lbl">Clean Habitats</div></div>' +
+              '<div class="stat"><div class="stat-num">' +
+                (tierCounts.easy ? '🥉' + tierCounts.easy + ' ' : '') +
+                (tierCounts.normal ? '🥈' + tierCounts.normal + ' ' : '') +
+                (tierCounts.hard ? '🥇' + tierCounts.hard + ' ' : '') +
+                (tierCounts.expert ? '👑' + tierCounts.expert : '') +
+                (cleanCount === 0 ? '—' : '') +
+              '</div><div class="stat-lbl">Medal Distribution</div></div>' +
+            '</div>' +
+            // Habitats table
+            '<h2>Habitats</h2>' +
+            allHabitats.map(function(hid) {
+              var hab = HABITATS[hid];
+              var hf = (foundByHabitat[hid] || {});
+              var hfCount = Object.keys(hf).length;
+              var hbCount = hab.birds.length;
+              var tier = getCleanTier(hid);
+              var medal = tier ? DIFFICULTY_MEDAL[tier] : '';
+              var pbBits = [];
+              ['easy', 'normal', 'hard', 'expert'].forEach(function(d2) {
+                var t = getCurrentBest(hid, d2);
+                if (t != null) pbBits.push(DIFFICULTY_MEDAL[d2] + ' ' + formatTime(t));
+              });
+              return '<div class="habitat-row' + (tier ? ' clean' : '') + '">' +
+                '<span class="medal">' + esc(medal || '·') + '</span>' +
+                '<span class="name">' + esc(hab.name) + '</span>' +
+                '<span style="color: #475569;">' + hfCount + ' / ' + hbCount + ' birds</span>' +
+                (pbBits.length ? '<span class="pb">⏱️ ' + esc(pbBits.join(' · ')) + '</span>' : '') +
+              '</div>';
+            }).join('') +
+            // Lifers list
+            '<h2>Life list — ' + lifers.length + ' species</h2>' +
+            (lifers.length === 0
+              ? '<div class="empty">No lifers yet. Find your first bird in any habitat to start the list.</div>'
+              : '<div class="lifer-grid">' + lifers.map(function(l) {
+                  var sightingsCount = Object.keys(l.habitats).reduce(function(sum, hid) { return sum + (l.habitats[hid] || 0); }, 0);
+                  return '<div class="lifer">' +
+                    '<div class="name">' + esc(l.name) + '</div>' +
+                    (l.sciName ? '<div class="sci">' + esc(l.sciName) + '</div>' : '') +
+                    '<div class="meta">First: ' + esc(l.firstHabitat || '—') + ' &middot; ' + esc(l.firstSeen || '—') +
+                      (sightingsCount > 1 ? ' &middot; <strong>' + sightingsCount + ' sightings</strong>' : '') +
+                    '</div>' +
+                  '</div>';
+                }).join('') + '</div>'
+            ) +
+            '<div class="note">Generated by BirdLab (STEM Lab). Lifers + clean-habitat records persist on this device. Bring this to a teacher or counselor if you want to share what you have spotted.</div>' +
+            '</body></html>';
+          try {
+            var w = window.open('', '_blank', 'width=860,height=900');
+            if (!w) {
+              if (typeof addToast === 'function') addToast('Pop-up blocked. Allow pop-ups and try again.', 'warning');
+              return;
+            }
+            w.document.open(); w.document.write(html); w.document.close();
+            announce('Spotter\'s Diary opened in a new window.');
+          } catch (e) {
+            if (typeof addToast === 'function') addToast('Could not open the diary: ' + (e.message || e), 'error');
+          }
+        }
 
         var habitat = HABITATS[habitatId];
         var found = foundByHabitat[habitatId] || {};
         var totalBirds = habitat.birds.length;
         var foundCount = Object.keys(found).length;
+        var habitatHintsUsed = hintsUsed[habitatId] || 0;
+        var hintsLeft = Math.max(0, HINT_BUDGET - habitatHintsUsed);
+
+        function fireHint(bird) {
+          // Already used max hints AND in hint mode → block
+          if (hintMode && habitatHintsUsed >= HINT_BUDGET) return;
+          // Mark a hint used (only in hint mode — accessibility mode doesn't deplete)
+          if (hintMode) {
+            var nextHints = Object.assign({}, hintsUsed);
+            nextHints[habitatId] = habitatHintsUsed + 1;
+            setHintsUsed(nextHints);
+            upd('blHintsUsed', nextHints);
+          }
+          // Using a hint disqualifies this habitat from "Clean Habitat" status
+          // AND resets the current spotter streak (was a run of unaided spots).
+          if (!habitatHinted[habitatId]) {
+            var nh = Object.assign({}, habitatHinted); nh[habitatId] = true;
+            setHabitatHinted(nh);
+            upd('blHabitatHinted', nh);
+          }
+          if (spotStreak > 0) {
+            setSpotStreak(0);
+            upd('blSpotStreak', 0);
+            if (spotStreak >= 3) announce('Hint used — streak reset (was ' + spotStreak + ').');
+          }
+          setHintActive({ species: bird.species, ts: Date.now() });
+          chirpHint();
+          announce('Hint: ' + bird.hint);
+          // Auto-clear pulse after 3.5 seconds
+          setTimeout(function() {
+            setHintActive(function(cur) {
+              return (cur && cur.species === bird.species) ? null : cur;
+            });
+          }, 3500);
+        }
+
+        function toggleHintMode() {
+          var next = !hintMode;
+          setHintMode(next);
+          upd('blHintMode', next);
+          announce(next ? 'Hint mode on. Buttons now reveal a hint instead of identifying.' : 'Accessibility mode on. Buttons identify birds directly. Unlimited use.');
+        }
 
         function switchHabitat(newId) {
           setHabitatId(newId);
           setPicked(null);
           upd('activeHabitat', newId);
           announce('Switched to ' + HABITATS[newId].name + ' habitat. ' + HABITATS[newId].birds.length + ' birds to find.');
+          // Start the silent spot-time clock if not already running for this habitat
+          // (only counts toward a personal best on a clean clear at the current difficulty)
+          if (!habitatStartTs[newId]) {
+            var hs = Object.assign({}, habitatStartTs); hs[newId] = Date.now();
+            setHabitatStartTs(hs);
+          }
+          // Track for 'visit3' daily challenge
+          if (!visitedToday.habitats[newId]) {
+            var nv = { date: visitedToday.date, habitats: Object.assign({}, visitedToday.habitats) };
+            nv.habitats[newId] = true;
+            setVisitedToday(nv);
+            upd('blVisitedToday', nv);
+            if (!dailyComplete && dailyChallenge.id === 'visit3'
+              && Object.keys(nv.habitats).length >= 3) completeDailyChallenge();
+          }
+        }
+        // Make sure the current habitat's timer is running (for direct landings)
+        if (!habitatStartTs[habitatId] && foundCount === 0) {
+          // Defer to avoid setState during render
+          setTimeout(function() {
+            setHabitatStartTs(function(prev) {
+              if (prev[habitatId]) return prev;
+              var hs2 = Object.assign({}, prev); hs2[habitatId] = Date.now();
+              return hs2;
+            });
+          }, 0);
         }
 
-        function handleBirdClick(bird) {
+        function handleBirdClick(bird, source) {
+          // source: 'spotted' (spatial click) | 'hinted' (no-longer-anonymous identify-via-button in accessibility mode)
+          // Default 'spotted' so existing call sites work.
+          var src = source || 'spotted';
           var species = BIRDS[bird.species];
           var habitatFound = Object.assign({}, found); habitatFound[bird.species] = true;
           var nextByHabitat = Object.assign({}, foundByHabitat); nextByHabitat[habitatId] = habitatFound;
           setFoundByHabitat(nextByHabitat);
           upd('foundByHabitat', nextByHabitat);
+          // Track find source — only record FIRST find. A subsequent re-click does not downgrade
+          // a previously-spotted bird to hinted.
+          var foundViaKey = habitatId + ':' + bird.species;
+          var isFirstFind = !foundVia[foundViaKey];
+          if (isFirstFind) {
+            var nextVia = Object.assign({}, foundVia);
+            nextVia[foundViaKey] = src;
+            setFoundVia(nextVia);
+            upd('blFoundVia', nextVia);
+            // Audio: bright ascending chirp on a real spot, quieter beep on direct-identify
+            if (src === 'spotted') chirpSpot();
+            // ── Spotter Streak management ──
+            if (src === 'spotted') {
+              var newStreak = spotStreak + 1;
+              setSpotStreak(newStreak);
+              upd('blSpotStreak', newStreak);
+              // Track personal best
+              if (newStreak > bestStreak) {
+                setBestStreak(newStreak);
+                upd('blBestStreak', newStreak);
+              }
+              // Milestone celebrations
+              if (newStreak === 3) announce('3 in a row spotted! Streak going.');
+              else if (newStreak === 5) {
+                announce('Hot streak — 5 unaided spots in a row!');
+                if (typeof addToast === 'function') addToast('🔥 Hot streak — 5 spotted in a row!', 'success');
+                if (!dailyComplete && dailyChallenge.id === 'spot5') completeDailyChallenge();
+              }
+              else if (newStreak === 10) {
+                announce('Eagle Eye — 10 in a row!');
+                if (typeof addToast === 'function') addToast('🦅 Eagle Eye — 10 spotted in a row!', 'success');
+                if (!dailyComplete && dailyChallenge.id === 'spot10') completeDailyChallenge();
+              }
+              // 'new_lifer' check
+              if (!dailyComplete && dailyChallenge.id === 'new_lifer') {
+                var prevLifeList2 = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+                if (!prevLifeList2[bird.species]) completeDailyChallenge();
+              }
+            } else {
+              // Accessibility-mode direct identify = not a spot. Resets the streak.
+              if (spotStreak > 0) {
+                setSpotStreak(0);
+                upd('blSpotStreak', 0);
+              }
+              if (!habitatHinted[habitatId]) {
+                var nh2 = Object.assign({}, habitatHinted); nh2[habitatId] = true;
+                setHabitatHinted(nh2);
+                upd('blHabitatHinted', nh2);
+              }
+            }
+          }
+          // Clear any active hint pulse — they got the bird, no need to keep pulsing.
+          setHintActive(null);
           setPicked(species);
+          // ── Clean Habitat detection ──
+          // If this find completes the habitat AND no hints have been used in it, it's "clean."
+          // Check AFTER state updates by computing the would-be next found state.
+          var nextHabitatFound = Object.assign({}, found); nextHabitatFound[bird.species] = true;
+          var nextHabitatFoundCount = Object.keys(nextHabitatFound).length;
+          // Allow re-clear if the new attempt is at a HIGHER difficulty than the recorded clear.
+          var existingTier = getCleanTier(habitatId);
+          var newRank = DIFFICULTY_RANK[difficulty] || 0;
+          var existingRank = existingTier ? (DIFFICULTY_RANK[existingTier] || 0) : 0;
+          var wouldBeClean = (nextHabitatFoundCount >= habitat.birds.length)
+            && !habitatHinted[habitatId]
+            && src === 'spotted'
+            && newRank > existingRank;
+          if (wouldBeClean) {
+            var isUpgrade = existingRank > 0;
+            var nc = Object.assign({}, cleanHabitats);
+            nc[habitatId] = { difficulty: difficulty, date: new Date().toISOString() };
+            setCleanHabitats(nc);
+            upd('blCleanHabitats', nc);
+            var medal = DIFFICULTY_MEDAL[difficulty];
+            var tierLabel = DIFFICULTY_TIER_LABEL[difficulty];
+            var actionWord = isUpgrade ? 'upgraded to' : 'cleared on';
+            announce('Clean habitat ' + actionWord + ' ' + tierLabel + ' tier! All ' + habitat.birds.length + ' birds spotted in ' + habitat.name + '.');
+            if (typeof addToast === 'function') addToast(medal + ' ' + tierLabel + ' — ' + habitat.name + ' ' + actionWord + ' ' + tierLabel + ' tier!', 'success');
+            chirpClean();
+            // Record personal best clear time (habitat × difficulty)
+            var startedAt = habitatStartTs[habitatId];
+            if (startedAt) {
+              var elapsed = Math.floor((Date.now() - startedAt) / 1000);
+              var btKey = habitatId + '|' + difficulty;
+              var prev = bestTimes[btKey];
+              if (prev == null || elapsed < prev) {
+                var nbt = Object.assign({}, bestTimes); nbt[btKey] = elapsed;
+                setBestTimes(nbt);
+                upd('blBestTimes', nbt);
+                if (prev != null) announce('New personal best: ' + formatTime(elapsed));
+              }
+              // Reset the timer for this habitat (so a re-run can earn a new PB later)
+              var hsr = Object.assign({}, habitatStartTs); delete hsr[habitatId];
+              setHabitatStartTs(hsr);
+            }
+            // Daily-challenge wins from cleaning
+            if (!dailyComplete && dailyChallenge.id === 'clean_any') completeDailyChallenge();
+            if (!dailyComplete && dailyChallenge.id === 'clean_hard'
+              && (difficulty === 'hard' || difficulty === 'expert')) completeDailyChallenge();
+            // Trigger celebratory overlay; auto-clears after ~3.6s
+            setCleanCelebration({
+              habitatName: habitat.name,
+              birdCount: habitat.birds.length,
+              difficulty: difficulty,
+              medal: medal,
+              tierLabel: tierLabel,
+              isUpgrade: isUpgrade,
+              streak: spotStreak + 1,  // +1 because this find is the one completing it
+              ts: Date.now()
+            });
+            setTimeout(function() { setCleanCelebration(null); }, 3600);
+          }
 
           // ── Life list tracking: detect new lifer + record habitat sighting ──
           // The life list persists across habitats; if a kid spots a chickadee
@@ -3064,6 +9850,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           h('div', { className: 'p-4 max-w-6xl mx-auto space-y-4' },
+            // ── Challenge of the Day ──
+            h('div', { className: 'rounded-2xl border-2 shadow-sm overflow-hidden ' +
+              (dailyComplete ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-emerald-100' : 'border-indigo-300 bg-gradient-to-r from-indigo-50 via-fuchsia-50 to-amber-50')
+            },
+              h('div', { className: 'flex items-center gap-3 p-3 flex-wrap' },
+                h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-md ' +
+                  (dailyComplete ? 'bg-emerald-500 text-white' : 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white')
+                }, dailyComplete ? '✓' : dailyChallenge.icon),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                    h('span', { className: 'text-[10px] font-black uppercase tracking-widest ' + (dailyComplete ? 'text-emerald-700' : 'text-indigo-700') },
+                      '🎯 Challenge of the day'),
+                    dailyComplete && h('span', { className: 'text-[10px] font-bold px-2 py-0.5 bg-emerald-200 text-emerald-900 border border-emerald-400 rounded-full' },
+                      '✓ COMPLETE'),
+                    !dailyComplete && h('span', { className: 'text-[10px] font-mono text-indigo-700' }, '+' + dailyChallenge.xp + ' XP')
+                  ),
+                  h('div', { className: 'text-sm font-black text-slate-900 mt-0.5' },
+                    dailyChallenge.title),
+                  h('div', { className: 'text-xs text-slate-700 mt-0.5 leading-snug' },
+                    dailyChallenge.desc),
+                  // 'visit3' shows progress
+                  !dailyComplete && dailyChallenge.id === 'visit3' && h('div', { className: 'text-[10px] text-indigo-700 font-bold mt-1' },
+                    'Visited today: ' + Object.keys(visitedToday.habitats).length + ' / 3')
+                )
+              )
+            ),
+            // ── Personal records summary panel ──
+            (function() {
+              var totalLifers = Object.keys(d.blLifeList || {}).length;
+              var totalHabitats = Object.keys(HABITATS).length;
+              var cleanCount = Object.keys(cleanHabitats).length;
+              var allHabitatsClean = cleanCount >= totalHabitats;
+              // Detect highest tier earned across all habitats AND whether ALL habitats are at that tier
+              var tierCounts = { easy: 0, normal: 0, hard: 0, expert: 0 };
+              Object.keys(cleanHabitats).forEach(function(hid) {
+                var t = getCleanTier(hid);
+                if (t && tierCounts[t] != null) tierCounts[t]++;
+              });
+              var allExpertClean = allHabitatsClean && tierCounts.expert === totalHabitats;
+              var allHardOrBetter = allHabitatsClean && (tierCounts.hard + tierCounts.expert) === totalHabitats;
+              return h('div', { className: 'bg-gradient-to-r from-emerald-50 via-amber-50 to-sky-50 border-2 border-emerald-200 rounded-2xl p-3 shadow-sm' },
+                h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600 flex items-center gap-2 flex-wrap' },
+                    h('span', { 'aria-hidden': 'true' }, '📋'),
+                    h('span', null, 'Personal records'),
+                    // Sound toggle — small unobtrusive button
+                    h('button', {
+                      onClick: function() {
+                        var next = !soundOn;
+                        setSoundOn(next);
+                        upd('blSpotSounds', next);
+                        announce(next ? 'Spot sounds on' : 'Spot sounds off');
+                        if (next) chirpSpot(); // preview when turning on
+                      },
+                      'aria-pressed': soundOn ? 'true' : 'false',
+                      'aria-label': soundOn ? 'Mute spot sounds' : 'Turn on spot sounds',
+                      className: 'text-[10px] px-1.5 py-0.5 rounded border ' + (soundOn ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-slate-100 border-slate-300 text-slate-600 opacity-60'),
+                      title: soundOn ? 'Sounds on (click to mute)' : 'Sounds off (click to enable)'
+                    }, soundOn ? '🔊' : '🔇'),
+                    // Spotter's Diary — printable summary
+                    h('button', {
+                      onClick: openSpotterDiary,
+                      'aria-label': 'Open Spotter\'s Diary — printable summary of your achievements',
+                      className: 'text-[10px] px-2 py-0.5 rounded border bg-white border-emerald-300 text-emerald-800 hover:bg-emerald-50 normal-case tracking-normal font-bold focus:outline-none focus:ring-2 ring-emerald-500/40',
+                      title: 'Open your Spotter\'s Diary — print or save a summary'
+                    }, '📔 Diary')
+                  ),
+                  h('div', { className: 'flex items-center gap-3 flex-wrap text-center' },
+                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Lifers: ' + totalLifers + ' unique species' },
+                      h('div', { className: 'text-xl font-black text-emerald-700', 'aria-hidden': 'true' }, totalLifers),
+                      h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'lifers')
+                    ),
+                    h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
+                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Best streak: ' + bestStreak + ' in a row' },
+                      h('div', { className: 'text-xl font-black ' + (bestStreak >= 10 ? 'text-amber-700' : bestStreak >= 5 ? 'text-orange-700' : 'text-slate-700'), 'aria-hidden': 'true' },
+                        (bestStreak >= 10 ? '🦅 ' : bestStreak >= 5 ? '🔥 ' : '') + bestStreak),
+                      h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'best streak')
+                    ),
+                    h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
+                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Clean habitats: ' + cleanCount + ' of ' + totalHabitats },
+                      h('div', { className: 'text-xl font-black ' + (allHabitatsClean ? 'text-amber-700' : 'text-slate-700'), 'aria-hidden': 'true' },
+                        (allHabitatsClean ? '🏆 ' : '') + cleanCount + '/' + totalHabitats),
+                      // Mini medal tally — shows distribution of tier achievements
+                      cleanCount > 0 && h('div', { className: 'text-[10px] text-slate-600 mt-0.5', 'aria-hidden': 'true' },
+                        tierCounts.easy   > 0 ? '🥉' + tierCounts.easy + ' ' : '',
+                        tierCounts.normal > 0 ? '🥈' + tierCounts.normal + ' ' : '',
+                        tierCounts.hard   > 0 ? '🥇' + tierCounts.hard + ' ' : '',
+                        tierCounts.expert > 0 ? '👑' + tierCounts.expert : ''
+                      ),
+                      h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'clean habitats')
+                    ),
+                    // Tiered Master Spotter pill — escalates with achievement level
+                    allExpertClean
+                      ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 border-2 border-amber-600 rounded-full text-[10px] font-black uppercase tracking-wider text-amber-900 shadow-md',
+                          'aria-label': 'Grand Master Spotter: all habitats cleared on Expert difficulty'
+                        }, '👑 Grand Master')
+                      : allHardOrBetter
+                        ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-amber-200 border-2 border-amber-500 rounded-full text-[10px] font-black uppercase tracking-wider text-amber-900',
+                            'aria-label': 'Master Spotter: all habitats cleared on Hard or Expert'
+                          }, '🥇 Master Spotter')
+                        : allHabitatsClean
+                          ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-emerald-100 border-2 border-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider text-emerald-900',
+                              'aria-label': 'Spotter: all habitats cleared without hints'
+                            }, '✨ Spotter')
+                          : null
+                  )
+                )
+              );
+            })(),
             // Habitat picker (tab strip)
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Pick a habitat'),
@@ -3086,34 +9981,145 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('span', { className: 'mr-1', 'aria-hidden': true }, habitatIcon),
                     hab.name,
                     h('span', { className: 'ml-2 text-[11px] font-mono ' + (sel ? 'text-emerald-100' : 'text-slate-700') },
-                      hfCount + '/' + hbCount)
+                      hfCount + '/' + hbCount),
+                    (function() {
+                      var tier = getCleanTier(hid);
+                      if (!tier) return null;
+                      return h('span', {
+                        title: 'Clean Habitat — ' + DIFFICULTY_TIER_LABEL[tier] + ' tier (' + DIFFICULTY_LABELS[tier] + ')',
+                        'aria-label': 'Clean Habitat ' + DIFFICULTY_TIER_LABEL[tier] + ' tier',
+                        className: 'ml-1.5 text-[12px]'
+                      }, DIFFICULTY_MEDAL[tier]);
+                    })()
                   );
                 })
               )
             ),
-            // Habitat description + find counter
+            // Habitat description + find counter + streak meter
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 flex items-start justify-between gap-4 flex-wrap' },
               h('div', { className: 'flex-1 min-w-0' },
-                h('h2', { className: 'text-base font-black text-emerald-900 mb-1' }, habitat.name + ' habitat'),
+                h('h2', { className: 'text-base font-black text-emerald-900 mb-1 flex items-center gap-2 flex-wrap' },
+                  habitat.name + ' habitat',
+                  (function() {
+                    var tier = getCleanTier(habitatId);
+                    if (!tier) return null;
+                    return h('span', {
+                      title: 'Cleared without a single hint on ' + DIFFICULTY_LABELS[tier] + ' difficulty',
+                      className: 'inline-flex items-center gap-1 text-[10px] font-black bg-amber-300 text-amber-900 border-2 border-amber-500 px-2 py-0.5 rounded-full uppercase tracking-wider'
+                    }, DIFFICULTY_MEDAL[tier] + ' ' + DIFFICULTY_TIER_LABEL[tier]);
+                  })(),
+                  (function() {
+                    // Personal-best clear-time badge for current difficulty
+                    var pb = getCurrentBest(habitatId, difficulty);
+                    if (pb == null) return null;
+                    return h('span', {
+                      title: 'Your fastest clean clear of ' + habitat.name + ' on ' + DIFFICULTY_LABELS[difficulty],
+                      className: 'inline-flex items-center gap-1 text-[10px] font-black bg-sky-100 text-sky-900 border border-sky-400 px-2 py-0.5 rounded-full uppercase tracking-wider'
+                    }, '⏱️ PB ' + formatTime(pb));
+                  })()
+                ),
                 h('p', { className: 'text-sm text-slate-800' }, habitat.description)
               ),
-              h('div', { className: 'text-center flex-shrink-0' },
-                h('div', { className: 'text-3xl font-black text-emerald-700' }, foundCount + ' / ' + totalBirds),
-                h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700' }, 'birds found')
+              h('div', { className: 'flex items-center gap-3 flex-wrap justify-end' },
+                // Streak meter
+                h('div', {
+                  className: 'text-center px-3 py-2 rounded-lg border-2 ' +
+                    (spotStreak >= 5 ? 'bg-amber-100 border-amber-400'
+                      : spotStreak >= 3 ? 'bg-orange-100 border-orange-400'
+                      : 'bg-white border-slate-300'),
+                  'aria-label': 'Spotter streak: ' + spotStreak + ' in a row. Personal best ' + bestStreak + '.'
+                },
+                  h('div', { className: 'text-xl font-black ' + (spotStreak >= 5 ? 'text-amber-700' : spotStreak >= 3 ? 'text-orange-700' : 'text-slate-700'),
+                    'aria-hidden': 'true'
+                  }, (spotStreak >= 10 ? '🦅 ' : spotStreak >= 5 ? '🔥 ' : '') + spotStreak),
+                  h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700', 'aria-hidden': 'true' }, 'streak'),
+                  bestStreak > 0 && h('div', { className: 'text-[9px] text-slate-600 mt-0.5', 'aria-hidden': 'true' }, 'best ' + bestStreak)
+                ),
+                // Find counter
+                h('div', { className: 'text-center flex-shrink-0' },
+                  h('div', { className: 'text-3xl font-black text-emerald-700' }, foundCount + ' / ' + totalBirds),
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700' }, 'birds found')
+                )
               )
             ),
             // The habitat scene
             h('div', { className: 'relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
+              // ── Clean Habitat celebration overlay (auto-dismiss after ~3.6s) ──
+              cleanCelebration && h('div', {
+                role: 'status',
+                'aria-live': 'assertive',
+                className: 'absolute inset-0 z-50 flex items-center justify-center pointer-events-none overflow-hidden',
+                style: { background: 'radial-gradient(ellipse at center, rgba(254,243,199,0.85) 0%, rgba(254,243,199,0.5) 50%, rgba(255,255,255,0.2) 100%)' }
+              },
+                // ── Confetti burst (16 particles fanning out + falling) ──
+                Array.from({ length: 18 }, function(_, ci) {
+                  // Deterministic-ish spread so it looks like a burst
+                  var angle = (ci / 18) * Math.PI * 2;
+                  var distance = 120 + (ci % 4) * 22;
+                  var dx = Math.cos(angle) * distance;
+                  var dy = Math.sin(angle) * distance + 40; // bias downward for gravity
+                  var colors = ['#fbbf24', '#f87171', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
+                  var color = colors[ci % colors.length];
+                  var size = 6 + (ci % 3) * 3;
+                  var rotate = (ci * 47) % 360;
+                  var delay = (ci % 6) * 0.04;
+                  return h('div', {
+                    key: 'cnf-' + ci,
+                    'aria-hidden': 'true',
+                    className: 'birdlab-confetti',
+                    style: {
+                      position: 'absolute',
+                      top: '50%', left: '50%',
+                      width: size + 'px', height: (size * (ci % 2 ? 1 : 1.6)) + 'px',
+                      background: color,
+                      borderRadius: ci % 3 === 0 ? '50%' : '2px',
+                      transform: 'translate(-50%, -50%)',
+                      // Pass per-particle motion via CSS custom properties (read by keyframe)
+                      '--dx': dx + 'px',
+                      '--dy': dy + 'px',
+                      '--rot': rotate + 'deg',
+                      animationDelay: delay + 's'
+                    }
+                  });
+                }),
+                h('div', { className: 'birdlab-clean-celebrate relative bg-white border-4 border-amber-500 rounded-2xl shadow-2xl px-6 py-5 text-center max-w-sm mx-4',
+                  style: { boxShadow: '0 12px 36px rgba(217, 119, 6, 0.45), 0 4px 12px rgba(217, 119, 6, 0.25)' }
+                },
+                  // Spinning gold halo behind the medal
+                  h('div', { 'aria-hidden': 'true', className: 'absolute birdlab-trophy-spin',
+                    style: { top: '-12px', left: '50%', width: '96px', height: '96px', transform: 'translateX(-50%)', borderRadius: '50%', background: 'conic-gradient(from 0deg, #fbbf24, #fde047, #f59e0b, #fbbf24)', filter: 'blur(8px)', opacity: 0.55 }
+                  }),
+                  h('div', { 'aria-hidden': 'true', className: 'text-5xl mb-2 relative', style: { textShadow: '0 4px 12px rgba(217, 119, 6, 0.45)' } },
+                    cleanCelebration.medal || '🏆'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-700 mb-1' },
+                    (cleanCelebration.isUpgrade ? 'TIER UPGRADED — ' : '') + (cleanCelebration.tierLabel || 'Clean') + ' Tier'),
+                  h('div', { className: 'text-xl font-black text-slate-900 mb-1' },
+                    cleanCelebration.habitatName + (cleanCelebration.isUpgrade ? ' re-cleared!' : ' cleared!')),
+                  h('div', { className: 'text-sm text-slate-700 mb-2' },
+                    'All ' + cleanCelebration.birdCount + ' birds spotted ',
+                    h('span', { className: 'font-bold text-amber-700' }, 'without a single hint'),
+                    '.'),
+                  h('div', { className: 'flex items-center justify-center gap-2 text-[11px] font-bold text-slate-600 flex-wrap' },
+                    h('span', { className: 'px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full' },
+                      DIFFICULTY_LABELS[cleanCelebration.difficulty]),
+                    cleanCelebration.streak >= 3 && h('span', { className: 'px-2 py-0.5 bg-orange-100 border border-orange-300 rounded-full' },
+                      '🔥 ' + cleanCelebration.streak + '-streak')
+                  )
+                )
+              ),
               h('div', {
                 role: 'img',
                 'aria-label': habitatAriaLabel,
                 className: 'relative w-full h-full',
                 style: { background: habitat.bgGradient }
               },
-                // Layered SVG scene — birds and habitat layers stacked in z-order
+                // Layered SVG scene — birds and habitat layers stacked in z-order.
+                // No `pointer-events-none` here: click targets are foreignObject
+                // buttons rendered INSIDE this SVG (see below), so they share the
+                // same viewBox transform as the birds and stay glued to them.
                 h('svg', {
                   viewBox: '0 0 ' + habitat.width + ' ' + habitat.height,
-                  className: 'absolute inset-0 w-full h-full pointer-events-none',
+                  className: 'absolute inset-0 w-full h-full',
                   preserveAspectRatio: 'xMidYMid slice'
                 },
                   // Static habitat layers 0-3
@@ -3124,9 +10130,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird2-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
                   }),
                   // Habitat layer 3 (midground trees) on top of layer-2 birds
                   habitat.renderLayer(h, 3),
@@ -3135,9 +10144,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird3-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
                   }),
                   // Habitat layer 4 (foreground trees / ground / foliage)
                   habitat.renderLayer(h, 4),
@@ -3146,39 +10158,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird4-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
                   }),
                   // Birds at layer 5 (highest — soaring raptor)
                   habitat.birds.filter(function(b) { return b.layer === 5; }).map(function(b, i) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird5-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
+                  }),
+                  // ── Hint pulse: a pulsing amber ring on the hinted bird's position ──
+                  // Rendered above all bird layers so it's clearly visible even on
+                  // tightly-clustered birds. Auto-clears 3.5s after triggered.
+                  hintActive && (function() {
+                    var hintedBird = null;
+                    for (var bi = 0; bi < habitat.birds.length; bi++) {
+                      if (habitat.birds[bi].species === hintActive.species) { hintedBird = habitat.birds[bi]; break; }
+                    }
+                    if (!hintedBird) return null;
+                    return h('g', { key: 'hint-pulse', 'aria-hidden': 'true' },
+                      // Outer pulsing ring (animates outward + fades)
+                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 12,
+                        fill: 'none', stroke: '#f59e0b', strokeWidth: 3,
+                        className: 'birdlab-hint-ring' }),
+                      // Static inner dot so the location is always pinned
+                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 6,
+                        fill: '#f59e0b', opacity: 0.85,
+                        stroke: '#fef3c7', strokeWidth: 2 })
+                    );
+                  })(),
+                  // ── Click hotspots — foreignObject buttons positioned in SVG
+                  // viewBox coords so they stay glued to the bird sprites no
+                  // matter how the container aspect ratio shifts (minHeight,
+                  // narrow viewports, sliced preserveAspectRatio). Earlier the
+                  // sibling-div % buttons drifted on narrow screens.
+                  habitat.birds.map(function(b, i) {
+                    var sp = BIRDS[b.species];
+                    var isFound = !!found[b.species];
+                    var yFrac = b.y / habitat.height;
+                    var xFrac = b.x / habitat.width;
+                    var vDesc = yFrac < 0.33 ? 'upper sky' : yFrac < 0.66 ? 'mid scene' : 'ground level';
+                    var hDesc = xFrac < 0.33 ? 'left' : xFrac > 0.66 ? 'right' : 'center';
+                    var areaDesc = vDesc + ', ' + hDesc;
+                    var hitSize = 60; // SVG units — scales with the scene
+                    return h('foreignObject', {
+                      key: 'btn-' + i,
+                      x: b.x - hitSize / 2,
+                      y: b.y - hitSize / 2,
+                      width: hitSize,
+                      height: hitSize,
+                      style: { pointerEvents: 'auto', overflow: 'visible' }
+                    },
+                      h('button', {
+                        onClick: function() { handleBirdClick(b, 'spotted'); },
+                        'aria-label': (isFound
+                          ? 'Identified: ' + sp.name + '. Click to review.'
+                          : 'Bird in ' + areaDesc + ': ' + b.hint + '. Click to identify.'),
+                        className: 'birdlab-bird-btn',
+                        style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
+                      },
+                        isFound && h('span', {
+                          'aria-hidden': true,
+                          style: { position: 'absolute', top: '-4px', right: '-4px', background: '#059669', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' }
+                        }, '✓')
+                      )
+                    );
                   })
                 ),
-                // Click hotspots — invisible buttons positioned over each bird (uses % positioning to scale with the SVG)
-                habitat.birds.map(function(b, i) {
-                  var sp = BIRDS[b.species];
-                  var leftPct = (b.x / habitat.width) * 100;
-                  var topPct  = (b.y / habitat.height) * 100;
-                  var isFound = !!found[b.species];
-                  return h('button', {
-                    key: 'btn-' + i,
-                    onClick: function() { handleBirdClick(b); },
-                    'aria-label': (isFound ? 'Identified: ' + sp.name + '. Click to review.' : 'Bird at upper area: ' + b.hint + '. Click to identify.'),
-                    className: 'birdlab-bird-btn',
-                    style: { left: leftPct + '%', top: topPct + '%', width: '40px', height: '40px', transform: 'translate(-50%, -50%)' }
-                  },
-                    isFound && h('span', {
-                      'aria-hidden': true,
-                      style: { position: 'absolute', top: '-4px', right: '-4px', background: '#059669', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' }
-                    }, '✓')
+                // ── Hint banner: shows above the keyboard alternative when a hint is active ──
+                hintActive && (function() {
+                  var hb = null;
+                  for (var bi = 0; bi < habitat.birds.length; bi++) {
+                    if (habitat.birds[bi].species === hintActive.species) { hb = habitat.birds[bi]; break; }
+                  }
+                  if (!hb) return null;
+                  var sp = BIRDS[hb.species];
+                  return h('div', { 'aria-live': 'polite', className: 'absolute top-2 left-2 right-2 bg-amber-100 border-2 border-amber-400 rounded-lg px-3 py-2 shadow-lg flex items-center gap-3 text-sm font-bold text-amber-900' },
+                    // Bird silhouette so the student knows what shape they're looking for
+                    h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 bg-white border-2 border-amber-300 rounded-md p-1', style: { width: '48px', height: '48px' } },
+                      h('svg', { viewBox: '0 0 30 30', style: { width: '100%', height: '100%' } },
+                        h('g', { transform: 'translate(2, 2)' }, sp.svg(h))
+                      )
+                    ),
+                    h('span', { className: 'flex-1 leading-snug min-w-0' },
+                      h('span', { className: 'font-black mr-1' }, '💡 Looking for ' + sp.name + ':'),
+                      hb.hint,
+                      h('span', { className: 'block text-[11px] font-normal mt-0.5 text-amber-800' },
+                        '👉 Now find and click it in the scene to identify.')
+                    )
                   );
-                })
+                })(),
+                // (Click hotspots now rendered inside the SVG above as foreignObject buttons)
               )
             ),
             // Info panel for picked bird
@@ -3263,7 +10343,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-400' },
                         '🐾 ' + (picked.movement || '').replace(/-/g, ' ')),
                       h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-200 text-sky-900 border border-sky-400' },
-                        '📍 ' + foundCount + '/' + totalBirds + ' in this habitat')
+                        '📍 ' + foundCount + '/' + totalBirds + ' in this habitat'),
+                      // Find-source tag — spotted in the scene gets a star, hinted gets the lightbulb
+                      (function() {
+                        var src = foundVia[habitatId + ':' + (function() {
+                          // Look up species id by name (picked is the species object, not the placement)
+                          for (var k in BIRDS) { if (BIRDS[k] === picked) return k; }
+                          return '';
+                        })()];
+                        if (src === 'spotted') {
+                          return h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-500',
+                            title: 'You spotted this one in the scene without using a hint button.' },
+                            '🌟 Spotted!');
+                        }
+                        if (src === 'hinted') {
+                          return h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700 border border-slate-400',
+                            title: 'Identified via the keyboard-alternative button in accessibility mode.' },
+                            '💡 Hinted');
+                        }
+                        return null;
+                      })()
                     )
                   )
                 )
@@ -3290,25 +10389,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 )
               )
             ),
-            // Keyboard alternative — list of birds for tabbing
+            // Birds in this scene — hint mode by default, accessibility toggle for direct ID
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
-              h('div', { className: 'flex items-center justify-between mb-2 flex-wrap gap-2' },
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, 'Birds in this scene (keyboard alternative)'),
-                h('span', { className: 'text-xs text-slate-700' }, 'Use these buttons if you can\'t use the spatial hotspots above')
+              h('div', { className: 'flex items-center justify-between mb-3 flex-wrap gap-2' },
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' },
+                  'Birds in this scene',
+                  hintMode
+                    ? h('span', { className: 'ml-2 text-[10px] font-mono text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full normal-case tracking-normal' },
+                        HINT_BUDGET === 0 ? '👑 Expert · 0 hints' : '💡 Hint mode · ' + hintsLeft + '/' + HINT_BUDGET + ' left')
+                    : h('span', { className: 'ml-2 text-[10px] font-mono text-blue-700 bg-blue-100 border border-blue-300 px-2 py-0.5 rounded-full normal-case tracking-normal' },
+                        '♿ Accessibility mode')
+                ),
+                h('button', {
+                  onClick: toggleHintMode,
+                  'aria-pressed': hintMode ? 'false' : 'true',
+                  'aria-label': hintMode ? 'Switch to accessibility mode (direct identify, unlimited)' : 'Switch to hint mode (spotting challenge)',
+                  className: 'text-[11px] font-bold px-2 py-1 rounded-md border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
+                    (hintMode ? 'bg-white text-slate-700 border-slate-300 hover:border-blue-500' : 'bg-blue-50 text-blue-800 border-blue-400')
+                }, hintMode ? '♿ I need direct access' : '💡 Back to hint mode')
               ),
+              // Difficulty selector — only visible in hint mode (accessibility mode is unlimited)
+              hintMode && h('div', { className: 'mb-3 flex items-center gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Hint budget difficulty' },
+                h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mr-1' }, 'Difficulty:'),
+                ['easy', 'normal', 'hard', 'expert'].map(function(diffKey) {
+                  var isActive = difficulty === diffKey;
+                  var budget = DIFFICULTY_BUDGETS[diffKey];
+                  return h('button', {
+                    key: diffKey,
+                    role: 'radio',
+                    'aria-checked': isActive ? 'true' : 'false',
+                    onClick: function() {
+                      setDifficulty(diffKey);
+                      upd('blDifficulty', diffKey);
+                      announce('Difficulty: ' + DIFFICULTY_LABELS[diffKey] + '. ' + budget + ' hint' + (budget === 1 ? '' : 's') + ' per habitat.');
+                    },
+                    className: 'text-[10px] font-bold px-2 py-1 rounded-md border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
+                      (isActive ? 'bg-amber-100 text-amber-900 border-amber-500' : 'bg-white text-slate-700 border-slate-300 hover:border-amber-400'),
+                    title: budget + ' hint' + (budget === 1 ? '' : 's') + ' per habitat'
+                  }, DIFFICULTY_LABELS[diffKey], h('span', { className: 'ml-1 text-slate-500 font-mono' }, '(' + budget + ')'));
+                })
+              ),
+              h('p', { className: 'text-[11px] text-slate-700 mb-3 leading-snug' },
+                hintMode
+                  ? h('span', null,
+                      h('strong', { className: 'text-amber-800' }, 'Hint mode: '),
+                      'each button reveals where the bird is — but you still have to find and click it in the scene to identify it. ',
+                      h('strong', null, 'Spotting beats button-clicking.'),
+                      ' If you need direct access, tap the toggle above (unlimited).'
+                    )
+                  : h('span', null,
+                      h('strong', { className: 'text-blue-800' }, 'Accessibility mode: '),
+                      'buttons identify birds directly. Unlimited use.'
+                    )
+              ),
+              hintMode && hintsLeft === 0 && h('div', { 'aria-live': 'polite', className: 'mb-3 p-2 bg-amber-50 border-2 border-amber-300 rounded-lg text-[11px] text-amber-900' },
+                'Out of hints for this habitat. Keep scanning the scene — the birds are there. Or switch to accessibility mode if you need direct identification.'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
                 habitat.birds.map(function(b, i) {
                   var sp = BIRDS[b.species];
                   var isFound = !!found[b.species];
+                  var btnDisabled = hintMode && !isFound && hintsLeft === 0;
+                  var foundViaThis = foundVia[habitatId + ':' + b.species];
                   return h('button', {
                     key: 'kbd-' + i,
-                    onClick: function() { handleBirdClick(b); },
+                    disabled: btnDisabled,
+                    onClick: function() {
+                      if (isFound) {
+                        // Already found — show the info panel (no double-credit, no hint cost)
+                        setPicked(BIRDS[b.species]);
+                        return;
+                      }
+                      if (hintMode) fireHint(b);
+                      else handleBirdClick(b, 'hinted'); // accessibility direct-identify
+                    },
+                    'aria-label': isFound
+                      ? sp.name + ' — found. Click to review.'
+                      : (hintMode
+                          ? 'Reveal hint for ' + sp.name + (btnDisabled ? ' (no hints remaining)' : '')
+                          : 'Identify ' + sp.name + ' directly'),
                     className: 'text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
-                      (isFound ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-300 hover:border-emerald-500')
+                      (isFound
+                        ? 'bg-emerald-50 border-emerald-400'
+                        : btnDisabled
+                          ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                          : 'bg-white border-slate-300 hover:border-emerald-500')
                   },
                     h('div', { className: 'text-xs font-bold text-slate-800 flex items-center gap-1.5' },
-                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, '○'),
-                      sp.name
+                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, hintMode ? '💡' : '○'),
+                      sp.name,
+                      isFound && foundViaThis === 'spotted' && h('span', { 'aria-label': 'Spotted in the scene', title: 'You spotted this one in the scene', className: 'ml-1 text-[10px] text-amber-600' }, '🌟')
                     ),
                     h('div', { className: 'text-[10px] text-slate-700 mt-0.5 italic' }, b.hint)
                   );
@@ -3434,22 +10603,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     opacity: isPicked ? 1 : 0.85,
                     'aria-hidden': true
                   });
+                }),
+                // Hotspot buttons — positioned inside the SVG via foreignObject
+                // so they stay aligned to the visual circles regardless of the
+                // container aspect ratio. Earlier sibling-div % buttons drifted
+                // when minHeight broke the implied aspectRatio on narrow views.
+                fm.hotspots.map(function(hs) {
+                  var hitR = Math.max(hs.r, 18);
+                  return h('foreignObject', {
+                    key: 'btn-' + hs.id,
+                    x: hs.x - hitR,
+                    y: hs.y - hitR,
+                    width: hitR * 2,
+                    height: hitR * 2,
+                    style: { pointerEvents: 'auto', overflow: 'visible' }
+                  },
+                    h('button', {
+                      onClick: function() { pickHotspot(hs); },
+                      'aria-label': hs.label + (hsVisited(hs) ? ' (explored)' : ''),
+                      'aria-pressed': picked && picked.id === hs.id ? 'true' : 'false',
+                      className: 'birdlab-bird-btn',
+                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
+                    })
+                  );
                 })
-              ),
-              // Hotspot buttons (positioned over the SVG using percent-based positioning)
-              fm.hotspots.map(function(hs) {
-                var leftPct = (hs.x / 320) * 100;
-                var topPct  = (hs.y / 240) * 100;
-                var sizePct = (hs.r * 2 / 320) * 100;
-                return h('button', {
-                  key: 'btn-' + hs.id,
-                  onClick: function() { pickHotspot(hs); },
-                  'aria-label': hs.label + (hsVisited(hs) ? ' (explored)' : ''),
-                  'aria-pressed': picked && picked.id === hs.id ? 'true' : 'false',
-                  className: 'birdlab-bird-btn',
-                  style: { left: leftPct + '%', top: topPct + '%', width: sizePct + '%', aspectRatio: '1', transform: 'translate(-50%, -50%)' }
-                });
-              })
+              )
             ),
             // Detail card for picked hotspot — specimen-card layout with zoom inset
             picked && (function() {
@@ -4058,6 +11236,193 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }, '?')
         );
       }
+
+      // Visual SPECTROGRAM strip — same mnemonic → frequency-vs-time view.
+      // Pairs with songRhythmStrip (which shows only timing): each note is
+      // rendered as a thin horizontal band at its actual pitch, so students
+      // can see the SHAPE of the call (rising? falling? steady? "see-bee"?).
+      // This is how field guides teach call ID — the spectrogram silhouette
+      // is the visual fingerprint. UDL: pairs the audio playback with a
+      // visual representation for learners who decode visuals faster than
+      // sustained audio.
+      // Classify the OVERALL CALL SHAPE from a note list. Returns one of:
+      // 'rising' | 'falling' | 'steady' | 'two-note' | 'trill' | 'complex'.
+      // This is the language real field guides use to describe call patterns;
+      // the spectrogram visualizes it, this descriptor names it.
+      function classifyCallShape(notes) {
+        if (!notes || notes.length === 0) return null;
+        if (notes.length === 1) return 'steady';
+        // Frequency stats
+        var freqs = notes.map(function(n) { return n.freq; });
+        var minF = Math.min.apply(null, freqs);
+        var maxF = Math.max.apply(null, freqs);
+        var range = maxF - minF;
+        var first = notes[0].freq;
+        var last = notes[notes.length - 1].freq;
+        var delta = last - first;
+        // Trill: 4+ short repeating same-freq notes
+        if (notes.length >= 4 && range < 120) {
+          var allShort = notes.every(function(n) { return n.dur < 0.2; });
+          if (allShort) return 'trill';
+        }
+        // Two-note: exactly 2 distinct freqs
+        if (notes.length === 2 && range > 200) return 'two-note';
+        // Steady: range under 150 Hz
+        if (range < 150) return 'steady';
+        // Rising / falling: overall trend strong + monotonic-ish
+        if (Math.abs(delta) > 250) {
+          // Check monotonic-ish: count notes that follow the trend
+          var sign = delta > 0 ? 1 : -1;
+          var followers = 0;
+          for (var i = 1; i < notes.length; i++) {
+            if ((notes[i].freq - notes[i - 1].freq) * sign >= -30) followers++;
+          }
+          if (followers / (notes.length - 1) >= 0.65) {
+            return delta > 0 ? 'rising' : 'falling';
+          }
+        }
+        return 'complex';
+      }
+
+      // Visual SPECTROGRAM strip — same mnemonic → frequency-vs-time view.
+      // v2: includes an animated playhead that sweeps across during playback +
+      // a call-shape descriptor badge that translates the silhouette into the
+      // field-guide language students need to read real bird guides.
+      // `isPlaying` (optional) toggles the playhead sweep animation.
+      function songSpectrogram(mnemonic, color, isPlaying) {
+        if (!mnemonic) return null;
+        var notes = mnemonicToTones(mnemonic);
+        if (!notes.length) return null;
+        var stripColor = color || '#0ea5e9';
+        // Time scale: pixels per second so the strip is comfortable to read.
+        var PX_PER_SEC = 90;
+        var H = 56;
+        var leftPad = 24;  // room for frequency-axis label
+        // Build x-positions in seconds first
+        var tCursor = 0;
+        var noteRects = notes.map(function(n) {
+          var rect = { x0: tCursor, x1: tCursor + n.dur, freq: n.freq, emph: n.emph };
+          tCursor += n.dur + n.gap;
+          return rect;
+        });
+        var totalSec = tCursor;
+        var widthPx = leftPad + Math.max(60, totalSec * PX_PER_SEC);
+        // Frequency range: songbird mid 2300–3500 Hz works for our mnemonic synth.
+        // Pad ±100 Hz so notes don't sit flush against edges.
+        var FMIN = 2200, FMAX = 3500;
+        function freqToY(f) {
+          var clamped = Math.max(FMIN, Math.min(FMAX, f));
+          // Higher freq = top of strip (smaller y)
+          return 4 + (1 - (clamped - FMIN) / (FMAX - FMIN)) * (H - 14);
+        }
+        // Classify the call shape for the descriptor badge
+        var shape = classifyCallShape(notes);
+        var shapeLabels = {
+          rising:    { icon: '↗', text: 'Rising',   bg: '#0e7490', fg: '#cffafe' },
+          falling:   { icon: '↘', text: 'Falling',  bg: '#a16207', fg: '#fef3c7' },
+          steady:    { icon: '→', text: 'Steady',   bg: '#475569', fg: '#e2e8f0' },
+          'two-note':{ icon: '⤴', text: 'Two-note', bg: '#7c3aed', fg: '#ede9fe' },
+          trill:     { icon: '∿', text: 'Trill',    bg: '#be185d', fg: '#fce7f3' },
+          complex:   { icon: '⤳', text: 'Complex',  bg: '#1e40af', fg: '#dbeafe' }
+        };
+        var shapeStyle = shape && shapeLabels[shape];
+
+        // Inject playhead CSS once per page
+        try {
+          if (typeof document !== 'undefined' && !document.getElementById('birdlab-playhead-css')) {
+            var st = document.createElement('style');
+            st.id = 'birdlab-playhead-css';
+            st.textContent =
+              '@keyframes birdlab-playhead-sweep {' +
+              '  0%   { transform: translateX(0); opacity: 0.95; }' +
+              '  98%  { opacity: 0.95; }' +
+              '  100% { transform: translateX(var(--birdlab-sweep-x, 0)); opacity: 0; }' +
+              '}' +
+              '.birdlab-playhead { animation: birdlab-playhead-sweep var(--birdlab-sweep-dur, 2s) linear forwards; }' +
+              '@media (prefers-reduced-motion: reduce) { .birdlab-playhead { animation: none !important; opacity: 0 !important; } }';
+            document.head.appendChild(st);
+          }
+        } catch (e) { /* SSR-safe */ }
+
+        var sweepDistance = (widthPx - leftPad - 2);
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+          h('svg', {
+            viewBox: '0 0 ' + widthPx + ' ' + H,
+            width: '100%',
+            style: { maxWidth: widthPx + 'px', height: H, display: 'block' },
+            'aria-hidden': 'true'
+          },
+            // Spectrogram background panel (dark like a real spectrogram)
+            h('rect', { x: leftPad, y: 2, width: widthPx - leftPad - 2, height: H - 4,
+              rx: 3, fill: '#0f172a', opacity: 0.92 }),
+            // Faint frequency grid lines (3 horizontal divisions)
+            [0.25, 0.5, 0.75].map(function(gp, i) {
+              var y = 4 + gp * (H - 14);
+              return h('line', { key: 'gl' + i,
+                x1: leftPad, x2: widthPx - 2, y1: y, y2: y,
+                stroke: '#334155', strokeWidth: 0.5, strokeDasharray: '2,3' });
+            }),
+            // Frequency-axis labels (just "high"/"low" — kid-friendly)
+            h('text', { x: 2, y: 9, fontSize: 7, fontWeight: 'bold', fill: '#0ea5e9' }, 'high'),
+            h('text', { x: 2, y: H - 6, fontSize: 7, fontWeight: 'bold', fill: '#0ea5e9' }, 'low'),
+            h('text', { x: 2, y: H / 2 + 3, fontSize: 6, fill: '#64748b' }, 'pitch'),
+            // Each note: a thin colored band centered on its frequency.
+            noteRects.map(function(r, i) {
+              var x = leftPad + r.x0 * PX_PER_SEC;
+              var w = Math.max(4, (r.x1 - r.x0) * PX_PER_SEC);
+              var y = freqToY(r.freq);
+              // Color shifts up with emphasis (cyan → amber for emphasized notes)
+              var fill = r.emph ? '#fbbf24' : stripColor;
+              return h('g', { key: 'sp' + i },
+                // Soft glow (wider, fainter)
+                h('rect', { x: x - 0.5, y: y - 3, width: w + 1, height: 9,
+                  rx: 4, fill: fill, opacity: 0.22 }),
+                // Solid band
+                h('rect', { x: x, y: y - 1.5, width: w, height: 4,
+                  rx: 2, fill: fill, opacity: r.emph ? 0.95 : 0.85 })
+              );
+            }),
+            // Animated playhead — vertical line that sweeps across during
+            // playback. Keyed by `isPlaying` so toggling restarts the animation.
+            isPlaying && h('line', {
+              key: 'ph-' + Date.now(),  // forces fresh animation on each play
+              x1: leftPad, y1: 2, x2: leftPad, y2: H - 2,
+              stroke: '#fef9c3', strokeWidth: 1.6,
+              className: 'birdlab-playhead',
+              style: {
+                '--birdlab-sweep-x': sweepDistance + 'px',
+                '--birdlab-sweep-dur': Math.max(0.6, totalSec) + 's'
+              }
+            })
+          ),
+          // Call-shape descriptor — small badge under the strip
+          shapeStyle && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 } },
+            h('span', { style: { fontSize: 9, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Shape'),
+            h('span', {
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                padding: '1px 7px', borderRadius: 999,
+                background: shapeStyle.bg, color: shapeStyle.fg,
+                fontSize: 10, fontWeight: 700, letterSpacing: 0.3
+              }
+            },
+              h('span', { 'aria-hidden': true, style: { fontSize: 11 } }, shapeStyle.icon),
+              shapeStyle.text
+            ),
+            h('span', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic' } },
+              ({
+                rising: 'pitch climbs upward',
+                falling: 'pitch drops downward',
+                steady: 'pitch stays level',
+                'two-note': 'two distinct pitches',
+                trill: 'rapid same-pitch repetition',
+                complex: 'mixed pattern'
+              })[shape] || ''
+            )
+          )
+        );
+      }
+
       // ───────────────────────────────────────────────
       // Web Audio "tone sketch" — synthesized whistled
       // rhythms from a mnemonic. Each syllable maps to a
@@ -4463,10 +11828,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         )
                       ),
                       h('p', { className: 'text-sm text-slate-800 italic mb-1.5' }, c.mnemonic),
-                      // Rhythm strip — visual cadence
+                      // Rhythm strip — visual cadence (time only)
                       h('div', { className: 'flex items-end gap-2 mt-1.5 pt-1.5 border-t border-violet-200' },
                         h('span', { className: 'text-[9px] font-bold uppercase tracking-wider text-violet-700 flex-shrink-0', style: { lineHeight: '22px' } }, 'Rhythm'),
                         h('div', { style: { flex: 1, minWidth: 0 } }, songRhythmStrip(c.mnemonic, '#7c3aed'))
+                      ),
+                      // Spectrogram strip — frequency-vs-time view of the same call.
+                      // Animated playhead sweeps across during playback, pairing
+                      // the audio with the visual silhouette field guides use.
+                      h('div', { className: 'flex items-start gap-2 mt-1.5 pt-1.5 border-t border-violet-100' },
+                        h('span', { className: 'text-[9px] font-bold uppercase tracking-wider text-cyan-700 flex-shrink-0', style: { lineHeight: '14px', paddingTop: 2 } }, 'Spectrogram'),
+                        h('div', { style: { flex: 1, minWidth: 0 } }, songSpectrogram(c.mnemonic, '#22d3ee', isPlaying))
                       ),
                       isPlaying && h('div', { className: 'mt-1 text-[10px] italic text-violet-700', 'aria-live': 'polite' },
                         '🎶 Playing synthesized rhythm — open Merlin Bird ID for the real recording.')
@@ -9879,6 +17251,986 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         );
       }
 
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 2 EXPANSION VIEWS — visual + interactive content
+      // ═══════════════════════════════════════════════════════════
+
+      // ── NEST GALLERY ─────────────────────────────────────────
+      function NestGallery() {
+        var selState = useState(NESTS[0].id);
+        var sel = selState[0], setSel = selState[1];
+        var picked = NESTS.find(function(n) { return n.id === sel; }) || NESTS[0];
+
+        var renderNestSVG = function(svg) {
+          var sz = svg.size || 100;
+          var w = 400, hgt = 320;
+          var cx = w / 2, cy = hgt / 2;
+          var eggs = [];
+          for (var i = 0; i < (svg.eggCount || 1); i++) {
+            var angle = (i / Math.max(svg.eggCount, 1)) * Math.PI * 2;
+            var r = sz / 6;
+            eggs.push(h('ellipse', {
+              key: 'e' + i,
+              cx: cx + Math.cos(angle) * r,
+              cy: cy + Math.sin(angle) * r * 0.6,
+              rx: Math.max(8, sz / 12),
+              ry: Math.max(10, sz / 9),
+              fill: svg.eggColor || '#fef3c7',
+              stroke: '#475569', strokeWidth: 1
+            }));
+          }
+          var shapeEl;
+          if (svg.shape === 'platform' || svg.shape === 'cup' || svg.shape === 'mound' || svg.shape === 'scrape') {
+            shapeEl = h('g', null,
+              h('ellipse', { cx: cx, cy: cy + sz/4, rx: sz/1.5, ry: sz/4, fill: svg.color || '#92400e', stroke: '#451a03', strokeWidth: 2 }),
+              h('ellipse', { cx: cx, cy: cy + sz/6, rx: sz/2.2, ry: sz/5, fill: '#1e293b', opacity: 0.35 }));
+          } else if (svg.shape === 'pouch') {
+            shapeEl = h('path', { d: 'M ' + (cx-sz/3) + ' ' + (cy-sz/4) + ' Q ' + cx + ' ' + (cy+sz/1.2) + ' ' + (cx+sz/3) + ' ' + (cy-sz/4) + ' Z', fill: svg.color || '#a16207', stroke: '#451a03', strokeWidth: 2 });
+          } else if (svg.shape === 'gourd') {
+            shapeEl = h('path', { d: 'M ' + (cx-sz/3) + ' ' + (cy-sz/3) + ' Q ' + (cx-sz/2) + ' ' + cy + ' ' + cx + ' ' + (cy+sz/3) + ' Q ' + (cx+sz/2) + ' ' + cy + ' ' + (cx+sz/3) + ' ' + (cy-sz/3) + ' Q ' + cx + ' ' + (cy-sz/2.4) + ' ' + (cx-sz/3) + ' ' + (cy-sz/3) + ' Z', fill: svg.color || '#a16207', stroke: '#451a03', strokeWidth: 2 });
+          } else if (svg.shape === 'cavity') {
+            shapeEl = h('g', null,
+              h('rect', { x: cx-sz/2.5, y: cy-sz/2, width: sz*0.8, height: sz, fill: svg.treeColor || '#44403c', rx: 6 }),
+              h('ellipse', { cx: cx, cy: cy, rx: sz/3, ry: sz/2.5, fill: '#0a0a0a' }),
+              h('ellipse', { cx: cx, cy: cy + sz/4, rx: sz/3.5, ry: sz/8, fill: svg.color || '#92400e' }));
+          } else if (svg.shape === 'burrow') {
+            shapeEl = h('g', null,
+              h('rect', { x: 50, y: cy-20, width: w-100, height: hgt/2, fill: svg.treeColor || '#a3a3a3', rx: 8 }),
+              h('ellipse', { cx: cx, cy: cy, rx: sz/2.5, ry: sz/3.5, fill: '#0a0a0a' }));
+          } else {
+            shapeEl = h('ellipse', { cx: cx, cy: cy + sz/4, rx: sz/2, ry: sz/5, fill: svg.color || '#92400e', stroke: '#451a03', strokeWidth: 2 });
+          }
+          return h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', maxHeight: 280, background: 'linear-gradient(180deg, #dbeafe 0%, #fef3c7 60%, #d6d3d1 100%)', borderRadius: 12 } },
+            shapeEl,
+            eggs);
+        };
+
+        return h('div', { className: 'p-4 max-w-6xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪺 Nest Gallery — Maine Breeding Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Click any species to see its nest structure, dimensions, materials, eggs, and story. Maine\'s 20 breeding species + nest profiles.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+            h('div', { className: 'md:col-span-1 bg-white rounded-xl shadow border border-slate-200 p-3 max-h-[600px] overflow-y-auto' },
+              NESTS.map(function(n, i) {
+                var active = n.id === sel;
+                return h('button', { key: n.id, onClick: function() { setSel(n.id); },
+                  className: 'w-full text-left px-3 py-2 rounded-lg mb-1.5 text-sm transition ' +
+                    (active ? 'bg-amber-100 border-amber-500 border-2 font-bold text-amber-900' : 'bg-slate-50 hover:bg-amber-50 border border-slate-200 text-slate-800')
+                }, n.species);
+              })),
+            h('div', { className: 'md:col-span-2 bg-white rounded-xl shadow border border-slate-200 p-4' },
+              h('h2', { className: 'text-xl font-black text-amber-900 mb-2' }, picked.species),
+              h('div', { className: 'mb-3' }, renderNestSVG(picked.svg)),
+              h('div', { className: 'space-y-2 text-sm' },
+                h('div', null, h('b', null, 'Type: '), picked.type),
+                h('div', null, h('b', null, 'Location: '), picked.location),
+                h('div', { className: 'grid grid-cols-3 gap-2 my-2' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, 'Diameter: '), picked.diameter),
+                  h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, 'Depth: '), picked.depth),
+                  h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, 'Weight: '), picked.weight)),
+                h('div', null, h('b', null, 'Materials: '), picked.materials),
+                h('div', { className: 'p-2 bg-sky-50 rounded text-xs' }, h('b', null, 'Eggs: '), picked.eggs),
+                h('div', { className: 'mt-3 p-3 bg-slate-50 rounded border-l-4 border-amber-600 italic text-slate-700' }, picked.story)
+              ))));
+      }
+
+      // ── EGG GALLERY ─────────────────────────────────────────
+      function EggGallery() {
+        var sortState = useState('size');
+        var sortBy = sortState[0], setSortBy = sortState[1];
+        var detailState = useState(null);
+        var detail = detailState[0], setDetail = detailState[1];
+
+        var sorted = EGGS_DATA.slice().sort(function(a, b) {
+          if (sortBy === 'size') {
+            var sa = parseFloat((a.dimensions||'').split('×')[0]) || 0;
+            var sb = parseFloat((b.dimensions||'').split('×')[0]) || 0;
+            return sb - sa;
+          }
+          return a.species.localeCompare(b.species);
+        });
+
+        var renderEgg = function(e, scale) {
+          var dim = (e.dimensions||'').match(/(\d+)\s*×\s*(\d+)/);
+          var w = dim ? parseInt(dim[1]) : 25;
+          var hgt = dim ? parseInt(dim[2]) : 18;
+          var s = scale || 1.5;
+          var rx = w * s / 2, ry = hgt * s / 2;
+          var patternEl = null;
+          if (e.pattern === 'spotted' || e.pattern === 'speckled') {
+            patternEl = [];
+            for (var i = 0; i < 12; i++) {
+              var ang = (i / 12) * Math.PI * 2;
+              var pr = Math.random() * rx * 0.7;
+              patternEl.push(h('circle', { key: 'p' + i, cx: rx + Math.cos(ang) * pr, cy: ry + Math.sin(ang) * pr * 0.8, r: 1.5, fill: '#7c2d12' }));
+            }
+          } else if (e.pattern === 'blotched') {
+            patternEl = [];
+            for (var j = 0; j < 6; j++) {
+              var ang2 = (j / 6) * Math.PI * 2;
+              patternEl.push(h('ellipse', { key: 'p' + j, cx: rx + Math.cos(ang2) * rx * 0.5, cy: ry + Math.sin(ang2) * ry * 0.5, rx: 3, ry: 2, fill: '#7c2d12', opacity: 0.6 }));
+            }
+          } else if (e.pattern === 'scrawled') {
+            patternEl = h('path', { d: 'M ' + (rx*0.4) + ' ' + (ry*0.6) + ' Q ' + rx + ' ' + (ry*0.3) + ' ' + (rx*1.6) + ' ' + (ry*0.7) + ' M ' + (rx*0.5) + ' ' + (ry*1.3) + ' Q ' + rx + ' ' + (ry*1.5) + ' ' + (rx*1.5) + ' ' + (ry*1.2), stroke: '#0c0a09', strokeWidth: 1, fill: 'none' });
+          }
+          return h('svg', { viewBox: '0 0 ' + (rx*2) + ' ' + (ry*2), style: { width: rx*2, height: ry*2 } },
+            h('ellipse', { cx: rx, cy: ry, rx: rx-1, ry: ry-1, fill: e.color || '#fef3c7', stroke: '#475569', strokeWidth: 0.8 }),
+            patternEl);
+        };
+
+        return h('div', { className: 'p-4 max-w-6xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🥚 Egg Gallery — Maine Bird Eggs to Scale'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Eggs shown to relative scale. Click any egg to read its species story.'),
+          h('div', { className: 'flex gap-2 mb-3' },
+            h('button', { onClick: function() { setSortBy('size'); },
+              className: 'px-3 py-1 rounded text-xs font-bold ' + (sortBy === 'size' ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700') }, 'Sort by size'),
+            h('button', { onClick: function() { setSortBy('alpha'); },
+              className: 'px-3 py-1 rounded text-xs font-bold ' + (sortBy === 'alpha' ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700') }, 'Sort alphabetically')
+          ),
+          h('div', { className: 'bg-amber-50 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3' },
+            sorted.map(function(e, i) {
+              var picked = detail && detail.species === e.species;
+              return h('button', { key: i, onClick: function() { setDetail(e); },
+                className: 'flex flex-col items-center p-2 rounded-lg ' + (picked ? 'bg-amber-200 ring-2 ring-amber-600' : 'bg-white hover:bg-amber-100') + ' transition border border-amber-200'
+              },
+                renderEgg(e, 1.5),
+                h('div', { className: 'text-[10px] text-center mt-1 font-bold text-slate-800' }, e.species),
+                h('div', { className: 'text-[9px] text-slate-500' }, e.dimensions));
+            })),
+          detail && h('div', { className: 'mt-4 p-4 bg-white rounded-xl shadow border-2 border-amber-300' },
+            h('div', { className: 'flex items-center gap-4 mb-3' },
+              h('div', null, renderEgg(detail, 3)),
+              h('div', null,
+                h('h2', { className: 'text-xl font-black text-amber-900' }, detail.species),
+                h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Dimensions: '), detail.dimensions),
+                h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Clutch size: '), detail.clutch),
+                h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Pattern: '), detail.pattern))),
+            h('p', { className: 'text-sm text-slate-700 italic leading-relaxed' }, detail.notes)
+          )
+        );
+      }
+
+      // ── FEATHER ANATOMY LAB ─────────────────────────────────────────
+      function FeatherAnatomyLab() {
+        var sel = useState(null);
+        var pick = sel[0], setPick = sel[1];
+        var picked = pick ? FEATHER_PARTS.find(function(p) { return p.id === pick; }) : null;
+
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪶 Feather Anatomy Interactive Lab'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Click any labeled part of the feather to learn its name and function. Feathers are the most complex structure ever evolved.'),
+          h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
+            h('div', { className: 'bg-gradient-to-b from-sky-100 to-amber-50 rounded-xl p-6 shadow' },
+              h('svg', { viewBox: '0 0 400 420', style: { width: '100%', maxHeight: 500 } },
+                h('defs', null,
+                  h('linearGradient', { id: 'featherShaft', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#fef3c7' }),
+                    h('stop', { offset: '100%', stopColor: '#92400e' })),
+                  h('linearGradient', { id: 'featherVane', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: '#7dd3fc' }),
+                    h('stop', { offset: '50%', stopColor: '#60a5fa' }),
+                    h('stop', { offset: '100%', stopColor: '#3b82f6' }))),
+                h('path', { d: 'M 200 40 Q 360 100 320 220 Q 280 320 200 380 Q 120 320 80 220 Q 40 100 200 40 Z',
+                  fill: 'url(#featherVane)', stroke: '#1e293b', strokeWidth: 1.5, opacity: 0.7 }),
+                Array.from({length: 28}).map(function(_, i) {
+                  var yp = 50 + i * 12;
+                  var w = i < 4 ? 25 + i*15 : (i > 22 ? 80 - (i-22)*16 : 120 - Math.abs(i-13)*3);
+                  return h('g', { key: 'b' + i },
+                    h('line', { x1: 200, y1: yp, x2: 200-w, y2: yp+5, stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.6 }),
+                    h('line', { x1: 200, y1: yp, x2: 200+w, y2: yp+5, stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.6 }));
+                }),
+                h('rect', { x: 195, y: 40, width: 10, height: 340, fill: 'url(#featherShaft)', rx: 4 }),
+                FEATHER_PARTS.map(function(p, i) {
+                  var active = pick === p.id;
+                  return h('g', { key: p.id, onClick: function() { setPick(p.id); }, style: { cursor: 'pointer' } },
+                    h('circle', { cx: p.x, cy: p.y, r: 18, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
+                    h('text', { x: p.x, y: p.y+5, textAnchor: 'middle', fontSize: 16, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
+                }))),
+            h('div', { className: 'space-y-3' },
+              picked
+                ? h('div', { className: 'bg-white rounded-xl shadow p-4 border-2 border-amber-300' },
+                    h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, picked.label),
+                    h('div', { className: 'p-3 bg-amber-50 rounded mb-2' },
+                      h('div', { className: 'text-xs font-bold text-amber-800 uppercase tracking-wider mb-1' }, 'What it is'),
+                      h('p', { className: 'text-sm text-slate-700' }, picked.what)),
+                    h('div', { className: 'p-3 bg-sky-50 rounded' },
+                      h('div', { className: 'text-xs font-bold text-sky-800 uppercase tracking-wider mb-1' }, 'Its function'),
+                      h('p', { className: 'text-sm text-slate-700' }, picked.function)))
+                : h('div', { className: 'bg-amber-50 rounded-xl p-6 text-center text-slate-600 italic' },
+                    '👈 Click a number on the feather to learn that part'),
+              h('div', { className: 'bg-slate-50 rounded-xl p-4 text-xs text-slate-700' },
+                h('h3', { className: 'font-bold text-slate-800 mb-2' }, 'Did you know?'),
+                h('ul', { className: 'list-disc ml-5 space-y-1' },
+                  h('li', null, 'Feathers evolved from reptile scales — feathered dinosaurs preceded modern birds.'),
+                  h('li', null, 'A single feather has 1 million+ microscopic hooklets binding barbs together.'),
+                  h('li', null, 'Birds preen daily to re-hook disrupted barbules + apply oil from the uropygial gland.'),
+                  h('li', null, 'Bird feathers are stronger by weight than steel.'),
+                  h('li', null, 'A wild turkey has ~5,500 feathers; a hummingbird ~940.')))
+            ))
+        );
+      }
+
+      // ── SILHOUETTE QUIZ ─────────────────────────────────────────
+      function SilhouetteQuiz() {
+        var stateIdx = useState(0);
+        var idx = stateIdx[0], setIdx = stateIdx[1];
+        var stateScore = useState(0);
+        var score = stateScore[0], setScore = stateScore[1];
+        var stateAttempted = useState(0);
+        var attempted = stateAttempted[0], setAttempted = stateAttempted[1];
+        var stateFeedback = useState(null);
+        var feedback = stateFeedback[0], setFeedback = stateFeedback[1];
+
+        var cur = SILHOUETTES[idx];
+
+        var renderSilhouette = function(shape) {
+          var w = 300, hgt = 200;
+          if (shape === 'eagle') return h('path', { d: 'M 150 100 L 80 80 Q 40 90 30 100 Q 50 95 80 100 L 145 105 L 145 130 L 155 130 L 155 105 L 220 100 Q 250 95 270 100 Q 260 90 220 80 Z M 150 100 L 150 80 Q 145 75 140 75 Q 140 85 145 95 Z', fill: '#1e293b' });
+          if (shape === 'osprey') return h('path', { d: 'M 60 100 L 130 95 L 150 80 L 170 95 L 240 100 Q 220 85 180 90 L 155 88 Q 153 86 155 75 Q 153 86 145 88 L 120 90 Q 80 85 60 100 Z', fill: '#1e293b' });
+          if (shape === 'turkeyvulture') return h('path', { d: 'M 50 110 Q 60 90 80 95 L 145 100 L 150 95 L 155 100 L 220 95 Q 240 90 250 110 L 230 105 L 165 105 L 150 110 L 135 105 L 70 105 Z', fill: '#1e293b' });
+          if (shape === 'buteo') return h('ellipse', { cx: 150, cy: 100, rx: 110, ry: 20, fill: '#1e293b' });
+          if (shape === 'accipiter') return h('path', { d: 'M 80 100 L 145 95 L 150 80 L 155 95 L 220 100 L 150 130 Z', fill: '#1e293b' });
+          if (shape === 'falcon' || shape === 'falcon-large') return h('path', { d: 'M 70 110 Q 130 80 145 95 L 150 80 L 155 95 Q 170 80 230 110 L 200 100 L 150 100 L 100 100 Z', fill: '#1e293b' });
+          if (shape === 'gull') return h('path', { d: 'M 50 100 Q 100 75 150 90 Q 200 75 250 100 Q 230 95 200 95 L 150 90 L 100 95 Q 70 95 50 100 Z', fill: '#1e293b' });
+          if (shape === 'tern') return h('path', { d: 'M 60 100 Q 110 85 145 90 L 150 85 L 155 90 Q 190 85 240 100 L 200 90 L 160 105 L 150 115 L 140 105 L 100 90 Z', fill: '#1e293b' });
+          if (shape === 'heron') return h('g', null,
+            h('path', { d: 'M 50 100 L 150 95 Q 200 85 250 100 Z', fill: '#1e293b' }),
+            h('path', { d: 'M 150 95 L 160 80 Q 170 75 175 90 Z', fill: '#1e293b' }),
+            h('line', { x1: 150, y1: 105, x2: 140, y2: 150, stroke: '#1e293b', strokeWidth: 3 }));
+          if (shape === 'cormorant') return h('path', { d: 'M 70 110 L 80 100 L 140 95 L 165 80 L 170 90 L 230 100 L 240 110 L 230 105 L 165 105 L 150 110 L 90 105 Z', fill: '#1e293b' });
+          if (shape === 'loon') return h('ellipse', { cx: 150, cy: 100, rx: 70, ry: 18, fill: '#1e293b' });
+          if (shape === 'duck') return h('g', null,
+            h('ellipse', { cx: 150, cy: 100, rx: 60, ry: 16, fill: '#1e293b' }),
+            h('path', { d: 'M 210 95 L 230 90 L 240 95 L 230 100 L 215 100 Z', fill: '#1e293b' }));
+          if (shape === 'crow') return h('rect', { x: 80, y: 92, width: 140, height: 16, fill: '#1e293b' });
+          if (shape === 'raven') return h('path', { d: 'M 80 95 L 220 95 L 250 100 L 220 105 L 80 105 Z', fill: '#1e293b' });
+          if (shape === 'kingfisher') return h('path', { d: 'M 100 100 L 150 95 L 160 85 L 170 95 L 200 100 L 180 105 L 160 110 L 130 105 Z M 150 95 L 140 100 L 145 105 Z', fill: '#1e293b' });
+          if (shape === 'woodpecker-large') return h('path', { d: 'M 80 100 L 140 95 L 165 80 L 170 90 L 220 100 L 175 100 L 165 130 L 155 100 L 140 105 Z', fill: '#1e293b' });
+          if (shape === 'goose') return h('path', { d: 'M 60 100 L 145 95 L 150 80 L 160 75 L 165 90 L 240 100 L 200 105 L 165 105 L 150 110 L 130 105 L 100 105 Z', fill: '#1e293b' });
+          if (shape === 'turkey') return h('path', { d: 'M 60 105 L 150 90 L 155 80 L 160 90 L 240 105 L 220 110 L 165 110 L 150 115 L 135 110 L 80 110 Z', fill: '#1e293b' });
+          if (shape === 'songbird') return h('g', null,
+            h('ellipse', { cx: 150, cy: 100, rx: 30, ry: 12, fill: '#1e293b' }),
+            h('ellipse', { cx: 110, cy: 95, rx: 25, ry: 8, fill: '#1e293b' }),
+            h('ellipse', { cx: 190, cy: 95, rx: 25, ry: 8, fill: '#1e293b' }),
+            h('ellipse', { cx: 165, cy: 100, rx: 12, ry: 8, fill: '#1e293b' }));
+          return h('rect', { x: 100, y: 90, width: 100, height: 20, fill: '#475569' });
+        };
+
+        var others = SILHOUETTES.filter(function(s) { return s.id !== cur.id; }).sort(function() { return Math.random() - 0.5 }).slice(0, 3);
+        var choices = [cur].concat(others).sort(function() { return Math.random() - 0.5; });
+
+        return h('div', { className: 'p-4 max-w-4xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌑 Silhouette Quiz'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Identify the bird from its silhouette. ' + SILHOUETTES.length + ' species. Score: ' + score + ' / ' + attempted),
+          h('div', { className: 'bg-amber-50 rounded-xl p-6 mb-3' },
+            h('svg', { viewBox: '0 0 300 200', style: { width: '100%', maxHeight: 280, background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: 12 } },
+              renderSilhouette(cur.shape)),
+            h('p', { className: 'mt-2 text-center text-xs text-slate-600 italic' }, 'Habitat: ' + cur.habitat)),
+          h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+            choices.map(function(c, i) {
+              return h('button', { key: i, onClick: function() {
+                setAttempted(attempted + 1);
+                if (c.id === cur.id) {
+                  setScore(score + 1);
+                  setFeedback({ ok: true, msg: '✓ Correct! ' + cur.name + ' — ' + cur.clue });
+                } else {
+                  setFeedback({ ok: false, msg: '✗ That was ' + c.name + '. Correct: ' + cur.name + ' — ' + cur.clue });
+                }
+              }, className: 'p-3 rounded-lg font-bold text-sm bg-white hover:bg-amber-100 border-2 border-amber-300 text-slate-800' }, c.name);
+            })),
+          feedback && h('div', { className: 'p-3 rounded-lg mb-3 ' + (feedback.ok ? 'bg-emerald-100 border-2 border-emerald-500' : 'bg-rose-100 border-2 border-rose-500') }, feedback.msg),
+          h('button', { onClick: function() {
+            setIdx((idx + 1) % SILHOUETTES.length);
+            setFeedback(null);
+          }, className: 'w-full p-3 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold' }, 'Next silhouette →')
+        );
+      }
+
+      // ── SEASONAL PLUMAGE VIEW ─────────────────────────────────────────
+      function PlumageView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = PLUMAGE_CYCLES[idx];
+
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🍂 Seasonal Plumage + Molt'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'How birds change feathers seasonally. Molt timing, breeding vs non-breeding, and species-specific patterns.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            PLUMAGE_CYCLES.map(function(p, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-900 hover:bg-amber-200')
+              }, p.species);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-3' }, cur.species),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-3' },
+              h('div', { className: 'p-4 bg-gradient-to-br from-rose-100 to-amber-100 rounded-xl' },
+                h('div', { className: 'font-bold text-rose-800 mb-2 uppercase text-xs tracking-wider' }, '☀️ Breeding plumage'),
+                h('p', { className: 'text-sm text-slate-700' }, cur.breeding)),
+              h('div', { className: 'p-4 bg-gradient-to-br from-slate-100 to-sky-100 rounded-xl' },
+                h('div', { className: 'font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider' }, '❄️ Non-breeding plumage'),
+                h('p', { className: 'text-sm text-slate-700' }, cur.nonbreeding))),
+            h('div', { className: 'p-3 bg-slate-50 rounded-lg mb-2' },
+              h('div', { className: 'font-bold text-slate-700 text-xs uppercase mb-1' }, 'Molt strategy'),
+              h('p', { className: 'text-sm text-slate-700' }, cur.molt)),
+            h('div', { className: 'p-3 bg-emerald-50 rounded-lg' },
+              h('div', { className: 'font-bold text-emerald-800 text-xs uppercase mb-1' }, 'Maine timing'),
+              h('p', { className: 'text-sm text-slate-700' }, cur.maine_timing)))
+        );
+      }
+
+      // ── TRACKS + SIGN VIEW ─────────────────────────────────────────
+      function TracksSignView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = TRACKS_SIGN[idx];
+
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '👣 Tracks + Sign — Reading Bird Evidence'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Tracking + reading sign reveals birds you never see. Footprints, droppings, feeding evidence, pellets — each tells a story.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            TRACKS_SIGN.map(function(t, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+              }, t.name);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3' }, cur.name),
+            h('div', { className: 'space-y-3' },
+              h('div', { className: 'p-3 bg-amber-50 rounded-lg border-l-4 border-amber-500' },
+                h('div', { className: 'font-bold text-amber-800 text-xs uppercase mb-1' }, '👣 Tracks'),
+                h('p', { className: 'text-sm text-slate-700' }, cur.tracks)),
+              h('div', { className: 'p-3 bg-stone-100 rounded-lg border-l-4 border-stone-500' },
+                h('div', { className: 'font-bold text-stone-800 text-xs uppercase mb-1' }, '💩 Droppings'),
+                h('p', { className: 'text-sm text-slate-700' }, cur.droppings)),
+              h('div', { className: 'p-3 bg-sky-50 rounded-lg border-l-4 border-sky-500' },
+                h('div', { className: 'font-bold text-sky-800 text-xs uppercase mb-1' }, '🍽️ Feeding sign'),
+                h('p', { className: 'text-sm text-slate-700' }, cur.feeding)),
+              h('div', { className: 'p-3 bg-emerald-50 rounded-lg border-l-4 border-emerald-500' },
+                h('div', { className: 'font-bold text-emerald-800 text-xs uppercase mb-1' }, '📍 Where to look'),
+                h('p', { className: 'text-sm text-slate-700' }, cur.where))))
+        );
+      }
+
+      // ── FLIGHT PATTERNS VIEW ─────────────────────────────────────────
+      function FlightPatternsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '✈️ Flight Patterns + Wing Shape'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Behavior in flight is a field mark. How a bird moves through air — wing shape + beats + altitude pattern — identifies it from far away.'),
+          h('div', { className: 'space-y-4' },
+            FLIGHT_PATTERNS.map(function(fp, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '✈️ ' + fp.name),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Pattern: '), fp.pattern),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Species: '), fp.species),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Energy: '), fp.energy),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Timing: '), fp.timing),
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'How to identify: '), fp.identify)));
+            }))
+        );
+      }
+
+      // ── OWL DEEP DIVE VIEW ─────────────────────────────────────────
+      function OwlDeepView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = OWL_PROFILES[idx];
+
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦉 Maine Owls Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Maine\'s ' + OWL_PROFILES.length + ' owl species — year-round residents, winter visitors, breeders, secretive specialists.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            OWL_PROFILES.map(function(o, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-indigo-700 text-white' : 'bg-indigo-100 text-indigo-900 hover:bg-indigo-200')
+              }, o.name.split(' (')[0]);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-indigo-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-indigo-900 mb-2' }, '🦉 ' + cur.name),
+            h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+              h('div', { className: 'p-2 bg-indigo-50 rounded text-xs' }, h('b', null, 'Size: '), cur.size),
+              h('div', { className: 'p-2 bg-indigo-50 rounded text-xs' }, h('b', null, 'Wingspan: '), cur.wingspan)),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', null, h('b', null, '🔊 Voice: '), cur.voice),
+              h('div', null, h('b', null, '🌳 Habitat: '), cur.habitat),
+              h('div', null, h('b', null, '🍴 Diet: '), cur.diet),
+              h('div', null, h('b', null, '📍 Maine status: '), cur.maine_status),
+              h('div', null, h('b', null, '🎨 Morphs: '), cur.morphs),
+              h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '🛡️ Conservation: '), cur.conservation)))
+        );
+      }
+
+      // ── RAPTOR DEEP DIVE VIEW ─────────────────────────────────────────
+      function RaptorDeepView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = RAPTOR_PROFILES[idx];
+
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦅 Maine Raptors Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Hawks, eagles, falcons, harriers, vultures — Maine\'s ' + RAPTOR_PROFILES.length + ' birds-of-prey species. Each with hunting + breeding + conservation profile.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            RAPTOR_PROFILES.map(function(r, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-rose-700 text-white' : 'bg-rose-100 text-rose-900 hover:bg-rose-200')
+              }, r.name.split(' (')[0]);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-rose-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-rose-900 mb-2' }, '🦅 ' + cur.name),
+            h('div', { className: 'p-2 bg-rose-50 rounded text-xs mb-3' }, h('b', null, 'Group: '), cur.group),
+            h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+              h('div', { className: 'p-2 bg-rose-50 rounded text-xs' }, h('b', null, 'Size: '), cur.size),
+              h('div', { className: 'p-2 bg-rose-50 rounded text-xs' }, h('b', null, 'Wingspan: '), cur.wingspan)),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', null, h('b', null, '🔊 Voice: '), cur.voice),
+              h('div', null, h('b', null, '🍴 Diet: '), cur.diet),
+              h('div', null, h('b', null, '🎯 Hunting: '), cur.hunting),
+              h('div', null, h('b', null, '🪺 Breeding: '), cur.breeding),
+              h('div', null, h('b', null, '📍 Maine status: '), cur.maine_status),
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🛡️ Conservation: '), cur.conservation)))
+        );
+      }
+
+      // ── WARBLER DEEP DIVE VIEW ─────────────────────────────────────────
+      function WarblerDeepView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = WARBLER_PROFILES[idx];
+
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌈 Maine Warblers Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Warblers — the hardest ID family for new birders. ' + WARBLER_PROFILES.length + ' Maine breeders. Each tiny, fast-moving, and seasonal. Master them and you\'ve made it.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            WARBLER_PROFILES.map(function(w, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-yellow-700 text-white' : 'bg-yellow-100 text-yellow-900 hover:bg-yellow-200')
+              }, w.name);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-yellow-300 p-5' },
+            h('h2', { className: 'text-xl font-black text-yellow-900 mb-1' }, '🌈 ' + cur.name),
+            h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-2 bg-yellow-50 rounded' }, h('b', null, '👁 Key mark: '), cur.mark),
+              h('div', null, h('b', null, '🌳 Habitat: '), cur.habitat),
+              h('div', null, h('b', null, '🎶 Song: '), cur.song),
+              h('div', null, h('b', null, '📍 Maine status: '), cur.maine_status),
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🌱 Arrival: '), cur.arrival),
+                h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🍂 Departure: '), cur.departure))))
+        );
+      }
+
+      // ── OPTICS VIEW ─────────────────────────────────────────
+      function OpticsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔭 Birding Optics + Gear'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Binoculars, scopes, apps, and field gear for birders. From budget starter to premium gear.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            OPTICS.map(function(o, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-base font-black text-sky-900 mb-2' }, '🔭 ' + o.item),
+                h('div', { className: 'text-xs text-slate-600 italic mb-2' }, o.meaning),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Use: '), o.use),
+                h('div', { className: 'grid grid-cols-2 gap-2 text-xs text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Pros: '), o.pros),
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '✗ Cons: '), o.cons)),
+                h('div', { className: 'mt-2 p-2 bg-amber-50 rounded text-xs' }, h('b', null, '💰 Price: '), o.price));
+            }))
+        );
+      }
+
+      // ── ETHICS VIEW ─────────────────────────────────────────
+      function EthicsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛡️ Birding Ethics'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'The American Birding Association Code of Birding Ethics — eight principles for birders. The bird comes first.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_ETHICS.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-base font-black text-emerald-900 mb-2' }, '🛡️ ' + e.principle),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, e.details),
+                h('div', { className: 'p-2 bg-emerald-50 rounded text-xs italic' }, h('b', null, 'Examples: '), e.examples));
+            }))
+        );
+      }
+
+      // ── WEATHER VIEW ─────────────────────────────────────────
+      function WeatherView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '⛅ Weather + Birding'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds respond to weather. Knowing what to expect when the forecast says X is half the battle.'),
+          h('div', { className: 'space-y-3' },
+            WEATHER_BIRDING.map(function(w, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-base font-black text-sky-900 mb-2' }, '⛅ ' + w.weather),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, '🐦 Bird response: '), w.birds),
+                h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, '📍 Where to go: '), w.where_to_go));
+            }))
+        );
+      }
+
+      // ── FAQ VIEW ─────────────────────────────────────────
+      function FaqView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '❓ Birding FAQ'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')
+          ),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Common questions from new birders. Plain answers + Maine context.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_FAQ.map(function(f, i) {
+              return h('details', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 cursor-pointer' },
+                h('summary', { className: 'text-sm font-black text-violet-900' }, '❓ ' + f.q),
+                h('p', { className: 'mt-3 text-sm text-slate-700 leading-relaxed' }, f.a));
+            }))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 3 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── WATERFOWL DEEP VIEW ─────────────────────────────────────────
+      function WaterfowlView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = WATERFOWL[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦆 Maine Waterfowl Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Maine\'s ' + WATERFOWL.length + ' waterfowl species — dabblers, divers, mergansers, sea ducks, geese, swans.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            WATERFOWL.map(function(w, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-900 hover:bg-sky-200')
+              }, w.name.split(' (')[0]);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-sky-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-sky-900 mb-1' }, '🦆 ' + cur.name),
+            h('div', { className: 'text-xs italic text-slate-600 mb-3' }, 'Type: ' + cur.type),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
+              h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, '♂ Male: '), cur.male),
+              h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, '♀ Female: '), cur.female)),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', null, h('b', null, '🔊 Voice: '), cur.voice),
+              h('div', null, h('b', null, '🌳 Habitat: '), cur.habitat),
+              h('div', null, h('b', null, '🍴 Diet: '), cur.diet),
+              h('div', null, h('b', null, '📍 Maine status: '), cur.maine_status),
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🪺 Breeding: '), cur.breeding))));
+      }
+
+      // ── SHOREBIRDS DEEP VIEW ─────────────────────────────────────────
+      function ShorebirdsView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = SHOREBIRDS[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦴 Maine Shorebirds Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Maine\'s ' + SHOREBIRDS.length + ' shorebird species — plovers, sandpipers, yellowlegs, snipe. Mostly migrants; some breeders.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            SHOREBIRDS.map(function(s, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-900 hover:bg-amber-200')
+              }, s.name);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-1' }, '🦴 ' + cur.name),
+            h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + ' · ' + cur.size),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🌳 Habitat: '), cur.habitat),
+              h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '👁 Key mark: '), cur.key_mark),
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Maine: '), cur.maine),
+              h('div', { className: 'p-2 bg-rose-50 italic rounded' }, cur.story))));
+      }
+
+      // ── SEABIRDS DEEP VIEW ─────────────────────────────────────────
+      function SeabirdsView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = SEABIRDS[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌊 Gulf of Maine Seabirds Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Gulf of Maine seabirds — alcids (puffin/razorbill/murre/guillemot), pelagic species, terns.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            SEABIRDS.map(function(s, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-900 hover:bg-cyan-200')
+              }, s.name);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-cyan-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-cyan-900 mb-1' }, '🌊 ' + cur.name),
+            h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + ' · ' + cur.size),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', null, h('b', null, '🌊 Habitat: '), cur.habitat),
+              h('div', { className: 'p-2 bg-cyan-50 rounded' }, h('b', null, '👁 Key mark: '), cur.key_mark),
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Maine: '), cur.maine),
+              h('div', { className: 'p-3 bg-amber-50 italic rounded' }, cur.story))));
+      }
+
+      // ── WING TYPES VIEW ─────────────────────────────────────────
+      function WingTypesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪶 Wing Types — Shape Predicts Flight'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '5 main wing shapes + the birds that use them. Wing shape is one of the strongest predictors of how a bird flies + what it eats + where it lives.'),
+          h('div', { className: 'space-y-3' },
+            WING_TYPES.map(function(w, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🪶 ' + w.type),
+                h('p', { className: 'text-sm text-slate-700 mb-2 italic' }, w.shape_desc),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Birds: '), w.birds),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Flight use: '), w.flight_use)),
+                h('div', { className: 'mt-2 p-2 bg-emerald-50 rounded text-xs' }, h('b', null, 'Examples: '), w.examples));
+            })));
+      }
+
+      // ── FOOT TYPES VIEW ─────────────────────────────────────────
+      function FootTypesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦶 Foot Types — Form + Function'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 foot types from perching to swimming to climbing to wading. Foot shape adapts to habitat + diet.'),
+          h('div', { className: 'space-y-3' },
+            FOOT_TYPES.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🦶 ' + f.type),
+                h('div', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Shape: '), f.shape),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Birds: '), f.birds),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Function: '), f.function)),
+                h('div', { className: 'mt-2 p-2 bg-emerald-50 rounded text-xs' }, h('b', null, 'Examples: '), f.examples));
+            })));
+      }
+
+      // ── BEHAVIORS VIEW ─────────────────────────────────────────
+      function BehaviorsView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = BEHAVIORS[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧠 Bird Behavior Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Courtship, territory, parenting, migration, communication — the behaviors that shape bird life.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            BEHAVIORS.map(function(b, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-violet-700 text-white' : 'bg-violet-100 text-violet-900 hover:bg-violet-200')
+              }, b.topic);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-violet-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-violet-900 mb-2' }, '🧠 ' + cur.topic),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-3 bg-violet-50 rounded' }, h('b', null, 'Mechanism: '), cur.mechanism),
+              h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Examples: '), cur.examples),
+              h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, 'Function: '), cur.function),
+              h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, '📍 Maine: '), cur.maine))));
+      }
+
+      // ── PHYSIOLOGY VIEW ─────────────────────────────────────────
+      function PhysiologyView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🫀 Bird Physiology'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Heart, lungs, bones, vision, hearing, navigation. Birds are physiological athletes — every system optimized for flight.'),
+          h('div', { className: 'space-y-3' },
+            PHYSIOLOGY.map(function(p, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🫀 ' + p.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Detail: '), p.detail),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Function: '), p.function),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Example: '), p.example)));
+            })));
+      }
+
+      // ── EVOLUTION VIEW ─────────────────────────────────────────
+      function EvolutionView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦖 Bird Evolution — Dinosaurs to Today'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds are dinosaurs. The path from feathered theropods 160 million years ago to today\'s 10,500+ species.'),
+          h('div', { className: 'space-y-3' },
+            EVOLUTION.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-stone-500 p-4' },
+                h('div', { className: 'flex items-baseline gap-3 mb-2 flex-wrap' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider px-2 py-1 bg-stone-200 rounded' }, e.era),
+                  h('div', { className: 'text-base font-black text-stone-800' }, e.event)),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, e.what),
+                h('div', { className: 'p-2 bg-amber-50 rounded text-xs italic' }, h('b', null, 'Example: '), e.example));
+            })));
+      }
+
+      // ── BIRD SCIENTISTS VIEW ─────────────────────────────────────────
+      function ScientistsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '👩‍🔬 Bird Scientists'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Historical + contemporary figures whose work shaped bird science + conservation.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_SCIENTISTS.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-base font-black text-amber-900 mb-2' }, '👩‍🔬 ' + s.name),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Contribution: '), s.contribution),
+                s.legacy ? h('div', { className: 'p-2 bg-amber-50 rounded text-xs mb-2' }, h('b', null, 'Legacy: '), s.legacy) : null,
+                s.controversy ? h('div', { className: 'p-2 bg-rose-50 rounded text-xs mb-2' }, h('b', null, '⚠️ Controversy: '), s.controversy) : null,
+                s.maine ? h('div', { className: 'p-2 bg-emerald-50 rounded text-xs italic' }, h('b', null, '📍 Maine: '), s.maine) : null);
+            })));
+      }
+
+      // ── GULL ID VIEW ─────────────────────────────────────────
+      function GullIdView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = GULL_ID[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🐦 Gull ID — Maine\'s Hardest Group'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '7 Maine gull species. Birders consider gulls among hardest ID — multiple plumages over 3–4 years.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            GULL_ID.map(function(g, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-900 hover:bg-stone-200')
+              }, g.name);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-stone-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-stone-900 mb-1' }, '🐦 ' + cur.name),
+            h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + ' · ' + cur.size),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-2 bg-stone-50 rounded' }, h('b', null, '❄️ Adult winter: '), cur.adult_winter),
+              h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '☀️ Adult breeding: '), cur.adult_breeding),
+              h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐣 First winter: '), cur.first_winter),
+              h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '🔊 Voice: '), cur.voice),
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Where: '), cur.where),
+              h('div', { className: 'p-2 bg-violet-50 italic rounded' }, h('b', null, '💡 Tip: '), cur.tip))));
+      }
+
+      // ── IRRUPTIONS VIEW ─────────────────────────────────────────
+      function IrruptionsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '❄️ Irruptive Winter Visitors'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds that arrive in unpredictable years — driven by food crop variations in northern + boreal habitats. Some winters bring spectacular numbers; other winters very few.'),
+          h('div', { className: 'space-y-3' },
+            IRRUPTIONS.map(function(ir, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-indigo-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-indigo-900 mb-2' }, '❄️ ' + ir.species),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-indigo-50 rounded' }, h('b', null, 'Irrupts when: '), ir.irrupt_when),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Pattern: '), ir.pattern),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Where: '), ir.where_to_look),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, ir.story)));
+            })));
+      }
+
+      // ── ENDANGERED VIEW ─────────────────────────────────────────
+      function EndangeredView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛡️ Endangered Maine Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s state + federally listed species. Each with current status, threats, Maine population, and conservation actions.'),
+          h('div', { className: 'space-y-3' },
+            ENDANGERED_SPECIES.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-1' }, '🛡️ ' + e.name),
+                h('div', { className: 'text-xs italic text-slate-600 mb-2' }, e.sci),
+                h('div', { className: 'inline-block px-2 py-1 bg-rose-700 text-white text-xs font-bold rounded mb-2' }, e.status),
+                h('div', { className: 'space-y-1 text-sm text-slate-700' },
+                  h('div', null, h('b', null, '⚠️ Threats: '), e.threats),
+                  h('div', null, h('b', null, '📍 Maine: '), e.maine),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Action: '), e.action)));
+            })));
+      }
+
+      // ── HOTSPOTS DEEP VIEW ─────────────────────────────────────────
+      function HotspotsDeepView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = HOTSPOTS_DEEP[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📍 Maine Birding Hotspots — Extended'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '12 Maine birding hotspots — saltmarshes, offshore islands, mountains, river restorations, hawkwatches.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            HOTSPOTS_DEEP.map(function(h2, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+              }, h2.name.split(' (')[0]);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-2' }, '📍 ' + cur.name),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Type: '), cur.type + (cur.size ? ' · ' + cur.size : '')),
+              h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🐦 Key species: '), cur.key_species),
+              h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '📅 Best seasons: '), cur.best_seasons),
+              h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, '🚪 Access: '), cur.access),
+              h('div', { className: 'p-3 bg-rose-50 italic rounded' }, h('b', null, '💡 Tip: '), cur.tip))));
+      }
+
+      // ── DUCK ID VIEW ─────────────────────────────────────────
+      function DuckIdView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦆 Duck ID — Dabbler vs Diver'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine ducks split by feeding strategy. Anatomy + behavior + flight tells you which.'),
+          h('div', { className: 'space-y-3' },
+            DUCK_ID_GUIDE.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🦆 ' + d.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', null, h('b', null, 'Examples: '), d.examples),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Anatomy: '), d.anatomy),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Behavior: '), d.behavior),
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Flight: '), d.flight),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Diet: '), d.diet),
+                  h('div', null, h('b', null, '📍 Where: '), d.where_to_see)));
+            })));
+      }
+
+      // ── VOCAL DEEP VIEW ─────────────────────────────────────────
+      function VocalDeepView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎵 Bird Vocalizations Deep'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How birds vocalize, why they sing, what makes a song a song.'),
+          h('div', { className: 'space-y-3' },
+            VOCAL_DEEP.map(function(v, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🎵 ' + v.topic),
+                h('div', { className: 'space-y-1 text-sm text-slate-700' },
+                  v.song ? h('div', null, h('b', null, 'Song: '), v.song) : null,
+                  v.call ? h('div', null, h('b', null, 'Call: '), v.call) : null,
+                  v.maine_example ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Maine: '), v.maine_example) : null,
+                  v.mechanism ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Mechanism: '), v.mechanism) : null,
+                  v.experiment ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Experiment: '), v.experiment) : null,
+                  v.implication ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Implication: '), v.implication) : null,
+                  v.reasons ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Reasons: '), v.reasons) : null,
+                  v.seasonality ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Seasonality: '), v.seasonality) : null,
+                  v.examples ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Examples: '), v.examples) : null,
+                  v.species ? h('div', null, h('b', null, 'Species: '), v.species) : null,
+                  v.what ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'What: '), v.what) : null,
+                  v.function ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Function: '), v.function) : null,
+                  v.apps ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Apps: '), v.apps) : null,
+                  v.research_question ? h('div', { className: 'p-2 bg-rose-50 italic rounded' }, h('b', null, 'Research question: '), v.research_question) : null));
+            })));
+      }
+
+      // ── REPRO DEEP VIEW ─────────────────────────────────────────
+      function ReproDeepView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🥚 Bird Reproduction Deep'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How birds make eggs, brood them, hatch chicks, raise young. The biology of bird reproduction.'),
+          h('div', { className: 'space-y-3' },
+            REPRO_DEEP.map(function(r, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🥚 ' + r.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  r.process ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Process: '), r.process) : null,
+                  r.mechanism ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Mechanism: '), r.mechanism) : null,
+                  r.timing ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Timing: '), r.timing) : null,
+                  r.duration ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Duration: '), r.duration) : null,
+                  r.energetics ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Energetics: '), r.energetics) : null,
+                  r.eggs_under_belly ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Eggs under belly: '), r.eggs_under_belly) : null,
+                  r.altricial ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Altricial: '), r.altricial) : null,
+                  r.precocial ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Precocial: '), r.precocial) : null,
+                  r.post_fledge ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Post-fledge: '), r.post_fledge) : null,
+                  r.bald_eagle ? h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Bald Eagle example: '), r.bald_eagle) : null,
+                  r.examples ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Examples: '), r.examples) : null,
+                  r.hosts ? h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Hosts: '), r.hosts) : null,
+                  r.conservation ? h('div', { className: 'p-2 bg-rose-50 italic rounded' }, h('b', null, 'Conservation: '), r.conservation) : null,
+                  r.reality ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Reality: '), r.reality) : null,
+                  r.function ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Function: '), r.function) : null));
+            })));
+      }
+
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'ispy') return h(ISpyHabitat);
@@ -9894,6 +18246,1753 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (view === 'photoId') return h(BirdPhotoID);
       if (view === 'compare') return h(CompareLab);
       if (view === 'lifeList') return h(LifeListView);
+      if (view === 'nestGallery') return h(NestGallery);
+      if (view === 'eggGallery') return h(EggGallery);
+      if (view === 'featherAnatomy') return h(FeatherAnatomyLab);
+      if (view === 'silhouetteQuiz') return h(SilhouetteQuiz);
+      if (view === 'plumage') return h(PlumageView);
+      if (view === 'tracksSign') return h(TracksSignView);
+      if (view === 'flightPatterns') return h(FlightPatternsView);
+      if (view === 'owls') return h(OwlDeepView);
+      if (view === 'raptors') return h(RaptorDeepView);
+      if (view === 'warblers') return h(WarblerDeepView);
+      if (view === 'optics') return h(OpticsView);
+      if (view === 'ethics') return h(EthicsView);
+      if (view === 'weather') return h(WeatherView);
+      if (view === 'faq') return h(FaqView);
+      if (view === 'waterfowl') return h(WaterfowlView);
+      if (view === 'shorebirds') return h(ShorebirdsView);
+      if (view === 'seabirds') return h(SeabirdsView);
+      if (view === 'wingTypes') return h(WingTypesView);
+      if (view === 'footTypes') return h(FootTypesView);
+      if (view === 'behaviors') return h(BehaviorsView);
+      if (view === 'physiology') return h(PhysiologyView);
+      if (view === 'evolution') return h(EvolutionView);
+      if (view === 'scientists') return h(ScientistsView);
+      if (view === 'gullId') return h(GullIdView);
+      if (view === 'irruptions') return h(IrruptionsView);
+      if (view === 'endangered') return h(EndangeredView);
+      if (view === 'hotspotsDeep') return h(HotspotsDeepView);
+      if (view === 'duckId') return h(DuckIdView);
+      if (view === 'vocalDeep') return h(VocalDeepView);
+      if (view === 'reproDeep') return h(ReproDeepView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 4 VIEWS — species family deep dives
+      // ═══════════════════════════════════════════════════════════
+      function makeSpeciesView(title, icon, items, accent) {
+        return function() {
+          var idxState = useState(0);
+          var idx = idxState[0], setIdx = idxState[1];
+          var cur = items[idx];
+          var bg = accent.replace('bg-', '').split('-')[0];
+          return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+            h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+              h('h1', { className: 'text-2xl font-black text-stone-800' }, icon + ' ' + title),
+              h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+                className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+            h('p', { className: 'text-sm text-slate-700 italic mb-3' }, items.length + ' species in this group.'),
+            h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+              items.map(function(it, i) {
+                return h('button', { key: i, onClick: function() { setIdx(i); },
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? accent + ' text-white' : 'bg-' + bg + '-100 text-' + bg + '-900 hover:bg-' + bg + '-200')
+                }, it.name);
+              })),
+            h('div', { className: 'bg-white rounded-xl shadow border-2 border-' + bg + '-200 p-5' },
+              h('h2', { className: 'text-xl font-black text-' + bg + '-900 mb-1' }, icon + ' ' + cur.name),
+              h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + (cur.size ? ' · ' + cur.size : '')),
+              h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                cur.habitat ? h('div', { className: 'p-2 bg-' + bg + '-50 rounded' }, h('b', null, '🌳 Habitat: '), cur.habitat) : null,
+                cur.key_mark ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '👁 Key mark: '), cur.key_mark) : null,
+                cur.song ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, '🎵 Song: '), cur.song) : null,
+                cur.voice ? h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, '🔊 Voice: '), cur.voice) : null,
+                cur.tip ? h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '💡 Tip: '), cur.tip) : null,
+                cur.maine ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '📍 Maine: '), cur.maine) : null,
+                cur.story ? h('div', { className: 'p-3 bg-rose-50 italic rounded' }, cur.story) : null)));
+        };
+      }
+
+      var SparrowsView = makeSpeciesView('Maine Sparrows', '🐦', SPARROWS, 'bg-stone-700');
+      var ThrushesView = makeSpeciesView('Maine Thrushes', '🎵', THRUSHES, 'bg-amber-700');
+      var WoodpeckersView = makeSpeciesView('Maine Woodpeckers', '🪓', WOODPECKERS, 'bg-rose-700');
+      var FinchesView = makeSpeciesView('Maine Finches', '🌻', FINCHES, 'bg-yellow-700');
+      var BlackbirdsCrowsView = makeSpeciesView('Maine Blackbirds + Corvids', '⬛', BLACKBIRDS_CROWS, 'bg-slate-700');
+      var HummSwiftView = makeSpeciesView('Hummingbirds + Swifts', '🐝', HUMM_SWIFT, 'bg-emerald-700');
+      var FlyVireoView = makeSpeciesView('Flycatchers + Vireos', '🦟', FLYCATCHERS_VIREOS, 'bg-teal-700');
+
+      if (view === 'sparrows') return h(SparrowsView);
+      if (view === 'thrushes') return h(ThrushesView);
+      if (view === 'woodpeckers') return h(WoodpeckersView);
+      if (view === 'finches') return h(FinchesView);
+      if (view === 'blackbirds') return h(BlackbirdsCrowsView);
+      if (view === 'hummswift') return h(HummSwiftView);
+      if (view === 'flyvireo') return h(FlyVireoView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 5 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── BIRD TOPOGRAPHY VIEW ─────────────────────────────────────────
+      function TopologyView() {
+        var sel = useState(null);
+        var pick = sel[0], setPick = sel[1];
+        var picked = pick ? TOPOLOGY.find(function(t) { return t.id === pick; }) : null;
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦴 Bird Topography Lab'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'The body parts birders use for ID. Click each region of the bird to learn its name + when it matters.'),
+          h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
+            h('div', { className: 'bg-gradient-to-b from-sky-100 to-amber-50 rounded-xl p-6 shadow' },
+              h('svg', { viewBox: '0 0 280 360', style: { width: '100%', maxHeight: 500 } },
+                // Body
+                h('ellipse', { cx: 165, cy: 220, rx: 80, ry: 60, fill: '#92400e' }),
+                // Head
+                h('circle', { cx: 165, cy: 100, r: 50, fill: '#a16207' }),
+                // Beak
+                h('path', { d: 'M 215 130 L 250 135 L 215 145 Z', fill: '#1e293b' }),
+                // Eye
+                h('circle', { cx: 195, cy: 115, r: 5, fill: '#0c0a09' }),
+                // Wing
+                h('ellipse', { cx: 110, cy: 220, rx: 35, ry: 50, fill: '#78350f' }),
+                // Tail
+                h('path', { d: 'M 70 280 L 50 320 L 90 290 Z', fill: '#78350f' }),
+                // Legs
+                h('line', { x1: 145, y1: 280, x2: 145, y2: 320, stroke: '#1e293b', strokeWidth: 3 }),
+                h('line', { x1: 175, y1: 280, x2: 175, y2: 320, stroke: '#1e293b', strokeWidth: 3 }),
+                // Markers
+                TOPOLOGY.map(function(t, i) {
+                  var active = pick === t.id;
+                  return h('g', { key: t.id, onClick: function() { setPick(t.id); }, style: { cursor: 'pointer' } },
+                    h('circle', { cx: t.x, cy: t.y, r: 12, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
+                    h('text', { x: t.x, y: t.y+4, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
+                }))),
+            h('div', { className: 'space-y-3' },
+              picked
+                ? h('div', { className: 'bg-white rounded-xl shadow p-4 border-2 border-amber-300' },
+                    h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, picked.label),
+                    h('p', { className: 'text-sm text-slate-700' }, picked.what))
+                : h('div', { className: 'bg-amber-50 rounded-xl p-6 text-center text-slate-600 italic' },
+                    '👈 Click a number on the bird to learn that region'),
+              h('div', { className: 'bg-slate-50 rounded-xl p-4 text-xs text-slate-700' },
+                h('h3', { className: 'font-bold text-slate-800 mb-2' }, 'Why these regions matter:'),
+                h('p', null, 'Birders identify birds by combining multiple field marks. Crown color + bill shape + wing bars + breast pattern + tail shape together specify a species. Topography vocabulary lets birders communicate precisely.'),
+                h('p', { className: 'mt-2' }, h('b', null, 'Total topology points labeled: '), '' + TOPOLOGY.length)))));
+      }
+
+      // ── HABITATS DEEP VIEW ─────────────────────────────────────────
+      function HabitatsDeepView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = HABITATS_DEEP[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌲 Maine Habitats Deep Dive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, HABITATS_DEEP.length + ' Maine ecosystems — northern hardwood, spruce-fir, salt marsh, freshwater marsh, grassland, mixed forest, young second-growth, river corridor, lake, pelagic, suburban, beach + dune.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            HABITATS_DEEP.map(function(h2, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+              }, h2.name);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-2' }, '🌲 ' + cur.name),
+            h('p', { className: 'text-sm text-slate-700 italic mb-3' }, cur.description),
+            h('div', { className: 'space-y-2 text-sm' },
+              h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🐦 Key birds: '), cur.key_birds),
+              h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, '🛡️ Conservation: '), cur.conservation),
+              h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '📍 Maine sites: '), cur.sites))));
+      }
+
+      // ── CLIMATE BIRDS VIEW ─────────────────────────────────────────
+      function ClimateBirdsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌡️ Climate Change + Maine Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How climate change is reshaping Maine bird populations. Gulf of Maine is warming 4× global ocean average. Birds are moving + adapting + failing.'),
+          h('div', { className: 'space-y-3' },
+            CLIMATE_BIRDS.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🌡️ ' + c.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'What: '), c.what),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Example: '), c.example),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Magnitude: '), c.magnitude),
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Future: '), c.future)));
+            })));
+      }
+
+      // ── FEEDER VIEW ─────────────────────────────────────────
+      function FeederView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏠 Backyard Feeder Guide'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Feeder types + foods + birds + setup tips for your Maine backyard.'),
+          h('div', { className: 'space-y-3' },
+            FEEDER_GUIDE.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🏠 ' + f.feeder_type),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🌾 Foods: '), f.foods),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐦 Birds: '), f.birds),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '💡 Tips: '), f.tips)));
+            })));
+      }
+
+      // ── NESTBOX VIEW ─────────────────────────────────────────
+      function NestboxView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = NESTBOX_GUIDE[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪺 Nest Box Guide'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Nest box specifications for ' + NESTBOX_GUIDE.length + ' Maine species. Size matters — wrong dimensions = wrong species.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            NESTBOX_GUIDE.map(function(n, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-900 hover:bg-amber-200')
+              }, n.species);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-2' }, '🪺 ' + cur.species),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📏 Box: '), cur.box_size + ' · Entry: ' + cur.entry),
+              h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '⬆️ Height + habitat: '), cur.height),
+              h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Placement: '), cur.placement),
+              h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, '📅 Timing: '), cur.timing),
+              h('div', { className: 'p-2 bg-rose-50 italic rounded' }, h('b', null, '💡 Tips: '), cur.tips))));
+      }
+
+      // ── DIETS VIEW ─────────────────────────────────────────
+      function DietsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🍽️ Bird Diets + Foraging'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '9 dietary categories — granivores, insectivores, nectarivores, frugivores, piscivores, carnivores, scavengers, mollusk specialists, aquatic plant eaters. What birds eat shapes what they look like.'),
+          h('div', { className: 'space-y-3' },
+            DIETS.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🍽️ ' + d.type),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', null, h('b', null, 'Examples: '), d.examples),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Adaptations: '), d.adaptations),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Foods: '), d.foods),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine examples: '), d.maine_examples)));
+            })));
+      }
+
+      // ── MIGRATION DEEP VIEW ─────────────────────────────────────────
+      function MigrationDeepView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = MIGRATION_DEEP[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛫 Migration — The Deep Science'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Why birds migrate, how they prepare, how they navigate, hazards they face, and Maine\'s migration calendar.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            MIGRATION_DEEP.map(function(m, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-orange-700 text-white' : 'bg-orange-100 text-orange-900 hover:bg-orange-200')
+              }, m.topic);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-orange-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-orange-900 mb-3' }, '🛫 ' + cur.topic),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              cur.what ? h('div', { className: 'p-3 bg-orange-50 rounded' }, h('b', null, 'What: '), cur.what) : null,
+              cur.example ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Example: '), cur.example) : null,
+              cur.energy_cost ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Energy cost: '), cur.energy_cost) : null,
+              cur.photoperiod ? h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, 'Photoperiod: '), cur.photoperiod) : null,
+              cur.hormones ? h('div', { className: 'p-3 bg-violet-50 rounded' }, h('b', null, 'Hormones: '), cur.hormones) : null,
+              cur.weather ? h('div', { className: 'p-3 bg-cyan-50 rounded' }, h('b', null, 'Weather: '), cur.weather) : null,
+              cur.hyperphagia ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Hyperphagia: '), cur.hyperphagia) : null,
+              cur.fat_deposits ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Fat deposits: '), cur.fat_deposits) : null,
+              cur.organ_atrophy ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Organ atrophy: '), cur.organ_atrophy) : null,
+              cur.altitude ? h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, 'Altitude: '), cur.altitude) : null,
+              cur.speed ? h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, 'Speed: '), cur.speed) : null,
+              cur.duration ? h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, 'Duration: '), cur.duration) : null,
+              cur.water ? h('div', { className: 'p-3 bg-cyan-50 rounded' }, h('b', null, 'Water: '), cur.water) : null,
+              cur.compass ? h('div', { className: 'p-3 bg-violet-50 rounded' }, h('b', null, 'Compass: '), cur.compass) : null,
+              cur.learning ? h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, 'Learning: '), cur.learning) : null,
+              cur.research ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Research: '), cur.research) : null,
+              cur.threats ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Threats: '), cur.threats) : null,
+              cur.maine ? h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, 'Maine: '), cur.maine) : null,
+              cur.conservation ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Conservation: '), cur.conservation) : null,
+              cur.window_collisions ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Window collisions: '), cur.window_collisions) : null,
+              cur.tower_collisions ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Tower collisions: '), cur.tower_collisions) : null,
+              cur.cat_predation ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Cat predation: '), cur.cat_predation) : null,
+              cur.weather_loss ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Weather loss: '), cur.weather_loss) : null,
+              cur.poisoning ? h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, 'Poisoning: '), cur.poisoning) : null,
+              cur.spring ? h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🌱 Spring: '), cur.spring) : null,
+              cur.fall ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🍂 Fall: '), cur.fall) : null,
+              cur.year_round ? h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, 'Year-round: '), cur.year_round) : null,
+              cur.bar_tailed_godwit ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Bar-tailed Godwit: '), cur.bar_tailed_godwit) : null,
+              cur.red_knot ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Red Knot: '), cur.red_knot) : null,
+              cur.arctic_tern ? h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, 'Arctic Tern: '), cur.arctic_tern) : null,
+              cur.maine_birds ? h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, 'Maine birds: '), cur.maine_birds) : null)));
+      }
+
+      // ── COMPLETE GLOSSARY VIEW ─────────────────────────────────────────
+      function GlossaryDeepView() {
+        var qState = useState('');
+        var q = qState[0], setQ = qState[1];
+        var filtered = COMPLETE_GLOSSARY.filter(function(g) {
+          if (!q) return true;
+          var ql = q.toLowerCase();
+          return g.term.toLowerCase().indexOf(ql) >= 0 || g.def.toLowerCase().indexOf(ql) >= 0;
+        });
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📖 Complete Birding Glossary'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, COMPLETE_GLOSSARY.length + ' birding terms — the vocabulary you need.'),
+          h('input', { type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
+            placeholder: 'Search terms or definitions...',
+            className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-300 mb-3 text-sm' }),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+            filtered.map(function(g, i) {
+              return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3' },
+                h('div', { className: 'text-sm font-black text-violet-900 mb-1' }, '📖 ' + g.term),
+                h('div', { className: 'text-xs text-slate-700' }, g.def));
+            })),
+          filtered.length === 0 && h('div', { className: 'text-center text-slate-500 italic p-8' }, 'No matches for "' + q + '"'));
+      }
+
+      if (view === 'topology') return h(TopologyView);
+      if (view === 'habitatsDeep') return h(HabitatsDeepView);
+      if (view === 'climateBirds') return h(ClimateBirdsView);
+      if (view === 'feeder') return h(FeederView);
+      if (view === 'nestbox') return h(NestboxView);
+      if (view === 'diets') return h(DietsView);
+      if (view === 'migrationDeep') return h(MigrationDeepView);
+      if (view === 'glossaryDeep') return h(GlossaryDeepView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 6 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── DICHOTOMOUS KEY VIEW ─────────────────────────────────────────
+      function DichotomousKeyView() {
+        var stepState = useState('start');
+        var step = stepState[0], setStep = stepState[1];
+        var historyState = useState([]);
+        var history = historyState[0], setHistory = historyState[1];
+        var node = DICHOTOMOUS_KEY.find(function(n) { return n.id === step; });
+
+        return h('div', { className: 'p-4 max-w-3xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔑 Dichotomous Key — Walk Through ID'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Step-by-step bird identification. Answer questions about the bird you saw + reach a likely species ID.'),
+          history.length > 0 && h('div', { className: 'mb-3' },
+            h('button', { onClick: function() {
+              var prev = history.slice(0, -1);
+              setHistory(prev);
+              setStep(prev[prev.length - 1] || 'start');
+            }, className: 'px-3 py-1 rounded bg-stone-200 text-stone-700 text-xs font-bold' }, '← Back')),
+          node ? h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-violet-300 p-5' },
+            node.question ? h('div', null,
+              h('h2', { className: 'text-lg font-black text-violet-900 mb-4' }, '❓ ' + node.question),
+              h('div', { className: 'space-y-2' },
+                node.choices.map(function(c, i) {
+                  return h('button', { key: i, onClick: function() {
+                    setHistory(history.concat([step]));
+                    setStep(c.next);
+                  }, className: 'w-full p-3 rounded-lg bg-white hover:bg-violet-100 border-2 border-violet-300 text-left text-sm text-slate-800 font-bold' }, c.label);
+                }))) : null,
+            node.result ? h('div', null,
+              h('h2', { className: 'text-lg font-black text-emerald-900 mb-3' }, '✓ Likely Identification'),
+              h('p', { className: 'text-sm text-slate-700 mb-4 p-3 bg-emerald-50 rounded' }, node.result),
+              h('button', { onClick: function() { setStep('start'); setHistory([]); },
+                className: 'px-4 py-2 rounded-lg bg-emerald-700 text-white font-bold text-sm' }, 'Start Over')) : null) : null);
+      }
+
+      // ── SEASONAL GUIDE VIEW ─────────────────────────────────────────
+      function SeasonalGuideView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = SEASONAL_GUIDE[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🗓 Maine Birding by Season'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, 'Year-round Maine birding guide. Each season has its own bird community + birding strategy.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            SEASONAL_GUIDE.map(function(s, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-900 hover:bg-amber-200')
+              }, s.season.split(' — ')[0]);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-amber-900 mb-2' }, '🗓 ' + cur.season),
+            h('p', { className: 'text-sm text-slate-700 italic mb-3' }, cur.character),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🐦 Species: '), cur.species),
+              h('div', { className: 'p-3 bg-sky-50 rounded' }, h('b', null, '📍 Where: '), cur.where),
+              h('div', { className: 'p-3 bg-emerald-50 italic rounded' }, h('b', null, '💡 Tip: '), cur.tip),
+              h('div', { className: 'p-3 bg-violet-50 rounded' }, h('b', null, '🎯 Hotspots: '), cur.hotspots))));
+      }
+
+      // ── PHOTO VIEW ─────────────────────────────────────────
+      function PhotoView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📸 Bird Photography'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Equipment, settings, composition, ethics, action shots, editing, sharing. Photography techniques for bird photographers.'),
+          h('div', { className: 'space-y-3' },
+            PHOTO_TIPS.map(function(p, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '📸 ' + p.topic),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, p.details),
+                p.cost && p.cost !== '—' ? h('div', { className: 'p-2 bg-violet-50 text-xs italic' }, h('b', null, '💰 Cost: '), p.cost) : null);
+            })));
+      }
+
+      // ── RESOURCES VIEW ─────────────────────────────────────────
+      function ResourcesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📚 Birding Resources'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Apps, field guides, organizations, citizen science, books, tours, festivals. Everything to get started + go deeper.'),
+          h('div', { className: 'space-y-3' },
+            RESOURCES.map(function(r, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📚 ' + r.category),
+                h('p', { className: 'text-sm text-slate-700' }, r.items));
+            })));
+      }
+
+      // ── AGE SEX ID VIEW ─────────────────────────────────────────
+      function AgeSexIdView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎂 Aging + Sexing Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 topics on aging + sexing — songbirds, raptors, gulls, waterfowl. The skills experienced birders use.'),
+          h('div', { className: 'space-y-3' },
+            AGE_SEX_ID.map(function(a, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎂 ' + a.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Detail: '), a.detail),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, 'Example: '), a.example)));
+            })));
+      }
+
+      // ── SHAPE DIFF VIEW ─────────────────────────────────────────
+      function ShapeDiffView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📐 Bird Shape + Size Quick Reference'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 morphological features for ID at a glance — bill length + shape, wing shape, tail length + shape, body size + shape, leg length.'),
+          h('div', { className: 'space-y-3' },
+            SHAPE_DIFF.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '📐 ' + s.feature),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'What: '), s.what),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '💡 Diagnostic: '), s.diagnostic)));
+            })));
+      }
+
+      // ── ICONIC MAINE VIEW ─────────────────────────────────────────
+      function IconicMaineView() {
+        var idxState = useState(0);
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = ICONIC_MAINE[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌟 Iconic Maine Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '10 Maine birds with deep cultural + ecological significance to the state.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-3' },
+            ICONIC_MAINE.map(function(i2, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+              }, i2.name.split(' (')[0]);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3' }, '🌟 ' + cur.name),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🌟 Why iconic: '), cur.why_iconic),
+              h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🏛 Cultural significance: '), cur.cultural),
+              h('div', { className: 'p-3 bg-rose-50 rounded' }, h('b', null, '🛡️ Conservation: '), cur.conservation))));
+      }
+
+      if (view === 'dichotomous') return h(DichotomousKeyView);
+      if (view === 'seasonal') return h(SeasonalGuideView);
+      if (view === 'photo') return h(PhotoView);
+      if (view === 'resources') return h(ResourcesView);
+      if (view === 'agesex') return h(AgeSexIdView);
+      if (view === 'shapediff') return h(ShapeDiffView);
+      if (view === 'iconic') return h(IconicMaineView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 7 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── BIRD FACTS VIEW ─────────────────────────────────────────
+      function FactsView() {
+        var catState = useState('All');
+        var cat = catState[0], setCat = catState[1];
+        var cats = ['All'].concat(Array.from(new Set(BIRD_FACTS.map(function(f) { return f.category; }))).sort());
+        var filtered = cat === 'All' ? BIRD_FACTS : BIRD_FACTS.filter(function(f) { return f.category === cat; });
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💡 100 Bird Facts'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, BIRD_FACTS.length + ' remarkable facts about birds. Filter by category.'),
+          h('div', { className: 'flex gap-2 flex-wrap mb-4' },
+            cats.map(function(c, i) {
+              return h('button', { key: i, onClick: function() { setCat(c); },
+                className: 'px-3 py-1 rounded text-xs font-bold ' + (cat === c ? 'bg-violet-700 text-white' : 'bg-violet-100 text-violet-900 hover:bg-violet-200')
+              }, c);
+            })),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+            filtered.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3' },
+                h('div', { className: 'text-xs uppercase tracking-wider text-violet-600 font-bold mb-1' }, f.category),
+                h('div', { className: 'text-sm text-slate-700' }, f.fact));
+            })));
+      }
+
+      // ── EXTINCT VIEW ─────────────────────────────────────────
+      function ExtinctView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦤 Historically Extinct Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 birds extinct in historical times. Great Auk + Passenger Pigeon + Carolina Parakeet + Labrador Duck + others — each species\' loss + lessons.'),
+          h('div', { className: 'space-y-3' },
+            HISTORICAL_EXTINCT.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-stone-700 p-4' },
+                h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, '🦤 ' + e.species),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-stone-100 rounded' }, h('b', null, 'Extinction: '), e.extinction),
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Reason: '), e.reason),
+                  e.relation_maine ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Maine relation: '), e.relation_maine) : null,
+                  h('div', { className: 'p-2 bg-violet-50 italic rounded' }, h('b', null, '📚 Lesson: '), e.lesson)));
+            })));
+      }
+
+      // ── CONFUSING PAIRS VIEW ─────────────────────────────────────────
+      function ConfusingPairsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔀 Common Confusing Pairs'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 Maine bird pairs that are easily mistaken. Each pair with key distinguishing features.'),
+          h('div', { className: 'space-y-3' },
+            CONFUSING_PAIRS.map(function(p, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🔀 ' + p.pair),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Similarity: '), p.similarity),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Key difference: '), p.key_diff)));
+            })));
+      }
+
+      // ── FAMILIES VIEW ─────────────────────────────────────────
+      function FamiliesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📚 Bird Families Overview'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '12 major bird orders/families. The taxonomic tree birders use to organize 10,500+ species.'),
+          h('div', { className: 'space-y-3' },
+            FAMILIES.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📚 ' + f.family),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', null, h('b', null, 'Common name: '), f.common),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Maine: '), f.maine),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Characteristics: '), f.what)));
+            })));
+      }
+
+      // ── KIDS BIRDING VIEW ─────────────────────────────────────────
+      function KidsBirdingView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧒 Birding with Kids'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Age-appropriate approaches to bird-watching with kids — toddler to teen.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_WITH_KIDS.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🧒 ' + b.age),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '⏱ Attention span: '), b.attention),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Approach: '), b.approach),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🎨 Activities: '), b.activities),
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '⚠️ Avoid: '), b.avoid)));
+            })));
+      }
+
+      // ── ACCESSIBILITY VIEW ─────────────────────────────────────────
+      function AccessibilityView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '♿ Accessible Birding'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birding for everyone. Autistic birders, mobility limitations, vision + hearing differences, cost accessibility, ADHD-friendly approaches.'),
+          h('div', { className: 'space-y-3' },
+            ACCESSIBILITY.map(function(a, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '♿ ' + a.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), a.details),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Tools: '), a.tools),
+                  a.community ? h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Community: '), a.community) : null,
+                  a.maine_sites ? h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine sites: '), a.maine_sites) : null,
+                  a.maine_resources ? h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine resources: '), a.maine_resources) : null));
+            })));
+      }
+
+      // ── TEACHING VIEW ─────────────────────────────────────────
+      function TeachingView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '👨‍🏫 Teaching Birding'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Teacher resources for bringing birds into classroom + curriculum. NGSS-aligned. Maine-relevant. Cross-curricular.'),
+          h('div', { className: 'space-y-3' },
+            TEACHING_TIPS.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '👨‍🏫 ' + t.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Details: '), t.details),
+                  t.curriculum ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📚 Curriculum: '), t.curriculum) : null,
+                  t.maine_recommendations ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '📍 Maine: '), t.maine_recommendations) : null,
+                  t.maine_natives ? h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🌳 Maine natives: '), t.maine_natives) : null,
+                  t.data ? h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, '📊 Data: '), t.data) : null,
+                  t.benefits ? h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefits: '), t.benefits) : null,
+                  t.maine_connections ? h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '📍 Maine connections: '), t.maine_connections) : null,
+                  t.examples ? h('div', { className: 'p-2 bg-violet-50 italic rounded' }, h('b', null, '✏ Examples: '), t.examples) : null,
+                  t.maine ? h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), t.maine) : null,
+                  t.mindset ? h('div', { className: 'p-3 bg-amber-100 rounded font-medium' }, h('b', null, '🌱 Mindset: '), t.mindset) : null));
+            })));
+      }
+
+      if (view === 'facts') return h(FactsView);
+      if (view === 'extinct') return h(ExtinctView);
+      if (view === 'confusing') return h(ConfusingPairsView);
+      if (view === 'families') return h(FamiliesView);
+      if (view === 'kids') return h(KidsBirdingView);
+      if (view === 'access') return h(AccessibilityView);
+      if (view === 'teach') return h(TeachingView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 8 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── WABANAKI BIRDS VIEW ─────────────────────────────────────────
+      function WabanakiView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪶 Wabanaki Birds + Indigenous Knowledge'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Wabanaki peoples — Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki — have lived alongside Maine birds for ~13,000 years. This module references general cultural knowledge with respect; for primary sources contact specific tribal cultural authorities. Aligns with Maine LD 291 (Indigenous Studies in K-12 curriculum).'),
+          h('div', { className: 'space-y-3' },
+            WABANAKI_BIRDS.map(function(w, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🪶 ' + w.species),
+                w.penobscot_name ? h('div', { className: 'text-xs italic text-slate-600 mb-2' }, 'Naming: ' + w.penobscot_name) : null,
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Cultural: '), w.cultural),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Ecological knowledge: '), w.ecological_knowledge),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, 'Modern engagement: '), w.modern_engagement)));
+            })));
+      }
+
+      // ── BIRDS LITERATURE VIEW ─────────────────────────────────────────
+      function LiteratureView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📜 Birds in Literature'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds in poetry, nature writing, scientific literature. From Poe\'s Raven to Mary Oliver\'s wild geese to Heinrich\'s Maine ravens.'),
+          h('div', { className: 'space-y-3' },
+            BIRDS_LITERATURE.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-base font-black text-violet-900 mb-2' }, '📜 ' + b.reference),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, b.what),
+                h('div', { className: 'p-2 bg-violet-50 italic rounded text-xs' }, b.cultural));
+            })));
+      }
+
+      // ── ACHIEVEMENTS LIFE VIEW ─────────────────────────────────────────
+      function AchievementsLifeView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏆 Birding Lifetime Achievements'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Milestones + tiers + benchmarks from beginner to expert. Where are you on your birding journey?'),
+          h('div', { className: 'space-y-3' },
+            ACHIEVEMENTS_LIFE.map(function(a, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🏆 ' + a.tier),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🎯 Goals: '), a.goals),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📊 Benchmark: '), a.benchmark)));
+            })));
+      }
+
+      // ── HAWKWATCH VIEW ─────────────────────────────────────────
+      function HawkwatchView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦅 Maine Hawkwatch Guide'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Bradbury Mountain (Pownal) is Maine\'s premier hawkwatch. Sept-Oct migration peaks. Citizen science + viewing.'),
+          h('div', { className: 'space-y-3' },
+            HAWKWATCH_GUIDE.map(function(h2, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '🦅 ' + h2.topic),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h2.details),
+                h2.season ? h('div', { className: 'p-2 bg-orange-50 rounded text-xs' }, h('b', null, '📅 Season: '), h2.season) : null,
+                h2.timing ? h('div', { className: 'p-2 bg-orange-50 rounded text-xs' }, h('b', null, '⏰ Timing: '), h2.timing) : null,
+                h2.maine_specific ? h('div', { className: 'p-2 bg-emerald-50 rounded text-xs' }, h('b', null, '📍 Maine: '), h2.maine_specific) : null,
+                h2.tip ? h('div', { className: 'p-2 bg-amber-50 italic rounded text-xs' }, h('b', null, '💡 Tip: '), h2.tip) : null,
+                h2.maine ? h('div', { className: 'p-2 bg-sky-50 rounded text-xs' }, h('b', null, '📍 Maine: '), h2.maine) : null,
+                h2.worst ? h('div', { className: 'p-2 bg-rose-50 rounded text-xs' }, h('b', null, '⚠️ Avoid: '), h2.worst) : null);
+            })));
+      }
+
+      // ── CBC VIEW ─────────────────────────────────────────
+      function CbcView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎄 Christmas Bird Count Guide'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s most-rewarding winter citizen-science event. Mid-Dec to early Jan. ~30 Maine circles. Begun 1900.'),
+          h('div', { className: 'space-y-3' },
+            CBC_GUIDE.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🎄 ' + c.topic),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, c.details),
+                c.history ? h('div', { className: 'p-2 bg-emerald-50 rounded text-xs' }, h('b', null, '📚 History: '), c.history) : null,
+                c.science ? h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, '🔬 Science: '), c.science) : null,
+                c.participation ? h('div', { className: 'p-2 bg-sky-50 rounded text-xs' }, h('b', null, '✏ Participation: '), c.participation) : null,
+                c.effort ? h('div', { className: 'p-2 bg-amber-50 rounded text-xs' }, h('b', null, '⏱ Effort: '), c.effort) : null,
+                c.tips ? h('div', { className: 'p-2 bg-emerald-50 italic rounded text-xs' }, h('b', null, '💡 Tips: '), c.tips) : null,
+                c.maine_specifics ? h('div', { className: 'p-2 bg-emerald-50 rounded text-xs' }, h('b', null, '📍 Maine: '), c.maine_specifics) : null,
+                c.future ? h('div', { className: 'p-2 bg-violet-50 italic rounded text-xs' }, h('b', null, '🔮 Future: '), c.future) : null,
+                c.tip ? h('div', { className: 'p-2 bg-emerald-50 italic rounded text-xs' }, h('b', null, '💡 Tip: '), c.tip) : null);
+            })));
+      }
+
+      // ── SUPERSTITIONS VIEW ─────────────────────────────────────────
+      function SuperstitionsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🪄 Bird Superstitions + Lore'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Cultural lore + folk beliefs about birds. Sometimes containing ecological insight; sometimes pure folklore.'),
+          h('div', { className: 'space-y-3' },
+            SUPERSTITIONS.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🪄 ' + s.lore),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, '📜 Origin: '), s.origin),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '🔬 Reality: '), s.truth)));
+            })));
+      }
+
+      // ── ETIQUETTE DEEP VIEW ─────────────────────────────────────────
+      function EtiquetteDeepView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🤝 Birding Etiquette Deep'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 specific birding situations + how to handle each respectfully. Beyond the basic ABA Code.'),
+          h('div', { className: 'space-y-3' },
+            ETIQUETTE_DEEP.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🤝 ' + e.situation),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Etiquette: '), e.etiquette),
+                e.maine_specifics ? h('div', { className: 'p-2 bg-sky-50 italic rounded text-xs' }, h('b', null, '📍 Maine: '), e.maine_specifics) : null,
+                e.maine_examples ? h('div', { className: 'p-2 bg-sky-50 italic rounded text-xs' }, h('b', null, '📍 Examples: '), e.maine_examples) : null,
+                e.maine_sites ? h('div', { className: 'p-2 bg-sky-50 italic rounded text-xs' }, h('b', null, '📍 Maine sites: '), e.maine_sites) : null,
+                e.maine ? h('div', { className: 'p-2 bg-sky-50 italic rounded text-xs' }, h('b', null, '📍 Maine: '), e.maine) : null,
+                e.respect ? h('div', { className: 'p-2 bg-rose-50 italic rounded text-xs' }, h('b', null, '🛡️ Respect: '), e.respect) : null,
+                e.tip ? h('div', { className: 'p-2 bg-amber-50 italic rounded text-xs' }, h('b', null, '💡 Tip: '), e.tip) : null,
+                e.community ? h('div', { className: 'p-2 bg-violet-50 italic rounded text-xs' }, h('b', null, '🤝 Community: '), e.community) : null,
+                e.research_usage ? h('div', { className: 'p-2 bg-amber-50 italic rounded text-xs' }, h('b', null, '🔬 Research: '), e.research_usage) : null,
+                e.what_to_report ? h('div', { className: 'p-2 bg-emerald-50 italic rounded text-xs' }, h('b', null, '📝 Report: '), e.what_to_report) : null);
+            })));
+      }
+
+      // ── HAWKWATCH DATA VIEW ─────────────────────────────────────────
+      function HawkwatchDataView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📊 Hawkwatch Science Data'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Bradbury Mountain Hawkwatch + Maine raptor migration data. 30+ years of citizen-science records.'),
+          h('div', { className: 'space-y-3' },
+            HAWKWATCH_DATA.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '📊 ' + d.year),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, '🦅 Total count: '), d.total_count),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '⭐ Peak day: '), d.peak_day),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '🌤 Conditions: '), d.conditions)));
+            })));
+      }
+
+      // ── URBAN BIRDING VIEW ─────────────────────────────────────────
+      function UrbanView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏙 Urban Birding — Maine Cities'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s cities have surprising bird diversity. Birding without leaving the city.'),
+          h('div', { className: 'space-y-3' },
+            URBAN_BIRDS.map(function(u, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🏙 ' + u.city_area),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐦 Species: '), u.species),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📅 Best seasons: '), u.best_seasons),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '💡 Tip: '), u.tip)));
+            })));
+      }
+
+      // ── LOG TEMPLATE VIEW ─────────────────────────────────────────
+      function LogTemplateView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📓 Daily Birding Log Template'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'What to record on a typical day of birding. Use this template for your journal or eBird submissions.'),
+          h('div', { className: 'space-y-3' },
+            LOG_TEMPLATE.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📓 ' + t.field),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, 'Example: '), t.example),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'What: '), t.what)));
+            })));
+      }
+
+      if (view === 'wabanaki') return h(WabanakiView);
+      if (view === 'literature') return h(LiteratureView);
+      if (view === 'achLife') return h(AchievementsLifeView);
+      if (view === 'hawkwatch') return h(HawkwatchView);
+      if (view === 'cbc') return h(CbcView);
+      if (view === 'superstitions') return h(SuperstitionsView);
+      if (view === 'etiquetteDeep') return h(EtiquetteDeepView);
+      if (view === 'hawkData') return h(HawkwatchDataView);
+      if (view === 'urban') return h(UrbanView);
+      if (view === 'logTemplate') return h(LogTemplateView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 9 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── INTELLIGENCE VIEW ─────────────────────────────────────────
+      function IntelligenceView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧠 Bird Intelligence + Cognition'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 dimensions of bird cognition — tool use, language, self-recognition, caching, long-term memory, theory of mind, communication, migration memory. Birds are smarter than once thought.'),
+          h('div', { className: 'space-y-3' },
+            INTELLIGENCE.map(function(i2, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🧠 ' + i2.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Details: '), i2.details),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🔬 Research: '), i2.research),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine: '), i2.maine)));
+            })));
+      }
+
+      // ── ECOSYSTEM SERVICES VIEW ─────────────────────────────────────────
+      function EcoServicesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌍 Birds + Ecosystem Services'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Pollination, seed dispersal, pest control, carrion removal, ecosystem engineering, nutrient cycling, recreation, education. Birds make critical contributions.'),
+          h('div', { className: 'space-y-3' },
+            ECOSYSTEM_SERVICES.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🌍 ' + e.service),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🐦 Birds: '), e.birds),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), e.details),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '💰 Value: '), e.value)));
+            })));
+      }
+
+      // ── RECOVERY STORIES VIEW ─────────────────────────────────────────
+      function RecoveryView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏥 Conservation Recovery Stories'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Bald Eagle, Peregrine Falcon, Atlantic Puffin, Brown Pelican, Whooping Crane, California Condor, Wild Turkey, Eastern Bluebird. Conservation works.'),
+          h('div', { className: 'space-y-3' },
+            RECOVERY_STORIES.map(function(r, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🏥 ' + r.species),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '⬇️ Decline: '), r.decline),
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, '⚠️ Causes: '), r.causes),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🎯 Action: '), r.action),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '✓ Result: '), r.result),
+                  r.maine ? h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine: '), r.maine) : null));
+            })));
+      }
+
+      // ── WIND ENERGY VIEW ─────────────────────────────────────────
+      function WindEnergyView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '⚡ Wind Energy + Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Wind turbines kill birds + bats. Climate change kills far more. The complex science + ethics of renewable energy + bird conservation.'),
+          h('div', { className: 'space-y-3' },
+            WIND_ENERGY.map(function(w, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '⚡ ' + w.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Details: '), w.details),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🔬 Research: '), w.research),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), w.maine_specifics)));
+            })));
+      }
+
+      // ── RESEARCH TECH VIEW ─────────────────────────────────────────
+      function ResearchTechView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🔬 Bird Research Technology'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 research methods modern ornithologists use to study birds. From bands to AI sound recognition to citizen science apps.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_RESEARCH_TECH.map(function(r, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🔬 ' + r.method),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'What: '), r.what),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🎯 Purpose: '), r.research_purpose),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), r.maine_examples)));
+            })));
+      }
+
+      // ── FESTIVALS VIEW ─────────────────────────────────────────
+      function FestivalsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎉 Maine Birding Events + Festivals'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 Maine birding events + festivals year-round. From Acadia Birding Festival to Christmas Bird Counts to weekly Maine Audubon walks.'),
+          h('div', { className: 'space-y-3' },
+            FESTIVALS.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎉 ' + f.event),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), f.details),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '👥 Audience: '), f.audience),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '💰 Cost: '), f.cost)));
+            })));
+      }
+
+      if (view === 'intelligence') return h(IntelligenceView);
+      if (view === 'ecoServices') return h(EcoServicesView);
+      if (view === 'recovery') return h(RecoveryView);
+      if (view === 'windEnergy') return h(WindEnergyView);
+      if (view === 'researchTech') return h(ResearchTechView);
+      if (view === 'festivals') return h(FestivalsView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 10 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── BACKYARD 30 VIEW ─────────────────────────────────────────
+      function Backyard30View() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏡 30 Common Maine Backyard Birds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Maine\'s 30 most-commonly-seen backyard + feeder birds. Season, visit frequency, recommended feeder + food.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'w-full text-sm' },
+              h('thead', null, h('tr', { className: 'bg-stone-700 text-white' },
+                h('th', { className: 'p-2 text-left' }, 'Species'),
+                h('th', { className: 'p-2 text-left' }, 'Season'),
+                h('th', { className: 'p-2 text-left' }, 'Visit Frequency'),
+                h('th', { className: 'p-2 text-left' }, 'Recommended Feeder'))),
+              h('tbody', null,
+                BACKYARD_30.map(function(b, i) {
+                  return h('tr', { key: i, className: i % 2 === 0 ? 'bg-amber-50' : 'bg-white' },
+                    h('td', { className: 'p-2 font-bold text-stone-800' }, b.name),
+                    h('td', { className: 'p-2 text-slate-700' }, b.season),
+                    h('td', { className: 'p-2 text-slate-700' }, b.visit_freq),
+                    h('td', { className: 'p-2 text-slate-700' }, b.feeder));
+                })))));
+      }
+
+      // ── MONTHLY CALENDAR VIEW ─────────────────────────────────────────
+      function MonthlyView() {
+        var idxState = useState(new Date().getMonth());
+        var idx = idxState[0], setIdx = idxState[1];
+        var cur = MONTHLY_CALENDAR[idx];
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📅 Maine Monthly Bird Calendar'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '12 months of Maine birding — what to expect, key species, activities, tips.'),
+          h('div', { className: 'flex gap-1 flex-wrap mb-3' },
+            MONTHLY_CALENDAR.map(function(m, i) {
+              return h('button', { key: i, onClick: function() { setIdx(i); },
+                className: 'px-3 py-1 rounded text-xs font-bold ' + (i === idx ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200')
+              }, m.month);
+            })),
+          h('div', { className: 'bg-white rounded-xl shadow border-2 border-emerald-200 p-5' },
+            h('h2', { className: 'text-xl font-black text-emerald-900 mb-3' }, '📅 ' + cur.month),
+            h('div', { className: 'space-y-2 text-sm text-slate-700' },
+              h('div', { className: 'p-3 bg-emerald-50 rounded' }, h('b', null, '🐦 Species: '), cur.species),
+              h('div', { className: 'p-3 bg-amber-50 rounded' }, h('b', null, '🎯 Activities: '), cur.activities),
+              h('div', { className: 'p-3 bg-sky-50 italic rounded' }, h('b', null, '💡 Tip: '), cur.tip))));
+      }
+
+      // ── NAMING VIEW ─────────────────────────────────────────
+      function NamingView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏷 Bird Naming + Taxonomy'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Why birds have both common + scientific names. How scientific names work. The story behind bird naming + ongoing taxonomic revisions.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_NAMING.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🏷 ' + b.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), b.details),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Example: '), b.example)));
+            })));
+      }
+
+      // ── DRAWING VIEW ─────────────────────────────────────────
+      function DrawingView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '✏ Bird Drawing + Journaling'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Field sketching builds observation + ID skills better than photo alone. How to start a bird journal.'),
+          h('div', { className: 'space-y-3' },
+            DRAWING_TIPS.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '✏ ' + d.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), d.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefit: '), d.benefit)));
+            })));
+      }
+
+      // ── BIRDS ECONOMY VIEW ─────────────────────────────────────────
+      function EconomyView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💰 Birds + Maine Economy'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Birds + birding contribute meaningfully to Maine\'s economy. Tourism, gear, jobs, conservation funding.'),
+          h('div', { className: 'space-y-3' },
+            BIRDS_ECONOMY.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '💰 ' + b.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Data: '), b.data),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Examples: '), b.examples),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, 'Source: '), b.source)));
+            })));
+      }
+
+      // ── BEGINNER TIPS VIEW ─────────────────────────────────────────
+      function BeginnerTipsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌱 Beginner Birding Tips'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 essential tips for new birders. From "where to start" to "how to learn from mistakes."'),
+          h('div', { className: 'space-y-3' },
+            BEGINNER_TIPS.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🌱 ' + b.tip),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Details: '), b.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefit: '), b.benefit)));
+            })));
+      }
+
+      // ── MENTAL HEALTH VIEW ─────────────────────────────────────────
+      function MentalHealthView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌿 Birding + Mental Health'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 mental health benefits of birding — stress reduction, mindfulness, sense of place, slow living, community, purpose, aesthetic reward, reduced depression + anxiety.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_MENTAL_HEALTH.map(function(m, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🌿 ' + m.benefit),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🔬 Research: '), m.research),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '📍 Maine: '), m.maine_specific)));
+            })));
+      }
+
+      if (view === 'backyard30') return h(Backyard30View);
+      if (view === 'monthly') return h(MonthlyView);
+      if (view === 'naming') return h(NamingView);
+      if (view === 'drawing') return h(DrawingView);
+      if (view === 'economy') return h(EconomyView);
+      if (view === 'beginnerTips') return h(BeginnerTipsView);
+      if (view === 'mentalHealth') return h(MentalHealthView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 11 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      // ── QUIZ BANK VIEW ─────────────────────────────────────────
+      function QuizBankView() {
+        var qiState = useState(Math.floor(Math.random() * QUIZ_BANK.length));
+        var qi = qiState[0], setQi = qiState[1];
+        var showState = useState(false);
+        var show = showState[0], setShow = showState[1];
+        var cur = QUIZ_BANK[qi];
+        return h('div', { className: 'p-4 max-w-3xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎓 Bird Quiz Bank — 50 Questions'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-3' }, '50 quiz questions for testing your knowledge. Question ' + (qi+1) + ' of ' + QUIZ_BANK.length + '.'),
+          h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-violet-300 p-6 mb-3' },
+            h('div', { className: 'text-xs uppercase tracking-wider text-violet-600 mb-2 font-bold' }, cur.topic),
+            h('h2', { className: 'text-lg font-black text-violet-900 mb-4' }, '❓ ' + cur.q),
+            !show && h('button', { onClick: function() { setShow(true); },
+              className: 'px-4 py-2 rounded bg-emerald-600 text-white font-bold' }, 'Show answer'),
+            show && h('div', { className: 'p-4 bg-emerald-50 rounded text-sm text-slate-700' },
+              h('b', null, 'Answer: '), cur.a)),
+          h('div', { className: 'flex gap-2' },
+            h('button', { onClick: function() { setQi(Math.floor(Math.random() * QUIZ_BANK.length)); setShow(false); },
+              className: 'flex-1 px-4 py-2 rounded bg-violet-600 text-white font-bold' }, '🎲 Random question'),
+            h('button', { onClick: function() { setQi((qi + 1) % QUIZ_BANK.length); setShow(false); },
+              className: 'flex-1 px-4 py-2 rounded bg-stone-600 text-white font-bold' }, 'Next →')));
+      }
+
+      // ── DAILY ROUTINE VIEW ─────────────────────────────────────────
+      function DailyRoutineView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌅 A Bird\'s Day'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Hour-by-hour what birds do — from pre-dawn chorus through midday rest through evening songs to overnight migration.'),
+          h('div', { className: 'space-y-3' },
+            DAILY_ROUTINE.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🌅 ' + d.time),
+                h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Activity: '), d.activity),
+                h('div', { className: 'p-2 bg-emerald-50 italic rounded text-xs' }, h('b', null, '🐦 Species example: '), d.species_example));
+            })));
+      }
+
+      // ── THERMOREGULATION VIEW ─────────────────────────────────────────
+      function ThermoView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌡️ Bird Thermoregulation'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How birds maintain ~104-108°F body temperature in Maine\'s -30°F to 100°F range. Feathers, behavior, torpor, group roosting, gular fluttering, migration.'),
+          h('div', { className: 'space-y-3' },
+            THERMOREGULATION.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🌡️ ' + t.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Details: '), t.details),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Method: '), t.method)));
+            })));
+      }
+
+      // ── DAWN CHORUS VIEW ─────────────────────────────────────────
+      function DawnChorusView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌄 Dawn Chorus Science'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Why birds sing at dawn. Maine\'s peak dawn chorus is late May to early June.'),
+          h('div', { className: 'space-y-3' },
+            DAWN_CHORUS.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🌄 ' + d.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), d.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), d.maine_specific)));
+            })));
+      }
+
+      // ── BIRDS BY COLOR VIEW ─────────────────────────────────────────
+      function BirdsByColorView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎨 Birds By Color — Visual ID'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '7 color groups + Maine birds with each. Color is one of the first cues but never the only one.'),
+          h('div', { className: 'space-y-3' },
+            BIRDS_BY_COLOR.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '🎨 ' + c.color),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, '🐦 Birds: '), c.birds),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '💡 Tip: '), c.tip)));
+            })));
+      }
+
+      // ── BEHAVIOR GLOSSARY VIEW ─────────────────────────────────────────
+      function BehaviorGlossView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🧠 Bird Behavior Glossary'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '25 behavior terms birders use — mobbing, caching, lekking, philopatry, anting, mantling + more.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+            BEHAVIOR_GLOSSARY.map(function(g, i) {
+              return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3' },
+                h('div', { className: 'text-sm font-black text-violet-900 mb-1' }, '🧠 ' + g.term),
+                h('div', { className: 'text-xs text-slate-700' }, g.def));
+            })));
+      }
+
+      // ── BIRDS + TOOLS VIEW ─────────────────────────────────────────
+      function BirdsToolsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛠 Birds + Tools — What to Use'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 birding goals + the tools each requires. From beginner to pelagic photography.'),
+          h('div', { className: 'space-y-3' },
+            BIRDS_AND_TOOLS.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🛠 ' + b.goal),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Tools: '), b.tools),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '💰 Cost: '), b.cost),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '📍 Where: '), b.where)));
+            })));
+      }
+
+      // ── BIRD FRIENDLY HOME VIEW ─────────────────────────────────────────
+      function BirdFriendlyView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🏡 Bird-Friendly Home + Yard'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 practical actions for making your Maine home bird-friendly. From native plants to nest boxes to keeping cats indoors.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_FRIENDLY_HOME.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🏡 ' + b.action),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Details: '), b.details),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '✓ Benefit: '), b.benefit)));
+            })));
+      }
+
+      if (view === 'quizBank') return h(QuizBankView);
+      if (view === 'dailyRoutine') return h(DailyRoutineView);
+      if (view === 'thermo') return h(ThermoView);
+      if (view === 'dawnChorus') return h(DawnChorusView);
+      if (view === 'colorId') return h(BirdsByColorView);
+      if (view === 'behaviorGloss') return h(BehaviorGlossView);
+      if (view === 'birdsTools') return h(BirdsToolsView);
+      if (view === 'birdFriendly') return h(BirdFriendlyView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 12 VIEWS — final
+      // ═══════════════════════════════════════════════════════════
+
+      // ── SPRING ARRIVALS VIEW ─────────────────────────────────────────
+      function SpringArrivalsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌱 Maine Spring Arrival Dates'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Approximate arrival dates for 30+ Maine breeding species. Mark your calendar.'),
+          h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'w-full text-sm' },
+              h('thead', null, h('tr', { className: 'bg-emerald-700 text-white' },
+                h('th', { className: 'p-2 text-left' }, 'Species'),
+                h('th', { className: 'p-2 text-left' }, 'Arrival'),
+                h('th', { className: 'p-2 text-left' }, 'Notes'))),
+              h('tbody', null,
+                SPRING_ARRIVALS.map(function(s, i) {
+                  return h('tr', { key: i, className: i % 2 === 0 ? 'bg-emerald-50' : 'bg-white' },
+                    h('td', { className: 'p-2 font-bold text-emerald-900' }, s.species),
+                    h('td', { className: 'p-2 text-slate-700' }, s.date),
+                    h('td', { className: 'p-2 text-slate-700 text-xs italic' }, s.notes));
+                })))));
+      }
+
+      // ── FALL MIGRATION VIEW ─────────────────────────────────────────
+      function FallMigrationView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🍂 Fall Migration Strategies'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 strategies for fall migration birding in Maine — when, where, weather, ID challenges.'),
+          h('div', { className: 'space-y-3' },
+            FALL_MIGRATION_TIPS.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-orange-900 mb-2' }, '🍂 ' + f.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, 'Details: '), f.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), f.maine_specific)));
+            })));
+      }
+
+      // ── NIGHT BIRDING VIEW ─────────────────────────────────────────
+      function NightBirdingView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌙 Night Birding'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '7 night-birding approaches in Maine — owls, nightjars, nocturnal flight calls, owl banding, photography, equipment, safety.'),
+          h('div', { className: 'space-y-3' },
+            NIGHT_BIRDING.map(function(n, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-indigo-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-indigo-900 mb-2' }, '🌙 ' + n.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-indigo-50 rounded' }, h('b', null, 'Details: '), n.details),
+                  n.species ? h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Species: '), n.species) : null,
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Where: '), n.where)));
+            })));
+      }
+
+      // ── BIRDING INTERNATIONAL VIEW ─────────────────────────────────────────
+      function InternationalView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🌍 Birding Beyond Maine'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 destinations beyond Maine for serious birders. Costa Rica, Texas Gulf Coast, Iceland, Africa, India + more.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_INTERNATIONAL.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, '🌍 ' + b.region),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '🐦 Species: '), b.species),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📅 Best time: '), b.best_time),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '🚪 Access: '), b.access)));
+            })));
+      }
+
+      // ── BIRDING GAMES VIEW ─────────────────────────────────────────
+      function BirdingGamesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎲 Birding Games for Groups + Kids'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '11 birding games for groups, classrooms, families, scouts. From I-Spy to Bingo to Migration Race.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_GAMES.map(function(g, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎲 ' + g.game),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), g.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '👥 Age: '), g.age)));
+            })));
+      }
+
+      // ── BIRD SOUND TIPS VIEW ─────────────────────────────────────────
+      function BirdSoundView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎧 Bird Sound + Birding by Ear'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 tips for learning bird songs + identifying birds by ear.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_SOUND_TIPS.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🎧 ' + t.tip),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Details: '), t.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Benefit: '), t.benefit)));
+            })));
+      }
+
+      if (view === 'springArr') return h(SpringArrivalsView);
+      if (view === 'fallMig') return h(FallMigrationView);
+      if (view === 'nightBird') return h(NightBirdingView);
+      if (view === 'intl') return h(InternationalView);
+      if (view === 'games') return h(BirdingGamesView);
+      if (view === 'soundTips') return h(BirdSoundView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 13 VIEWS — final
+      // ═══════════════════════════════════════════════════════════
+
+      // ── DISEASES VIEW ─────────────────────────────────────────
+      function DiseasesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🦠 Birds + Disease'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 bird diseases + their impact + prevention. Public health concerns. Maine status.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_DISEASES.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '🦠 ' + d.disease),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Affected: '), d.affected),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Symptoms: '), d.symptoms),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, '📍 Maine: '), d.maine_status),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '✓ Prevention: '), d.prevention)));
+            })));
+      }
+
+      // ── DISABILITY BIRDING VIEW ─────────────────────────────────────────
+      function DisabilityBirdingView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '♿ Inclusive Birding Resources'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 inclusive birding resources — accessibility for mobility, vision, hearing, neurodiversity, cost, LGBTQ+, Indigenous birders, wellness.'),
+          h('div', { className: 'space-y-3' },
+            DISABILITY_BIRDING.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '♿ ' + d.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Tools: '), d.tools),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '💡 Tips: '), d.tips),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine orgs: '), d.maine_orgs)));
+            })));
+      }
+
+      // ── BIRD STORIES VIEW ─────────────────────────────────────────
+      function StoriesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📖 Bird Conservation Stories'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 epic bird conservation stories. Project Puffin, eBird revolution, DDT/Bald Eagle recovery, Maine Loon, Wild Turkey restoration + more.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_STORIES.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '📖 ' + s.story),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), s.details),
+                  h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Development: '), s.development),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📚 Lesson: '), s.lesson)));
+            })));
+      }
+
+      // ── TRAILS VIEW ─────────────────────────────────────────
+      function TrailsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🗺 Maine Birding Trail Regions'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 Maine birding trail regions. Each with key sites, species, access notes.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_TRAILS.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🗺 ' + t.region),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '📍 Sites: '), t.sites),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '🐦 Species: '), t.species),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '🚪 Access: '), t.access)));
+            })));
+      }
+
+      // ── SAFETY ETHICS VIEW ─────────────────────────────────────────
+      function SafetyEthicsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🛡 Safety + Ethics — Comprehensive'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 safety + ethics topics — personal, wildlife, tick, sun, bird welfare, property, sound, sensitive locations, photography, citizen science.'),
+          h('div', { className: 'space-y-3' },
+            SAFETY_ETHICS.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🛡 ' + s.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), s.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), s.maine_specific)));
+            })));
+      }
+
+      if (view === 'diseases') return h(DiseasesView);
+      if (view === 'disability') return h(DisabilityBirdingView);
+      if (view === 'stories') return h(StoriesView);
+      if (view === 'trails') return h(TrailsView);
+      if (view === 'safety') return h(SafetyEthicsView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 14 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      function AtlasView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🗂 Bird Atlas Projects'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '4 major bird atlas + survey projects — Maine + national breeding bird atlases, BBS, eBird.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_ATLASES.map(function(a, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '🗂 ' + a.topic),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Details: '), a.details),
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Years: '), a.years),
+                  h('div', { className: 'p-2 bg-sky-50 italic rounded' }, h('b', null, '✓ Benefit: '), a.benefit)));
+            })));
+      }
+
+      function MaineChangesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📊 Maine Bird Population Changes'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'How 10 Maine birds have changed over the past century — recoveries + losses + climate-driven shifts.'),
+          h('div', { className: 'space-y-3' },
+            MAINE_BIRD_CHANGES.map(function(m, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '📊 ' + m.species),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Historic: '), m.historic),
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Modern: '), m.modern),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '📚 Lesson: '), m.lesson)));
+            })));
+      }
+
+      function VoiceTypesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎵 Bird Voice Types — Categorize Sounds'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '12 categories of bird sounds — whistled, buzzed, repeated phrase, jumble, trill, mournful, liquid, insect-like, mechanical, cackle, caw, hoot.'),
+          h('div', { className: 'space-y-3' },
+            VOICE_TYPES.map(function(v, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-purple-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-purple-900 mb-2' }, '🎵 ' + v.type),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-purple-50 rounded' }, h('b', null, 'Description: '), v.description),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Examples: '), v.examples)));
+            })));
+      }
+
+      function DetailedCalendarView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📆 Detailed Birding Calendar'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, 'Week-by-week Maine bird calendar with bird activity + recommended birder actions.'),
+          h('div', { className: 'space-y-3' },
+            DETAILED_CALENDAR.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '📆 ' + d.window),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, '🐦 Activity: '), d.activity),
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, '✓ Action: '), d.action)));
+            })));
+      }
+
+      if (view === 'atlas') return h(AtlasView);
+      if (view === 'maineChanges') return h(MaineChangesView);
+      if (view === 'voiceTypes') return h(VoiceTypesView);
+      if (view === 'detCalendar') return h(DetailedCalendarView);
+
+      // ═══════════════════════════════════════════════════════════
+      // PHASE 15 VIEWS
+      // ═══════════════════════════════════════════════════════════
+
+      function ArtView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎨 Bird Art + Aesthetic History'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '7 eras of bird visual representation — from Indigenous art through Audubon through modern AI.'),
+          h('div', { className: 'space-y-3' },
+            BIRD_ART.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '🎨 ' + b.period),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), b.details),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '📍 Maine: '), b.maine)));
+            })));
+      }
+
+      function PhilosophyView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💭 Birding Philosophy + Meaning'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '8 deeper reflections on what birding can mean. The long game, birds as teachers, belonging, citizen science, indicators, active hope, community, intergenerational.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_PHILOSOPHY.map(function(p, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '💭 ' + p.idea),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), p.details),
+                  h('div', { className: 'p-3 bg-emerald-50 italic rounded font-medium text-emerald-900' }, h('b', null, '📚 Lesson: '), p.lesson)));
+            })));
+      }
+
+      function MaineStatsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '📊 Maine Birds in Numbers'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '15 statistics about Maine\'s birds + birding.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            MAINE_BIRD_STATS.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-emerald-500 p-4' },
+                h('h2', { className: 'text-sm font-bold text-emerald-900 mb-1' }, s.stat),
+                h('div', { className: 'text-2xl font-black text-amber-700 mb-2' }, s.number),
+                h('div', { className: 'text-xs text-slate-600 italic' }, s.context));
+            })));
+      }
+
+      if (view === 'art') return h(ArtView);
+      if (view === 'philosophy') return h(PhilosophyView);
+      if (view === 'maineStats') return h(MaineStatsView);
+
+      function FaqEssentialsView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '❓ Essential Birding FAQ'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 essential questions about Maine birding answered.'),
+          h('div', { className: 'space-y-3' },
+            FAQ_ESSENTIALS.map(function(f, i) {
+              return h('details', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 cursor-pointer' },
+                h('summary', { className: 'text-sm font-black text-violet-900' }, '❓ ' + f.q),
+                h('p', { className: 'mt-3 text-sm text-slate-700 leading-relaxed' }, f.a));
+            })));
+      }
+
+      if (view === 'faqEss') return h(FaqEssentialsView);
+
+      function MilestonesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '🎯 Birding Milestones'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '14 birding milestones from your very first bird to lifetime achievement. Goals + benchmarks + tips for each stage.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_MILESTONES.map(function(m, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '🎯 ' + m.milestone),
+                h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                  h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, '📅 Stage: '), m.stage),
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, '💡 Tip: '), m.tip)));
+            })));
+      }
+
+      if (view === 'milestones') return h(MilestonesView);
+
+      function QuotesView() {
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800' }, '💬 Birding Wisdom + Quotes'),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold' }, '← Menu')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, '10 quotes about birds + birding from naturalists, poets, scientists.'),
+          h('div', { className: 'space-y-3' },
+            BIRDING_QUOTES.map(function(q, i) {
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-5' },
+                h('blockquote', { className: 'text-base text-slate-700 italic mb-2' }, q.quote),
+                h('cite', { className: 'text-sm text-amber-700 font-bold' }, '— ' + q.author));
+            })));
+      }
+
+      if (view === 'quotes') return h(QuotesView);
       return h(MainMenu);
     }
   });

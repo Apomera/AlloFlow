@@ -56,7 +56,34 @@
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
-          try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+          var rendered;
+          try { rendered = tool.render(ctx); }
+          catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+          if (rendered == null) return null;
+          // ── WCAG dark-shell auto-wrap ──
+          // Every STEM tool's text palette was designed for a dark navy
+          // substrate (#86efac, #94a3b8, #cbd5e1, #e2e8f0 etc.). When the
+          // tool renders on a white host page, those colors fail WCAG AA
+          // (e.g., #86efac on white = 1.6:1, need 4.5:1).
+          //
+          // Wrap the tool's output in a self-contained dark shell at the
+          // host level so every tool inherits the proper contrast substrate
+          // automatically — no per-tool wrap needed.
+          //
+          // Opt out by setting `lightBackground: true` in the registerTool
+          // config (intended for tools that genuinely need a white surface,
+          // e.g., printable artifact tools).
+          if (tool.lightBackground === true) return rendered;
+          if (!ctx || !ctx.React) return rendered;
+          return ctx.React.createElement('div', {
+            style: {
+              background: '#0f172a',
+              color: '#e2e8f0',
+              borderRadius: 12,
+              minHeight: 'calc(100vh - 32px)'
+            },
+            'data-stem-tool-shell': id
+          }, rendered);
         },
         // Shared HiDPI canvas setup. Resizes the internal pixel buffer
         // to match the device pixel ratio while keeping CSS dims at the
@@ -2962,8 +2989,8 @@
                 color: 'emerald', ready: true
               },
               {
-                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Maine Stewardship Campaigns',
-                desc: 'Cross-campaign launcher: pick from five environmental stewardship sims (Cultural Mosaic, Conservation Manager, Outbreak Response, Watershed Steward, Climate Policy Pathways) and track mastery across all five.',
+                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Environmental Stewardship Campaigns',
+                desc: 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine campaigns plus ten cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone, Akagera Rwanda), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray\u2013Darling Basin), climate (Marshall Islands, Bangladesh delta). Family Pairing Insights unlock when you complete Maine + cross-region in the same mechanic family.',
                 color: 'emerald', ready: true
               },
               {
@@ -2985,6 +3012,16 @@
                 id: 'petsLab', icon: '🐾', label: 'Science of Pets Lab',
                 desc: 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses. Service & support animals. Cross-species training that assumes BehaviorLab\'s operant theory.',
                 color: 'amber', ready: true
+              },
+              {
+                id: 'fisherLab', icon: '🎣', label: 'FisherLab: Boating & Fishing Sim',
+                desc: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn IALA-B buoyage (red-right-returning), COLREGS rules of the road, charts, tides, and weather while fishing for cod, haddock, pollock, striper, and pulling lobster traps. Full 3D three.js sim with Maine-default DMR regs and a region toggle.',
+                color: 'cyan', ready: true
+              },
+              {
+                id: 'aquacultureLab', icon: '🦪', label: 'AquacultureLab: Mussel Farm Sim',
+                desc: 'Run a Maine shellfish farm. Pilot your skiff out to a Bagaduce River lease, deploy seeded longlines, monitor water quality (DO, salinity, pH, temp, chlorophyll-a), harvest mussels and oysters, navigate weather and tides. Full 3D three.js sim teaching boating navigation alongside aquaculture fundamentals.',
+                color: 'teal', ready: true
               },
               {
                 id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
@@ -3120,6 +3157,11 @@
                 desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
                 color: 'amber', ready: true
               },
+              {
+                id: 'schoolBehaviorToolkit', icon: '\uD83C\uDFEB', label: 'School Behavior Toolkit',
+                desc: 'Applied K-12 behavior practice \u2014 what school psychs and educators actually do with the science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin\'s seven-phase Acting-Out Cycle, Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab.',
+                color: 'teal', ready: true
+              },
 
               { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', category: true },
               {
@@ -3209,6 +3251,16 @@
                 color: 'green', ready: true
               },
               {
+                id: 'kitchenLab', icon: '🍳', label: 'Kitchen Lab',
+                desc: 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
+                color: 'orange', ready: true
+              },
+              {
+                id: 'cephalopodLab', icon: '🐙', label: 'Cephalopod Lab',
+                desc: 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
+                color: 'indigo', ready: true
+              },
+              {
                 id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
                 desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
@@ -3243,10 +3295,12 @@
               { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
               { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
               { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
+              { id: 'microbiology', icon: '\uD83E\uDD7C', label: 'Microbiology Lab', desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, vaccines + immune system, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), case studies (Snow, Fleming, MRSA, COVID/mRNA, FMT), quiz, printable lab safety + microbes reference.', color: 'emerald', ready: true },
 
               { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+              { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
@@ -3260,9 +3314,11 @@
 
               { id: '_cat_HistoryEng', icon: '', label: '\uD83D\uDCDC History & Engineering', desc: '', color: 'slate', category: true },
               { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', color: 'amber', ready: true },
+              { id: 'bridgeLab', icon: '\uD83C\uDF09', label: 'Bridge Engineering Lab', desc: 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
 
               { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
+              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: 'Raptor Hunt: Predator Physics + Biology', desc: 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
 
               { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
@@ -3403,7 +3459,15 @@
               { id: 'assessmentLiteracy', icon: '🔍', label: 'Junk-Science',
                 color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
                 slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
-                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } }
+                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } },
+              { id: 'fisherLab', icon: '🎣', label: 'Fisher Life Log',
+                color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
+                slot: '__alloflowFisherLab', lsKey: 'fisherLab.state.v1', total: 8,
+                count: function () { var s = _readSlot('__alloflowFisherLab', 'fisherLab.state.v1'); if (!s) return 0; var caught = s.speciesCaught || {}; return Object.keys(caught).length; } },
+              { id: 'aquacultureLab', icon: '🦪', label: 'Farm Log',
+                color: '#14b8a6', accent: 'rgba(20,184,166,0.15)',
+                slot: '__alloflowAquacultureLab', lsKey: 'aquacultureLab.state.v1', total: 5,
+                count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0; } }
             ];
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
@@ -4404,21 +4468,21 @@
             math: true, moneyMath: true, multtable: true, numberline: true,
             probability: true, protractor: true, volume: true,
             // Science
-            anatomy: true, aquarium: true, brainAtlas: true, cell: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
+            anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
-            epidemicSim: true, fireEcology: true, molecule: true, opticsLab: true, punnett: true,
+            epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
             // Engineering & CS
-            archStudio: true, circuit: true, codingPlayground: true,
+            archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, semiconductor: true,
             // Art & Music
             artStudio: true, creative: true, gameStudio: true,
             // Earth & Space
-            galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
+            astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
-            behaviorLab: true, dataStudio: true, economicsLab: true, logicLab: true,
+            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
             // Applied
@@ -4429,6 +4493,7 @@
             roadReady: true,
             bikeLab: true,
             birdLab: true,
+            raptorHunt: true,
             printingPress: true,
             atcTower: true,
             throwlab: true,
@@ -4443,8 +4508,14 @@
             weldLab: true,
             nutritionLab: true,
             evoLab: true,
+            kitchenLab: true,
+            cephalopodLab: true,
             statsLab: true,
             learningLab: true,
+            // Added May 15 2026 — was registering successfully but missing
+            // from this map caused the fallback at line ~4489 to return
+            // null, so the user saw a blank tile content area.
+            stewardshipHub: true,
             llmLiteracy: true,
             assessmentLiteracy: true,
             musicSynth: true,

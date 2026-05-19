@@ -32,7 +32,7 @@ function GlobalLevelUpModal({
         <div className="relative z-10">
           <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-white relative">
             <Trophy size={48} className="text-indigo-900 fill-current animate-bounce" />
-            <div className="absolute -top-2 -right-2 bg-indigo-900 text-yellow-400 text-xs font-black px-2 py-1 rounded-full border-2 border-white transform rotate-12">
+            <div className="absolute -top-2 -right-2 bg-indigo-900 text-yellow-700 text-xs font-black px-2 py-1 rounded-full border-2 border-white transform rotate-12">
               {t('common.new_badge')}
             </div>
           </div>

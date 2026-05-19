@@ -153,13 +153,13 @@ Breakdown of why this is safer than my earlier reverted simplified-pipeline stri
 - **[content_engine_source.jsx:910](content_engine_source.jsx#L910)** — the broken strip regex to replace
 - **[content_engine_source.jsx:921](content_engine_source.jsx#L921)** — `generateBibliographyString` call that already produces the correct app-owned refs (this part is fine; nothing to change here)
 
-**Source-module sync:** `content_engine_source.jsx` compiles to `content_engine_module.js` (CDN file). Also mirror edits to `prismflow-deploy/src/content_engine_source.jsx` per the pre-commit drift guard at `check-source-pair-drift.js`.
+**Source-module sync:** `content_engine_source.jsx` compiles to `content_engine_module.js` (CDN file). Also mirror edits to `prismflow-deploy/src/content_engine_source.jsx` per the pre-commit drift guard at `dev-tools/check_source_pair_drift.js`.
 
 ## Verification plan for next session
 
 1. Apply Fix 1 + Fix 2 above to the **canonical** source (`content_engine_source.jsx`) and mirror to the duplicate.
 2. Recompile `content_engine_module.js` from source (the session convention is manual — there's no compile script; diff is just the IIFE + window export wrapper).
-3. `node check-source-pair-drift.js` — confirm passes.
+3. `node dev-tools/check_source_pair_drift.js` — confirm passes.
 4. Full turbo-all deploy.
 5. In live app, use Generate Source with a short target (~200 words, citations enabled). Repeat ~5 times (Gemini is nondeterministic; the bug is intermittent).
 6. Confirm each run either (a) has no inline refs trailer in the input field or (b) has only the app's clean `### Source Text References` block with complete URLs.

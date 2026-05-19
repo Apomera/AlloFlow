@@ -124,7 +124,7 @@ const StudentQuizOverlay = React.memo(({
       warnLog("Error submitting quiz response:", e);
       setHasAnswered(false);
       setSelectedOptionIndex(null);
-      alert(t('errors.quiz_submit_failed'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.quiz_submit_failed'), 'error'); else alert(t('errors.quiz_submit_failed'));
     }
   };
   const getModeStyles = () => {
@@ -228,7 +228,7 @@ const StudentQuizOverlay = React.memo(({
   }) : /*#__PURE__*/React.createElement("div", {
     className: "w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm"
   }, bossStats.isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
-    className: "animate-spin text-red-400"
+    className: "animate-spin text-red-600"
   }) : "👾"), phase === 'revealed' && bossStats.lastDamage > 0 && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md"
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
@@ -254,7 +254,7 @@ const StudentQuizOverlay = React.memo(({
       width: `${Math.max(0, (bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100)}%`
     }
   })), phase === 'revealed' && bossStats.lastClassDamage > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "text-orange-400 text-xs font-bold mt-1 animate-pulse text-center"
+    className: "text-orange-700 text-xs font-bold mt-1 animate-pulse text-center"
   }, t('quiz.boss.counter_attack_msg', {
     damage: bossStats.lastClassDamage
   })))), /*#__PURE__*/React.createElement("div", {
@@ -369,7 +369,7 @@ const StudentQuizOverlay = React.memo(({
   }), " Explanation"), /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap",
     dangerouslySetInnerHTML: {
-      __html: currentQuestion.factCheck.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
+      __html: String(currentQuestion.factCheck).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
     }
   }), showTranslated && currentQuestion.factCheck_en && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-200"
@@ -464,7 +464,7 @@ const RoleSelectionModal = React.memo(({
   const handleMicCheck = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert(t('roles.voice_not_supported'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('roles.voice_not_supported'), 'error'); else alert(t('roles.voice_not_supported'));
       return;
     }
     setMicStatus('requesting');
@@ -674,7 +674,7 @@ const StudentEntryModal = React.memo(({
     "data-help-key": "entry_start_new"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
-    className: "text-yellow-400 fill-current"
+    className: "text-yellow-700 fill-current"
   }), " ", t('entry.start')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.upload'),
     onClick: () => handleConfirm('load'),

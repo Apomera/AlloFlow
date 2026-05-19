@@ -271,12 +271,13 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
         ref={wizardRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="quickstart-wizard-title"
         className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
       <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]">
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
               <div>
-                  <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  <h2 id="quickstart-wizard-title" className="text-xl font-black text-slate-800 flex items-center gap-2">
                     <Sparkles className="text-yellow-500 fill-current" size={20} /> {t('wizard.title')}
                   </h2>
                   <div className="flex gap-1 mt-2">
@@ -398,7 +399,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       );
                                   })}
                               </div>
-                              <p className="text-xs text-slate-600 text-right">{localData.standards.length} {t('wizard.selected_counter')}</p>
+                              <p className="text-xs text-slate-600 text-end">{localData.standards.length} {t('wizard.selected_counter')}</p>
                           </div>
                       )}
                   </div>
@@ -476,6 +477,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <div className="flex gap-2 mb-6">
                                   <input aria-label={t('common.enter_url_input')}
                                       type="url"
+                                      autoComplete="url"
                                       value={urlInput}
                                       onChange={(e) => setUrlInput(e.target.value)}
                                       data-help-key="wizard_url_input"
@@ -549,7 +551,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                 aria-label={t('common.refresh')}
                                                 data-help-key="wizard_search_result_select"
                                                 onClick={() => selectSearchOption(opt)}
-                                                className="w-full text-left p-4 pr-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
+                                                className="w-full text-start p-4 pe-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
                                             >
                                                 <div className="font-bold text-slate-700 group-hover:text-teal-800 mb-1 text-sm">{opt.title || t('wizard.untitled_resource')}</div>
                                                 <div className="text-xs text-slate-600 group-hover:text-teal-600 line-clamp-2">{opt.description || t('wizard.no_description')}</div>
@@ -570,7 +572,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     setUrlInput('');
                                                     if (addToast) addToast(t('wizard.link_opened_toast'), "info");
                                                 }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
+                                                className="absolute end-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
                                                 data-help-key="wizard_search_result_link"
                                                 title={t('wizard.open_link_title')}
                                             >
@@ -623,7 +625,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   <div>
                                       <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_topic_label')}</label>
                                       <div className="relative">
-                                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                          <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                                               <Type size={14} className="text-slate-600" />
                                           </div>
                                           <input
@@ -642,7 +644,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       <div>
                                           <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_tone_label')}</label>
                                           <div className="relative">
-                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                              <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                                                   <MessageSquare size={14} className="text-slate-600" />
                                               </div>
                                               <select
@@ -664,7 +666,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       <div>
                                           <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_length_label')}</label>
                                           <div className="relative">
-                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                              <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                                                   <AlignJustify size={14} className="text-slate-600" />
                                               </div>
                                               <select
@@ -687,7 +689,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       <div>
                                           <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_level_label')}</label>
                                           <div className="relative">
-                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                              <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                                                   <GraduationCap size={14} className="text-slate-600" />
                                               </div>
                                               <select
@@ -719,7 +721,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       <div>
                                           <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_dok_label')}</label>
                                           <div className="relative">
-                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                              <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                                                   <Brain size={14} className="text-slate-600" />
                                               </div>
                                               <select
@@ -808,7 +810,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                                         if(addToast) addToast(t('standards.toast_max_limit'), "error");
                                                                     }
                                                                 }}
-                                                                className="w-full text-left p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
+                                                                className="w-full text-start p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
                                                             >
                                                                 <div className="flex justify-between items-start gap-1">
                                                                     {!isIndependentMode && (
@@ -863,7 +865,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   </span>
                                                   <button
                                                       onClick={() => handleRemoveStandard(idx)}
-                                                      className="hover:text-green-900 ml-1 shrink-0"
+                                                      className="hover:text-green-900 ms-1 shrink-0"
                                                       data-help-key="wizard_std_remove_btn"
                                                       title={t('standards.remove_standard')}
                                                       aria-label={t('standards.remove_standard')}
@@ -879,7 +881,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       {t('wizard.input_vocab_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                                             <Languages size={14} className="text-slate-600" />
                                         </div>
                                         <input
@@ -896,10 +898,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   <div>
                                       <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_instructions_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
                                       <div className="relative">
-                                          <div className="absolute top-3 left-3 pointer-events-none">
+                                          <div className="absolute top-3 start-3 pointer-events-none">
                                               <Wrench size={14} className="text-slate-600" />
                                           </div>
                                           <textarea
+                                              aria-label={t('wizard.input_instructions_label') || 'Custom instructions'}
                                               value={localData.sourceCustomInstructions}
                                               onChange={(e) => setLocalData(prev => ({ ...prev, sourceCustomInstructions: e.target.value }))}
                                               data-help-key="wizard_instructions_input"
@@ -1026,7 +1029,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   aria-label={t('common.close')}
                                                   data-help-key="wizard_lang_remove_btn"
                                                   onClick={() => removeWizLanguage(lang)}
-                                                  className="hover:text-indigo-900 ml-1"
+                                                  className="hover:text-indigo-900 ms-1"
                                               >
                                                   <X size={12} />
                                               </button>
@@ -1036,7 +1039,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   </div>
                               </div>
                               <div>
-                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-400 font-normal"> (Optional)</span></label>
+                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-600 font-normal"> (Optional)</span></label>
                                   <div className="flex gap-2 mb-2">
                                       <input aria-label={t('common.enter_wiz_interest_input')}
                                         type="text"
@@ -1065,7 +1068,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   aria-label={t('common.close')}
                                                   data-help-key="wizard_interest_remove_btn"
                                                   onClick={() => removeWizInterest(interest)}
-                                                  className="hover:text-pink-900 ml-1"
+                                                  className="hover:text-pink-900 ms-1"
                                               >
                                                   <X size={12} />
                                               </button>

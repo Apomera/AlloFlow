@@ -98,7 +98,17 @@ const fixCitationPlacement = (text) => {
 
 const processMathHTML = (text) => {
     if (text == null || text === '') return '';
-    let content = String(text).replace(/^\$\$/, '').replace(/\$\$$/, '');
+    // XSS guard: escape HTML special chars from raw input BEFORE transforming.
+    // Output below produces trusted <span> wrappers around regex captures
+    // ($1, $2). Without pre-escaping, `\text{<script>alert(1)</script>}` would
+    // execute since the call site uses dangerouslySetInnerHTML.
+    // Math notation doesn't legitimately contain raw <, >, or & — LaTeX uses
+    // \lt, \gt, \amp etc. — so escaping breaks only attacker input, not real math.
+    let content = String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    content = content.replace(/^\$\$/, '').replace(/\$\$$/, '');
     content = content.replace(/^\$/, '').replace(/\$$/, '');
     content = content.replace(/\\left\s*([(\[{|.])/g, '$1');
     content = content.replace(/\\right\s*([)\]}|.])/g, '$1');

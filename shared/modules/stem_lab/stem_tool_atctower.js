@@ -1,4 +1,4 @@
-// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+// ΓöÇΓöÇ Reduced motion CSS (WCAG 2.3.3) ΓÇö shared across all STEM Lab tools ΓöÇΓöÇ
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -8,11 +8,11 @@
   if (document.head) document.head.appendChild(st);
 })();
 
-// ═══════════════════════════════════════════
-// stem_tool_atctower.js — ATC Tower: Air Traffic Control Simulator
+// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// stem_tool_atctower.js ΓÇö ATC Tower: Air Traffic Control Simulator
 // Teaches: spatial reasoning, rate problems, vectors, sequencing,
 // communication protocols, and decision-making under pressure
-// ═══════════════════════════════════════════
+// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
@@ -26,7 +26,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
 (function() {
   'use strict';
-  // ── Accessibility live region (WCAG 4.1.3) ──
+  // ΓöÇΓöÇ Accessibility live region (WCAG 4.1.3) ΓöÇΓöÇ
   (function() {
     if (document.getElementById('allo-live-atcTower')) return;
     var lr = document.createElement('div');
@@ -40,13 +40,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
   })();
 
 
-  // ── ATC MATH HELPERS ──
+  // ΓöÇΓöÇ ATC MATH HELPERS ΓöÇΓöÇ
   var toRad = function(d) { return d * Math.PI / 180; };
   var toDeg = function(r) { return r * 180 / Math.PI; };
   var distNm = function(x1, y1, x2, y2) { return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)); };
   var bearingDeg = function(x1, y1, x2, y2) { return (toDeg(Math.atan2(x2-x1, -(y2-y1))) + 360) % 360; };
 
-  // ── AIRPORT CONFIGURATIONS ──
+  // ΓöÇΓöÇ AIRPORT CONFIGURATIONS ΓöÇΓöÇ
   var AIRPORTS = [
     { id: 'simple', name: 'Smallville Regional', code: 'SVR', runways: [{ hdg: 270, x: 150, y: 200, len: 40 }], difficulty: 'Beginner', desc: '1 runway, low traffic. Learn the basics.', maxTraffic: 4, spawnRate: 8 },
     { id: 'parallel', name: 'Metro International', code: 'MIA', runways: [{ hdg: 270, x: 150, y: 170, len: 40 }, { hdg: 270, x: 150, y: 230, len: 40 }], difficulty: 'Intermediate', desc: '2 parallel runways. Manage simultaneous approaches.', maxTraffic: 6, spawnRate: 6 },
@@ -54,20 +54,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
     { id: 'busy', name: "O'Hare Challenge", code: 'ORD', runways: [{ hdg: 270, x: 120, y: 160, len: 35 }, { hdg: 270, x: 120, y: 200, len: 35 }, { hdg: 270, x: 120, y: 240, len: 35 }, { hdg: 320, x: 180, y: 120, len: 35 }], difficulty: 'Expert', desc: '4 runways, heavy traffic. Can you handle the pressure?', maxTraffic: 12, spawnRate: 3 },
   ];
 
-  // ── AIRCRAFT TYPES ──
+  // ΓöÇΓöÇ AIRCRAFT TYPES ΓöÇΓöÇ
   var AC_TYPES = [
-    { id: 'C172', name: 'Cessna 172', cat: 'Light', speed: 90, icon: '🛩️', color: '#60a5fa', size: 4 },
-    { id: 'B738', name: 'Boeing 737', cat: 'Medium', speed: 140, icon: '✈️', color: '#fbbf24', size: 6 },
-    { id: 'A320', name: 'Airbus A320', cat: 'Medium', speed: 135, icon: '✈️', color: '#4ade80', size: 6 },
-    { id: 'B77W', name: 'Boeing 777', cat: 'Heavy', speed: 145, icon: '🛫', color: '#f97316', size: 8 },
-    { id: 'A388', name: 'Airbus A380', cat: 'Super', speed: 140, icon: '🛫', color: '#ef4444', size: 10 },
+    { id: 'C172', name: 'Cessna 172', cat: 'Light', speed: 90, icon: '≡ƒ¢⌐∩╕Å', color: '#60a5fa', size: 4 },
+    { id: 'B738', name: 'Boeing 737', cat: 'Medium', speed: 140, icon: 'Γ£ê∩╕Å', color: '#fbbf24', size: 6 },
+    { id: 'A320', name: 'Airbus A320', cat: 'Medium', speed: 135, icon: 'Γ£ê∩╕Å', color: '#4ade80', size: 6 },
+    { id: 'B77W', name: 'Boeing 777', cat: 'Heavy', speed: 145, icon: '≡ƒ¢½', color: '#f97316', size: 8 },
+    { id: 'A388', name: 'Airbus A380', cat: 'Super', speed: 140, icon: '≡ƒ¢½', color: '#ef4444', size: 10 },
   ];
 
-  // ── CALLSIGNS ──
+  // ΓöÇΓöÇ CALLSIGNS ΓöÇΓöÇ
   var AIRLINES = ['Delta', 'United', 'American', 'Southwest', 'JetBlue', 'Spirit', 'Alaska', 'Frontier', 'Air Canada', 'British'];
   var genCallsign = function() { return AIRLINES[Math.floor(Math.random() * AIRLINES.length)] + ' ' + (Math.floor(Math.random() * 900) + 100); };
 
-  // ── ATC PHRASEOLOGY TEMPLATES ──
+  // ΓöÇΓöÇ ATC PHRASEOLOGY TEMPLATES ΓöÇΓöÇ
   var PHRASES = {
     cleared_approach: '{callsign}, cleared ILS runway {rwy}, maintain {speed} knots until established.',
     go_around: '{callsign}, go around. Fly heading {hdg}, climb and maintain 3,000.',
@@ -78,7 +78,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
     separation: 'Traffic alert: {callsign1} and {callsign2}, {dist} miles separation. Minimum required: {min} miles.',
   };
 
-  // ── MATH CHALLENGE TEMPLATES ──
+  // ΓöÇΓöÇ MATH CHALLENGE TEMPLATES ΓöÇΓöÇ
   var MATH_CHALLENGES = [
     { type: 'arrival_order', question: 'Aircraft A is {d1} nm out at {s1} kts. Aircraft B is {d2} nm out at {s2} kts. Who arrives first?',
       generate: function() {
@@ -99,7 +99,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         var closingDist = d - sep;
         var minutes = closingDist / rate * 60;
         return { d: d, rate: rate, sep: sep, answer: Math.round(minutes * 10) / 10,
-          explanation: 'Closing distance: ' + d + ' - ' + sep + ' = ' + closingDist + ' nm. At ' + rate + ' kts closing: ' + closingDist + '/' + rate + ' × 60 = ' + (Math.round(minutes * 10) / 10) + ' minutes.' };
+          explanation: 'Closing distance: ' + d + ' - ' + sep + ' = ' + closingDist + ' nm. At ' + rate + ' kts closing: ' + closingDist + '/' + rate + ' ├ù 60 = ' + (Math.round(minutes * 10) / 10) + ' minutes.' };
       }
     },
     { type: 'descent', question: 'An aircraft at FL{alt} needs to be at {target} ft in {dist} nm at {speed} kts. What descent rate (fpm) is needed?',
@@ -112,10 +112,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         var timeMin = dist / speed * 60;
         var fpm = Math.round(altChange / timeMin);
         return { alt: alt, target: target, dist: dist, speed: speed, answer: fpm,
-          explanation: 'Altitude to lose: ' + (alt * 100).toLocaleString() + ' - ' + target.toLocaleString() + ' = ' + altChange.toLocaleString() + ' ft. Time: ' + dist + '/' + speed + ' × 60 = ' + (Math.round(timeMin * 10) / 10) + ' min. Rate: ' + altChange.toLocaleString() + ' / ' + (Math.round(timeMin * 10) / 10) + ' = ~' + fpm + ' fpm.' };
+          explanation: 'Altitude to lose: ' + (alt * 100).toLocaleString() + ' - ' + target.toLocaleString() + ' = ' + altChange.toLocaleString() + ' ft. Time: ' + dist + '/' + speed + ' ├ù 60 = ' + (Math.round(timeMin * 10) / 10) + ' min. Rate: ' + altChange.toLocaleString() + ' / ' + (Math.round(timeMin * 10) / 10) + ' = ~' + fpm + ' fpm.' };
       }
     },
-    { type: 'wind_correction', question: 'Runway heading is {rwyHdg}°. Wind is from {windDir}° at {windSpd} kts. What is the crosswind component?',
+    { type: 'wind_correction', question: 'Runway heading is {rwyHdg}┬░. Wind is from {windDir}┬░ at {windSpd} kts. What is the crosswind component?',
       generate: function() {
         var rwyHdg = Math.floor(Math.random() * 36) * 10;
         var windDir = Math.floor(Math.random() * 36) * 10;
@@ -124,33 +124,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         if (diff > 180) diff = 360 - diff;
         var crosswind = Math.round(windSpd * Math.sin(toRad(diff)));
         return { rwyHdg: rwyHdg, windDir: windDir, windSpd: windSpd, answer: Math.abs(crosswind),
-          explanation: 'Angle between wind and runway: ' + diff + '°. Crosswind = ' + windSpd + ' × sin(' + diff + '°) = ' + Math.abs(crosswind) + ' kts. ' + (Math.abs(crosswind) > 20 ? '⚠️ This exceeds many aircraft crosswind limits!' : '✅ Within limits for most aircraft.') };
+          explanation: 'Angle between wind and runway: ' + diff + '┬░. Crosswind = ' + windSpd + ' ├ù sin(' + diff + '┬░) = ' + Math.abs(crosswind) + ' kts. ' + (Math.abs(crosswind) > 20 ? 'ΓÜá∩╕Å This exceeds many aircraft crosswind limits!' : 'Γ£à Within limits for most aircraft.') };
       }
     },
   ];
 
-  // ── EDUCATIONAL LESSONS ──
+  // ΓöÇΓöÇ EDUCATIONAL LESSONS ΓöÇΓöÇ
   var ATC_LESSONS = {
-    separation: { title: 'Why Separation Matters', icon: '📏', content: 'Controllers must maintain minimum separation between aircraft: 3 nautical miles horizontally OR 1,000 feet vertically. For heavy aircraft (wake turbulence), 6nm is required behind. A 747 creates wingtip vortices that can flip a small plane — these invisible tornadoes persist for up to 3 minutes.', formula: 'Min separation: 3nm (radar) / 5nm (non-radar) / 6nm (behind heavy)' },
-    sequencing: { title: 'The Art of Sequencing', icon: '📋', content: 'Sequencing is the core skill of ATC: deciding the order aircraft land. Factors include: distance from airport, speed, aircraft type (heavies need more spacing), runway assignment, and fuel state (emergency = priority). A good controller builds a smooth, evenly-spaced line of aircraft — like merging highway traffic, but in 3D.', formula: 'Time = Distance / Speed (the fundamental ATC equation)' },
-    vectors: { title: 'Radar Vectors', icon: '🧭', content: 'Controllers issue heading instructions ("vectors") to guide aircraft. A 360° turn takes about 2 minutes at standard rate (3°/second). To intercept a course, the vector must account for the turn radius. Wide-body jets have larger turn radii than small planes — like the difference between a bus and a bicycle turning a corner.', formula: 'Turn radius = TAS² / (g × tan(bank angle))' },
-    communication: { title: 'ATC Phraseology', icon: '📻', content: 'Aviation uses standardized phrases to prevent misunderstanding. "Cleared to land" is permission to touch down. "Go around" means abort the landing and climb. Every instruction gets a "readback" — the pilot repeats it so the controller can verify. The phonetic alphabet (Alpha, Bravo, Charlie...) prevents letter confusion over radio.', formula: '"Roger" = received. "Wilco" = will comply. "Unable" = I cannot do that.' },
-    weather: { title: 'Weather & ATC', icon: '🌧️', content: 'Weather is the #1 factor in ATC delays. Thunderstorms force route changes. Low visibility reduces runway capacity (aircraft need more spacing for instrument approaches). Wind direction determines which runway to use — aircraft always land INTO the wind when possible. A 15kt crosswind is challenging; 25kt is the limit for many aircraft.', formula: 'Headwind component = wind speed × cos(angle). Crosswind = wind speed × sin(angle).' },
+    separation: { title: 'Why Separation Matters', icon: '≡ƒôÅ', content: 'Controllers must maintain minimum separation between aircraft: 3 nautical miles horizontally OR 1,000 feet vertically. For heavy aircraft (wake turbulence), 6nm is required behind. A 747 creates wingtip vortices that can flip a small plane ΓÇö these invisible tornadoes persist for up to 3 minutes.', formula: 'Min separation: 3nm (radar) / 5nm (non-radar) / 6nm (behind heavy)' },
+    sequencing: { title: 'The Art of Sequencing', icon: '≡ƒôï', content: 'Sequencing is the core skill of ATC: deciding the order aircraft land. Factors include: distance from airport, speed, aircraft type (heavies need more spacing), runway assignment, and fuel state (emergency = priority). A good controller builds a smooth, evenly-spaced line of aircraft ΓÇö like merging highway traffic, but in 3D.', formula: 'Time = Distance / Speed (the fundamental ATC equation)' },
+    vectors: { title: 'Radar Vectors', icon: '≡ƒº¡', content: 'Controllers issue heading instructions ("vectors") to guide aircraft. A 360┬░ turn takes about 2 minutes at standard rate (3┬░/second). To intercept a course, the vector must account for the turn radius. Wide-body jets have larger turn radii than small planes ΓÇö like the difference between a bus and a bicycle turning a corner.', formula: 'Turn radius = TAS┬▓ / (g ├ù tan(bank angle))' },
+    communication: { title: 'ATC Phraseology', icon: '≡ƒô╗', content: 'Aviation uses standardized phrases to prevent misunderstanding. "Cleared to land" is permission to touch down. "Go around" means abort the landing and climb. Every instruction gets a "readback" ΓÇö the pilot repeats it so the controller can verify. The phonetic alphabet (Alpha, Bravo, Charlie...) prevents letter confusion over radio.', formula: '"Roger" = received. "Wilco" = will comply. "Unable" = I cannot do that.' },
+    weather: { title: 'Weather & ATC', icon: '≡ƒîº∩╕Å', content: 'Weather is the #1 factor in ATC delays. Thunderstorms force route changes. Low visibility reduces runway capacity (aircraft need more spacing for instrument approaches). Wind direction determines which runway to use ΓÇö aircraft always land INTO the wind when possible. A 15kt crosswind is challenging; 25kt is the limit for many aircraft.', formula: 'Headwind component = wind speed ├ù cos(angle). Crosswind = wind speed ├ù sin(angle).' },
   };
 
-  // ═══════════════════════════════════════════
+  // ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
   // REGISTER TOOL
-  // ═══════════════════════════════════════════
+  // ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
   window.StemLab.registerTool('atcTower', {
-    icon: '🗼',
+    icon: '≡ƒù╝',
     label: 'ATC Tower',
-    desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
+    desc: 'Air Traffic Control simulator ΓÇö manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
     color: 'emerald',
     category: 'applied',
     questHooks: [
-      { id: 'land_3', label: 'Land 3 aircraft safely', icon: '🛬', check: function(d) { return (d.totalLanded || 0) >= 3; }, progress: function(d) { return (d.totalLanded || 0) + '/3'; } },
-      { id: 'land_10', label: 'Land 10 aircraft total', icon: '🏆', check: function(d) { return (d.totalLanded || 0) >= 10; }, progress: function(d) { return (d.totalLanded || 0) + '/10'; } },
-      { id: 'score_50', label: 'Reach ATC score of 50', icon: '⭐', check: function(d) { return (d.totalScore || 0) >= 50; }, progress: function(d) { return (d.totalScore || 0) + '/50'; } }
+      { id: 'land_3', label: 'Land 3 aircraft safely', icon: '≡ƒ¢¼', check: function(d) { return (d.totalLanded || 0) >= 3; }, progress: function(d) { return (d.totalLanded || 0) + '/3'; } },
+      { id: 'land_10', label: 'Land 10 aircraft total', icon: '≡ƒÅå', check: function(d) { return (d.totalLanded || 0) >= 10; }, progress: function(d) { return (d.totalLanded || 0) + '/10'; } },
+      { id: 'score_50', label: 'Reach ATC score of 50', icon: 'Γ¡É', check: function(d) { return (d.totalScore || 0) >= 50; }, progress: function(d) { return (d.totalScore || 0) + '/50'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -171,7 +171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       var totalLanded = d.totalLanded || 0;
       var bestStreak = d.bestStreak || 0;
 
-      // ── Game State Refs ──
+      // ΓöÇΓöÇ Game State Refs ΓöÇΓöÇ
       var canvasRef = useRef(null);
       var animRef = useRef(null);
       var gameRef = useRef({
@@ -181,18 +181,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       });
       var runningRef = useRef(false);
 
-      // ── Tutorial System ──
+      // ΓöÇΓöÇ Tutorial System ΓöÇΓöÇ
       var tutorialSteps = [
-        { msg: '👋 Welcome, Controller! Aircraft are entering your airspace. Click one to select it.', trigger: 'start', key: 'click' },
-        { msg: '🛬 Good! Now press R to assign a runway. The aircraft needs to know where to land.', trigger: 'selected', key: 'R' },
-        { msg: '🧭 Press H to give a heading. Guide the aircraft toward the runway.', trigger: 'runway_assigned', key: 'H' },
-        { msg: '✅ Now press C to clear for approach. The aircraft will fly the ILS to the runway.', trigger: 'heading_given', key: 'C' },
-        { msg: '🎉 Great — your first aircraft is on approach! Watch it land. You\'re a natural!', trigger: 'cleared', key: null },
-        { msg: '💡 Tip: Watch the ETA timeline at the bottom. Keep aircraft spaced apart to avoid conflicts!', trigger: 'landed_first', key: null },
+        { msg: '≡ƒæï Welcome, Controller! Aircraft are entering your airspace. Click one to select it.', trigger: 'start', key: 'click' },
+        { msg: '≡ƒ¢¼ Good! Now press R to assign a runway. The aircraft needs to know where to land.', trigger: 'selected', key: 'R' },
+        { msg: '≡ƒº¡ Press H to give a heading. Guide the aircraft toward the runway.', trigger: 'runway_assigned', key: 'H' },
+        { msg: 'Γ£à Now press C to clear for approach. The aircraft will fly the ILS to the runway.', trigger: 'heading_given', key: 'C' },
+        { msg: '≡ƒÄë Great ΓÇö your first aircraft is on approach! Watch it land. You\'re a natural!', trigger: 'cleared', key: null },
+        { msg: '≡ƒÆí Tip: Watch the ETA timeline at the bottom. Keep aircraft spaced apart to avoid conflicts!', trigger: 'landed_first', key: null },
       ];
       var tutorialRef = useRef({ step: 0, active: true, dismissed: false });
 
-      // ── ATC Sound Effects ──
+      // ΓöÇΓöÇ ATC Sound Effects ΓöÇΓöÇ
       var atcAudioRef = useRef({ ctx: null });
       var playATCSound = function(type) {
         try {
@@ -213,17 +213,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         } catch(e) {}
       };
 
-      // ── ATC Achievements ──
+      // ΓöÇΓöÇ ATC Achievements ΓöÇΓöÇ
       var ATC_BADGES = [
-        { id: 'first_land', name: 'First Landing', icon: '🛬', desc: 'Land your first aircraft', check: function(g) { return g.landed >= 1; } },
-        { id: 'streak_5', name: 'Hot Streak', icon: '🔥', desc: '5 consecutive safe landings', check: function(g) { return g.streak >= 5; } },
-        { id: 'streak_10', name: 'Perfect Sequence', icon: '⭐', desc: '10 consecutive safe landings', check: function(g) { return g.streak >= 10; } },
-        { id: 'land_10', name: 'Busy Controller', icon: '📋', desc: 'Land 10 aircraft in one session', check: function(g) { return g.landed >= 10; } },
-        { id: 'land_25', name: 'Tower Chief', icon: '🗼', desc: 'Land 25 aircraft in one session', check: function(g) { return g.landed >= 25; } },
-        { id: 'math_5', name: 'Quick Calculator', icon: '🧮', desc: 'Solve 5 math challenges correctly', check: function(g) { return g.mathCorrect >= 5; } },
-        { id: 'no_conflict', name: 'Safety First', icon: '🛡️', desc: 'Land 10+ aircraft with zero conflicts', check: function(g) { return g.landed >= 10 && g.conflicts < 1; } },
-        { id: 'heavy_land', name: 'Heavy Metal', icon: '✈️', desc: 'Land a Heavy or Super aircraft', check: function(g) { return g.landedHeavy; } },
-        { id: 'efficiency_90', name: 'Efficient Ops', icon: '📊', desc: 'Maintain 90%+ efficiency with 10+ landings', check: function(g) { return g.landed >= 10 && g.efficiency >= 90; } },
+        { id: 'first_land', name: 'First Landing', icon: '≡ƒ¢¼', desc: 'Land your first aircraft', check: function(g) { return g.landed >= 1; } },
+        { id: 'streak_5', name: 'Hot Streak', icon: '≡ƒöÑ', desc: '5 consecutive safe landings', check: function(g) { return g.streak >= 5; } },
+        { id: 'streak_10', name: 'Perfect Sequence', icon: 'Γ¡É', desc: '10 consecutive safe landings', check: function(g) { return g.streak >= 10; } },
+        { id: 'land_10', name: 'Busy Controller', icon: '≡ƒôï', desc: 'Land 10 aircraft in one session', check: function(g) { return g.landed >= 10; } },
+        { id: 'land_25', name: 'Tower Chief', icon: '≡ƒù╝', desc: 'Land 25 aircraft in one session', check: function(g) { return g.landed >= 25; } },
+        { id: 'math_5', name: 'Quick Calculator', icon: '≡ƒº«', desc: 'Solve 5 math challenges correctly', check: function(g) { return g.mathCorrect >= 5; } },
+        { id: 'no_conflict', name: 'Safety First', icon: '≡ƒ¢í∩╕Å', desc: 'Land 10+ aircraft with zero conflicts', check: function(g) { return g.landed >= 10 && g.conflicts < 1; } },
+        { id: 'heavy_land', name: 'Heavy Metal', icon: 'Γ£ê∩╕Å', desc: 'Land a Heavy or Super aircraft', check: function(g) { return g.landedHeavy; } },
+        { id: 'efficiency_90', name: 'Efficient Ops', icon: '≡ƒôè', desc: 'Maintain 90%+ efficiency with 10+ landings', check: function(g) { return g.landed >= 10 && g.efficiency >= 90; } },
       ];
       var atcBadgesRef = useRef({});
       var atcBadgePopRef = useRef(null);
@@ -248,7 +248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         }
       };
 
-      // ── Accessibility: keyboard aircraft cycling ──
+      // ΓöÇΓöÇ Accessibility: keyboard aircraft cycling ΓöÇΓöÇ
       var cycleSelection = function(direction) {
         var game = gameRef.current;
         var active = game.aircraft.filter(function(a) { return a.state !== 'landed' && a.state !== 'departed'; });
@@ -257,12 +257,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         var nextIdx = direction > 0 ? (currentIdx + 1) % active.length : (currentIdx - 1 + active.length) % active.length;
         game.selected = active[nextIdx].id;
         var sel = active[nextIdx];
-        game.messages.unshift({ text: '📻 ' + sel.callsign + ' (' + sel.type.name + ')', time: game.time, color: '#60a5fa' });
+        game.messages.unshift({ text: '≡ƒô╗ ' + sel.callsign + ' (' + sel.type.name + ')', time: game.time, color: '#60a5fa' });
         playATCSound('select');
         announce('Selected ' + sel.callsign + '. ' + sel.type.name + '. Altitude ' + sel.altitude + '. Heading ' + Math.round(sel.heading) + '. ' + Math.round(sel.speed) + ' knots. State: ' + sel.state);
       };
 
-      // ── WCAG 2.1 AA: Accessible state narration ──
+      // ΓöÇΓöÇ WCAG 2.1 AA: Accessible state narration ΓöÇΓöÇ
       // Creates/updates an aria-live region that announces game events to screen readers
       var a11yRef = useRef(null);
       useEffect(function() {
@@ -282,17 +282,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         if (a11yRef.current) { a11yRef.current.textContent = ''; setTimeout(function() { a11yRef.current.textContent = msg; }, 50); }
       };
 
-      // ── WCAG 2.2.1: Pause mechanism ──
+      // ΓöÇΓöÇ WCAG 2.2.1: Pause mechanism ΓöÇΓöÇ
       var togglePause = function() {
         var game = gameRef.current;
         game.paused = !game.paused;
         announce(game.paused ? 'Game paused' : 'Game resumed');
       };
 
-      // ── WCAG 1.4.3/1.4.11: High contrast mode ──
+      // ΓöÇΓöÇ WCAG 1.4.3/1.4.11: High contrast mode ΓöÇΓöÇ
       var highContrast = d.highContrast || false;
 
-      // ── WCAG 2.3.1: Reduced motion detection ──
+      // ΓöÇΓöÇ WCAG 2.3.1: Reduced motion detection ΓöÇΓöÇ
       var reducedMotion = useRef(false);
       useEffect(function() {
         var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -304,7 +304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         }
       }, []);
 
-      // ── Spawn aircraft ──
+      // ΓöÇΓöÇ Spawn aircraft ΓöÇΓöÇ
       var spawnAircraft = function(airport) {
         var game = gameRef.current;
         if (game.aircraft.length >= airport.maxTraffic) return;
@@ -320,7 +320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         if (game.landed >= 5 && Math.random() < 0.1) {
           var emergTypes = [
             { type: 'engine', label: 'ENGINE FAILURE', msg: 'has lost an engine! Priority landing required.', priority: true, fuelOverride: 8, lesson: 'Single-engine aircraft must land immediately. Multi-engine can fly on one engine but with reduced performance. Controllers clear the runway and give direct vectors.' },
-            { type: 'medical', label: 'MEDICAL EMERGENCY', msg: 'reports medical emergency on board! Requesting priority.', priority: true, lesson: 'Medical emergencies get priority sequencing. Controllers coordinate with airport emergency services. The aircraft doesn\'t need a special runway — just the fastest path to the gate.' },
+            { type: 'medical', label: 'MEDICAL EMERGENCY', msg: 'reports medical emergency on board! Requesting priority.', priority: true, lesson: 'Medical emergencies get priority sequencing. Controllers coordinate with airport emergency services. The aircraft doesn\'t need a special runway ΓÇö just the fastest path to the gate.' },
             { type: 'birdstrike', label: 'BIRD STRIKE', msg: 'reports bird strike! Checking aircraft systems.', priority: false, lesson: 'Bird strikes happen ~13,000 times per year in the US. Most are minor, but they can damage engines. The pilot may request to return for inspection.' },
             { type: 'hydraulic', label: 'HYDRAULIC FAILURE', msg: 'reports partial hydraulic failure. May have difficulty steering on ground.', priority: true, lesson: 'Hydraulic systems control flaps, landing gear, and brakes. Pilots can use backup systems but need extra runway length. Controllers keep other aircraft clear.' },
           ];
@@ -346,7 +346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         game.aircraft.push(newAC);
 
         if (emergency) {
-          game.messages.unshift({ text: '🚨 ' + newAC.callsign + ' ' + emergency.msg, time: game.time, color: '#ef4444' });
+          game.messages.unshift({ text: '≡ƒÜ¿ ' + newAC.callsign + ' ' + emergency.msg, time: game.time, color: '#ef4444' });
           announce(newAC.callsign + ' declares ' + emergency.label + '. ' + emergency.lesson);
           playATCSound('conflict');
         }
@@ -356,11 +356,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           var PHONETIC = { A: 'Alpha', B: 'Bravo', C: 'Charlie', D: 'Delta', E: 'Echo', F: 'Foxtrot', G: 'Golf', H: 'Hotel', I: 'India', J: 'Juliet', K: 'Kilo', L: 'Lima', M: 'Mike', N: 'November', O: 'Oscar', P: 'Papa', Q: 'Quebec', R: 'Romeo', S: 'Sierra', T: 'Tango', U: 'Uniform', V: 'Victor', W: 'Whiskey', X: 'Xray', Y: 'Yankee', Z: 'Zulu' };
           var firstLetter = newAC.callsign.charAt(0).toUpperCase();
           var phonetic = PHONETIC[firstLetter] || firstLetter;
-          game.messages.unshift({ text: '📻 "' + airport.code + ' Approach, ' + newAC.callsign + ', ' + Math.round(newAC.altitude / 100) * 100 + ' descending, inbound"', time: game.time, color: '#60a5fa' });
+          game.messages.unshift({ text: '≡ƒô╗ "' + airport.code + ' Approach, ' + newAC.callsign + ', ' + Math.round(newAC.altitude / 100) * 100 + ' descending, inbound"', time: game.time, color: '#60a5fa' });
         }
       };
 
-      // ── Check separation conflicts ──
+      // ΓöÇΓöÇ Check separation conflicts ΓöÇΓöÇ
       var checkConflicts = function() {
         var game = gameRef.current;
         var ac = game.aircraft.filter(function(a) { return a.state !== 'landed' && a.state !== 'departed'; });
@@ -368,7 +368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         for (var i = 0; i < ac.length; i++) {
           for (var j = i + 1; j < ac.length; j++) {
             var dist = distNm(ac[i].x, ac[i].y, ac[j].x, ac[j].y);
-            var minSep = (ac[i].type.cat === 'Heavy' || ac[i].type.cat === 'Super' || ac[j].type.cat === 'Heavy' || ac[j].type.cat === 'Super') ? 18 : 10; // pixels ≈ nm scaled
+            var minSep = (ac[i].type.cat === 'Heavy' || ac[i].type.cat === 'Super' || ac[j].type.cat === 'Heavy' || ac[j].type.cat === 'Super') ? 18 : 10; // pixels Γëê nm scaled
             if (dist < minSep && Math.abs(ac[i].altitude - ac[j].altitude) < 1000) {
               conflicts.push({ a: ac[i], b: ac[j], dist: dist });
             }
@@ -377,7 +377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         return conflicts;
       };
 
-      // ── Check if aircraft is on approach/landing ──
+      // ΓöÇΓöÇ Check if aircraft is on approach/landing ΓöÇΓöÇ
       var checkLanding = function(ac, airport) {
         if (ac.state !== 'approach') return false;
         var rwy = airport.runways.find(function(r) { return r === ac.assignedRunway; });
@@ -387,7 +387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         return dist < 8 && hdgDiff < 30;
       };
 
-      // ── Main game loop ──
+      // ΓöÇΓöÇ Main game loop ΓöÇΓöÇ
       var startGame = function(airportId) {
         var airport = AIRPORTS.find(function(a) { return a.id === airportId; });
         if (!airport) return;
@@ -462,10 +462,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               var emergBonus = ac.emergency ? 40 : 0;
               game.score += baseScore + emergBonus;
               if (ac.emergency) {
-                game.messages.unshift({ text: '🏥 ' + ac.callsign + ' emergency resolved! +' + emergBonus + ' bonus. ' + ac.emergency.lesson, time: game.time, color: '#a78bfa' });
+                game.messages.unshift({ text: '≡ƒÅÑ ' + ac.callsign + ' emergency resolved! +' + emergBonus + ' bonus. ' + ac.emergency.lesson, time: game.time, color: '#a78bfa' });
                 announce(ac.callsign + ' emergency aircraft landed safely. Bonus ' + emergBonus + ' points. ' + ac.emergency.lesson);
               }
-              game.messages.unshift({ text: '✅ ' + ac.callsign + ' landed RWY ' + (ac.assignedRunway ? ac.assignedRunway.hdg : '?') + '°', time: game.time, color: '#4ade80' });
+              game.messages.unshift({ text: 'Γ£à ' + ac.callsign + ' landed RWY ' + (ac.assignedRunway ? ac.assignedRunway.hdg : '?') + '┬░', time: game.time, color: '#4ade80' });
               // Touchdown visual effect
               if (!game.touchdowns) game.touchdowns = [];
               game.touchdowns.push({ x: ac.x, y: ac.y, time: game.time, color: ac.type.color });
@@ -486,12 +486,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               else if (ac.state === 'inbound') {
                 ac.state = 'departed';
                 game.score -= 10; game.streak = 0;
-                game.messages.unshift({ text: '❌ ' + ac.callsign + ' left airspace without clearance!', time: game.time, color: '#ef4444' });
+                game.messages.unshift({ text: 'Γ¥î ' + ac.callsign + ' left airspace without clearance!', time: game.time, color: '#ef4444' });
               }
             }
             // Fuel emergency
             if (ac.fuel < 5 && ac.fuel > 4.9) {
-              game.messages.unshift({ text: '🔴 ' + ac.callsign + ' FUEL EMERGENCY — priority landing!', time: game.time, color: '#ef4444' });
+              game.messages.unshift({ text: '≡ƒö┤ ' + ac.callsign + ' FUEL EMERGENCY ΓÇö priority landing!', time: game.time, color: '#ef4444' });
             }
           });
 
@@ -505,7 +505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           // Game over if too many conflicts
           if (game.conflicts > 15 && !game.gameOver) { game.gameOver = true; announce('Game over. Too many separation conflicts. Final score: ' + game.score + '. Aircraft landed: ' + game.landed); }
 
-          // ═══ RENDER ═══
+          // ΓòÉΓòÉΓòÉ RENDER ΓòÉΓòÉΓòÉ
 
           // High contrast color scheme
           var hc = highContrast;
@@ -518,7 +518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             conflict: hc ? '#ff0000' : '#ef4444',
           };
 
-          // Background — dark radar scope with subtle radial gradient
+          // Background ΓÇö dark radar scope with subtle radial gradient
           var bgGrad = gfx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
           bgGrad.addColorStop(0, hc ? '#0a0a0a' : '#0d1f0d');
           bgGrad.addColorStop(0.5, hc ? '#050505' : '#081408');
@@ -551,7 +551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           if (game.paused) {
             gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, H);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 28px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⏸ PAUSED', W / 2, H * 0.4);
+            gfx.fillText('ΓÅ╕ PAUSED', W / 2, H * 0.4);
             gfx.fillStyle = '#94a3b8'; gfx.font = '14px system-ui';
             gfx.fillText('Press Space to resume | I for status | ESC to exit', W / 2, H * 0.5);
             gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
@@ -560,7 +560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             return;
           }
 
-          // Radar sweep effect — realistic rotating beam with phosphor decay
+          // Radar sweep effect ΓÇö realistic rotating beam with phosphor decay
           if (!reducedMotion.current) {
             var sweepAngle = (game.time * 0.5) % (Math.PI * 2);
             var sweepGrad = gfx.createConicGradient(sweepAngle, W / 2, H / 2);
@@ -585,7 +585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.restore();
           }
 
-          // Range rings — with intermediate dotted rings
+          // Range rings ΓÇö with intermediate dotted rings
           [40, 60, 80, 120, 160, 180].forEach(function(r2) {
             var rPx = r2 * scale;
             var isMajor = r2 % 60 === 0;
@@ -627,7 +627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.stroke();
           }
 
-          // Terrain shading — water bodies with depth gradient
+          // Terrain shading ΓÇö water bodies with depth gradient
           if (!hc) {
             var water1Grad = gfx.createRadialGradient(W * 0.7, H * 0.3, 0, W * 0.7, H * 0.3, 60 * scale);
             water1Grad.addColorStop(0, 'rgba(10,40,90,0.08)');
@@ -649,7 +649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText('City', W * 0.35, H * 0.35 + 2);
           }
 
-          // Wind sock (bottom-left corner) — animated with multi-stripe pattern
+          // Wind sock (bottom-left corner) ΓÇö animated with multi-stripe pattern
           var wsX = 40; var wsY = H - 55;
           gfx.save();
           gfx.translate(wsX, wsY);
@@ -677,7 +677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.restore();
           // Wind info text
           gfx.fillStyle = 'rgba(255,255,255,0.35)'; gfx.font = 'bold 8px monospace'; gfx.textAlign = 'center';
-          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '°/' + game.wind.speed + 'kt', wsX, H - 32);
+          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '┬░/' + game.wind.speed + 'kt', wsX, H - 32);
 
           // Restricted areas / no-fly zones (decorative)
           gfx.strokeStyle = 'rgba(239,68,68,0.1)'; gfx.lineWidth = 1; gfx.setLineDash([3, 3]);
@@ -686,7 +686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.fillStyle = 'rgba(239,68,68,0.15)'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('R-001', W * 0.8, H * 0.2 + 3);
 
-          // Runways — enhanced with approach lights, threshold, taxiway stubs
+          // Runways ΓÇö enhanced with approach lights, threshold, taxiway stubs
           airport.runways.forEach(function(rwy) {
             var rx = rwy.x * scale; var ry = rwy.y * scale;
             var rwyRad = toRad(rwy.hdg);
@@ -772,7 +772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.strokeStyle = 'rgba(239,68,68,' + emAlpha + ')'; gfx.lineWidth = 2;
               gfx.beginPath(); gfx.arc(ax, ay, 20 * scale, 0, Math.PI * 2); gfx.stroke();
               gfx.fillStyle = 'rgba(239,68,68,' + emAlpha + ')'; gfx.font = 'bold ' + (7 * scale) + 'px system-ui'; gfx.textAlign = 'center';
-              gfx.fillText('🚨 ' + ac.emergency.label, ax, ay - 18 * scale);
+              gfx.fillText('≡ƒÜ¿ ' + ac.emergency.label, ax, ay - 18 * scale);
             }
             for (var tr = 6; tr >= 1; tr--) {
               var trX = ax - Math.sin(toRad(ac.heading)) * tr * 4 * scale;
@@ -782,7 +782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.beginPath(); gfx.arc(trX, trY, (2 + (6 - tr) * 0.3) * scale, 0, Math.PI * 2); gfx.fill();
             }
 
-            // Radar blip glow (bloom effect) — brighter for selected/emergency
+            // Radar blip glow (bloom effect) ΓÇö brighter for selected/emergency
             var glowMult = isSelected ? 2.2 : ac.emergency ? 2.0 : 1.5;
             var glowSize = ac.type.size * scale * glowMult;
             var glowGrad = gfx.createRadialGradient(ax, ay, 0, ax, ay, glowSize);
@@ -798,7 +798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.save(); gfx.translate(ax, ay); gfx.rotate(toRad(ac.heading));
             var sz = ac.type.size * scale * altScale;
             if (ac.type.cat === 'Heavy' || ac.type.cat === 'Super') {
-              // Wide-body — fuselage + swept wings + tail
+              // Wide-body ΓÇö fuselage + swept wings + tail
               gfx.beginPath(); gfx.moveTo(0, -sz * 0.8); gfx.lineTo(-sz * 0.12, -sz * 0.2);
               gfx.lineTo(-sz * 0.6, sz * 0.05); gfx.lineTo(-sz * 0.55, sz * 0.15);
               gfx.lineTo(-sz * 0.12, sz * 0.1); gfx.lineTo(-sz * 0.12, sz * 0.5);
@@ -809,7 +809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.lineTo(sz * 0.55, sz * 0.15); gfx.lineTo(sz * 0.6, sz * 0.05);
               gfx.lineTo(sz * 0.12, -sz * 0.2); gfx.closePath(); gfx.fill();
             } else if (ac.type.cat === 'Light') {
-              // Small prop — simple shape with high wing
+              // Small prop ΓÇö simple shape with high wing
               gfx.beginPath(); gfx.moveTo(0, -sz * 0.6);
               gfx.lineTo(-sz * 0.08, -sz * 0.1); gfx.lineTo(-sz * 0.45, -sz * 0.05);
               gfx.lineTo(-sz * 0.4, sz * 0.05); gfx.lineTo(-sz * 0.08, sz * 0.1);
@@ -819,7 +819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.lineTo(sz * 0.45, -sz * 0.05); gfx.lineTo(sz * 0.08, -sz * 0.1);
               gfx.closePath(); gfx.fill();
             } else {
-              // Narrow-body — B737/A320 shape
+              // Narrow-body ΓÇö B737/A320 shape
               gfx.beginPath(); gfx.moveTo(0, -sz * 0.7);
               gfx.lineTo(-sz * 0.1, -sz * 0.15); gfx.lineTo(-sz * 0.5, sz * 0.05);
               gfx.lineTo(-sz * 0.45, sz * 0.12); gfx.lineTo(-sz * 0.1, sz * 0.08);
@@ -889,15 +889,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               });
             }
 
-            // Data tag — professional radar display format
+            // Data tag ΓÇö professional radar display format
             var tagX = ax + 12 * scale; var tagY = ay - 10 * scale;
             var csShort = ac.callsign.split(' ')[0].substring(0, 3) + ac.callsign.split(' ')[1];
             var altHundreds = Math.round(ac.altitude / 100);
-            var altTrend = ac.targetAltitude ? (ac.targetAltitude > ac.altitude ? '↑' : ac.targetAltitude < ac.altitude ? '↓' : '') : '';
+            var altTrend = ac.targetAltitude ? (ac.targetAltitude > ac.altitude ? 'Γåæ' : ac.targetAltitude < ac.altitude ? 'Γåô' : '') : '';
             var catPrefix = ac.type.cat === 'Heavy' ? 'H/' : ac.type.cat === 'Super' ? 'J/' : '';
             var line1 = csShort;
             var line2 = ac.type.id + ' ' + catPrefix + altHundreds + altTrend;
-            var line3 = Math.round(ac.speed) + 'kt ' + String(Math.round(ac.heading)).padStart(3, '0') + '°';
+            var line3 = Math.round(ac.speed) + 'kt ' + String(Math.round(ac.heading)).padStart(3, '0') + '┬░';
             gfx.font = (8 * scale) + 'px monospace';
             var tagW = Math.max(gfx.measureText(line1).width, gfx.measureText(line2).width, gfx.measureText(line3).width) + 14;
             var tagH = 34 * scale;
@@ -934,16 +934,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             // Fuel warning
             if (ac.fuel < 10) {
               gfx.fillStyle = ac.fuel < 5 ? '#ef4444' : '#f97316'; gfx.font = 'bold ' + (7 * scale) + 'px system-ui';
-              gfx.fillText('⛽' + Math.round(ac.fuel) + 'm', tagX + 1, tagY + 27 * scale);
+              gfx.fillText('Γ¢╜' + Math.round(ac.fuel) + 'm', tagX + 1, tagY + 27 * scale);
             }
             // Assigned runway
             if (ac.assignedRunway && ac.state === 'inbound') {
               gfx.fillStyle = '#a78bfa'; gfx.font = (7 * scale) + 'px monospace';
-              gfx.fillText('→R' + String(Math.round(ac.assignedRunway.hdg / 10)).padStart(2, '0'), tagX + 1, tagY + 27 * scale);
+              gfx.fillText('ΓåÆR' + String(Math.round(ac.assignedRunway.hdg / 10)).padStart(2, '0'), tagX + 1, tagY + 27 * scale);
             }
           });
 
-          // ── Touchdown Effects (expanding rings on landing) ──
+          // ΓöÇΓöÇ Touchdown Effects (expanding rings on landing) ΓöÇΓöÇ
           if (game.touchdowns) {
             game.touchdowns = game.touchdowns.filter(function(td) { return game.time - td.time < 3; });
             game.touchdowns.forEach(function(td) {
@@ -966,12 +966,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               if (age < 0.8) {
                 gfx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.8) + ')';
                 gfx.font = 'bold ' + Math.round(14 * scale * (1 + age * 0.5)) + 'px system-ui'; gfx.textAlign = 'center';
-                gfx.fillText('✓', td.x * scale, td.y * scale - radius - 5);
+                gfx.fillText('Γ£ô', td.x * scale, td.y * scale - radius - 5);
               }
             });
           }
 
-          // ── Top Status Bar — segmented professional display ──
+          // ΓöÇΓöÇ Top Status Bar ΓÇö segmented professional display ΓöÇΓöÇ
           var activeTraffic = game.aircraft.filter(function(a) { return a.state !== 'landed' && a.state !== 'departed'; }).length;
           // Bar background with subtle gradient
           var barGrad = gfx.createLinearGradient(0, 0, 0, 30);
@@ -982,7 +982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.beginPath(); gfx.moveTo(0, 30); gfx.lineTo(W, 30); gfx.stroke();
           // Airport identifier
           gfx.fillStyle = colors.text; gfx.font = 'bold 13px monospace'; gfx.textAlign = 'left';
-          gfx.fillText('🗼 ' + airport.code, 8, 20);
+          gfx.fillText('≡ƒù╝ ' + airport.code, 8, 20);
           // Segmented stats
           var statsX = 80;
           var statItems = [
@@ -1004,24 +1004,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.fillText('WIND', W - 8, 11);
           gfx.fillStyle = game.wind.speed > 20 ? '#ef4444' : game.wind.speed > 12 ? '#fbbf24' : '#4ade80';
           gfx.font = 'bold 11px monospace';
-          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '° / ' + game.wind.speed + 'kt', W - 8, 24);
+          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '┬░ / ' + game.wind.speed + 'kt', W - 8, 24);
 
           // Conflict warning bar
           if (conflicts.length > 0) {
             gfx.fillStyle = 'rgba(239,68,68,' + (0.3 + Math.sin(game.time * 4) * 0.2) + ')';
             gfx.fillRect(0, 28, W, 20);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⚠️ CONFLICT — ' + conflicts.length + ' aircraft pair(s) below minimum separation!', W / 2, 42);
+            gfx.fillText('ΓÜá∩╕Å CONFLICT ΓÇö ' + conflicts.length + ' aircraft pair(s) below minimum separation!', W / 2, 42);
           }
 
-          // ── Flight Strip Board (left panel) ──
+          // ΓöÇΓöÇ Flight Strip Board (left panel) ΓöÇΓöÇ
           var activeAC = game.aircraft.filter(function(a) { return a.state !== 'landed' && a.state !== 'departed'; });
           var stripW = 130; var stripH = 22;
           var stripX = 4; var stripY = conflicts.length > 0 ? 52 : 30;
           gfx.fillStyle = 'rgba(0,0,0,0.6)';
           gfx.beginPath(); gfx.roundRect(stripX, stripY, stripW + 8, Math.min(H - stripY - 60, activeAC.length * (stripH + 2) + 22), 4); gfx.fill();
           gfx.fillStyle = 'rgba(34,197,94,0.4)'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'left';
-          gfx.fillText('📋 SEQUENCE (' + activeAC.length + ')', stripX + 4, stripY + 10);
+          gfx.fillText('≡ƒôï SEQUENCE (' + activeAC.length + ')', stripX + 4, stripY + 10);
 
           // Sort by distance to airport center (closest first = landing order)
           var apCx = 200; var apCy = 200;
@@ -1063,7 +1063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             }
           });
 
-          // ── Arrival Sequence Timeline (bottom-left) ──
+          // ΓöÇΓöÇ Arrival Sequence Timeline (bottom-left) ΓöÇΓöÇ
           if (activeAC.length > 1) {
             var tlY = H - 55; var tlX = 10; var tlW = W * 0.4;
             gfx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -1093,7 +1093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             });
           }
 
-          // ── Holding Pattern Visualization ──
+          // ΓöÇΓöÇ Holding Pattern Visualization ΓöÇΓöÇ
           game.aircraft.forEach(function(ac) {
             if (ac.state !== 'holding') return;
             var hx = ac.x * scale; var hy = ac.y * scale;
@@ -1108,7 +1108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText('HOLD', hx, hy - 15 * scale);
           });
 
-          // ── Runway Status Indicators (near each runway) ──
+          // ΓöÇΓöÇ Runway Status Indicators (near each runway) ΓöÇΓöÇ
           airport.runways.forEach(function(rwy) {
             var rx = rwy.x * scale; var ry = rwy.y * scale;
             // Count aircraft on approach to this runway
@@ -1122,14 +1122,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText((approachCount > 0 ? approachCount + ' ILS' : inboundCount > 0 ? inboundCount + ' seq' : 'idle'), rx + 30 * scale, ry + 3);
           });
 
-          // ── Performance Metrics (top-right) ──
+          // ΓöÇΓöÇ Performance Metrics (top-right) ΓöÇΓöÇ
           var perfX = W - 115; var perfY = conflicts.length > 0 ? 52 : 30;
           gfx.fillStyle = 'rgba(0,0,0,0.6)';
           gfx.beginPath(); gfx.roundRect(perfX, perfY, 110, 55, 4); gfx.fill();
           gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = 'bold 7px system-ui'; gfx.textAlign = 'left';
           gfx.fillText('PERFORMANCE', perfX + 4, perfY + 10);
           // Ops per minute
-          var opsPerMin = game.time > 60 ? (game.landed / (game.time / 60)).toFixed(1) : '—';
+          var opsPerMin = game.time > 60 ? (game.landed / (game.time / 60)).toFixed(1) : 'ΓÇö';
           gfx.fillStyle = '#4ade80'; gfx.font = '8px monospace';
           gfx.fillText('Ops/min: ' + opsPerMin, perfX + 4, perfY + 22);
           // Avg separation
@@ -1140,13 +1140,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.fillStyle = efficiency > 80 ? '#4ade80' : efficiency > 50 ? '#fbbf24' : '#ef4444';
           gfx.fillText('Efficiency: ' + efficiency + '%', perfX + 4, perfY + 44);
 
-          // ── Clock ──
+          // ΓöÇΓöÇ Clock ΓöÇΓöÇ
           var clockMin = Math.floor(game.time / 60);
           var clockSec = Math.floor(game.time % 60);
           gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '9px monospace'; gfx.textAlign = 'right';
-          gfx.fillText('⏱ ' + clockMin + ':' + String(clockSec).padStart(2, '0'), W - 8, H - 22);
+          gfx.fillText('ΓÅ▒ ' + clockMin + ':' + String(clockSec).padStart(2, '0'), W - 8, H - 22);
 
-          // ── Message log (right side) ──
+          // ΓöÇΓöÇ Message log (right side) ΓöÇΓöÇ
           var msgX = W - 5; var msgY = H - 10;
           gfx.textAlign = 'right'; gfx.font = '9px system-ui';
           game.messages.slice(0, 6).forEach(function(msg, i) {
@@ -1158,7 +1158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           });
           gfx.globalAlpha = 1;
 
-          // ── Math Challenge Overlay ──
+          // ΓöÇΓöÇ Math Challenge Overlay ΓöÇΓöÇ
           if (game.mathChallenge && !game.mathChallenge.answered) {
             var mc = game.mathChallenge;
             var mcW2 = Math.min(W - 20, 380); var mcX = (W - mcW2) / 2; var mcY = H * 0.3;
@@ -1166,13 +1166,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.beginPath(); gfx.roundRect(mcX, mcY, mcW2, 90, 10); gfx.fill();
             gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.stroke();
             gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'left';
-            gfx.fillText('🧮 ATC MATH CHALLENGE (+25 bonus)', mcX + 10, mcY + 14);
+            gfx.fillText('≡ƒº« ATC MATH CHALLENGE (+25 bonus)', mcX + 10, mcY + 14);
             gfx.fillStyle = '#fff'; gfx.font = '12px system-ui';
             // Render question with values
             var qText = mc.type === 'arrival_order' ? 'A is ' + mc.d1 + 'nm at ' + mc.s1 + 'kt. B is ' + mc.d2 + 'nm at ' + mc.s2 + 'kt. Who arrives first?' :
                         mc.type === 'separation' ? mc.d + 'nm apart, closing at ' + mc.rate + 'kt. Minutes until ' + mc.sep + 'nm separation?' :
-                        mc.type === 'descent' ? 'FL' + mc.alt + ' → ' + mc.target + 'ft in ' + mc.dist + 'nm at ' + mc.speed + 'kt. FPM needed?' :
-                        'Runway ' + mc.rwyHdg + '°, wind ' + mc.windDir + '°/' + mc.windSpd + 'kt. Crosswind?';
+                        mc.type === 'descent' ? 'FL' + mc.alt + ' ΓåÆ ' + mc.target + 'ft in ' + mc.dist + 'nm at ' + mc.speed + 'kt. FPM needed?' :
+                        'Runway ' + mc.rwyHdg + '┬░, wind ' + mc.windDir + '┬░/' + mc.windSpd + 'kt. Crosswind?';
             gfx.fillText(qText, mcX + 10, mcY + 35);
             // Answer input hint
             gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
@@ -1187,7 +1187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             }
           }
 
-          // ── Tutorial Overlay ──
+          // ΓöÇΓöÇ Tutorial Overlay ΓöÇΓöÇ
           var tut = tutorialRef.current;
           if (tut.active && !tut.dismissed && tut.step < tutorialSteps.length) {
             var ts = tutorialSteps[tut.step];
@@ -1207,7 +1207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText('Step ' + (tut.step + 1) + '/' + tutorialSteps.length + '  |  Press T to toggle tutorial', W / 2, tutY - 4);
           }
 
-          // ── Achievement Badge Popup ──
+          // ΓöÇΓöÇ Achievement Badge Popup ΓöÇΓöÇ
           checkATCBadges(game, game.time);
           var pop = atcBadgePopRef.current;
           if (pop && game.time - pop.time < 5) {
@@ -1218,18 +1218,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.beginPath(); gfx.roundRect(popX2, popY2, popW2, 45, 8); gfx.fill();
             gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.stroke();
             gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'left';
-            gfx.fillText('🏆 BADGE EARNED!', popX2 + 8, popY2 + 14);
+            gfx.fillText('≡ƒÅå BADGE EARNED!', popX2 + 8, popY2 + 14);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui';
             gfx.fillText(pop.badge.icon + ' ' + pop.badge.name, popX2 + 8, popY2 + 32);
             gfx.globalAlpha = 1;
           }
 
-          // ── Conflict sound ──
+          // ΓöÇΓöÇ Conflict sound ΓöÇΓöÇ
           if (conflicts.length > 0 && Math.floor(game.time * 2) % 2 === 0 && Math.floor((game.time - dt) * 2) % 2 !== 0) {
             playATCSound('conflict');
           }
 
-          // ── Game Over — dramatic cinematic overlay ──
+          // ΓöÇΓöÇ Game Over ΓÇö dramatic cinematic overlay ΓöÇΓöÇ
           if (game.gameOver) {
             gfx.fillStyle = 'rgba(0,0,0,0.85)'; gfx.fillRect(0, 0, W, H);
             // Red scan lines
@@ -1241,9 +1241,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.strokeRect(4, 4, W - 8, H - 8);
             // Title
             gfx.fillStyle = '#ef4444'; gfx.font = 'bold 28px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('⚠ TOWER CLOSED', W / 2, H * 0.3);
+            gfx.fillText('ΓÜá TOWER CLOSED', W / 2, H * 0.3);
             gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = '12px system-ui';
-            gfx.fillText('Too many separation conflicts — airspace unsafe', W / 2, H * 0.37);
+            gfx.fillText('Too many separation conflicts ΓÇö airspace unsafe', W / 2, H * 0.37);
             // Stats panel
             var goY = H * 0.42;
             gfx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -1265,7 +1265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             });
             // Efficiency rating
             var goEff = game.landed > 0 ? Math.max(0, 100 - Math.round(game.conflicts / game.landed * 20)) : 0;
-            var goRating = goEff >= 90 ? 'A+ — Outstanding' : goEff >= 80 ? 'A — Excellent' : goEff >= 70 ? 'B — Good' : goEff >= 50 ? 'C — Needs Work' : 'D — Keep Practicing';
+            var goRating = goEff >= 90 ? 'A+ ΓÇö Outstanding' : goEff >= 80 ? 'A ΓÇö Excellent' : goEff >= 70 ? 'B ΓÇö Good' : goEff >= 50 ? 'C ΓÇö Needs Work' : 'D ΓÇö Keep Practicing';
             gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '8px system-ui';
             gfx.fillText('Efficiency Rating', W / 2, goY + 60);
             gfx.fillStyle = goEff >= 80 ? '#4ade80' : goEff >= 50 ? '#fbbf24' : '#ef4444';
@@ -1276,27 +1276,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText('Press ESC to return to tower', W / 2, H * 0.82);
           }
 
-          // ── Help Overlay (press ?) ──
+          // ΓöÇΓöÇ Help Overlay (press ?) ΓöÇΓöÇ
           if (game.showHelp) {
             gfx.fillStyle = 'rgba(0,0,0,0.92)'; gfx.fillRect(0, 0, W, H);
             var helpCx = W / 2; var helpY = 20;
             gfx.fillStyle = colors.text; gfx.font = 'bold 18px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('🗼 ATC TOWER — CONTROLS & HELP', helpCx, helpY += 20);
+            gfx.fillText('≡ƒù╝ ATC TOWER ΓÇö CONTROLS & HELP', helpCx, helpY += 20);
             gfx.font = '11px system-ui'; gfx.fillStyle = '#94a3b8'; helpY += 10;
 
             var helpSections = [
-              { title: '✈️ AIRCRAFT MANAGEMENT', items: [
+              { title: 'Γ£ê∩╕Å AIRCRAFT MANAGEMENT', items: [
                 ['Tab / Shift+Tab', 'Cycle through aircraft (keyboard)'],
                 ['Click', 'Select aircraft (mouse)'],
-                ['H', 'Assign heading — aircraft turns to your heading'],
-                ['S', 'Assign speed — aircraft accelerates/decelerates'],
+                ['H', 'Assign heading ΓÇö aircraft turns to your heading'],
+                ['S', 'Assign speed ΓÇö aircraft accelerates/decelerates'],
                 ['R', 'Cycle runway assignment'],
                 ['C', 'Clear for ILS approach (must assign runway first)'],
-                ['G', 'Go around — abort landing, climb, reverse'],
+                ['G', 'Go around ΓÇö abort landing, climb, reverse'],
                 ['P', 'Toggle holding pattern'],
                 ['D / U', 'Descend / Climb by 1,000 ft'],
               ]},
-              { title: '🎮 GAME CONTROLS', items: [
+              { title: '≡ƒÄ« GAME CONTROLS', items: [
                 ['Space', 'Pause / Resume'],
                 ['I', 'Read full status summary (screen reader)'],
                 ['V', 'Toggle high contrast mode'],
@@ -1304,17 +1304,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 ['?', 'Toggle this help screen'],
                 ['ESC', 'Exit to menu'],
               ]},
-              { title: '📏 ATC RULES', items: [
+              { title: '≡ƒôÅ ATC RULES', items: [
                 ['Separation', '3nm between aircraft, 6nm behind heavy/super'],
                 ['Sequence', 'Closest aircraft should land first'],
                 ['Fuel', 'Aircraft with <10 min fuel need priority'],
                 ['Landing', 'Aircraft must be on correct heading, near runway'],
               ]},
-              { title: '♿ ACCESSIBILITY', items: [
-                ['Tab', 'Full keyboard control — no mouse needed'],
+              { title: 'ΓÖ┐ ACCESSIBILITY', items: [
+                ['Tab', 'Full keyboard control ΓÇö no mouse needed'],
                 ['I key', 'Announces all aircraft info to screen reader'],
                 ['V key', 'High contrast yellow-on-black mode'],
-                ['Space', 'Pause anytime — no time pressure when paused'],
+                ['Space', 'Pause anytime ΓÇö no time pressure when paused'],
                 ['Sounds', 'Audio cues for select, land, conflict, correct'],
               ]},
             ];
@@ -1337,20 +1337,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText('Press ? or ESC to close help', W / 2, H - 10);
           }
 
-          // ── Adaptive Hints ──
+          // ΓöÇΓöÇ Adaptive Hints ΓöÇΓöÇ
           // Show contextual tips when the player seems stuck
           if (!game.showHelp && !game.paused && !game.gameOver) {
             var hintMsg = null;
             var activeCount = game.aircraft.filter(function(a) { return a.state === 'inbound'; }).length;
             var approachCount = game.aircraft.filter(function(a) { return a.state === 'approach'; }).length;
             if (game.time > 15 && game.landed === 0 && !game.selected && activeCount > 0) {
-              hintMsg = '💡 Click an aircraft or press Tab to select one, then R to assign a runway';
+              hintMsg = '≡ƒÆí Click an aircraft or press Tab to select one, then R to assign a runway';
             } else if (game.selected && !game.aircraft.find(function(a) { return a.id === game.selected && a.assignedRunway; }) && game.time > 20 && game.landed === 0) {
-              hintMsg = '💡 Press R to assign a runway to the selected aircraft';
+              hintMsg = '≡ƒÆí Press R to assign a runway to the selected aircraft';
             } else if (activeCount > 3 && approachCount === 0 && game.time > 30) {
-              hintMsg = '💡 You have ' + activeCount + ' aircraft waiting! Select one → R (runway) → C (clear approach)';
+              hintMsg = '≡ƒÆí You have ' + activeCount + ' aircraft waiting! Select one ΓåÆ R (runway) ΓåÆ C (clear approach)';
             } else if (conflicts.length > 0 && game.landed > 0) {
-              hintMsg = '⚠️ Separation conflict! Assign different altitudes (D/U) or headings (H) to separate aircraft';
+              hintMsg = 'ΓÜá∩╕Å Separation conflict! Assign different altitudes (D/U) or headings (H) to separate aircraft';
             }
             if (hintMsg && Math.sin(game.time * 0.5) > 0) {
               gfx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -1361,7 +1361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             }
           }
 
-          // ── Controls help ──
+          // ΓöÇΓöÇ Controls help ΓöÇΓöÇ
           gfx.fillStyle = 'rgba(0,0,0,0.5)'; gfx.fillRect(0, H - 18, W, 18);
           gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Tab: Cycle | H: Heading | S: Speed | R: Runway | C: Clear | G: Go Around | P: Hold | D/U: Alt | Space: Pause | I: Info | V: Contrast', W / 2, H - 5);
@@ -1388,7 +1388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           });
           game.selected = closest ? closest.id : null;
           if (closest) {
-            game.messages.unshift({ text: '📻 Selected: ' + closest.callsign + ' (' + closest.type.name + ')', time: game.time, color: '#60a5fa' });
+            game.messages.unshift({ text: '≡ƒô╗ Selected: ' + closest.callsign + ' (' + closest.type.name + ')', time: game.time, color: '#60a5fa' });
             playATCSound('select');
             announce('Selected ' + closest.callsign + ', ' + closest.type.name + ', altitude ' + closest.altitude + ' feet, heading ' + Math.round(closest.heading) + ' degrees, ' + Math.round(closest.speed) + ' knots');
             if (tutorialRef.current.active && tutorialRef.current.step === 0) tutorialRef.current.step = 1;
@@ -1396,9 +1396,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         };
 
         // Keyboard handler
+        // Bug fix: ATC commands (T H R G P D U), Tab, Space, arrows
+        // weren't preventDefault'd. Tab in particular pulled focus
+        // away from the canvas mid-game, and the ? / shortcut keys
+        // could trigger browser quick-find. Now any key the game
+        // actually consumes swallows its default action so the page
+        // doesn't fight the player.
+        var ATC_GAME_KEYS = {
+          // Math challenge entry
+          a: 1, b: 1, '0': 1, '1': 1, '2': 1, '3': 1, '4': 1, '5': 1,
+          '6': 1, '7': 1, '8': 1, '9': 1, enter: 1, backspace: 1,
+          // Aircraft cycling + commands
+          tab: 1, ' ': 1, escape: 1,
+          t: 1, h: 1, r: 1, g: 1, p: 1, d: 1, u: 1,
+          // Help shortcuts
+          '?': 1, '/': 1
+        };
         var onKey = function(e) {
           var game = gameRef.current;
           var key = e.key.toLowerCase();
+          if (ATC_GAME_KEYS[key]) e.preventDefault();
 
           // Math challenge input
           if (game.mathChallenge && !game.mathChallenge.answered) {
@@ -1407,7 +1424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               mc.answered = true;
               mc.correct = key.toUpperCase() === mc.answer;
               if (mc.correct) game.score += 25;
-              game.messages.unshift({ text: (mc.correct ? '✅ Correct! ' : '❌ Wrong. ') + mc.explanation, time: game.time, color: mc.correct ? '#4ade80' : '#ef4444' });
+              game.messages.unshift({ text: (mc.correct ? 'Γ£à Correct! ' : 'Γ¥î Wrong. ') + mc.explanation, time: game.time, color: mc.correct ? '#4ade80' : '#ef4444' });
               setTimeout(function() { game.mathChallenge = null; }, 4000);
               return;
             }
@@ -1419,11 +1436,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               mc.correct = Math.abs(userAnswer - mc.answer) < mc.answer * 0.15; // 15% tolerance
               if (mc.correct) { game.score += 25; game.mathCorrect = (game.mathCorrect || 0) + 1; playATCSound('correct'); }
               else { playATCSound('conflict'); }
-              game.messages.unshift({ text: (mc.correct ? '✅ Correct! ' : '❌ Answer: ' + mc.answer + '. ') + mc.explanation, time: game.time, color: mc.correct ? '#4ade80' : '#ef4444' });
+              game.messages.unshift({ text: (mc.correct ? 'Γ£à Correct! ' : 'Γ¥î Answer: ' + mc.answer + '. ') + mc.explanation, time: game.time, color: mc.correct ? '#4ade80' : '#ef4444' });
               setTimeout(function() { game.mathChallenge = null; }, 5000);
               return;
             }
-            if (key === 's') { mc.answered = true; game.messages.unshift({ text: '⏭️ Skipped. ' + mc.explanation, time: game.time, color: '#94a3b8' }); setTimeout(function() { game.mathChallenge = null; }, 4000); return; }
+            if (key === 's') { mc.answered = true; game.messages.unshift({ text: 'ΓÅ¡∩╕Å Skipped. ' + mc.explanation, time: game.time, color: '#94a3b8' }); setTimeout(function() { game.mathChallenge = null; }, 4000); return; }
           }
 
           if (key === 'escape') {
@@ -1485,29 +1502,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
           if (key === 'h') {
             var hdgStr = prompt('Heading for ' + sel.callsign + '? (0-360)');
-            if (hdgStr) { sel.targetHeading = parseInt(hdgStr) % 360; game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; }
+            if (hdgStr) { sel.targetHeading = parseInt(hdgStr) % 360; game.messages.unshift({ text: '≡ƒº¡ ' + sel.callsign + ' turn heading ' + sel.targetHeading + '┬░', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; }
           }
           if (key === 's') {
             var spdStr = prompt('Speed for ' + sel.callsign + '? (knots)');
-            if (spdStr) { sel.targetSpeed = parseInt(spdStr); game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); }
+            if (spdStr) { sel.targetSpeed = parseInt(spdStr); game.messages.unshift({ text: '≡ƒÆ¿ ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); }
           }
           if (key === 'c') {
             if (sel.assignedRunway) {
               sel.state = 'approach';
               var rwyHdg2 = sel.assignedRunway.hdg;
               sel.targetHeading = (rwyHdg2 + 180) % 360; // fly toward runway
-              game.messages.unshift({ text: '✈️ ' + sel.callsign + ' cleared ILS RWY ' + rwyHdg2 + '°', time: game.time, color: '#4ade80' });
+              game.messages.unshift({ text: 'Γ£ê∩╕Å ' + sel.callsign + ' cleared ILS RWY ' + rwyHdg2 + '┬░', time: game.time, color: '#4ade80' });
               playATCSound('clear');
               if (tutorialRef.current.active && tutorialRef.current.step === 3) tutorialRef.current.step = 4;
             } else {
-              game.messages.unshift({ text: '⚠️ Assign runway first (R)', time: game.time, color: '#f97316' });
+              game.messages.unshift({ text: 'ΓÜá∩╕Å Assign runway first (R)', time: game.time, color: '#f97316' });
             }
           }
           if (key === 'r') {
             var rwys = game.airport.runways;
             var rwyIdx = rwys.indexOf(sel.assignedRunway);
             sel.assignedRunway = rwys[(rwyIdx + 1) % rwys.length];
-            game.messages.unshift({ text: '🛬 ' + sel.callsign + ' assigned RWY ' + sel.assignedRunway.hdg + '°', time: game.time, color: '#a78bfa' });
+            game.messages.unshift({ text: '≡ƒ¢¼ ' + sel.callsign + ' assigned RWY ' + sel.assignedRunway.hdg + '┬░', time: game.time, color: '#a78bfa' });
             playATCSound('select');
             if (tutorialRef.current.active && tutorialRef.current.step === 1) tutorialRef.current.step = 2;
           }
@@ -1515,21 +1532,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             sel.state = 'goAround';
             sel.targetHeading = (sel.heading + 180) % 360;
             sel.altitude = 3000;
-            game.messages.unshift({ text: '🔄 ' + sel.callsign + ' GO AROUND — fly heading ' + sel.targetHeading + '°, climb 3,000', time: game.time, color: '#f97316' });
+            game.messages.unshift({ text: '≡ƒöä ' + sel.callsign + ' GO AROUND ΓÇö fly heading ' + sel.targetHeading + '┬░, climb 3,000', time: game.time, color: '#f97316' });
           }
           if (key === 'p') {
             sel.state = sel.state === 'holding' ? 'inbound' : 'holding';
-            game.messages.unshift({ text: (sel.state === 'holding' ? '🔁 ' + sel.callsign + ' HOLD present position' : '➡️ ' + sel.callsign + ' resume inbound'), time: game.time, color: '#a78bfa' });
+            game.messages.unshift({ text: (sel.state === 'holding' ? '≡ƒöü ' + sel.callsign + ' HOLD present position' : 'Γ₧í∩╕Å ' + sel.callsign + ' resume inbound'), time: game.time, color: '#a78bfa' });
           }
           if (key === 'd') {
             // Descend
             sel.altitude = Math.max(1000, sel.altitude - 1000);
-            game.messages.unshift({ text: '⬇️ ' + sel.callsign + ' descend and maintain ' + sel.altitude.toLocaleString() + ' ft', time: game.time, color: '#22d3ee' });
+            game.messages.unshift({ text: 'Γ¼ç∩╕Å ' + sel.callsign + ' descend and maintain ' + sel.altitude.toLocaleString() + ' ft', time: game.time, color: '#22d3ee' });
           }
           if (key === 'u') {
             // Climb
             sel.altitude = Math.min(45000, sel.altitude + 1000);
-            game.messages.unshift({ text: '⬆️ ' + sel.callsign + ' climb and maintain ' + sel.altitude.toLocaleString() + ' ft', time: game.time, color: '#22d3ee' });
+            game.messages.unshift({ text: 'Γ¼å∩╕Å ' + sel.callsign + ' climb and maintain ' + sel.altitude.toLocaleString() + ' ft', time: game.time, color: '#22d3ee' });
           }
         };
 
@@ -1545,18 +1562,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         };
       }, [view]);
 
-      // ═══ MENU VIEW ═══
+      // ΓòÉΓòÉΓòÉ MENU VIEW ΓòÉΓòÉΓòÉ
       if (view === 'menu') {
         return h('div', { style: { minHeight: '500px', background: 'linear-gradient(135deg, #021a0a 0%, #0a2e1a 50%, #0d3320 100%)', borderRadius: '16px', overflow: 'hidden' } },
           h('div', { style: { textAlign: 'center', padding: '28px 24px 14px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🗼'),
+            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '≡ƒù╝'),
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#4ade80', letterSpacing: '2px' } }, 'ATC TOWER'),
             h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Guide aircraft safely. Solve rate problems. Master the math of aviation.')
           ),
           // Career stats
           (totalLanded > 0) ? h('div', { style: { padding: '0 24px 12px' } },
             h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center' } },
-              [['🏆 ' + totalScore, 'Career Score'], ['✈️ ' + totalLanded, 'Total Landed'], ['🔥 ' + bestStreak, 'Best Streak']].map(function(s) {
+              [['≡ƒÅå ' + totalScore, 'Career Score'], ['Γ£ê∩╕Å ' + totalLanded, 'Total Landed'], ['≡ƒöÑ ' + bestStreak, 'Best Streak']].map(function(s) {
                 return h('div', { key: s[1], style: { background: '#0a1a0a', padding: '6px 12px', borderRadius: '6px', textAlign: 'center', border: '1px solid #1a3a2a' } },
                   h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80' } }, s[0]),
                   h('div', { style: { fontSize: '8px', color: '#94a3b8' } }, s[1])
@@ -1566,20 +1583,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           ) : null,
           // Airport selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏢 Select Airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '≡ƒÅó Select Airport'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               AIRPORTS.map(function(apt) {
                 return h('button', { key: apt.id, onClick: function() { startGame(apt.id); },
                   style: { padding: '12px', borderRadius: '10px', border: '1px solid #1a3a2a', background: '#0a1a0a', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }
                 },
-                  h('div', { style: { fontSize: '28px', width: '40px', textAlign: 'center', shrink: 0 } }, '🗼'),
+                  h('div', { style: { fontSize: '28px', width: '40px', textAlign: 'center', shrink: 0 } }, '≡ƒù╝'),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                       h('span', { style: { fontSize: '13px', fontWeight: 800 } }, apt.name + ' (' + apt.code + ')'),
                       h('span', { style: { fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, background: apt.difficulty === 'Beginner' ? '#0a2e1a' : apt.difficulty === 'Intermediate' ? '#1a2a0a' : apt.difficulty === 'Advanced' ? '#2a1a0a' : '#2a0a0a', color: apt.difficulty === 'Beginner' ? '#4ade80' : apt.difficulty === 'Intermediate' ? '#fbbf24' : apt.difficulty === 'Advanced' ? '#f97316' : '#ef4444' } }, apt.difficulty)
                     ),
                     h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, apt.desc),
-                    h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, apt.runways.length + ' runway(s) · Max ' + apt.maxTraffic + ' aircraft')
+                    h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, apt.runways.length + ' runway(s) ┬╖ Max ' + apt.maxTraffic + ' aircraft')
                   )
                 );
               })
@@ -1587,7 +1604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Badges (' + Object.keys(earnedATCBadges).length + '/' + ATC_BADGES.length + ')'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '≡ƒÅå Badges (' + Object.keys(earnedATCBadges).length + '/' + ATC_BADGES.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', marginBottom: '12px' } },
               ATC_BADGES.map(function(badge) {
                 var earned = !!earnedATCBadges[badge.id];
@@ -1596,7 +1613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 }, badge.icon + ' ' + (earned ? badge.name : '???'));
               })
             ),
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 ATC Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '≡ƒôÜ ATC Lessons'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               Object.keys(ATC_LESSONS).map(function(key) {
                 var les = ATC_LESSONS[key];
@@ -1621,7 +1638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         );
       }
 
-      // ═══ LESSON VIEW ═══
+      // ΓòÉΓòÉΓòÉ LESSON VIEW ΓòÉΓòÉΓòÉ
       if (view === 'lesson' && d.selectedLesson && ATC_LESSONS[d.selectedLesson]) {
         var les = ATC_LESSONS[d.selectedLesson];
         var aiKey = 'aiExplain_' + d.selectedLesson;
@@ -1659,7 +1676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           });
         };
         return h('div', { style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Back to Tower'),
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, 'ΓåÉ Back to Tower'),
           h('div', { style: { background: 'linear-gradient(135deg, #021a0a, #0a2e1a)', borderRadius: '16px', padding: '24px', color: '#fff' } },
             h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' }, 'aria-hidden': true }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
@@ -1669,10 +1686,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#4ade80', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula)
             ),
 
-            // ── AI Tutor Panel ──
+            // ΓöÇΓöÇ AI Tutor Panel ΓöÇΓöÇ
             h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: '#0a1a0a', border: '1px solid #6b21a8' }, role: 'region', },
               h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
-                h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, '✨ Explain at my level'),
+                h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, 'Γ£¿ Explain at my level'),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' }, role: 'group', 'aria-label': 'Reading level' },
                   LEVELS.map(function (L) {
                     var active = aiLevel === L.id;
@@ -1690,7 +1707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                   disabled: aiLoading,
                   'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
                   style: { padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#9333ea', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: aiLoading ? 'default' : 'pointer', opacity: aiLoading ? 0.5 : 1 }
-                }, aiLoading ? '⏳ Thinking...' : (aiText ? '🔄 Re-explain' : '🧠 Explain'))
+                }, aiLoading ? 'ΓÅ│ Thinking...' : (aiText ? '≡ƒöä Re-explain' : '≡ƒºá Explain'))
               ),
               aiError && h('p', { style: { fontSize: '11px', color: '#fca5a5', margin: 0 }, role: 'alert' }, aiError),
               aiText && h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
@@ -1699,14 +1716,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
             h('button', { onClick: function() { startGame('simple'); },
               style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
-            }, '🗼 Practice — Start Controlling')
+            }, '≡ƒù╝ Practice ΓÇö Start Controlling')
           )
         );
       }
 
-      // ═══ PLAYING VIEW ═══
+      // ΓòÉΓòÉΓòÉ PLAYING VIEW ΓòÉΓòÉΓòÉ
       if (view === 'playing') {
-        return h('div', { style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#0a1a0a' } },
+        return h('div', { id: 'atctower-fs-wrap', style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#0a1a0a' } },
           h('canvas', {
             ref: canvasRef,
             role: 'application',
@@ -1717,7 +1734,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             onFocusCapture: function(e) { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(74,222,128,0.7)'; },
             onBlurCapture: function(e) { e.currentTarget.style.boxShadow = 'none'; },
             onFocus: function() { announce('ATC radar display focused. ' + (tutorialRef.current.active ? 'Tutorial active. ' : '') + 'Press I for status summary. Tab to select aircraft.'); }
-          })
+          }),
+          // Fullscreen toggle (top-right). Wraps the whole radar
+          // container so the canvas + any HUD overlay drawn on top
+          // ride along into fullscreen.
+          h('button', {
+            'aria-label': 'Toggle fullscreen for the ATC radar',
+            title: 'Fullscreen',
+            onClick: function() {
+              var el = document.getElementById('atctower-fs-wrap');
+              if (!el) return;
+              var inFull = document.fullscreenElement === el
+                || document.webkitFullscreenElement === el
+                || document.mozFullScreenElement === el;
+              if (inFull) {
+                var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                if (ex) ex.call(document);
+              } else {
+                var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                if (rq) rq.call(el);
+              }
+            },
+            style: {
+              position: 'absolute', top: 8, right: 8, zIndex: 20,
+              width: 32, height: 32, borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(10,46,26,0.85)',
+              backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+              border: '1px solid rgba(74,222,128,0.45)',
+              color: '#4ade80',
+              fontSize: 16, fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+            }
+          }, 'Γ¢╢')
         );
       }
 

@@ -53,7 +53,7 @@ function ClozeInteractionPanel(props) {
                         <button
                             aria-label={t('common.close')}
                             onClick={handleSetInteractionModeToRead}
-                            className="text-blue-400 hover:text-blue-700 bg-blue-100/50 hover:bg-blue-100 p-1 rounded-full transition-colors"
+                            className="text-blue-700 hover:text-blue-700 bg-blue-100/50 hover:bg-blue-100 p-1 rounded-full transition-colors"
                             title={t('simplified.exit_cloze')}
                         >
                             <X size={14}/>

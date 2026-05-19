@@ -76,7 +76,7 @@ function ExportPreviewView(props) {
                           title={`Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
                         <button onClick={() => deleteExportPreset(key)}
-                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-600 hover:text-red-600 hover:bg-red-50 transition-all"
                           title={`Delete "${preset.name}" preset`}
                         ><X size={10} /></button>
                       </div>
@@ -422,6 +422,39 @@ function ExportPreviewView(props) {
                         🌐 Language cards (emphasizes translations)
                       </label>
                     </div>
+                    {/* Image size — only relevant for table mode (cards have their own sizing). */}
+                    {(exportConfig.glossaryDisplayMode || 'table') === 'table' && (
+                      <div className="mt-2 pl-1">
+                        <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
+                        <div className="flex flex-wrap gap-1">
+                          {[
+                            { v: 'small',  label: 'S',  px: 40 },
+                            { v: 'medium', label: 'M',  px: 64 },
+                            { v: 'large',  label: 'L',  px: 96 },
+                            { v: 'xl',     label: 'XL', px: 140 },
+                          ].map(opt => {
+                            const cur = exportConfig.glossaryImageSize || 'medium';
+                            const isActive = cur === opt.v;
+                            return (
+                              <button
+                                key={opt.v}
+                                type="button"
+                                disabled={!exportConfig.includeGlossary}
+                                onClick={() => setExportConfigAndRefresh(p => ({ ...p, glossaryImageSize: opt.v }))}
+                                title={opt.label + ' (' + opt.px + ' px)'}
+                                aria-label={'Glossary image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                                aria-pressed={isActive}
+                                className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                  ? 'bg-emerald-600 text-white border-emerald-700'
+                                  : 'bg-white text-slate-600 border-slate-300 hover:bg-emerald-50')}
+                              >
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Timeline display: list / cuttable strips */}
@@ -436,6 +469,36 @@ function ExportPreviewView(props) {
                         <input type="radio" name="timelineDisplayMode" checked={exportConfig.timelineDisplayMode === 'cuttable-strips'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'cuttable-strips' }))} />
                         ✂ Cuttable chronology strips
                       </label>
+                    </div>
+                    {/* Image size — same SMLXL pattern as glossary. Affects both list + strips modes. */}
+                    <div className="mt-2 pl-1">
+                      <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          { v: 'small',  label: 'S',  px: 48 },
+                          { v: 'medium', label: 'M',  px: 64 },
+                          { v: 'large',  label: 'L',  px: 96 },
+                          { v: 'xl',     label: 'XL', px: 140 },
+                        ].map(opt => {
+                          const cur = exportConfig.timelineImageSize || 'medium';
+                          const isActive = cur === opt.v;
+                          return (
+                            <button
+                              key={opt.v}
+                              type="button"
+                              onClick={() => setExportConfigAndRefresh(p => ({ ...p, timelineImageSize: opt.v }))}
+                              title={opt.label + ' (' + opt.px + ' px)'}
+                              aria-label={'Timeline image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                              aria-pressed={isActive}
+                              className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                ? 'bg-indigo-600 text-white border-indigo-700'
+                                : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -454,12 +517,41 @@ function ExportPreviewView(props) {
                     </div>
                   </div>
 
-                  {/* Concept-sort interactive */}
+                  {/* Concept-sort interactive + image size */}
                   <div>
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))} className="rounded" />
                       🧩 Concept sort: drag-to-sort on digital
                     </label>
+                    <div className="mt-1 pl-1">
+                      <div className="text-[10px] font-semibold text-slate-500 mb-1">Sort strip image size</div>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          { v: 'small',  label: 'S',  px: 56 },
+                          { v: 'medium', label: 'M',  px: 80 },
+                          { v: 'large',  label: 'L',  px: 110 },
+                          { v: 'xl',     label: 'XL', px: 150 },
+                        ].map(opt => {
+                          const cur = exportConfig.conceptSortImageSize || 'medium';
+                          const isActive = cur === opt.v;
+                          return (
+                            <button
+                              key={opt.v}
+                              type="button"
+                              onClick={() => setExportConfigAndRefresh(p => ({ ...p, conceptSortImageSize: opt.v }))}
+                              title={opt.label + ' (' + opt.px + ' px)'}
+                              aria-label={'Concept sort image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                              aria-pressed={isActive}
+                              className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                ? 'bg-rose-600 text-white border-rose-700'
+                                : 'bg-white text-slate-600 border-slate-300 hover:bg-rose-50')}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -561,7 +653,7 @@ function ExportPreviewView(props) {
                           <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Issues ({exportAuditResult.issues.length})</div>
                           {exportAuditResult.issues.slice(0, 5).map((issue, i) => (
                             <div key={i} className="text-[11px] text-slate-600 mb-1 flex items-start gap-1">
-                              <span className="text-red-400 shrink-0">●</span>
+                              <span className="text-red-600 shrink-0">●</span>
                               <span>{typeof issue === 'string' ? issue : issue.issue}{issue.wcag ? ` (${issue.wcag})` : ''}</span>
                             </div>
                           ))}
@@ -779,9 +871,9 @@ function ExportPreviewView(props) {
                 {/* ── Expert Workbench: Command Bar + Agent Activity (collapsible) ── */}
                 <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group">
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
-                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-400 text-[10px]">▸</span>
-                    <span className="text-[11px] text-purple-400 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
-                    {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse">Running...</span>}
+                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-600 text-[10px]">▸</span>
+                    <span className="text-[11px] text-purple-700 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
+                    {isAgentRunning && <span className="text-[11px] text-amber-700 animate-pulse">Running...</span>}
                     <span className="ml-auto text-[10px] text-slate-500">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                   </summary>
                   <div className="px-2 pb-1.5">
@@ -851,10 +943,10 @@ function ExportPreviewView(props) {
                           <span>{entry.text}</span>
                         </div>
                       ))}
-                      {isAgentRunning && <div className="text-purple-400 animate-pulse">⏳ Processing...</div>}
+                      {isAgentRunning && <div className="text-purple-700 animate-pulse">⏳ Processing...</div>}
                     </div>
                     <div className="flex items-center gap-3 px-2 py-1 border-t border-slate-800">
-                      <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
+                      <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-700 hover:text-purple-200 underline">
                         {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                       </button>
                       <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>

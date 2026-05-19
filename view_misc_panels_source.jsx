@@ -222,13 +222,13 @@ function PdfDiffViewer(props) {
               <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
                 <span className="text-lg">📝</span>
                 <div className="flex-1 min-w-0">
-                  <h2 id="allo-diff-title" className="text-sm font-black text-slate-800 truncate">Source PDF ↔ Remediated HTML · Diff</h2>
-                  <p className="text-[11px] text-slate-600">Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.</p>
+                  <h2 id="allo-diff-title" className="text-sm font-black text-slate-800 truncate">{t('diff_view.title') || 'Source PDF ↔ Remediated HTML · Diff'}</h2>
+                  <p className="text-[11px] text-slate-600">{t('diff_view.subtitle') || 'Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.'}</p>
                 </div>
                 <button
                   onClick={() => setDiffViewOpen(false)}
                   className="shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
-                  aria-label="Close diff view"
+                  aria-label={t('diff_view.close_aria') || 'Close diff view'}
                 >✕</button>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap">
@@ -250,7 +250,7 @@ function PdfDiffViewer(props) {
                     {_rejCount > 0 && (
                       <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
                         {_rejCount.toLocaleString()} rejected
-                        <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title="Undo every rejection in this view">undo all</button>
+                        <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title={t('diff_view.undo_all_tooltip') || 'Undo every rejection in this view'}>{t('diff_view.undo_all_button') || 'undo all'}</button>
                       </span>
                     )}
                   </div>
@@ -281,8 +281,8 @@ function PdfDiffViewer(props) {
                   <div className="text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3">
                     <RefreshCw size={14} className="animate-spin shrink-0" />
                     <div className="flex-1">
-                      <div className="font-bold mb-1">Computing diff…</div>
-                      <div className="text-[12px] text-amber-700 leading-relaxed">If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).</div>
+                      <div className="font-bold mb-1">{t('diff_view.computing') || 'Computing diff…'}</div>
+                      <div className="text-[12px] text-amber-700 leading-relaxed">{t('diff_view.computing_stale_hint') || 'If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).'}</div>
                     </div>
                     <button
                       onClick={() => {
@@ -293,8 +293,8 @@ function PdfDiffViewer(props) {
                         setDiffGranularity(g => g);
                       }}
                       className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[12px]"
-                      title="Clear the diff cache and recompute chunks against the current source ↔ remediated pair."
-                    >Rebuild diff</button>
+                      title={t('diff_view.rebuild_tooltip') || 'Clear the diff cache and recompute chunks against the current source ↔ remediated pair.'}
+                    >{t('diff_view.rebuild_button') || 'Rebuild diff'}</button>
                   </div>
                 )}
                 {diffLibReady && _chunks && (
@@ -333,7 +333,7 @@ function PdfDiffViewer(props) {
                   </pre>
                 )}
                 {diffLibReady && !_chunks && (
-                  <div className="text-sm text-slate-600">Computing diff…</div>
+                  <div className="text-sm text-slate-600">{t('diff_view.computing') || 'Computing diff…'}</div>
                 )}
                 {diffSelection && (
                   <div
@@ -344,23 +344,23 @@ function PdfDiffViewer(props) {
                     <button
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true)}
                       className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
-                    >Reject selection</button>
+                    >{t('diff_view.reject_selection') || 'Reject selection'}</button>
                     <button
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
                       className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
-                    >Keep selection</button>
+                    >{t('diff_view.keep_selection') || 'Keep selection'}</button>
                     <button
                       onClick={() => setDiffSelection(null)}
                       className="px-1.5 py-1 rounded hover:bg-slate-700"
-                      aria-label="Dismiss toolbar"
+                      aria-label={t('diff_view.dismiss_toolbar_aria') || 'Dismiss toolbar'}
                     >✕</button>
                   </div>
                 )}
               </div>
               <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
                 <span>📚 jsdiff@5.2.0</span>
-                <span className="text-slate-400">·</span>
-                <span>Click spans or drag-select to edit. Pairs toggle together.</span>
+                <span className="text-slate-600">·</span>
+                <span>{t('diff_view.footer_help') || 'Click spans or drag-select to edit. Pairs toggle together.'}</span>
                 {/* Revert button — only rendered when there's a snapshot
                     to restore (i.e., the user has previously clicked Apply
                     on this doc). One-level undo; pressing Apply again
@@ -370,7 +370,7 @@ function PdfDiffViewer(props) {
                     onClick={_revertLastApply}
                     disabled={applyingRemarkup}
                     className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
-                    title="Restore the accessible HTML to the state before your last Apply & Export"
+                    title={t('diff_view.revert_tooltip') || 'Restore the accessible HTML to the state before your last Apply & Export'}
                   >
                     ↶ Revert last Apply
                   </button>
@@ -380,7 +380,7 @@ function PdfDiffViewer(props) {
                     onClick={_applyAndExport}
                     disabled={applyingRemarkup}
                     className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
-                    title="Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
+                    title={t('diff_view.apply_export_tooltip') || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."}
                   >
                     {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin" /> Applying…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
                   </button>
@@ -532,7 +532,7 @@ function GroupSessionModal(props) {
                             <FileText size={16} className="text-indigo-600" />
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
                             <span className="text-xs text-slate-600 ml-2">({sessionData.resources?.length || 0} items)</span>
-                            <span className="text-[11px] text-purple-400 ml-auto italic flex items-center gap-1">
+                            <span className="text-[11px] text-purple-700 ml-auto italic flex items-center gap-1">
                                 <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag to reorder'}
                             </span>
                         </div>
@@ -632,7 +632,7 @@ function GroupSessionModal(props) {
                                     <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
+                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-600 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
                                         </div>
                                         <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
                                             {t('groups.assign_resource_label')}
@@ -741,6 +741,7 @@ function FluencyModePanel(props) {
                 aria-modal="true"
                 aria-label={t('fluency.tool_label')}
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative border-4 border-rose-200 overflow-hidden flex flex-col h-[80vh]"
+                data-help-key="fluency_mode_panel"
             >
                 <div className="bg-rose-50 p-4 border-b border-rose-100 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">
@@ -760,6 +761,7 @@ function FluencyModePanel(props) {
                                     value={fluencyTimeLimit}
                                     onChange={(e) => { setFluencyTimeLimit(parseInt(e.target.value)); setFluencyTimeRemaining(parseInt(e.target.value)); }}
                                     className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    data-help-key="fluency_mode_time_limit"
                                 >
                                     <option value={0}>{t('fluency.time_limit_none')}</option>
                                     <option value={30}>30 sec</option>
@@ -908,16 +910,16 @@ function FluencyModePanel(props) {
                                             {fluencyResult.confidence.overall}<span className="text-sm opacity-60">/10</span>
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-slate-700">AI Confidence in This Analysis</div>
+                                            <div className="text-xs font-bold text-slate-700">{t('fluency.ai_confidence_title') || 'AI Confidence in This Analysis'}</div>
                                             <div className="text-[11px] text-slate-600">{fluencyResult.confidence.overall >= 7 ? 'High confidence' : fluencyResult.confidence.overall >= 4 ? 'Moderate confidence — some results may be inaccurate' : 'Low confidence — human verification recommended'}</div>
                                         </div>
                                     </div>
                                     <div className="flex gap-3 text-[11px] mb-2">
                                         <span className="text-slate-600">🎙️ Audio: {fluencyResult.confidence.audioQuality}/10</span>
                                         <span className="text-slate-600">🗣️ Clarity: {fluencyResult.confidence.speakerClarity}/10</span>
-                                        {fluencyResult.confidence.accentDetected && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">Accent detected — scored conservatively</span>}
-                                        {fluencyResult.confidence.youngVoiceDetected && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">Young voice detected</span>}
-                                        {fluencyResult.confidence.dialectalPatternsDetected && <span className="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">Dialectal patterns respected</span>}
+                                        {fluencyResult.confidence.accentDetected && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.accent_detected_badge') || 'Accent detected — scored conservatively'}</span>}
+                                        {fluencyResult.confidence.youngVoiceDetected && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.young_voice_badge') || 'Young voice detected'}</span>}
+                                        {fluencyResult.confidence.dialectalPatternsDetected && <span className="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.dialectal_patterns_badge') || 'Dialectal patterns respected'}</span>}
                                     </div>
                                     {fluencyResult.confidence.lowConfidenceWordCount > 0 && (
                                         <div className="text-[11px] text-amber-700 font-medium">⚠ {fluencyResult.confidence.lowConfidenceWordCount} word(s) marked with low confidence — look for ⚠ in the word display below</div>
@@ -940,7 +942,7 @@ function FluencyModePanel(props) {
                                     </div>
                                 </div>
                             )}
-                            <div className="text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5">
+                            <div className="text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5" data-help-key="fluency_mode_word_analysis">
                                 {fluencyResult.wordData.map((w, i) => (
                                     <span
                                         key={i}
@@ -1005,6 +1007,7 @@ function FluencyModePanel(props) {
                                     onClick={() => generateFluencyScoreSheet(fluencyResult, typeof generatedContent?.data === 'string' ? generatedContent.data : '')}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
                                     aria-label={t('common.print_score_sheet')}
+                                    data-help-key="fluency_mode_print_score_sheet_btn"
                                 >
                                     <FileText size={15} /> Print Score Sheet
                                 </button>
@@ -1012,6 +1015,7 @@ function FluencyModePanel(props) {
                                     onClick={exportFluencyCSV}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                                     aria-label={t('common.export_fluency_csv')}
+                                    data-help-key="fluency_mode_export_csv_btn"
                                 >
                                     <Download size={15} /> Export Fluency CSV
                                 </button>
@@ -1021,11 +1025,11 @@ function FluencyModePanel(props) {
                         <div className="max-w-2xl">
                              {fluencyTranscript && (
                                 <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-600 italic">
-                                    <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
+                                    <span className="font-bold uppercase text-xs text-rose-700 block mb-1">{t('fluency.hearing_label')}</span>
                                     "{fluencyTranscript}"
                                 </div>
                              )}
-                             <div className="text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center">
+                             <div className="text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center" data-help-key="fluency_mode_passage_display">
                                 {typeof generatedContent?.data === 'string' ? (
                                     generatedContent?.data
                                         .split('--- ENGLISH TRANSLATION ---')[0]
@@ -1081,6 +1085,7 @@ function FluencyModePanel(props) {
                         <button
                             onClick={toggleFluencyRecording}
                             disabled={fluencyStatus === 'processing'}
+                            data-help-key="fluency_mode_record_btn"
                             className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all transform border-4 ${
                                 fluencyStatus === 'listening'
                                 ? 'bg-red-700 text-white animate-pulse border-red-200 shadow-red-500/30 hover:scale-105 active:scale-95'
@@ -1717,23 +1722,23 @@ function VolumeBuilderView(props) {
                                         ));
                                     }
                             return (
-                            <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1">
+                            <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                                         📦 3D Volume Explorer
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <button onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label="Zoom out">−</button>
+                                        <button onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}>−</button>
                                         <span className="text-[11px] text-emerald-600 font-mono w-10 text-center">{Math.round(cubeScale * 100)}%</span>
-                                        <button onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label="Zoom in">+</button>
-                                        <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label="Reset view">↺</button>
+                                        <button onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_in_aria') || 'Zoom in'}>+</button>
+                                        <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-emerald-700/70">Drag to rotate • Scroll to zoom • Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)</p>
+                                <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Drag to rotate • Scroll to zoom • Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)'}</p>
                                 {/* Shape selector — toggle between a solid rectangular prism
                                     and an L-block (rectangular base with a corner notch carved
                                     out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
-                                <div className="flex gap-2 justify-center" role="radiogroup" aria-label="Volume Builder shape">
+                                <div className="flex gap-2 justify-center" role="radiogroup" aria-label={t('volume_builder.shape_radiogroup_aria') || 'Volume Builder shape'} data-help-key="volume_builder_shape_selector">
                                     {[
                                         { id: 'rect',   label: '🧊 Rectangular' },
                                         { id: 'lblock', label: '📐 L-Block' },
@@ -1752,7 +1757,7 @@ function VolumeBuilderView(props) {
                                         );
                                     })}
                                 </div>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-3 gap-2" data-help-key="volume_builder_dimensions_input">
                                     {['l','w','h'].map(dim => (
                                         <div key={dim}>
                                             <label className="block text-xs text-slate-600 mb-1 font-bold uppercase">{dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'}</label>
@@ -1810,7 +1815,7 @@ function VolumeBuilderView(props) {
                                     <span className="text-xs font-mono text-emerald-600 w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
                                     {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">All</button>}
                                 </div>
-                                <div className="bg-white/80 rounded-lg p-3 border border-emerald-100">
+                                <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="text-center">
                                             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume')}</div>
@@ -1858,11 +1863,11 @@ function VolumeBuilderView(props) {
                                         setCubeAnswer('');
                                         setCubeFeedback(null);
                                         setCubeShowLayers(null);
-                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md">
+                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
                                         🎲 Random Challenge
                                     </button>
                                     <button onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
-                                        className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">
+                                        className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all" data-help-key="volume_builder_reset_btn">
                                         ↺ Reset
                                     </button>
                                 </div>
@@ -1873,12 +1878,14 @@ function VolumeBuilderView(props) {
                                             <input type="number" value={cubeAnswer}
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); } }}
-                                                placeholder="Enter volume..."
+                                                placeholder={t('volume_builder.answer_placeholder') || 'Enter volume...'}
                                                 className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
-                                                aria-label="Volume answer" />
+                                                aria-label={t('volume_builder.answer_aria') || 'Volume answer'}
+                                                data-help-key="volume_builder_answer_field" />
                                             <button onClick={() => { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); }}
                                                 disabled={!cubeAnswer}
-                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all">
+                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all"
+                                                data-help-key="volume_builder_check_btn">
                                                 Check
                                             </button>
                                         </div>

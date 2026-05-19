@@ -88,7 +88,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
           warnLog("Error submitting quiz response:", e);
           setHasAnswered(false);
           setSelectedOptionIndex(null);
-          alert(t('errors.quiz_submit_failed'));
+          if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.quiz_submit_failed'), 'error'); else alert(t('errors.quiz_submit_failed'));
       }
   };
   const getModeStyles = () => {
@@ -164,7 +164,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                              />
                          ) : (
                              <div className="w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm">
-                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-400"/> : "👾"}
+                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-600"/> : "👾"}
                              </div>
                          )}
                          {phase === 'revealed' && bossStats.lastDamage > 0 && (
@@ -197,7 +197,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                              ></div>
                          </div>
                          {phase === 'revealed' && bossStats.lastClassDamage > 0 && (
-                             <div className="text-orange-400 text-xs font-bold mt-1 animate-pulse text-center">
+                             <div className="text-orange-700 text-xs font-bold mt-1 animate-pulse text-center">
                                  {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                              </div>
                          )}
@@ -331,13 +331,13 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
                                      <Sparkles size={14} className="fill-yellow-400 text-yellow-500"/> Explanation
                                  </h4>
+                                 {/* XSS guard: factCheck is AI-generated; escape <,>,& BEFORE the markdown-to-HTML replacements so injected tags can't echo through. */}
                                  <div
                                     className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap"
-                                    dangerouslySetInnerHTML={{
-                                        __html: currentQuestion.factCheck
-                                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                            .replace(/\n/g, '<br/>')
-                                    }}
+                                    dangerouslySetInnerHTML={{ __html: String(currentQuestion.factCheck)
+                                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                        .replace(/\n/g, '<br/>') }}
                                  />
                                  {showTranslated && currentQuestion.factCheck_en && (
                                      <div className="mt-3 pt-3 border-t border-slate-200">
@@ -391,6 +391,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
             <div>
                 <input
                     type="password"
+                    autoComplete="current-password"
                     value={passwordInput}
                     onChange={(e) => {
                         setPasswordInput(e.target.value);
@@ -436,7 +437,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
   const handleMicCheck = () => {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-          alert(t('roles.voice_not_supported'));
+          if (window.AlloFlowUX) window.AlloFlowUX.toast(t('roles.voice_not_supported'), 'error'); else alert(t('roles.voice_not_supported'));
           return;
       }
       setMicStatus('requesting');
@@ -464,6 +465,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
     ref={roleRef}
     role="dialog"
     aria-modal="true"
+    aria-labelledby="role-selection-title"
     className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
   >
     <div className="min-h-full flex items-center justify-center">
@@ -476,7 +478,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
            <Layers size={48} className="text-indigo-600" />
         </div>
       </div>
-      <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
+      <h2 id="role-selection-title" className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
       <p className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
@@ -651,7 +653,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-help-key="entry_start_new"
             >
-                <Sparkles size={18} className="text-yellow-400 fill-current" /> {t('entry.start')}
+                <Sparkles size={18} className="text-yellow-700 fill-current" /> {t('entry.start')}
             </button>
             <button
                 aria-label={t('common.upload')}

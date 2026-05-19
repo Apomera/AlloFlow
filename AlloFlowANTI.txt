@@ -810,8 +810,8 @@ const VisualPanelGrid = React.memo((props) => {
     return (
         <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-400">
             <div className="text-3xl mb-2">🎨</div>
-            <p className="text-sm font-bold text-slate-600">Loading Visual Panel...</p>
-            <p className="text-xs text-slate-600 mt-1">Module loading from CDN.</p>
+            <p className="text-sm font-bold text-slate-600">{t('common.loading_module', { name: 'Visual Panel' }) || 'Loading Visual Panel...'}</p>
+            <p className="text-xs text-slate-600 mt-1">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
         </div>
     );
 });
@@ -829,8 +829,8 @@ const WordSoundsGenerator = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">🔤</div>
-                <p className="text-lg font-bold text-slate-700">Loading Word Sounds Studio...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds Studio' }) || 'Loading Word Sounds Studio...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -898,8 +898,8 @@ const StudentAnalyticsPanel = React.memo((props) => {
         <div className="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">📊</div>
-                <p className="text-lg font-bold text-slate-700">Loading Assessment Center...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Assessment Center' }) || 'Loading Assessment Center...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>,
@@ -997,8 +997,134 @@ const getDifferentiationGrades = (targetGrade, range) => {
         .sort((a, b) => a - b)
         .map(idx => GRADE_ORDER[idx]);
 };
+// ─── Translation glossary (loaded once per session) ───
+// Single source of truth for do-not-translate terms + domain terminology.
+// Hot-fetched from GitHub then cached; falls back to an inline minimal list
+// if the fetch fails (so translation still works offline / pre-deploy).
+let _TRANSLATION_GLOSSARY = null;
+const _MIN_DNT_FALLBACK = [
+  'AlloFlow', 'AlloBot', 'AlloHaven', 'StoryForge', 'LitLab', 'PoetTree',
+  'SEL Hub', 'STEM Lab', 'UDL', 'SEL', 'RTI', 'IEP', 'FERPA',
+  'Tier 1', 'Tier 2', 'Tier 3', 'Common Core'
+];
+const _DNT_REGEX_PATTERNS = [
+  /\{[a-zA-Z_][a-zA-Z0-9_]*\}/g,                     // {placeholders}
+  /\d+(\.\d+)?(MB|KB|GB|cm|mm|km|kg|°C|°F|fps|Hz|ms|nm|μm|AU|ly)\b/g,  // 5MB, 24°C
+  /v\d+(\.\d+)?/g,                                   // v1, v2.3
+  /#[A-Fa-f0-9]{3,8}\b/g,                            // #fff, #f97316
+  /https?:\/\/[^\s\)\]]+/g                           // URLs
+];
+async function _loadTranslationGlossary() {
+  if (_TRANSLATION_GLOSSARY) return _TRANSLATION_GLOSSARY;
+  try {
+    const cached = typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_translation_glossary_v1');
+    if (cached) {
+      _TRANSLATION_GLOSSARY = JSON.parse(cached);
+      return _TRANSLATION_GLOSSARY;
+    }
+  } catch (_) {}
+  try {
+    const resp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/translation_glossary.js');
+    if (resp.ok) {
+      const text = (await resp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
+      _TRANSLATION_GLOSSARY = JSON.parse(text);
+      try { localStorage.setItem('alloflow_translation_glossary_v1', JSON.stringify(_TRANSLATION_GLOSSARY)); } catch (_) {}
+      return _TRANSLATION_GLOSSARY;
+    }
+  } catch (e) { warnLog('Translation glossary fetch failed; using minimal fallback:', e?.message); }
+  // Fallback: minimal inline glossary
+  _TRANSLATION_GLOSSARY = { version: 0, DO_NOT_TRANSLATE: _MIN_DNT_FALLBACK, DOMAIN_GLOSSARY: {} };
+  return _TRANSLATION_GLOSSARY;
+}
+// Escape a string for safe RegExp use
+function _escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+// Wrap DNT terms with ‹dnt:N› tokens. Returns { masked, tokens } so we can
+// restore them verbatim after the model returns. The model is also told to
+// preserve any ‹dnt:N› tokens it sees, as a belt+suspenders measure.
+function _maskDNT(strings, glossary) {
+  const tokens = [];
+  const dntTerms = (glossary && glossary.DO_NOT_TRANSLATE) || _MIN_DNT_FALLBACK;
+  // Sort by length DESC so longer phrases match before shorter substrings
+  const sortedTerms = dntTerms.slice().sort((a, b) => b.length - a.length);
+  function maskOne(str) {
+    if (typeof str !== 'string') return str;
+    let masked = str;
+    // Pattern-based masking first (placeholders, units, URLs, hex)
+    _DNT_REGEX_PATTERNS.forEach((re) => {
+      masked = masked.replace(re, (match) => {
+        const id = tokens.length;
+        tokens.push(match);
+        return '‹dnt:' + id + '›';
+      });
+    });
+    // Term-based masking — word boundary on letters, case-insensitive
+    sortedTerms.forEach((term) => {
+      const re = new RegExp('\\b' + _escapeRe(term) + '\\b', 'gi');
+      masked = masked.replace(re, (match) => {
+        const id = tokens.length;
+        tokens.push(match);
+        return '‹dnt:' + id + '›';
+      });
+    });
+    return masked;
+  }
+  const result = {};
+  for (const k in strings) result[k] = maskOne(strings[k]);
+  return { masked: result, tokens };
+}
+function _unmaskDNT(strings, tokens) {
+  function unmaskOne(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/‹dnt:(\d+)›/g, (m, id) => {
+      const tok = tokens[parseInt(id, 10)];
+      return tok !== undefined ? tok : m;
+    });
+  }
+  const result = {};
+  for (const k in strings) result[k] = unmaskOne(strings[k]);
+  return result;
+}
+// Build a glossary preamble of K-12 special-ed terminology. The model uses
+// this to keep terms consistent across chunks. Each chunk sees the same
+// preamble so chunk-3's "scaffold" matches chunk-47's "scaffold."
+function _buildGlossaryPreamble(glossary, targetLanguage) {
+  if (!glossary || !glossary.DOMAIN_GLOSSARY) return '';
+  const entries = [];
+  const groups = glossary.DOMAIN_GLOSSARY;
+  for (const groupKey in groups) {
+    for (const term in groups[groupKey]) {
+      entries.push('  - "' + term + '" — ' + groups[groupKey][term]);
+    }
+  }
+  if (entries.length === 0) return '';
+  return [
+    'DOMAIN GLOSSARY — translate these English terms consistently. Use the standard ' + targetLanguage + ' equivalent for K-12 special education. If a term is a proper noun, brand, or acronym, keep it verbatim.',
+    entries.join('\n'),
+    ''
+  ].join('\n');
+}
 const translateChunk = async (chunkData, targetLanguage, apiKey) => {
-  const prompt = `You are a UI Translator. Translate the values of this JSON object into ${targetLanguage}. Keep keys identical. Return ONLY valid JSON.\n\n${JSON.stringify(chunkData)}`;
+  const glossary = await _loadTranslationGlossary();
+  const { masked, tokens } = _maskDNT(chunkData, glossary);
+  const glossaryPreamble = _buildGlossaryPreamble(glossary, targetLanguage);
+  const prompt = [
+    'You are a UI translator for AlloFlow, a K-12 special-education web app that supports Universal Design for Learning (UDL), social-emotional learning (SEL), Response to Intervention (RTI), and Individualized Education Programs (IEP). Your audience is teachers, school psychologists, and students.',
+    '',
+    'TRANSLATE the JSON values into ' + targetLanguage + '. Use the locale\'s standard special-education and pedagogical terminology. Keep a clear, professional, learner-friendly tone — short imperatives for buttons (Save → Guardar / 保存), full sentences for help text.',
+    '',
+    'RULES — these are strict, the output will be auto-validated:',
+    '  1. Keep all JSON keys IDENTICAL. Do not translate keys.',
+    '  2. Preserve every ‹dnt:N› token EXACTLY as you see it. Do not translate, reorder, or modify these tokens. They mark do-not-translate values that will be restored after translation.',
+    '  3. Preserve all markdown syntax: **bold**, ### headings, * bullets, • bullets, line breaks (\\n), numbered lists, code in `backticks`. Translate the text inside the markdown, not the syntax itself.',
+    '  4. Preserve all parameter placeholders like {name}, {count}, {grade} EXACTLY. Do not translate the word inside the braces, do not add or remove braces.',
+    '  5. Preserve units (cm, °C, MB, fps) and version tags (v1, v2.3) and brand names verbatim.',
+    '  6. For UI controls (buttons, labels, menu items), prefer the shortest natural ' + targetLanguage + ' equivalent. Translated text should not be more than ~30% longer than the source.',
+    '  7. Return ONLY valid JSON. No prose, no markdown fences, no leading or trailing whitespace, no commentary.',
+    '',
+    glossaryPreamble,
+    'INPUT JSON:',
+    JSON.stringify(masked)
+  ].filter(Boolean).join('\n');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
   const callApi = async (textInput) => {
       try {
@@ -1032,7 +1158,9 @@ const translateChunk = async (chunkData, targetLanguage, apiKey) => {
         const repairedText = await callApi(repairPrompt);
         parsed = safeJsonParse(repairedText);
     }
-    return parsed;
+    if (!parsed) return null;
+    // Restore DNT tokens to their original verbatim values
+    return _unmaskDNT(parsed, tokens);
   } catch (e) {
     warnLog(`translateChunk failed for ${targetLanguage}`, e);
     return null;
@@ -1049,7 +1177,8 @@ const useTranslation = (targetLanguage, apiKey) => {
   }, []);
   const exportLanguagePack = useCallback(() => {
     if (!languagePack) {
-      alert(t('language_selector.no_data_export'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.no_data_export'), 'warning');
+      else alert(t('language_selector.no_data_export'));
       return;
     }
     const dataStr = JSON.stringify(languagePack, null, 2);
@@ -1075,11 +1204,13 @@ const useTranslation = (targetLanguage, apiKey) => {
           setIsTranslating(false);
           setIsTranslating(false);
         } else {
-          alert(t('language_selector.alert_invalid_json'));
+          if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_invalid_json'), 'error');
+          else alert(t('language_selector.alert_invalid_json'));
         }
       } catch (err) {
         warnLog("Import failed", err);
-        alert(t('language_selector.alert_parse_error'));
+        if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_parse_error'), 'error');
+        else alert(t('language_selector.alert_parse_error'));
       }
     };
     reader.readAsText(file);
@@ -1111,38 +1242,66 @@ const useTranslation = (targetLanguage, apiKey) => {
         }
         setIsTranslating(true);
         setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }));
+
+        // ─── Fuzzy match the user's input against the known-pack manifest ───
+        // User types "spanis" → matches "spanish_latin_america". User types
+        // "haitan creole" → matches "haitian_creole". User types "yoruba"
+        // and we have no pack → falls through to live generation.
+        let langSlug = targetLanguage.toLowerCase().replace(/\s+/g, '_');
+        let resolvedDisplay = targetLanguage;
         try {
-            const langSlug = targetLanguage.toLowerCase().replace(/\s+/g, '_');
-            const githubUrl = `https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/${langSlug}.js`;
-            const ghResp = await fetch(githubUrl);
-            if (ghResp.ok) {
-                const ghText = await ghResp.text();
-                let ghPack = null;
+            if (window.AlloLangMatcher && typeof window.AlloLangMatcher.match === 'function') {
+                const matched = await window.AlloLangMatcher.match(targetLanguage);
+                if (matched && matched.slug) {
+                    langSlug = matched.slug;
+                    resolvedDisplay = matched.display || targetLanguage;
+                    if (matched.confidence < 1.0 && matched.confidence >= 0.7) {
+                        debugLog('[useTranslation] Fuzzy-matched "' + targetLanguage + '" → "' + resolvedDisplay + '" (slug=' + langSlug + ', conf=' + matched.confidence.toFixed(2) + ')');
+                    }
+                }
+            }
+        } catch (matchErr) { warnLog('Language matcher error (using raw slug):', matchErr?.message); }
+
+        // ─── Try Cloudflare CDN first (faster + cheaper than GitHub raw) ───
+        const PACK_URLS = [
+            'https://alloflow-cdn.pages.dev/lang/' + langSlug + '.js',
+            'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/' + langSlug + '.js'
+        ];
+        let loaded = false;
+        for (const packUrl of PACK_URLS) {
+            try {
+                const resp = await fetch(packUrl);
+                if (!resp.ok) continue;
+                const text = await resp.text();
+                let pack = null;
                 try {
-                    ghPack = JSON.parse(ghText);
+                    pack = JSON.parse(text);
                 } catch (parseErr) {
                     try {
-                        ghPack = new Function('return ' + ghText)();
+                        pack = new Function('return ' + text)();
                     } catch (evalErr) {
                         try {
-                            const cleaned = ghText.replace(/^\s*\/\/.*$/gm, '').trim();
-                            ghPack = JSON.parse(cleaned);
+                            const cleaned = text.replace(/^\s*\/\/.*$/gm, '').trim();
+                            pack = JSON.parse(cleaned);
                         } catch (e2) {
-                            warnLog('GitHub language pack parse failed:', e2?.message);
+                            warnLog('Pack parse failed for ' + packUrl + ':', e2?.message);
+                            continue;
                         }
                     }
                 }
-                if (ghPack && Object.keys(ghPack).length > 10) {
-                    debugLog(`[useTranslation] Loaded ${targetLanguage} from GitHub.`);
-                    setLanguagePack(ghPack);
+                if (pack && Object.keys(pack).length > 10) {
+                    debugLog('[useTranslation] Loaded ' + resolvedDisplay + ' from ' + packUrl);
+                    setLanguagePack(pack);
                     setIsTranslating(false);
-                    try { await storageDB.set(storageKey, ghPack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
-                    return;
+                    try { await storageDB.set(storageKey, pack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
+                    loaded = true;
+                    break;
                 }
+            } catch (fetchErr) {
+                warnLog('Pack fetch failed (' + packUrl + '):', fetchErr?.message);
             }
-        } catch (ghErr) {
-            warnLog('GitHub language pack not available:', ghErr?.message);
         }
+        if (loaded) return;
         setStatusMessage(t('language_selector.status_generating', { lang: targetLanguage }));
         setProgress(5);
         let _helpStrings = {};
@@ -1229,7 +1388,12 @@ const useTranslation = (targetLanguage, apiKey) => {
       let result = getVal(languagePack, keys);
       if (!result) result = getVal(UI_STRINGS, keys);
       if (!result) result = WORD_SOUNDS_STRINGS[keyString];
-      if (!result) return keyString;
+      if (!result) {
+          if (typeof window !== 'undefined' && (window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1')) {
+              console.warn('[i18n] missing key:', keyString);
+          }
+          return undefined;
+      }
       if (params && typeof result === 'string') {
           Object.keys(params).forEach(key => {
               result = result.replace(`{${key}}`, params[key]);
@@ -1266,13 +1430,49 @@ export const LanguageProvider = ({ children }) => {
   useEffect(() => {
     const isRtl = isRtlLang(currentUiLanguage);
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-    if (isRtl) {
-        if (currentUiLanguage === 'Arabic') document.documentElement.lang = 'ar';
-        else if (currentUiLanguage === 'Hebrew') document.documentElement.lang = 'he';
-    } else {
-        document.documentElement.lang = 'en';
+    // Set <html lang> to the full BCP-47 code for the current UI language (WCAG 3.1.1).
+    // Falls back to 'en' if the language isn't in the map. Uses getSpeechLangCode
+    // which carries the full 47-language map already used elsewhere for TTS.
+    try {
+      const bcp47 = (typeof getSpeechLangCode === 'function' ? getSpeechLangCode(currentUiLanguage) : null) || 'en-US';
+      document.documentElement.lang = bcp47.split('-')[0]; // primary subtag only for <html lang>
+    } catch (_) {
+      document.documentElement.lang = 'en';
     }
   }, [currentUiLanguage]);
+  // ── window.AlloFlowLang — global helper for inline foreign-language markup (WCAG 3.1.2) ──
+  // Modules use:
+  //   const lang = window.AlloFlowLang.bcp47('Spanish'); // → 'es'
+  //   <span lang={lang}>{vocabWord}</span>
+  // Or use the ready-made wrapper component:
+  //   <window.AlloFlowLang.Span lang="Spanish">hola</window.AlloFlowLang.Span>
+  useEffect(() => {
+    if (window.AlloFlowLang) return;
+    window.AlloFlowLang = {
+      bcp47(friendlyName) {
+        try {
+          if (typeof getSpeechLangCode !== 'function') return 'en';
+          const full = getSpeechLangCode(friendlyName) || 'en-US';
+          // Return the language subtag only (e.g. 'es' from 'es-ES') for <span lang>.
+          return full.split('-')[0];
+        } catch (_) { return 'en'; }
+      },
+      // Returns the full BCP-47 tag including region (e.g. 'es-ES').
+      bcp47Full(friendlyName) {
+        try {
+          if (typeof getSpeechLangCode !== 'function') return 'en-US';
+          return getSpeechLangCode(friendlyName) || 'en-US';
+        } catch (_) { return 'en-US'; }
+      },
+      // Helper React element factory — modules without JSX can call:
+      //   AlloFlowLang.span('Spanish', 'hola', { className: '...' })
+      span(friendlyName, text, extraProps) {
+        const code = this.bcp47(friendlyName);
+        const props = Object.assign({ lang: code }, extraProps || {});
+        return React.createElement('span', props, text);
+      },
+    };
+  }, []);
   const value = {
     currentUiLanguage,
     setUiLanguage,
@@ -1308,18 +1508,29 @@ const StudentSubmitModal = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">📤</div>
-                <p className="text-lg font-bold text-slate-700">Loading Submit Panel...</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Submit Panel' }) || 'Loading Submit Panel...'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
     );
 });
-const useFocusTrap = (ref, isOpen) => {
+// useFocusTrap(ref, isOpen[, onEscape])
+//   ref       — React ref to the modal/dialog root element
+//   isOpen    — boolean; trap is only active when true
+//   onEscape  — OPTIONAL callback fired when user presses Escape. Pass this
+//               from modal-owning components so users can always escape via
+//               keyboard (WCAG 2.1.2 No Keyboard Trap). If omitted, Escape
+//               passes through to the component's own onKeyDown handler.
+const useFocusTrap = (ref, isOpen, onEscape) => {
   useEffect(() => {
     if (!isOpen || !ref.current) return;
     const previouslyFocused = document.activeElement;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
+        if (typeof onEscape === 'function') {
+          e.preventDefault();
+          try { onEscape(); } catch (_) {}
+        }
         return;
       }
       if (e.key !== 'Tab') return;
@@ -1358,6 +1569,31 @@ const useFocusTrap = (ref, isOpen) => {
   }, [isOpen, ref]);
 };
 window.__alloHooks = { useFocusTrap };
+// ── Global keyboard-trap safety net (WCAG 2.1.2) ──
+// Last-resort Escape hatch. Runs in the BUBBLE phase so per-component
+// handlers fire first; only acts if no other handler already dismissed
+// the modal (we re-check the DOM 50ms later and only fire if the dialog
+// is still present and visible).
+if (typeof window !== 'undefined' && !window.__alloEscapeNetInstalled) {
+  window.__alloEscapeNetInstalled = true;
+  window.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
+    setTimeout(function() {
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (!dialogs.length) return;
+      const top = dialogs[dialogs.length - 1];
+      // Verify the dialog is still visible (per-component handler didn't dismiss).
+      const rect = top.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      // Find a close-button candidate inside it.
+      const closeBtn = top.querySelector('[data-alloflow-close-on-escape="true"]')
+        || top.querySelector('button[aria-label*="lose" i]')
+        || top.querySelector('button[aria-label*="ismiss" i]')
+        || top.querySelector('button[aria-label*="ancel" i]');
+      if (closeBtn) { try { closeBtn.click(); } catch (_) {} }
+    }, 50);
+  }, false /* bubble phase — per-component handlers fire first */);
+}
 window.UiLanguageSelector = UiLanguageSelector;
 window.APP_CONFIG = APP_CONFIG;
 window.warnLog = warnLog;
@@ -1525,7 +1761,7 @@ const StudentQuizOverlay = React.memo((props) => {
 const DraftFeedbackInterface = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.DraftFeedbackInterface;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-8 text-center text-slate-600">Loading feedback interface...</div>;
+    return <div className="p-8 text-center text-slate-600">{t('common.loading_module', { name: 'feedback interface' }) || 'Loading feedback interface...'}</div>;
 });
 const TeacherGate = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.TeacherGate;
@@ -1608,9 +1844,10 @@ window.__alloUtils.cleanJson = cleanJson;
 window.__alloUtils.safeJsonParse = safeJsonParse;
 const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
+  const { t } = useContext(LanguageContext) || { t: (k) => undefined };
   return (
   <div className="relative inline-block group ml-1 align-middle z-10">
-    <button type="button" aria-describedby={tooltipId} className="text-slate-600 cursor-help hover:text-indigo-500 focus:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded-full" aria-label="More information">
+    <button type="button" aria-describedby={tooltipId} className="text-slate-600 cursor-help hover:text-indigo-500 focus:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded-full" aria-label={t('common.more_information') || 'More information'}>
       <HelpCircle size={12} />
     </button>
     <div id={tooltipId} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none leading-tight invisible group-hover:visible group-focus-within:visible text-center border border-slate-600 z-50">
@@ -1689,6 +1926,66 @@ const generateUUID = () => {
     return v.toString(16);
   });
 };
+// FERPA-by-design boundary for live-session sync. Tier-1 = sync-safe aggregates
+// and pseudonymous tokens. Anything NOT on this list is Tier-2 (student-identifying
+// or individual artifacts: real names, free text, AI transcripts, generated images)
+// and must NOT touch any backend, even ephemerally. New session-doc writes should
+// route through writeToSession() below; existing writes were audited and either
+// gated by _isCanvasEnv or restricted to Tier-1 fields.
+const SESSION_TIER1_LEAVES = new Set([
+  // 'name' is the curated adjective+animal codename from StudentEntryModal's two
+  // dropdowns (see prismflow-deploy/public/ui_modals_module.js); students cannot
+  // free-type so it's structurally non-PII. Do NOT promote 'name' to free-text
+  // entry without revisiting this allowlist.
+  'name',
+  'displayToken', 'nicknameToken', 'xp', 'level', 'energy', 'gold', 'progress',
+  'groupId', 'groupConfig', 'readingLevel', 'language', 'ttsSpeed',
+  'submitted', 'timestamp', 'itemType', 'conceptLabel', 'phase', 'stage',
+  'vote', 'rating', 'choice', 'questionIdx',
+  'currentScene', 'sceneImage', 'xpToNextLevel', 'inventory',
+  'currentResourceId', 'activeAdventureScene', 'activeAdventureState',
+  'pushedBy', 'forceStatic', 'createdAt', 'expiresAt',
+  // Concept Pictionary: per-student role for the active round (drawer/guesser/null).
+  // Structurally enum-only, not student-typed; cleared at round end. Tier-1 safe.
+  'role',
+  // Concept Pictionary round metadata (host-managed): { roundId, conceptHidden,
+  // drawerUids[], status }. No student-typed content; concept text only travels
+  // over WebRTC to assigned drawers, never to Firestore.
+  'pictionaryRound',
+  // Visual-organizer interactive mode (teacher-armed): { type: 'tchart'|'venn'|...,
+  // armedAt: ms-timestamp } | null. type is an enum from a small fixed set in code;
+  // armedAt is a numeric timestamp used by students to distinguish new arm events
+  // from arm events they've already dismissed. No student-typed content; Tier-1 safe.
+  'interactiveOrganizer',
+  // Per-student conditional resource visibility. Array of resource IDs the student
+  // should NOT see in their history panel. Populated by quiz auto-routing when a
+  // teacher-authored rule's `then.hiddenResourceIds` matches the student's answer.
+  // Resource IDs are non-PII (auto-generated by the host, never student-typed) so
+  // Tier-1-safe. Fail-open by design: missing/empty list = show everything.
+  'hiddenResourceIds',
+]);
+const writeToSession = async (sessionRef, payload) => {
+  if (!sessionRef || !payload || typeof payload !== 'object') {
+    return Promise.reject(new Error('writeToSession: invalid arguments'));
+  }
+  const violations = [];
+  Object.keys(payload).forEach(key => {
+    const leaf = key.split('.').pop();
+    if (!SESSION_TIER1_LEAVES.has(leaf)) violations.push(key);
+  });
+  if (violations.length > 0) {
+    console.error(
+      '[AlloFlow Privacy] Refusing Tier-2 sync to session doc. Fields:', violations,
+      '\nKeep this data local-only, add the field to SESSION_TIER1_LEAVES with justification, or use a WebRTC peer channel.'
+    );
+    return Promise.reject(new Error('Tier-2 sync refused: ' + violations.join(', ')));
+  }
+  return updateDoc(sessionRef, payload);
+};
+if (typeof window !== 'undefined') {
+  window.__alloWriteToSession = writeToSession;
+  window.__alloSessionTier1Leaves = SESSION_TIER1_LEAVES;
+}
 // ── Session asset sync extracted to module_scope_extras_module.js (CDN) ──
 // uploadSessionAssets / hydrateSessionAssets — Firestore data:image ↔ doc-ref swap.
 let uploadSessionAssets = async (appId, resources) => {
@@ -1721,7 +2018,8 @@ const useAudioRecorder = () => {
       setIsRecording(true);
     } catch (err) {
       warnLog("Error accessing microphone:", err);
-      alert(t('errors.microphone_access_denied'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.microphone_access_denied'), 'error');
+      else alert(t('errors.microphone_access_denied'));
     }
   };
   const stopRecording = () => {
@@ -1822,21 +2120,17 @@ const ComplexityGauge = React.memo(({ level }) => {
     </div>
   );
 });
-const Sticker = ({ type, x, y }) => {
-    const icons = {
-        star: '⭐',
-        check: '✅',
-        idea: '💡',
-        love: '❤️',
-    };
-    return (
-        <div
-            className="absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] pointer-events-none select-none z-50 hover:scale-110 transition-transform"
-            style={{ top: y - 15, left: x - 15 }}
-        >
-            {icons[type]}
-        </div>
-    );
+// Sticker — thin shim that delegates to window.AlloModules.AnnotationSuite.
+// Full implementation lives in annotation_suite_source.jsx so future
+// annotation types (highlight, sticky note) can extend the module without
+// re-bloating the monolith. Falls back to a no-op div if the module hasn't
+// loaded yet (network race during first paint).
+const Sticker = (props) => {
+    const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+    if (_m && _m.StickerNode) {
+        return React.createElement(_m.StickerNode, { s: props });
+    }
+    return null;
 };
 const MatchVisuals = () => (
   <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none overflow-hidden rounded-xl">
@@ -1870,51 +2164,51 @@ const ClozeInput = React.memo((props) => {
 });
 const MemoryGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.MemoryGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const MatchingGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.MatchingGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const TimelineGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.TimelineGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const ConceptSortGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.ConceptSortGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const VennGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.VennGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const CauseEffectSortGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CauseEffectSortGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const PipelineBuilderGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.PipelineBuilderGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const CrosswordGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CrosswordGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const SyntaxScramble = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.SyntaxScramble;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const BingoGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.BingoGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const StudentBingoGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.StudentBingoGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const WordScrambleGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.WordScrambleGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const SkeletonLoader = ({ type }) => {
   return (
@@ -1961,7 +2255,7 @@ const AdventureShop = React.memo((props) => {
 const CastLobby = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.CastLobby;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-4 text-center text-slate-600">Loading character cast...</div>;
+    return <div className="p-4 text-center text-slate-600">{t('common.loading_module', { name: 'character cast' }) || 'Loading character cast...'}</div>;
 });
 const RoleSelectionModal = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.RoleSelectionModal;
@@ -1989,8 +2283,8 @@ const RosterKeyPanel = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4" onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">👥</div>
-                <p className="text-lg font-bold text-slate-700">Loading Roster Panel...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Roster Panel' }) || 'Loading Roster Panel...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>
@@ -2000,12 +2294,12 @@ const RosterKeyPanel = React.memo((props) => {
 const SimpleBarChart = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.SimpleBarChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-600 italic text-center py-4">Loading chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">{t('common.loading_module', { name: 'chart' }) || 'Loading chart...'}</div>;
 });
 const SimpleDonutChart = (props) => {
     const Ext = window.AlloModules && window.AlloModules.SimpleDonutChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-600 italic text-center py-4">Loading chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">{t('common.loading_module', { name: 'chart' }) || 'Loading chart...'}</div>;
 };
 const ConfettiEffect = ({ isActive }) => {
     if (!isActive) return null;
@@ -2040,7 +2334,7 @@ const calculateAnalyticsMetrics = (dashboardData) => {
 const LongitudinalProgressChart = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.LongitudinalProgressChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-600 italic text-center py-4">Loading progress chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">{t('common.loading_module', { name: 'progress chart' }) || 'Loading progress chart...'}</div>;
 });
 
 const LearnerProgressView = React.memo((props) => {
@@ -2050,8 +2344,8 @@ const LearnerProgressView = React.memo((props) => {
         <div className="max-w-4xl mx-auto p-8 text-center animate-in fade-in duration-300">
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-400">
                 <div className="text-4xl mb-3">📊</div>
-                <p className="text-lg font-bold text-slate-700">Loading Learning Progress...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Learning Progress' }) || 'Loading Learning Progress...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -2065,8 +2359,8 @@ const TeacherDashboard = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-slate-100 flex items-center justify-center animate-in fade-in duration-300">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl border border-slate-400">
                 <div className="text-4xl mb-3">📋</div>
-                <p className="text-lg font-bold text-slate-700">Loading Teacher Dashboard...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Teacher Dashboard' }) || 'Loading Teacher Dashboard...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -2080,8 +2374,8 @@ const QuickStartWizard = React.memo((props) => {
         <div className="fixed inset-0 z-[300] bg-slate-900/90 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">🚀</div>
-                <p className="text-lg font-bold text-slate-700">Loading Setup Wizard...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Setup Wizard' }) || 'Loading Setup Wizard...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>
@@ -2091,7 +2385,7 @@ const FocusReaderOverlay = React.memo((props) => {
     const Ext = window.AlloModules && (window.AlloModules.FocusReaderOverlay || window.AlloModules.SpeedReaderOverlay);
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
-    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">Loading Focus Mode...</div>;
+    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">{t('common.loading_module', { name: 'Focus Mode' }) || 'Loading Focus Mode...'}</div>;
 });
 const SpeedReaderOverlay = FocusReaderOverlay;
 const BionicChunkReader = FocusReaderOverlay;
@@ -2099,13 +2393,13 @@ const PerspectiveCrawlOverlay = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.PerspectiveCrawlOverlay;
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
-    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">Loading Cinematic Crawl...</div>;
+    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">{t('common.loading_module', { name: 'Cinematic Crawl' }) || 'Loading Cinematic Crawl...'}</div>;
 });
 const KaraokeReaderOverlay = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.KaraokeReaderOverlay;
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
-    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">Loading Karaoke Reader...</div>;
+    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">{t('common.loading_module', { name: 'Karaoke Reader' }) || 'Loading Karaoke Reader...'}</div>;
 });
 const ImmersiveToolbar = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.ImmersiveToolbar;
@@ -2115,7 +2409,7 @@ const ImmersiveToolbar = React.memo((props) => {
 const InteractiveBlueprintCard = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.InteractiveBlueprintCard;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-4 text-center text-slate-600">Loading blueprint editor...</div>;
+    return <div className="p-4 text-center text-slate-600">{t('common.loading_module', { name: 'blueprint editor' }) || 'Loading blueprint editor...'}</div>;
 });
 const HarmonyMeter = ({ score }) => {
     const Ext = window.AlloModules && window.AlloModules.HarmonyMeter;
@@ -2815,6 +3109,7 @@ const AlloFlowContent = () => {
     { id: 'persona', label: 'Interview Mode' },
     { id: 'timeline', label: 'Sequence Builder' },
     { id: 'concept-sort', label: 'Concept Sort' },
+    { id: 'dbq', label: 'Document-Based Question' },
     { id: 'math', label: 'STEM Lab' },
     { id: 'adventure', label: 'Adventure Mode' },
     { id: 'quiz', label: 'Exit Ticket' },
@@ -3436,6 +3731,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       _setIsAlloHavenOpenRaw(v);
     }
   }, []);
+  // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
+  const [isDynamicAssessmentOpen, _setIsDynamicAssessmentOpenRaw] = useState(false);
+  const setIsDynamicAssessmentOpen = React.useCallback((v) => {
+    if (v && typeof window.__alloLazyDynamicAssessment === 'function') {
+      try { window.__alloLazyDynamicAssessment(); } catch(_) {}
+    }
+    _setIsDynamicAssessmentOpenRaw(v);
+  }, []);
+  // Expose a global opener so the tool is reachable from devtools while
+  // the UI button is still being designed. Aaron uses this for smoke
+  // testing: `window.__alloOpenDynamicAssessment()` from the console.
+  React.useEffect(() => {
+    window.__alloOpenDynamicAssessment = () => setIsDynamicAssessmentOpen(true);
+    return () => { try { delete window.__alloOpenDynamicAssessment; } catch(_) {} };
+  }, [setIsDynamicAssessmentOpen]);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -3502,7 +3812,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     anatomy: { system: 'skeletal', selectedStructure: null, detailLevel: 'standard', quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null },
     brainAtlas: { view: 'lateral', selectedRegion: null, detailLevel: 'standard', quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null },
     artStudio: { tab: 'color', hue: 0, sat: 100, lit: 50, harmony: 'complementary', color2: { h: 180, s: 100, l: 50 }, mixRatio: 50, mixMode: 'subtractive', pixelGrid: Array(256).fill(''), pixelColor: '#e74c3c', pixelSize: 16, symFolds: 6, symLines: [], fgHex: '#1a1a2e', bgHex: '#e8e8e8', quiz: null },
-    graphCalc: { tier: 'explorer', funcs: [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }], window: { xmin: -10, xmax: 10, ymin: -10, ymax: 10 }, showTable: false, showWindow: false, showChallenge: false, showMathPad: false, showArith: false, arithExpr: '', arithResult: '', showSliders: false, focusedInput: 0, tableX: -5, tableStep: 1, badges: [], aiMessages: [], aiInput: '', aiLoading: false },
+    graphCalc: { tier: 'explorer', funcs: [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#b45309' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }], window: { xmin: -10, xmax: 10, ymin: -10, ymax: 10 }, showTable: false, showWindow: false, showChallenge: false, showMathPad: false, showArith: false, arithExpr: '', arithResult: '', showSliders: false, focusedInput: 0, tableX: -5, tableStep: 1, badges: [], aiMessages: [], aiInput: '', aiLoading: false },
     algebraCAS: { mode: 'solve', expr: '', result: null, history: [], badges: [] }
   });
   const [cubeBuilderMode, setCubeBuilderMode] = useState('slider');
@@ -3590,6 +3900,53 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
+    // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
+    // Persisted to localStorage so the user can extend API/audio timeouts
+    // beyond the defaults if their connection is slow. Modules read these
+    // values via window.AlloFlowConfig.timeouts.* and fall back to defaults
+    // if config not present.
+    if (!window.AlloFlowConfig) {
+      let _userCfg = {};
+      try { _userCfg = JSON.parse(localStorage.getItem('alloflow_user_config') || '{}') || {}; } catch (_) {}
+      const _defaults = {
+        timeouts: {
+          aiTextMs: 120000,        // 2 min — AI text generation
+          aiImageMs: 180000,       // 3 min — image gen
+          aiOptimizeMs: 90000,     // 90s — image optimization
+          audioLoadMs: 15000,      // 15s — audio file load
+          webSearchMs: 15000,      // 15s — web search proxy
+          contentEngineOptimizeMs: 90000, // 90s — content engine optimization
+        },
+      };
+      const _userTimeouts = (_userCfg && typeof _userCfg.timeouts === 'object') ? _userCfg.timeouts : {};
+      window.AlloFlowConfig = {
+        timeouts: Object.assign({}, _defaults.timeouts, _userTimeouts),
+        // Update a single timeout value and persist. Accepts ms; floors to 1000ms.
+        setTimeout(name, ms) {
+          if (typeof name !== 'string' || typeof ms !== 'number' || !isFinite(ms) || ms < 1000) return false;
+          this.timeouts[name] = Math.floor(ms);
+          try {
+            const cfg = JSON.parse(localStorage.getItem('alloflow_user_config') || '{}') || {};
+            cfg.timeouts = cfg.timeouts || {};
+            cfg.timeouts[name] = this.timeouts[name];
+            localStorage.setItem('alloflow_user_config', JSON.stringify(cfg));
+          } catch (_) {}
+          return true;
+        },
+        // Restore defaults (single name or all). Persists removal.
+        resetTimeout(name) {
+          try {
+            const cfg = JSON.parse(localStorage.getItem('alloflow_user_config') || '{}') || {};
+            if (cfg.timeouts) {
+              if (name) delete cfg.timeouts[name]; else delete cfg.timeouts;
+              localStorage.setItem('alloflow_user_config', JSON.stringify(cfg));
+            }
+            if (name) this.timeouts[name] = _defaults.timeouts[name];
+            else Object.assign(this.timeouts, _defaults.timeouts);
+          } catch (_) {}
+        },
+      };
+    }
     const loadModule = (name, url) => {
       console.log('[CDN] Attempting to load ' + name + ' from: ' + url);
       const prevOnError = window.onerror;
@@ -3669,6 +4026,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js');
@@ -3690,6 +4048,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js'); }; })();
+    // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
+    // School-psych workflow: pretest → AI-mediated or clinician-led mediation
+    // → posttest with graduated prompt hierarchies + modifiability scoring.
+    window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
@@ -3726,6 +4088,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
     loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js');
+    // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js');
     window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js'); }; })();
     window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js'); }; })();
@@ -3749,6 +4113,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js');
     loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js');
     loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js');
+    // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
+    loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
     loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js');
     loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js');
     loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js');
@@ -3804,6 +4170,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js');
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3859,6 +4230,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_renewables.js',
         'stem_lab/stem_tool_pets.js',
         'stem_lab/stem_tool_fireecology.js',
+        'stem_lab/stem_tool_stewardship.js',
         'stem_lab/stem_tool_lifeskills.js',
         'stem_lab/stem_tool_spacecolony.js',
         'stem_lab/stem_tool_worldbuilder.js',
@@ -3895,6 +4267,26 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_assessmentliteracy.js',
         'stem_lab/stem_tool_autorepair.js',
         'stem_lab/stem_tool_learning_lab.js',
+        // Catch-up batch (May 15 2026): tools that have files + tile catalog
+        // entries + _pluginOnlyTools flags but were never added to this
+        // loader. Without this list entry the plugin never registers and
+        // the fallback shows an infinite skeleton (registered: false) OR
+        // returns null (registered: true but not in _pluginOnlyTools).
+        // Aaron reported cephalopodLab + stewardshipHub; comm-based audit
+        // caught 5 more siblings: astronomy, bridgelab, kitchenlab,
+        // microbiology, raptorhunt.
+        'stem_lab/stem_tool_cephalopodlab.js',
+        'stem_lab/stem_tool_astronomy.js',
+        'stem_lab/stem_tool_bridgelab.js',
+        'stem_lab/stem_tool_kitchenlab.js',
+        'stem_lab/stem_tool_microbiology.js',
+        'stem_lab/stem_tool_raptorhunt.js',
+        'stem_lab/stem_tool_schoolbehaviortoolkit.js',
+        // May 16 2026: FisherLab + AquacultureLab — 3D immersive sims
+        // teaching Maine boating navigation alongside fishing + aquaculture
+        // fundamentals. Anchor exhibits for the King Middle Spring 2026 pilot.
+        'stem_lab/stem_tool_fisherlab.js',
+        'stem_lab/stem_tool_aquaculture.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
@@ -3938,6 +4330,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'arcade_mode_realm_builder.js',
         'arcade_mode_concept_atlas.js',
         'arcade_mode_modelun.js',
+        'arcade_mode_concept_pictionary.js',
       ];
 
       // Generic ensure-loader factory: idempotent (closure flag), polls for the
@@ -4557,7 +4950,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [generatedContent?.id, handleScoreUpdate]);
   const handleGameCompletion = useCallback((gameType, data) => {
     recordGameCompletion(generatedContent?.id, gameType, data);
-  }, [generatedContent?.id, recordGameCompletion]);
+    // Auto-unarm the teacher-armed interactive flag once a student completes the activity.
+    // Silent un-arm: the student stays on the Victory screen until they close it. When they do,
+    // the render gate falls back to the static diagram (because isInteractiveX is now false).
+    // Teachers keep their armed flag on so they can preview their own playthrough.
+    if (!isTeacherMode) {
+      switch (gameType) {
+        case 'tchartSort': setIsInteractiveTChart(false); break;
+        case 'causeEffectSort': setIsInteractiveCESort(false); break;
+        case 'pipelineBuilder': setIsInteractivePipeline(false); break;
+        case 'conceptMapSort': setIsInteractiveConceptMapSort(false); break;
+        case 'problemSolutionSort': setIsInteractiveProblemSolutionSort(false); break;
+        case 'fishboneSort': setIsInteractiveFishboneSort(false); break;
+        case 'outlineSort': setIsInteractiveOutlineSort(false); break;
+        case 'frayerSort': setIsInteractiveFrayerSort(false); break;
+        case 'seeThinkWonderSort': setIsInteractiveSeeThinkWonderSort(false); break;
+        case 'storyMapSort': setIsInteractiveStoryMapSort(false); break;
+      }
+    }
+  }, [generatedContent?.id, recordGameCompletion, isTeacherMode]);
   const handleCloseClassAnalytics = useCallback(() => setShowClassAnalytics(false), []);
   const handleCloseSubmitModal = useCallback(() => setShowSubmitModal(false), []);
   const handleCloseGate = useCallback(() => setIsGateOpen(false), []);
@@ -4688,13 +5099,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setIsVennPlaying(false);
       if (!isTeacherMode) setIsInteractiveVenn(false);
   }, [isTeacherMode]);
-  const closeCESort = useCallback(() => setIsCESortPlaying(false), []);
-  const closePipeline = useCallback(() => setIsPipelinePlaying(false), []);
-  const closeTChart = useCallback(() => setIsTChartPlaying(false), []);
-  const closeConceptMapSort = useCallback(() => setIsConceptMapSortPlaying(false), []);
-  const closeOutlineSort = useCallback(() => setIsOutlineSortPlaying(false), []);
-  const closeFishboneSort = useCallback(() => setIsFishboneSortPlaying(false), []);
-  const closeProblemSolutionSort = useCallback(() => setIsProblemSolutionSortPlaying(false), []);
+  const closeCESort = useCallback(() => { setIsCESortPlaying(false); if (!isTeacherMode) setIsInteractiveCESort(false); }, [isTeacherMode]);
+  const closePipeline = useCallback(() => { setIsPipelinePlaying(false); if (!isTeacherMode) setIsInteractivePipeline(false); }, [isTeacherMode]);
+  const closeTChart = useCallback(() => { setIsTChartPlaying(false); if (!isTeacherMode) setIsInteractiveTChart(false); }, [isTeacherMode]);
+  const closeConceptMapSort = useCallback(() => { setIsConceptMapSortPlaying(false); if (!isTeacherMode) setIsInteractiveConceptMapSort(false); }, [isTeacherMode]);
+  const closeOutlineSort = useCallback(() => { setIsOutlineSortPlaying(false); if (!isTeacherMode) setIsInteractiveOutlineSort(false); }, [isTeacherMode]);
+  const closeFishboneSort = useCallback(() => { setIsFishboneSortPlaying(false); if (!isTeacherMode) setIsInteractiveFishboneSort(false); }, [isTeacherMode]);
+  const closeProblemSolutionSort = useCallback(() => { setIsProblemSolutionSortPlaying(false); if (!isTeacherMode) setIsInteractiveProblemSolutionSort(false); }, [isTeacherMode]);
+  const closeFrayerSort = useCallback(() => { setIsFrayerSortPlaying(false); if (!isTeacherMode) setIsInteractiveFrayerSort(false); }, [isTeacherMode]);
+  const closeSeeThinkWonderSort = useCallback(() => { setIsSeeThinkWonderSortPlaying(false); if (!isTeacherMode) setIsInteractiveSeeThinkWonderSort(false); }, [isTeacherMode]);
+  const closeStoryMapSort = useCallback(() => { setIsStoryMapSortPlaying(false); if (!isTeacherMode) setIsInteractiveStoryMapSort(false); }, [isTeacherMode]);
     React.useEffect(() => {
         if (!user || !db || !appId) return;
         const cleanExpiredImages = async () => {
@@ -4915,6 +5329,157 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [stickers, setStickers] = useState([]);
   const [isStickerMode, setIsStickerMode] = useState(false);
   const [stickerType, setStickerType] = useState('star');
+  // Phase 3a annotation suite extension: a single string-mode supersedes the
+  // legacy isStickerMode boolean ('' = off, 'sticker', 'note', future
+  // 'highlight'). isStickerMode is kept in sync below for back-compat with
+  // call sites that haven't migrated yet. Note color drives newly created
+  // sticky notes via the toolbar's color picker.
+  const [annotationMode, setAnnotationMode] = useState('');
+  const [noteColor, setNoteColor] = useState('yellow');
+  const [highlightColor, setHighlightColor] = useState('yellow');
+  // Phase 9: drawing tool — freehand SVG strokes as a new annotation kind.
+  // Color + width are picked from the toolbar; DrawingCapture renders the
+  // active stroke; createDrawingFromStroke commits it as a 'draw' annotation.
+  const [drawColor, setDrawColor] = useState('red');
+  const [drawWidth, setDrawWidth] = useState(4);
+  // Phase 9b: shape primitives (line/arrow/rect/circle) + eraser. Default
+  // 'free' keeps existing behavior. 'erase' makes the cursor a hit-test
+  // radius that removes any annotation it crosses.
+  const [drawShape, setDrawShape] = useState('free');
+  // Phase 7: note templates. Empty string = freeform (inline editor opens).
+  // Non-empty = pre-filled content; stays "sticky" across multiple clicks
+  // so a teacher can rapid-fire the same feedback when grading a class set.
+  const [noteTemplate, setNoteTemplate] = useState('');
+  // Phase 5: annotation sidebar visibility. Toggled from the toolbar so
+  // users can review/jump-to/delete annotations from one panel.
+  const [showAnnotationSidebar, setShowAnnotationSidebar] = useState(false);
+  // Phase 6: voice note recording state. Stores the placeholder id +
+  // pixel position + elapsed seconds so RecordingOverlay can render in
+  // place of the still-empty bubble. Recording uses the same
+  // useAudioRecorder hook the fluency feature uses (battle-tested mic
+  // permission + stream cleanup), instantiated separately so voice + fluency
+  // can coexist without cross-talk.
+  const [voiceRecording, setVoiceRecording] = useState(null);
+  const voiceStartTimeRef = useRef(0);
+  const voiceTickRef = useRef(null);
+  const voiceCapTimeoutRef = useRef(null);
+  // Phase 6c: annotations import. Hidden file input invoked from the
+  // sidebar header — lets a teacher load a student's downloaded
+  // annotations JSON and merge it into the current view.
+  const annotationImportInputRef = useRef(null);
+  // Phase 7b: annotation undo. Session-only stack of recent stickers
+  // snapshots so Ctrl/Cmd+Z reverts the last annotation mutation. Capped
+  // at 20 to avoid memory bloat. isUndoingRef prevents the undo itself
+  // from being pushed onto the stack (which would undo the undo).
+  const annotationUndoStackRef = useRef([]);
+  const annotationPrevStickersRef = useRef(stickers);
+  const isUndoingAnnotationRef = useRef(false);
+  const [annotationUndoCount, setAnnotationUndoCount] = useState(0);
+  // 2D: voice audio registry. Voice notes carry base64 audio (~300KB / min),
+  // which would blow memory if every undo snapshot copied it. Keep a
+  // session-scoped registry; snapshots store only the envelope; undo
+  // re-attaches audio by id.
+  const voiceAudioRegistryRef = useRef({});
+  React.useEffect(() => {
+    if (annotationPrevStickersRef.current === stickers) return;
+    if (isUndoingAnnotationRef.current) {
+      isUndoingAnnotationRef.current = false;
+    } else {
+      // Refresh registry from current state so any new voice notes are tracked.
+      const cur = annotationPrevStickersRef.current;
+      if (Array.isArray(cur)) {
+        cur.forEach((a) => {
+          if (a && a.kind === 'voice' && a.audioBase64) {
+            voiceAudioRegistryRef.current[a.id] = {
+              audioBase64: a.audioBase64,
+              mimeType: a.mimeType,
+              durationSec: a.durationSec,
+            };
+          }
+        });
+      }
+      // Build a lite snapshot — strip audioBase64 to keep memory bounded.
+      const lite = Array.isArray(cur)
+        ? cur.map((a) => {
+            if (a && a.kind === 'voice' && a.audioBase64) {
+              const copy = Object.assign({}, a);
+              delete copy.audioBase64;
+              return copy;
+            }
+            return a;
+          })
+        : cur;
+      annotationUndoStackRef.current.push(lite);
+      if (annotationUndoStackRef.current.length > 20) annotationUndoStackRef.current.shift();
+      setAnnotationUndoCount(annotationUndoStackRef.current.length);
+    }
+    annotationPrevStickersRef.current = stickers;
+  }, [stickers]);
+  const handleAnnotationUndo = React.useCallback(() => {
+    // 2E guard: voice recording in flight. Cancelling through setStickers
+    // would push another snapshot, making undo pop the wrong thing.
+    // Cleaner to refuse and prompt the user to use the Cancel button.
+    if (voiceRecording) {
+      if (addToast) addToast('Cancel the active recording before undoing.', 'warning');
+      return;
+    }
+    const stack = annotationUndoStackRef.current;
+    if (stack.length === 0) return;
+    let prev = stack.pop();
+    setAnnotationUndoCount(stack.length);
+    isUndoingAnnotationRef.current = true;
+    // 2D: re-attach voice audio from the registry. Snapshots strip
+    // audioBase64 to bound memory; this hydrates the popped state.
+    if (Array.isArray(prev)) {
+      const reg = voiceAudioRegistryRef.current;
+      prev = prev.map((a) => {
+        if (a && a.kind === 'voice' && !a.audioBase64 && reg[a.id]) {
+          return Object.assign({}, a, reg[a.id]);
+        }
+        return a;
+      });
+    }
+    setStickers(prev);
+    // 2B: visual confirmation so Ctrl/Cmd+Z isn't an invisible action.
+    if (addToast) addToast('↩ Undid last annotation', 'info');
+    try {
+      const btn = document.querySelector('[data-allo-undo-btn]');
+      if (btn) {
+        btn.classList.remove('alloflow-undo-flash');
+        void btn.offsetWidth; // force reflow so the re-add re-triggers
+        btn.classList.add('alloflow-undo-flash');
+        setTimeout(() => { try { btn.classList.remove('alloflow-undo-flash'); } catch (_) {} }, 500);
+      }
+    } catch (_) {}
+    // Note: `addToast` is intentionally NOT in deps — it's declared later
+    // in the component body (line ~6408). Listing it in deps causes a TDZ
+    // ReferenceError on first render because React reads the deps array
+    // synchronously at useCallback call time. The closure still resolves
+    // `addToast` at click time when it's safely initialized.
+  }, [voiceRecording]);
+  // Ctrl/Cmd+Z keyboard shortcut. Scoped to the document so it works from
+  // anywhere on the page; ignored if a textarea/input is focused so the
+  // user can still use system undo inside text fields.
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.key === 'z' || e.key === 'Z')) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      if (e.shiftKey) return; // redo is reserved
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.target && e.target.isContentEditable) return;
+      if (annotationUndoStackRef.current.length === 0) return;
+      e.preventDefault();
+      handleAnnotationUndo();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [handleAnnotationUndo]);
+  React.useEffect(function () {
+    // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
+    // the existing JSX continue to work without per-site migration.
+    setIsStickerMode(annotationMode === 'sticker');
+  }, [annotationMode]);
   const contentAreaRef = useRef(null);
   const [phonicsData, setPhonicsData] = useState(null);
   const [isFluencyMode, setIsFluencyMode] = useState(false);
@@ -5166,6 +5731,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
 
   const { isRecording: isFluencyRecording, startRecording: startFluencyRecording, stopRecording: stopFluencyRecording } = useAudioRecorder();
+  // Voice-note recorder — second instance of the same hook so the fluency
+  // recorder and the annotation voice-note recorder don't share state.
+  const { isRecording: isVoiceRecording, startRecording: startVoiceRecording, stopRecording: stopVoiceRecording } = useAudioRecorder();
   const wordSoundsModalRef = useRef(null);
   const speakWord = React.useCallback((text, lang = 'en-US', speed = 1) => {
   return new Promise((resolve) => {
@@ -5401,6 +5969,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [promptDialog, setPromptDialog] = useState(null);
   const [bingoSettings, setBingoSettings] = useState({
       gridSize: 5,
       mode: 'term',
@@ -5528,7 +6097,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showLedger, setShowLedger] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState(null);
   const fluencyModalRef = useRef(null);
-  useFocusTrap(fluencyModalRef, isFluencyMode);
+  useFocusTrap(fluencyModalRef, isFluencyMode, () => setIsFluencyMode(false));
   const [enableFactionResources, setEnableFactionResources] = useState(false);
   const [factionResourceMode, setFactionResourceMode] = useState('ai');
   const [pendingFactionResources, setPendingFactionResources] = useState(null);
@@ -5536,9 +6105,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const adventureScrollRef = useRef(null);
   const [autoRemoveWords, setAutoRemoveWords] = useState(true);
   const xpModalRef = useRef(null);
-  useFocusTrap(xpModalRef, showXPModal);
+  useFocusTrap(xpModalRef, showXPModal, () => setShowXPModal(false));
   const studyTimerRef = useRef(null);
-  useFocusTrap(studyTimerRef, showStudyTimerModal);
+  useFocusTrap(studyTimerRef, showStudyTimerModal, () => setShowStudyTimerModal(false));
   const [saveFileName, setSaveFileName] = useState('');
   const [saveType, setSaveType] = useState(null);
   const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
@@ -5572,6 +6141,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [bridgeF2FCustomLangB, setBridgeF2FCustomLangB] = useState('');
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
+  const [showLivePollingPanel, setShowLivePollingPanel] = useState(false);
+  const [showPictionaryHost, setShowPictionaryHost] = useState(false);
+  const [showPictionaryGuest, setShowPictionaryGuest] = useState(false);
+  // Anchor Chart -> Pictionary bridge: when a teacher clicks "Play Pictionary"
+  // from an anchor chart, the chart's section labels land here and seed the
+  // Pictionary host's concept-idea chips on next open.
+  const [pictionaryIncomingConcepts, setPictionaryIncomingConcepts] = useState([]);
+  const handlePlayPictionaryFromAnchorChart = React.useCallback((payload) => {
+    const concepts = (payload && Array.isArray(payload.concepts)) ? payload.concepts.filter(c => c && c.trim()) : [];
+    if (concepts.length > 0) setPictionaryIncomingConcepts(concepts);
+    setShowPictionaryHost(true);
+  }, []);
+  // sessionData useState moved up here (was at line ~5868) so the
+  // _picMyRoleRaw / _picRoundActive const declarations below can reference
+  // it without hitting the TDZ. Previously fired
+  // "Cannot access 'sessionData' before initialization" on every load
+  // because the const block ran synchronously before useState declared it.
+  const [sessionData, setSessionData] = useState(null);
+  // Auto-open the Pictionary guest overlay on students once the teacher has
+  // assigned them a role (drawer or guesser) in the live session. We watch the
+  // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
+  const _picMyRoleRaw = (!isTeacherMode && user && user.uid && sessionData && sessionData.roster && sessionData.roster[user.uid] && sessionData.roster[user.uid].role) || null;
+  const _picRoundActive = !!(sessionData && sessionData.pictionaryRound && sessionData.pictionaryRound.active);
+  // Late-joiner default: if a round is active but the student doesn't have a
+  // role yet (they joined the session AFTER the teacher started the round),
+  // treat them as a guesser so they can still watch + guess.
+  const _picMyRole = _picMyRoleRaw || (_picRoundActive ? 'guesser' : null);
+  React.useEffect(() => {
+    if (isTeacherMode) return;
+    if (!activeSessionCode || !user || !user.uid) return;
+    if (_picMyRole === 'drawer' || _picMyRole === 'guesser') {
+      setShowPictionaryGuest(true);
+    }
+    // Role cleared (round resolved) — overlay stays open in v1 to show the
+    // "round resolved" state until the student dismisses it manually.
+  }, [isTeacherMode, activeSessionCode, _picMyRole, user && user.uid]);
+  React.useEffect(() => {
+    const handler = () => {
+      if (!isTeacherMode) {
+        addToast && addToast('Live Polling is teacher-mode only.', 'info');
+        return;
+      }
+      if (!activeSessionCode) {
+        addToast && addToast('Start a live session first to use Live Polling.', 'info');
+        return;
+      }
+      setShowLivePollingPanel(true);
+    };
+    window.addEventListener('alloflow:open-live-polling', handler);
+    return () => window.removeEventListener('alloflow:open-live-polling', handler);
+  }, [isTeacherMode, activeSessionCode]);
     React.useEffect(() => {
         if (!activeSessionCode || !isTeacherMode || !db || !appId) return;
         const sessionCleanupOnUnload = () => {
@@ -5587,7 +6207,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             window.removeEventListener('beforeunload', sessionCleanupOnUnload);
         };
     }, [activeSessionCode, isTeacherMode, db, appId]);
-  const [sessionData, setSessionData] = useState(null);
+  // sessionData useState moved up to ~line 5825 (before _picMyRoleRaw
+  // const block) to fix the TDZ ReferenceError on initial render.
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [joinAppIdInput, setJoinAppIdInput] = useState('');
   const [isJoinPopoverOpen, setIsJoinPopoverOpen] = useState(false);
@@ -5640,7 +6261,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = () => {
-      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'lesson-plan'];
+      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
       const areAllExpanded = allToolIds.every(id => expandedTools.includes(id));
       if (areAllExpanded) {
           setExpandedTools([]);
@@ -6216,6 +6837,62 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       addToastRef.current = addToast;
   }, []);
 
+  // ── window.AlloFlowUX — global polished-UX helper (May 2026 polish pass) ──
+  // Any module or inline script can call:
+  //   window.AlloFlowUX.toast(msg, type)        — non-blocking toast (success/error/warning/info)
+  //   window.AlloFlowUX.confirm(msg, opts)      → Promise<boolean>
+  //   window.AlloFlowUX.prompt(msg, default, opts) → Promise<string|null>
+  // All three gracefully fall back to native browser dialogs if React state
+  // hasn't initialized yet (e.g. during the very first module load).
+  useEffect(() => {
+    window.AlloFlowUX = {
+      toast: (message, type = 'info') => {
+        try { addToast(String(message), type); }
+        catch (_) { try { window.console && window.console.log && window.console.log('[Toast]', message); } catch (_) {} }
+      },
+      confirm: (message, opts = {}) => new Promise((resolve) => {
+        try {
+          setConfirmDialog({
+            message: String(message),
+            title: opts.title,
+            detail: opts.detail,
+            confirmText: opts.confirmText,
+            cancelText: opts.cancelText,
+            tone: opts.tone || 'warning',
+            onConfirm: () => resolve(true),
+            onCancel: () => resolve(false),
+          });
+        } catch (_) {
+          try { resolve(!!window.confirm(String(message))); }
+          catch (__) { resolve(false); }
+        }
+      }),
+      prompt: (message, defaultValue = '', opts = {}) => new Promise((resolve) => {
+        try {
+          setPromptDialog({
+            message: String(message),
+            defaultValue: defaultValue == null ? '' : String(defaultValue),
+            title: opts.title,
+            placeholder: opts.placeholder,
+            confirmText: opts.confirmText,
+            cancelText: opts.cancelText,
+            multiline: !!opts.multiline,
+            maxLength: opts.maxLength,
+            inputType: opts.inputType || 'text',
+            validate: opts.validate,
+            onSubmit: (v) => resolve(v),
+            onCancel: () => resolve(null),
+          });
+        } catch (_) {
+          try {
+            const v = window.prompt(String(message), defaultValue == null ? '' : String(defaultValue));
+            resolve(v == null ? null : String(v));
+          } catch (__) { resolve(null); }
+        }
+      }),
+    };
+  }, []);
+
   const handleImportResearchJSON = useCallback((file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -6410,7 +7087,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleIsUDLGuideExpanded = React.useCallback(() => setIsUDLGuideExpanded(prev => !prev), []);
   const handleToggleShowUDLGuide = React.useCallback(() => setShowUDLGuide(prev => !prev), []);
   const handleToggleIsHistoryMaximized = React.useCallback(() => setIsHistoryMaximized(prev => !prev), []);
-  const handleToggleIsStickerMode = React.useCallback(() => setIsStickerMode(prev => !prev), []);
+  const handleToggleIsStickerMode = React.useCallback(() => {
+    // New: drives the unified annotationMode. Toggling sticker mode now
+    // routes through the same single-mode contract that the note tool uses.
+    setAnnotationMode(prev => prev === 'sticker' ? '' : 'sticker');
+  }, []);
   const handleToggleIsEditingAnalysis = React.useCallback(() => setIsEditingAnalysis(prev => !prev), []);
   const handleToggleIsEditingGlossary = React.useCallback(() => setIsEditingGlossary(prev => !prev), []);
   const handleToggleShowFlashcardImages = React.useCallback(() => setShowFlashcardImages(prev => !prev), []);
@@ -6610,6 +7291,67 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isOutlineSortPlaying, setIsOutlineSortPlaying] = useState(false);
   const [isFishboneSortPlaying, setIsFishboneSortPlaying] = useState(false);
   const [isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying] = useState(false);
+  const [isFrayerSortPlaying, setIsFrayerSortPlaying] = useState(false);
+  const [isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying] = useState(false);
+  const [isStoryMapSortPlaying, setIsStoryMapSortPlaying] = useState(false);
+  // Teacher-armed interactive flags. When teacher arms, students see the game until finished.
+  const [isInteractiveTChart, setIsInteractiveTChart] = useState(false);
+  const [isInteractiveCESort, setIsInteractiveCESort] = useState(false);
+  const [isInteractivePipeline, setIsInteractivePipeline] = useState(false);
+  const [isInteractiveConceptMapSort, setIsInteractiveConceptMapSort] = useState(false);
+  const [isInteractiveOutlineSort, setIsInteractiveOutlineSort] = useState(false);
+  const [isInteractiveFishboneSort, setIsInteractiveFishboneSort] = useState(false);
+  const [isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort] = useState(false);
+  const [isInteractiveFrayerSort, setIsInteractiveFrayerSort] = useState(false);
+  const [isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort] = useState(false);
+  const [isInteractiveStoryMapSort, setIsInteractiveStoryMapSort] = useState(false);
+
+  // ── Cross-device sync for teacher-armed organizer interactive mode ──
+  // Writes go to sessionDoc.interactiveOrganizer (Tier-1). Students subscribe
+  // via sessionData and get armed when armedAt changes. Dismissing locally
+  // does NOT re-arm because lastSeenInteractiveArmRef tracks the last armedAt
+  // the student has already reacted to.
+  const lastSeenInteractiveArmRef = useRef(null);
+  const _interactiveOrganizerSetters = {
+    venn: setIsInteractiveVenn,
+    tchart: setIsInteractiveTChart,
+    cesort: setIsInteractiveCESort,
+    pipeline: setIsInteractivePipeline,
+    conceptmap: setIsInteractiveConceptMapSort,
+    outline: setIsInteractiveOutlineSort,
+    fishbone: setIsInteractiveFishboneSort,
+    problemsolution: setIsInteractiveProblemSolutionSort,
+    frayer: setIsInteractiveFrayerSort,
+    seethinkwonder: setIsInteractiveSeeThinkWonderSort,
+    storymap: setIsInteractiveStoryMapSort,
+  };
+  const broadcastInteractiveOrganizer = useCallback(async (type) => {
+    if (!isTeacherMode || !activeSessionCode) return;
+    try {
+      const targetAppId = activeSessionAppId || appId;
+      const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+      const payload = type ? { interactiveOrganizer: { type: type, armedAt: Date.now() } } : { interactiveOrganizer: null };
+      await window.__alloWriteToSession(sessionRef, payload);
+    } catch (e) { try { warnLog('interactiveOrganizer sync failed:', e); } catch(_) {} }
+  }, [isTeacherMode, activeSessionCode, activeSessionAppId, appId]);
+  useEffect(() => {
+    if (isTeacherMode) return;
+    const remote = sessionData?.interactiveOrganizer;
+    if (!remote || !remote.type) {
+      // Teacher cleared (or no arm yet) — clear all student-side flags.
+      Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
+      lastSeenInteractiveArmRef.current = null;
+      return;
+    }
+    // Only react when this is a NEW arm (different armedAt). If the student already
+    // dismissed this same arm event, don't re-arm — wait for the teacher to cycle.
+    if (remote.armedAt === lastSeenInteractiveArmRef.current) return;
+    lastSeenInteractiveArmRef.current = remote.armedAt;
+    Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
+    const setter = _interactiveOrganizerSetters[remote.type];
+    if (setter) setter(true);
+  }, [sessionData?.interactiveOrganizer?.type, sessionData?.interactiveOrganizer?.armedAt, isTeacherMode]);
+
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
           const { main, branches, challenge, nodes: savedNodes, edges: savedEdges } = generatedContent?.data;
@@ -6809,6 +7551,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       });
       setIsInteractiveVenn(true);
       if (!isTeacherMode) setIsVennPlaying(true);
+      broadcastInteractiveOrganizer('venn');
   };
   const handleAddVennItem = (category) => {
       const text = vennInputs[category]?.trim();
@@ -7428,6 +8171,19 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!history) return null;
       return history.slice().reverse().find(h => h && h.type === 'lesson-plan');
   }, [history]);
+  const notebookEntryCount = React.useMemo(() => {
+      if (!history) return 0;
+      // The Notebook overlay surfaces both note-taking AND anchor-chart entries.
+      return history.filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
+  }, [history]);
+  const handleSelectNotebookEntry = React.useCallback((entry) => {
+      if (!entry) return;
+      setGeneratedContent(entry);
+      // Route to the correct view based on entry type — note-taking and
+      // anchor-chart are distinct top-level views with their own renderers.
+      setActiveView(entry.type === 'anchor-chart' ? 'anchor-chart' : 'note-taking');
+      setShowNotebook(false);
+  }, []);
   const fetchCloudHistory = async () => {
       if (!user || !appId || !isCloudSyncEnabled) {
           setIsCloudInitialized(true);
@@ -8978,10 +9734,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     //   timelineDisplayMode: 'list' | 'cuttable-strips'
     //   conceptSortInteractive: true (drag-to-sort JS in interactive mode) | false
     //   brainstormDisplayMode: 'grid' (default cards) | 'mindmap' (central topic + spokes)
+    //   faqAccordion: true (HTML FAQ collapses each Q; click reveals A) | false
+    //   mathHideSolution: true (teacher view collapses steps+answer behind a
+    //     reveal button) | false (flat display)
+    //   glossarySelfTest: true (table-mode definitions hidden until clicked) |
+    //     false (default flat display)
     glossaryDisplayMode: 'table',
     timelineDisplayMode: 'list',
     conceptSortInteractive: true,
     brainstormDisplayMode: 'grid',
+    faqAccordion: true,
+    mathHideSolution: true,
+    glossarySelfTest: false,
   });
   const exportPreviewRef = useRef(null);
   const [a11yInspectMode, setA11yInspectMode] = useState(false);
@@ -9022,6 +9786,21 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const projectFileInputRef = useRef(null);
   const [outlineType, setOutlineType] = useState('Venn Diagram');
   const [outlineCustomInstructions, setOutlineCustomInstructions] = useState('');
+  // Note-Taking Templates (Cornell Notes / Lab Report / Reading Response).
+  // Implementation lives in note_taking_templates_module.js; this is the
+  // minimal monolith state needed to drive template-type selection and
+  // editable updates on generatedContent.data.
+  const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
+  const [anchorChartType, setAnchorChartType] = useState('reference');
+  const [showNotebook, setShowNotebook] = useState(false);
+  const handleNoteUpdate = useCallback((key, value) => {
+    setGeneratedContent(prev => {
+      if (!prev || prev.type !== 'note-taking') return prev;
+      const updated = { ...prev, data: { ...(prev.data || {}), [key]: value } };
+      setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+      return updated;
+    });
+  }, []);
   const [fillInTheBlank, setFillInTheBlank] = useState(false);
   const [creativeMode, setCreativeMode] = useState(false);
   const [noText, setNoText] = useState(true);
@@ -10050,6 +10829,101 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }).catch(e => warnLog("Auto-assign error:", e));
       }
   }, [isTeacherMode, rosterKey, activeSessionCode, sessionData?.roster]);
+  // Quiz auto-routing (Phase 2): evaluates teacher-authored routing rules
+  // attached to the current quiz question. Watches incoming responses
+  // (both the one-question-at-a-time `quizState.responses` path used by
+  // StudentQuizOverlay and the `quizState.allResponses[uid][idx]` path
+  // used by handleSubmitLiveAnswer) and writes `roster.{uid}.groupId`
+  // via writeToSession when a rule matches.
+  // Rule schema reused from LivePolling (window.AlloModules.LivePolling.evaluateRoutingRules).
+  // For MCQ items, responses[uid] is an option INDEX — we convert to the
+  // option TEXT before evaluating so rules can use the option's actual
+  // string (matching the polling-tool semantics).
+  const routedQuizRef = useRef({}); // { questionIdx: { uid: groupId } } suppresses dupes
+  useEffect(() => {
+      if (!isTeacherMode || !activeSessionCode || !sessionData?.quizState) return;
+      const qIdx = sessionData.quizState.currentQuestionIndex;
+      if (typeof qIdx !== 'number') return;
+      const question = generatedContent?.data?.questions?.[qIdx];
+      // Rules can live on the question itself (when quiz is authored with
+      // rules attached) OR in a window-mirrored store written by
+      // TeacherLiveQuizControls' inline editor.
+      const winRules = (typeof window !== 'undefined' && window.__alloQuizRoutingRules) || {};
+      const questionRules = (question && Array.isArray(question.routingRules) && question.routingRules.length > 0) ? question.routingRules : null;
+      const rules = questionRules || (Array.isArray(winRules[qIdx]) ? winRules[qIdx] : []);
+      if (!rules || rules.length === 0) return;
+      const writer = window.__alloWriteToSession;
+      if (typeof writer !== 'function') return;
+      const options = (question && Array.isArray(question.options)) ? question.options : [];
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      // Local predicate matcher — mirrors live_polling_module.js's matchesPredicate.
+      // Used to find the matched rule's full `then` block so we can write both
+      // `roster.{uid}.groupId` (the original Phase-2 behavior) AND
+      // `roster.{uid}.hiddenResourceIds` (the new conditional-visibility behavior).
+      const _matchPred = (when, response) => {
+          if (!when || typeof when !== 'object') return false;
+          const op = when.op || when.predicate || 'eq';
+          const v = when.value;
+          switch (op) {
+              case 'eq':  return v === response;
+              case 'neq': return v !== response;
+              case 'gte': return typeof v === 'number' && typeof response === 'number' && response >= v;
+              case 'gt':  return typeof v === 'number' && typeof response === 'number' && response > v;
+              case 'lte': return typeof v === 'number' && typeof response === 'number' && response <= v;
+              case 'lt':  return typeof v === 'number' && typeof response === 'number' && response < v;
+              case 'between':
+                  return Array.isArray(v) && v.length === 2 && typeof v[0] === 'number' && typeof v[1] === 'number'
+                      && typeof response === 'number' && response >= v[0] && response <= v[1];
+              case 'in': return Array.isArray(v) && v.indexOf(response) !== -1;
+              default: return false;
+          }
+      };
+      const _findMatchedThen = (response) => {
+          for (let i = 0; i < rules.length; i++) {
+              const r = rules[i];
+              if (r && r.when && r.then && _matchPred(r.when, response)) return r.then;
+          }
+          return null;
+      };
+      const _applyMatch = (uid, responseValue) => {
+          const then = _findMatchedThen(responseValue);
+          if (!then) return;
+          const patch = {};
+          if (then.groupId) patch[`roster.${uid}.groupId`] = then.groupId;
+          if (Array.isArray(then.hiddenResourceIds) && then.hiddenResourceIds.length > 0) {
+              // Sanitize to plain strings + dedupe; never write Tier-2 leaves through this path.
+              const ids = Array.from(new Set(then.hiddenResourceIds.filter(x => typeof x === 'string' && x.length > 0)));
+              if (ids.length > 0) patch[`roster.${uid}.hiddenResourceIds`] = ids;
+          }
+          if (Object.keys(patch).length === 0) return;
+          writer(sessionRef, patch).catch(e => warnLog('Quiz auto-route failed:', e && e.message));
+          already[uid] = then.groupId || '__hide-only__';
+      };
+      const already = routedQuizRef.current[qIdx] || {};
+      const responsesMap = sessionData.quizState.responses || {};
+      Object.keys(responsesMap).forEach(uid => {
+          if (already[uid]) return;
+          const raw = responsesMap[uid];
+          // raw is option index for StudentQuizOverlay; convert to text for rule eval
+          const responseValue = (typeof raw === 'number' && options[raw] !== undefined) ? options[raw] : raw;
+          _applyMatch(uid, responseValue);
+      });
+      const allMap = (sessionData.quizState.allResponses && sessionData.quizState.allResponses[qIdx]) || null;
+      // allResponses is keyed { uid: { answer, itemType, ... } }, not { questionIdx: { uid: ... } }.
+      // Iterate the outer (uid) keys and only act on responses for the current questionIdx.
+      const allByUid = sessionData.quizState.allResponses || {};
+      Object.keys(allByUid).forEach(uid => {
+          if (already[uid]) return;
+          const entry = allByUid[uid] && allByUid[uid][qIdx];
+          if (!entry || typeof entry.answer === 'undefined') return;
+          let responseValue = entry.answer;
+          if (typeof responseValue === 'number' && options[responseValue] !== undefined) {
+              responseValue = options[responseValue];
+          }
+          _applyMatch(uid, responseValue);
+      });
+      routedQuizRef.current[qIdx] = already;
+  }, [isTeacherMode, activeSessionCode, sessionData?.quizState?.responses, sessionData?.quizState?.allResponses, sessionData?.quizState?.currentQuestionIndex, generatedContent]);
   useEffect(() => {
       setUdlStandardGrade(gradeLevel);
   }, [gradeLevel]);
@@ -13733,14 +14607,20 @@ Return ONLY valid JSON in this format:
       if (!activeSessionCode || !user || !user.uid) return;
       if (!payload || typeof payload.questionIdx !== 'number') return;
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const STRUCTURED_ITEM_TYPES = new Set(['mcq', 'multiple-choice', 'true-false', 'tf', 'match', 'sequence', 'numeric', 'order']);
+      const isStructured = STRUCTURED_ITEM_TYPES.has(String(payload.itemType || 'mcq').toLowerCase());
+      const responsePayload = {
+          itemType: payload.itemType || 'mcq',
+          timestamp: payload.timestamp || Date.now(),
+          conceptLabel: payload.conceptLabel || '',
+          submitted: true,
+      };
+      if (isStructured) {
+          responsePayload.answer = payload.answer;
+      }
       try {
         await updateDoc(sessionRef, {
-            [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: {
-                answer: payload.answer,
-                itemType: payload.itemType || 'mcq',
-                timestamp: payload.timestamp || Date.now(),
-                conceptLabel: payload.conceptLabel || '',
-            }
+            [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
         });
       } catch (error) {
            warnLog("Error submitting live answer:", error);
@@ -14145,9 +15025,14 @@ Return ONLY valid JSON in this format:
     // exportConfig so doc_pipeline embeds it + the Save button in the
     // student HTML. Only the interactive 'print'/'html' modes get this;
     // worksheet (paper) mode skips since kids hand in paper.
-    const cfgWithSubmissionKey = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
+    const cfgBase = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
       ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk }
-      : exportConfig;
+      : { ...exportConfig };
+    // Inject teacher's current annotations (stickers + notes + highlights)
+    // so they ride the exported HTML. Phase 4 of the annotation suite —
+    // the export becomes a self-contained surface that renders these
+    // annotations + lets the student add their own locally.
+    const cfgWithSubmissionKey = { ...cfgBase, annotations: Array.isArray(stickers) ? stickers : [] };
     return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, cfgWithSubmissionKey);
   };
   const getSlidesPreviewHTML = () => {
@@ -14314,10 +15199,26 @@ Return ONLY valid JSON in this format:
   };
   const calculateStudentStats = () => {
       const quizzesTaken = history.filter(h => h.type === 'quiz').length;
+      // Notebook activity rollup (added when note-taking + anchor-chart
+      // shipped May 2026 — counts surface on teacher dashboard).
+      const noteTakingEntries = history.filter(h => h.type === 'note-taking');
+      const anchorChartEntries = history.filter(h => h.type === 'anchor-chart').length;
+      const notebookFeedbackRequests = noteTakingEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+      const cornellCount = noteTakingEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
+      const labReportCount = noteTakingEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
+      const readingResponseCount = noteTakingEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
       return {
           totalXP: globalPoints,
           adventureLevel: adventureState.level,
-          quizzesTaken
+          quizzesTaken,
+          notebook: {
+              cornell: cornellCount,
+              labReport: labReportCount,
+              readingResponse: readingResponseCount,
+              anchorChart: anchorChartEntries,
+              total: noteTakingEntries.length + anchorChartEntries,
+              aiFeedbackRequests: notebookFeedbackRequests,
+          },
       };
   };
   const isScaffoldComplete = React.useMemo(() => {
@@ -14341,7 +15242,21 @@ Return ONLY valid JSON in this format:
       }
   }, [generatedContent, studentResponses]);
   const handleSubmitAssignment = (confirmedName, summaryStats) => {
-      const relevantTypes = ['quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline', 'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds'];
+      // Whitelist of student-authored or student-engaged resource types that
+      // should ride the Save & Submit JSON to the teacher. Anything the student
+      // CREATED, FILLED IN, or ENGAGED WITH belongs here. Excluded: teacher-
+      // only tools (analysis, udl-advice, alignment-report, brainstorm,
+      // gemini-bridge) which would never be student-authored.
+      //
+      // Historical gap: note-taking + anchor-chart shipped May 2026 but were
+      // never added to this list, so student work in those tools never
+      // reached the teacher dashboard. Fixed May 2026.
+      const relevantTypes = [
+          'quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline',
+          'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds',
+          'note-taking', 'anchor-chart', 'dbq', 'faq', 'outline', 'image',
+          'fluency-record',
+      ];
       const filteredContent = history.filter(item => relevantTypes.includes(item.type));
       const cleanContent = sanitizeSubmissionData(filteredContent);
       const submissionData = {
@@ -14349,7 +15264,13 @@ Return ONLY valid JSON in this format:
           submissionDate: new Date().toISOString(),
           stats: { ...calculateStudentStats(), summary: summaryStats },
           content: cleanContent,
-          answers: studentResponses
+          answers: studentResponses,
+          // Game-engagement data (concept-sort placements, memory match results,
+          // matching/timeline/crossword/etc. completions). Required for the
+          // teacher dashboard's cross-tool misconception detection — without
+          // this, concept-sort per-item misplacement data never reaches the
+          // teacher. Added May 2026 alongside the dashboard misconception work.
+          gameCompletions: gameCompletions,
       };
       const safeName = (submissionData.studentName).replace(/[^a-z0-9]/gi, '_');
       const dateStr = new Date().toISOString().split('T')[0];
@@ -14573,6 +15494,7 @@ Return ONLY valid JSON in this format:
         calculateLocalFluencyMetrics,
         applyGlobalCitations,
         chunkText,
+        stickers,
       });
     throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
   };
@@ -14645,6 +15567,7 @@ Return ONLY valid JSON in this format:
         addToast,
         warnLog,
         hydrateHistory,
+        setStickers,
       });
     throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
   };
@@ -16272,6 +17195,59 @@ Return ONLY valid JSON in this format:
         setIsProcessing(false);
     }
   };
+  // Generate or refine the optional Examples-quadrant image for a Frayer Model
+  // outline. Called from the rendered Frayer view (view_renderers). First call
+  // produces a fresh educational illustration of the vocabulary term + its
+  // examples; subsequent calls with a refinement instruction use image-to-image
+  // edit. Persists onto generatedContent.data.frayerExampleImage.
+  const handleGenerateFrayerImage = async (refinementInstruction = '') => {
+    if (!generatedContent || generatedContent.type !== 'outline') return;
+    const data = generatedContent?.data || {};
+    if (data.structureType !== 'Frayer Model') return;
+    const term = data.main || 'vocabulary term';
+    const examplesBranch = (data.branches || [])[2] || { items: [] };
+    const exampleItems = (examplesBranch.items || [])
+      .map(it => typeof it === 'object' ? (it?.text || '') : String(it))
+      .filter(Boolean)
+      .slice(0, 4)
+      .join(', ');
+    const existingImage = data.frayerExampleImage;
+    setIsProcessing(true);
+    try {
+      let newImage = null;
+      if (existingImage && refinementInstruction.trim()) {
+        const rawBase64 = (existingImage.split(',')[1] || existingImage);
+        const refinePrompt = `Edit this educational illustration. Instruction: ${refinementInstruction.trim()}. Maintain a simple, friendly, flat vector-art style on a white background.`;
+        newImage = await callGeminiImageEdit(refinePrompt, rawBase64);
+      } else {
+        const prompt = `Simple, friendly, flat vector-art educational illustration of the vocabulary term "${term}"${exampleItems ? `, showing examples such as ${exampleItems}` : ''}. Clean iconography on a white background, no text labels, suitable for ${gradeLevel || 'middle school'} students.`;
+        newImage = await callGeminiImageEdit(prompt);
+      }
+      if (newImage) {
+        const updatedContent = { ...generatedContent, data: { ...data, frayerExampleImage: newImage } };
+        setGeneratedContent(updatedContent);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        addToast(existingImage ? (t('visuals.actions.icon_refined') || 'Image refined') : 'Frayer image generated', 'success');
+      } else {
+        addToast(t('visuals.actions.refinement_failed') || 'Image generation failed', 'error');
+      }
+    } catch (e) {
+      warnLog('Frayer image generation failed', e);
+      addToast(t('visuals.actions.refinement_failed') || 'Image generation failed', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  const handleRemoveFrayerImage = () => {
+    if (!generatedContent || generatedContent.type !== 'outline') return;
+    const data = generatedContent?.data || {};
+    if (data.structureType !== 'Frayer Model' || !data.frayerExampleImage) return;
+    const { frayerExampleImage, ...rest } = data;
+    const updatedContent = { ...generatedContent, data: rest };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    addToast('Frayer image removed', 'info');
+  };
   const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
     const instruction = instructionOverride || glossaryRefinementInputs[index];
@@ -17536,18 +18512,43 @@ Return ONLY valid JSON in this format:
      }
   };
   const modifyBlueprintWithAI = async (currentConfig, userInstruction) => {
+      // Pull tool catalog from the shared ToolCatalog module. Falls back to a
+      // minimal inline list if the catalog hasn't loaded (rare; loads at startup).
+      const _toolList = (typeof window !== 'undefined' && typeof window.formatToolCatalogInline === 'function')
+          ? window.formatToolCatalogInline()
+          : `        - analysis — Always recommended first.
+        - simplified — Adapt text to a reading level.
+        - glossary — Key vocabulary.
+        - outline — Visual organizer.
+        - image — AI-generated illustration.
+        - quiz — Assessment questions.
+        - sentence-frames — Scaffolded writing prompts.
+        - brainstorm — Open-ended idea generation.
+        - timeline — Chronological sequence.
+        - concept-sort — Categorization activity.
+        - adventure — Choose-your-own-adventure narrative.
+        - faq — FAQs from source text.
+        - persona — Interview historical figures.
+        - dbq — Document-Based Question activity.
+        - note-taking — Scaffolded note templates (Cornell / Lab Report / Reading Response).
+        - anchor-chart — EL-style class anchor chart.
+        - math — Opens STEM Lab.
+        - lesson-plan — Teacher synthesis. ALWAYS place LAST.
+        - gemini-bridge — Interactive sim/app generator.
+        - alignment-report — Post-hoc audit (only if explicit standards + audit requested).`;
       const prompt = `
       You are a Curriculum Designer adjusting a lesson plan blueprint based on teacher feedback.
       Current Blueprint JSON:
       ${JSON.stringify(currentConfig)}
       Teacher Instruction: "${userInstruction}",
       Task:
-      1. Interpret the request (e.g., "Add a quiz", "Remove glossary", "Focus on vocabulary", "Change grade to 5th").
+      1. Interpret the request (e.g., "Add a quiz", "Remove glossary", "Focus on vocabulary", "Change grade to 5th", "Add note-taking templates", "Make an anchor chart").
       2. Modify the JSON:
          - Update "recommendedResources" array to add/remove tools (ensure valid tool IDs).
          - Update "globalSettings" (gradeLevel, tone) if requested.
          - Update "toolDirectives" to add specific instructions for tools if requested.
-      Valid Tools: analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, lesson-plan.
+      Valid Tools (tool_id — when to use):
+${_toolList}
       Return ONLY the updated valid JSON.
       `;
       try {
@@ -18040,6 +19041,8 @@ Return ONLY valid JSON in this format:
         brainstormCustomInstructions,
         faqCustomInstructions,
         outlineCustomInstructions,
+        noteTakingTemplateType,
+        anchorChartType,
         visualCustomInstructions,
         lessonCustomAdditions,
         timelineTopic,
@@ -18541,6 +19544,29 @@ Return ONLY valid JSON in this format:
         isProblemSolutionSortPlaying,
         setIsProblemSolutionSortPlaying,
         closeProblemSolutionSort,
+        isFrayerSortPlaying,
+        setIsFrayerSortPlaying,
+        closeFrayerSort,
+        isSeeThinkWonderSortPlaying,
+        setIsSeeThinkWonderSortPlaying,
+        closeSeeThinkWonderSort,
+        isStoryMapSortPlaying,
+        setIsStoryMapSortPlaying,
+        closeStoryMapSort,
+        // Teacher-armed interactive flags for organizer-sort games
+        isInteractiveTChart, setIsInteractiveTChart,
+        isInteractiveCESort, setIsInteractiveCESort,
+        isInteractivePipeline, setIsInteractivePipeline,
+        isInteractiveConceptMapSort, setIsInteractiveConceptMapSort,
+        isInteractiveOutlineSort, setIsInteractiveOutlineSort,
+        isInteractiveFishboneSort, setIsInteractiveFishboneSort,
+        isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort,
+        isInteractiveFrayerSort, setIsInteractiveFrayerSort,
+        isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort,
+        isInteractiveStoryMapSort, setIsInteractiveStoryMapSort,
+        broadcastInteractiveOrganizer,
+        handleGenerateFrayerImage,
+        handleRemoveFrayerImage,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };
@@ -19273,6 +20299,21 @@ Return ONLY valid JSON in this format:
           } else if (activeUnitId !== 'all') {
               filtered = filtered.filter(item => item.unitId === activeUnitId);
           }
+      } else {
+          // Conditional resource visibility — fail-open. If a teacher-authored quiz
+          // routing rule's `then.hiddenResourceIds` matched this student's answer,
+          // the rule applier wrote `roster.{uid}.hiddenResourceIds` to the session
+          // doc (see Tier-1 leaf 'hiddenResourceIds'). Filter those out here so the
+          // student's history panel only shows the resources their answers unlocked.
+          // Missing/empty list = show everything (default-show + rules hide).
+          try {
+              const myHidden = (user && user.uid && sessionData && sessionData.roster
+                  && sessionData.roster[user.uid] && sessionData.roster[user.uid].hiddenResourceIds) || null;
+              if (Array.isArray(myHidden) && myHidden.length > 0) {
+                  const hideSet = new Set(myHidden);
+                  filtered = filtered.filter(item => !hideSet.has(item.id));
+              }
+          } catch (_) { /* fail-open if sessionData is shaped unexpectedly */ }
       }
       return filtered;
   };
@@ -19319,20 +20360,169 @@ Return ONLY valid JSON in this format:
       }
   };
   const handleContentClick = (e) => {
-      if (!isStickerMode || !contentAreaRef.current) return;
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('button')) {
+      if (!annotationMode || !contentAreaRef.current) return;
+      // Dispatch by annotationMode to the appropriate factory in the
+      // annotation_suite module. Both factories handle the same
+      // {id, kind, x, y, author, authorName, createdAt} envelope and skip
+      // placement on interactive elements (buttons, inputs, textareas).
+      const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+      if (!_m) return;
+      const authorName = studentNickname || studentProjectSettings?.nickname || '';
+      let next = null;
+      if (annotationMode === 'sticker' && _m.createStickerFromClick) {
+          next = _m.createStickerFromClick(contentAreaRef.current, e, {
+              stickerType: stickerType,
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
+      } else if (annotationMode === 'note' && _m.createNoteFromClick) {
+          next = _m.createNoteFromClick(contentAreaRef.current, e, {
+              color: noteColor,
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+              // Pre-fill content from the active template (empty = freeform).
+              templateContent: noteTemplate || undefined,
+          });
+      } else if (annotationMode === 'voice' && _m.createVoicePlaceholder) {
+          // Voice flow: drop a pending placeholder, then start recording.
+          // The RecordingOverlay renders in its place until audio attaches.
+          if (isVoiceRecording || voiceRecording) return; // already recording
+          next = _m.createVoicePlaceholder(contentAreaRef.current, e, {
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
+          if (!next) return;
+          setStickers(prev => [...prev, next]);
+          // Fire async — startVoiceRecording returns a promise but we
+          // don't await; the recorder's permission prompt is non-blocking
+          // from our perspective.
+          (async function () {
+              await startVoiceRecording();
+              voiceStartTimeRef.current = Date.now();
+              setVoiceRecording({ id: next.id, x: next.x, y: next.y, elapsedSec: 0 });
+              // Tick every 250ms to update elapsed display.
+              voiceTickRef.current = setInterval(function () {
+                  const sec = (Date.now() - voiceStartTimeRef.current) / 1000;
+                  setVoiceRecording(prev => prev ? Object.assign({}, prev, { elapsedSec: sec }) : null);
+              }, 250);
+              // Auto-stop at the max cap.
+              voiceCapTimeoutRef.current = setTimeout(function () {
+                  handleVoiceRecordingStop();
+              }, ((_m.VOICE_MAX_SECONDS || 60) * 1000) + 100);
+          })();
+          playSound('click');
           return;
       }
-      const rect = contentAreaRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left + contentAreaRef.current.scrollLeft;
-      const y = e.clientY - rect.top + contentAreaRef.current.scrollTop;
-      const newSticker = {
-          id: Date.now(),
-          type: stickerType,
-          x,
-          y
-      };
-      setStickers(prev => [...prev, newSticker]);
+      if (!next) return;
+      setStickers(prev => [...prev, next]);
+      playSound('click');
+  };
+  // Voice recording — stop / cancel handlers. Stop attaches the recorded
+  // audio to the placeholder; cancel removes the placeholder + discards
+  // audio without writing to state.
+  const handleVoiceRecordingStop = async () => {
+      if (!voiceRecording) return;
+      const placeholderId = voiceRecording.id;
+      const elapsedSec = voiceRecording.elapsedSec || 0;
+      if (voiceTickRef.current) { clearInterval(voiceTickRef.current); voiceTickRef.current = null; }
+      if (voiceCapTimeoutRef.current) { clearTimeout(voiceCapTimeoutRef.current); voiceCapTimeoutRef.current = null; }
+      setVoiceRecording(null);
+      try {
+          const result = await stopVoiceRecording();
+          const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+          if (!_m || !_m.attachAudioToVoiceNote) return;
+          const payload = result
+              ? { audioBase64: result.base64, mimeType: result.mimeType || 'audio/webm', durationSec: elapsedSec }
+              : null;
+          if (!payload || !payload.audioBase64) {
+              // Recording failed — remove the placeholder.
+              setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
+              addToast && addToast('Voice recording failed — no audio captured.', 'error');
+              return;
+          }
+          const next = _m.attachAudioToVoiceNote(stickers, placeholderId, payload);
+          if (next && next.error === 'too-large') {
+              setStickers(next.list);
+              addToast && addToast('Voice note too long to save (over 500KB). Try a shorter clip.', 'warning');
+              return;
+          }
+          setStickers(next);
+      } catch (err) {
+          warnLog && warnLog('[Voice] stop failed:', err);
+          setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
+      }
+  };
+  // Import annotations from a JSON file (the shape that the export's
+  // "Save mine" button produces). Teachers use this to load a student's
+  // downloaded annotations into their own in-app view to review marks
+  // the student left on a take-home copy. Imported annotations get
+  // author='student' forced so they're visually distinct from the
+  // teacher's own in the overlay + sidebar.
+  const handleImportAnnotations = () => {
+    if (!annotationImportInputRef.current) return;
+    annotationImportInputRef.current.value = '';
+    annotationImportInputRef.current.click();
+  };
+  const handleAnnotationImportFile = (e) => {
+    const file = e && e.target && e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const payload = JSON.parse(ev.target.result);
+        const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+        if (!_m || !_m.importAnnotations) {
+          addToast && addToast('Annotation suite not ready — try again in a moment.', 'error');
+          return;
+        }
+        // Teacher importing student work → force author='student' on
+        // everything so the teacher's own annotations stay distinguishable.
+        // Student importing peer work → keep authors as-is (no rebrand).
+        const opts = isTeacherMode ? { forceAuthor: 'student' } : {};
+        const result = _m.importAnnotations(stickers, payload, opts);
+        if (result.error) {
+          addToast && addToast('Could not import: ' + result.error + '. File must be an annotations JSON.', 'error');
+          return;
+        }
+        setStickers(result.list);
+        addToast && addToast('Imported ' + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
+      } catch (err) {
+        warnLog && warnLog('[Annotations] import failed:', err);
+        addToast && addToast('Could not parse the file. Must be a valid annotations JSON.', 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  const handleVoiceRecordingCancel = async () => {
+      if (!voiceRecording) return;
+      const placeholderId = voiceRecording.id;
+      if (voiceTickRef.current) { clearInterval(voiceTickRef.current); voiceTickRef.current = null; }
+      if (voiceCapTimeoutRef.current) { clearTimeout(voiceCapTimeoutRef.current); voiceCapTimeoutRef.current = null; }
+      setVoiceRecording(null);
+      // Stop the recorder + discard the result.
+      try { await stopVoiceRecording(); } catch (_) {}
+      setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
+  };
+  // Highlight capture: in highlight mode, mouseup on the content area
+  // checks for a non-collapsed text selection and converts it to a
+  // highlight annotation via the module helper. Clears the selection
+  // after capture so the visible blue selection goes away in favor of
+  // the rendered colored overlay.
+  const handleContentMouseUp = () => {
+      if (annotationMode !== 'highlight' || !contentAreaRef.current) return;
+      const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+      if (!_m || !_m.createHighlightFromSelection) return;
+      const sel = typeof window !== 'undefined' ? window.getSelection && window.getSelection() : null;
+      if (!sel || sel.isCollapsed) return;
+      const authorName = studentNickname || studentProjectSettings?.nickname || '';
+      const newHighlight = _m.createHighlightFromSelection(contentAreaRef.current, sel, {
+          color: highlightColor,
+          isTeacher: isTeacherMode,
+          authorName: authorName,
+      });
+      if (!newHighlight) return;
+      setStickers(prev => [...prev, newHighlight]);
+      try { sel.removeAllRanges(); } catch (_) {}
       playSound('click');
   };
   const clearStickers = () => setStickers([]);
@@ -20273,7 +21463,7 @@ Return ONLY valid JSON in this format:
     <ThemeContext.Provider value={_themeCtx}>
     <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
       {kokoroLoadState && kokoroLoadState.loading && (
-        <div role="status" aria-live="polite" aria-label="AlloFlow loading" style={{
+        <div role="status" aria-live="polite" aria-label={t('common.alloflow_loading_aria') || 'AlloFlow loading'} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
           background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -20281,10 +21471,10 @@ Return ONLY valid JSON in this format:
         }}>
           <div style={{ textAlign: 'center', maxWidth: '480px', padding: '0 24px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌊</div>
-            <h1 style={{ color: '#f1f5f9', fontSize: '28px', fontWeight: 700, margin: '0 0 8px' }}>
+            <h1 style={{ color: '#475569', fontSize: '28px', fontWeight: 700, margin: '0 0 8px' }}>
               AlloFlow
             </h1>
-            <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 32px' }}>
+            <p style={{ color: '#475569', fontSize: '14px', margin: '0 0 32px' }}>
               Preparing your learning environment...
             </p>
             <div style={{
@@ -20353,7 +21543,7 @@ Return ONLY valid JSON in this format:
             <span className="opacity-60">|</span>
             <span className="capitalize">{lmsSession.role}</span>
           </div>
-          <button onClick={() => setLmsSession(null)} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors" aria-label="Dismiss LMS banner">Dismiss</button>
+          <button onClick={() => setLmsSession(null)} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors" aria-label={t('lms.dismiss_banner_aria') || 'Dismiss LMS banner'}>{t('lms.dismiss_button') || 'Dismiss'}</button>
         </div>
       )}
       {/* ── Bookmarklet Audit Queue ── */}
@@ -20393,7 +21583,7 @@ Return ONLY valid JSON in this format:
               );
             })}
           </div>
-          <p className="text-[11px] opacity-70 mt-2">Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.</p>
+          <p className="text-[11px] opacity-70 mt-2">{t('lms.audit_queue_help') || 'Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.'}</p>
         </div>
       )}
       <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
@@ -20420,6 +21610,7 @@ Return ONLY valid JSON in this format:
       </div>
       {showSessionModal && activeSessionCode && <SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} />}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
+      {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
           activeSessionCode, addToast, appId, db,
@@ -20429,6 +21620,79 @@ Return ONLY valid JSON in this format:
           t, updateDoc, warnLog
       })}
       <style>{`
+        /* ── Polish pass May 2026: global a11y baselines ── */
+        /* Respect prefers-reduced-motion across all CDN tools that animate. */
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
+        /* Stronger keyboard focus ring for sighted keyboard users.
+           Mouse clicks still get the default; only :focus-visible (kbd focus) gets the high-vis ring. */
+        button:focus-visible,
+        a:focus-visible,
+        [role="button"]:focus-visible,
+        [role="tab"]:focus-visible,
+        [role="link"]:focus-visible,
+        [role="menuitem"]:focus-visible,
+        [role="option"]:focus-visible,
+        [tabindex]:focus-visible:not([tabindex="-1"]),
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        summary:focus-visible {
+          outline: 3px solid #6366f1 !important;
+          outline-offset: 2px !important;
+          border-radius: 6px;
+        }
+        /* ── WCAG 1.4.10 Reflow — let multi-panel STEM tools reflow at 320px / 400% zoom ── */
+        /* Any wide horizontal panel layout opts in to vertical-stacking via .allo-reflow.
+           At ≤640px (Tailwind sm breakpoint) panels stack and inner overflow becomes scrollable
+           instead of forcing a horizontal page scroll. */
+        @media (max-width: 640px) {
+          .allo-reflow,
+          .allo-reflow > * {
+            flex-direction: column !important;
+            grid-template-columns: 1fr !important;
+            min-width: 0 !important;
+          }
+          .allo-reflow [class*="grid-cols-2"],
+          .allo-reflow [class*="grid-cols-3"],
+          .allo-reflow [class*="grid-cols-4"],
+          .allo-reflow [class*="grid-cols-5"],
+          .allo-reflow [class*="grid-cols-6"] {
+            grid-template-columns: 1fr !important;
+          }
+          /* Wide pre/code/table elements inside reflow containers scroll internally */
+          .allo-reflow pre, .allo-reflow table, .allo-reflow code {
+            max-width: 100%;
+            overflow-x: auto;
+          }
+        }
+        /* WCAG 1.4.12 Text Spacing — let user-overridden line/letter/word/paragraph
+           spacing render without being clipped by fixed-height containers. The codebase
+           already uses Tailwind leading- and tracking- classes (rem units) which scale
+           naturally; this rule just ensures no inline height traps text overflow. */
+        .allo-textbox, .allo-textbox * {
+          line-height: inherit;
+        }
+        /* App-level skeleton shimmer for loading states */
+        @keyframes alloflow-skeleton-shimmer {
+          0%   { background-position: -400px 0; }
+          100% { background-position: 400px 0; }
+        }
+        .alloflow-skeleton {
+          background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+          background-size: 800px 100%;
+          animation: alloflow-skeleton-shimmer 1.4s infinite linear;
+          border-radius: 6px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .alloflow-skeleton { animation: none; }
+        }
         @media print {
           .no-print { display: none !important; }
           .print-only { display: block !important; }
@@ -20733,7 +21997,7 @@ Return ONLY valid JSON in this format:
       >
         {t('a11y.skip_content')}
       </a>
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {showInfoModal && <InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} />}
       {showHintsModal && <HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} />}
       {showXPModal && <XPModal currentLevelXP={currentLevelXP} globalLevel={globalLevel} globalPoints={globalPoints} globalProgress={globalProgress} globalXPNext={globalXPNext} handleSetShowXPModalToFalse={handleSetShowXPModalToFalse} pointHistory={pointHistory} t={t} />}
@@ -20757,6 +22021,17 @@ Return ONLY valid JSON in this format:
           />
       )}
       {showStorybookExportModal && <StorybookExportModal handleExportStorybook={handleExportStorybook} handleSetShowStorybookExportModalToFalse={handleSetShowStorybookExportModalToFalse} isProcessing={isProcessing} setShowStorybookExportModal={setShowStorybookExportModal} t={t} />}
+      {showNotebook && window.AlloModules && window.AlloModules.NotebookOverlay
+        ? React.createElement(window.AlloModules.NotebookOverlay, {
+            isOpen: true,
+            onClose: () => setShowNotebook(false),
+            history,
+            onSelectEntry: handleSelectNotebookEntry,
+            t,
+            callGemini,
+            addToast,
+          })
+        : null}
       {!isTeacherMode && activeSessionCode && sessionData && (
           <ErrorBoundary fallbackMessage="Live Quiz encountered an error. waiting for sync...">
             <StudentQuizOverlay
@@ -20906,8 +22181,8 @@ Return ONLY valid JSON in this format:
                         {isExtracting ? <RefreshCw size={12} className="animate-spin"/> : <Upload size={12} />}
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
-                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm cursor-pointer" title="Load a previously saved AlloFlow PDF project">
-                        <FileDown size={12} /> Load Project
+                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
+                        <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
                           const reader = new FileReader();
@@ -21078,7 +22353,7 @@ Return ONLY valid JSON in this format:
                   <div className="flex items-center gap-2">
                       <div className="bg-pink-100 p-1 rounded-md text-pink-700"><Volume2 size={16}/></div>
                       <div>
-                        <span className="text-sm font-bold text-slate-700 block">Word Sounds</span>
+                        <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_wordsounds') || 'Word Sounds'}</span>
                       </div>
                   </div>
                   {expandedTools.includes('ui-tool-wordsounds') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
@@ -21103,6 +22378,40 @@ Return ONLY valid JSON in this format:
                 {expandedTools.includes('outline') && window.AlloModules && window.AlloModules.OutlinePanel && React.createElement(window.AlloModules.OutlinePanel, {
           expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, outlineCustomInstructions,
           outlineType, setOutlineCustomInstructions, setOutlineType, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('note-taking') ? undefined : 'none'}} id="tour-tool-note-taking" data-help-key="tool_note_taking" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'note-taking' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
+              `}>
+                <button
+                    aria-label={t('common.toggle_note_taking') || 'Toggle note-taking templates'}
+                    data-help-key="tool_note_taking"
+                    aria-expanded={expandedTools.includes('note-taking')} onClick={() => toggleTool('note-taking')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><BookOpen size={16}/> {t('sidebar.tool_note_taking') || 'Note-Taking Templates'}</div>
+                  {expandedTools.includes('note-taking') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── NoteTakingPanel lives in view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('note-taking') && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, noteTakingTemplateType, setNoteTakingTemplateType, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('anchor-chart') ? undefined : 'none'}} id="tour-tool-anchor-chart" data-help-key="tool_anchor_chart" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'anchor-chart' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
+              `}>
+                <button
+                    aria-label={t('common.toggle_anchor_chart') || 'Toggle anchor chart'}
+                    data-help-key="tool_anchor_chart"
+                    aria-expanded={expandedTools.includes('anchor-chart')} onClick={() => toggleTool('anchor-chart')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('sidebar.tool_anchor_chart') || 'Anchor Chart'}</div>
+                  {expandedTools.includes('anchor-chart') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── AnchorChartPanel lives in view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('anchor-chart') && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, anchorChartType, setAnchorChartType, t
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
@@ -21161,9 +22470,9 @@ Return ONLY valid JSON in this format:
                     type="button"
                     onClick={() => setShowStoryForge(true)}
                     className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label="Open StoryForge"
+                    aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
                   >
-                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">StoryForge</span>
+                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
                   </button>
                 </div>
                 {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
@@ -21255,7 +22564,7 @@ Return ONLY valid JSON in this format:
                 ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
                 <button
-                    aria-label="Document-Based Questions"
+                    aria-label={t('sidebar.tool_dbq_aria') || 'Document-Based Questions'}
                     data-help-key="tool_dbq"
                     onClick={() => toggleTool('dbq')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
@@ -21286,7 +22595,7 @@ Return ONLY valid JSON in this format:
                     type="button"
                     onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                     className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label="Open STEM Lab Explore"
+                    aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}
                   >
                     🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                   </button>
@@ -21389,7 +22698,7 @@ Return ONLY valid JSON in this format:
                             className="w-3.5 h-3.5 text-purple-600 rounded cursor-pointer border-transparent focus:ring-offset-transparent focus:ring-white/50"
                         />
                         <label htmlFor="autoConfigToggle" className="text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none flex items-center gap-1">
-                            <Sparkles size={10} className="text-yellow-300 fill-current"/> {t('fullpack.auto_configure')}
+                            <Sparkles size={10} className="text-yellow-700 fill-current"/> {t('fullpack.auto_configure')}
                         </label>
                     </div>
                     {isAutoConfigEnabled && (
@@ -21457,7 +22766,7 @@ Return ONLY valid JSON in this format:
                             {standardsInput ? (isIndependentMode ? "Verify your mastery against standards." : (isParentMode ? "See how this matches school goals" : "Audits curriculum across 6 dimensions")) : "Audits curriculum across 5 dimensions (add standards for full audit)"}
                         </span>
                     </div>
-                    <ArrowRight size={16} className="text-teal-300 group-hover:text-teal-600" />
+                    <ArrowRight size={16} className="text-teal-700 group-hover:text-teal-600" />
                 </button>
             </div>
           </div>
@@ -21537,7 +22846,7 @@ Return ONLY valid JSON in this format:
                         title={isPaused ? t('audio_player.resume') : t('audio_player.pause')}
                         aria-label={isPaused ? t('audio_player.resume') : t('audio_player.pause')}
                     >
-                        {isPaused ? <MonitorPlay size={20} className="fill-current text-yellow-400"/> : <AudioWave />}
+                        {isPaused ? <MonitorPlay size={20} className="fill-current text-yellow-700"/> : <AudioWave />}
                     </button>
                     <div className="flex items-center gap-2 px-2 border-l border-slate-600 pl-4">
                         <span className="text-[11px] font-bold text-slate-600 w-8 text-right tabular-nums">{playbackRate}x</span>
@@ -21594,36 +22903,83 @@ Return ONLY valid JSON in this format:
                 </h3>
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ml-2">
-                        <button
-                            onClick={handleToggleIsStickerMode}
-                            className={`p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ${isStickerMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100'}`}
-                            title={t('toolbar.stickers_tooltip')}
-                        >
-                            <Smile size={14} /> {t('toolbar.stickers_label')}
-                        </button>
-                        {isStickerMode && (
-                            <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
-                                {['star', 'check', 'idea', 'love'].map(type => (
-                                    <button
-                                        aria-label={t('common.delete')}
-                                        key={type}
-                                        onClick={() => setStickerType(type)}
-                                        className={`w-6 h-6 flex items-center justify-center rounded-full text-sm hover:scale-125 transition-transform ${stickerType === type ? 'bg-indigo-50 shadow-sm scale-110 ring-1 ring-indigo-200' : 'opacity-60 hover:opacity-100'}`}
-                                    >
-                                        {{star: '⭐', check: '✅', idea: '💡', love: '❤️'}[type]}
-                                    </button>
-                                ))}
-                                <div className="w-px h-4 bg-slate-200 mx-1"></div>
-                                <button onClick={clearStickers} className="p-1 text-slate-600 hover:text-red-500 rounded-full" title={t('toolbar.clear_stickers')} aria-label={t('toolbar.clear_stickers')}>
-                                    <Trash2 size={12}/>
+                        {(() => {
+                            // Annotation suite toolbar — sticker + note mode
+                            // toggles + per-tool sub-controls. Delegates to
+                            // the CDN module so future tools (highlight) land
+                            // in one place. Falls back to nothing if the
+                            // module hasn't loaded yet.
+                            const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                            if (!_m || !_m.Toolbar) return null;
+                            return React.createElement(_m.Toolbar, {
+                                mode: annotationMode,
+                                stickerType: stickerType,
+                                noteColor: noteColor,
+                                highlightColor: highlightColor,
+                                noteTemplate: noteTemplate,
+                                drawColor: drawColor,
+                                drawWidth: drawWidth,
+                                drawShape: drawShape,
+                                isTeacher: isTeacherMode,
+                                onSetMode: setAnnotationMode,
+                                onPickType: setStickerType,
+                                onPickNoteColor: setNoteColor,
+                                onPickHighlightColor: setHighlightColor,
+                                onPickTemplate: setNoteTemplate,
+                                onPickDrawColor: setDrawColor,
+                                onPickDrawWidth: setDrawWidth,
+                                onPickDrawShape: setDrawShape,
+                                onClear: clearStickers,
+                                t: t,
+                            });
+                        })()}
+                        {/* Annotation undo (Phase 7b). Disabled when the
+                            undo stack is empty. Keyboard shortcut Ctrl/Cmd+Z
+                            works document-wide except inside text fields. */}
+                        {(() => {
+                            const canUndo = annotationUndoCount > 0;
+                            return (
+                                <button
+                                    type="button"
+                                    data-allo-undo-btn="true"
+                                    onClick={canUndo ? handleAnnotationUndo : undefined}
+                                    disabled={!canUndo}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+                                    title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
+                                    aria-label={t('annotation.undo_aria') || 'Undo last annotation'}
+                                >
+                                    {t('annotation.undo_button') || '↩ Undo'}
                                 </button>
-                            </div>
-                        )}
+                            );
+                        })()}
+                        {/* Annotation sidebar toggle (Phase 5). Count
+                            badge surfaces the total so users see at a
+                            glance whether the doc has feedback waiting. */}
+                        {(() => {
+                            const total = Array.isArray(stickers) ? stickers.length : 0;
+                            return (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAnnotationSidebar(prev => !prev)}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
+                                    title={t('annotation.show_all_tooltip') || 'Show all annotations'}
+                                    aria-label={t('annotation.toggle_list_aria') || 'Toggle annotation list'}
+                                    aria-pressed={showAnnotationSidebar}
+                                >
+                                    {t('annotation.list_button') || '📋 List'}
+                                    {total > 0 && (
+                                        <span className="ml-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
+                                            {total}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })()}
                     {generatedContent && (activeView === 'math') && (
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                             className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ml-1"
-                            aria-label="Open STEM Lab Explore">
+                            aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}>
                             🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                         </span>
                     )}
@@ -21655,8 +23011,10 @@ Return ONLY valid JSON in this format:
           <div
             ref={contentAreaRef}
             onClick={handleContentClick}
+            onMouseUp={handleContentMouseUp}
             data-reading-theme={readingTheme}
-            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
+            data-allo-anno-host="true"
+            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''} ${annotationMode === 'voice' ? 'cursor-crosshair' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : readingTheme === 'warm' ? '#5c4033' : readingTheme === 'dyslexia' ? '#1e293b' : undefined,
@@ -21666,9 +23024,135 @@ Return ONLY valid JSON in this format:
               transition: 'background-color 0.3s, color 0.3s',
             } : undefined}
           >
-            {stickers.map(s => (
-                <Sticker key={s.id} type={s.type} x={s.x} y={s.y} />
-            ))}
+            {(() => {
+                // Annotation overlay — module dispatches by `kind`. Notes
+                // get edit/delete callbacks so they're truly interactive;
+                // stickers stay pointer-events:none decorations. Future
+                // highlights will plug into the same dispatcher.
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.Overlay) return null;
+                return React.createElement(_m.Overlay, {
+                    annotations: stickers,
+                    mode: annotationMode,
+                    isTeacher: isTeacherMode,
+                    onMove: (id, x, y, isFinal) => {
+                        // Live updates during drag, committed on pointerup.
+                        // Permission: students can drag their own; teachers
+                        // can drag anything (checked also in Overlay).
+                        if (_m.updateAnnotation) {
+                            setStickers(prev => _m.updateAnnotation(prev, id, { x: Math.max(0, x), y: Math.max(0, y) }));
+                        }
+                    },
+                    onNoteChange: (id, patch) => {
+                        if (_m.updateAnnotation) {
+                            setStickers(prev => _m.updateAnnotation(prev, id, patch));
+                        }
+                    },
+                    onNoteDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                    onHighlightDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                    onVoiceDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                    onDrawDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
+            })()}
+            {/* Drawing capture overlay — only mounts when draw mode is active.
+                Pointer events get captured here, the in-progress stroke renders
+                live, and pointerup commits via createDrawingFromStroke. In
+                eraser mode (drawShape === 'erase'), no stroke commits — the
+                onErase callback fires once per annotation under the cursor. */}
+            {annotationMode === 'draw' && (() => {
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.DrawingCapture || !_m.createDrawingFromStroke) return null;
+                const authorName = studentNickname || studentProjectSettings?.nickname || '';
+                return React.createElement(_m.DrawingCapture, {
+                    active: true,
+                    color: drawColor,
+                    width: drawWidth,
+                    shape: drawShape,
+                    annotations: stickers,
+                    onCommit: (stroke) => {
+                        const next = _m.createDrawingFromStroke(stroke, {
+                            isTeacher: isTeacherMode,
+                            authorName: authorName,
+                        });
+                        if (next) {
+                            setStickers(prev => [...prev, next]);
+                            playSound('click');
+                        }
+                    },
+                    onErase: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
+            })()}
+            {voiceRecording && (() => {
+                // RecordingOverlay (Phase 6) — pinned at the placeholder
+                // position. Shows elapsed time + a stop/cancel pair while
+                // the MediaRecorder is capturing audio. Replaces the
+                // (still-empty) voice bubble until audio attaches.
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.RecordingOverlay) return null;
+                return React.createElement(_m.RecordingOverlay, {
+                    x: voiceRecording.x,
+                    y: voiceRecording.y,
+                    elapsedSec: voiceRecording.elapsedSec,
+                    onStop: handleVoiceRecordingStop,
+                    onCancel: handleVoiceRecordingCancel,
+                });
+            })()}
+            {showAnnotationSidebar && (() => {
+                // Annotation sidebar (Phase 5) — list + filter + jump-to.
+                // Permission: in-app users can delete annotations they
+                // authored; teachers can also delete student annotations.
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.Sidebar) return null;
+                return React.createElement(_m.Sidebar, {
+                    annotations: stickers,
+                    isTeacher: isTeacherMode,
+                    onClose: () => setShowAnnotationSidebar(false),
+                    onImport: handleImportAnnotations,
+                    onFocus: (id) => {
+                        const target = (stickers || []).find(a => a && a.id === id);
+                        if (!target || !contentAreaRef.current) return;
+                        if (_m.focusAnnotation) _m.focusAnnotation(contentAreaRef.current, target);
+                    },
+                    onDelete: (id) => {
+                        const target = (stickers || []).find(a => a && a.id === id);
+                        if (!target) return;
+                        // Permission check: students can only delete their
+                        // own; teachers can delete anything in their view.
+                        if (!isTeacherMode && target.author !== 'student') return;
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
+            })()}
+            <input
+              ref={annotationImportInputRef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: 'none' }}
+              onChange={handleAnnotationImportFile}
+              aria-hidden="true"
+            />
             {isProcessing && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
                     <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
@@ -21854,8 +23338,8 @@ Return ONLY valid JSON in this format:
                         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
                             <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl">
                                 <div className="text-4xl mb-3">⚙️</div>
-                                <p className="text-lg font-bold text-slate-700">Loading Word Sounds...</p>
-                                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds' }) || 'Loading Word Sounds...'}</p>
+                                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                                 <button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">Close</button>
                             </div>
                         </div>
@@ -22019,7 +23503,8 @@ Return ONLY valid JSON in this format:
                     getRows, formatInlineText, renderFormattedText,
                     getReviewCategories, playSound, addToast,
                     ErrorBoundary, EscapeRoomTeacherControls, TeacherLiveQuizControls,
-                    Stamp, ConfettiExplosion
+                    Stamp, ConfettiExplosion,
+                    history
                 })}
                 {activeView === 'udl-advice' && (
                     <div className="space-y-6">
@@ -22192,6 +23677,19 @@ Return ONLY valid JSON in this format:
                     ErrorBoundary, AdventureAmbience, AdventureShop, AnimatedNumber,
                     ClimaxProgressBar, ConfettiExplosion, InventoryGrid
                 })}
+                {activeView === 'note-taking' && window.AlloModules && window.AlloModules.NoteTakingView && React.createElement(window.AlloModules.NoteTakingView, {
+                    t, generatedContent, isTeacherMode, isProcessing,
+                    handleNoteUpdate, handleGenerate,
+                    callGemini, addToast, handleScoreUpdate, inputText, history,
+                })}
+                {activeView === 'anchor-chart' && window.AlloModules && window.AlloModules.AnchorChartView && React.createElement(window.AlloModules.AnchorChartView, {
+                    t, generatedContent, isTeacherMode, isProcessing,
+                    handleNoteUpdate, callImagen,
+                    activeSessionCode,
+                    onPlayPictionary: handlePlayPictionaryFromAnchorChart,
+                    // Phase 10: interactive grading + XP
+                    callGemini, addXp, addToast,
+                })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,
                     singleImageOverride, isTeacherMode, imageRefinementInput, isProcessing,
@@ -22274,13 +23772,13 @@ Return ONLY valid JSON in this format:
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-2xl">🏰</span>
-                                        <h2 className="text-lg font-black text-amber-900">Fluency Maze</h2>
+                                        <h2 className="text-lg font-black text-amber-900">{t('fluency_maze.title') || 'Fluency Maze'}</h2>
                                     </div>
-                                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Math facts unlock the gates</span>
+                                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">{t('fluency_maze.tagline') || 'Math facts unlock the gates'}</span>
                                 </div>
                                 {!FluencyMazeComponent ? (
                                     <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 text-center text-purple-700 text-sm">
-                                        Loading Fluency Maze module...
+                                        {t('common.loading_module', { name: 'Fluency Maze' }) || 'Loading Fluency Maze module...'}
                                     </div>
                                 ) : (
                                     <FluencyMazeComponent
@@ -22332,7 +23830,7 @@ Return ONLY valid JSON in this format:
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
                         <div className="bg-slate-900 text-slate-600 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-                                <div className="flex items-center gap-2 text-green-400 font-bold">
+                                <div className="flex items-center gap-2 text-green-700 font-bold">
                                     <Terminal size={18} />
                                     <span>{t('bridge.prompt_header')}</span>
                                 </div>
@@ -22347,7 +23845,7 @@ Return ONLY valid JSON in this format:
                                             {idx + 1}
                                         </div>
                                         <div className="bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors">
-                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200 overflow-x-auto font-mono mb-2">
+                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600 overflow-x-auto font-mono mb-2">
                                                 {promptStep}
                                             </pre>
                                             <div className="flex justify-end pt-2 border-t border-slate-700/50">
@@ -22417,7 +23915,7 @@ Return ONLY valid JSON in this format:
                                         <Sparkles size={28} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse" />
                                     </div>
                                     <p className="mt-6 text-lg font-bold text-slate-700">{t('persona.identifying')}</p>
-                                    <p className="text-sm text-slate-600 mt-1">Analyzing content for historical figures...</p>
+                                    <p className="text-sm text-slate-600 mt-1">{t('persona.analyzing_historical_figures') || 'Analyzing content for historical figures...'}</p>
                                 </div>
                             )}
                             {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((persona, idx) => {
@@ -22706,6 +24204,7 @@ Return ONLY valid JSON in this format:
               dashboardView={dashboardView}
               generateResourceHTML={generateResourceHTML}
               onOpenBehaviorLens={() => setShowBehaviorLens(true)}
+              callGemini={callGemini}
           />
       </ErrorBoundary>
       )}
@@ -22788,6 +24287,81 @@ Return ONLY valid JSON in this format:
         onClose={handleCloseStudentEntry}
         onConfirm={handleStudentEntryConfirm}
       />
+      {/* Live Polling (WebRTC peer-to-peer). Signaling docs at signaling/{sessionCode}/peers/{uid} */}
+      {/* contain only SDP+ICE+codename and are deleted on connection. All poll/response data flows */}
+      {/* browser-to-browser, never persisted. See live_polling_module.js + feedback_session_tier1_tier2. */}
+      {isTeacherMode && activeSessionCode && (
+        <button
+          onClick={() => setShowLivePollingPanel(true)}
+          aria-label={t('live_polling.open_aria') || 'Open live polling'}
+          style={{position:'fixed',bottom:'1rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+        >
+          {t('live_polling.button') || 'Live Polling'}
+        </button>
+      )}
+      {isTeacherMode && activeSessionCode && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.HostPanel &&
+        React.createElement(window.AlloModules.LivePolling.HostPanel, {
+          sessionCode: activeSessionCode,
+          isOpen: showLivePollingPanel,
+          onClose: () => setShowLivePollingPanel(false),
+        })
+      }
+      {!isTeacherMode && activeSessionCode && user && user.uid && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.GuestOverlay &&
+        React.createElement(window.AlloModules.LivePolling.GuestOverlay, {
+          sessionCode: activeSessionCode,
+          userUid: user.uid,
+          codename: studentNickname || 'Guest',
+          enabled: true,
+        })
+      }
+      {/* Concept Pictionary (WebRTC peer-to-peer). Sibling of Live Polling. Strokes + guesses */}
+      {/* flow browser-to-browser; only Tier-1 roster.{uid}.role markers touch Firestore. See  */}
+      {/* concept_pictionary_module.js + feedback_session_tier1_tier2. */}
+      {isTeacherMode && activeSessionCode && (
+        <button
+          onClick={() => setShowPictionaryHost(true)}
+          aria-label={t('pictionary.open_aria') || 'Open Concept Pictionary'}
+          style={{position:'fixed',bottom:'4rem',right:'1rem',zIndex:9999,background:'#9f1239',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(159,18,57,0.35)'}}
+        >
+          {t('pictionary.button') || '🎨 Pictionary'}
+        </button>
+      )}
+      {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
+        React.createElement(window.AlloModules.ConceptPictionary.HostView, {
+          isOpen: showPictionaryHost,
+          onClose: () => { setShowPictionaryHost(false); setPictionaryIncomingConcepts([]); },
+          sessionCode: activeSessionCode,
+          sessionData,
+          sessionRef: (typeof sessionUnsubscribeRef !== 'undefined' && sessionUnsubscribeRef && sessionUnsubscribeRef.current && sessionUnsubscribeRef.current.docRef) || (activeSessionCode ? doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode) : null),
+          writeToSession,
+          callGemini,
+          sourceText: (() => {
+            // Anchor charts don't carry sourceText; if one is open, synthesize
+            // a sourceText snapshot from the chart's title + section labels +
+            // bullets so AI concept-suggest has meaningful context to suggest
+            // drawable concepts from the chart's terminology.
+            if (generatedContent && generatedContent.type === 'anchor-chart' && generatedContent.data) {
+              const d = generatedContent.data;
+              const sectionsTxt = (Array.isArray(d.sections) ? d.sections : [])
+                .map(s => `${s && s.label ? s.label : ''}: ${(s && Array.isArray(s.bullets) ? s.bullets : []).join(', ')}`)
+                .filter(line => line.replace(/^:\s*$/, ''))
+                .join('\n');
+              return `Anchor chart: ${d.title || ''}\n${sectionsTxt}`;
+            }
+            return (generatedContent && (generatedContent.source || (generatedContent.data && generatedContent.data.sourceText))) || (typeof inputText !== 'undefined' ? inputText : '');
+          })(),
+          initialConceptIdeas: pictionaryIncomingConcepts,
+        })
+      }
+      {!isTeacherMode && activeSessionCode && user && user.uid && showPictionaryGuest && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.GuestOverlay &&
+        React.createElement(window.AlloModules.ConceptPictionary.GuestOverlay, {
+          sessionCode: activeSessionCode,
+          userUid: user.uid,
+          codename: studentNickname || 'Guest',
+          myRole: _picMyRole,
+          onClose: () => setShowPictionaryGuest(false),
+        })
+      }
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
       {(bridgeSendOpen && isTeacherMode) && window.AlloModules && window.AlloModules.BridgeSendModal && React.createElement(window.AlloModules.BridgeSendModal, {
           activeSessionCode, addToast, appId, bridgeChatMessages, bridgeChatOpen,
@@ -22826,7 +24400,7 @@ Return ONLY valid JSON in this format:
                     <div style={{fontWeight:800,fontSize:12,color:'#1e293b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.title || 'Untitled'}</div>
                     <div style={{fontSize:10,color:'#64748b'}}>By {sub.author || 'Student'} · {sub.wordCount || 0} words · {sub.vocabUsed || 0}/{sub.vocabTotal || 0} vocab</div>
                     {sub.gradingScore && <div style={{fontSize:10,color:'#7c3aed',fontWeight:700}}>Score: {sub.gradingScore}</div>}
-                    {sub.preview && <div style={{fontSize:10,color:'#94a3b8',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.preview}</div>}
+                    {sub.preview && <div style={{fontSize:10,color: '#475569',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.preview}</div>}
                   </div>
                 </div>
               ))}
@@ -22839,7 +24413,7 @@ Return ONLY valid JSON in this format:
         const _aacColors = { noun:'#fef9c3', verb:'#dcfce7', adjective:'#dbeafe', other:'#f3f4f6' };
         return (
           <div
-            role="dialog" aria-modal="true" aria-label="Visual Support from your teacher"
+            role="dialog" aria-modal="true" aria-label={t('visual_support.teacher_modal_aria') || 'Visual Support from your teacher'}
             style={{position:'fixed',inset:0,zIndex:99998,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(10px)',WebkitBackdropFilter:'blur(10px)'}}
             onClick={(e) => { if (e.target === e.currentTarget) setVisualSupportsPayload(null); }}
           >
@@ -22878,7 +24452,7 @@ Return ONLY valid JSON in this format:
                       return (
                         <div key={ii} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',borderRadius:'12px',background:_isNow?'rgba(99,102,241,0.08)':'rgba(0,0,0,0.02)',border:`1px solid ${_isNow?'rgba(99,102,241,0.25)':'rgba(0,0,0,0.06)'}`}}>
                           {_isNow && <span style={{fontSize:'12px',fontWeight:700,color:'#4f46e5',background:'#eef2ff',padding:'2px 7px',borderRadius:'6px',flexShrink:0}}>NOW</span>}
-                          {!_isNow && <span style={{width:'20px',height:'20px',borderRadius:'50%',background:'rgba(0,0,0,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'11px',color:'#94a3b8',fontWeight:700,flexShrink:0}}>{ii+1}</span>}
+                          {!_isNow && <span style={{width:'20px',height:'20px',borderRadius:'50%',background:'rgba(0,0,0,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'11px',color: '#475569',fontWeight:700,flexShrink:0}}>{ii+1}</span>}
                           {item.image && <img src={item.image} alt={item.label} style={{width:'40px',height:'40px',objectFit:'contain',borderRadius:'6px',background:'white',border:'1px solid rgba(0,0,0,0.08)'}} />}
                           <span style={{fontSize:'14px',fontWeight:600,color:'#1e293b'}}>{item.label}</span>
                         </div>
@@ -23180,15 +24754,16 @@ Return ONLY valid JSON in this format:
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
-                <h3 className="font-black text-lg">Advanced Settings</h3>
+                <h3 className="font-black text-lg">{t('canvas_settings.title') || 'Advanced Settings'}</h3>
             </div>
             <div className="space-y-4">
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Google Search API Key <span className="normal-case font-normal text-slate-600">(optional)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.google_api_label') || 'Google Search API Key'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
                     <input
-                        id="ai-canvas-cse-key" aria-label="Google Search API Key"
+                        id="ai-canvas-cse-key" aria-label={t('canvas_settings.google_api_label') || 'Google Search API Key'}
                         type="password"
-                        placeholder="Your Google API key..."
+                        autoComplete="off"
+                        placeholder={t('canvas_settings.google_api_placeholder') || 'Your Google API key...'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').cseApiKey || ''; } catch { return ''; } })()}
                         onChange={(e) => {
                             const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -23197,14 +24772,14 @@ Return ONLY valid JSON in this format:
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">Power users: enter your own Google Custom Search API key (100 free queries/day)</p>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.google_api_hint') || 'Power users: enter your own Google Custom Search API key (100 free queries/day)'}</p>
                 </div>
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-600">(optional)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
                     <input
-                        id="ai-canvas-wolfram" aria-label="Wolfram Alpha App ID"
+                        id="ai-canvas-wolfram" aria-label={t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'}
                         type="text"
-                        placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
+                        placeholder={t('canvas_settings.wolfram_placeholder') || 'XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
                         onChange={(e) => {
                             const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -23212,14 +24787,14 @@ Return ONLY valid JSON in this format:
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">Free: 2,000 queries/month. Adds exact math solving and step-by-step verification</p>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.wolfram_hint') || 'Free: 2,000 queries/month. Adds exact math solving and step-by-step verification'}</p>
                 </div>
                 <div className="flex justify-end pt-2">
                     <button
                         onClick={() => setShowAIBackendModal(false)}
                         className="bg-violet-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors shadow-lg shadow-violet-200 active:scale-95"
                     >
-                        Done
+                        {t('common.done') || 'Done'}
                     </button>
                 </div>
             </div>
@@ -23340,7 +24915,7 @@ Return ONLY valid JSON in this format:
         </div>
       )}
       {!isAppReady && (
-        <div role="region" aria-label="AlloFlow loading screen" style={{
+        <div role="region" aria-label={t('splash.loading_screen_aria') || 'AlloFlow loading screen'} style={{
           position: 'fixed', inset: 0, zIndex: 99999,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #312e81 60%, #1e3a5f 100%)',
@@ -23350,7 +24925,7 @@ Return ONLY valid JSON in this format:
           <div style={{ textAlign: 'center', animation: 'pulse 2s ease-in-out infinite', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, color: 'white', margin: '0 0 16px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
             <img src={"https://raw.githubusercontent.com/Apomera/AlloFlow/main/rainbow-book.jpg"} alt="AlloFlow" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
-            <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>Adaptive Levels, Layers, & Outputs</p>
+            <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>{t('about.allo_acronym_def') || 'Adaptive Levels, Layers, & Outputs'}</p>
             <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.5)', margin: '0 0 32px', fontWeight: 500, fontStyle: 'italic' }}>{t('splash.udl_tagline')}</p>
           </div>
           <div style={{ width: '280px', height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 0 20px rgba(99,102,241,0.2)' }}>
@@ -23487,8 +25062,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStemLab(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">⚙️</div>
-                    <p className="text-lg font-bold text-slate-700">Loading STEM Lab...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'STEM Lab' }) || 'Loading STEM Lab...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowStemLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23574,8 +25149,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsSymbolStudioOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎨</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Symbol Studio...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Symbol Studio' }) || 'Loading Symbol Studio...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23648,9 +25223,38 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAlloHavenOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🌿</div>
-                    <p className="text-lg font-bold text-slate-700">Loading AlloHaven...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'AlloHaven' }) || 'Loading AlloHaven...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
+        {isDynamicAssessmentOpen && (() => {
+            const DA = window.AlloModules && window.AlloModules.DynamicAssessment;
+            if (DA) {
+                return (
+                <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                    <div className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                        {React.createElement(DA, {
+                            React: React,
+                            onClose: () => setIsDynamicAssessmentOpen(false),
+                            callGemini: callGemini,
+                            addToast,
+                            t,
+                            studentNickname: studentNickname || ''
+                        })}
+                    </div>
+                </div>
+                );
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">🔬</div>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Dynamic Assessment Studio' }) || 'Loading Dynamic Assessment Studio...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
+                    <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );
@@ -23669,8 +25273,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsCommunityCatalogOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">📚</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Community Catalog...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Community Catalog' }) || 'Loading Community Catalog...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsCommunityCatalogOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23693,8 +25297,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAccessibilityLabOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Accessibility Lab...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Accessibility Lab' }) || 'Loading Accessibility Lab...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsAccessibilityLabOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23720,8 +25324,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAuditRemediatorOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🛠️</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Audit Remediator...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Audit Remediator' }) || 'Loading Audit Remediator...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsAuditRemediatorOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23778,8 +25382,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryForge(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">📖</div>
-                    <p className="text-lg font-bold text-slate-700">Loading StoryForge...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'StoryForge' }) || 'Loading StoryForge...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23818,8 +25422,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">Loading LitLab...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'LitLab' }) || 'Loading LitLab...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23871,8 +25475,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowPoetTree(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🌳</div>
-                    <p className="text-lg font-bold text-slate-700">Loading PoetTree...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'PoetTree' }) || 'Loading PoetTree...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowPoetTree(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -23903,8 +25507,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
-                    <p className="text-lg font-bold text-slate-700">Loading SEL Hub...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'SEL Hub' }) || 'Loading SEL Hub...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24003,23 +25607,23 @@ Return ONLY valid JSON in this format:
           return (
               <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-l-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
                   style={{ background: theme === 'contrast' ? '#000' : '#0f172a', color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}
-                  role="complementary" aria-label="Read This Page panel"
+                  role="complementary" aria-label={t('read_this_page.panel_aria') || 'Read This Page panel'}
               >
                   {/* Header */}
                   <div className="flex items-center justify-between p-3 border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
                       <div className="flex items-center gap-2 font-black text-sm">
-                          <Ear size={16} className="text-purple-400" />
-                          <span>Read This Page</span>
+                          <Ear size={16} className="text-purple-700" />
+                          <span>{t('read_this_page.title') || 'Read This Page'}</span>
                       </div>
                       <div className="flex items-center gap-1">
                           <button id="rtp-read-all-btn" onClick={handleReadAll}
                               className="px-3 py-1 rounded-lg text-white text-[11px] font-bold transition-colors hover:brightness-110"
                               style={{ background: '#7c3aed' }}
-                          >{'\u25B6'} Read All</button>
+                          >{'\u25B6'} {t('read_this_page.read_all_button') || 'Read All'}</button>
                           <button onClick={handleStop}
                               className="px-2 py-1 rounded-lg text-white text-[11px] font-bold hover:bg-red-600 transition-colors"
                               style={{ background: '#dc2626' }}
-                          >{'\u23F9'} Stop</button>
+                          >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
                           <button onClick={() => { handleStop(); setShowReadThisPage(false); setFocusNarrationEnabled(false); }}
                               className="ml-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
                           >{'\u2715'}</button>
@@ -24031,9 +25635,9 @@ Return ONLY valid JSON in this format:
                           <input type="checkbox" checked={focusNarrationEnabled} onChange={(e) => setFocusNarrationEnabled(e.target.checked)}
                               className="w-4 h-4 rounded accent-purple-500"
                           />
-                          <span className="text-[11px] font-bold">Keyboard Focus Narration</span>
+                          <span className="text-[11px] font-bold">{t('read_this_page.focus_narration_label') || 'Keyboard Focus Narration'}</span>
                       </label>
-                      <span className="text-[11px] text-slate-600">{focusNarrationEnabled ? 'Tab to hear controls' : 'Off'}</span>
+                      <span className="text-[11px] text-slate-600">{focusNarrationEnabled ? (t('read_this_page.focus_narration_on_hint') || 'Tab to hear controls') : (t('common.off') || 'Off')}</span>
                   </div>
                   {/* Content Items */}
                   <div className="flex-1 overflow-y-auto p-2 space-y-1" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
@@ -24079,10 +25683,10 @@ class AlloFlowErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return React.createElement("div", {
         style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                 minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#0f172a", color: "#e2e8f0", padding: "2rem" }
+                 minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#0f172a", color: "#475569", padding: "2rem" }
       },
         React.createElement("h1", { style: { fontSize: "1.5rem", marginBottom: "1rem" } }, "Something went wrong"),
-        React.createElement("p", { style: { color: "#94a3b8", marginBottom: "1.5rem", textAlign: "center", maxWidth: "400px" } },
+        React.createElement("p", { style: { color: "#475569", marginBottom: "1.5rem", textAlign: "center", maxWidth: "400px" } },
           "AlloFlow encountered an unexpected error. This can happen if cached data is corrupted."),
         React.createElement("button", {
           onClick: () => {
@@ -24114,6 +25718,12 @@ function KokoroOfferModal(props) {
 function ConfirmDialog(props) {
     var Real = window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
     if (Real && Real !== ConfirmDialog) return React.createElement(Real, props);
+    return null;
+}
+// ── PromptDialog extracted to view_prompt_dialog_module.js (CDN) ──
+function PromptDialog(props) {
+    var Real = window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+    if (Real && Real !== PromptDialog) return React.createElement(Real, props);
     return null;
 }
 // ── HintsModal extracted to view_hints_modal_module.js (CDN) ──

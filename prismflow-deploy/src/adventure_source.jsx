@@ -48,7 +48,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="relative z-20">
                 <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className="text-cyan-400 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
+                    <span className="text-cyan-700 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
                     <span className="text-white">{proficiency}/100 ({ratingLabel})</span>
                 </div>
                 <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
@@ -60,13 +60,13 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             </div>
             <div className="grid grid-cols-2 gap-4 relative z-20">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-yellow-400">
+                    <div className="flex items-center gap-2 mb-2 text-yellow-700">
                         <Zap size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
                     <div className="text-3xl font-black">{efficiency}%</div>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-green-400">
+                    <div className="flex items-center gap-2 mb-2 text-green-700">
                         <Key size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
                     </div>
                     <div className="text-3xl font-black">{safeStats.conceptsFound.length}</div>
@@ -420,8 +420,8 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
         <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
       </div>
       <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mt-1.5 px-1">
-        <span className="text-red-400">{leftLabel} (0%)</span>
-        <span className="text-green-400">{rightLabel} (100%)</span>
+        <span className="text-red-600">{leftLabel} (0%)</span>
+        <span className="text-green-700">{rightLabel} (100%)</span>
       </div>
     </div>
   );
@@ -566,7 +566,7 @@ const InventoryGrid = React.memo(({ inventory, onSelect }) => {
   if (!inventory || inventory.length === 0) return null;
   return (
     <div className="flex items-center gap-2 bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-600/50">
-      <Backpack size={16} className="text-yellow-400" />
+      <Backpack size={16} className="text-yellow-700" />
       <div className="flex -space-x-2">
         {inventory.map((item, idx) => (
           <div
@@ -678,13 +678,14 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
 // ═══ AdventureShop (lines 10923-11011) ═══
 const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
   const shopRef = useRef(null);
-  useFocusTrap(shopRef, true);
+  useFocusTrap(shopRef, true, onClose);
   const { t } = useContext(LanguageContext);
   return (
     <div
         ref={shopRef}
         role="dialog"
         aria-modal="true"
+        aria-label={t('adventure.shop')}
         className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
         onClick={onClose}
     >
@@ -709,14 +710,14 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                     <span className="text-2xl">💰</span>
                     <div>
                         <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
-                        <div className="text-xl font-black text-yellow-400 leading-none">{gold}</div>
+                        <div className="text-xl font-black text-yellow-700 leading-none">{gold}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
                     <span className="text-2xl">🏆</span>
                     <div>
                         <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
-                        <div className="text-xl font-black text-green-400 leading-none">{globalXP}</div>
+                        <div className="text-xl font-black text-green-700 leading-none">{globalXP}</div>
                     </div>
                 </div>
             </div>
@@ -732,7 +733,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                             {item.icon}
                         </div>
                         <div className="text-right">
-                            <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
+                            <div className="text-yellow-700 font-black text-lg">{item.cost} G</div>
                             <span className="text-[11px] font-bold uppercase text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
                                 {t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>
@@ -820,7 +821,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 text-red-400 hover:bg-red-200 hover:text-red-600 text-xs font-bold opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center" title={t('adventure.remove_character')}>✕</button>
+                            <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-600 text-xs font-bold opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center" title={t('adventure.remove_character')}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner">
                                 {char.isGenerating ? (
                                     <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full"></div>
@@ -831,17 +832,17 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 )}
                             </div>
                             {editingField?.idx === i && editingField?.field === 'name' ? (
-                                <input type="text" value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white"/>
+                                <input type="text" aria-label={t('adventure.edit_name') || 'Edit character name'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white"/>
                             ) : (
                                 <h3 onClick={() => startFieldEdit(i, 'name')} className="font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-600 hover:underline decoration-dashed underline-offset-2 transition-colors" title={t('adventure.edit_name')}>{char.name}</h3>
                             )}
                             {editingField?.idx === i && editingField?.field === 'role' ? (
-                                <input type="text" value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="text-xs text-violet-600 font-medium text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white mt-0.5"/>
+                                <input type="text" aria-label={t('adventure.edit_role') || 'Edit character role'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="text-xs text-violet-600 font-medium text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white mt-0.5"/>
                             ) : (
                                 <p onClick={() => startFieldEdit(i, 'role')} className="text-xs text-violet-600 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors" title={t('adventure.edit_role')}>{char.role}</p>
                             )}
                             {editingField?.idx === i && editingField?.field === 'appearance' ? (
-                                <textarea value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white resize-none"/>
+                                <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white resize-none"/>
                             ) : (
                                 <p onClick={() => startFieldEdit(i, 'appearance')} className="text-[11px] text-slate-600 mt-1 leading-relaxed cursor-pointer hover:text-slate-700 hover:underline decoration-dashed underline-offset-2 transition-colors" title={t('adventure.edit_appearance')}>{char.appearance}</p>
                             )}
@@ -853,13 +854,13 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                     <button onClick={() => onGeneratePortrait(i)} className="text-xs px-3 py-1 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-all font-bold" title={t('adventure.regen_portrait')}>
                                         🔄 {char.isUserUploaded ? 'AI Generate' : 'Regenerate'}
                                     </button>
-                                    <input type="file" accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
+                                    <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
                                     <button onClick={() => portraitFileRefs.current[i]?.click()} className="text-xs px-3 py-1 bg-sky-50 text-sky-600 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-200" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload
                                     </button>
                                     {editIdx === i ? (
                                         <div className="w-full flex gap-1 mt-1">
-                                            <input type="text" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder="e.g. Add green glasses" className="flex-1 text-xs px-2 py-1 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}}/>
+                                            <input type="text" aria-label={t('adventure.portrait_refine_aria') || 'Describe how to refine portrait'} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder={t('adventure.portrait_refine_placeholder') || 'e.g. Add green glasses'} className="flex-1 text-xs px-2 py-1 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}}/>
                                             <button onClick={() => { if (editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}} className="text-xs px-2 py-1 bg-violet-500 text-white rounded-lg font-bold hover:bg-violet-600">✓</button>
                                             <button onClick={() => { setEditIdx(null); setEditPrompt(''); }} className="text-xs px-2 py-1 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300">✗</button>
                                         </div>
@@ -887,23 +888,23 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                     <button onClick={() => onGeneratePortrait(i)} className="text-xs px-3 py-1 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-all font-bold">
                                         🎨 Generate Portrait
                                     </button>
-                                    <input type="file" accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
+                                    <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
                                     <button onClick={() => portraitFileRefs.current['new-' + i]?.click()} className="text-xs px-3 py-1 bg-sky-50 text-sky-600 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-200" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload Photo
                                     </button>
                                 </div>
                             )}
                             {char.isGenerating && (
-                                <p className="mt-2 text-[11px] text-violet-400 animate-pulse font-medium">Generating...</p>
+                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium">Generating...</p>
                             )}
                         </div>
                     ))}
                     {isAdding ? (
                         <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center">
                             <span className="text-2xl mb-2">✨</span>
-                            <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('adventure.char_name_placeholder')} className="w-full text-sm px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center font-bold"/>
-                            <input type="text" value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center"/>
-                            <input type="text" value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder="Appearance (e.g. tall, silver hair, blue robe)" className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}}/>
+                            <input type="text" aria-label={t('adventure.char_name_placeholder') || 'Character name'} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('adventure.char_name_placeholder')} className="w-full text-sm px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center font-bold"/>
+                            <input type="text" aria-label={t('adventure.role_placeholder') || 'Character role'} value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center"/>
+                            <input type="text" aria-label={t('adventure.appearance_placeholder') || 'Character appearance'} value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder={t('adventure.appearance_placeholder') || 'Appearance (e.g. tall, silver hair, blue robe)'} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}}/>
                             <div className="flex gap-1.5 mt-1">
                                 <button onClick={() => { if (newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg font-bold hover:bg-violet-700">Add</button>
                                 <button onClick={() => { setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }} className="text-xs px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300">Cancel</button>
@@ -913,7 +914,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                         <button onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-200 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-400 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group">
                             <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">➕</span>
                             <span className="font-bold text-sm text-violet-600">{t('adventure.add_character')}</span>
-                            <span className="text-[11px] text-slate-400 mt-0.5">{t('adventure.create_cast_member')}</span>
+                            <span className="text-[11px] text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
                         </button>
                     )}
                 </div>
