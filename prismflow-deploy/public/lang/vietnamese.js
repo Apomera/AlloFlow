@@ -1785,6 +1785,17 @@
     "pronounce_term": "Phát âm thuật ngữ",
     "pronounce_term_title": "Nghe cách phát âm"
   },
+  "text_tools": {
+    "click_to_add": "Nhấp để thêm vào từ vựng",
+    "click_to_phonics": "Nhấp để nghe ngữ âm",
+    "click_to_define": "Nhấp để định nghĩa",
+    "menu_placeholder": "Chúng ta nên thay đổi điều này như thế nào?",
+    "simplify": "Đơn giản hóa",
+    "custom": "Chỉnh sửa Tùy chỉnh",
+    "explain": "Giải thích",
+    "define": "Định nghĩa",
+    "add_term": "Thêm Thuật ngữ"
+  },
   "flashcards": {
     "no_translations": "Không có bản dịch nào. Vui lòng thêm ngôn ngữ mục tiêu để tạo thẻ học ngôn ngữ.",
     "alt_visual": "Hình ảnh",
@@ -1844,6 +1855,11 @@
     "status_checking": "Đang kiểm tra gói ngôn ngữ...",
     "status_generating": "Đang tạo bản dịch...",
     "status_translating_part": "Đang dịch phần {current} của {total}..."
+  },
+  "languages": {
+    "english": "Tiếng Anh",
+    "all_selected": "Tất cả Ngôn ngữ Đã chọn",
+    "english_only": "Chỉ Tiếng Anh"
   },
   "lesson_plan": {
     "toast_drafting_plan": "Đang soạn Giáo án...",
@@ -2175,6 +2191,28 @@
     "toggle_images_aria": "Bật/tắt thẻ hình ảnh",
     "show_images_title": "Hiện hình ảnh trên thẻ",
     "hide_images_title": "Ẩn hình ảnh khỏi thẻ"
+  },
+  "audio_player": {
+    "resume": "Tiếp tục Âm thanh",
+    "pause": "Tạm dừng Âm thanh",
+    "speed": "Tốc độ Phát",
+    "stop": "Dừng Âm thanh và Đặt lại"
+  },
+  "review_game": {
+    "title": "Thử thách Ôn tập",
+    "subtitle": "Chọn một ô để hiện câu hỏi • Kiếm điểm cho đội của bạn",
+    "toggle_sound": "Bật/tắt Hiệu ứng Âm thanh",
+    "reset": "Đặt lại Trò chơi",
+    "reset_confirm": "Đặt lại bảng trò chơi và điểm số?",
+    "add_team": "Thêm Đội",
+    "reveal_answer": "Tiết lộ Đáp án",
+    "hide_answer": "Ẩn Đáp án",
+    "who_correct": "Ai đã trả lời đúng?",
+    "no_points": "Không có Điểm",
+    "cat_concepts": "Khái niệm Cốt lõi",
+    "cat_vocab": "Từ vựng",
+    "cat_analysis": "Phân tích",
+    "team_default_name": "Đội"
   },
   "escape_room": {
     "save_config": "Lưu cấu hình",
@@ -2918,6 +2956,33 @@
     "restore_original": "Khôi phục Bản gốc",
     "upload_image": "Tải lên Hình ảnh"
   },
+  "visual_director": {
+    "multi_panel": "Đa Bảng ({{count}} bảng)",
+    "generating_panels": "Đang tạo minh họa đa bảng...",
+    "refining_panel": "Đang tinh chỉnh bảng...",
+    "refining_panel_n": "Đang tinh chỉnh bảng {{n}} trên {{total}}...",
+    "refining_all_panels": "Đang tinh chỉnh tất cả các bảng...",
+    "all_panels_refined": "Đã tinh chỉnh tất cả các bảng!",
+    "panels_downloaded": "Đã tải xuống các bảng!",
+    "refine_failed": "Tinh chỉnh bảng thất bại.",
+    "panel_refined": "Đã tinh chỉnh bảng!"
+  },
+  "fullpack": {
+    "button_label": "Tạo Trọn bộ Tài nguyên",
+    "helper_text": "Tạo Phân tích, Văn bản, Từ vựng, Hình ảnh, Bài kiểm tra & nhiều hơn (Tuần tự)",
+    "auto_configure": "Cấu hình Tự động",
+    "limit_tooltip": "Giới hạn số lượng tài nguyên được tạo",
+    "option_auto": "Tự động (AI Quyết định)",
+    "option_short": "Ngắn (5)",
+    "option_standard": "Tiêu chuẩn (8)",
+    "option_deep": "Sâu (12)",
+    "option_all": "Tất cả Công cụ",
+    "status_init": "Đang khởi tạo Bộ Tài nguyên...",
+    "status_start": "Đang bắt đầu trình tự tạo...",
+    "group_all": "Tất cả Nhóm",
+    "group_current": "Cài đặt Hiện tại",
+    "group_tooltip": "Tạo cho một nhóm cụ thể hoặc tất cả các nhóm"
+  },
   "faq": {
     "title": "Trình tạo FAQ",
     "count": "Số lượng Câu hỏi",
@@ -2965,6 +3030,10 @@
     "fix_grammar_button": "Sửa Lỗi Ngữ pháp",
     "dismiss_fixed": "Bỏ qua Các Thông báo Đã sửa",
     "grammar_dismissed": "Đã xóa các thông báo ngữ pháp."
+  },
+  "udl_advice": {
+    "title": "Chiến lược UDL",
+    "header_description": "<strong>Chiến lược UDL:</strong> Lời khuyên sư phạm cho phân hóa và hòa nhập."
   },
   "scaffolds": {
     "title": "Khung Hỗ trợ Viết",
@@ -3926,6 +3995,18 @@
     "edit_step_explanation": "Chỉnh sửa giải thích bước",
     "edit_step_latex": "Chỉnh sửa bước (LaTeX)"
   },
+  "progression": {
+    "title": "Tiến triển Chương trình",
+    "analyze_btn": "Tạo Bài học Tiếp theo Hợp lý",
+    "analyzing_btn": "Đang phân tích Phạm vi & Trình tự...",
+    "helper_text": "Xác định bước tiếp theo trong đơn vị này dựa trên tiêu chuẩn.",
+    "recommended_header": "Bước Tiếp theo Khuyến nghị",
+    "build_btn": "Xây dựng Bài học này Ngay",
+    "toast_success": "Đã xác định lộ trình tiến triển!",
+    "toast_error": "Không thể xác định bài học tiếp theo.",
+    "toast_activated": "Đã cấu hình Bài học Tiếp theo. Sẵn sàng để tạo.",
+    "bot_intro": "Tôi đã cấu hình chủ đề bài học tiếp theo: \"**{topic}**\".\n\nTôi đã điền sẵn các cài đặt tạo nguồn dựa trên tiến triển chương trình.\n\n**Bạn có muốn tôi tạo văn bản nguồn ngay bây giờ không?** (Bạn cũng có thể điều chỉnh Giọng điệu, Độ dài hoặc Hướng dẫn trong bảng trước)."
+  },
   "bridge": {
     "prompt_header": "Lời nhắc Gemini Canvas",
     "copy_action": "Sao chép Lời nhắc",
@@ -4075,6 +4156,16 @@
     "toast_max_limit": "Tối đa cho phép 3 tiêu chuẩn.",
     "toast_duplicate": "Tiêu chuẩn đã được thêm.",
     "toast_added": "Đã thêm tiêu chuẩn."
+  },
+  "export_menu": {
+    "label": "Tải xuống dưới dạng...",
+    "qti": "Bài kiểm tra Canvas (QTI)",
+    "print": "In / Lưu PDF",
+    "clean_pdf": "Tệp PDF Sạch",
+    "worksheet": "Phiếu bài tập",
+    "html": "Gói HTML",
+    "slides": "Slide PowerPoint",
+    "ims": "Gói LMS (IMS)"
   },
   "export": {
     "district_resource": "Tài nguyên Học khu AlloFlow",
@@ -4416,6 +4507,16 @@
     "local_mode_warning": "Đang chạy ở chế độ xem trước cục bộ (Firebase bị tắt).",
     "waiting_for_students": "Đang chờ học sinh nộp bài..."
   },
+  "student": {
+    "save_banner_title": "Lưu Tiến độ của Bạn",
+    "save_banner_desc": "Sao lưu các tài nguyên của bạn để giữ một bản sao công việc.",
+    "save_drive": "Lưu Tệp",
+    "load_file": "Tải Tệp",
+    "resume_adventure": "Tiếp tục Phiêu lưu",
+    "resume_adventure_desc": "Tiếp tục cuộc phiêu lưu đã lưu của bạn",
+    "adventure_restored": "Đã khôi phục tiến độ phiêu lưu!",
+    "adventure_saved": "Đã bao gồm tiến độ phiêu lưu trong bản lưu"
+  },
   "dashboard": {
     "title": "Bảng điều khiển Chấm điểm Giáo viên",
     "grading_dashboard": "Bảng điều khiển Chấm điểm Giáo viên",
@@ -4622,6 +4723,20 @@
     },
     "all_tool_activity": "Tất cả hoạt động công cụ"
   },
+  "tools": {
+    "source": "Tài liệu Nguồn",
+    "glossary": "Từ vựng & Chọn Ngôn ngữ",
+    "simplified": "Điều chỉnh & Gắn kết Văn bản",
+    "outline": "Tổ chức Trực quan",
+    "quiz": "Phiếu Thoát Lớp",
+    "adventure": "Chế độ Phiêu lưu"
+  },
+  "actions": {
+    "rename": "Đổi tên",
+    "move_up": "Di chuyển Lên",
+    "move_down": "Di chuyển Xuống",
+    "remove": "Xóa"
+  },
   "modals": {
     "student_welcome": "Không gian làm việc của Học sinh",
     "student_entry": "Chào mừng, Học sinh",
@@ -4753,6 +4868,37 @@
     "auto_advance_aria": "Tự động chuyển sang câu tiếp theo",
     "playback_speed_aria": "Tốc độ phát"
   },
+  "timer": {
+    "title": "Đồng hồ Nhiệm vụ",
+    "label_task": "Nhiệm vụ Hiện tại",
+    "placeholder": "Bạn đang làm gì?",
+    "start": "Bắt đầu",
+    "pause": "Tạm dừng",
+    "reset": "Đặt lại Đồng hồ",
+    "set_btn": "Đặt",
+    "time_up_msg": "Hết giờ! Tập trung tuyệt vời."
+  },
+  "roles": {
+    "title": "Chào mừng đến với AlloFlow",
+    "subtitle": "Hôm nay bạn sẽ sử dụng ứng dụng như thế nào?",
+    "student": "Học sinh",
+    "teacher": "Giáo viên",
+    "parent": "Phụ huynh",
+    "independent": "Người Học Độc lập",
+    "mic_setup": "Thiết lập Tùy chọn",
+    "mic_ready": "Micro Sẵn sàng",
+    "mic_denied": "Truy cập Bị từ chối (Kiểm tra Cài đặt Trình duyệt)",
+    "mic_requesting": "Đang yêu cầu truy cập...",
+    "mic_enable": "Bật Truy cập Micro",
+    "mic_tip": "Khuyến nghị: Nhấp ở trên để ngăn gián đoạn sau này.",
+    "voice_not_supported": "Các tính năng giọng nói không được hỗ trợ trong trình duyệt này."
+  },
+  "entry": {
+    "placeholder": "ví dụ: Chim Ưng Đỏ",
+    "warning": "Đừng dùng tên thật của bạn.",
+    "start": "Bắt đầu Phiêu lưu Mới",
+    "load": "Tải Tệp Đã lưu"
+  },
   "codenames": {
     "adjectives": [
       "Núi cao",
@@ -4860,6 +5006,12 @@
     ],
     "pick_adjective": "Chọn một Tính từ",
     "pick_animal": "Chọn một Động vật"
+  },
+  "welcome": {
+    "load": "Tải Tệp Bài học",
+    "skip": "Bỏ qua (Bắt đầu Mới)",
+    "prompt": "Bạn có tệp bài học để tải không?",
+    "close_aria": "Đóng"
   },
   "tips": {
     "simplified_def": "Hãy thử nhấp vào một từ như '{word}' trong văn bản để xem nó có nghĩa là gì!",
@@ -5704,6 +5856,39 @@
     "portrait_refine_placeholder": "ví dụ: Thêm kính màu xanh lá",
     "appearance_placeholder": "Ngoại hình (ví dụ: cao, tóc bạc, áo choàng xanh)"
   },
+  "grades": {
+    "k": "Mẫu giáo",
+    "g1": "Lớp 1",
+    "g2": "Lớp 2",
+    "g3": "Lớp 3",
+    "g4": "Lớp 4",
+    "g5": "Lớp 5",
+    "g6": "Lớp 6",
+    "g7": "Lớp 7",
+    "g8": "Lớp 8",
+    "g9": "Lớp 9",
+    "g10": "Lớp 10",
+    "g11": "Lớp 11",
+    "g12": "Lớp 12",
+    "college": "Đại học",
+    "grad": "Sau Đại học"
+  },
+  "grades_short": {
+    "k": "MG",
+    "g1": "L1",
+    "g2": "L2",
+    "g3": "L3",
+    "g4": "L4",
+    "g5": "L5",
+    "g6": "L6",
+    "g7": "L7",
+    "g8": "L8",
+    "g9": "L9",
+    "g10": "L10",
+    "g11": "L11",
+    "g12": "L12",
+    "college": "ĐH"
+  },
   "chat_guide": {
     "header": "Hướng dẫn & Trợ lý AI",
     "voice_mode": "Chế độ Giọng nói",
@@ -5786,6 +5971,18 @@
     "save_actionable_btn": "Lưu Hành động",
     "save_actionable_loading": "Đang lưu..."
   },
+  "student_dashboard": {
+    "level_progress": "Tiến độ Cấp độ",
+    "level_abbr": "Cấp",
+    "total_xp": "Tổng XP",
+    "no_activities": "Chưa hoàn thành hoạt động nào."
+  },
+  "prompts": {
+    "verified_correct": "**Đáp án Đúng Đã xác minh:**",
+    "actual_correct": "**Đáp án Đúng Thực sự:**",
+    "correction_warning": "**SỬA / CẢNH BÁO:**",
+    "why_incorrect": "**Tại sao các tùy chọn khác không đúng:**"
+  },
   "project_settings": {
     "title": "Cài đặt Dự án Học sinh",
     "enable_dictation": "Bật Đọc Chính tả trong Chế độ Học sinh",
@@ -5832,6 +6029,9 @@
     "aria_active": "Trợ lý AI AlloBot",
     "sleeping": "Zzz..."
   },
+  "error": {
+    "syntax_scramble": "Xáo Cú pháp gặp lỗi."
+  },
   "profiles": {
     "title": "Hồ sơ Học sinh",
     "import_tooltip": "Nhập JSON Hồ sơ",
@@ -5850,6 +6050,13 @@
     "new_profile_placeholder": "ví dụ: Nhóm ESL A (Lớp 3)",
     "save_helper": "Lưu Lớp, Ngôn ngữ, Sở thích, DOK & Tiêu chuẩn hiện tại.",
     "save_tooltip": "Lưu cấu hình hiện tại làm hồ sơ mới"
+  },
+  "chat": {
+    "location_unknown": "Tôi không chắc \"{target}\" nằm ở đâu trong giao diện.",
+    "generating_resource": "Hiểu rồi. Đang tạo tài nguyên Văn bản Phân cấp ngay...",
+    "settings_updated": "Tôi đã cập nhật cài đặt của bạn:\n- {changes}\n\nSẵn sàng để tạo?",
+    "settings_failed": "Tôi hiểu bạn muốn thay đổi cài đặt, nhưng tôi không thể phát hiện các giá trị cụ thể. Vui lòng thử lại.",
+    "find_feature_error": "Không thể tìm thấy tính năng đó."
   },
   "toolbar": {
     "show_bot": "Hiện Trợ lý AI",
@@ -6137,6 +6344,30 @@
     "young_voice_badge": "Đã phát hiện giọng trẻ",
     "dialectal_patterns_badge": "Các mẫu phương ngữ được tôn trọng"
   },
+  "socratic": {
+    "title": "Gia sư Socrates",
+    "thinking": "Đang suy nghĩ...",
+    "placeholder": "Hỏi xin gợi ý...",
+    "welcome": "Xin chào! Tôi là gia sư của bạn. Tôi sẽ không cho bạn các câu trả lời, nhưng tôi có thể giúp bạn tìm chúng. Bạn đang làm gì?",
+    "ask_for_help": "Hỏi xin Trợ giúp",
+    "auto_read": "Tự đọc Phản hồi",
+    "auto_send": "Tự động Gửi Giọng nói",
+    "mic_tooltip": "Nhập Giọng nói",
+    "listening": "Đang nghe...",
+    "expand_tooltip": "Mở rộng Chat",
+    "collapse_tooltip": "Thu gọn Chat",
+    "drag_hint": "Kéo để di chuyển"
+  },
+  "hints": {
+    "title": "Gợi ý & Ý tưởng Hữu ích",
+    "loading_title": "Trong khi bạn đợi...",
+    "empty_state": "Chưa có gợi ý nào được tạo. Tạo một số tài nguyên để xem các mẹo AI ở đây!",
+    "synthesizing": "Đang tổng hợp các kết nối...",
+    "generate_extensions": "Tạo Mở rộng Bài học Sâu",
+    "save_to_history": "Lưu vào Lịch sử",
+    "apply_brainstorm": "Áp dụng cho Động não",
+    "apply_brainstorm_tooltip": "Sử dụng ý tưởng này để tạo các hoạt động Động não"
+  },
   "mastery": {
     "start_check": "Kiểm tra Thông thạo",
     "start_tooltip": "Bắt đầu Bản nháp Viết Có hướng dẫn",
@@ -6275,6 +6506,30 @@
     "Indonesian": "Tiếng Indonesia",
     "Turkish": "Tiếng Thổ Nhĩ Kỳ"
   },
+  "organizer": {
+    "labels": {
+      "cause": "Nguyên nhân",
+      "effect": "Kết quả",
+      "end": "Kết thúc",
+      "problem_label": "Vấn đề",
+      "solutions": "Giải pháp"
+    }
+  },
+  "quick_start": {
+    "article_imported": "Đã nhập và làm sạch bài viết!",
+    "copy_paste_instruction": "Vui lòng sao chép URL từ tab mới và dán vào đây.",
+    "error_auto_search": "Tìm kiếm thất bại. Vui lòng thử lại.",
+    "error_extract": "Không thể trích xuất văn bản. URL có thể không hợp lệ hoặc chặn truy cập.",
+    "error_no_urls": "Không thể tìm thấy URL cụ thể. Hãy thử chủ đề khác.",
+    "error_read_file": "Đọc tệp văn bản thất bại.",
+    "search_failed": "Tìm kiếm thất bại.",
+    "found_resources": "Đã tìm thấy {count} tài nguyên"
+  },
+  "stem_lab": {
+    "save_to_resources": "Lưu vào Tài nguyên",
+    "assessment_saved": "Đã lưu Đánh giá STEM vào tài nguyên!",
+    "assessment_prefix": "Đánh giá STEM:"
+  },
   "explore": {
     "challenge_number_line": "Thử thách Trục số",
     "challenge_multiplication": "Thử thách Nhân",
@@ -6300,6 +6555,29 @@
     "frac_equivalent": "{n}/{d} = ?/{target} (tìm tử số bị thiếu)",
     "frac_compare": "Cái nào lớn hơn: {n1}/{d1} hoặc {n2}/{d2}? (Gõ tử số của cái lớn hơn)",
     "fluency_started": "Đã bắt đầu luyện lưu loát!"
+  },
+  "survey": {
+    "tam_student_usefulness": "AlloFlow giúp tôi học đọc và toán tốt hơn",
+    "tam_student_ease": "AlloFlow dễ sử dụng",
+    "tam_student_intention": "Tôi muốn tiếp tục sử dụng AlloFlow",
+    "tam_teacher_usefulness": "AlloFlow cải thiện đáng kể kết quả đọc viết của học sinh",
+    "tam_teacher_ease": "AlloFlow tích hợp dễ dàng vào quy trình làm việc hiện tại của tôi",
+    "tam_teacher_intention": "Tôi dự định tiếp tục sử dụng AlloFlow trong năm học tới",
+    "tam_parent_usefulness": "AlloFlow đã hữu ích cho việc học của con tôi",
+    "tam_parent_intention": "Tôi sẽ giới thiệu AlloFlow cho các phụ huynh khác"
+  },
+  "rti": {
+    "progress_monitor": "Giám sát Tiến độ RTI",
+    "baseline": "Đường cơ sở",
+    "target_wcpm": "WCPM Mục tiêu",
+    "target_date": "Ngày Mục tiêu",
+    "trend_line_comparison": "So sánh Đường Xu hướng",
+    "ncii_recommended": "NCII khuyến nghị",
+    "frequency": "Tần suất",
+    "weekly": "Hàng tuần",
+    "group_size": "Quy mô Nhóm",
+    "start_date": "Ngày Bắt đầu",
+    "download_report_title": "Tải xuống báo cáo tập trung vào phát triển phù hợp để chia sẻ với gia đình"
   },
   "probes": {
     "benchmark_battery": "Bộ Đánh giá Chuẩn mực",
@@ -6377,6 +6655,24 @@
     "scale": "Thang đo",
     "value": "Giá trị"
   },
+  "glossary_health": {
+    "composite_accuracy": "Độ chính xác Tổng hợp",
+    "grade_level": "Cấp lớp",
+    "vocabulary_tiers": "Cấp Từ vựng",
+    "suggested_terms": "Thuật ngữ Bổ sung Đề xuất",
+    "concept_web": "Mạng Khái niệm"
+  },
+  "resource_builder": {
+    "question": "Câu hỏi",
+    "quick_templates": "Mẫu Nhanh",
+    "use_current_text": "Sử dụng Văn bản Hiện tại",
+    "attach_image": "Đính kèm Hình ảnh",
+    "use_generated": "Sử dụng Đã tạo",
+    "generation_mode": "Chế độ Tạo",
+    "target_group": "Nhóm Mục tiêu",
+    "target_language": "Ngôn ngữ Mục tiêu",
+    "reading_level": "Trình độ Đọc"
+  },
   "print": {
     "oral_fluency_title": "Phiếu Điểm Lưu loát Bằng lời",
     "student": "Học sinh",
@@ -6408,6 +6704,16 @@
     "assessment_record": "Bản ghi Đánh giá AlloFlow",
     "generated": "Được tạo"
   },
+  "splash": {
+    "tagline": "Cấp độ, Lớp & Đầu ra Thích ứng ➔ Tùy chọn Học tập Linh hoạt cho Giáo dục Toàn diện",
+    "rights": "Cấp phép theo AGPLv3 • Bản quyền © 2026 Aaron Pomeranz, PsyD",
+    "udl_tagline": "Được thông tin bởi Thiết kế Phổ quát cho Học tập",
+    "initializing": "Đang khởi tạo...",
+    "loading_resources": "Đang tải tài nguyên...",
+    "preparing_workspace": "Đang chuẩn bị không gian làm việc của bạn...",
+    "almost_ready": "Gần xong...",
+    "loading_screen_aria": "Màn hình tải AlloFlow"
+  },
   "educator_hub": {
     "title": "Công cụ Giáo dục",
     "subtitle": "Công cụ chuyên nghiệp cho các nhà giáo dục và lâm sàng",
@@ -6431,6 +6737,33 @@
     "accessibility_lab_title": "Phòng Khả năng Tiếp cận",
     "accessibility_lab_desc": "Xác minh trải nghiệm của học sinh: xem trước với tư cách học sinh, tour chỉ bàn phím, kiểm toán WCAG trực tiếp (axe-core) với các vi phạm được đóng khung bởi tác động đến học sinh, xem trước thông báo trình đọc màn hình và các trình mô phỏng khuyết tật (thị lực thấp, mù màu, khó đọc, chậm vận động)."
   },
+  "report_writer": {
+    "loading": "Đang tải Report Writer...",
+    "loading_hint": "Mô-đun đang tải từ CDN. Nếu vẫn tiếp diễn, hãy kiểm tra kết nối của bạn."
+  },
+  "learning_hub": {
+    "title": "Công cụ Học tập",
+    "subtitle": "Chọn một công cụ để khám phá",
+    "stem_title": "Phòng STEM",
+    "stem_desc": "Hơn 40 khám phá toán & khoa học tương tác",
+    "storyforge_title": "StoryForge",
+    "storyforge_desc": "Tạo các câu chuyện minh họa với công cụ viết AI",
+    "sel_title": "SEL Hub",
+    "sel_desc": "Học tập cảm xúc xã hội cho sự tự nhận thức & phát triển",
+    "close_aria": "Đóng trung tâm học tập",
+    "litlab_title": "LitLab",
+    "litlab_desc": "Đưa các câu chuyện vào cuộc sống với giọng nhân vật & phân tích văn học",
+    "poettree_title": "PoetTree",
+    "poettree_desc": "Viết thơ với khung dạng, phân tích vần & nhịp điệu, phản hồi AI"
+  },
+  "sel_hub": {
+    "loading": "Đang tải SEL Hub...",
+    "loading_hint": "Mô-đun đang tải từ CDN. Nếu vẫn tiếp diễn, hãy kiểm tra kết nối của bạn."
+  },
+  "adventure_title": "Phiêu lưu",
+  "cancel": "Hủy",
+  "move_down": "Di chuyển xuống",
+  "move_up": "Di chuyển lên",
   "bl": {
     "abc_entries": "Mục ABC",
     "antecedent": "Tiền đề",
@@ -6461,6 +6794,77 @@
     "settings_label": "Cài đặt",
     "target_behaviors_frequency": "Tần suất hành vi mục tiêu",
     "total_sessions": "Tổng số phiên"
+  },
+  "docbuilder": {
+    "search_aria": "Tìm kiếm khối",
+    "search_placeholder": "Tìm kiếm khối…"
+  },
+  "note_taking": {
+    "template_label": "Loại mẫu",
+    "cornell": "Ghi chú Cornell (2 cột + tóm tắt)",
+    "lab_report": "Báo cáo Thí nghiệm (Câu hỏi / Giả thuyết / Phương pháp / Dữ liệu / CER / Kết luận)",
+    "reading_response": "Mục Nhật ký Phản hồi Đọc",
+    "help": "Mỗi mẫu được khung hỗ trợ từ văn bản nguồn hôm nay nhưng tồn tại trong lịch sử của bạn để bạn có thể tiếp tục thêm vào qua các bài học.",
+    "generate": "Tạo mẫu"
+  },
+  "anchor_chart": {
+    "type_label": "Loại biểu đồ",
+    "reference": "Tham khảo (đặc điểm / chuẩn mực / quy ước)",
+    "process": "Quy trình (các bước tuần tự)",
+    "concept_map": "Bản đồ Khái niệm (các phần của tổng thể)",
+    "comparison": "So sánh (giữa các danh mục)",
+    "help": "Biểu đồ neo lớp học kiểu EL. AI soạn thảo cấu trúc + biểu tượng vẽ tay; chỉnh sửa bất cứ lúc nào; mở chế độ phê bình để bạn bè để lại các ghi chú Tôi nhận thấy / Tôi tự hỏi.",
+    "generate": "Tạo biểu đồ neo"
+  },
+  "fluency_maze": {
+    "title": "Mê cung Lưu loát",
+    "description": "Khám phá hầm ngục được chiếu sáng bằng đuốc. Mỗi cổng bị khóa bởi một phép tính toán — giải nó để đi qua. Tìm chìa khóa vàng để mở khóa lối thoát.",
+    "open_aria": "Mở Mê cung Lưu loát trong chế độ xem chính",
+    "open_button": "🚪 Mở Mê cung (chế độ xem đầy đủ)",
+    "saved_note": "Đã lưu vào lịch sử để bạn có thể quay lại sau.",
+    "tagline": "Các phép tính toán mở khóa các cổng"
+  },
+  "lms": {
+    "dismiss_banner_aria": "Bỏ qua banner LMS",
+    "dismiss_button": "Bỏ qua",
+    "audit_queue_help": "Nhấp vào một tài liệu để lấy và tải nó vào pipeline khả năng tiếp cận. Một số tệp LMS có thể yêu cầu bạn đăng nhập vào LMS trong trình duyệt này."
+  },
+  "annotation": {
+    "undo_tooltip": "Hoàn tác chú thích cuối ({count} có sẵn) — Ctrl/Cmd+Z",
+    "nothing_to_undo": "Không có gì để hoàn tác",
+    "undo_aria": "Hoàn tác chú thích cuối",
+    "undo_button": "↩ Hoàn tác",
+    "show_all_tooltip": "Hiện tất cả các chú thích",
+    "toggle_list_aria": "Bật/tắt danh sách chú thích",
+    "list_button": "📋 Danh sách"
+  },
+  "live_polling": {
+    "open_aria": "Mở bỏ phiếu trực tiếp",
+    "button": "Bỏ phiếu Trực tiếp"
+  },
+  "pictionary": {
+    "open_aria": "Mở Pictionary Khái niệm",
+    "button": "🎨 Pictionary"
+  },
+  "visual_support": {
+    "teacher_modal_aria": "Hỗ trợ Trực quan từ giáo viên của bạn"
+  },
+  "canvas_settings": {
+    "title": "Cài đặt Nâng cao",
+    "google_api_label": "Khóa API Google Search",
+    "google_api_placeholder": "Khóa API Google của bạn...",
+    "google_api_hint": "Người dùng nâng cao: nhập khóa API Google Custom Search của riêng bạn (100 truy vấn miễn phí/ngày)",
+    "wolfram_label": "Wolfram Alpha App ID",
+    "wolfram_placeholder": "XXXXX-XXXXXXXXXX (từ developer.wolframalpha.com)",
+    "wolfram_hint": "Miễn phí: 2.000 truy vấn/tháng. Thêm giải toán chính xác và xác minh từng bước"
+  },
+  "read_this_page": {
+    "panel_aria": "Bảng Đọc Trang Này",
+    "title": "Đọc Trang Này",
+    "read_all_button": "Đọc Tất cả",
+    "stop_button": "Dừng",
+    "focus_narration_label": "Tường thuật Tiêu điểm Bàn phím",
+    "focus_narration_on_hint": "Tab để nghe các điều khiển"
   },
   "teacher": {
     "local_only": "Chỉ cục bộ",
@@ -6498,6 +6902,9 @@
       "station_xp_events": "Sự kiện XP Trạm"
     }
   },
+  "fab": {
+    "visual_supports": "Hỗ trợ Trực quan"
+  },
   "ai_backend": {
     "title": "Cài đặt Backend AI",
     "provider_label": "Nhà cung cấp",
@@ -6526,6 +6933,32 @@
     "local_cascade_label": "Thác cục bộ:",
     "image_generation_header": "Tạo Hình ảnh",
     "image_provider_aria": "Nhà cung cấp tạo hình ảnh"
+  },
+  "diff_view": {
+    "title": "PDF Nguồn ↔ HTML Đã sửa · Khác biệt",
+    "subtitle": "Nhấp vào bất kỳ khoảng có màu nào để từ chối thay đổi. Kéo-chọn qua các khoảng để từ chối hàng loạt. Các cặp Xóa→Thêm diễn giải bật/tắt cùng nhau.",
+    "close_aria": "Đóng chế độ xem khác biệt",
+    "undo_all_tooltip": "Hoàn tác mọi từ chối trong chế độ xem này",
+    "undo_all_button": "hoàn tác tất cả",
+    "computing": "Đang tính khác biệt…",
+    "computing_stale_hint": "Nếu việc này tiếp diễn, văn bản nguồn và HTML đã sửa có thể đã trôi mất đồng bộ (hoặc bộ đệm khác biệt cũ).",
+    "rebuild_tooltip": "Xóa bộ đệm khác biệt và tính lại các đoạn so với cặp nguồn ↔ đã sửa hiện tại.",
+    "rebuild_button": "Xây dựng lại khác biệt",
+    "reject_selection": "Từ chối lựa chọn",
+    "keep_selection": "Giữ lựa chọn",
+    "dismiss_toolbar_aria": "Bỏ qua thanh công cụ",
+    "footer_help": "Nhấp vào các khoảng hoặc kéo-chọn để chỉnh sửa. Các cặp bật/tắt cùng nhau.",
+    "revert_tooltip": "Khôi phục HTML dễ tiếp cận về trạng thái trước khi Áp dụng & Xuất cuối cùng của bạn",
+    "apply_export_tooltip": "Áp dụng các từ chối qua phẫu thuật văn bản (bảo toàn tất cả đánh dấu, tức thì, không cần gọi Gemini). Chỉ chuyển sang chu trình Gemini nếu phẫu thuật không thể ánh xạ một số đoạn."
+  },
+  "volume_builder": {
+    "zoom_out_aria": "Thu nhỏ",
+    "zoom_in_aria": "Phóng to",
+    "reset_view_aria": "Đặt lại chế độ xem",
+    "help_caption": "Kéo để xoay • Cuộn để thu phóng • Xây dựng các hình lăng trụ chữ nhật hoặc khối hình L với các khối lập phương đơn vị (5.MD.3-5)",
+    "shape_radiogroup_aria": "Hình dạng Volume Builder",
+    "answer_placeholder": "Nhập thể tích...",
+    "answer_aria": "Đáp án thể tích"
   },
   "notes_feedback": {
     "title": "Phản hồi về ghi chú của bạn",
