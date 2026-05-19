@@ -8525,6 +8525,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(_hrHeadX - 0.3, _hrHeadY - 0.3, 0.2, 0, 6.28); c.fill();
               }
 
+              // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
+              // Tiny silhouettes in the upper sky add scale and the felt sense
+              // of a real ecosystem above the apiary. Fully suppressed in winter.
+              if (season === 0 || season === 1) {
+                // Lazy circling hawk: parametric circle in sky, with wing flap
+                var _hkT = t2 * 0.003;
+                var _hkCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
+                var _hkCy = H * 0.16 + Math.cos(t2 * 0.0008) * 8;
+                var _hkX = _hkCx + Math.cos(_hkT) * 36;
+                var _hkY = _hkCy + Math.sin(_hkT) * 12;
+                var _hkFlap = Math.sin(t2 * 0.04) * 0.35;
+                c.save();
+                c.translate(_hkX, _hkY);
+                c.rotate(_hkT + Math.PI / 2);
+                c.strokeStyle = 'rgba(60,50,40,0.55)';
+                c.lineWidth = 1.1;
+                c.beginPath();
+                c.moveTo(-9, 0);
+                c.quadraticCurveTo(-4, -2 + _hkFlap, 0, 0);
+                c.quadraticCurveTo(4, -2 + _hkFlap, 9, 0);
+                c.stroke();
+                // Tail dot
+                c.fillStyle = 'rgba(60,50,40,0.6)';
+                c.beginPath(); c.arc(0, 1.5, 0.9, 0, 6.28); c.fill();
+                c.restore();
+              } else if (season === 2) {
+                // Fall: V-formation of 5 migrating geese sweeping right→left across sky
+                var _vfPhase = ((t2 * 0.18) % (W + 240)) - 60;
+                var _vfBaseX = W - _vfPhase;
+                var _vfBaseY = H * 0.13 + Math.sin(t2 * 0.002) * 4;
+                c.save();
+                c.strokeStyle = 'rgba(50,45,55,0.55)';
+                c.lineWidth = 1;
+                for (var vfi = 0; vfi < 5; vfi++) {
+                  var _vfRow = Math.floor(vfi / 2);
+                  var _vfSide = (vfi % 2 === 0) ? -1 : 1;
+                  var _vfX = _vfBaseX + _vfRow * 7 * _vfSide + (vfi === 0 ? 0 : 0);
+                  var _vfY = _vfBaseY + _vfRow * 4;
+                  if (vfi === 0) { _vfX = _vfBaseX; _vfY = _vfBaseY; }
+                  // Per-bird wing flap, slight phase offset
+                  var _vfFlap = Math.sin(t2 * 0.07 + vfi * 0.6) * 0.5;
+                  c.beginPath();
+                  c.moveTo(_vfX - 4, _vfY);
+                  c.quadraticCurveTo(_vfX - 1.5, _vfY - 1.5 + _vfFlap, _vfX, _vfY);
+                  c.quadraticCurveTo(_vfX + 1.5, _vfY - 1.5 + _vfFlap, _vfX + 4, _vfY);
+                  c.stroke();
+                }
+                c.restore();
+              }
+
               // ── Red barn next to the farmhouse (classic rural pairing) ──
               if (season !== 3) {
                 var bnX = W * 0.80, bnY = H * 0.70;
@@ -8693,6 +8743,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     c.beginPath(); c.arc(_dwX - _dwR * 0.35, _dwY - _dwR * 0.4, _dwR * 0.35, 0, 6.28); c.fill();
                   }
                 }
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
                 // First frosts — six-pointed crystals replace the dewdrops on
                 // late-fall dawns (day >= 19 of season 2). Real biology: the
                 // first frost is what pushes a colony into winter-cluster mode.
@@ -8725,6 +8777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     c.restore();
                   }
                 }
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               }
               // ── Cloud shadows drifting across the meadow ──
               // Soft dark patches on the ground that drift in sync with the
@@ -13761,6 +13814,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
 
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
               // ── Row of sunflowers (late summer + fall — major bee pollen plant) ──
               // Real biology: sunflowers (Helianthus annuus) produce more
               // pollen per acre than almost any other flower. Bees pack it
@@ -14010,6 +14065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               // ── Frozen birdbath in winter (ice + frost rim) ──
               // Closes the seasonal arc for the water station: the bath doesn't
               // disappear when winter hits, it freezes. Hexagonal frost cracks
@@ -14144,6 +14200,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
               // ── Dappled sunlight under the apple tree (spring + summer day) ──
               // Sub-canopy leaf-shadow play: real-world phenomenon where
               // sunlight filtering through leaves creates moving bright spots
@@ -14514,6 +14572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               // ── Stepping stones path leading from meadow to the hive ──
               var stepCount = 7;
               for (var sp = 0; sp < stepCount; sp++) {
@@ -15907,6 +15966,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+<<<<<<< HEAD:shared/modules/stem_lab/stem_tool_beehive.js
+=======
               // ── Aurora borealis (winter night cameo, rare) ──
               // Three undulating green-cyan ribbons drift across the upper sky
               // on rare winter nights only. Cycle: appears for ~30s every ~4min
@@ -15956,6 +16017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+>>>>>>> upstream/main:prismflow-deploy/public/stem_lab/stem_tool_beehive.js
               // ── Moon (visible during the night phase) ──
               // Rises in the east as the sun sets, peaks center-high at
               // midnight, sets in the west as dawn approaches. Drawn AFTER

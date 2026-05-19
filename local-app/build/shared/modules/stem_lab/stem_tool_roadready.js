@@ -389,21 +389,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // localStorage helpers — first use of localStorage in this tool. Wrapped so file://
   // and privacy-mode contexts that disable storage degrade silently to in-memory state.
   // Versioned keys let future shape changes invalidate cleanly without corrupting reads.
-  // Write-failure surfacing: if the browser blocks writes (private mode, quota full,
-  // or storage disabled), set a window flag and dispatch an event ONCE so the
-  // component can show a single user-facing toast. Previously a silent catch hid
-  // the problem entirely — students could spend 45 min building permit-test
-  // mastery, close the browser, and find all progress vanished with zero warning.
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
-  function lsSet(key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); }
-    catch(e) {
-      if (typeof window !== 'undefined' && !window._alloflowRRStorageBlocked) {
-        window._alloflowRRStorageBlocked = true;
-        try { window.dispatchEvent(new CustomEvent('alloflow-roadready-storage-blocked')); } catch(_) {}
-      }
-    }
-  }
+  function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
   var PERMIT_BANK = [
     // ── Rules of the road ──
@@ -1168,13 +1155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var phaseB = (seed * 0.0007) % (Math.PI * 2);
       var hA = Math.sin(y * 0.045 + phaseA) * 0.7;
       var hB = Math.sin(y * 0.013 + phaseB) * 0.3;
-      // Sum is in [-1, +1]. Shift + halve so the output range is [0, amp] — i.e.,
-      // roads always roll UPWARD from the baseline, never dipping below Y=0.
-      // Without this the player car at session start could be positioned at a
-      // negative Y while surrounding ground meshes stayed at Y=0, producing
-      // the "car sunk into the road" visual bug. (See dev-tools/check_stem_behavior.cjs
-      // — the roadReady-freeExplore suite enforces this invariant going forward.)
-      return ((hA + hB) + 1) * amp / 2;
+      return (hA + hB) * amp;
     }
     return {
       seed: seed,
@@ -3311,21 +3292,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return function () { window.removeEventListener('alloflow-roadready-restored', onRestore); };
       }, []);
       var addToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
-      // Surface localStorage write failures (private mode / quota / disabled storage)
-      // with a one-shot toast so students aren't silently losing progress. Listens
-      // for the event lsSet dispatches; also runs an initial check in case the
-      // failure happened before this component mounted (e.g. from a save during
-      // onRestore handling above).
-      useEffect(function() {
-        function onBlocked() {
-          if (window._alloflowRRStorageToastShown) return;
-          window._alloflowRRStorageToastShown = true;
-          addToast('⚠️ Browser storage unavailable — your progress won\'t save on reload. Try a different browser or disable private mode.', 'error');
-        }
-        if (window._alloflowRRStorageBlocked) onBlocked();
-        window.addEventListener('alloflow-roadready-storage-blocked', onBlocked);
-        return function() { window.removeEventListener('alloflow-roadready-storage-blocked', onBlocked); };
-      }, []);
       var callTTS = ctx.callTTS || null;
       var callGemini = ctx.callGemini || null;
       // Voice instructor: speaks coaching tips and scenario intros aloud.
@@ -3594,22 +3560,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // the underlying scenario entry stuck at time='night' for every subsequent drive.
       var _scenarioBase = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
       var currentScenario = Object.assign({}, _scenarioBase);
-      // Fold Free Explore overrides into currentScenario at every render. These
-      // live in d.freeExploreScenario (persisted via updMulti). Without this
-      // step, picking time='night' in Free Explore setup would NOT make the
-      // scene render as night, because currentScenario gets rebuilt fresh from
-      // SCENARIOS[id] every render and the feScenario state was only ever
-      // applied to the throwaway clone inside startDriving.
-      // Also makes the in-drive HUD Day/Night/Weather/Traffic toggles work
-      // properly: persisting via updMulti({freeExploreScenario}) now survives
-      // the next render because this block re-applies the override.
-      if (d.freeExplore && d.freeExploreScenario) {
-        var _fes = d.freeExploreScenario;
-        if (_fes.weather) currentScenario.weather = _fes.weather;
-        if (_fes.time) currentScenario.time = _fes.time;
-        if (_fes.traffic) currentScenario.traffic = _fes.traffic;
-        if (_fes.speedLimit) currentScenario.speedLimit = _fes.speedLimit;
-      }
 
       // ── Refs for the active driving sim ──
       var canvasRef = useRef(null);  // 2D HUD overlay canvas
@@ -3650,49 +3600,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Active spark meshes from crashes — fade & remove after ~1s.
       var crashSparksRef = useRef([]);
       var audioRef = useRef({ ctx: null, engineOsc: null, engineGain: null, started: false });
-
-      // ── Test hook (no overhead unless window.__testHooks is set by a test harness) ──
-      // Lets dev-tools/check_stem_behavior.cjs read live simulation state to assert
-      // invariants like "AI cars stay within lane bounds" without scraping the canvas.
-      // See dev-tools/check_stem_behavior.cjs for the test pattern.
-      // The startDriving function is declared later (it's a useCallback); we store it
-      // via ref + expose it so the test can trigger the sim from outside.
-      var _testStartDrivingRef = useRef(null);
-      useEffect(function() {
-        if (typeof window !== 'undefined' && window.__testHooks) {
-          window.__testHooks.roadReady = {
-            trafficRef: trafficRef,
-            carRef: carRef,
-            pedsRef: pedsRef,
-            signalsRef: signalsRef,
-            cyclistsRef: cyclistsRef,
-            wildlifeRef: wildlifeRef,
-            stopSignQueueRef: stopSignQueueRef,
-            mapRef: mapRef,
-            threeRef: threeRef,           // { scene, camera, renderer, playerCarGroup, ... }
-            infiniteWorldRef: infiniteWorldRef, // { roadHeightAtY, roadCenterAtY, ... } when in free explore
-            constants: {
-              MAP_SIZE: 96,
-              CENTER_X: 48,             // road centerline (MAP_SIZE / 2)
-              SIDEWALK_OFFSET: 4.5,     // peds at centerX ± 4.5
-              MPH_TO_MS: 0.44704,
-              MS_TO_MPH: 2.23694,
-            },
-            // Read current scenario (incl. speedLimit) — useful for testing speed compliance
-            getCurrentScenario: function() {
-              try { return JSON.parse(JSON.stringify(currentScenario)); } catch (e) { return null; }
-            },
-            // Test harness calls this to start the sim without clicking "Start Driving"
-            startDriving: function(scenarioId, vehicleId) {
-              if (_testStartDrivingRef.current) {
-                return _testStartDrivingRef.current(scenarioId || 'residential', vehicleId || 'sedan');
-              }
-              return null;
-            },
-          };
-        }
-      }, []);
-
       // Two-tone horn: major-third stack (≈400 + ≈500 Hz) with a square wave for
       // bite and a tiny attack ramp. Closer to a real car than a single beep.
       var playHorn = function(dur) {
@@ -3952,14 +3859,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var eventToastRef = useRef({ msg: null, until: 0 });
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
-      // Touch-device detection (computed once at mount). Used to hide the
-      // on-screen throttle/brake/steering buttons on desktop, where they're
-      // visual clutter — the keyboard handles all input. Touch-capable Surface
-      // laptops will get the buttons (correct: redundant but harmless).
-      var isTouchDeviceRef = useRef(
-        typeof window !== 'undefined' &&
-        ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0)
-      );
       var timeRef = useRef(0);
       var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} });
       var lastStateRef = useRef({ speed: 0, accel: 0 });
@@ -4160,25 +4059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── Start / stop driving ──
       var startDriving = useCallback(function(scenarioId, vehicleId) {
-        // Read d fresh from ctx.toolData inside the callback. useCallback with
-        // empty deps freezes the closure at first render, so the outer-scope
-        // `d` would be the first-render value forever. Callers like the Free
-        // Explore "Start Exploring" button do `updMulti({freeExplore: true});
-        // startDriving(...)` — without a fresh read here, the Free Explore
-        // branch below (lines ~4201) would see d.freeExplore = false and skip
-        // initialising the procedural world. (A safety-net at ~6120 catches
-        // that case, but the intro message / weather sys / scenario-override
-        // application would still be skipped.)
-        var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
-        // Shallow-clone so the Free Explore override block below (and any
-        // other runtime mutations) don't leak into the SCENARIOS master
-        // array. Previously `scn.time = fes.time` would mutate the source
-        // entry, so a Free Explore session with `time: 'day'` would leave
-        // SCENARIOS['night'].time stuck at 'day' for the rest of the
-        // session — making the Night Driving scenario render as daytime
-        // even though its definition calls for night.
-        var _scnBase = SCENARIOS.find(function(s) { return s.id === scenarioId; }) || SCENARIOS[0];
-        var scn = Object.assign({}, _scnBase);
+        var scn = SCENARIOS.find(function(s) { return s.id === scenarioId; }) || SCENARIOS[0];
         var veh = VEHICLES.find(function(v) { return v.id === vehicleId; }) || VEHICLES[0];
         mapRef.current = buildMap(scn.id);
         trafficRef.current = spawnTraffic(scn);
@@ -4267,28 +4148,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var Ac = window.AudioContext || window.webkitAudioContext;
           if (Ac && !audioRef.current.ctx) {
             audioRef.current.ctx = new Ac();
-            // Browser autoplay policy: AudioContext starts in 'suspended' until
-            // a user gesture. If still suspended ~1.5s later, the engine/coach
-            // sounds will be silent and the student will think the simulator
-            // is broken. Surface a one-shot toast that explains the click-to-
-            // enable + bind a single-shot listener that resumes on first input.
-            var _autoplayCheckCtx = audioRef.current.ctx;
-            safeTimeout(function() {
-              if (!_autoplayCheckCtx) return;
-              if (_autoplayCheckCtx.state === 'suspended' && !window._alloflowRRAudioToastShown) {
-                window._alloflowRRAudioToastShown = true;
-                addToast('🔊 Click anywhere to enable engine and coaching sounds.', 'info');
-                var _autoplayResumeOnce = function() {
-                  try { _autoplayCheckCtx.resume(); } catch(_) {}
-                  window.removeEventListener('click', _autoplayResumeOnce);
-                  window.removeEventListener('touchstart', _autoplayResumeOnce);
-                  window.removeEventListener('keydown', _autoplayResumeOnce);
-                };
-                window.addEventListener('click', _autoplayResumeOnce);
-                window.addEventListener('touchstart', _autoplayResumeOnce);
-                window.addEventListener('keydown', _autoplayResumeOnce);
-              }
-            }, 1500);
           }
         } catch (e) { /* audio unavailable */ }
         // Start position: on the road, right lane, heading north, away from intersections
@@ -4541,9 +4400,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         safeTimeout(function() { playDoorClose(); }, 80);
         safeTimeout(function() { playEngineStart(); }, 450);
       }, []);
-
-      // ── Test hook wiring (paired with the useEffect above; no overhead in production) ──
-      _testStartDrivingRef.current = startDriving;
 
       var exitDriving = useCallback(function() {
         drivingRef.current = false;
@@ -5347,7 +5203,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ws.enabled && ws.queue.length > 0 && curT >= ws.queue[0].startAt) {
                 var nextW = ws.queue.shift();
                 var changed = false;
-                var feDelta = null; // built up if we need to persist
                 if (nextW.weather && nextW.weather !== currentScenario.weather) {
                   Object.assign(currentScenario, { weather: nextW.weather });
                   ws.lastApplied = nextW.weather;
@@ -5355,7 +5210,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   addToast((wIcon[nextW.weather] || '🌦️') + ' Weather changing to ' + nextW.weather);
                   journalLog('weather_change', wIcon[nextW.weather] || '🌦️', 'Weather → ' + nextW.weather);
                   changed = true;
-                  feDelta = Object.assign(feDelta || {}, { weather: nextW.weather });
                 }
                 if (nextW.time && nextW.time !== currentScenario.time) {
                   var priorTime = currentScenario.time;
@@ -5364,16 +5218,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   addToast((tIcon[nextW.time] || '🕐') + ' Time of day: ' + nextW.time);
                   journalLog('time_change', tIcon[nextW.time] || '🕐', 'Time of day: ' + priorTime + ' → ' + nextW.time);
                   changed = true;
-                  feDelta = Object.assign(feDelta || {}, { time: nextW.time });
-                }
-                // Persist the change to d.freeExploreScenario so the next React
-                // render (which rebuilds currentScenario fresh from SCENARIOS)
-                // still reflects the change. Without this, the rAF loop sees the
-                // change (it captured the same currentScenario object) but the
-                // HUD weather/time buttons revert their "active" highlight.
-                if (changed && feDelta) {
-                  var feMerged = Object.assign({}, d.freeExploreScenario || {}, feDelta);
-                  updMulti({ freeExploreScenario: feMerged });
                 }
                 if (changed) {
                   speak(nextW.narration);
@@ -5563,18 +5407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (!callGemini) {
                   coachRef.current.inFlight = false;
                 } else {
-                  // Wrap with a 20s timeout: if Gemini hangs (network issue or
-                  // upstream stall, neither resolving nor rejecting), inFlight
-                  // would otherwise stay true forever and silently disable the
-                  // coach for the rest of the session. Promise.race lets the
-                  // .catch path run on timeout exactly like a normal rejection.
-                  var coachTimeoutPromise = new Promise(function(_resolve, reject) {
-                    setTimeout(function() { reject(new Error('coach-timeout')); }, 20000);
-                  });
-                  Promise.race([
-                    callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' }),
-                    coachTimeoutPromise
-                  ])
+                  callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' })
                     .then(function(resp) {
                       coachRef.current.inFlight = false;
                       var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
@@ -5832,13 +5665,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (wl && !ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)]) {
               if (Math.abs(wl.x - car.x) < 6 && (car.y - wl.y) > 0 && (car.y - wl.y) < 20) {
                 ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)] = true;
-                // Bound the dict so a multi-hour Free Explore drive can't grow
-                // it unboundedly. At 200+ keys we wipe and restart — the only
-                // cost is a player who backtracks past an OLD hazard they
-                // already heard about MIGHT hear the announcement again. Worth
-                // it to avoid a slow memory leak in long sessions.
-                var _hzKeys = Object.keys(ras.announcedHazards);
-                if (_hzKeys.length > 200) ras.announcedHazards = {};
                 if (wl.kind === 'moose') speak('Moose on the road edge. Braking straight, not swerving. Never swerve around a moose.', 'hazard', 'critical');
                 else if (wl.kind === 'deer') speak('Deer detected. Slowing and scanning for more — deer travel in groups.', 'hazard', 'critical');
                 else speak('Animal in the road. Braking.', 'hazard', 'critical');
@@ -6346,15 +6172,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               statsRef.current.speedViolations += 1;
               statsRef.current._wasOverLimit = true;
               pushDriveEvent(statsRef, 'speedViolation', speedMph, frictionCoef(scn.weather), scn.speedLimit, speedMph > scn.speedLimit + 15 ? 3 : 2);
-              // Live student-facing toast — previously this whole branch was
-              // silent (stats incremented, no UI feedback). Free Explore had
-              // no debrief at all so students never learned they were over.
-              // Debounce 8s so sustained overage doesn't spam toasts but
-              // recurring trips back over the limit still notify each time.
-              if (timeRef.current - (statsRef.current._lastSpeedToastAt || 0) > 8) {
-                statsRef.current._lastSpeedToastAt = timeRef.current;
-                addToast('🚨 Slow down — limit is ' + scn.speedLimit + ' mph (you\'re at ' + Math.round(speedMph) + ').', 'error');
-              }
             }
           } else if (statsRef.current._wasOverLimit && speedMph < scn.speedLimit + 3) {
             // Hysteresis: only "exit" the violation state once you're 3 mph under the +8 trigger,
@@ -6624,14 +6441,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       }
                     }
                   } else if (s.state === 'yellow') {
-                    // Dilemma-zone behavior: aggressive drivers gun yellows ONLY when
-                    // they're already close to the line and can't safely stop. Far
-                    // from the intersection, even aggressive drivers brake — there's
-                    // no upside to accelerating toward a yellow you can stop for.
-                    // Previous logic had this inverted (`rel.ahead > 5`), causing
-                    // aggressive cars to floor it from blocks away — exactly the
-                    // pattern that produces high-speed rear-ends at intersections.
-                    if (pers.aggro > 0.5 && rel.ahead < 5) slowFor = Math.max(slowFor, 0);
+                    // Brake unless far enough to clear (dilemma zone): aggressive past 5 cells gun it.
+                    if (pers.aggro > 0.5 && rel.ahead > 5) slowFor = Math.max(slowFor, 0);
                     else slowFor = Math.max(slowFor, 1);
                   }
                 }
@@ -6688,18 +6499,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Right-of-way gate: are we the front of the arrival queue?
                 // Prune stale entries (>10s) before checking — covers the case
                 // where a queued car got recycled or teleported off.
-                // Also drop entries whose owning car no longer has _stopArrivedAt
-                // set (they respawned or moved past the stop), otherwise the
-                // next car at this sign would yield to a "ghost" queue head for
-                // up to 10 seconds — visible as a stopped car idling for no
-                // reason at a 4-way stop.
                 var arrivalQ2 = stopSignQueueRef.current[stopKey] || [];
-                while (arrivalQ2.length) {
-                  var headEntry = arrivalQ2[0];
-                  var headCar = traffic[headEntry.carIdx];
-                  var headStale = (timeRef.current - headEntry.arrivedAt > 10) ||
-                                  !headCar || !headCar._stopArrivedAt;
-                  if (!headStale) break;
+                while (arrivalQ2.length && timeRef.current - arrivalQ2[0].arrivedAt > 10) {
                   arrivalQ2.shift();
                 }
                 if (arrivalQ2.length > 0 && arrivalQ2[0].carIdx !== idx) {
@@ -9373,23 +9174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (isFreeExploreInit) ground.position.y = -4;
           scene.add(ground);
 
-          // Hoisted: needed by downstream weather/decoration code (hedges, wet
-          // overlay, snow drifts ~ lines 10700-11210) even when the scenario-mode
-          // road block is skipped in Free Explore.
-          var centerX = Math.floor(MAP_SIZE / 2);
-
-          // ── Scenario-mode road infrastructure (skip in Free Explore) ──
-          // Free Explore builds the road surface, lane stripes, cross-streets,
-          // edge lines and lane dividers per-chunk via the procedural ribbon
-          // renderer further down (~line 15280). Running this scenario-mode
-          // block AS WELL drops a straight rectangular asphalt plane + straight
-          // stripes at a fixed centerX on top of the curved chunk ribbon, and
-          // adds perpendicular cross-street asphalt + yellow dashes at the
-          // hardcoded Y values [20, 40, 56, 72]. Those collide visually with
-          // the chunked road and read as zigzag / broken markings on the road
-          // surface — exactly the "broken lane lines in Free Explore" report.
-          if (!isFreeExploreInit) {
           // ── Road surface ──
+          var centerX = Math.floor(MAP_SIZE / 2);
           var isRainScene = currentScenario.weather === 'rain';
           // Wet asphalt is noticeably darker than dry — water fills in the texture pores.
           // We also swap to a Phong material so the directional sun/moon mesh actually
@@ -10604,22 +10390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             sl.position.set(centerX - MAP_SIZE / 2, 0.021, sig.y - MAP_SIZE / 2 - 3.5);
             scene.add(sl);
           });
-          } // ── end of scenario-mode road infrastructure block ──
 
-          // signalObjs is referenced from the per-frame loop and the scene
-          // return object — declare it outside the Free-Explore gate so the
-          // empty-array case still works.
-          var signalObjs = [];
-
-          // ── Scenario-mode world props (skip in Free Explore) ──
-          // Static buildings, trees, hedges, and scenario traffic-light/stop-sign
-          // poles all key off the fixed scenario `map` array and `signalsRef`,
-          // which are scenario-grid-aligned. Free Explore builds its own
-          // buildings, trees, intersections, and traffic lights per-chunk along
-          // the procedural spline, so running this block ALSO produces a phantom
-          // grid of scenario buildings + hedges + stop poles materializing on
-          // top of the curved infinite-world road.
-          if (!isFreeExploreInit) {
           // ── Buildings from map (with rooftops + driveways) ──
           var buildingMeshes = [];
           var buildColors = [0xb08c64, 0xa09078, 0x8c7a62, 0x9e8878, 0xc0a888];
@@ -10792,7 +10563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Traffic light + stop sign meshes ──
           // Traffic lights are overhead-mounted on arms extending from roadside poles (US style)
-          // (signalObjs is hoisted above the Free-Explore gate.)
+          var signalObjs = [];
           var sigPoleMat = new T.MeshLambertMaterial({ color: 0x555555 });
           signalsRef.current.forEach(function(s) {
             var sx = s.x - MAP_SIZE / 2;
@@ -10830,7 +10601,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               scene.add(housing);
               // Three lamp spheres (red top, yellow middle, green bottom)
               var lampColors = [0xef4444, 0xfbbf24, 0x22c55e];
-              var lampLetters = ['R', 'Y', 'G']; // colorblind-readable position-locked label
               var lamps = [];
               lampColors.forEach(function(lc, li) {
                 var lMat = new T.MeshBasicMaterial({ color: 0x111111 });
@@ -10848,25 +10618,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lhMesh = new T.Mesh(new T.PlaneGeometry(0.45, 0.45), lhMat);
                 lhMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.16);
                 scene.add(lhMesh);
-                // Colorblind label sprite (R/Y/G) — same approach as the
-                // mast-arm signals in the infinite world. Always faces camera.
-                try {
-                  var slCv = document.createElement('canvas');
-                  slCv.width = 64; slCv.height = 64;
-                  var slCx = slCv.getContext('2d');
-                  slCx.fillStyle = 'rgba(0,0,0,0.55)';
-                  slCx.beginPath(); slCx.arc(32, 32, 28, 0, Math.PI * 2); slCx.fill();
-                  slCx.fillStyle = '#ffffff';
-                  slCx.font = 'bold 38px system-ui, sans-serif';
-                  slCx.textAlign = 'center'; slCx.textBaseline = 'middle';
-                  slCx.fillText(lampLetters[li], 32, 34);
-                  var slTex = new T.CanvasTexture(slCv);
-                  var slMat = new T.SpriteMaterial({ map: slTex, transparent: true, depthTest: false });
-                  var slSpr = new T.Sprite(slMat);
-                  slSpr.position.set(sx, 3.95 - li * 0.28, sz + 0.18);
-                  slSpr.scale.set(0.14, 0.14, 1);
-                  scene.add(slSpr);
-                } catch (_) {}
                 lamps.push({ mesh: lMesh, onColor: lc, halo: lhMesh, haloColor: lc });
               });
               // Also add a second light housing on the other side for cross-street visibility
@@ -10877,7 +10628,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               signalObjs.push({ ref: s, lamps: lamps, type: 'light' });
             }
           });
-          } // ── end of scenario-mode world props (buildings/trees/hedges/poles) ──
 
           // ── Dynamic object groups (updated each frame) ──
           var trafficGroup = new T.Group(); scene.add(trafficGroup);
@@ -14921,7 +14671,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var grPostMat = new T.MeshLambertMaterial({ color: 0x4a4a52 });
                 var crackMat = new T.MeshBasicMaterial({ color: 0x16181c, transparent: true, opacity: 0.55 });
                 for (var grZ = chunkWorldZ + 2; grZ < chunkWorldZ + CHUNK_SIZE - 2; grZ += 2) {
-                  if (chunk.hasIntersection && Math.abs((grZ - chunkWorldZ) - chunk.intersectionY) < 3.5) continue;
                   var grHd = iw.spline.headingAt(grZ - chunkWorldZ + chunkBY);
                   if (Math.abs(grHd) < 0.18) continue;
                   var grSide = grHd > 0 ? 1 : -1;
@@ -14957,7 +14706,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 // Mile markers — small reflective post every ~16 cells, alternating sides
                 for (var mmZ = chunkWorldZ + 4; mmZ < chunkWorldZ + CHUNK_SIZE - 4; mmZ += 16) {
-                  if (chunk.hasIntersection && Math.abs((mmZ - chunkWorldZ) - chunk.intersectionY) < 3.5) continue;
                   var mmCx = lookupCenterAtZ(mmZ);
                   var mmHy = lookupHeightAtZ(mmZ);
                   var mmSide = ((Math.floor(mmZ) >> 4) & 1) ? 1 : -1;
@@ -15041,7 +14789,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var isNightSL = scn.time === 'night' || scn.id === 'night';
                   var slPoleMat = new T.MeshLambertMaterial({ color: 0x2a2e34 });
                   for (var slZ = chunkWorldZ + 6; slZ < chunkWorldZ + CHUNK_SIZE - 6; slZ += 10) {
-                    if (chunk.hasIntersection && Math.abs((slZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
                     var slSide = ((Math.floor(slZ) / 10) & 1) ? 1 : -1;
                     var slCx = lookupCenterAtZ(slZ);
                     var slHy = lookupHeightAtZ(slZ);
@@ -15077,7 +14824,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var upSpacing = 12;
                   var upStarts = [];
                   for (var upZ = chunkWorldZ + 3; upZ < chunkWorldZ + CHUNK_SIZE - 3; upZ += upSpacing) {
-                    if (chunk.hasIntersection && Math.abs((upZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
                     var upSide = 1; // always on same side for a clean wire line
                     var upCx = lookupCenterAtZ(upZ);
                     var upHy = lookupHeightAtZ(upZ);
@@ -15250,7 +14996,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var fnStart = chunkWorldZ + 2;
                   var fnEnd = chunkWorldZ + CHUNK_SIZE / 2 + furnRng() * (CHUNK_SIZE / 2 - 4);
                   for (var fnZ = fnStart; fnZ < fnEnd; fnZ += 1.4) {
-                    if (chunk.hasIntersection && Math.abs((fnZ - chunkWorldZ) - chunk.intersectionY) < 3.5) continue;
                     var fnCx = lookupCenterAtZ(fnZ);
                     var fnHy = lookupHeightAtZ(fnZ);
                     var fnPost = new T.Mesh(new T.BoxGeometry(0.06, 0.6, 0.06), fnMat);
@@ -15472,12 +15217,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Inner edge: at the road's outer edge (touches asphalt)
                     var innerX = sWX + shldSide * roadHalfW;
                     var outerX = sWX + shldSide * (roadHalfW + shldWidth);
-                    // Collapse the strip to a degenerate width across the
-                    // intersection so the dirt shoulder doesn't paint over the
-                    // perpendicular cross-street asphalt + crosswalks.
-                    if (chunk.hasIntersection && Math.abs(sR - chunk.intersectionY) < 3.5) {
-                      outerX = innerX;
-                    }
                     shldVerts[(sR * 2 + 0) * 3 + 0] = innerX;
                     shldVerts[(sR * 2 + 0) * 3 + 1] = sH;
                     shldVerts[(sR * 2 + 0) * 3 + 2] = sWZ;
@@ -16723,13 +16462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // the wild grass/tree line. Short ribbon segments.
                 var shoulderMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xd8dde4 : 0x4a8a3a });
                 var shOff = roadHalfW + 0.4;
-                // Same intersection-clearance pattern as the dashed stripes:
-                // skip a ±3.5m window around the cross-street so the grass
-                // strip doesn't block the perpendicular asphalt at intersections.
-                var shSkipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3.5 : -99999;
-                var shSkipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3.5 : -99999;
                 for (var shZ = chunkWorldZ + 0.5; shZ < chunkWorldZ + CHUNK_SIZE - 0.5; shZ += 1.5) {
-                  if (shZ > shSkipZ1 && shZ < shSkipZ2) continue;
                   var shCtr = markCenterAtZ(shZ);
                   var shHt = iw.spline ? iw.spline.heightAt(shZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var shHd = iw.spline ? iw.spline.headingAt(shZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -16750,12 +16483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // the road edge.
                 var curbMat = new T.MeshLambertMaterial({ color: 0xb8b8b0 });
                 var edgeOff = roadHalfW + 0.1; // just outside the ribbon edge
-                // Skip the curb across the intersection — otherwise the concrete
-                // strip runs through the cross-street like a sidewalk barrier.
-                var cbSkipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3.5 : -99999;
-                var cbSkipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3.5 : -99999;
                 for (var cbZ = chunkWorldZ + 0.5; cbZ < chunkWorldZ + CHUNK_SIZE - 0.5; cbZ += 1.0) {
-                  if (cbZ > cbSkipZ1 && cbZ < cbSkipZ2) continue;
                   var cbCtr = markCenterAtZ(cbZ);
                   var cbHt = iw.spline ? iw.spline.heightAt(cbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var cbHd = iw.spline ? iw.spline.headingAt(cbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -16775,12 +16503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var amberMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffc040 : 0xbc7a1a });
                 var whiteRefMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffffff : 0xcccccc });
                 var refLineOff = roadHalfW - 0.2;
-                // Skip reflectors over the cross-street so they don't appear
-                // floating on the perpendicular asphalt at intersections.
-                var refSkipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3.5 : -99999;
-                var refSkipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3.5 : -99999;
                 for (var refZ = chunkWorldZ + 2; refZ < chunkWorldZ + CHUNK_SIZE - 2; refZ += 4) {
-                  if (refZ > refSkipZ1 && refZ < refSkipZ2) continue;
                   var refCtr = markCenterAtZ(refZ);
                   var refHt = iw.spline ? iw.spline.heightAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var refHd = iw.spline ? iw.spline.headingAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -17037,30 +16760,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var lampMesh = new T.Mesh(lampGeo, lampMat);
                       lampMesh.position.set(sp.x, 5.1 + ld.dy, poleLocalZ + housingD / 2 + 0.02);
                       crossGroup.add(lampMesh);
-                      // Colorblind support: paint an R / Y / G letter sprite right
-                      // in front of each lamp so red-green colorblind students
-                      // (≈8% of males) can identify the state by letter, not just
-                      // hue. Sprite always faces the camera. Letter is white on a
-                      // semi-transparent dark disc so it reads against any lamp
-                      // state (lit or dim).
-                      try {
-                        var lblCv = document.createElement('canvas');
-                        lblCv.width = 64; lblCv.height = 64;
-                        var lblCx = lblCv.getContext('2d');
-                        lblCx.fillStyle = 'rgba(0,0,0,0.55)';
-                        lblCx.beginPath(); lblCx.arc(32, 32, 28, 0, Math.PI * 2); lblCx.fill();
-                        lblCx.fillStyle = '#ffffff';
-                        lblCx.font = 'bold 38px system-ui, sans-serif';
-                        lblCx.textAlign = 'center';
-                        lblCx.textBaseline = 'middle';
-                        lblCx.fillText(ld.name === 'red' ? 'R' : ld.name === 'yellow' ? 'Y' : 'G', 32, 34);
-                        var lblTex = new T.CanvasTexture(lblCv);
-                        var lblMat = new T.SpriteMaterial({ map: lblTex, transparent: true, depthTest: false });
-                        var lblSpr = new T.Sprite(lblMat);
-                        lblSpr.position.set(sp.x, 5.1 + ld.dy, poleLocalZ + housingD / 2 + 0.18);
-                        lblSpr.scale.set(0.18, 0.18, 1);
-                        crossGroup.add(lblSpr);
-                      } catch (_) { /* sprite is non-essential; lamp colors still work */ }
                       s3.trafficLampsByChunk[ci].push({
                         mesh: lampMesh,
                         onHex: ld.onHex,
@@ -17356,22 +17055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ki < unloadLo || ki > unloadHi) {
                 var cg = s3._loadedChunks[ki];
                 if (cg) {
-                  // Dispose .map (CanvasTexture / Texture) BEFORE the material so
-                  // we don't leak the GPU-side texture handle. The chunk builder
-                  // attaches 15+ canvas-textured signs per chunk (speed limit,
-                  // mile markers, shop signs, etc.) — without disposing .map
-                  // each, long Free Explore drives accumulate VRAM until the
-                  // browser tab gets killed.
-                  cg.traverse(function(obj) {
-                    if (obj.geometry) obj.geometry.dispose();
-                    if (obj.material) {
-                      var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-                      mats.forEach(function(m) {
-                        if (m.map && typeof m.map.dispose === 'function') m.map.dispose();
-                        if (typeof m.dispose === 'function') m.dispose();
-                      });
-                    }
-                  });
+                  cg.traverse(function(obj) { if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
                   s3.scene.remove(cg);
                 }
                 delete s3._loadedChunks[ki];
@@ -20640,10 +20324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '11px', color: '#bbf7d0', lineHeight: '1.4' } }, 'Rearview (top center) · Left mirror (top left) · Right mirror (top right). Take your time — the road isn\'t going anywhere.')
           ) : null,
           // ── Touch controls for mobile/tablet ──
-          // Wrapped in isTouchDeviceRef check so they only render on touch-
-          // capable devices. On desktop they were ~10% of the viewport in
-          // visual clutter for no benefit (keyboard handles all input).
-          isTouchDeviceRef.current ? h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
+          h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
             className: 'touch-controls' },
             // Throttle (big green button)
             h('button', {
@@ -20683,9 +20364,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'aria-label': 'Brake (touch and hold)',
               style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #ef4444', background: 'rgba(239,68,68,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
             }, '▼')
-          ) : null,
-          // Left side touch: gear + signals (same touch-only guard)
-          isTouchDeviceRef.current ? h('div', { style: { position: 'absolute', bottom: '110px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
+          ),
+          // Left side touch: gear + signals
+          h('div', { style: { position: 'absolute', bottom: '110px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
             className: 'touch-controls' },
             h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
               'aria-label': 'Shift between Drive and Reverse (only when stopped)',
@@ -20701,7 +20382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'aria-pressed': blinkerRef.current === 1,
               style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, 'Signal ►')
-          ) : null,
+          ),
           // Free Explore live condition toolbar
           // ── Road Test HUD: score + time remaining (when road test is active) ──
           d.roadTestStage === 'drive' && roadTestRef.current.active ? h('div', {
@@ -20837,25 +20518,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return null;
             })()
           ) : null,
-          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '110px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 19, minWidth: '160px' } },
+          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '110px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 15, minWidth: '160px' } },
             h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '6px', textAlign: 'center' } }, '🌎 FREE EXPLORE'),
             // Weather row
             h('div', { style: { display: 'flex', gap: '3px', marginBottom: '4px', justifyContent: 'center' } },
               [['clear','☀️'],['rain','🌧'],['snow','❄'],['fog','🌫']].map(function(w) {
                 var active = currentScenario.weather === w[0];
                 return h('button', { key: w[0], onClick: function() {
-                  // Mutate the in-scope currentScenario for IMMEDIATE per-frame
-                  // effect (the rAF loop captured this object on scene init,
-                  // so writes here turn the sky/lights right now), AND persist
-                  // via updMulti so the change survives the next React render
-                  // (which rebuilds currentScenario fresh from _scenarioBase).
-                  var nextW = w[0];
-                  var newSpeedLimit = currentScenario.speedLimit;
-                  if (nextW === 'snow') newSpeedLimit = Math.min(newSpeedLimit, 35);
-                  if (nextW === 'fog') newSpeedLimit = Math.min(newSpeedLimit, 30);
-                  Object.assign(currentScenario, { weather: nextW, speedLimit: newSpeedLimit });
-                  var feNext = Object.assign({}, d.freeExploreScenario || {}, { weather: nextW, speedLimit: newSpeedLimit });
-                  updMulti({ freeExploreScenario: feNext });
+                  var newScn = Object.assign({}, currentScenario, { weather: w[0] });
+                  if (w[0] === 'snow') newScn.speedLimit = Math.min(newScn.speedLimit, 35);
+                  if (w[0] === 'fog') newScn.speedLimit = Math.min(newScn.speedLimit, 30);
+                  upd('scenario', newScn.id); // keep scenario ID but the physics reads currentScenario
+                  // Mutate the scenario ref for immediate effect (CDN tool pattern)
+                  Object.assign(currentScenario, newScn);
                 },
                   style: { padding: '3px 6px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '12px' } }, w[1]);
               })
@@ -20866,8 +20541,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var active = currentScenario.time === t[0];
                 return h('button', { key: t[0], onClick: function() {
                   Object.assign(currentScenario, { time: t[0] });
-                  var feNext = Object.assign({}, d.freeExploreScenario || {}, { time: t[0] });
-                  updMulti({ freeExploreScenario: feNext });
                 },
                   style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, t[1]);
               })
@@ -20878,8 +20551,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var active = currentScenario.traffic === t[0];
                 return h('button', { key: t[0], onClick: function() {
                   Object.assign(currentScenario, { traffic: t[0] });
-                  var feNext = Object.assign({}, d.freeExploreScenario || {}, { traffic: t[0] });
-                  updMulti({ freeExploreScenario: feNext });
                   // Respawn traffic to match. Also clear the renderer's traffic mesh
                   // group so old vehicle meshes (built for prior types) don't get
                   // re-assigned to the new entities — that caused visual type mismatches
@@ -21803,18 +21474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       reflectionRef.current.inFlight = false;
                       addToast('AI reflection not available in this environment.');
                     } else {
-                      // 30s timeout: if Gemini hangs (network stall, no resolve
-                      // or reject), the reflection UI would otherwise stay in
-                      // "loading…" state indefinitely, blocking the user from
-                      // retrying or moving on. Promise.race makes timeout
-                      // surface through the existing .catch path.
-                      var reflTimeoutPromise = new Promise(function(_resolve, reject) {
-                        setTimeout(function() { reject(new Error('reflection-timeout')); }, 30000);
-                      });
-                      Promise.race([
-                        callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' }),
-                        reflTimeoutPromise
-                      ])
+                      callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' })
                         .then(function(resp) {
                           reflectionRef.current.inFlight = false;
                           var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
