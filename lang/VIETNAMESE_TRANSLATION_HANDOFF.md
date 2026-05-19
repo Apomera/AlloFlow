@@ -1,6 +1,29 @@
 # Vietnamese Translation Handoff
 
-**Status (May 18, 2026):** 1,203 / ~9,295 keys (~13% coverage). Foundation complete, 124 ui_strings sections + 782 help_strings keys remaining.
+**Status (May 19, 2026):** 7,237 / ~9,295 keys (~78% coverage). 140 sections complete. Only behavior_lens (1,483 keys) + help_mode (782 keys) remain.
+
+## Session log
+
+- May 18 commit `c9f5599a`: Foundation (1,203 keys, 19 sections)
+- May 18 commit `33c94e25`: Tier 1 tools (+628 keys = 1,831)
+- May 19 commit `5cdaeae2`: adventure (+529 = 2,360)
+- May 19 commit `b0590c5c`: word_sounds + escape_room (+406 = 2,766)
+- May 19 commit `a1586fa0`: roster + games + timeline + persona (+509 = 3,275)
+- May 19 commit `24f48e74`: concept_map + dbq + export + math + outline + groups (+472 = 3,747)
+- May 19 commit `138f31e6`: pdf_audit + baking + about (+594 = 4,341)
+- May 19 commit `f3caf97a`: chat_guide/concept_sort/session/class_analytics/fluency/modals/lesson_plan/immersive (+504 = 4,849)
+- May 19 commit `4870dd82`: 13 small sections (+447 = 5,296)
+- May 19 commit `07120ce2`: 26 mid-small sections (+639 = 5,935)
+- May 19 commit `87b64208`: 53 small sections (+333 = 6,268) — closes all small ui_strings
+- May 19 commit `ad13ccfe`: **stem section (+969 = 7,237)** — closes ui_strings except behavior_lens
+
+## Remaining
+
+1. **behavior_lens** (1,483 keys, ~84KB) — Behavior Lens FBA/BIP clinical toolkit with 60+ sub-tools. Subsections include hub (207), ui (232), toast (189), raw (340), plus dozens of smaller. Vietnamese clinical/educational terminology should follow standards from school psychology textbooks: FBA → Đánh giá Chức năng Hành vi, BIP → Kế hoạch Can thiệp Hành vi, ABC → Tiền đề-Hành vi-Hậu quả, antecedent → tiền đề, behavior → hành vi, consequence → hậu quả, reinforcement → củng cố, intervention → can thiệp, fidelity → trung thành thực hiện.
+
+2. **help_mode** (782 hover-help long-form keys) — translate as nested `help_mode` section in vietnamese.js, mirroring French + Spanish + Chinese + Somali completion pattern. ~8 batches typical pace.
+
+After these two sections, Vietnamese hits 100%.
 
 ## File locations
 
