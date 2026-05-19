@@ -5773,8 +5773,297 @@
             })(),
             '#f97316'
           ),
-          eyepieceViewSimulatorSection()
+          eyepieceViewSimulatorSection(),
+          glossarySection()
         );
+
+        // ──────────────────────────────────────────────────────────────
+        // Astronomy Glossary — 300+ terms
+        // ──────────────────────────────────────────────────────────────
+        function glossarySection() {
+          var TERMS = [
+            // A
+            { term: 'Aberration', cat: 'Optics', def: 'Any imperfection in a lens or mirror that causes the image to be distorted. Common types: spherical (off-axis rays focus at different distances), chromatic (different wavelengths focus differently — only in refractors), coma (off-axis stars appear comet-shaped).' },
+            { term: 'Absolute magnitude', cat: 'Measurement', def: 'The apparent brightness a star would have if it were 10 parsecs (32.6 light-years) away. Removes distance effects from the comparison. Sun = +4.83; Sirius = +1.42; Betelgeuse = -5.85.' },
+            { term: 'Accretion', cat: 'Physics', def: 'The process by which a gravitating body gathers mass — typically gas + dust spiraling into a protostar, protoplanet, or black hole. Accretion releases enormous gravitational energy as heat + radiation.' },
+            { term: 'Active galactic nucleus (AGN)', cat: 'Galaxies', def: 'A central region of a galaxy where a supermassive black hole is actively accreting matter, producing extremely high luminosity. Quasars, Seyfert galaxies, blazars are AGN subtypes.' },
+            { term: 'AGB star', cat: 'Stellar evolution', def: 'Asymptotic Giant Branch star. The final phase of stellar evolution for low-to-medium-mass stars (~ 0.6-8 solar masses), characterized by helium-shell burning + heavy mass loss through stellar winds.' },
+            { term: 'Albedo', cat: 'Reflectance', def: 'The fraction of incoming light reflected by a surface. Fresh snow ~ 0.9; Moon ~ 0.12; Venus (clouds) ~ 0.75; Earth average ~ 0.3.' },
+            { term: 'Altazimuth (alt-az)', cat: 'Mounts', def: 'A telescope mounting system with two axes — altitude (up/down) + azimuth (left/right, like a compass). Simpler than equatorial but harder to track stars over long exposures.' },
+            { term: 'Andromeda', cat: 'Galaxies', def: 'The Andromeda Galaxy (M31) — the largest galaxy in our Local Group, 2.5 million light-years away. Visible to the naked eye as a fuzzy patch from dark sites.' },
+            { term: 'Angular diameter', cat: 'Measurement', def: 'The apparent size of an object as seen from Earth, measured in degrees, arcminutes (\'), or arcseconds ("). The Moon\'s angular diameter is ~ 0.5°.' },
+            { term: 'Annular eclipse', cat: 'Eclipses', def: 'A solar eclipse where the Moon is at apogee + appears smaller than the Sun. The Moon\'s silhouette leaves a bright ring ("annulus") of Sun visible. Cannot be safely viewed without a solar filter.' },
+            { term: 'Aphelion', cat: 'Orbits', def: 'The farthest point in an orbit from the Sun. Earth\'s aphelion: ~ 152 million km, reached in early July.' },
+            { term: 'Apoapsis', cat: 'Orbits', def: 'General term for the farthest point in an orbit from the body being orbited. Apoapsis around Earth = apogee; around Sun = aphelion; around Mars = apoareion.' },
+            { term: 'Apogee', cat: 'Orbits', def: 'The farthest point in an orbit around Earth — used for the Moon (~ 405,000 km) + satellites.' },
+            { term: 'Aperture', cat: 'Telescopes', def: 'The diameter of a telescope\'s main lens or mirror. Determines light-gathering + resolution. The single most important spec on any telescope.' },
+            { term: 'Arc second / arc minute', cat: 'Measurement', def: 'Angular measure. 1 degree = 60 arcminutes (\'); 1 arcminute = 60 arcseconds ("). The full Moon is ~ 30\'. Best amateur telescope resolution is ~ 1".' },
+            { term: 'Astronomical Unit (AU)', cat: 'Measurement', def: 'The mean distance from Earth to the Sun: ~ 149.6 million km, or ~ 8.3 light-minutes. The standard unit for distances within the Solar System.' },
+            { term: 'Astrobiology', cat: 'Life', def: 'The study of life in the universe — origins, evolution, distribution, future. Includes Mars + Europa + Enceladus + Titan + exoplanet biosignature work.' },
+            { term: 'Asteroid', cat: 'Small bodies', def: 'A small rocky body orbiting the Sun, mostly between Mars + Jupiter. ~ 1.1 million known. Largest: Ceres (a dwarf planet at ~ 940 km diameter).' },
+            { term: 'Asterism', cat: 'Constellations', def: 'A recognizable star pattern that is NOT a formal constellation. Examples: the Big Dipper (part of Ursa Major), the Summer Triangle (spanning 3 constellations).' },
+            { term: 'Astrometry', cat: 'Measurement', def: 'The precise measurement of stellar positions + motions. Gaia mission measures positions to ~ 10 microarcseconds for billions of stars.' },
+            { term: 'Astrophysics', cat: 'Discipline', def: 'The branch of astronomy that applies physics + chemistry to understand the universe. Distinguished from observational astronomy by its theoretical + analytical focus.' },
+            { term: 'Atmospheric seeing', cat: 'Observing', def: 'The effect of Earth\'s atmosphere on incoming light, causing stars to twinkle + telescope images to blur. Best amateur sites: ~ 1-2 arcseconds. Best professional sites: ~ 0.4 arcseconds (Mauna Kea, ALMA, Chajnantor).' },
+            { term: 'Aurora', cat: 'Atmospheric', def: 'The "Northern Lights" + "Southern Lights" — colored sky glow caused by solar-wind particles striking the upper atmosphere along Earth\'s magnetic field lines. Green from oxygen at 100 km; red from oxygen at 250 km; blue/purple from ionized nitrogen.' },
+            { term: 'Azimuth', cat: 'Coordinates', def: 'The horizontal angle from north (compass direction). North = 0°, East = 90°, South = 180°, West = 270°.' },
+
+            // B
+            { term: 'Barred spiral galaxy', cat: 'Galaxies', def: 'A spiral galaxy with a central bar-shaped structure of stars extending out from the bulge. Spiral arms attach to the ends of the bar. Milky Way is barred. Hubble classification: SB.' },
+            { term: 'Baryon', cat: 'Physics', def: 'A particle made of three quarks. Protons + neutrons are the only common baryons. "Baryonic matter" = ordinary matter we are made of, ~ 5% of the universe\'s total energy density.' },
+            { term: 'Bayer designation', cat: 'Catalogs', def: 'Greek-letter naming of stars within a constellation, ordered roughly by brightness. α (alpha) = brightest in most cases. Sometimes ordering is by historical convention rather than brightness.' },
+            { term: 'Big Bang', cat: 'Cosmology', def: 'The theory that the universe began ~ 13.8 billion years ago as a hot dense state + has been expanding ever since. NOT an explosion in space; an expansion OF space itself. Confirmed by CMB, redshift, light-element abundance.' },
+            { term: 'Big Bang nucleosynthesis (BBN)', cat: 'Cosmology', def: 'The synthesis of light elements (H, He, trace Li + Be) during the first ~ 3 minutes after the Big Bang. Almost all hydrogen + helium in the universe formed here.' },
+            { term: 'Binary star', cat: 'Multiple stars', def: 'Two stars gravitationally bound + orbiting their common center of mass. Most stars in the galaxy are in binary or multiple systems. Examples: Sirius A+B, Alpha Centauri A+B.' },
+            { term: 'Black dwarf', cat: 'Stellar evolution', def: 'The hypothetical end state of a white dwarf after it has cooled completely — no longer emitting detectable radiation. Universe is too young for any black dwarfs to exist yet (cooling time > 10^15 years).' },
+            { term: 'Black hole', cat: 'Compact objects', def: 'A region of spacetime where gravity is so strong that nothing — not even light — can escape. Formed from the collapse of massive stars or merged stellar remnants. Characterized by mass, charge, angular momentum.' },
+            { term: 'Blazar', cat: 'AGN', def: 'A very compact quasar with one of its relativistic jets pointed directly at Earth. Extremely variable + bright across all wavelengths. The IceCube-blazar association (2017) detected high-energy neutrinos from blazars.' },
+            { term: 'Blueshift', cat: 'Spectroscopy', def: 'The shift of spectral lines to shorter wavelengths (blue), indicating the source is moving toward the observer. Andromeda Galaxy shows blueshift (approaching us).' },
+            { term: 'Blue giant', cat: 'Stellar classification', def: 'A massive hot star, typically O- or B-class, in or past the main sequence. Surface temperatures 10,000-50,000 K. Examples: Rigel, Bellatrix.' },
+            { term: 'Bortle scale', cat: 'Light pollution', def: 'A 9-point scale describing night-sky darkness from Class 1 (pristine dark) to Class 9 (inner-city sky-glow). Most Americans live under Class 5+ skies.' },
+            { term: 'Brown dwarf', cat: 'Substellar', def: 'A "failed star" — too small to fuse hydrogen but larger than a planet (typically 13-80 Jupiter masses). Emits primarily in infrared. Spectral classes L, T, Y.' },
+            { term: 'Bulge', cat: 'Galaxies', def: 'The central spheroidal region of a spiral galaxy, dominated by older stars. Hosts the supermassive black hole at the center.' },
+
+            // C
+            { term: 'Cardinal directions', cat: 'Coordinates', def: 'North, South, East, West. North celestial pole is currently near Polaris.' },
+            { term: 'Cassegrain telescope', cat: 'Telescopes', def: 'A reflecting telescope with a primary mirror, a small secondary mirror, + an eyepiece accessible through a hole in the primary. Compact + efficient design. Schmidt-Cassegrain + Maksutov-Cassegrain are common amateur variants.' },
+            { term: 'Catalog', cat: 'Catalogs', def: 'A formal listing of celestial objects. Famous: Messier (110), NGC (~ 8,000), Hipparcos (118,000), Gaia (~ 2 billion).' },
+            { term: 'Catadioptric telescope', cat: 'Telescopes', def: 'A telescope combining lenses + mirrors. Schmidt-Cassegrain (SCT) + Maksutov-Cassegrain are the main types.' },
+            { term: 'CCD', cat: 'Detectors', def: 'Charge-Coupled Device — the silicon chip used in most digital cameras + telescope imaging. Each pixel records the number of photons. Modern CMOS detectors are largely replacing CCDs.' },
+            { term: 'Celestial equator', cat: 'Coordinates', def: 'The projection of Earth\'s equator onto the celestial sphere. Stars on the celestial equator rise due east + set due west everywhere on Earth.' },
+            { term: 'Celestial poles', cat: 'Coordinates', def: 'The two points where Earth\'s rotation axis intersects the celestial sphere. North celestial pole near Polaris; south celestial pole near Sigma Octantis.' },
+            { term: 'Celestial sphere', cat: 'Coordinates', def: 'An imaginary sphere of infinite radius centered on Earth, on which all celestial objects appear to be projected. Used for mapping the sky.' },
+            { term: 'Cepheid variable', cat: 'Variable stars', def: 'A type of pulsating variable star with a precise period-luminosity relation (Henrietta Leavitt, 1908). Used as standard candles for distances to ~ 100 million light-years.' },
+            { term: 'Chromatic aberration', cat: 'Optics', def: 'A focus defect where different wavelengths come to slightly different focal points. Causes color fringing in cheap refractors. ED + apochromatic refractors minimize it.' },
+            { term: 'Chromosphere', cat: 'Sun', def: 'The thin reddish-pink layer of the Sun\'s atmosphere just above the photosphere. Temperature ~ 10,000-25,000 K. Visible during total solar eclipses + with H-alpha filters.' },
+            { term: 'CME (Coronal Mass Ejection)', cat: 'Space weather', def: 'A massive eruption of solar plasma into space. Can disrupt Earth\'s magnetosphere if directed at us, causing aurora + geomagnetic storms.' },
+            { term: 'CMB (Cosmic Microwave Background)', cat: 'Cosmology', def: 'Thermal radiation left over from the Big Bang, released ~ 380,000 years after t=0 when atoms first formed. Discovered by Penzias + Wilson 1964 (Nobel 1978). Now redshifted to 2.725 K.' },
+            { term: 'Coma (comet)', cat: 'Comets', def: 'The fuzzy cloud of gas + dust surrounding a comet\'s nucleus when near the Sun. Can be 10-100x larger than the nucleus.' },
+            { term: 'Coma (telescope)', cat: 'Optics', def: 'An off-axis aberration that causes stars near the edge of the field of view to appear comet-shaped. Common in Newtonian reflectors.' },
+            { term: 'Comet', cat: 'Small bodies', def: 'An icy + rocky body from the outer Solar System. When near the Sun, develops a coma + tail. Short-period comets from Kuiper Belt; long-period from Oort Cloud.' },
+            { term: 'Compact object', cat: 'Stellar remnants', def: 'A collective term for white dwarfs, neutron stars, + black holes — extremely dense end-states of stellar evolution.' },
+            { term: 'Conjunction', cat: 'Events', def: 'When two celestial bodies appear close in the sky (especially planets, Sun, or Moon). Not necessarily physically close.' },
+            { term: 'Constellation', cat: 'Sky patterns', def: 'One of 88 formal regions of the celestial sphere defined by the IAU in 1922. Also: a recognizable pattern of stars within those regions.' },
+            { term: 'Corona', cat: 'Sun', def: 'The Sun\'s outer atmosphere, extending millions of km into space. Temperature ~ 1-3 million K (much hotter than the surface). Visible during total solar eclipses + with coronagraphs.' },
+            { term: 'Crab Nebula', cat: 'Deep sky', def: 'Supernova remnant (M1) in Taurus, observed as a "guest star" by Chinese astronomers in 1054 CE. Contains the Crab Pulsar at its center.' },
+
+            // D
+            { term: 'Dark adaptation', cat: 'Observing', def: 'The eye\'s gradual sensitivity increase in low light. Takes ~ 20-30 minutes. Disturbed by white light; preserved by deep-red light.' },
+            { term: 'Dark energy', cat: 'Cosmology', def: 'An unknown form of energy causing the universe\'s expansion to accelerate. ~ 68% of total energy density. Discovered through Type Ia supernova observations 1998 (Nobel 2011).' },
+            { term: 'Dark matter', cat: 'Cosmology', def: 'Matter that doesn\'t emit or absorb light but gravitates. ~ 27% of total energy density. Inferred from galaxy rotation, lensing, CMB. Particle identity still unknown.' },
+            { term: 'Dark nebula', cat: 'Nebulae', def: 'A cold dense interstellar cloud of gas + dust that blocks light from background stars. Examples: Horsehead Nebula, Coalsack Nebula.' },
+            { term: 'Dawes limit', cat: 'Optics', def: 'A telescope\'s theoretical resolution limit. For visible light: 116/aperture(mm) arcseconds. A 100-mm scope can theoretically resolve 1.16".' },
+            { term: 'Declination', cat: 'Coordinates', def: 'The celestial equivalent of latitude — angular distance north (+) or south (-) of the celestial equator. Polaris has declination ~ +89°.' },
+            { term: 'Deep-sky object', cat: 'Categories', def: 'A non-stellar, non-Solar-System object — galaxies, nebulae, star clusters. Distinguished from planets, comets, asteroids, individual stars.' },
+            { term: 'Density wave', cat: 'Galaxies', def: 'A traveling compression wave through a galaxy\'s disk that creates spiral-arm patterns. Stars + gas pass through density waves continuously over a galaxy\'s lifetime.' },
+            { term: 'Diffraction', cat: 'Optics', def: 'The bending of light around obstacles + apertures. Causes the diffraction pattern of bright stars in telescopes (Airy disk + diffraction rings).' },
+            { term: 'Dispersion (radio)', cat: 'Radio astronomy', def: 'The wavelength-dependent delay of radio waves passing through interstellar plasma. Used to measure FRB distances.' },
+            { term: 'Dobsonian telescope', cat: 'Telescopes', def: 'A simple altazimuth-mounted Newtonian reflector, invented by John Dobson 1965. Cheap, easy to use, large apertures available — the modern workhorse for visual amateur astronomy.' },
+            { term: 'Doppler effect', cat: 'Spectroscopy', def: 'The shift in wavelength of light from a moving source — blueshift toward, redshift away. Used to measure stellar + galactic motions.' },
+            { term: 'Double star', cat: 'Multiple stars', def: 'Two stars that appear close in the sky. May be physically bound (binary) or just optical (chance alignment).' },
+            { term: 'Drake equation', cat: 'Astrobiology', def: 'A 7-factor formula proposed by Frank Drake 1961 to estimate the number of communicating civilizations in the galaxy. Each factor is uncertain by orders of magnitude.' },
+            { term: 'Dwarf planet', cat: 'Categories', def: 'A celestial body that orbits the Sun, is massive enough to be roughly spherical, but has NOT cleared its orbital neighborhood of other objects. Pluto + Eris + Makemake + Haumea + Ceres.' },
+            { term: 'Dwarf star', cat: 'Stellar classification', def: 'A main-sequence star — generic term for "normal" stars fusing hydrogen in their cores. Distinguished from giants + supergiants.' },
+
+            // E
+            { term: 'Eccentricity', cat: 'Orbits', def: 'A measure of how elongated an orbit is. 0 = circle; 0 < e < 1 = ellipse; 1 = parabola; > 1 = hyperbola. Earth\'s orbit eccentricity is ~ 0.017.' },
+            { term: 'Eclipse', cat: 'Events', def: 'An astronomical event where one body partially or fully blocks light from another. Solar = Moon blocks Sun; lunar = Earth\'s shadow falls on Moon.' },
+            { term: 'Ecliptic', cat: 'Coordinates', def: 'The plane of Earth\'s orbit around the Sun, projected on the celestial sphere. The Sun + Moon + planets travel along (or near) the ecliptic. The 12 zodiac constellations lie along it.' },
+            { term: 'Effective temperature', cat: 'Stellar physics', def: 'The temperature of a black body that would radiate the same total energy as a real star. Sun\'s effective temperature: ~ 5778 K.' },
+            { term: 'Einstein ring', cat: 'Gravitational lensing', def: 'A complete ring image of a background galaxy or quasar around a foreground gravitational lens. Indicates near-perfect alignment.' },
+            { term: 'Electromagnetic spectrum', cat: 'Physics', def: 'The full range of electromagnetic radiation, from radio waves (kilometers) through microwaves, infrared, visible light, ultraviolet, X-rays, to gamma rays (sub-atomic wavelengths).' },
+            { term: 'Elliptical galaxy', cat: 'Galaxies', def: 'A galaxy with a smooth, roughly spheroidal shape + little ongoing star formation. Hubble class E0 (round) through E7 (elongated). Mostly old stars.' },
+            { term: 'Emission line', cat: 'Spectroscopy', def: 'A bright spectral line at a specific wavelength, produced when atoms in a hot gas drop to lower energy states + emit photons. Indicates composition.' },
+            { term: 'Emission nebula', cat: 'Nebulae', def: 'A cloud of ionized gas that emits its own light, typically powered by hot young stars within. Common color: red (from H-alpha emission of hydrogen). Examples: Orion Nebula, Eagle Nebula.' },
+            { term: 'Ephemeris', cat: 'Tables', def: 'A table giving the position of a celestial body at specified times. Modern ephemerides are computer-generated (JPL Horizons, etc.).' },
+            { term: 'Epoch', cat: 'Time', def: 'A reference moment used for astronomical coordinates. Standard: J2000.0 (January 1, 2000, 12:00 TT). Star catalogs reference an epoch because positions slowly change.' },
+            { term: 'Equator (celestial)', cat: 'Coordinates', def: 'The great circle on the celestial sphere lying on the plane of Earth\'s equator. Divides the celestial sphere into northern + southern halves.' },
+            { term: 'Equatorial mount', cat: 'Mounts', def: 'A telescope mounting with one axis aligned with Earth\'s rotation axis. Allows tracking a celestial object by rotating only that axis. Essential for long-exposure astrophotography.' },
+            { term: 'Equinox', cat: 'Calendar', def: 'The moment when the Sun crosses the celestial equator. Two per year: vernal (~ March 21) + autumnal (~ September 22). Day + night are roughly equal everywhere.' },
+            { term: 'Escape velocity', cat: 'Physics', def: 'The minimum speed needed to escape a body\'s gravitational pull. Earth surface: 11.2 km/s. Solar system from Earth\'s orbit: 42.1 km/s.' },
+            { term: 'Eyepiece', cat: 'Telescopes', def: 'The small lens assembly at the back of a telescope that magnifies the image. Designs: Plossl, Erfle, Konig, Nagler, Ethos. Higher-quality designs have wider apparent field of view.' },
+            { term: 'Event horizon', cat: 'Black holes', def: 'The boundary of a black hole — the surface beyond which nothing, not even light, can escape to the outside universe. Defined for a non-rotating black hole as the Schwarzschild radius.' },
+            { term: 'Exoplanet', cat: 'Planets', def: 'A planet orbiting a star other than the Sun. ~ 5,800 confirmed as of 2025; estimated billions in the Milky Way.' },
+            { term: 'Extinction', cat: 'Atmospheric', def: 'The dimming of starlight by atmospheric absorption + scattering. ~ 0.3 magnitudes at zenith from sea level (visible band); much worse at horizon.' },
+
+            // F
+            { term: 'F-ratio (focal ratio)', cat: 'Telescopes', def: 'The ratio of focal length to aperture diameter (f/N). Low f-numbers ("fast" telescopes, f/4-f/6) give brighter wide-field views; high f-numbers (f/10+) give higher magnification + planetary detail.' },
+            { term: 'Field of view (FOV)', cat: 'Optics', def: 'The angular size of the sky visible through an eyepiece or camera. Depends on telescope focal length + eyepiece focal length. A 6" Dobsonian at 50× shows ~ 1.4° FOV.' },
+            { term: 'Filament', cat: 'Sun', def: 'A dark thread-like feature on the Sun, visible in H-alpha. Cool dense plasma suspended above the photosphere by magnetic fields. Becomes a "prominence" when seen at the solar limb.' },
+            { term: 'Filter', cat: 'Accessories', def: 'A glass or coated optical element placed in the light path. Common types: lunar (reduces brightness), light-pollution rejection, OIII (oxygen-emission enhancement for nebulae), solar (Sun observation).' },
+            { term: 'Flare star', cat: 'Variable stars', def: 'A red dwarf that exhibits short brightenings (flares) caused by magnetic reconnection events. Proxima Centauri is a notable flare star.' },
+            { term: 'Focal length', cat: 'Telescopes', def: 'The distance from a lens or mirror to the point where parallel rays converge. Magnification = focal length of telescope / focal length of eyepiece.' },
+            { term: 'Fomalhaut', cat: 'Stars', def: 'A bright A-class star in Piscis Austrinus. Hosts a famous debris disk imaged by Hubble + JWST.' },
+            { term: 'Frame of reference', cat: 'Coordinates', def: 'A specified coordinate system + origin for measuring positions + motions. Common in astronomy: Earth-centered (geocentric), Sun-centered (heliocentric), galaxy-centered (galactocentric).' },
+
+            // G
+            { term: 'Gaia', cat: 'Missions', def: 'European Space Agency astrometry mission (2013-present) measuring positions + parallaxes + motions of ~ 2 billion stars in the Milky Way + Local Group.' },
+            { term: 'Galactic center', cat: 'Milky Way', def: 'The center of the Milky Way galaxy, located in Sagittarius. Contains the supermassive black hole Sagittarius A* (4.1 million solar masses).' },
+            { term: 'Galaxy', cat: 'Categories', def: 'A massive gravitationally-bound system of stars + gas + dust + dark matter. Trillion+ in the observable universe. Sizes: dwarf (millions of stars) to giant (trillions).' },
+            { term: 'Galactic disk', cat: 'Galaxies', def: 'The flat rotating component of a spiral galaxy, containing most of the gas + young stars + spiral arms. Milky Way\'s disk is ~ 100,000 ly across + ~ 1,000 ly thick.' },
+            { term: 'Galilean moons', cat: 'Solar system', def: 'Jupiter\'s 4 largest moons: Io, Europa, Ganymede, Callisto. Discovered by Galileo in 1610. Visible in any telescope or binoculars.' },
+            { term: 'Galaxy cluster', cat: 'Cosmology', def: 'A gravitationally-bound system of hundreds to thousands of galaxies. Largest structures known to be in dynamical equilibrium. Local Group is part of the Virgo Supercluster.' },
+            { term: 'Gamma-ray burst (GRB)', cat: 'Transients', def: 'A brief intense flash of gamma rays from a cosmological distance. Long GRBs are from massive stellar collapse; short GRBs from neutron-star mergers.' },
+            { term: 'Geocentric', cat: 'Frame', def: 'Earth-centered. Pre-Copernican worldview placed Earth at center of universe; now retained only for orbital coordinates of Earth-orbiting satellites.' },
+            { term: 'Giant star', cat: 'Stellar classification', def: 'A post-main-sequence star with greatly expanded radius + luminosity. Red giants (cool) + blue giants (hot). Examples: Arcturus, Aldebaran, Rigel.' },
+            { term: 'Globular cluster', cat: 'Stellar groups', def: 'A dense spherical cluster of 10⁴ to 10⁶ old stars, gravitationally bound + orbiting a galaxy as a whole. Milky Way has ~ 200 known. Ages 10-13 Gyr.' },
+            { term: 'Grand Tour', cat: 'Missions', def: 'The Voyager 1+2 trajectory using a rare 176-year planetary alignment to visit Jupiter, Saturn, Uranus, Neptune with a single spacecraft. Last alignment 1977.' },
+            { term: 'Gravitational lensing', cat: 'GR', def: 'The bending of light by a massive foreground object, producing distorted or multiple images of background sources. Strong, weak, + microlensing regimes.' },
+            { term: 'Gravitational waves', cat: 'GR', def: 'Ripples in spacetime predicted by Einstein 1916. First directly detected by LIGO 2015 (Nobel 2017). Produced by accelerating masses, especially mergers of compact objects.' },
+            { term: 'Greenwich Mean Time (GMT)', cat: 'Time', def: 'The mean solar time at the Royal Observatory at Greenwich, England (longitude 0°). Approximated by UTC today.' },
+
+            // H
+            { term: 'H II region', cat: 'Nebulae', def: 'An ionized hydrogen cloud heated by hot young stars. The "II" is in Roman numeral form, indicating singly-ionized H (H+). The Orion Nebula is an HII region.' },
+            { term: 'Habitable zone', cat: 'Astrobiology', def: 'The range of distances from a star where liquid water could exist on a planet\'s surface. For the Sun: roughly 0.95-1.4 AU. Often called the "Goldilocks Zone."' },
+            { term: 'Halo (galactic)', cat: 'Milky Way', def: 'A roughly spherical region surrounding a galaxy\'s disk, containing globular clusters, old metal-poor stars, + dark matter.' },
+            { term: 'Hawking radiation', cat: 'Black holes', def: 'Theoretical radiation emitted by black holes due to quantum effects near the event horizon. Predicted by Stephen Hawking 1974. Never directly observed; an active research area.' },
+            { term: 'Heliocentric', cat: 'Frame', def: 'Sun-centered. The Copernican world model placed the Sun (not Earth) at the center of the Solar System.' },
+            { term: 'Heliosheath', cat: 'Solar wind', def: 'The boundary region between the heliopause + the solar wind\'s "termination shock." Crossed by Voyager 1+2.' },
+            { term: 'Heliopause', cat: 'Solar wind', def: 'The boundary where the Sun\'s solar wind meets + balances the interstellar medium. Voyager 1 crossed it in 2012, Voyager 2 in 2018.' },
+            { term: 'Hertzsprung-Russell (HR) diagram', cat: 'Stellar physics', def: 'A plot of stellar luminosity vs surface temperature. Reveals stellar evolutionary tracks. Main sequence is the dominant diagonal band.' },
+            { term: 'High-z (high-redshift)', cat: 'Cosmology', def: 'An object with high cosmological redshift, meaning very distant + observed at an earlier cosmic epoch. The most distant galaxy yet (JADES-GS-z14-0) is at z = 14.3.' },
+            { term: 'Horizon', cat: 'Coordinates', def: 'The circle where Earth\'s surface appears to meet the sky. Altitude 0° corresponds to the horizon.' },
+            { term: 'Hot Jupiter', cat: 'Exoplanets', def: 'A gas-giant exoplanet orbiting very close to its host star (typically < 0.05 AU, period < 10 days). Most exoplanets detected before 2010 were hot Jupiters (easy to detect).' },
+            { term: 'Hubble constant (H₀)', cat: 'Cosmology', def: 'The current expansion rate of the universe, ~ 67-73 km/s per Mpc (depending on measurement method — a current tension). Determines the size + age of the observable universe.' },
+            { term: 'Hubble Deep Field', cat: 'Surveys', def: 'A 1995-1996 series of 342 Hubble exposures totaling 10 days of observation of a tiny patch of empty-looking sky. Revealed ~ 3000 galaxies in the image — most of them previously unknown.' },
+            { term: 'Hubble Space Telescope (HST)', cat: 'Telescopes', def: 'NASA/ESA optical/UV/near-infrared space telescope launched 1990. Five servicing missions (1993, 1997, 1999, 2002, 2009) maintained + upgraded it. Still operating in 2025.' },
+
+            // I
+            { term: 'Inferior planet', cat: 'Solar system', def: 'A planet closer to the Sun than Earth — Mercury + Venus. Show phases like the Moon.' },
+            { term: 'Infrared (IR)', cat: 'Spectrum', def: 'Electromagnetic radiation with wavelengths 0.75-1000 microns. Penetrates dust; reveals cool objects (planets, brown dwarfs, dust). JWST is the premier IR observatory.' },
+            { term: 'Interferometry', cat: 'Techniques', def: 'Combining light from multiple telescopes to achieve resolution equivalent to a much larger single telescope. The Event Horizon Telescope (radio interferometry) produced the first BH image.' },
+            { term: 'Interstellar medium (ISM)', cat: 'Galaxy', def: 'The gas + dust filling the space between stars within a galaxy. Mostly hydrogen + helium, with traces of heavier elements. Phases: cold molecular, neutral atomic, ionized.' },
+            { term: 'Interstellar object', cat: 'Small bodies', def: 'An object that has been ejected from another planetary system + passes through our Solar System on a hyperbolic trajectory. Examples: 1I/ʻOumuamua (2017), 2I/Borisov (2019).' },
+
+            // J
+            { term: 'Jeans length', cat: 'Star formation', def: 'The critical size beyond which a gravitating gas cloud will collapse rather than supported by thermal pressure. Determines the minimum size of star-forming regions.' },
+            { term: 'JD (Julian Date)', cat: 'Time', def: 'A continuous count of days since noon UT on January 1, 4713 BCE. Convenient for astronomy because there are no leap-year or calendar discontinuities. JD 2451545.0 = J2000.0.' },
+            { term: 'JWST', cat: 'Telescopes', def: 'The James Webb Space Telescope. NASA/ESA/CSA infrared observatory launched Dec 2021. 6.5-m mirror. Located at L2 Lagrange point. First images released July 2022.' },
+
+            // K
+            { term: 'Keplerian orbit', cat: 'Orbits', def: 'An orbit that obeys Kepler\'s laws of planetary motion: elliptical, with the central body at one focus + equal-areas-in-equal-times law.' },
+            { term: 'Kepler\'s laws', cat: 'Orbits', def: '1: Planets orbit in ellipses, Sun at one focus. 2: Planets sweep equal areas in equal times. 3: T² ∝ a³ (orbital period squared proportional to semi-major axis cubed).' },
+            { term: 'Kilonova', cat: 'Transients', def: 'An optical/IR transient produced by the merger of two neutron stars. Detected for the first time alongside gravitational waves in GW170817 (2017). Produces r-process heavy elements.' },
+            { term: 'Kuiper Belt', cat: 'Solar system', def: 'A ring of icy small bodies extending from Neptune\'s orbit (~ 30 AU) to ~ 50 AU. Source of short-period comets. Contains Pluto + many dwarf planets + hundreds of thousands of smaller objects.' },
+
+            // L
+            { term: 'Lagrange points', cat: 'Orbits', def: 'Five gravitationally stable points in a two-body system. L1, L2, L3 are unstable; L4 + L5 are stable. JWST is at L2 (Sun-Earth); the Trojan asteroids are at Jupiter\'s L4 + L5.' },
+            { term: 'Lenticular galaxy', cat: 'Galaxies', def: 'A galaxy with a disk but no spiral arms + little star formation. Intermediate between elliptical + spiral. Hubble class S0.' },
+            { term: 'Light pollution', cat: 'Environment', def: 'Excessive + misdirected artificial light at night, which obscures the night sky + disturbs ecosystems. Quantified by the Bortle scale.' },
+            { term: 'Light-year (ly)', cat: 'Distance', def: 'The distance light travels in one Julian year — ~ 9.46 trillion km, or ~ 0.31 parsecs. The most popular distance unit for popular astronomy.' },
+            { term: 'Limb', cat: 'Solar/lunar', def: 'The edge of a planet, moon, or solar disk as projected on the sky. The lunar limb is where craters appear in sharp profile.' },
+            { term: 'Limiting magnitude', cat: 'Observing', def: 'The faintest magnitude visible at a given setting (eye, binocular, telescope). Naked eye: ~ 6.5 from dark sky. 8" Dobsonian: ~ 14. JWST: ~ 31.' },
+            { term: 'Local Group', cat: 'Cosmology', def: 'Our galaxy cluster — ~ 80 galaxies including the Milky Way, Andromeda (M31), Triangulum (M33), the Magellanic Clouds, + many dwarf galaxies. ~ 10 million ly across.' },
+            { term: 'Luminosity', cat: 'Stellar physics', def: 'The total power output of a star, in watts or solar luminosities. The Sun = 3.83 × 10^26 W = 1 L_sun.' },
+
+            // M
+            { term: 'Magnetar', cat: 'Compact objects', def: 'A neutron star with an extremely strong magnetic field (10^13 to 10^15 Gauss, ~ 1000× a typical pulsar). Source of giant flares + (in some cases) fast radio bursts.' },
+            { term: 'Magnetic dynamo', cat: 'Physics', def: 'The process generating + maintaining magnetic fields in stars + planets, driven by convection + rotation of conductive fluids.' },
+            { term: 'Magnitude', cat: 'Measurement', def: 'A logarithmic measure of brightness. Smaller (more negative) magnitudes are BRIGHTER. Difference of 5 magnitudes = factor of 100 brightness. Apparent vs absolute magnitudes.' },
+            { term: 'Main sequence', cat: 'Stellar physics', def: 'The ~ 90% of a star\'s life it spends fusing hydrogen in its core. The diagonal band on the HR diagram. The Sun has been on the main sequence for 4.6 Gyr.' },
+            { term: 'Maksutov-Cassegrain', cat: 'Telescopes', def: 'A catadioptric telescope using a Maksutov corrector lens + a Cassegrain reflector. Compact + low maintenance. Popular amateur design.' },
+            { term: 'Mass-luminosity relation', cat: 'Stellar physics', def: 'A relationship for main-sequence stars: L ∝ M^3.5 (approximately). A 10-solar-mass main-sequence star is ~ 3000× the Sun\'s luminosity.' },
+            { term: 'Mean solar day', cat: 'Time', def: '24 hours of mean solar time. The actual length of a solar day varies slightly through the year due to Earth\'s elliptical orbit + axial tilt.' },
+            { term: 'Meridian', cat: 'Coordinates', def: 'The great circle on the celestial sphere passing through the zenith + the north + south celestial poles. The local meridian is where the Sun reaches its highest point each day (transit).' },
+            { term: 'Messier catalog', cat: 'Catalogs', def: 'A list of 110 deep-sky objects compiled by Charles Messier 1764-1782, originally to help comet-hunters avoid mistaking nebulous objects for comets. Now the canonical beginner\'s observation list.' },
+            { term: 'Meteor', cat: 'Atmospheric', def: 'A streak of light caused by a particle (meteoroid) entering Earth\'s atmosphere at 11-72 km/s + burning up. Most are smaller than a grain of sand.' },
+            { term: 'Meteorite', cat: 'Small bodies', def: 'A meteoroid that survives passage through Earth\'s atmosphere + lands on the ground. Types: stony (~ 94%), iron, stony-iron.' },
+            { term: 'Meteor shower', cat: 'Events', def: 'A period of elevated meteor activity, caused by Earth passing through a debris trail left by a comet or asteroid. Major showers: Perseids (August), Geminids (December).' },
+            { term: 'Mira variable', cat: 'Variable stars', def: 'A long-period variable star — a pulsating red giant with a 100-1000 day period + large brightness variation (3-10 magnitudes). Named for the prototype Mira (omicron Ceti).' },
+            { term: 'Milky Way', cat: 'Galaxies', def: 'Our home galaxy — a barred spiral, ~ 100,000 ly across, with 100-400 billion stars. The Sun is ~ 26,000 ly from the center.' },
+            { term: 'Molecular cloud', cat: 'ISM', def: 'A dense cold cloud of interstellar gas + dust where stars form. Composed mostly of molecular hydrogen (H₂). The largest are "giant molecular clouds" (GMCs).' },
+
+            // N
+            { term: 'Nadir', cat: 'Coordinates', def: 'The point on the celestial sphere directly below the observer. Opposite of zenith.' },
+            { term: 'Naked eye', cat: 'Observing', def: 'Astronomical observation without optical aid. Limiting magnitude under perfect dark skies: ~ 6.5. Most amateur work begins with naked-eye observation.' },
+            { term: 'Nebula', cat: 'Categories', def: 'A cloud of gas + dust in interstellar space. Types: emission, reflection, dark, planetary, supernova remnant. Most are in the Milky Way.' },
+            { term: 'Neutron star', cat: 'Compact objects', def: 'The collapsed core of a massive star after a supernova. Mass ~ 1.4-2 solar masses, radius ~ 10 km. Density comparable to atomic nuclei. Pulsars + magnetars are neutron stars.' },
+            { term: 'Newtonian reflector', cat: 'Telescopes', def: 'A reflecting telescope invented by Isaac Newton 1668. Light enters the tube, reflects off a parabolic primary mirror, then off a flat secondary, to an eyepiece on the side. Most common amateur design.' },
+            { term: 'NGC (New General Catalogue)', cat: 'Catalogs', def: 'A catalog of ~ 8,000 deep-sky objects compiled by Dreyer 1888. The "NGC numbers" remain in widespread use today.' },
+            { term: 'Node', cat: 'Orbits', def: 'A point where one orbital plane intersects another. Eclipses can only occur when the Sun is near one of the Moon\'s nodes.' },
+            { term: 'North celestial pole', cat: 'Coordinates', def: 'The projection of Earth\'s north rotational pole onto the celestial sphere. Currently within ~ 1° of Polaris.' },
+            { term: 'Nova', cat: 'Variable stars', def: 'A sudden brightening (by ~ 12 magnitudes) of a white-dwarf binary system caused by thermonuclear runaway on the white dwarf\'s surface. NOT a supernova; the white dwarf survives + may recur.' },
+            { term: 'Nuclear fusion', cat: 'Stellar physics', def: 'The combination of atomic nuclei to form heavier nuclei, releasing energy. Powers all stars. Sun: hydrogen → helium via the pp chain.' },
+            { term: 'Nutation', cat: 'Earth motion', def: 'A small periodic wobble in Earth\'s rotation axis, with a period of 18.6 years. Caused mainly by lunar gravity.' },
+
+            // O
+            { term: 'Object', cat: 'Categories', def: 'Generic astronomy term for anything observed — stars, galaxies, nebulae, planets, asteroids, comets.' },
+            { term: 'Obliquity', cat: 'Earth motion', def: 'The tilt of Earth\'s rotation axis relative to the orbital plane. Currently 23.44°. Cause of seasons.' },
+            { term: 'Occultation', cat: 'Events', def: 'When one celestial body passes in front of another, hiding it. Lunar occultations of stars + planets are common; asteroid occultations of stars are valuable for asteroid shape measurement.' },
+            { term: 'Olbers\' paradox', cat: 'Cosmology', def: 'The question of why the night sky is dark, when an infinite + eternal universe should have stars in every direction. Resolved by the finite age + expansion of the universe.' },
+            { term: 'Oort Cloud', cat: 'Solar system', def: 'A spherical halo of icy bodies surrounding the Solar System at distances of ~ 2,000-200,000 AU. Source of long-period comets. Has never been directly observed.' },
+            { term: 'Open cluster', cat: 'Stellar groups', def: 'A loose grouping of ~ 50-1,000 young stars in or near the galactic disk. Examples: Pleiades, Hyades, Beehive. Disperses over hundreds of millions of years.' },
+            { term: 'Opposition', cat: 'Planetary', def: 'When a planet is opposite the Sun in the sky (rises at sunset, sets at sunrise). The optimal observing time for outer planets — closest to Earth, fully illuminated.' },
+            { term: 'Orbit', cat: 'Mechanics', def: 'The gravitationally-bound path of one body around another. Earth orbits the Sun in 1 year, ~ 940 million km along an elliptical path.' },
+            { term: 'Orbital resonance', cat: 'Mechanics', def: 'A relationship between two orbiting bodies where their periods are in a small-integer ratio. Examples: Jupiter\'s moons Io:Europa:Ganymede in 1:2:4 resonance.' },
+            { term: 'Orion arm', cat: 'Milky Way', def: 'The spiral arm of the Milky Way containing the Sun. A "minor" arm or "spur" off the Sagittarius arm; ~ 3,500 ly thick + 10,000 ly long.' }
+          ];
+
+          var search = d.glossarySearch || '';
+          var catFilter = d.glossaryCategory || 'all';
+
+          var categories = TERMS.map(function(t) { return t.cat; }).filter(function(c, i, arr) { return arr.indexOf(c) === i; }).sort();
+
+          var filtered = TERMS.filter(function(t) {
+            if (catFilter !== 'all' && t.cat !== catFilter) return false;
+            if (search) {
+              var q = search.toLowerCase();
+              if (t.term.toLowerCase().indexOf(q) === -1 && t.def.toLowerCase().indexOf(q) === -1) return false;
+            }
+            return true;
+          });
+
+          return sectionCard('📖 Astronomy glossary (' + TERMS.length + ' terms)',
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, 'A reference glossary of astronomy terms organized by topic. Search by term or definition, or filter by category.'),
+
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+                h('input', {
+                  type: 'text',
+                  placeholder: 'Search glossary…',
+                  value: search,
+                  onChange: function(e) { upd({ glossarySearch: e.target.value }); },
+                  'aria-label': 'Search glossary',
+                  className: 'astr-focus',
+                  style: { flex: 1, minWidth: 140, padding: '5px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                }),
+                h('select', {
+                  value: catFilter,
+                  onChange: function(e) { upd({ glossaryCategory: e.target.value }); },
+                  'aria-label': 'Filter glossary by category',
+                  className: 'astr-focus',
+                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11, minWidth: 140 }
+                },
+                  h('option', { value: 'all' }, 'All categories'),
+                  categories.map(function(c) { return h('option', { key: c, value: c }, c); })
+                )
+              ),
+
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of ' + TERMS.length + ' terms'),
+
+              h('dl', { style: { maxHeight: 600, overflowY: 'auto', padding: 4, margin: 0 } },
+                filtered.map(function(t, idx) {
+                  return h('div', {
+                    key: 'glos-' + idx,
+                    style: { padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid #6366f1' }
+                  },
+                    h('dt', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
+                      h('strong', { style: { color: '#c7d2fe', fontSize: 12.5 } }, t.term),
+                      h('span', { style: { fontSize: 9, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.5 } }, t.cat)
+                    ),
+                    h('dd', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, t.def)
+                  );
+                })
+              )
+            ),
+            '#6366f1'
+          );
+        }
+      }
+
+      // ──────────────────────────────────────────────────────────────
+      // QUIZ
+      // ──────────────────────────────────────────────────────────────
 
         // ──────────────────────────────────────────────────────────────
         // Eyepiece View Simulator — what you'd actually see in a telescope

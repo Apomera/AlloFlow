@@ -385,6 +385,7 @@ function AIBackendModal(props) {
       id: "ai-backend-apikey",
       "aria-label": t("ai_backend.api_key_aria") || "Custom AI backend API key",
       type: "password",
+      autoComplete: "off",
       placeholder: t("ai_backend.api_key_placeholder") || "Your API key...",
       defaultValue: (() => {
         try {

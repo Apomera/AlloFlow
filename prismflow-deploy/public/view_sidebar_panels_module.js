@@ -1305,6 +1305,7 @@ function SourceInputPanel(props) {
     {
       "aria-label": t("common.common_url_placeholder"),
       type: "url",
+      autoComplete: "url",
       value: urlToFetch,
       onChange: (e) => setUrlToFetch(e.target.value),
       placeholder: t("common.url_placeholder"),

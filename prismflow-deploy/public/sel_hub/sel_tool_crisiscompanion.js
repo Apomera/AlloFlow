@@ -1411,6 +1411,9 @@ window.SelHub = window.SelHub || {
 
       var SECTIONS = [
         { id: 'mykit',               icon: '🛡', label: 'My Safety Kit' },
+        { id: 'breath',              icon: '🫧', label: 'Breath pacer' },
+        { id: 'grounding',           icon: '🌿', label: 'Grounding 5-4-3-2-1' },
+        { id: 'thermometer',         icon: '🌡', label: 'Distress check' },
         { id: 'whyMatters',          icon: '🫂', label: 'Why this matters' },
         { id: 'recognizeDepression', icon: '🌧️', label: 'Recognizing depression' },
         { id: 'crisisSigns',         icon: '🚨', label: 'Crisis warning signs' },
@@ -1587,6 +1590,316 @@ window.SelHub = window.SelHub || {
       if (section === 'mykit') {
         content = h('div', null,
           h(CrisisSafetyKit, { d: d, upd: upd })
+        );
+      }
+
+      // ─── Breath Pacer (interactive widget — no content change) ───
+      // Box breathing (4-4-4-4) or 4-7-8 calming breath. Animated circle
+      // expands/contracts so the user can pace inhale/hold/exhale visually.
+      // No safety messaging added or modified.
+      else if (section === 'breath') {
+        var bMode = d.breathMode || 'box';
+        var bRunning = !!d.breathRunning;
+        var bStart  = d.breathStart || 0;
+        var bSession = d.breathSession || { cycles: 0 };
+        var BREATH_MODES = {
+          box:  { name: 'Box breathing (4-4-4-4)', phases: [{ name: 'Inhale', sec: 4, scale: 1.4 }, { name: 'Hold',   sec: 4, scale: 1.4 }, { name: 'Exhale', sec: 4, scale: 0.7 }, { name: 'Hold',   sec: 4, scale: 0.7 }] },
+          fourseven: { name: '4-7-8 calming breath', phases: [{ name: 'Inhale', sec: 4, scale: 1.4 }, { name: 'Hold', sec: 7, scale: 1.4 }, { name: 'Exhale', sec: 8, scale: 0.7 }] },
+          equal:{ name: 'Equal breath (6-6)',     phases: [{ name: 'Inhale', sec: 6, scale: 1.4 }, { name: 'Exhale', sec: 6, scale: 0.7 }] }
+        };
+        var pattern = BREATH_MODES[bMode] || BREATH_MODES.box;
+        var cycleSec = pattern.phases.reduce(function(s, p) { return s + p.sec; }, 0);
+        var now = Date.now();
+        var elapsed = bRunning && bStart > 0 ? Math.floor((now - bStart) / 1000) : 0;
+        var inCycle = cycleSec > 0 ? (elapsed % cycleSec) : 0;
+        var cycles = cycleSec > 0 ? Math.floor(elapsed / cycleSec) : 0;
+        var cumulative = 0; var currentPhase = pattern.phases[0]; var phaseProgress = 0;
+        for (var pi = 0; pi < pattern.phases.length; pi++) {
+          if (inCycle < cumulative + pattern.phases[pi].sec) {
+            currentPhase = pattern.phases[pi];
+            phaseProgress = (inCycle - cumulative) / pattern.phases[pi].sec;
+            break;
+          }
+          cumulative += pattern.phases[pi].sec;
+        }
+        // Persist completed cycles
+        if (cycles > (d.breathSession && d.breathSession.cycles || 0)) {
+          upd('breathSession', { cycles: cycles });
+        }
+        function start() { upd('breathRunning', true); upd('breathStart', Date.now()); upd('breathSession', { cycles: 0 }); }
+        function stop()  { upd('breathRunning', false); upd('breathStart', 0); }
+
+        // Tick (force re-render each second while running)
+        React.useEffect(function() {
+          if (bRunning) {
+            var t = setInterval(function() { upd('breathTick', (d.breathTick || 0) + 1); }, 250);
+            return function() { clearInterval(t); };
+          }
+        }, [bRunning, d.breathTick]);
+
+        var circleScale = 1;
+        if (bRunning) {
+          // Smooth interpolate between phase scales using phaseProgress
+          var prevPhase = pattern.phases[(pattern.phases.indexOf(currentPhase) - 1 + pattern.phases.length) % pattern.phases.length];
+          circleScale = (prevPhase.scale || 1) + ((currentPhase.scale || 1) - (prevPhase.scale || 1)) * phaseProgress;
+        }
+        var ringColor = currentPhase.name === 'Inhale' ? '#0d9488' : (currentPhase.name === 'Exhale' ? '#7c3aed' : '#0891b2');
+
+        content = h('div', null,
+          sectionHero({ icon: '🫧', label: 'Breath pacer' }),
+          h('div', { style: { background: '#fff', borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
+            h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
+              'A visual breathing pacer. Watch the circle expand and contract; let your breath follow. Useful for moments of acute stress before a hard conversation, after one, or any time the body is ahead of the mind. This is a tool to USE — it doesn\'t replace any of the supports in the rest of this module.'),
+
+            // Mode picker
+            h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+              Object.keys(BREATH_MODES).map(function(k) {
+                var picked = bMode === k;
+                return h('button', { key: k, onClick: function() { upd('breathMode', k); stop(); }, 'aria-pressed': picked,
+                  style: { padding: '8px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? TEAL : '#d1d5db'),
+                    background: picked ? '#ccfbf1' : '#fff', color: picked ? TEAL_DARK : SLATE_TEXT, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                  BREATH_MODES[k].name);
+              })
+            ),
+
+            // Animated circle
+            h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0' } },
+              h('div', { style: { width: 220, height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' } },
+                h('div', { 'aria-hidden': 'true', style: {
+                  width: 160, height: 160, borderRadius: '50%',
+                  background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.85), ' + ringColor + ')',
+                  boxShadow: '0 0 60px ' + ringColor + '88', border: '4px solid ' + ringColor,
+                  transform: 'scale(' + circleScale.toFixed(3) + ')',
+                  transition: bRunning ? 'transform 0.25s linear' : 'transform 0.4s ease'
+                } }),
+                h('div', { style: { position: 'absolute', textAlign: 'center', color: '#fff', fontWeight: 800, pointerEvents: 'none' } },
+                  h('div', { style: { fontSize: 22, textShadow: '0 1px 4px rgba(0,0,0,0.5)' } }, bRunning ? currentPhase.name : 'Ready'),
+                  bRunning && h('div', { style: { fontSize: 14, marginTop: 4, textShadow: '0 1px 4px rgba(0,0,0,0.5)' } }, (currentPhase.sec - Math.floor(phaseProgress * currentPhase.sec)) + 's')
+                )
+              ),
+              h('div', { style: { marginTop: 14, fontSize: 13, color: SLATE_MID, fontWeight: 600 } },
+                bRunning ? ('Cycle ' + cycles + ' · keep going as long as feels good') : 'Press Start when you\'re ready'),
+
+              h('div', { style: { display: 'flex', gap: 8, marginTop: 14 } },
+                !bRunning
+                  ? h('button', { onClick: start, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '▶ Start')
+                  : h('button', { onClick: stop, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '■ Stop'),
+                bRunning && h('button', { onClick: function() { upd('breathStart', Date.now()); upd('breathSession', { cycles: 0 }); },
+                  style: { padding: '10px 20px', borderRadius: 10, border: '1.5px solid #d1d5db', background: '#fff', color: SLATE_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↺ Restart')
+              )
+            )
+          ),
+
+          h('div', { style: { marginTop: 12, padding: 12, background: '#f0fdfa', borderRadius: 10, border: '1px solid ' + TEAL, fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65 } },
+            h('strong', { style: { color: TEAL_DARK } }, '💡 When to use which: '),
+            'Box breathing (4-4-4-4) for general regulation — military and first responders use it. ',
+            '4-7-8 for falling asleep or quick acute calm — the long exhale activates the parasympathetic system. ',
+            'Equal breath (6-6) for sustainable everyday use — no holds, easy to maintain.')
+        );
+      }
+
+      // ─── Grounding 5-4-3-2-1 (interactive walkthrough) ───
+      else if (section === 'grounding') {
+        var gStep = d.groundStep || 0;
+        var gItems = d.groundItems || { sight: [], touch: [], hear: [], smell: [], taste: [] };
+        var STEPS = [
+          { sense: 'sight', count: 5, label: '5 things you can SEE', icon: '👁', prompt: 'Look around. Name 5 things you can see right now. Be specific — "the corner of a book", not "a book".' },
+          { sense: 'touch', count: 4, label: '4 things you can TOUCH', icon: '✋', prompt: 'Reach out and touch 4 different things. Notice the texture. Cold or warm? Smooth or rough?' },
+          { sense: 'hear',  count: 3, label: '3 things you can HEAR', icon: '👂', prompt: 'Listen. Name 3 different sounds — they can be close or far, loud or quiet.' },
+          { sense: 'smell', count: 2, label: '2 things you can SMELL', icon: '👃', prompt: 'Notice 2 smells. If you can\'t smell anything, name 2 smells you remember enjoying.' },
+          { sense: 'taste', count: 1, label: '1 thing you can TASTE', icon: '👅', prompt: 'Notice 1 taste in your mouth — what your last drink or food left, or just the taste of the air.' }
+        ];
+        var current = STEPS[Math.min(gStep, STEPS.length - 1)];
+        var sense = current.sense;
+        var items = (gItems[sense] || []).slice();
+        var complete = items.length >= current.count;
+        var allDone = gStep >= STEPS.length;
+        function addItem(text) {
+          if (!text || !text.trim()) return;
+          var ni = Object.assign({}, gItems);
+          ni[sense] = (ni[sense] || []).concat([text.trim()]);
+          upd('groundItems', ni);
+        }
+        function removeItem(idx) {
+          var ni = Object.assign({}, gItems);
+          var arr = (ni[sense] || []).slice();
+          arr.splice(idx, 1); ni[sense] = arr;
+          upd('groundItems', ni);
+        }
+        function nextStep() { upd('groundStep', gStep + 1); }
+        function reset() { upd('groundStep', 0); upd('groundItems', { sight: [], touch: [], hear: [], smell: [], taste: [] }); }
+        content = h('div', null,
+          sectionHero({ icon: '🌿', label: 'Grounding 5-4-3-2-1' }),
+          h('div', { style: { background: '#fff', borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
+            h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
+              'When your mind is racing or anxiety is climbing, the 5-4-3-2-1 technique pulls attention back to the body and the present moment. Use any of the 5 senses, even if some aren\'t accessible — name what you remember, what you imagine, what you wish you smelled. It still works.'),
+            // Progress dots
+            h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, justifyContent: 'center' } },
+              STEPS.map(function(s, i) {
+                return h('div', { key: i, style: { width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800,
+                  background: i < gStep ? '#22c55e' : (i === gStep ? TEAL : '#e5e7eb'),
+                  color: i < gStep ? '#fff' : (i === gStep ? '#fff' : '#94a3b8') } }, i < gStep ? '✓' : s.count);
+              })
+            ),
+            !allDone && h('div', { style: { padding: 16, background: '#f0fdfa', borderRadius: 10, marginBottom: 12 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                h('span', { style: { fontSize: 32 } }, current.icon),
+                h('div', null,
+                  h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK } }, current.label),
+                  h('div', { style: { fontSize: 12, color: SLATE_MID, marginTop: 2 } }, items.length + ' of ' + current.count + ' added'))
+              ),
+              h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 10px' } }, current.prompt),
+              // Input
+              !complete && h('div', { style: { display: 'flex', gap: 6 } },
+                h('input', { type: 'text', id: 'gr-input-' + sense,
+                  placeholder: 'Type one ' + sense + ' thing and press Enter',
+                  onKeyDown: function(e) { if (e.key === 'Enter') { addItem(e.target.value); e.target.value = ''; } },
+                  style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 } })
+              ),
+              // List
+              items.length > 0 && h('div', { style: { marginTop: 10 } },
+                items.map(function(it, idx) {
+                  return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, background: '#fff', borderRadius: 6, marginBottom: 4, border: '1px solid #d1fae5' } },
+                    h('span', { style: { fontSize: 16, color: '#22c55e' } }, '✓'),
+                    h('span', { style: { flex: 1, fontSize: 13, color: SLATE_TEXT } }, it),
+                    h('button', { onClick: function() { removeItem(idx); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 } }, '×'));
+                })
+              ),
+              complete && h('button', { onClick: nextStep,
+                style: { marginTop: 12, padding: '10px 18px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } },
+                gStep === STEPS.length - 1 ? '✓ Finish' : 'Next →')
+            ),
+            allDone && h('div', { style: { padding: 18, background: 'linear-gradient(135deg, #d1fae5, #ccfbf1)', borderRadius: 12, textAlign: 'center' } },
+              h('div', { style: { fontSize: 28, marginBottom: 6 } }, '🌿'),
+              h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK, marginBottom: 6 } }, 'Grounding complete'),
+              h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } }, 'You named 15 specific things in your present moment. Notice how you feel now compared to when you started.'),
+              h('button', { onClick: reset,
+                style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid ' + TEAL, background: '#fff', color: TEAL_DARK, fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '↺ Start again')
+            )
+          )
+        );
+      }
+
+      // ─── Distress thermometer (track distress over time) ───
+      else if (section === 'thermometer') {
+        var readings = d.distressReadings || [];
+        var nowMood = d.distressNow != null ? d.distressNow : 0;
+        var nowNote = d.distressNote || '';
+        function logReading() {
+          var entry = { id: 'dr_' + Date.now(), value: nowMood, note: nowNote, time: new Date().toISOString() };
+          upd('distressReadings', readings.concat([entry]));
+          upd('distressNote', '');
+          if (announce) announce('Distress reading saved.');
+        }
+        function removeReading(id) { upd('distressReadings', readings.filter(function(r) { return r.id !== id; })); }
+        function clearAll() { if (confirm('Clear all distress readings?')) upd('distressReadings', []); }
+
+        var sevenDayReadings = readings.filter(function(r) {
+          return new Date(r.time) > new Date(Date.now() - 7 * 86400000);
+        });
+        var avg7 = sevenDayReadings.length > 0
+          ? (sevenDayReadings.reduce(function(s, r) { return s + r.value; }, 0) / sevenDayReadings.length).toFixed(1)
+          : null;
+
+        var levelColors = ['#22c55e','#22c55e','#84cc16','#eab308','#eab308','#f59e0b','#f97316','#f97316','#ef4444','#ef4444','#b91c1c'];
+        var levelLabel = function(v) {
+          if (v <= 2) return 'Calm';
+          if (v <= 4) return 'Mild stress';
+          if (v <= 6) return 'Notable distress';
+          if (v <= 8) return 'High distress';
+          return 'Crisis-level distress';
+        };
+
+        content = h('div', null,
+          sectionHero({ icon: '🌡', label: 'Distress check' }),
+          h('div', { style: { background: '#fff', borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
+            h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
+              'A quick way to track how you\'re feeling over time. Rate your distress 0–10. Add an optional note. The pattern over a week tells you something words alone won\'t. ',
+              h('strong', null, 'If your reading is 8 or above for more than an hour, please reach out to a trusted adult or text HOME to 741741.')),
+
+            // Current reading slider
+            h('div', { style: { padding: 14, background: '#f0fdfa', borderRadius: 10, marginBottom: 14 } },
+              h('label', { htmlFor: 'distress-slider', style: { display: 'block', fontSize: 12, fontWeight: 700, color: TEAL_DARK, marginBottom: 8 } }, 'Right now I\'m feeling:'),
+              h('input', { id: 'distress-slider', type: 'range', min: 0, max: 10, step: 1, value: nowMood,
+                onChange: function(e) { upd('distressNow', parseInt(e.target.value, 10)); },
+                style: { width: '100%', accentColor: levelColors[nowMood] }
+              }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 2 } },
+                h('span', null, '0 · calm'), h('span', null, '5'), h('span', null, '10 · crisis')
+              ),
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 12 } },
+                h('div', { style: { fontSize: 36, fontWeight: 900, color: levelColors[nowMood] } }, nowMood),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: levelColors[nowMood] } }, levelLabel(nowMood))
+              ),
+              h('label', { htmlFor: 'distress-note', style: { display: 'block', fontSize: 11, fontWeight: 700, color: SLATE_MID, marginTop: 12, marginBottom: 4 } }, 'Optional note (what\'s going on?):'),
+              h('input', { id: 'distress-note', type: 'text', value: nowNote,
+                onChange: function(e) { upd('distressNote', e.target.value); },
+                placeholder: 'e.g., math test in 3rd period; barely slept',
+                style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 12.5, boxSizing: 'border-box' }
+              }),
+              h('button', { onClick: logReading,
+                style: { marginTop: 12, padding: '10px 18px', borderRadius: 8, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '💾 Log this reading'),
+
+              // Adaptive guidance based on level
+              nowMood >= 8 && h('div', { style: { marginTop: 12, padding: 12, background: '#fef2f2', borderRadius: 8, border: '1px solid #fca5a5' } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#b91c1c', marginBottom: 4 } }, '⚠ This is a hard moment.'),
+                h('p', { style: { fontSize: 12, color: '#7f1d1d', lineHeight: 1.6, margin: 0 } },
+                  'You\'re in real distress. The Breath pacer (one section up) and Grounding 5-4-3-2-1 are both right here. ',
+                  h('strong', null, 'If thoughts of self-harm are present, text HOME to 741741 (Crisis Text Line) or call/text 988 right now.'))),
+              nowMood >= 5 && nowMood < 8 && h('div', { style: { marginTop: 12, padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fcd34d' } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#92400e', marginBottom: 4 } }, 'Above average distress.'),
+                h('p', { style: { fontSize: 12, color: '#78350f', lineHeight: 1.6, margin: 0 } },
+                  'Worth pausing for. Try the Breath pacer or Grounding tool. If this level keeps coming back, telling a trusted adult is a good move.'))
+            ),
+
+            // History chart
+            readings.length > 0 && h('div', { style: { padding: 14, background: '#fff', borderRadius: 10, marginBottom: 14 } },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 } },
+                h('h4', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: SLATE_TEXT } }, '📊 Your pattern'),
+                avg7 && h('span', { style: { fontSize: 11, color: SLATE_MID } }, '7-day avg: ' + avg7 + ' · ' + sevenDayReadings.length + ' readings')
+              ),
+              // Mini timeline
+              h('svg', { viewBox: '0 0 320 100', style: { width: '100%', height: 100 }, 'aria-label': 'Distress over time chart' },
+                h('line', { x1: 30, y1: 90, x2: 310, y2: 90, stroke: '#cbd5e1' }),
+                [0, 5, 10].map(function(g) {
+                  var y = 90 - g * 8;
+                  return h('g', { key: g },
+                    h('line', { x1: 30, y1: y, x2: 310, y2: y, stroke: '#f1f5f9', strokeWidth: 0.5 }),
+                    h('text', { x: 26, y: y + 3, textAnchor: 'end', fontSize: 8, fill: '#64748b' }, g));
+                }),
+                readings.slice(-30).map(function(r, idx, arr) {
+                  var x = 30 + (arr.length === 1 ? 140 : (idx / (arr.length - 1)) * 280);
+                  var y = 90 - r.value * 8;
+                  return h('g', { key: r.id },
+                    h('circle', { cx: x, cy: y, r: 3, fill: levelColors[r.value] }),
+                    idx > 0 && (function() {
+                      var prev = arr[idx - 1];
+                      var px = 30 + ((idx - 1) / (arr.length - 1)) * 280;
+                      var py = 90 - prev.value * 8;
+                      return h('line', { x1: px, y1: py, x2: x, y2: y, stroke: levelColors[r.value], strokeWidth: 1.5, opacity: 0.5 });
+                    })()
+                  );
+                })
+              )
+            ),
+
+            // Recent log
+            readings.length > 0 && h('details', { style: { padding: 12, background: '#f8fafc', borderRadius: 10, marginBottom: 14 } },
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: TEAL_DARK } }, '📋 Recent readings (' + readings.length + ')'),
+              h('div', { style: { marginTop: 10, maxHeight: 200, overflowY: 'auto' } },
+                readings.slice().reverse().slice(0, 20).map(function(r) {
+                  var when = new Date(r.time);
+                  return h('div', { key: r.id, style: { display: 'flex', gap: 8, alignItems: 'baseline', padding: '4px 0', borderBottom: '1px solid #e5e7eb' } },
+                    h('span', { style: { fontSize: 14, fontWeight: 700, color: levelColors[r.value], minWidth: 28 } }, r.value),
+                    h('span', { style: { fontSize: 11, color: SLATE_MID, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 100 } }, when.toLocaleString()),
+                    h('span', { style: { flex: 1, fontSize: 12, color: SLATE_TEXT, lineHeight: 1.5 } }, r.note || ''),
+                    h('button', { onClick: function() { removeReading(r.id); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14 } }, '×')
+                  );
+                })
+              ),
+              h('button', { onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: '#fff', color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all readings')
+            )
+          )
         );
       }
 

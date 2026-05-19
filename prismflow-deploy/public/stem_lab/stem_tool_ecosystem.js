@@ -982,6 +982,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var tick = 0;
         var animId = null;
         var wasDay = true;
+        // Rolling population history for the phase explainer + live mini-chart.
+        // Sampled every ~10 frames (6 samples/sec), capped at last 60 samples
+        // = 10 seconds of history. Closed over the animation loop so it
+        // persists across frames without state.dataset thrash.
+        var popHistory = [];
+        var POP_HISTORY_MAX = 60;
+        var POP_SAMPLE_EVERY = 10;
 
         // Mouse tracking for sandbox
         canvas._mouseX = -1;
@@ -1396,8 +1403,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // a single fox from chain-killing several rabbits in one second.
             // Together with prey reproduction (below), the live canvas now
             // produces the boom-bust oscillation the analytical chart shows.
+            //
+            // Day/night realism: foxes are crepuscular/nocturnal hunters
+            // in reality. At night they detect prey further (HUNT_RADIUS_DAY/NIGHT)
+            // and close the gap faster (CHASE_SPEED_DAY/NIGHT). This honors
+            // the "foxes hunt more effectively in the dark" toast that
+            // previously had no code behind it.
             var STARVE_THRESHOLD = 720;  // ~12 seconds at 60fps without a kill
             var HUNT_COOLDOWN = 90;       // ~1.5 seconds before another kill
+            // Drought-time hunt boost: weakened prey are easier to detect
+            // and easier to chase. Real ecology — drought makes prey
+            // dehydrated/slower, predators get a one-time advantage
+            // window (which is itself short-lived because prey reproduce
+            // less during drought, so the predator boost accelerates the
+            // collapse rather than benefiting predators long-term).
+            var droughtBoost = droughtTicks > 0 ? 1.15 : 1.0;
+            var HUNT_RADIUS = (isDay ? 100 : 130) * droughtBoost;
+            var CHASE_GAIN = (isDay ? 0.40 : 0.55) * droughtBoost;
+            var CHASE_GAIN_Y = (isDay ? 0.30 : 0.42) * droughtBoost;
             for (var fxi = 0; fxi < predEntities.length; fxi++) {
               var f = predEntities[fxi];
               if (!f.alive) continue;
@@ -1427,14 +1450,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if (f.y > groundBottom) { f.y = groundBottom; f.vy = -Math.abs(f.vy); }
 
               f.hunting = false;
-              var nearDist = 100;
+              var nearDist = HUNT_RADIUS;
               var nearPrey = null;
               for (var np = 0; np < preyEntities.length; np++) {
                 if (!preyEntities[np].alive) continue;
                 var dx = preyEntities[np].x - f.x;
                 var dy = preyEntities[np].y - f.y;
                 var dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < nearDist) {
+                // Vegetation cover: if this prey is near a healthy plant,
+                // the predator's effective detection range shrinks. Real
+                // ecology — habitat heterogeneity. Walks the vegetation
+                // array once per prey scanned (acceptable cost — vegetation
+                // count is ~30, prey ~80, so worst case 2400 ops/frame).
+                // Only healthy plants (>0.5) provide meaningful cover —
+                // wildfires/drought reduce a plant\'s cover value.
+                var coverPenalty = 1.0;
+                for (var cvi = 0; cvi < vegetation.length; cvi++) {
+                  var v = vegetation[cvi];
+                  if (v.health < 0.5) continue;
+                  var vdx = preyEntities[np].x - v.x;
+                  var vdy = preyEntities[np].y - v.y;
+                  var vdSq = vdx * vdx + vdy * vdy;
+                  if (vdSq < 400) {  // within 20px of a healthy plant
+                    coverPenalty = 0.6;  // predator only sees 60% as far
+                    break;
+                  }
+                }
+                if (dist < nearDist * coverPenalty) {
                   nearDist = dist;
                   nearPrey = preyEntities[np];
                 }
@@ -1446,13 +1488,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var chDy = nearPrey.y - f.y;
                 var chDist = Math.sqrt(chDx * chDx + chDy * chDy);
                 if (chDist > 0) {
-                  f.vx = f.vx * 0.9 + (chDx / chDist) * 0.4;
-                  f.vy = f.vy * 0.9 + (chDy / chDist) * 0.3;
+                  f.vx = f.vx * 0.9 + (chDx / chDist) * CHASE_GAIN;
+                  f.vy = f.vy * 0.9 + (chDy / chDist) * CHASE_GAIN_Y;
                 }
                 f.facing = chDx > 0 ? 1 : -1;
 
                 // Kill only if cooldown has expired AND within strike range
                 if (chDist < 6 && f.huntCooldown <= 0) {
+                  // Capture whether this predator was well-fed BEFORE the
+                  // kill resets hunger — needed for the reproduction check.
+                  // A well-fed predator (hunger < 240, i.e. fed within the
+                  // last ~4 seconds) has the calories to reproduce; a
+                  // starving one is just keeping itself alive.
+                  var wasWellFed = (f.hunger || 0) < 240;
                   nearPrey.alive = false;
                   f.hunger = 0;                 // satiated
                   f.huntCooldown = HUNT_COOLDOWN; // post-kill cooldown
@@ -1465,6 +1513,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       life: 1.0,
                       color: '#fca5a5'
                     });
+                  }
+                  // ── Predator reproduction ──
+                  // Closes the Lotka-Volterra loop. Without this, the
+                  // predator population only ever decreases (starvation
+                  // with no births). When a well-fed predator catches
+                  // prey AND there's a free pool slot AND a small random
+                  // roll succeeds, respawn a dead predator near the
+                  // parent. Birth rate kept low (10%) so the cycle has
+                  // long enough phases for students to see boom/bust.
+                  if (wasWellFed && Math.random() < 0.10) {
+                    var predSpawnIdx = -1;
+                    for (var ps = 0; ps < predEntities.length; ps++) {
+                      if (!predEntities[ps].alive) { predSpawnIdx = ps; break; }
+                    }
+                    if (predSpawnIdx >= 0) {
+                      var bornPred = predEntities[predSpawnIdx];
+                      bornPred.alive = true;
+                      bornPred.x = f.x + (Math.random() - 0.5) * 12;
+                      bornPred.y = f.y + (Math.random() - 0.5) * 6;
+                      bornPred.vx = (Math.random() - 0.5) * 0.8;
+                      bornPred.vy = (Math.random() - 0.5) * 0.5;
+                      bornPred.facing = Math.random() > 0.5 ? 1 : -1;
+                      bornPred.hunting = false;
+                      bornPred.hunger = 0;     // born well-fed (parent shared the kill)
+                      bornPred.huntCooldown = HUNT_COOLDOWN; // can't immediately hunt
+                      // Orange sparkle for predator birth (distinct from
+                      // green prey birth + gray starvation puff).
+                      for (var bps = 0; bps < 3; bps++) {
+                        catchParticles.push({
+                          x: bornPred.x, y: bornPred.y,
+                          vx: (Math.random() - 0.5) * 1.5,
+                          vy: -Math.random() * 1.5,
+                          life: 1.0,
+                          color: '#fb923c'
+                        });
+                      }
+                    }
                   }
                 }
               } else {
@@ -1482,13 +1567,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // prey slot. Tuned so per-frame probability * average pairings
             // roughly matches the analytical preyBirth rate, producing
             // recoverable populations after predator pressure eases.
-            var CARRYING_K = preyEntities.length;  // pool size IS the cap
+            //
+            // Carrying capacity respects BOTH the pool size cap AND the
+            // K slider in the side panel (whichever is smaller). Previously
+            // the slider only affected the analytical chart, not the canvas
+            // — now moving K visibly throttles the canvas reproduction too.
+            //
+            // Vegetation modifier: average vegetation health scales the
+            // birth probability. Low veg = less food = slower prey
+            // reproduction. Closes the "compute vegHealth then ignore it"
+            // gap. Range 0.4 (healthy) → 0.1 (depleted) so the effect is
+            // noticeable without being punitive.
+            var CARRYING_K = Math.min(preyEntities.length, carryK);
             var aliveCount = 0;
             var firstDeadIdx = -1;
             for (var pcnt = 0; pcnt < preyEntities.length; pcnt++) {
               if (preyEntities[pcnt].alive) aliveCount++;
               else if (firstDeadIdx < 0) firstDeadIdx = pcnt;
             }
+            // Average current vegetation health across the field
+            var vegSum = 0, vegN = 0;
+            for (var vhi = 0; vhi < vegetation.length; vhi++) {
+              vegSum += vegetation[vhi].health || 0;
+              vegN++;
+            }
+            var avgVegHealth = vegN > 0 ? (vegSum / vegN) : 1;
+            // Map vegHealth (0-1) to a reproduction modifier (0.4-1.0)
+            // so depleted vegetation slows but doesn\'t stop reproduction.
+            var vegReproMod = 0.4 + 0.6 * avgVegHealth;
             // Only attempt reproduction if there's room + at least one dead slot
             if (firstDeadIdx >= 0 && aliveCount < CARRYING_K && aliveCount >= 2) {
               // Logistic damping — birth rate falls as we approach K
@@ -1503,7 +1609,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 if (a === b || !a.alive || !b.alive) continue;
                 var pdx = a.x - b.x, pdy = a.y - b.y;
                 if (pdx * pdx + pdy * pdy < 625) {  // within ~25px
-                  if (Math.random() < 0.04 * roomFactor) {
+                  // Drought modifier × vegetation modifier: when an active
+                  // drought is reducing water OR the field's vegetation
+                  // is generally depleted (heavy grazing pressure), prey
+                  // reproduce slower. Drought returns to 1 when droughtTicks
+                  // runs out; veg recovers passively as preyAlive falls.
+                  if (Math.random() < 0.04 * roomFactor * droughtPreyReproMod * vegReproMod) {
                     // Find next dead slot fresh (state may have changed mid-loop)
                     var spawnIdx = -1;
                     for (var sps = 0; sps < preyEntities.length; sps++) {
@@ -1570,55 +1681,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if (clouds[cli].x > cw + 60) clouds[cli].x = -80;
             }
 
-            // ── Population dynamics (every 200 ticks) ──
-            if (tick % 200 === 0) {
-              // Recount alive
-              preyAlive = 0;
-              predAlive = 0;
-              for (var rc1 = 0; rc1 < preyEntities.length; rc1++) { if (preyEntities[rc1].alive) preyAlive++; }
-              for (var rc2 = 0; rc2 < predEntities.length; rc2++) { if (predEntities[rc2].alive) predAlive++; }
-
-              // Prey reproduction (with carrying capacity and drought modifier)
-              if (preyAlive < carryK) {
-                var newPreyCount = Math.min(5, Math.floor(preyAlive * 0.15 * droughtPreyReproMod));
-                for (var rpi = 0; rpi < preyEntities.length && newPreyCount > 0; rpi++) {
-                  if (!preyEntities[rpi].alive) {
-                    preyEntities[rpi].alive = true;
-                    preyEntities[rpi].x = Math.random() * cw;
-                    preyEntities[rpi].y = groundY + Math.random() * (groundBottom - groundY);
-                    preyEntities[rpi].vx = (Math.random() - 0.5) * 1.2;
-                    preyEntities[rpi].vy = (Math.random() - 0.5) * 0.8;
-                    newPreyCount--;
-                    playSound('birth');
-                  }
-                }
-              }
-
-              // Predator starvation
-              if (predAlive > 2 && Math.random() < 0.2) {
-                for (var svi = predEntities.length - 1; svi >= 0; svi--) {
-                  if (predEntities[svi].alive) {
-                    predEntities[svi].alive = false;
-                    break;
-                  }
-                }
-              }
-
-              // Predator reproduction
-              if (preyAlive > 20 && Math.random() < 0.3) {
-                for (var rfi = 0; rfi < predEntities.length; rfi++) {
-                  if (!predEntities[rfi].alive) {
-                    predEntities[rfi].alive = true;
-                    predEntities[rfi].x = Math.random() * cw;
-                    predEntities[rfi].y = groundY + Math.random() * (groundBottom - groundY);
-                    predEntities[rfi].vx = (Math.random() - 0.5) * 0.8;
-                    predEntities[rfi].vy = (Math.random() - 0.5) * 0.5;
-                    playSound('birth');
-                    break;
-                  }
-                }
-              }
-            }
+            // ── Population dynamics ──
+            // The per-frame Lotka-Volterra system above (predator hunger,
+            // hunt cooldown, prey proximity reproduction, predator-on-kill
+            // reproduction) supersedes the old every-200-tick bulk system
+            // that used to live here. Removed in this pass — the per-frame
+            // logic is finer-grained, causally tied to actual interactions
+            // (kills, proximity), and doesn\'t produce the visible "spawn
+            // pulse" the old bulk system did. Drought integration that
+            // formerly lived in this block is now wired via
+            // droughtPreyReproMod into the per-frame reproduction check.
 
             // ── Track population history (every 10 ticks) ──
             if (tick % 10 === 0) {
@@ -2087,6 +2159,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
 
             ctxC.restore();
+
+            // ── Hunger bar (Phase L8) ──
+            // Rendered AFTER the scale/translate restore so it sits in
+            // world coordinates (no mirror flip from facing). A tiny
+            // 14px bar above each fox shows hunger as a fraction of
+            // STARVE_THRESHOLD. Color shifts green→yellow→red as the
+            // bar fills, so students can see WHICH predators are about
+            // to starve before the population crash phase explainer
+            // labels it. Skipped on freshly-fed foxes to reduce visual
+            // noise — only shows once hunger crosses ~30%.
+            var hungerFrac = Math.min(1, (f2.hunger || 0) / STARVE_THRESHOLD);
+            if (hungerFrac > 0.3) {
+              var hbarW = 14, hbarH = 2;
+              var hbarX = f2.x - hbarW / 2;
+              var hbarY = f2.y - 14;
+              // Background track
+              ctxC.fillStyle = 'rgba(15,23,42,0.6)';
+              ctxC.fillRect(hbarX, hbarY, hbarW, hbarH);
+              // Fill — color shifts with hunger
+              var fillColor;
+              if (hungerFrac > 0.85) fillColor = '#dc2626';        // critical red
+              else if (hungerFrac > 0.6) fillColor = '#f59e0b';    // amber
+              else fillColor = '#84cc16';                          // lime (lightly hungry)
+              ctxC.fillStyle = fillColor;
+              ctxC.fillRect(hbarX, hbarY, hbarW * hungerFrac, hbarH);
+            }
           }
 
           // ── Catch particles rendering ──
@@ -2163,6 +2261,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           for (var ha = 0; ha < preyEntities.length; ha++) { if (preyEntities[ha].alive) hudPreyAlive++; }
           for (var hb = 0; hb < predEntities.length; hb++) { if (predEntities[hb].alive) hudPredAlive++; }
 
+          // ── Sample population history (every 10th frame) ──
+          // Feeds the phase explainer + the live mini-chart below.
+          if (tick % POP_SAMPLE_EVERY === 0) {
+            popHistory.push({ p: hudPreyAlive, f: hudPredAlive });
+            if (popHistory.length > POP_HISTORY_MAX) popHistory.shift();
+          }
+
+          // ── Phase detection ──
+          // Read the rolling history to classify what part of the cycle the
+          // ecosystem is in right now. Compares mean of recent 1/3 vs older
+          // 2/3 of the buffer to detect trends. Pure inspection — never
+          // changes simulation state, just labels what students are seeing.
+          // Each phase gets a 1-sentence biology explainer for the bottom
+          // tip strip — the difference between NAMING what's happening and
+          // EXPLAINING the underlying mechanism.
+          var phaseLabel = '';
+          var phaseColor = 'rgba(100,116,139,0.85)';
+          var phaseExplain = '';
+          if (popHistory.length >= 12) {
+            var splitIdx = Math.floor(popHistory.length * 0.66);
+            var oldP = 0, oldF = 0, newP = 0, newF = 0;
+            var oldN = 0, newN = 0;
+            for (var phi = 0; phi < popHistory.length; phi++) {
+              if (phi < splitIdx) { oldP += popHistory[phi].p; oldF += popHistory[phi].f; oldN++; }
+              else { newP += popHistory[phi].p; newF += popHistory[phi].f; newN++; }
+            }
+            var pMean = oldN > 0 ? oldP / oldN : 0;
+            var fMean = oldN > 0 ? oldF / oldN : 0;
+            var pNew = newN > 0 ? newP / newN : 0;
+            var fNew = newN > 0 ? newF / newN : 0;
+            var pTrend = pNew - pMean;
+            var fTrend = fNew - fMean;
+            // Carrying capacity reference (pool sizes)
+            var preyPool = preyEntities.length;
+            var predPool = predEntities.length;
+            // Phase rules — checked in priority order
+            if (hudPreyAlive === 0) {
+              phaseLabel = '☠ Prey extinct';
+              phaseColor = 'rgba(127,29,29,0.85)';
+              phaseExplain = 'All prey are dead. Predators will starve without a food source. Trigger Food-boom or Migration to restart the cycle.';
+            } else if (hudPredAlive === 0) {
+              phaseLabel = '🌱 Predator-free recovery';
+              phaseColor = 'rgba(20,83,45,0.85)';
+              phaseExplain = 'No predators left. Prey will multiply until they hit carrying capacity (K) and overgrazing slows reproduction.';
+            } else if (pTrend < -2 && hudPreyAlive < preyPool * 0.3) {
+              phaseLabel = '⚠ Prey crash';
+              phaseColor = 'rgba(153,27,27,0.85)';
+              phaseExplain = 'Predators are eating prey faster than prey can reproduce. Watch for predator starvation to follow as food runs out.';
+            } else if (fTrend < -1 && hudPreyAlive < preyPool * 0.4) {
+              phaseLabel = '🍃 Predator starvation';
+              phaseColor = 'rgba(120,53,15,0.85)';
+              phaseExplain = 'Predators are dying because they cannot catch enough prey. As predators drop, prey gets a chance to recover.';
+            } else if (pTrend > 1.5 && hudPreyAlive < preyPool * 0.6) {
+              phaseLabel = '🌿 Prey rebound';
+              phaseColor = 'rgba(22,101,52,0.85)';
+              phaseExplain = 'Prey are reproducing faster than predators can catch them. Predator births will lag this rebound by about a quarter-cycle.';
+            } else if (fTrend > 0.5 && pTrend < 0) {
+              phaseLabel = '🦊 Predator pressure';
+              phaseColor = 'rgba(154,52,18,0.85)';
+              phaseExplain = 'Predators are well-fed and reproducing. Their growing population is starting to outpace prey births — a crash may follow.';
+            } else if (hudPreyAlive > preyPool * 0.75 && Math.abs(pTrend) < 1) {
+              phaseLabel = '☀ Prey boom';
+              phaseColor = 'rgba(21,128,61,0.85)';
+              phaseExplain = 'Prey are abundant. Vegetation may start to deplete (over-grazing) and predators will breed in response to the food surplus.';
+            } else {
+              phaseLabel = '⚖ Equilibrium';
+              phaseColor = 'rgba(30,64,175,0.85)';
+              phaseExplain = 'Both populations are roughly stable. This is the textbook Lotka-Volterra balance — easy to disrupt with a Drought, Disease, or Wildfire event.';
+            }
+          }
+
+          // ── Live mini-chart (top-right) ──
+          // Shows the last ~10 seconds of prey + predator counts as
+          // overlaid sparklines. Same data as the analytical chart\'s
+          // model, but THIS is what the canvas actually did. Students
+          // can compare model-vs-reality at a glance without leaving
+          // the sim view.
+          if (popHistory.length >= 2) {
+            var miniW = 110, miniH = 44;
+            var miniX = cw - miniW - 10, miniY = 10;
+            // Backing pill
+            ctxC.fillStyle = 'rgba(15,23,42,0.75)';
+            ctxC.beginPath();
+            ctxC.moveTo(miniX + 6, miniY);
+            ctxC.arcTo(miniX + miniW, miniY, miniX + miniW, miniY + miniH, 6);
+            ctxC.arcTo(miniX + miniW, miniY + miniH, miniX, miniY + miniH, 6);
+            ctxC.arcTo(miniX, miniY + miniH, miniX, miniY, 6);
+            ctxC.arcTo(miniX, miniY, miniX + miniW, miniY, 6);
+            ctxC.fill();
+            // Title
+            ctxC.font = '8px sans-serif';
+            ctxC.fillStyle = '#94a3b8';
+            ctxC.fillText('Last ~10s', miniX + 6, miniY + 9);
+            // Max-of-pools as the y-axis ceiling (so both lines fit)
+            var miniMax = Math.max(preyEntities.length, predEntities.length, 1);
+            var plotX = miniX + 4;
+            var plotY = miniY + 13;
+            var plotW = miniW - 8;
+            var plotH = miniH - 16;
+            // Faint baseline
+            ctxC.strokeStyle = 'rgba(148,163,184,0.20)';
+            ctxC.lineWidth = 1;
+            ctxC.beginPath();
+            ctxC.moveTo(plotX, plotY + plotH);
+            ctxC.lineTo(plotX + plotW, plotY + plotH);
+            ctxC.stroke();
+            // Prey line (green)
+            ctxC.strokeStyle = '#22c55e';
+            ctxC.lineWidth = 1.5;
+            ctxC.beginPath();
+            for (var mli = 0; mli < popHistory.length; mli++) {
+              var mx = plotX + (mli / (POP_HISTORY_MAX - 1)) * plotW;
+              var my = plotY + plotH - (popHistory[mli].p / miniMax) * plotH;
+              if (mli === 0) ctxC.moveTo(mx, my); else ctxC.lineTo(mx, my);
+            }
+            ctxC.stroke();
+            // Predator line (red)
+            ctxC.strokeStyle = '#ef4444';
+            ctxC.lineWidth = 1.5;
+            ctxC.beginPath();
+            for (var mli2 = 0; mli2 < popHistory.length; mli2++) {
+              var mx2 = plotX + (mli2 / (POP_HISTORY_MAX - 1)) * plotW;
+              var my2 = plotY + plotH - (popHistory[mli2].f / miniMax) * plotH;
+              if (mli2 === 0) ctxC.moveTo(mx2, my2); else ctxC.lineTo(mx2, my2);
+            }
+            ctxC.stroke();
+          }
+
           ctxC.fillStyle = 'rgba(15,23,42,0.75)';
           var hudW = 130, hudH = 56;
           ctxC.beginPath();
@@ -2183,16 +2409,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ctxC.fillText('\uD83D\uDC07 Prey: ' + hudPreyAlive, 14, 24);
           ctxC.fillText('\uD83E\uDD8A Predators: ' + hudPredAlive, 14, 38);
 
-          // Population bars
+          // Population bars — normalized to actual pool sizes so the bars
+          // stay informative even when populations boom past the old
+          // hardcoded 60/25 caps. Without this fix, a healthy prey
+          // population of 75 vs 80 looks identical (both 100%) on the bar.
           var barX = 100, barW = 30;
+          var preyCap = preyEntities.length || 1;
+          var predCap = predEntities.length || 1;
           ctxC.fillStyle = '#334155';
           ctxC.fillRect(barX, 16, barW, 6);
           ctxC.fillStyle = '#22c55e';
-          ctxC.fillRect(barX, 16, barW * Math.min(1, hudPreyAlive / 60), 6);
+          ctxC.fillRect(barX, 16, barW * Math.min(1, hudPreyAlive / preyCap), 6);
           ctxC.fillStyle = '#334155';
           ctxC.fillRect(barX, 30, barW, 6);
           ctxC.fillStyle = '#ef4444';
-          ctxC.fillRect(barX, 30, barW * Math.min(1, hudPredAlive / 25), 6);
+          ctxC.fillRect(barX, 30, barW * Math.min(1, hudPredAlive / predCap), 6);
 
           // Day/night indicator
           ctxC.fillStyle = '#e2e8f0';
@@ -2203,6 +2434,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.fillStyle = 'rgba(16,185,129,0.85)';
             ctxC.font = 'bold 9px sans-serif';
             ctxC.fillText('Tool: ' + sandboxToolVal.toUpperCase(), 14, 62);
+          }
+
+          // ── Phase explainer pill (right under the main HUD) ──
+          if (phaseLabel) {
+            ctxC.font = 'bold 10px sans-serif';
+            var phaseTextW = ctxC.measureText(phaseLabel).width;
+            var pillX = 8, pillY = 70, pillH = 18;
+            var pillW = phaseTextW + 16;
+            ctxC.fillStyle = phaseColor;
+            ctxC.beginPath();
+            ctxC.moveTo(pillX + 6, pillY);
+            ctxC.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + pillH, 6);
+            ctxC.arcTo(pillX + pillW, pillY + pillH, pillX, pillY + pillH, 6);
+            ctxC.arcTo(pillX, pillY + pillH, pillX, pillY, 6);
+            ctxC.arcTo(pillX, pillY, pillX + pillW, pillY, 6);
+            ctxC.fill();
+            ctxC.fillStyle = '#f8fafc';
+            ctxC.fillText(phaseLabel, pillX + 8, pillY + 12);
+          }
+
+          // ── Educational explainer strip (bottom of canvas) ──
+          // 1-sentence biology behind the current phase. Difference between
+          // NAMING what's happening (the pill above) and EXPLAINING the
+          // underlying mechanism. Word-wraps across up to 2 lines so the
+          // sentence fits at common canvas widths. Renders behind the
+          // existing bottom info bar so it doesn't fight HUD elements.
+          if (phaseExplain) {
+            var stripH = 36;
+            var stripY = ch - stripH - 24;  // 24px above the React info bar
+            var stripPad = 12;
+            // Backing strip — full width, gradient fade so it doesn't
+            // feel like a hard cut-off across the scene
+            var stripGrad = ctxC.createLinearGradient(0, stripY, 0, stripY + stripH);
+            stripGrad.addColorStop(0, 'rgba(15,23,42,0.78)');
+            stripGrad.addColorStop(1, 'rgba(15,23,42,0.88)');
+            ctxC.fillStyle = stripGrad;
+            ctxC.fillRect(0, stripY, cw, stripH);
+            // Accent line on top (uses the phase color for visual continuity
+            // with the pill)
+            ctxC.fillStyle = phaseColor;
+            ctxC.fillRect(0, stripY, cw, 2);
+            // Word-wrap the explainer to 2 lines max
+            ctxC.font = '11px sans-serif';
+            ctxC.fillStyle = '#e2e8f0';
+            var words = phaseExplain.split(' ');
+            var lines = [];
+            var currentLine = '';
+            var maxWidth = cw - stripPad * 2;
+            for (var wi = 0; wi < words.length; wi++) {
+              var testLine = currentLine ? currentLine + ' ' + words[wi] : words[wi];
+              if (ctxC.measureText(testLine).width > maxWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = words[wi];
+                if (lines.length >= 2) { currentLine = ''; break; }
+              } else {
+                currentLine = testLine;
+              }
+            }
+            if (currentLine) lines.push(currentLine);
+            for (var lni = 0; lni < lines.length && lni < 2; lni++) {
+              ctxC.fillText(lines[lni], stripPad, stripY + 16 + lni * 14);
+            }
           }
 
           // ── PAUSED overlay ──

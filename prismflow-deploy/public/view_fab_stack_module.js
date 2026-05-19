@@ -176,8 +176,8 @@ function FabStack(props) {
       {
         onClick: handleToggleVisualSupports,
         className: `p-3 rounded-full transition-all shadow-sm ${showVisualSupports ? "bg-purple-100 text-purple-600 ring-2 ring-purple-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
-        title: "Visual Supports",
-        "aria-label": "Visual Supports"
+        title: t("fab.visual_supports") || "Visual Supports",
+        "aria-label": t("fab.visual_supports") || "Visual Supports"
       },
       /* @__PURE__ */ React.createElement("span", { style: { fontSize: 20, lineHeight: 1 } }, "\u{1F5BC}\uFE0F")
     ),

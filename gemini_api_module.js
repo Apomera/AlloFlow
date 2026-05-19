@@ -197,6 +197,9 @@ const createGeminiAPI = deps => {
   };
   const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null) => {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+    // Build parts. Only attach inlineData when an actual base64 image is
+    // provided — otherwise Gemini receives an inlineData part with
+    // `data: undefined`, which silently fails for text-to-image use.
     const parts = [{
       text: prompt
     }];

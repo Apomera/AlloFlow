@@ -18125,15 +18125,15 @@ var d = labToolData.cell;
 
 
 
-              // ── Microscope slide background ──
+              // ── Microscope slide background (uniform vignette so corners don't read as cream) ──
 
-              var bgGrad = cctx.createRadialGradient(W / 2, HH / 2, 0, W / 2, HH / 2, Math.max(W, HH) * 0.7);
+              var bgGrad = cctx.createRadialGradient(W / 2, HH / 2, 0, W / 2, HH / 2, Math.max(W, HH) * 0.65);
 
-              bgGrad.addColorStop(0, '#f0fdf4');
+              bgGrad.addColorStop(0, '#d1fae5');
 
-              bgGrad.addColorStop(0.6, '#ecfdf5');
+              bgGrad.addColorStop(0.7, '#a7f3d0');
 
-              bgGrad.addColorStop(1, '#d1fae5');
+              bgGrad.addColorStop(1, '#6ee7b7');
 
               cctx.fillStyle = bgGrad; cctx.fillRect(0, 0, W, HH);
 

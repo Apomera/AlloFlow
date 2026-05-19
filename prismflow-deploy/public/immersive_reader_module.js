@@ -205,7 +205,12 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
       style: { backgroundColor: opt.value, borderColor: focusColor === opt.value ? c.strong : "transparent" },
       title: opt.name
     }
-  )))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8 relative", onClick: handlePlayToggle }, countdown > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement(
+  )))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8 relative", onClick: handlePlayToggle, role: "button", tabIndex: 0, onKeyDown: (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handlePlayToggle();
+    }
+  }, "aria-label": (typeof t === "function" ? t("immersive.toggle_play_aria") : null) || "Play or pause reading" }, countdown > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       key: countdown,
@@ -718,6 +723,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       className: "flex-1 relative overflow-hidden cursor-pointer select-none",
       style: { perspective: "900px", perspectiveOrigin: "50% 100%" },
       role: "button",
+      tabIndex: 0,
+      onKeyDown: (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          togglePlay();
+        }
+      },
       "aria-label": isPlaying ? "Pause crawl" : "Play crawl"
     },
     /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none", style: {
@@ -1026,6 +1038,16 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
             activeSentenceRef.current = el;
           },
           "aria-current": "true",
+          role: "button",
+          tabIndex: 0,
+          onKeyDown: (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSentenceIdx(idx);
+              setSweepPct(0);
+              if (!isPlaying) setIsPlaying(true);
+            }
+          },
           onClick: () => {
             setSentenceIdx(idx);
             setSweepPct(0);
@@ -1050,6 +1072,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
       "span",
       {
         key: idx,
+        role: "button",
+        tabIndex: 0,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setSentenceIdx(idx);
+            setSweepPct(0);
+          }
+        },
         onClick: () => {
           setSentenceIdx(idx);
           setSweepPct(0);

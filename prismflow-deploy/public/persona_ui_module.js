@@ -109,6 +109,7 @@ const GoldenThreadPanel = ({
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5"
   }, t('persona.essential_question') || 'Essential Question'), isEditing ? /*#__PURE__*/React.createElement("textarea", {
+    "aria-label": t('persona.essential_question') || 'Essential Question',
     value: eq,
     onChange: e => writeDNA({
       essentialQuestion: e.target.value
@@ -141,6 +142,7 @@ const GoldenThreadPanel = ({
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
+    "aria-label": t('persona.add_concept_placeholder') || 'Add concept',
     value: newConcept,
     onChange: e => setNewConcept(e.target.value),
     onKeyDown: e => {
@@ -172,6 +174,7 @@ const GoldenThreadPanel = ({
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
+    "aria-label": t('persona.add_term_placeholder') || 'Add term',
     value: newTerm,
     onChange: e => setNewTerm(e.target.value),
     onKeyDown: e => {

@@ -42,13 +42,17 @@ window.SelHub = window.SelHub || {
     { id: 'explore', label: '\ud83c\udf0d Explore Issues', desc: 'Learn about civic issues' },
     { id: 'act', label: '\u270a Act', desc: 'Turn feelings into action' },
     { id: 'planner', label: '\ud83d\udcdd Plan', desc: 'Build a civic action plan' },
+    { id: 'powermap', label: '\ud83d\uddfa Power Map', desc: 'Map who has power to change this' },
+    { id: 'allies', label: '\ud83e\udd1d Allies Web', desc: 'Map your support network' },
+    { id: 'timeline', label: '\ud83d\udcc5 Action Timeline', desc: 'Milestone-based action tracker' },
+    { id: 'talkprep', label: '\ud83d\udcac Talk Prep', desc: 'Practice hard civic conversations' },
     { id: 'simulation', label: '\ud83c\udfdb\ufe0f Simulate', desc: 'Civic decision-making simulation' },
     { id: 'survey', label: '\ud83d\udcca Survey', desc: 'Build a community survey' },
     { id: 'rights', label: '\ud83d\udcdc Rights & Dissent', desc: 'Rights frameworks, history of peaceful dissent, and reflection' },
     { id: 'service', label: '\ud83e\udd1d Service', desc: 'Plan a service learning project' },
     { id: 'quiz', label: '\ud83c\udfc6 Quiz', desc: 'Test your civic knowledge' },
     { id: 'scenarios', label: '\ud83c\udfad Scenarios', desc: 'Community change scenarios' },
-    { id: 'hope', label: '\ud83c\udf05 Hope', desc: 'Cultivate hope and vision' },
+    { id: 'hope', label: '\ud83c\udf05 Hope', desc: 'Cultivate hope and vision' }
   ];
 
   var FEELINGS_MAP = [
@@ -949,13 +953,13 @@ window.SelHub = window.SelHub || {
 
           // Free write
           h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
-            h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\ud83d\udcdd What is on your mind? (private)'),
+            h('label', { htmlFor: 'cv-freewrite', className: 'text-xs font-bold text-slate-600 block mb-1' }, '\ud83d\udcdd What is on your mind? (private)'),
             h('textarea', {
+              id: 'cv-freewrite',
               value: d.freeWrite || '',
               onChange: function(e) { upd('freeWrite', e.target.value); },
               placeholder: 'Write freely about what you are thinking and feeling. Nobody will see this unless you choose to share it.',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300',
-              'aria-label': 'Free write about your feelings'
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300'
             })
           ),
 
@@ -976,33 +980,33 @@ window.SelHub = window.SelHub || {
 
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'What issue or injustice concerns you most right now?'),
+              h('label', { htmlFor: 'cv-issue', className: 'text-xs font-bold text-slate-600 block mb-1' }, 'What issue or injustice concerns you most right now?'),
               h('input', {
+                id: 'cv-issue',
                 type: 'text', value: d.issueText || '',
                 onChange: function(e) { upd('issueText', e.target.value); },
                 placeholder: 'e.g., climate change, inequality, bullying, gun violence, housing...',
-                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
-                'aria-label': 'Issue you care about'
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
               })
             ),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Why does this matter to you personally?'),
+              h('label', { htmlFor: 'cv-why', className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Why does this matter to you personally?'),
               h('textarea', {
+                id: 'cv-why',
                 value: d.whyItMatters || '',
                 onChange: function(e) { upd('whyItMatters', e.target.value); },
                 placeholder: 'Connect this issue to your life, your values, or people you care about...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-teal-300',
-                'aria-label': 'Why it matters to you'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-teal-300'
               })
             ),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Who is most affected by this issue?'),
+              h('label', { htmlFor: 'cv-affected', className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Who is most affected by this issue?'),
               h('textarea', {
+                id: 'cv-affected',
                 value: d.whoAffected || '',
                 onChange: function(e) { upd('whoAffected', e.target.value); },
                 placeholder: 'Think about the people and communities most impacted...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300',
-                'aria-label': 'Who is affected'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300'
               })
             )
           ),
@@ -1248,34 +1252,34 @@ window.SelHub = window.SelHub || {
             h('h4', { className: 'text-sm font-bold text-amber-700' }, '\u270d\ufe0f Petition Creator'),
             h('p', { className: 'text-xs text-slate-600' }, 'Draft a petition to gather support for your cause.'),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Petition Title'),
+              h('label', { htmlFor: 'cv-petition-title', className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Petition Title'),
               h('input', {
+                id: 'cv-petition-title',
                 type: 'text',
                 value: d.petitionTitle || '',
                 onChange: function(e) { upd('petitionTitle', e.target.value); },
                 placeholder: 'e.g., "Add Recycling Bins to Every Classroom"',
-                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': 'Petition title'
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
               })
             ),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Why This Matters'),
+              h('label', { htmlFor: 'cv-petition-desc', className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Why This Matters'),
               h('textarea', {
+                id: 'cv-petition-desc',
                 value: d.petitionDesc || '',
                 onChange: function(e) { upd('petitionDesc', e.target.value); },
                 placeholder: 'Explain the problem and why this change is important...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': 'Petition description'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300'
               })
             ),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'What We Are Asking For'),
+              h('label', { htmlFor: 'cv-petition-asks', className: 'text-xs font-bold text-slate-600 block mb-1' }, 'What We Are Asking For'),
               h('textarea', {
+                id: 'cv-petition-asks',
                 value: d.petitionAsks || '',
                 onChange: function(e) { upd('petitionAsks', e.target.value); },
                 placeholder: '1. \n2. \n3. ',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': 'Petition asks'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300'
               })
             ),
             d.petitionTitle && d.petitionDesc && h('button', { 'aria-label': 'Save Petition Draft',
@@ -1672,14 +1676,14 @@ window.SelHub = window.SelHub || {
 
           // Survey title
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Survey Title'),
+            h('label', { htmlFor: 'cv-survey-title', className: 'text-xs font-bold text-slate-600 block' }, 'Survey Title'),
             h('input', {
+              id: 'cv-survey-title',
               type: 'text',
               value: surveyTitle,
               onChange: function(e) { upd('surveyTitle', e.target.value); },
               placeholder: 'e.g., "Our Community Needs Assessment"',
-              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
-              'aria-label': 'Survey title'
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
             })
           ),
 
@@ -1732,14 +1736,14 @@ window.SelHub = window.SelHub || {
               }, 'Multiple Choice')
             ),
             surveyCustomType === 'choice' && h('div', null,
-              h('label', { className: 'text-[10px] text-slate-600 block mb-1' }, 'Answer options (comma-separated)'),
+              h('label', { htmlFor: 'cv-answer-opts', className: 'text-[10px] text-slate-600 block mb-1' }, 'Answer options (comma-separated)'),
               h('input', {
+                id: 'cv-answer-opts',
                 type: 'text',
                 value: surveyCustomOpts,
                 onChange: function(e) { upd('surveyCustomOpts', e.target.value); },
                 placeholder: 'e.g., Strongly Agree, Agree, Neutral, Disagree, Strongly Disagree',
-                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
-                'aria-label': 'Answer options'
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
               })
             ),
             surveyCustomQ.length > 5 && h('button', { 'aria-label': '+ Add Question to Survey',
@@ -2392,6 +2396,320 @@ window.SelHub = window.SelHub || {
             }, '\ud83d\udd04 Try Again')
           )
         ),
+
+        // ═══ POWER MAP ═══ interactive stakeholder visualization
+        // Students place themselves, allies, opposition, and decision-makers
+        // on a 2D plane: x = position on issue (against ←→ for), y = power (low to high).
+        // Helps think strategically — who already agrees + has power? who needs persuading?
+        tab === 'powermap' && (function() {
+          var stakeholders = d.powerMapStakeholders || [
+            { id: 'self', label: 'Me', x: 50, y: 30, color: '#06b6d4', isMe: true }
+          ];
+          function updateStakeholders(newList) { upd('powerMapStakeholders', newList); }
+          function addStakeholder() {
+            var label = prompt('Who is this stakeholder? (e.g., "Principal", "City Council", "Local newspaper")');
+            if (!label || !label.trim()) return;
+            updateStakeholders(stakeholders.concat([{ id: 'sh_' + Date.now(), label: label.trim(), x: 50, y: 50, color: ['#f59e0b','#22c55e','#a855f7','#ef4444','#ec4899'][stakeholders.length % 5] }]));
+          }
+          function removeSh(id) {
+            if (id === 'self') return;
+            updateStakeholders(stakeholders.filter(function(s) { return s.id !== id; }));
+          }
+          function moveSh(id, axis, delta) {
+            updateStakeholders(stakeholders.map(function(s) {
+              if (s.id !== id) return s;
+              var v = (s[axis] || 50) + delta;
+              return Object.assign({}, s, axis === 'x' ? { x: Math.max(0, Math.min(100, v)) } : { y: Math.max(0, Math.min(100, v)) });
+            }));
+          }
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'text-center mb-2' },
+              h('h3', { className: 'text-lg font-black text-slate-800' }, '🗺 Power Map'),
+              h('p', { className: 'text-sm text-slate-600' }, 'Plot stakeholders on two axes: their POSITION on your issue (left = against, right = for) and their POWER (bottom = low, top = high). The top-right is your gold — high power, already on your side. The top-left is your obstacle — high power, against. Use this to plan WHERE to spend your time.')
+            ),
+            // SVG map
+            h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 p-4' },
+              h('svg', { viewBox: '0 0 400 320', style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Power map: stakeholders plotted on position vs power axes' },
+                // Quadrant backgrounds
+                h('rect', { x: 30, y: 20, width: 170, height: 140, fill: 'rgba(239,68,68,0.05)' }),
+                h('rect', { x: 200, y: 20, width: 170, height: 140, fill: 'rgba(34,197,94,0.08)' }),
+                h('rect', { x: 30, y: 160, width: 170, height: 140, fill: 'rgba(239,68,68,0.02)' }),
+                h('rect', { x: 200, y: 160, width: 170, height: 140, fill: 'rgba(34,197,94,0.03)' }),
+                // Axes
+                h('line', { x1: 30, y1: 160, x2: 370, y2: 160, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                h('line', { x1: 200, y1: 20, x2: 200, y2: 300, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                h('text', { x: 200, y: 14, fontSize: 11, fill: '#ef4444', textAnchor: 'middle', fontWeight: 'bold' }, 'HIGH POWER'),
+                h('text', { x: 200, y: 316, fontSize: 11, fill: '#64748b', textAnchor: 'middle' }, 'low power'),
+                h('text', { x: 36, y: 165, fontSize: 11, fill: '#ef4444', fontWeight: 'bold' }, 'AGAINST'),
+                h('text', { x: 364, y: 165, fontSize: 11, fill: '#22c55e', textAnchor: 'end', fontWeight: 'bold' }, 'FOR'),
+                h('text', { x: 80, y: 50, fontSize: 9, fill: '#ef4444' }, '⚠ obstacle'),
+                h('text', { x: 320, y: 50, fontSize: 9, fill: '#22c55e', textAnchor: 'end' }, '⭐ champion'),
+                h('text', { x: 80, y: 290, fontSize: 9, fill: '#94a3b8' }, 'background'),
+                h('text', { x: 320, y: 290, fontSize: 9, fill: '#94a3b8', textAnchor: 'end' }, 'potential ally'),
+                // Stakeholder dots
+                stakeholders.map(function(s) {
+                  var cx = 30 + (s.x / 100) * 340;
+                  var cy = 300 - (s.y / 100) * 280;
+                  return h('g', { key: s.id },
+                    h('circle', { cx: cx, cy: cy, r: s.isMe ? 14 : 10, fill: s.color, stroke: '#fff', strokeWidth: 2 }),
+                    h('text', { x: cx, y: cy - 14, fontSize: 10, fill: '#0f172a', textAnchor: 'middle', fontWeight: 700 }, s.label)
+                  );
+                })
+              )
+            ),
+            // Controls
+            h('div', { className: 'bg-white rounded-2xl border border-slate-300 p-4' },
+              h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-widest mb-3' }, 'Stakeholders'),
+              h('button', { onClick: addStakeholder, className: 'px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold mb-3' }, '+ Add stakeholder'),
+              h('div', { className: 'space-y-2' },
+                stakeholders.map(function(s) {
+                  return h('div', { key: s.id, className: 'flex items-center gap-2 p-2 bg-slate-50 rounded-lg' },
+                    h('div', { style: { width: 14, height: 14, borderRadius: 7, background: s.color, flexShrink: 0 } }),
+                    h('span', { className: 'flex-1 text-sm font-semibold text-slate-700' }, s.label + (s.isMe ? ' (you)' : '')),
+                    h('div', { className: 'flex items-center gap-1' },
+                      h('span', { className: 'text-[10px] text-slate-500 mr-1' }, 'Pos:'),
+                      h('button', { onClick: function() { moveSh(s.id, 'x', -10); }, 'aria-label': 'Move left', className: 'w-7 h-7 rounded bg-white border border-slate-300 text-slate-700 text-sm' }, '←'),
+                      h('button', { onClick: function() { moveSh(s.id, 'x', 10); }, 'aria-label': 'Move right', className: 'w-7 h-7 rounded bg-white border border-slate-300 text-slate-700 text-sm' }, '→'),
+                      h('span', { className: 'text-[10px] text-slate-500 ml-2 mr-1' }, 'Pow:'),
+                      h('button', { onClick: function() { moveSh(s.id, 'y', 10); }, 'aria-label': 'Move up', className: 'w-7 h-7 rounded bg-white border border-slate-300 text-slate-700 text-sm' }, '↑'),
+                      h('button', { onClick: function() { moveSh(s.id, 'y', -10); }, 'aria-label': 'Move down', className: 'w-7 h-7 rounded bg-white border border-slate-300 text-slate-700 text-sm' }, '↓'),
+                      !s.isMe && h('button', { onClick: function() { removeSh(s.id); }, 'aria-label': 'Remove', className: 'w-7 h-7 rounded bg-white border border-rose-300 text-rose-600 text-sm ml-1' }, '×')
+                    )
+                  );
+                })
+              )
+            ),
+            // Strategic guidance
+            h('div', { className: 'bg-amber-50 rounded-xl border-2 border-amber-300 p-4' },
+              h('h4', { className: 'text-sm font-bold text-amber-800 mb-2' }, '🎯 Strategic reading'),
+              h('ul', { className: 'space-y-2 text-sm text-amber-900 leading-relaxed' },
+                h('li', null, '🟢 Top-right (high power, with you): your champions. Ask them publicly for support. Their stamp moves others.'),
+                h('li', null, '🟡 Bottom-right (low power, with you): your base. Mobilize them — letters, attendance, social posts.'),
+                h('li', null, '🔴 Top-left (high power, against you): your obstacle. Don\'t spend your first energy here. Move others first.'),
+                h('li', null, '⚪ Bottom-left (low power, against): not worth your time unless they\'re close to crossing over.'),
+                h('li', null, '🌟 Middle: the swing. This is where persuasion actually works.')
+              )
+            )
+          );
+        })(),
+
+        // ═══ ALLIES WEB ═══ map your existing support network
+        tab === 'allies' && (function() {
+          var allies = d.alliesWeb || [];
+          var categories = [
+            { id: 'family', label: '👨‍👩‍👧 Family', color: '#a855f7' },
+            { id: 'school', label: '🏫 School staff', color: '#06b6d4' },
+            { id: 'peers',  label: '👥 Friends/peers', color: '#22c55e' },
+            { id: 'community', label: '🏘 Community/clubs', color: '#f59e0b' },
+            { id: 'online', label: '💻 Online groups', color: '#ec4899' },
+            { id: 'pros',   label: '🛟 Pros/services', color: '#10b981' }
+          ];
+          var support = ['emotional', 'practical', 'info', 'connections', 'voice'];
+          function addAlly() {
+            var label = prompt('Who? (Name or relationship)');
+            if (!label || !label.trim()) return;
+            upd('alliesWeb', allies.concat([{ id: 'a_' + Date.now(), label: label.trim(), cat: 'school', supports: [] }]));
+          }
+          function removeAlly(id) { upd('alliesWeb', allies.filter(function(a) { return a.id !== id; })); }
+          function setCat(id, cat) { upd('alliesWeb', allies.map(function(a) { return a.id === id ? Object.assign({}, a, { cat: cat }) : a; })); }
+          function toggleSupport(id, s) {
+            upd('alliesWeb', allies.map(function(a) {
+              if (a.id !== id) return a;
+              var sup = a.supports || [];
+              return Object.assign({}, a, { supports: sup.indexOf(s) === -1 ? sup.concat([s]) : sup.filter(function(x) { return x !== s; }) });
+            }));
+          }
+          var totals = {};
+          categories.forEach(function(c) { totals[c.id] = allies.filter(function(a) { return a.cat === c.id; }).length; });
+          var supportCoverage = {};
+          support.forEach(function(s) { supportCoverage[s] = allies.filter(function(a) { return (a.supports || []).indexOf(s) >= 0; }).length; });
+
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'text-center mb-2' },
+              h('h3', { className: 'text-lg font-black text-slate-800' }, '🤝 Allies Web'),
+              h('p', { className: 'text-sm text-slate-600' }, 'Who has your back? List the people and groups that already support you. Coverage check at the bottom shows whether you have someone for each kind of support — gaps are useful information.')
+            ),
+            h('button', { onClick: addAlly, className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold' }, '+ Add an ally'),
+
+            allies.length === 0 && h('div', { className: 'bg-white p-6 rounded-xl text-center text-slate-500 border-2 border-dashed border-slate-300' },
+              'No allies listed yet. Tap "Add an ally" to start.'),
+
+            h('div', { className: 'space-y-2' },
+              allies.map(function(a) {
+                var cat = categories.find(function(c) { return c.id === a.cat; }) || categories[0];
+                return h('div', { key: a.id, className: 'bg-white rounded-xl border p-3', style: { borderColor: cat.color + '88', borderLeftWidth: 4 } },
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('span', { className: 'text-sm font-bold text-slate-800 flex-1' }, a.label),
+                    h('select', { value: a.cat, onChange: function(e) { setCat(a.id, e.target.value); }, 'aria-label': 'Category for ' + a.label,
+                      className: 'text-xs border border-slate-300 rounded px-2 py-1' },
+                      categories.map(function(c) { return h('option', { key: c.id, value: c.id }, c.label); })
+                    ),
+                    h('button', { onClick: function() { removeAlly(a.id); }, 'aria-label': 'Remove', className: 'text-rose-500 text-lg leading-none px-1' }, '×')
+                  ),
+                  h('div', { className: 'flex gap-1 flex-wrap' },
+                    support.map(function(s) {
+                      var active = (a.supports || []).indexOf(s) >= 0;
+                      return h('button', { key: s, onClick: function() { toggleSupport(a.id, s); },
+                        'aria-pressed': active,
+                        className: 'px-2 py-0.5 rounded-full text-[10px] font-bold border ' + (active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-300') },
+                        (active ? '✓ ' : '') + s);
+                    })
+                  )
+                );
+              })
+            ),
+
+            // Coverage check
+            allies.length > 0 && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-300 p-4 mt-4' },
+              h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-widest mb-3' }, '🎯 Support coverage'),
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
+                support.map(function(s) {
+                  var count = supportCoverage[s] || 0;
+                  return h('div', { key: s, className: 'p-2 rounded ' + (count > 0 ? 'bg-emerald-100 border border-emerald-300' : 'bg-rose-100 border border-rose-300') },
+                    h('div', { className: 'text-[10px] font-bold uppercase ' + (count > 0 ? 'text-emerald-700' : 'text-rose-700') }, s),
+                    h('div', { className: 'text-lg font-black ' + (count > 0 ? 'text-emerald-700' : 'text-rose-700') }, count));
+                })
+              ),
+              h('p', { className: 'text-xs text-slate-600 mt-3 italic' },
+                'Coverage gaps (red zeros) tell you where to recruit. Most students have lots of emotional support and not enough INFO support or VOICE support — name your gap to know what kind of ally to seek next.')
+            )
+          );
+        })(),
+
+        // ═══ ACTION TIMELINE ═══ visual milestone tracker
+        tab === 'timeline' && (function() {
+          var milestones = d.actionMilestones || [];
+          function addMilestone() {
+            var label = prompt('What\'s the milestone?');
+            if (!label || !label.trim()) return;
+            var dateStr = prompt('Target date? (YYYY-MM-DD or just leave blank)');
+            upd('actionMilestones', milestones.concat([{ id: 'm_' + Date.now(), label: label.trim(), date: (dateStr || '').trim(), done: false, doneOn: null }]));
+          }
+          function toggleM(id) {
+            upd('actionMilestones', milestones.map(function(m) {
+              if (m.id !== id) return m;
+              var done = !m.done;
+              return Object.assign({}, m, { done: done, doneOn: done ? new Date().toISOString().slice(0, 10) : null });
+            }));
+          }
+          function removeM(id) { upd('actionMilestones', milestones.filter(function(m) { return m.id !== id; })); }
+          var sorted = milestones.slice().sort(function(a, b) {
+            if (a.date && b.date) return a.date.localeCompare(b.date);
+            if (a.date) return -1; if (b.date) return 1;
+            return 0;
+          });
+          var doneCount = sorted.filter(function(m) { return m.done; }).length;
+          var pct = sorted.length > 0 ? Math.round((doneCount / sorted.length) * 100) : 0;
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'text-center mb-2' },
+              h('h3', { className: 'text-lg font-black text-slate-800' }, '📅 Action Timeline'),
+              h('p', { className: 'text-sm text-slate-600' }, 'Big civic action = many small milestones. List them in order. Check off as you finish. Pacing matters — most action campaigns stall because milestones got vague.')
+            ),
+            h('button', { onClick: addMilestone, className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold' }, '+ Add a milestone'),
+
+            sorted.length > 0 && h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4' },
+              h('div', { className: 'flex items-baseline justify-between mb-2' },
+                h('span', { className: 'text-xs font-bold text-teal-700 uppercase tracking-widest' }, 'Campaign progress'),
+                h('span', { className: 'text-sm font-bold text-teal-700' }, doneCount + ' / ' + sorted.length + ' · ' + pct + '%')
+              ),
+              h('div', { className: 'h-3 bg-slate-100 rounded-full overflow-hidden' },
+                h('div', { 'aria-hidden': 'true', style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #14b8a6, #0d9488)', transition: 'width 0.4s' } })
+              )
+            ),
+
+            sorted.length === 0 && h('div', { className: 'bg-white p-6 rounded-xl text-center text-slate-500 border-2 border-dashed border-slate-300' },
+              'No milestones yet. Add 4-8 small steps that move your action forward.'),
+
+            // Timeline view
+            sorted.length > 0 && h('div', { className: 'relative pl-6 space-y-3' },
+              h('div', { 'aria-hidden': 'true', className: 'absolute left-2 top-3 bottom-3 w-0.5 bg-teal-300' }),
+              sorted.map(function(m, idx) {
+                return h('div', { key: m.id, className: 'relative bg-white rounded-xl border-2 p-3 ' + (m.done ? 'border-emerald-300 bg-emerald-50' : 'border-slate-300') },
+                  h('div', { 'aria-hidden': 'true', className: 'absolute -left-6 top-3 w-4 h-4 rounded-full border-2 border-white ' + (m.done ? 'bg-emerald-500' : 'bg-teal-400') }),
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('button', { onClick: function() { toggleM(m.id); }, 'aria-label': m.done ? 'Mark not done' : 'Mark done', 'aria-pressed': m.done,
+                      className: 'w-6 h-6 rounded-md border-2 ' + (m.done ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-400 bg-white') }, m.done ? '✓' : ''),
+                    h('div', { className: 'flex-1' },
+                      h('div', { className: 'text-sm font-bold ' + (m.done ? 'line-through text-slate-500' : 'text-slate-800') }, m.label),
+                      h('div', { className: 'text-[11px] text-slate-500' }, m.date ? ('Target: ' + m.date) : 'No target date'),
+                      m.doneOn && h('div', { className: 'text-[11px] text-emerald-600' }, 'Completed ' + m.doneOn)
+                    ),
+                    h('button', { onClick: function() { removeM(m.id); }, 'aria-label': 'Remove', className: 'text-rose-400 text-lg px-1' }, '×')
+                  )
+                );
+              })
+            )
+          );
+        })(),
+
+        // ═══ TALK PREP ═══ practice hard civic conversations
+        tab === 'talkprep' && (function() {
+          var topics = d.talkTopics || [];
+          var currentDraft = d.talkDraft || { topic: '', otherView: '', commonGround: '', myPoint: '', evidence: '', question: '' };
+          function updateDraft(field, value) {
+            upd('talkDraft', Object.assign({}, currentDraft, (function() { var o = {}; o[field] = value; return o; })()));
+          }
+          function saveDraft() {
+            if (!currentDraft.topic || !currentDraft.topic.trim()) return;
+            upd('talkTopics', topics.concat([Object.assign({}, currentDraft, { id: 't_' + Date.now(), savedOn: new Date().toISOString().slice(0, 10) })]));
+            upd('talkDraft', { topic: '', otherView: '', commonGround: '', myPoint: '', evidence: '', question: '' });
+            if (addToast) addToast('Conversation prep saved', 'success');
+          }
+          function removeTopic(id) { upd('talkTopics', topics.filter(function(t) { return t.id !== id; })); }
+          var stepsComplete = ['topic','otherView','commonGround','myPoint','evidence','question'].filter(function(k) { return (currentDraft[k] || '').trim().length > 5; }).length;
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'text-center mb-2' },
+              h('h3', { className: 'text-lg font-black text-slate-800' }, '💬 Talk Prep'),
+              h('p', { className: 'text-sm text-slate-600' }, 'Hard civic conversations go better with prep. Walk through six fields below to think before you talk. The goal isn\'t to win — it\'s to be heard AND to hear.')
+            ),
+            h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-4' },
+              h('div', { className: 'mb-2 flex items-baseline justify-between' },
+                h('h4', { className: 'text-sm font-bold text-teal-700' }, 'Build your prep'),
+                h('span', { className: 'text-xs text-slate-500' }, stepsComplete + ' / 6 fields drafted')
+              ),
+              // 6 fields
+              [
+                { key: 'topic', label: '1. The topic', help: 'In one sentence, what\'s the issue you\'re going to talk about?', placeholder: 'e.g., Whether to add gun control to our school board agenda' },
+                { key: 'otherView', label: '2. The other view (steelman)', help: 'Describe the OTHER person\'s view at its strongest — not the caricature, the actual reasoning.', placeholder: 'They believe...' },
+                { key: 'commonGround', label: '3. Common ground', help: 'What do you both actually agree on? Find at least one thing.', placeholder: 'We both care about...' },
+                { key: 'myPoint', label: '4. Your point', help: 'In one sentence, what\'s your actual position?', placeholder: 'I believe...' },
+                { key: 'evidence', label: '5. Your strongest evidence', help: 'One specific fact, story, or experience that supports your view.', placeholder: 'For example...' },
+                { key: 'question', label: '6. A real question to ask them', help: 'Not a gotcha. A real question that you actually want their answer to.', placeholder: 'What would change your mind?' }
+              ].map(function(f) {
+                return h('div', { key: f.key, className: 'mb-3' },
+                  h('label', { htmlFor: 'talk-' + f.key, className: 'text-xs font-bold text-slate-700 block mb-1' }, f.label),
+                  h('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, f.help),
+                  h('textarea', {
+                    id: 'talk-' + f.key, value: currentDraft[f.key] || '',
+                    onChange: function(e) { updateDraft(f.key, e.target.value); },
+                    placeholder: f.placeholder, rows: 2,
+                    className: 'w-full text-sm p-2 border border-slate-300 rounded'
+                  })
+                );
+              }),
+              h('button', { onClick: saveDraft, disabled: stepsComplete < 3,
+                className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (stepsComplete >= 3 ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed') },
+                stepsComplete < 3 ? 'Draft at least 3 fields to save' : '✓ Save this prep')
+            ),
+            // Saved preps
+            topics.length > 0 && h('div', null,
+              h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-widest mb-2' }, '📚 Saved preps (' + topics.length + ')'),
+              topics.slice().reverse().slice(0, 5).map(function(t) {
+                return h('details', { key: t.id, className: 'bg-white rounded-lg border border-slate-300 p-3 mb-2' },
+                  h('summary', { className: 'cursor-pointer text-sm font-bold text-slate-700' }, t.topic.substring(0, 80) + (t.topic.length > 80 ? '...' : '') + ' · ' + t.savedOn),
+                  h('div', { className: 'mt-2 space-y-1 text-xs' },
+                    t.otherView && h('div', null, h('strong', null, 'Other view: '), t.otherView),
+                    t.commonGround && h('div', null, h('strong', null, 'Common: '), t.commonGround),
+                    t.myPoint && h('div', null, h('strong', null, 'My point: '), t.myPoint),
+                    t.evidence && h('div', null, h('strong', null, 'Evidence: '), t.evidence),
+                    t.question && h('div', null, h('strong', null, 'My question: '), t.question)
+                  ),
+                  h('button', { onClick: function() { removeTopic(t.id); }, className: 'mt-2 text-rose-500 text-xs underline' }, 'Remove')
+                );
+              })
+            )
+          );
+        })(),
 
         // ═══ HOPE ═══
         tab === 'hope' && h('div', { className: 'space-y-4' },

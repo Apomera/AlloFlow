@@ -159,7 +159,7 @@
         printWindow.document.close();
         setTimeout(function() { printWindow.print(); }, 500);
       } else {
-        alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
+        if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
       }
     } else if (mode === 'html') {
       if (window.JSZip) {
@@ -253,7 +253,7 @@
         printWindow.document.close();
         setTimeout(function() { printWindow.print(); }, 500);
       } else {
-        alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
+        if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
       }
     } else {
       if (window.JSZip) {
