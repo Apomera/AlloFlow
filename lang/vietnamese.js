@@ -1785,6 +1785,193 @@
     "pronounce_term": "Phát âm thuật ngữ",
     "pronounce_term_title": "Nghe cách phát âm"
   },
+  "baking": {
+    "title": "Phòng Bánh nướng",
+    "subtitle": "Khám phá hóa học, tỷ lệ và khoa học nhiệt làm cho việc nướng bánh hoạt động",
+    "back": "Quay lại",
+    "back_aria": "Quay lại menu Phòng Bánh nướng",
+    "activities": {
+      "leavening_label": "Phòng Nở bột",
+      "leavening_desc": "Trộn axit và bazơ để làm bánh mì nở lên",
+      "emulsion_label": "Máy trộn Nhũ tương",
+      "emulsion_desc": "Kết hợp dầu và nước đúng cách",
+      "scaler_label": "Trình tỷ lệ Công thức",
+      "scaler_desc": "Phần trăm của thợ làm bánh và toán đơn vị",
+      "oven_label": "Dòng thời gian Lò nướng",
+      "oven_desc": "Điều gì xảy ra ở mỗi nhiệt độ",
+      "diagnosis_label": "Chẩn đoán Bánh nướng",
+      "diagnosis_desc": "Tìm ra tại sao một mẻ nướng bị sai",
+      "gluten_label": "Phòng Gluten",
+      "gluten_desc": "Xem cách bột mì, nước và nhào tạo ra mạng lưới",
+      "browning_label": "Phòng Hóa nâu",
+      "browning_desc": "Maillard so với caramel hóa đối đầu"
+    },
+    "stats": {
+      "reactions": "Phản ứng",
+      "emulsions": "Nhũ tương",
+      "recipes_scaled": "Công thức đã tỷ lệ",
+      "oven_events": "Sự kiện lò nướng",
+      "diagnoses": "Chẩn đoán",
+      "gluten_matches": "Khớp gluten",
+      "brownings": "Mẻ nướng hoàn hảo"
+    },
+    "leavening": {
+      "tagline": "Trộn một axit và một bazơ để tạo ra các bong bóng CO₂.",
+      "step_acid": "1. Chọn một axit",
+      "step_base": "2. Chọn một bazơ",
+      "step_amount": "3. Bao nhiêu? (nhúm → thìa)",
+      "rise_label": "Nở (khí CO₂)",
+      "mix_btn": "Trộn & Phản ứng",
+      "mix_running": "Đang phản ứng…",
+      "complete_base": "hoàn chỉnh",
+      "needs_acid": "cần axit",
+      "science_title": "Khoa học",
+      "verdict_title": "Phán quyết nướng bánh",
+      "verdict_flat": "Phẳng và đặc: giống bánh quy hơn là bánh ngọt.",
+      "verdict_low": "Nở nhẹ. Hãy nghĩ đến bánh quy hoặc bánh kếp dày.",
+      "verdict_medium": "Mềm và mịn. Tốt cho bánh muffin hoặc bánh chuối.",
+      "verdict_high": "Bồng bềnh và thoáng khí. Lãnh địa bánh ngọt cổ điển hoặc bánh mì nhanh.",
+      "verdict_peak": "Lực nâng tối đa! Hãy nghĩ đến soufflé hoặc bánh nhiều tầng cao.",
+      "verdict_over": "Quá nở: sẽ sụp đổ khi nguội.",
+      "explain_soda_no_acid": "Baking soda cần một axit. Không có axit, nó chỉ có vị kim loại và bột sẽ không nở nhiều.",
+      "explain_soda": "Baking soda (NaHCO₃) + {acid} → khí carbon dioxide (CO₂). Các bong bóng bị mắc kẹt trong bột và làm cho nó nở lên.",
+      "explain_powder": "Baking powder đã chứa một axit (kem tartar). Chỉ cần thêm nước và nhiệt để kích hoạt nó: không cần thêm axit.",
+      "explain_yeast": "Men là sống. Nó ăn đường và thở ra CO₂. Chậm nhưng mạnh mẽ: đây là cách bánh mì thật sự nở."
+    },
+    "emulsion": {
+      "tagline": "Dầu và nước không trộn lẫn. Lòng đỏ trứng giúp.",
+      "choose_goal": "Chọn một mục tiêu",
+      "your_mix": "Hỗn hợp của bạn",
+      "shake_btn": "Lắc & kiểm tra",
+      "stable": "Ổn định",
+      "broken": "Bị tách",
+      "mixing": "Đang trộn…",
+      "oil": "Dầu",
+      "water": "Nước",
+      "yolk": "Lòng đỏ trứng",
+      "target": "mục tiêu",
+      "oil_layer": "Lớp dầu",
+      "water_layer": "Lớp nước",
+      "success_toast": "Ổn định! {name} của bạn giữ vững.",
+      "not_quite": "Chưa hẳn: hãy thử điều chỉnh về phía mục tiêu.",
+      "science_title": "Khoa học"
+    },
+    "scaler": {
+      "tagline": "Tỷ lệ công thức với các tỷ số: và xem phần trăm của thợ làm bánh.",
+      "recipe": "Công thức",
+      "scale": "Tỷ lệ",
+      "units": "Đơn vị",
+      "makes_servings": "Làm {n} phần",
+      "cup_warning": "Quy đổi cốc là gần đúng: luôn cân để có độ chính xác.",
+      "save_btn": "Lưu công thức đã tỷ lệ",
+      "flour_anchor": "Bột = 100% (% của thợ làm bánh)",
+      "col_ingredient": "Nguyên liệu",
+      "col_amount": "Lượng",
+      "col_bakers": "% của thợ làm bánh",
+      "hydration": "Độ ẩm",
+      "hydration_hint": "Trọng lượng chất lỏng ÷ trọng lượng bột. Độ ẩm cao hơn = vụn mở hơn.",
+      "lock_flour": "Khóa trọng lượng bột",
+      "lock_flour_hint": "Chọn một lượng bột và mọi thứ khác tỷ lệ theo % của thợ làm bánh.",
+      "flour_weight": "Trọng lượng bột",
+      "math_title": "Toán học",
+      "scaled_toast": "Đã tỷ lệ công thức cho {n} phần."
+    },
+    "oven": {
+      "tagline": "Trượt nhiệt độ để xem điều gì xảy ra bên trong lò.",
+      "temperature": "Nhiệt độ",
+      "unit_f": "°F",
+      "unit_c": "°C",
+      "happening_now": "Đang xảy ra bây giờ",
+      "coming_up": "Sắp tới ở {temp}",
+      "degrees_to_go": "Còn {n}",
+      "all_milestones": "Bạn đã đạt mọi mốc lò nướng!",
+      "oven_cold": "Lò vẫn còn lạnh. Tăng nhiệt độ để bắt đầu phản ứng.",
+      "all_events": "Tất cả sự kiện lò nướng",
+      "science_title": "Khoa học",
+      "bake_zones_title": "Vùng nướng",
+      "zone_meringue": "Bánh trứng đường",
+      "zone_proof": "Bột ủ",
+      "zone_custard": "Custard",
+      "zone_cookies": "Bánh quy",
+      "zone_cake": "Bánh ngọt",
+      "zone_bread": "Bánh mì",
+      "zone_pizza": "Pizza"
+    },
+    "diagnosis": {
+      "tagline": "Có điều gì đó sai trong mẻ nướng. Giải thích nào phù hợp nhất?",
+      "symptom": "Triệu chứng",
+      "pick_cause": "Chọn nguyên nhân có khả năng nhất",
+      "check": "Kiểm tra đáp án",
+      "next": "Kịch bản tiếp theo",
+      "reshuffle": "Xáo trộn lại",
+      "reshuffle_aria": "Xáo trộn lại các kịch bản",
+      "scenario": "Kịch bản",
+      "correct": "Đúng",
+      "accuracy": "Độ chính xác",
+      "streak": "Chuỗi",
+      "best_streak": "Chuỗi tốt nhất phiên này: {n}"
+    },
+    "gluten": {
+      "tagline": "Ba biến số quyết định bao nhiêu gluten hình thành trong bột của bạn.",
+      "protein": "Protein bột",
+      "hydration": "Độ ẩm",
+      "hydr_dry": "Cứng",
+      "hydr_sweet": "Điểm ngọt",
+      "hydr_wet": "Bột nhão",
+      "knead": "Thời gian nhào",
+      "over_warning": "Quá 15 phút có nguy cơ nhào quá kỹ.",
+      "check_btn": "Kiểm tra so với mục tiêu",
+      "network": "Mạng lưới gluten",
+      "verdict": "Tốt nhất cho",
+      "verdict_none": "Hầu như không có gluten: tuyệt vời cho vỏ bánh pie hoặc bánh ngọt",
+      "verdict_weak": "Mềm và xốp: hãy nghĩ đến bánh ngọt hoặc bánh muffin",
+      "verdict_medium": "Hơi dai: bánh mì giàu chất, mì",
+      "verdict_strong": "Mạnh và đàn hồi: bánh mì thủ công, pizza",
+      "verdict_peak": "Gluten tối đa: mì kéo tay, bánh mì vòng",
+      "verdict_overworked": "Nhào quá kỹ: có thể trở nên dai",
+      "try_target": "Hãy thử khớp một mục tiêu",
+      "match": "Khớp!",
+      "distance": "Khoảng cách: {n}",
+      "match_toast": "Bạn đã khớp {label}!",
+      "no_match_toast": "Gần với {label}, nhưng chưa khớp.",
+      "science_title": "Khoa học",
+      "sci_proteins": "Hai protein, một mạng lưới",
+      "sci_hydration": "Nước là công tắc",
+      "sci_knead": "Nhào căn chỉnh các sợi",
+      "sci_tender": "Mềm = ít gluten hơn"
+    },
+    "browning": {
+      "tagline": "Phản ứng Maillard so với caramel hóa. Các loại thực phẩm khác nhau hóa nâu theo cách khác nhau.",
+      "pick_food": "Chọn một loại thực phẩm",
+      "temp": "Nhiệt độ",
+      "time": "Thời gian",
+      "moisture": "Bề mặt",
+      "wet": "Ướt",
+      "dry": "Khô (đã thấm)",
+      "moisture_hint": "Bề mặt ướt không thể vượt quá 212°F: nước phải bay hơi trước.",
+      "cook_btn": "Nấu",
+      "reactions": "Phản ứng đang hoạt động",
+      "maillard": "Maillard",
+      "caramel": "Caramel hóa",
+      "burn": "Cháy / nhiệt phân",
+      "flavors": "Ghi chú hương vị",
+      "verdict_wet": "Bề mặt quá ướt: nước phải bay hơi trước khi hóa nâu bắt đầu.",
+      "verdict_raw": "Chưa hóa nâu. Tăng nhiệt độ hoặc cho thêm thời gian.",
+      "verdict_light": "Màu sáng. Vàng nhạt: cần thêm chút thời gian hoặc nhiệt.",
+      "verdict_perfect": "Vàng hoàn hảo! Màu sắc phong phú, hương vị phức tạp.",
+      "verdict_deep": "Màu đậm: gần như quá xa. Lấy ra ngay.",
+      "verdict_burnt": "Cháy: các hợp chất đắng, cay đã hình thành.",
+      "verdict_ok": "Đang tiến triển tốt.",
+      "perfect_toast": "Vàng! Bạn đã làm chuẩn {label}.",
+      "burnt_toast": "Cháy. Giảm nhiệt độ hoặc lấy ra sớm hơn.",
+      "more_toast": "Chưa vàng hoàn hảo: hãy điều chỉnh và nấu lại.",
+      "science_title": "Khoa học",
+      "sci_maillard_title": "Phản ứng Maillard",
+      "sci_caramel_title": "Caramel hóa",
+      "sci_water": "Quy tắc nước",
+      "sci_past_400": "Quá điểm ngọt"
+    }
+  },
   "escape_room": {
     "save_config": "Lưu cấu hình",
     "launch": "Khởi chạy",
@@ -2540,6 +2727,395 @@
       "position_concern": "Mối quan ngại về vị trí"
     },
     "image_size_tooltip": "Điều chỉnh kích thước của hình ảnh dòng thời gian"
+  },
+  "pdf_audit": {
+    "view_last_audit": "Xem Kiểm toán gần nhất",
+    "start_new_audit": "Bắt đầu Kiểm toán mới",
+    "apply_and_export": "Áp dụng & Xuất",
+    "applying_remarkup": "Đang áp dụng lại đánh dấu dễ tiếp cận cho văn bản đã duyệt của bạn…",
+    "rejected_count": "{n} đã từ chối",
+    "undo_all_rejections": "hoàn tác tất cả",
+    "granularity_warning": "Thay đổi độ chi tiết sẽ đặt lại các từ chối của bạn. Tiếp tục?",
+    "remarkup_failed": "Không thể áp dụng lại đánh dấu đầy đủ: đã xuất các đoạn văn bản thuần. Hãy thử lại sau nếu cần.",
+    "reject_selection": "Từ chối lựa chọn",
+    "keep_selection": "Giữ lựa chọn",
+    "edits_applied": "Đã áp dụng các chỉnh sửa. Đã cập nhật HTML dễ tiếp cận.",
+    "start_new_confirm": "Bắt đầu kiểm toán mới? Kiểm toán hiện tại của bạn sẽ bị xóa: hãy đảm bảo bạn đã tải xuống HTML đã sửa chữa nếu cần.",
+    "modal_aria": "Kiểm toán Khả năng Tiếp cận PDF",
+    "close_modal_aria": "Đóng cửa sổ kiểm toán",
+    "close_wait_title": "Hãy đợi sửa chữa hoàn tất hoặc nhấp Dừng trước",
+    "close_esc_title": "Đóng (Esc)",
+    "web": {
+      "heading": "🌐 Khả năng Tiếp cận Web & HTML",
+      "subheading": "Kiểm toán URL trang web hoặc dán HTML để kiểm toán + sửa chữa WCAG 2.1 AA đầy đủ",
+      "url_label": "URL trang web",
+      "url_aria": "URL trang web để kiểm toán",
+      "fetch_aria": "Lấy HTML trang web",
+      "or_paste_hint": "Hoặc dán mã nguồn HTML trực tiếp ở bên dưới",
+      "html_label": "Nguồn HTML",
+      "html_placeholder": "Dán mã nguồn HTML ở đây, hoặc dùng Lấy về ở trên...",
+      "html_aria": "Mã nguồn HTML để kiểm toán"
+    },
+    "batch": {
+      "drop_text": "Kéo & thả các tệp PDF vào đây",
+      "browse_files": "Duyệt tệp",
+      "clear_all": "Xóa tất cả",
+      "progress_aria": "Tiến độ sửa chữa hàng loạt",
+      "stop_aria": "Dừng sửa chữa hàng loạt",
+      "avg_improvement": "Cải thiện TB",
+      "scored_90_plus": "Đạt 90+",
+      "new_batch": "Lô mới"
+    },
+    "choose_how": "Chọn cách xử lý PDF này:",
+    "settings": {
+      "audit_passes_aria": "Số lần chạy kiểm toán",
+      "target_score_aria": "Điểm khả năng tiếp cận mục tiêu",
+      "max_fix_passes_aria": "Số lần chạy sửa tối đa",
+      "auto_continue_aria": "Tự động tiếp tục sửa chữa đến điểm mục tiêu",
+      "polish_passes_aria": "Số lần chạy đánh bóng"
+    },
+    "brand": {
+      "heading": "Màu thương hiệu",
+      "where_from": "Màu sắc đến từ đâu?",
+      "match_original": "🎨 Khớp bản gốc",
+      "match_original_desc": "Trích xuất màu sắc từ PDF này",
+      "upload_guide": "📎 Tải lên Sổ tay Thương hiệu",
+      "upload_guide_desc": "Sử dụng tài liệu/logo khác",
+      "no_branding": "⬜ Không có thương hiệu",
+      "no_branding_desc": "Sử dụng bảng màu mặc định",
+      "tip": "Mẹo: Nếu bạn chọn Style Seed cụ thể bên dưới (không phải \"Khớp bản gốc\"), màu sắc của seed đó sẽ ghi đè lựa chọn thương hiệu của bạn. Để sử dụng màu thương hiệu của bạn, hãy ghép chúng với seed Khớp bản gốc."
+    },
+    "style": {
+      "heading": "Style Seed",
+      "subtext": "Phong cách thiết kế nào AI nên áp dụng? Tuân thủ WCAG được đảm bảo bằng trình làm sạch xác định.",
+      "your_custom": "Phong cách tùy chỉnh của bạn",
+      "name_label": "Tên phong cách",
+      "name_placeholder": "Phong cách của tôi",
+      "name_aria": "Tên phong cách tùy chỉnh",
+      "font_aria": "Họ phông chữ",
+      "font_inter": "Inter (Sạch)",
+      "font_georgia": "Georgia (Serif)",
+      "font_atkinson": "Atkinson (Tiếp cận)",
+      "font_lexend": "Lexend (Dễ đọc)",
+      "font_comic": "Comic Sans (Vui)",
+      "font_times": "Times (Cổ điển)",
+      "heading_color_label": "Màu tiêu đề",
+      "heading_color_aria": "Màu tiêu đề",
+      "accent_color_label": "Màu nhấn",
+      "accent_color_aria": "Màu nhấn",
+      "bg_color_aria": "Màu nền"
+    },
+    "triage": {
+      "source_type": "Loại nguồn",
+      "issues_to_fix": "Vấn đề cần sửa:",
+      "estimated_time": "Thời gian sửa chữa ước tính:"
+    },
+    "post_fix": {
+      "label": "Chế độ sau khi sửa",
+      "aria": "Chế độ sau khi sửa"
+    },
+    "quick_downloads": {
+      "heading": "Tải xuống nhanh (không cần sửa chữa)",
+      "tagged_pdf_title": "Tải xuống PDF được Gắn thẻ dựa trên bản gốc. Để gắn thẻ phong phú hơn: tiêu đề được trích xuất, bảng được xác định phạm vi đúng, văn bản thay thế: hãy chạy Sửa & Xác minh trước và tải xuống phiên bản được gắn thẻ sau."
+    },
+    "loading": {
+      "title": "Đang kiểm toán Khả năng Tiếp cận PDF...",
+      "subtitle": "Đang chạy 5 cuộc kiểm toán WCAG 2.1 AA song song với phép tam giác. Việc này có thể mất 15-30 giây.",
+      "progress_aria": "Đang tiến hành kiểm toán"
+    },
+    "knowbility": {
+      "partner_badge": "Đối tác Khả năng Tiếp cận",
+      "mission_lead": "Tạo một thế giới số hòa nhập cho người khuyết tật",
+      "ada_title": "Đạo luật Người khuyết tật Hoa Kỳ (ADA) Chương II",
+      "wcag_label": "WCAG 2.1 Cấp AA",
+      "deadline_range": "Tháng 4 năm 2026 đến tháng 4 năm 2027",
+      "broader_reach_desc": "Nội dung dễ tiếp cận hoạt động trên mọi thiết bị, mọi băng thông, mọi công nghệ hỗ trợ: tiếp cận nhiều người dùng hơn",
+      "seo_desc": "Tiêu đề có cấu trúc, văn bản thay thế và HTML ngữ nghĩa cải thiện xếp hạng tìm kiếm và khám phá nội dung",
+      "cognitive_desc": "Điều hướng rõ ràng, bố cục nhất quán và ngôn ngữ giản dị giúp tất cả người dùng: đặc biệt trong các bối cảnh tải nhận thức cao",
+      "future_desc": "Nội dung tuân thủ WCAG thích ứng với các thiết bị mới, trình đọc AI và các công nghệ hỗ trợ mới nổi",
+      "italic_callout": "WCAG 2.1 AA không chỉ là về việc tránh kiện tụng: đó là về việc xây dựng các tài liệu có thể cảm nhận, vận hành, hiểu được và mạnh mẽ cho mọi người.",
+      "audit_service_desc": "Kiểm toán WCAG chuyên gia và sửa chữa tài liệu bởi các chuyên gia được chứng nhận",
+      "usability_service_desc": "Kiểm tra tính khả dụng thực tế bởi những người sử dụng công nghệ hỗ trợ hàng ngày",
+      "docrem_service_desc": "Đội ngũ chuyên gia về tài liệu PDF và MS Office: tính khả dụng đầy đủ với công nghệ hỗ trợ",
+      "training_service_desc": "Hội nghị thường niên và các khóa học theo yêu cầu: kỹ năng khả năng tiếp cận từ cơ bản đến nâng cao",
+      "mission_strong": "Sứ mệnh: Tạo một thế giới số hòa nhập cho người khuyết tật.",
+      "testing_desc": "Kiểm toán WCAG thủ công tạo ra các báo cáo hành động được và lộ trình sửa chữa cho các trang web, ứng dụng và tài liệu",
+      "docrem_full_desc": "Đội ngũ chuyên gia cho tài liệu PDF và MS Office: đảm bảo tính khả dụng đầy đủ với công nghệ hỗ trợ",
+      "accessworks_desc": "Kiểm tra tính khả dụng thực tế bởi những người khuyết tật sử dụng công nghệ hỗ trợ hàng ngày",
+      "training_full_desc": "Hội nghị thường niên và các khóa học theo yêu cầu: từ kỹ năng khả năng tiếp cận cơ bản đến nâng cao"
+    },
+    "unavailable": {
+      "title": "Kiểm toán không khả dụng",
+      "body": "Kiểm toán khả năng tiếp cận AI không thể hoàn thành. Điều này thường do vấn đề API tạm thời, giới hạn tốc độ hoặc một PDF rất lớn/phức tạp.",
+      "proceed_hint": "Bạn vẫn có thể tiếp tục: Sửa & Xác minh sẽ chuyển đổi tài liệu và chạy kiểm toán đầy đủ sau đó."
+    },
+    "tabs": {
+      "aria": "Chế độ xem kiểm toán",
+      "remediation_results": "Kết quả Sửa chữa",
+      "original_audit": "Kiểm toán Gốc"
+    },
+    "doc_props": {
+      "aria": "Thuộc tính tài liệu",
+      "contains_images": "Chứa hình ảnh",
+      "contains_tables": "Chứa bảng",
+      "contains_forms": "Chứa biểu mẫu"
+    },
+    "reliability": {
+      "std_dev": "Độ lệch chuẩn",
+      "icc_title": "Chỉ số tùy chỉnh 1−(SD/50); không phải ICC sách giáo khoa",
+      "icc_label": "Tính nhất quán của kiểm toán viên (giống ICC)",
+      "cronbach": "Cronbach's α"
+    },
+    "score": {
+      "total_checks": "Tổng số kiểm tra đã thực hiện",
+      "issues_found": "Đã tìm thấy vấn đề",
+      "ai_rubric_label": "Tiêu chí AI",
+      "starts_at_100": "Bắt đầu ở 100, trừ theo loại vấn đề",
+      "how_ai_scores": "Cách AI chấm điểm",
+      "ai_critical_rule": "Nghiêm trọng: -15 mỗi (ngôn ngữ, tiêu đề, alt, landmark, tương phản)",
+      "ai_major_rule": "Lớn: -10 mỗi (tiêu đề, bảng, biểu mẫu)",
+      "ai_minor_rule": "Nhỏ: -5 mỗi (bỏ qua điều hướng, landmark, liên kết, danh sách)",
+      "ai_passes_rule": "Các lần đạt giảm tổng khấu trừ theo tỷ lệ",
+      "axe_desc": "Trình kiểm tra WCAG 2.1 AA tự động của Deque",
+      "how_axe_scores": "Cách axe-core chấm điểm",
+      "no_violations": "Không phát hiện vi phạm",
+      "average_both": "Trung bình của cả hai công cụ (trọng số bằng nhau)"
+    },
+    "multi_session": {
+      "no_pdf_attached": "PDF gốc không được đính kèm phiên này: bạn sẽ được nhắc chọn lại từ đĩa khi bạn bắt đầu sửa. (Tệp dự án không bao gồm byte PDF để giữ nhỏ.)",
+      "autosave_aria": "Tự động lưu tệp dự án sau mỗi phạm vi đã hoàn thành",
+      "autosave_label": "Tự động lưu tệp dự án sau mỗi phạm vi"
+    },
+    "page_range": {
+      "start_aria": "Trang bắt đầu",
+      "end_aria": "Trang kết thúc",
+      "clear_aria": "Xóa phạm vi trang và sửa chữa toàn bộ tài liệu"
+    },
+    "fix_pass": {
+      "additional_sweep": "Quét thêm",
+      "progress_aria": "Tiến độ Sửa và Xác minh"
+    },
+    "pipeline": {
+      "tracker_aria": "Trình theo dõi tiến độ pipeline",
+      "why_matters": "Tại sao điều này quan trọng:"
+    },
+    "boring_palette": {
+      "prompt": "Bạn có muốn giữ giao diện gốc hay áp dụng chủ đề?"
+    },
+    "live_chunk": {
+      "review_aria": "Xem lại sửa chữa đoạn trực tiếp",
+      "heading_short": "Sửa chữa trực tiếp",
+      "no_fixes_title": "Phần này đã đáp ứng tiêu chuẩn khả năng tiếp cận WCAG: pipeline không thực hiện thay đổi nào vì không cần thiết.",
+      "retried_title": "AI đã phải thử lại phần này một lần sau khi lần thử đầu tiên thất bại các kiểm tra tính toàn vẹn hoặc bảo toàn token.",
+      "content_verified_title": "Kiểm tra bảo toàn nội dung AI đã đạt: nội dung văn bản của phần đã được bảo toàn qua việc viết lại.",
+      "ai_skipped_long_title": "Viết lại AI thất bại hoặc bị từ chối cho phần này: chỉ áp dụng các sửa chữa xác định (dựa trên quy tắc). Phần này vẫn dễ tiếp cận hơn bản gốc, chỉ là ít hơn so với các phần được AI sửa chữa thành công.",
+      "ai_skipped_rule_only": "AI bỏ qua · chỉ dựa trên quy tắc",
+      "review_heading": "Xem lại sửa chữa trực tiếp",
+      "review_subhead": "Xem mỗi phần được sửa chữa trong thời gian thực: từ chối hoặc sửa lại bất cứ điều gì có vẻ sai",
+      "progress_aria": "Tiến độ sửa chữa trực tiếp",
+      "rule_based_title": "Đã áp dụng sửa chữa regex dựa trên quy tắc (xác định): luôn an toàn, không liên quan đến AI",
+      "targeted_title": "Đã áp dụng các sửa chữa vi mô có mục tiêu được AI chẩn đoán qua các công cụ xác định (bảo toàn nội dung)",
+      "ai_skipped_short_title": "Viết lại AI thất bại hoặc bị từ chối cho phần này: chỉ áp dụng các sửa chữa dựa trên quy tắc. Vẫn dễ tiếp cận hơn bản gốc.",
+      "ai_skipped_short": "AI bỏ qua",
+      "verified_title": "AI đã xác minh nội dung được bảo toàn",
+      "integrity_title": "Đã đạt kiểm tra tính toàn vẹn chồng chéo từ",
+      "before": "Trước (gốc)",
+      "after": "Sau (đã sửa)",
+      "integrity_note": "Ghi chú tính toàn vẹn:",
+      "violations_targeted": "Vi phạm được nhắm mục tiêu trong lần chạy này",
+      "clear_history_aria": "Xóa lịch sử xem lại trực tiếp"
+    },
+    "why_matters": {
+      "heading": "Tại sao Tài liệu Dễ Tiếp cận Quan trọng",
+      "udl_part1": "Tài liệu dễ tiếp cận hỗ trợ Thiết kế Phổ quát cho Học tập (UDL): có lợi cho",
+      "all": "tất cả",
+      "udl_part2": "người học bất kể khả năng, ngôn ngữ hoặc phong cách học",
+      "ux_part1": "Tiêu đề rõ ràng, cấu trúc logic và độ tương phản đủ làm cho tài liệu dễ đọc hơn cho",
+      "ux_part2": "người dùng: bao gồm trên di động và dưới ánh nắng",
+      "seo_desc": "HTML ngữ nghĩa, văn bản thay thế và tiêu đề phù hợp giúp công cụ tìm kiếm lập chỉ mục nội dung: tăng khả năng khám phá và phạm vi tiếp cận tự nhiên",
+      "innovation_desc": "Nhận dạng giọng nói, chú thích đóng và trình đọc màn hình đều bắt đầu là các tính năng khả năng tiếp cận: sau đó trở thành các công cụ thiết yếu được hàng triệu người sử dụng"
+    },
+    "ada": {
+      "heading": "ADA Chương II & WCAG 2.1 AA",
+      "deadline_badge": "Hạn chót: 24 tháng 4 năm 2026",
+      "title_strong": "Chương II của Đạo luật Người khuyết tật Hoa Kỳ (ADA)",
+      "wcag_strong": "WCAG 2.1 Cấp AA",
+      "deadline_50k": "24 tháng 4 năm 2026",
+      "deadline_small": "26 tháng 4 năm 2027",
+      "covered_desc": "Trang web công khai, ứng dụng di động, tài liệu số (PDF, Word, Excel, PowerPoint) và mạng xã hội do các thực thể chính phủ xuất bản",
+      "who_desc": "Tất cả các thực thể chính phủ tiểu bang và địa phương: bao gồm trường công lập, đại học, tòa án, thư viện, cơ quan giao thông và dịch vụ thành phố",
+      "matters_desc": "Vượt ra ngoài tuân thủ pháp lý: tài liệu dễ tiếp cận đảm bảo người khuyết tật có thể tiếp cận bình đẳng với giáo dục, dịch vụ công cộng, việc làm và tham gia dân sự",
+      "standard_callout": "Tiêu chuẩn AlloFlow nhắm mục tiêu: WCAG 2.1 Cấp AA: chính là tiêu chuẩn được yêu cầu bởi quy định liên bang này."
+    },
+    "doc_details": {
+      "heading": "Chi tiết Tài liệu"
+    },
+    "images": {
+      "review_heading": "Xem lại Mô tả Hình ảnh",
+      "download_all_title": "Tải xuống mọi hình ảnh được trích xuất: hữu ích làm phương án dự phòng thủ công nếu việc chèn lại của AI đặt sai vị trí hoặc bỏ qua một hình.",
+      "edit_alt_hint": "Chỉnh sửa văn bản thay thế bên dưới: thay đổi áp dụng cho tài liệu cuối cùng",
+      "download_one_title": "Tải xuống hình ảnh này",
+      "ai_generated_badge": "AI Tạo",
+      "alt_placeholder": "Mô tả hình ảnh này cho người dùng trình đọc màn hình...",
+      "regen_title": "Tạo lại hình ảnh này qua AI sử dụng mô tả đã lưu trữ",
+      "dropped_by_ai": "Bị AI loại bỏ trong lần chạy",
+      "regen_hint": "Nhấp Tạo lại để tạo lại hình ảnh qua AI sử dụng mô tả đã lưu trữ của nó, hoặc dùng Tải lên/Thay thế bên trong figure trong xem trước."
+    },
+    "integrity": {
+      "verifying": "Đang xác minh tính toàn vẹn nội dung…",
+      "diff_open_verifying_aria": "Mở chế độ xem khác biệt (xác minh vẫn đang chạy ở nền)",
+      "diff_open_verifying_title": "Mở chế độ xem khác biệt cấp độ từ. Xác minh tính toàn vẹn vẫn đang chạy ở nền, nhưng bản thân khác biệt đã sẵn sàng ngay bây giờ.",
+      "unverified": "Tính toàn vẹn nội dung chưa xác minh",
+      "diff_open_aria": "Mở chế độ xem khác biệt của văn bản PDF nguồn so với HTML cuối cùng",
+      "diff_open_title": "Khác biệt cấp độ từ cạnh nhau: xem mọi chèn, xóa và diễn giải lại giữa PDF nguồn và HTML đã sửa chữa.",
+      "recheck_aria": "Chạy lại kiểm tra tính toàn vẹn nội dung pdf.js",
+      "recheck_title": "Chạy lại bậc thang khôi phục độ trung thành (Giai đoạn A-D) trên HTML đã sửa chữa hiện tại."
+    },
+    "verification": {
+      "details_heading": "Chi tiết xác minh",
+      "char_coverage": "Phạm vi ký tự",
+      "word_coverage": "Phạm vi từ",
+      "source_words": "Từ nguồn",
+      "recovery_stages": "Các giai đoạn khôi phục đã áp dụng",
+      "ai_retry": "Thử lại AI",
+      "ground_truth": "Sự thật cơ bản:",
+      "open_diff_title": "Mở chế độ xem khác biệt cấp độ từ"
+    },
+    "fidelity": {
+      "heading": "Xác minh Độ trung thành Văn bản",
+      "run_title": "So sánh tài liệu đã sửa chữa với văn bản nguồn: gắn cờ bất kỳ từ nào xuất hiện trong nguồn nhưng không có trong đầu ra đã sửa chữa hiện tại.",
+      "run_aria": "Chạy kiểm tra độ trung thành văn bản dựa trên OCR nguồn",
+      "restore_title": "Nối các từ bị thiếu trở lại vào tài liệu đã sửa chữa bằng cách sử dụng khớp neo ngữ cảnh mờ. Các từ không thể đặt sẽ chuyển đến phụ lục Khôi phục Nội dung để không có gì bị mất.",
+      "restore_aria": "Khôi phục các từ bị thiếu vào tài liệu đã sửa chữa",
+      "not_ready": "Sửa chữa chưa sẵn sàng."
+    },
+    "report": {
+      "download_title": "Tải xuống báo cáo kiểm toán",
+      "text_extract_title": "Trích xuất văn bản để tạo nội dung"
+    },
+    "resume": {
+      "heading": "Đã tìm thấy Tiến độ Đã lưu"
+    },
+    "start_new_title": "Xóa kết quả kiểm toán này và bắt đầu mới với PDF mới",
+    "results": {
+      "verified_accessible": "Đã xác minh Dễ Tiếp cận",
+      "zero_violations": "Không phát hiện vi phạm WCAG"
+    },
+    "wcag_report": {
+      "coverage_note": "Phạm vi có thể không đầy đủ: chế độ xem này tổng hợp các quy tắc axe-core theo SC WCAG. Việc xem xét thủ công vẫn được yêu cầu cho một số tiêu chí (ví dụ: ý nghĩa ngữ nghĩa, thứ tự đọc, biểu mẫu phức tạp)."
+    },
+    "auto_fix": {
+      "stop_aria": "Dừng tự động tiếp tục sửa chữa",
+      "progress_aria": "Tiến độ tự động sửa"
+    },
+    "section_map": {
+      "heading": "Bản đồ Phần Tài liệu",
+      "rule_based_title": "Đã áp dụng các sửa chữa dựa trên quy tắc (xác định)",
+      "targeted_title": "Các sửa chữa vi mô có mục tiêu được AI chẩn đoán",
+      "ai_skipped_title": "Viết lại AI bị từ chối: chỉ áp dụng các sửa chữa dựa trên quy tắc",
+      "ai_skipped": "AI bỏ qua"
+    },
+    "expert_referral": {
+      "heading": "Tài liệu này Cần Sửa chữa Khả năng Tiếp cận Chuyên gia"
+    },
+    "diff": {
+      "button_aria": "Mở chế độ xem khác biệt cấp độ từ giữa PDF nguồn và HTML đã sửa chữa",
+      "button_title": "Mở cửa sổ khác biệt cấp độ từ: xem mọi chèn, xóa và diễn giải lại giữa văn bản PDF nguồn và HTML đã sửa chữa, với nhấp để từ chối và Áp dụng & Xuất."
+    },
+    "pdf_from_html": {
+      "title": "Tạo lại PDF từ HTML đã sửa chữa. Bố cục chảy lại: ngắt trang, phông chữ và phân trang có thể khác với bản gốc. Hoạt động tốt cho các tài liệu văn xuôi đơn giản."
+    },
+    "tagged_pdf": {
+      "title": "Bảo toàn bố cục trực quan của PDF gốc theo byte và đưa các thẻ khả năng tiếp cận vào cây cấu trúc của nó. Tốt nhất cho sách giáo khoa, tài liệu nhiều cột và PDF có thương hiệu nơi độ trung thành trực quan quan trọng."
+    },
+    "alt_formats": {
+      "intro": "Tải xuống tài liệu đã sửa chữa ở các định dạng thay thế dễ tiếp cận"
+    },
+    "expert": {
+      "command_aria": "Lệnh sửa chữa chuyên gia",
+      "log_aria": "Nhật ký hoạt động đại lý"
+    },
+    "translate": {
+      "lang_aria": "Ngôn ngữ dịch: gõ bất kỳ ngôn ngữ nào hoặc chọn từ các đề xuất",
+      "lang_placeholder": "🌐 Gõ ngôn ngữ (ví dụ: Tây Ban Nha, Tagalog, Dari...)"
+    },
+    "simplify": {
+      "level_aria": "Cấp lớp đơn giản hóa"
+    },
+    "plain_summary": {
+      "intro": "Tạo phiên bản dễ đọc cho phụ huynh, người giám hộ hoặc thành viên cộng đồng.",
+      "lang_aria": "Ngôn ngữ dịch"
+    },
+    "close_confirm": {
+      "title": "Đóng mà không lưu?",
+      "save_close": "Lưu & đóng"
+    },
+    "preview": {
+      "modal_aria": "Xem trước và chỉnh sửa tài liệu dễ tiếp cận",
+      "close_aria": "Đóng xem trước",
+      "edit_hint": "Nhấp bất kỳ đâu trong xem trước để chỉnh sửa văn bản trực tiếp. Sử dụng các điều khiển bên dưới để tùy chỉnh giao diện.",
+      "wcag_guaranteed": "Tuân thủ WCAG được đảm bảo: trình làm sạch chạy trên mỗi thay đổi phong cách.",
+      "ai_restyle_hint": "Tạo kiểu lại bằng AI một cú nhấp. Những điều này ghi đè chủ đề ở trên.",
+      "body_font_aria": "Phông chữ thân",
+      "font_system": "Hệ thống (Mặc định)",
+      "font_georgia": "Georgia (Serif)",
+      "font_times_new": "Times New Roman",
+      "font_atkinson_hyper": "Atkinson Hyperlegible",
+      "font_comic_short": "Comic Sans",
+      "font_courier": "Courier (Mono)",
+      "font_size_aria": "Cỡ chữ",
+      "live_preview": "Xem trước Trực tiếp",
+      "iframe_title": "Xem trước tài liệu dễ tiếp cận"
+    },
+    "wordart": {
+      "text_placeholder": "Văn bản nghệ thuật của bạn...",
+      "text_aria": "Văn bản nghệ thuật từ"
+    },
+    "a11y_inspect": {
+      "headings": "Tiêu đề (H1-H6)",
+      "images": "Hình ảnh + văn bản thay thế",
+      "tables": "Bảng + tiêu đề",
+      "figures": "Hình + chú thích",
+      "main_landmark": "Landmark chính",
+      "aria_roles": "Vai trò ARIA"
+    },
+    "ai_image": {
+      "prompt_placeholder": "Mô tả hình ảnh để tạo...",
+      "prompt_aria": "Lời nhắc tạo hình ảnh",
+      "select_hint": "Nhấp vào một hình ảnh trong xem trước để chọn nó, sau đó:"
+    },
+    "layout": {
+      "insert_blocks": "Chèn khối",
+      "header_branding": "Tiêu đề / Thương hiệu"
+    },
+    "templates": {
+      "aria": "Mẫu tài liệu",
+      "apply_placeholder": "Áp dụng mẫu...",
+      "saved_heading": "Mẫu Dễ Tiếp cận Đã lưu"
+    },
+    "version_stamp": {
+      "heading": "Tem phiên bản"
+    },
+    "extracted_images": {
+      "drag_hint": "Kéo hình thu nhỏ lên bất kỳ trình giữ chỗ hình ảnh nào trong xem trước để chèn nó, hoặc nhấp \"📷 Tải lên\" bên trong trình giữ chỗ và chọn \"Sử dụng hình ảnh đã trích xuất\"."
+    },
+    "toolbar": {
+      "aria": "Định dạng văn bản",
+      "bullet_list": "Danh sách dấu đầu dòng",
+      "numbered_list": "Danh sách đánh số",
+      "align_left": "Căn trái",
+      "align_center": "Căn giữa",
+      "align_center_title": "Giữa",
+      "insert_link": "Chèn liên kết",
+      "remove_link": "Xóa liên kết",
+      "clear_formatting": "Xóa định dạng",
+      "undo": "Hoàn tác",
+      "redo": "Làm lại",
+      "text_color": "Màu chữ",
+      "highlight_color": "Màu đánh dấu",
+      "insert_table_aria": "Chèn bảng",
+      "insert_table_title": "Chèn bảng dễ tiếp cận"
+    }
   },
   "dbq": {
     "title": "Phân tích Tài liệu (DBQ)",
@@ -4033,5 +4609,207 @@
     "aria_free_response": "Phản hồi tự do",
     "portrait_refine_placeholder": "ví dụ: Thêm kính màu xanh lá",
     "appearance_placeholder": "Ngoại hình (ví dụ: cao, tóc bạc, áo choàng xanh)"
+  },
+  "about": {
+    "title": "Giới thiệu về AlloFlow v1.0",
+    "tab_about": "Về UDL",
+    "tab_features": "Hướng dẫn Tính năng",
+    "approach_header": "Cách tiếp cận AlloFlow",
+    "allo_acronym_label": "ALLO:",
+    "allo_acronym_def": "Cấp độ, Lớp & Đầu ra Thích ứng",
+    "flow_acronym_label": "FLOW:",
+    "flow_acronym_def": "Tùy chọn Học tập Linh hoạt cho Giáo dục Toàn diện",
+    "what_is_udl": "UDL là gì?",
+    "udl_definition": "Thiết kế Phổ quát cho Học tập (UDL) là một khuôn khổ nhằm cải thiện và tối ưu hóa giảng dạy và học tập cho tất cả mọi người dựa trên những hiểu biết khoa học về cách con người học.",
+    "how_help_header": "Công cụ này giúp ích như thế nào?",
+    "how_help_desc": "Công cụ này sử dụng AI để ngay lập tức tạo các điểm tiếp cận đa dạng cho chương trình của bạn, đảm bảo bạn giải quyết ba nguyên tắc cốt lõi của UDL:",
+    "rep_title": "Trình bày:",
+    "rep_desc": "Trình bày thông tin theo các cách khác nhau (ví dụ: Văn bản phân cấp, Hỗ trợ Trực quan, Từ vựng).",
+    "action_title": "Hành động & Biểu hiện:",
+    "action_desc": "Cung cấp các tùy chọn để học sinh thể hiện những gì họ biết (ví dụ: Khung hỗ trợ, Bài kiểm tra).",
+    "engage_title": "Gắn kết:",
+    "engage_desc": "Khai thác sở thích để thử thách và động viên (ví dụ: phép tương tự dựa trên sở thích).",
+    "ai_guide_tip": "Sử dụng nút \"Hướng dẫn UDL & Liên kết AI\" trong thanh bên để trò chuyện với một bot sư phạm chuyên gia để được tư vấn chiến lược cụ thể.",
+    "cast_link_text": "Xem đầy đủ Hướng dẫn UDL (CAST.org)",
+    "reset_wizard": "Đặt lại Trình hướng dẫn Bắt đầu Nhanh",
+    "support_kofi": "Hỗ trợ trên Ko-fi",
+    "features_list": {
+      "categories": {
+        "creation": "Lập kế hoạch & Tạo",
+        "activities": "Gắn kết & Chơi",
+        "assessment": "Đánh giá & Hỗ trợ",
+        "platform": "Quản lý & Thích ứng"
+      },
+      "items": [
+        {
+          "title": "Phân tích Nguồn",
+          "icon": "Search",
+          "desc": "Trích xuất trình độ đọc, khái niệm then chốt và kiểm tra độ chính xác từ bất kỳ văn bản nguồn nào.",
+          "category": "creation",
+          "color": "blue"
+        },
+        {
+          "title": "Văn bản Phân cấp",
+          "icon": "BookOpen",
+          "desc": "Điều chỉnh độ phức tạp văn bản cho bất kỳ cấp lớp Mẫu giáo-12 nào. Bao gồm các chế độ xem song ngữ cạnh nhau.",
+          "category": "creation",
+          "color": "indigo"
+        },
+        {
+          "title": "Giáo án",
+          "icon": "ClipboardList",
+          "desc": "Tổng hợp tất cả các tài nguyên thành một giáo án hoặc hướng dẫn học tập liên kết với tiêu chuẩn.",
+          "category": "creation",
+          "color": "violet"
+        },
+        {
+          "title": "Tổ chức Trực quan",
+          "icon": "Layout",
+          "desc": "Tạo Sơ đồ Dòng chảy, Biểu đồ Venn và dàn ý có cấu trúc.",
+          "category": "creation",
+          "color": "cyan"
+        },
+        {
+          "title": "Động não",
+          "icon": "Lightbulb",
+          "desc": "Tạo ý tưởng hoạt động thực hành và kết nối thế giới thực.",
+          "category": "creation",
+          "color": "yellow"
+        },
+        {
+          "title": "Trình tạo FAQ",
+          "icon": "FileQuestion",
+          "desc": "Dự đoán các quan niệm sai của học sinh với các danh sách Hỏi-Đáp được tạo tự động.",
+          "category": "creation",
+          "color": "teal"
+        },
+        {
+          "title": "Chế độ Phỏng vấn",
+          "icon": "History",
+          "desc": "Trò chuyện với các nhân vật lịch sử, hư cấu hoặc chuyên gia. Khám phá các bí mật ẩn.",
+          "category": "activities",
+          "color": "amber"
+        },
+        {
+          "title": "Chế độ Phiêu lưu",
+          "icon": "MapIcon",
+          "desc": "Mô phỏng và các kịch bản đóng vai 'Tự chọn Phiêu lưu' tương tác.",
+          "category": "activities",
+          "color": "purple"
+        },
+        {
+          "title": "Khu Trò chơi",
+          "icon": "Gamepad2",
+          "desc": "Tự động tạo Loto, Ghép Trí nhớ, Tìm Từ và Ô chữ.",
+          "category": "activities",
+          "color": "pink"
+        },
+        {
+          "title": "Trình tạo Trình tự",
+          "icon": "ListOrdered",
+          "desc": "Hoạt động dòng thời gian kéo-thả cho các sự kiện theo trình tự thời gian hoặc các bước quy trình.",
+          "category": "activities",
+          "color": "rose"
+        },
+        {
+          "title": "Tri ý phân loại",
+          "icon": "Filter",
+          "desc": "Phân loại các thuật ngữ và khái niệm vào các thùng. Tuyệt vời để phân biệt các ý tưởng tương tự.",
+          "category": "activities",
+          "color": "orange"
+        },
+        {
+          "title": "Gia sư Socrates",
+          "icon": "MessageCircleQuestion",
+          "desc": "Hướng dẫn AI đặt câu hỏi hướng dẫn thay vì đưa ra câu trả lời.",
+          "category": "activities",
+          "color": "fuchsia"
+        },
+        {
+          "title": "Phiếu Thoát Lớp",
+          "icon": "CheckSquare",
+          "desc": "Tạo bài kiểm tra. Khởi chạy chế độ 'Bài kiểm tra Trực tiếp' để có kết quả lớp học thời gian thực.",
+          "category": "assessment",
+          "color": "emerald"
+        },
+        {
+          "title": "Khung Hỗ trợ Viết",
+          "icon": "Quote",
+          "desc": "Mở đầu câu và khung đoạn với tiêu chí đánh giá tích hợp.",
+          "category": "assessment",
+          "color": "orange"
+        },
+        {
+          "title": "Hỗ trợ Trực quan",
+          "icon": "ImageIcon",
+          "desc": "Sơ đồ và minh họa AI. Sử dụng 'Nano Banana' để tinh chỉnh hoặc xóa văn bản.",
+          "category": "assessment",
+          "color": "purple"
+        },
+        {
+          "title": "Toán & STEM",
+          "icon": "Calculator",
+          "desc": "Trình giải từng bước, tạo đồ thị và các bài tập tương tự.",
+          "category": "assessment",
+          "color": "blue"
+        },
+        {
+          "title": "Kiểm toán Tiêu chuẩn",
+          "icon": "ShieldCheck",
+          "desc": "Xác minh liên kết với các tiêu chuẩn giáo dục cụ thể và xác định các lỗ hổng về độ chặt chẽ.",
+          "category": "assessment",
+          "color": "slate"
+        },
+        {
+          "title": "Lưu loát Bằng Lời",
+          "icon": "Mic",
+          "desc": "Lắng nghe học sinh đọc to và tính WCPM và độ chính xác.",
+          "category": "assessment",
+          "color": "rose"
+        },
+        {
+          "title": "Bảng điều khiển Giáo viên",
+          "icon": "Layout",
+          "desc": "Theo dõi tiến độ học sinh, xem các phân tích và xuất sổ điểm.",
+          "category": "platform",
+          "color": "indigo"
+        },
+        {
+          "title": "Phiên Trực tiếp",
+          "icon": "Wifi",
+          "desc": "Tổ chức các lớp đồng bộ, chạy chế độ bỏ phiếu Dân chủ và quản lý các bài kiểm tra trực tiếp.",
+          "category": "platform",
+          "color": "rose"
+        },
+        {
+          "title": "Hồ sơ Học sinh",
+          "icon": "Users",
+          "desc": "Lưu các cài đặt phân hóa (Ngôn ngữ, Sở thích) cho các nhóm khác nhau.",
+          "category": "platform",
+          "color": "cyan"
+        },
+        {
+          "title": "Khả năng Tiếp cận",
+          "icon": "Ear",
+          "desc": "Trình đọc Đắm chìm, Tập trung Dòng, Đọc Chính tả và các công cụ Văn bản thành Giọng nói.",
+          "category": "platform",
+          "color": "teal"
+        },
+        {
+          "title": "Bộ Xuất",
+          "icon": "Download",
+          "desc": "Xuất sang PDF, PowerPoint, Canvas QTI hoặc Gói HTML.",
+          "category": "platform",
+          "color": "blue"
+        },
+        {
+          "title": "Cầu nối Gemini",
+          "icon": "Terminal",
+          "desc": "Tạo lời nhắc để xây dựng các ứng dụng tương tác tùy chỉnh trong Gemini Canvas.",
+          "category": "platform",
+          "color": "slate"
+        }
+      ]
+    }
   }
 }

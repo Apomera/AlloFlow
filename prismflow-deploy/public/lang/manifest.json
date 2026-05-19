@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-19T19:31:20.403Z",
+  "generated": "2026-05-19T19:37:28.794Z",
   "count": 8,
   "total_keys_expected": 9307,
   "available": [
@@ -35,9 +35,9 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 8504,
-      "bytes": 1017639,
-      "updated": "2026-05-18"
+      "keys": 9129,
+      "bytes": 1045451,
+      "updated": "2026-05-19"
     },
     {
       "slug": "somali",
@@ -56,8 +56,8 @@
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
-      "keys": 3751,
-      "bytes": 305955,
+      "keys": 4226,
+      "bytes": 350381,
       "updated": "2026-05-19"
     }
   ]
