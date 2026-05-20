@@ -25516,7 +25516,12 @@ ${_toolList}
                                     .map(s => String(s || '').trim()).filter(s => s.length > 1).slice(0, 6);
                                 if (safeTerms.length === 0) throw new Error('No seed terms supplied.');
                                 const lang = leveledTextLanguage || 'English';
-                                const prompt = `Generate a kid-friendly glossary entry for each of these target terms. Output a JSON array; each element has: { "term": string, "definition": string, "exampleSentence": string }. Keep definitions ${gradeLevel || 'grade-appropriate'} and concise (1-2 sentences). Output language: ${lang}. Target terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\nReturn ONLY the JSON array. No prose.`;
+                                // Mirror handleQuickAddGlossary's prompt shape exactly — same field
+                                // names (term/def/tier/translations) the main GlossaryView consumes.
+                                const wantTranslations = Array.isArray(selectedLanguages) && selectedLanguages.length > 0;
+                                const prompt = wantTranslations
+                                    ? `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n  3. Provide translations into: ${selectedLanguages.join(', ')}. Format each translation as "Translated Term: Translated Definition".\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific", "translations": { "<Lang>": "TranslatedTerm: TranslatedDef", ... } }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
+                                    : `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific" }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
                                 const raw = await callGemini(prompt, true);
                                 const cleaned = typeof cleanJson === 'function' ? cleanJson(raw) : raw;
                                 let parsed;
@@ -25527,9 +25532,10 @@ ${_toolList}
                                 }
                                 const data = parsed.slice(0, 6).map(entry => ({
                                     term: String(entry.term || '').trim(),
-                                    definition: String(entry.definition || '').trim(),
-                                    exampleSentence: String(entry.exampleSentence || entry.example || '').trim()
-                                })).filter(e => e.term && e.definition);
+                                    def: String(entry.def || entry.definition || '').trim(),
+                                    tier: entry.tier === 'Domain-Specific' || entry.tier === 'Academic' ? entry.tier : undefined,
+                                    translations: entry.translations && typeof entry.translations === 'object' ? entry.translations : {}
+                                })).filter(e => e.term && e.def);
                                 if (data.length === 0) throw new Error('Glossary AI returned no usable entries.');
                                 const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
                                 const newItem = {
@@ -25545,6 +25551,48 @@ ${_toolList}
                                     daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
                                 };
                                 setHistory(prev => [...prev, newItem]);
+                                // Fire-and-forget icon generation, mirroring handleQuickAddGlossary's
+                                // pipeline EXACTLY: callImagen for the icon, then (if autoRemoveWords)
+                                // callGeminiImageEdit to strip any letters the model leaked in. Sequential
+                                // so we don't burst the rate limiter; per-term failures tolerated.
+                                (async () => {
+                                    for (let i = 0; i < data.length; i++) {
+                                        const term = data[i].term;
+                                        const definition = data[i].def;
+                                        const imgPrompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
+                                        try {
+                                            let imageUrl = await callImagen(imgPrompt);
+                                            if (!imageUrl) continue;
+                                            if (autoRemoveWords) {
+                                                try {
+                                                    const rawBase64 = imageUrl.split(',')[1];
+                                                    const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
+                                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                                } catch (editErr) {
+                                                    console.warn('[DA glossary] Auto-remove text failed for term:', term, editErr && editErr.message);
+                                                }
+                                            }
+                                            setHistory(prev => prev.map(it => {
+                                                if (it.id !== newId || !Array.isArray(it.data)) return it;
+                                                const newData = it.data.slice();
+                                                const liveIdx = newData.findIndex(d => d && d.term === term);
+                                                if (liveIdx < 0) return it;
+                                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+                                                return { ...it, data: newData };
+                                            }));
+                                            setGeneratedContent(prev => {
+                                                if (!prev || prev.id !== newId || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+                                                const newData = prev.data.slice();
+                                                const liveIdx = newData.findIndex(d => d && d.term === term);
+                                                if (liveIdx < 0) return prev;
+                                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+                                                return { ...prev, data: newData };
+                                            });
+                                        } catch (imgErr) {
+                                            console.warn('[DA glossary] Image gen failed for term:', term, imgErr && imgErr.message);
+                                        }
+                                    }
+                                })();
                                 return { id: newId };
                             },
                             onOpenResource: (resourceId) => {
