@@ -31,6 +31,7 @@
   var t = props.t;
   var isTeacherMode = props.isTeacherMode;
   var callTTS = props.callTTS;
+  var selectedVoice = props.selectedVoice;
   const dbqData = generatedContent.data;
   const docs = dbqData.documents || [];
   const rubric = dbqData.rubric || [];

@@ -2336,7 +2336,8 @@
     "status_retrying_chunk": "Retrying chunk {chunk} (attempt {attempt} of {maxAttempts})...",
     "status_checking": "Checking language pack...",
     "status_generating": "Generating translation...",
-    "status_translating_part": "Translating part {current} of {total}..."
+    "status_translating_part": "Translating part {current} of {total}...",
+    "status_resuming": "Resuming translation ({done}/{total})…"
   },
   "languages": {
     "english": "English",

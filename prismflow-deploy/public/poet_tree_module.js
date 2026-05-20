@@ -2741,7 +2741,7 @@
                         e('p', { style: { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#1e293b', margin: 0, lineHeight: 1.5, maxHeight: '4.5em', overflow: 'hidden', textOverflow: 'ellipsis' } }, s.text.split('\n').slice(0, 3).join(' / ')),
                         // Image slot — skeleton when loading, error state, or rendered image
                         s.loading
-                          ? e('div', { 'aria-busy': 'true', 'aria-label': 'Rendering stanza ' + (si + 1), style: { width: '100%', aspectRatio: '1', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '12px' } }, '⏳')
+                          ? e('div', { 'aria-busy': 'true', 'aria-label': 'Rendering stanza ' + (si + 1), style: { width: '100%', aspectRatio: '1', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', fontSize: '12px' } }, '⏳')
                           : s.url
                             ? e('img', { src: s.url, alt: 'AI rendering of stanza ' + (si + 1) + ': ' + s.text.split('\n')[0], style: { width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '8px', display: 'block' } })
                             : e('div', { style: { width: '100%', aspectRatio: '1', background: '#fef2f2', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b91c1c', fontSize: '11px', fontStyle: 'italic', textAlign: 'center', padding: '8px' } }, s.error ? 'Failed to render' : 'No image yet'),
@@ -3075,8 +3075,8 @@
               readAloudActive && e('div', { style: { width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' } },
                 // Top bar
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'default' } },
-                  e('span', { style: { color: '#94a3b8', fontSize: '13px', fontFamily: 'system-ui, sans-serif' } }, (poemTitle || 'Untitled') + (studentNickname ? ' · ' + studentNickname : '')),
-                  e('span', { style: { color: '#94a3b8', fontSize: '12px', fontFamily: 'system-ui, sans-serif' } }, currentNonBlankIdx + ' / ' + totalLines)
+                  e('span', { style: { color: '#475569', fontSize: '13px', fontFamily: 'system-ui, sans-serif' } }, (poemTitle || 'Untitled') + (studentNickname ? ' · ' + studentNickname : '')),
+                  e('span', { style: { color: '#475569', fontSize: '12px', fontFamily: 'system-ui, sans-serif' } }, currentNonBlankIdx + ' / ' + totalLines)
                 ),
                 // Line display
                 e('p', { style: { fontFamily: 'Georgia, serif', fontSize: 'clamp(28px, 5vw, 56px)', color: '#fff', margin: 0, lineHeight: 1.4, textAlign: 'center', maxWidth: '100%', wordWrap: 'break-word' }, 'aria-live': 'polite' },
@@ -3085,16 +3085,16 @@
                 // Hint + controls (don't propagate clicks to advance)
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { display: 'flex', gap: '14px', alignItems: 'center', cursor: 'default' } },
                   e('button', { onClick: rewindReadAloud, 
-                    style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '8px 14px', background: 'transparent', color: '#475569', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '◀ Back'),
                   e('button', { onClick: advanceReadAloud, autoFocus: true, 
                     style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
                   e('button', { onClick: stopReadAloud, 'aria-label': 'Exit read-aloud mode',
-                    style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '8px 14px', background: 'transparent', color: '#475569', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '✕ Done')
                 ),
-                e('p', { style: { color: '#cbd5e1', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
+                e('p', { style: { color: '#475569', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
               )
             );
           })(),

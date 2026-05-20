@@ -221,21 +221,40 @@
     };
   }
 
+  // Strip citation-style markdown links like `[^(1)](https://...)` or
+  // `[(1)](https://...)` — these are reference markers that add noise to a
+  // student-facing preview. Returns plain text with the parenthesized number
+  // preserved (so context like "evaporation [1]" still reads naturally) and
+  // the URL discarded.
+  function stripCitations(text) {
+    if (typeof text !== 'string') return text;
+    return text.replace(/\[\^?\((\d+)\)\]\([^)]+\)/g, '[$1]');
+  }
+
   // Render a single history item in a student-friendly layout. Different
   // history types have different data shapes; we pick out the parts that
   // make sense to display in a preview.
-  function renderHistoryItemContent(item, theme) {
+  function renderHistoryItemContent(item, theme, renderFormattedText) {
     if (!item || !item.data) {
       return e('p', { style: { color: theme.sub, fontStyle: 'italic' } }, 'No content available for this lesson item.');
     }
     var data = item.data;
 
-    // analysis: source text + concepts
+    // analysis: source text + concepts.
+    // Source text often contains markdown (headings, links, citation refs).
+    // Strip citation links (noise in a student preview), then route through
+    // the host's renderFormattedText when available so headings/links/lists
+    // actually render. Fall back to plain pre-wrap text if the host did not
+    // wire renderFormattedText through.
     if (item.type === 'analysis') {
+      var cleanedSourceText = stripCitations(asString(data.originalText));
+      var sourceBody = (typeof renderFormattedText === 'function')
+        ? e('div', { className: 'a11y-rendered-markdown' }, renderFormattedText(cleanedSourceText, false, false))
+        : e('p', { style: { whiteSpace: 'pre-wrap' } }, cleanedSourceText);
       return e('div', null,
         data.originalText && e('section', { style: { marginBottom: '24px' } },
           e('h4', { style: { fontWeight: 700, marginBottom: '12px' } }, 'Source text'),
-          e('p', { style: { whiteSpace: 'pre-wrap' } }, asString(data.originalText))
+          sourceBody
         ),
         Array.isArray(data.concepts) && data.concepts.length > 0 && e('section', { style: { marginBottom: '24px' } },
           e('h4', { style: { fontWeight: 700, marginBottom: '12px' } }, 'Key concepts'),
@@ -351,6 +370,7 @@
   function PreviewTab(props) {
     var history = props.history || [];
     var callTTS = props.callTTS;
+    var renderFormattedText = props.renderFormattedText;
     var addToast = props.addToast;
     var tr = makeTr(props.t);
 
@@ -535,7 +555,7 @@
 
       // Preview pane (the actual student-eye view)
       e('div', { id: 'alloflow-a11y-preview-pane', style: settingsStyle(settings, theme), 'aria-label': tr('a11y_lab.preview.pane_aria', 'Student preview pane') },
-        renderHistoryItemContent(selectedItem, theme)
+        renderHistoryItemContent(selectedItem, theme, renderFormattedText)
       ),
 
       // Apply / Reset buttons (only when host passed the setters)

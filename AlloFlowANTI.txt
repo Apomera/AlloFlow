@@ -23837,7 +23837,7 @@ ${_toolList}
                     handleTimelineChange, handleTimelineDragEnd, handleTimelineDragOver, handleTimelineDragStart,
                     handleTimelineRevision, handleToggleIsEditingTimeline, handleVerifyTimelineAccuracy,
                     closeTimeline,
-                    ErrorBoundary, TimelineGame
+                    ErrorBoundary, TimelineGame, playSound
                 })}
                 {activeView === 'concept-sort' && window.AlloModules && window.AlloModules.ConceptSortView && React.createElement(window.AlloModules.ConceptSortView, {
                     t, isTeacherMode, isIndependentMode, generatedContent,
@@ -23968,7 +23968,7 @@ ${_toolList}
                 {/* ── DBQ Interactive View ── */}
                 {activeView === 'dbq' && generatedContent?.data && window.AlloModules && window.AlloModules.DbqView && React.createElement(window.AlloModules.DbqView, {
                     generatedContent, studentResponses, handleStudentInput, callGemini, cleanJson,
-                    addToast, handleScoreUpdate, gradeLevel, t, isTeacherMode, callTTS
+                    addToast, handleScoreUpdate, gradeLevel, t, isTeacherMode, callTTS, selectedVoice
                 })}
                 {activeView === 'persona' && (
                     <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
@@ -25396,7 +25396,8 @@ ${_toolList}
                     onClose: () => setIsAccessibilityLabOpen(false),
                     addToast,
                     history,
-                    callTTS,
+                    callTTS: callTTSDirect,
+                    renderFormattedText,
                     t,
                     readingTheme, setReadingTheme,
                     baseFontSize, setBaseFontSize,

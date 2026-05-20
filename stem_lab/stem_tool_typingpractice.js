@@ -546,9 +546,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       h('text', { x: 76, y: 22, fill: '#94a3b8', fontSize: 6, fontWeight: 700, opacity: 0, className: 'tp-mascot-z tp-mascot-z-2' }, 'z'),
       // Legs
       h('g', { className: 'tp-pip-legs' },
-        h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
-        h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
-        h('path', { d: 'M 38 92 L 42 92 L 46 92 M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+        h('g', { className: 'tp-pip-leg-l', style: { transformOrigin: '42px 80px', transformBox: 'fill-box' } },
+          h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+          h('path', { d: 'M 38 92 L 42 92 L 46 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+        ),
+        h('g', { className: 'tp-pip-leg-r', style: { transformOrigin: '58px 80px', transformBox: 'fill-box' } },
+          h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+          h('path', { d: 'M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+        )
       ),
       // Tiny ribbon bowtie around the neck
       h('g', { className: 'tp-pip-bowtie', style: { transformOrigin: '50px 72px', transformBox: 'fill-box' } },
@@ -671,12 +676,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       ),
       // Mechanical Segmented Wings (Left & Right)
       h('g', { className: 'tp-cog-wings' },
-        // Left Wing FEATHERS (3 layered plates)
-        h('path', { d: 'M 24 55 Q 12 52 14 62 L 24 64 Z', fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 }),
-        h('path', { d: 'M 24 60 Q 14 62 18 72 L 25 70 Z', fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 }),
-        // Right Wing FEATHERS (3 layered plates)
-        h('path', { d: 'M 76 55 Q 88 52 86 62 L 76 64 Z', fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 }),
-        h('path', { d: 'M 76 60 Q 86 62 82 72 L 75 70 Z', fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 })
+        // Left Wing (with transformOrigin at shoulder hinge)
+        h('g', { className: 'tp-cog-wing-l', style: { transformOrigin: '24px 55px', transformBox: 'fill-box' } },
+          h('path', { d: 'M 24 55 Q 12 52 14 62 L 24 64 Z', fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 }),
+          h('path', { d: 'M 24 60 Q 14 62 18 72 L 25 70 Z', fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 })
+        ),
+        // Right Wing (with transformOrigin at shoulder hinge)
+        h('g', { className: 'tp-cog-wing-r', style: { transformOrigin: '76px 55px', transformBox: 'fill-box' } },
+          h('path', { d: 'M 76 55 Q 88 52 86 62 L 76 64 Z', fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 }),
+          h('path', { d: 'M 76 60 Q 86 62 82 72 L 75 70 Z', fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 })
+        )
       ),
       // Owl body
       h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 28, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 2, className: 'tp-cog-body' }),
@@ -899,11 +908,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         style: { transformOrigin: '78px 78px', transformBox: 'fill-box' }
       }),
       // Left ear (triangle with pink inner)
-      h('polygon', { points: '24,40 28,16 42,32', fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.5 }),
-      h('polygon', { points: '28,32 30,22 38,30', fill: 'url(#tp-grad-mochi-ear)' }),
+      h('g', { className: 'tp-mochi-ear-l', style: { transformOrigin: '24px 40px', transformBox: 'fill-box' } },
+        h('polygon', { points: '24,40 28,16 42,32', fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.5 }),
+        h('polygon', { points: '28,32 30,22 38,30', fill: 'url(#tp-grad-mochi-ear)' })
+      ),
       // Right ear
-      h('polygon', { points: '76,40 72,16 58,32', fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.5 }),
-      h('polygon', { points: '72,32 70,22 62,30', fill: 'url(#tp-grad-mochi-ear)' }),
+      h('g', { className: 'tp-mochi-ear-r', style: { transformOrigin: '76px 40px', transformBox: 'fill-box' } },
+        h('polygon', { points: '76,40 72,16 58,32', fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.5 }),
+        h('polygon', { points: '72,32 70,22 62,30', fill: 'url(#tp-grad-mochi-ear)' })
+      ),
       // Head — round
       h('circle', { cx: 50, cy: 56, r: 30, fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.8, className: 'tp-mochi-head' }),
       // Cheeks
@@ -3020,6 +3033,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-pip-wing-flap-r { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-8deg); } }',
       '@keyframes tp-pip-wing-sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); } }',
       '@keyframes tp-pip-wing-sway-r { 0%, 100% { transform: rotate(1deg); } 50% { transform: rotate(-2deg); } }',
+      // Pip leg animations
+      '@keyframes tp-pip-leg-walk-l { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2px) rotate(-15deg); } }',
+      '@keyframes tp-pip-leg-walk-r { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2px) rotate(15deg); } }',
+      '@keyframes tp-pip-legs-jump { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-5px) scaleY(0.7); } }',
+      // Pip sprout shiver during danger
+      '@keyframes tp-pip-sprout-shiver { 0%, 100% { transform: rotate(0deg) scale(0.95); } 25% { transform: rotate(-8deg) scale(0.9); } 75% { transform: rotate(8deg) scale(0.9); } }',
+      // Cogsworth mechanical wings flap
+      '@keyframes tp-cog-wing-flap-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-22deg); } }',
+      '@keyframes tp-cog-wing-flap-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(22deg); } }',
+      // Cogsworth needle violent shake
+      '@keyframes tp-cog-needle-violent { 0%, 100% { transform: rotate(15deg); } 50% { transform: rotate(65deg); } }',
+      // Cogsworth violent steam release
+      '@keyframes tp-cog-steam-violent { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 50% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-12px) scale(1.6); } }',
+      // Vex equalizer visor animations
+      '@keyframes tp-vex-eq-idle { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1.3); } }',
+      '@keyframes tp-vex-eq-combo { 0%, 100% { transform: scaleY(0.2); } 50% { transform: scaleY(1.8); } }',
+      '@keyframes tp-vex-eq-danger { 0%, 100% { transform: scaleY(0.3); } 20% { transform: scaleY(1.4); } 40% { transform: scaleY(0.1); } 60% { transform: scaleY(1.5); } 80% { transform: scaleY(0.2); } }',
+      // Mochi paw cheer
+      '@keyframes tp-mochi-paws-raise { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-5px) scale(1.1); } }',
+      // Mochi ear twitch
+      '@keyframes tp-mochi-ear-twitch-l { 0%, 90%, 100% { transform: rotate(0deg); } 93% { transform: rotate(-10deg); } 96% { transform: rotate(5deg); } }',
+      '@keyframes tp-mochi-ear-twitch-r { 0%, 92%, 100% { transform: rotate(0deg); } 95% { transform: rotate(10deg); } 98% { transform: rotate(-5deg); } }',
+      // Inko bio-wave pulse danger
+      '@keyframes tp-inko-bio-pulse-danger { 0%, 100% { stroke: #fb7185; opacity: 0.4; } 50% { stroke: #dc2626; opacity: 1; } }',
       // Pip cheek puff — tiny scale on cheek tufts during danger
       '@keyframes tp-pip-cheek-puff { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.6); } }',
       // Pip beak chirp — open vertically during attack-out
@@ -3075,8 +3112,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-vex .tp-vex-spark { animation: tp-vex-spark-drift 2.5s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
       // Bell swing for Mochi
       '@keyframes tp-mochi-bell-swing { 0%, 100% { transform: rotate(-15deg); } 50% { transform: rotate(15deg); } }',
-      '.tp-mascot-mochi .tp-mochi-bell { animation: tp-mochi-bell-swing 2s ease-in-out infinite; transform-origin: 32px 50px; transform-box: fill-box; }',
-      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-bell { animation: tp-mochi-bell-swing 0.6s ease-in-out infinite; transform-origin: 32px 50px; transform-box: fill-box; }',
+      '.tp-mascot-mochi .tp-mochi-bell { animation: tp-mochi-bell-swing 2s ease-in-out infinite; transform-origin: 50px 74.5px; transform-box: fill-box; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-bell { animation: tp-mochi-bell-swing 0.6s ease-in-out infinite; transform-origin: 50px 74.5px; transform-box: fill-box; }',
       // Paw pat for Mochi
       '@keyframes tp-mochi-paws-pat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-paws { animation: tp-mochi-paws-pat 0.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
@@ -3405,8 +3442,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-cogsworth .tp-cog-pendulum { animation: tp-cog-pendulum 2.4s ease-in-out infinite; }',
       // Mochi idle tail sway
       '.tp-mascot-mochi .tp-mochi-tail { animation: tp-mochi-tail-sway 2.8s ease-in-out infinite; }',
-      // Vex eye-bar idle pulse — slow LED-readout heartbeat
-      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { animation: tp-vex-eye-blink 4.5s ease-in-out infinite, tp-vex-eye-pulse 1.6s ease-in-out infinite; }',
+      // Mochi idle ears twitch occasionally
+      '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-ear-l { animation: tp-mochi-ear-twitch-l 15s ease-in-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-ear-r { animation: tp-mochi-ear-twitch-r 15s ease-in-out infinite; }',
+      // Vex equalizer visor idle animations
+      '.tp-mascot-vex .tp-vex-eq-1 { animation: tp-vex-eq-idle 1.2s ease-in-out infinite; }',
+      '.tp-mascot-vex .tp-vex-eq-2 { animation: tp-vex-eq-idle 0.9s ease-in-out infinite 0.2s; }',
+      '.tp-mascot-vex .tp-vex-eq-3 { animation: tp-vex-eq-idle 1.4s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex .tp-vex-eq-4 { animation: tp-vex-eq-idle 1.0s ease-in-out infinite 0.3s; }',
+      '.tp-mascot-vex .tp-vex-eq-5 { animation: tp-vex-eq-idle 1.3s ease-in-out infinite 0.15s; }',
       // Cogsworth chest-rivets glow softly in alternating phase
       '.tp-mascot-cogsworth .tp-cog-body ~ circle:nth-of-type(1) { animation: tp-cog-rivet-glow 3s ease-in-out infinite; }',
       // Inko center tentacles fidget every ~10s in idle
@@ -3421,7 +3465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-sparkles text:first-child { animation: tp-mochi-sparkle-drift 8s ease-out infinite; }',
       '.tp-mascot-pip.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-pip-twitch 9s ease-in-out infinite; }',
       '.tp-mascot-vex .tp-vex-scanline { animation: tp-vex-scan 2.4s linear infinite; }',
-      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { transform-origin: center; transform-box: fill-box; animation: tp-vex-eye-blink 4.5s ease-in-out infinite; }',
+      // Vex visor scan line movement
       // Inko idle — chromatophore wash + fin undulation + arm sway + mantle
       // breathing + satellite half-beat pulse. Each dot uses its own inline
       // animationDelay so the color wave moves left-to-right; the long
@@ -3447,16 +3491,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-combo { animation: tp-mascot-pop 0.6s ease-out 1, tp-mascot-bob 3.2s ease-in-out infinite 0.6s; }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-sparkles text { animation: tp-mochi-sparkle 0.8s ease-out forwards; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-steam circle { animation: tp-cog-steam 0.9s ease-out forwards; }',
-      // Pip combo — wings flap fast, body pulses
+      // Pip combo — wings flap fast, body pulses, legs run
       '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-l { animation: tp-pip-wing-flap 0.32s ease-in-out infinite; }',
       '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.32s ease-in-out infinite; }',
       '.tp-mascot-pip.tp-mascot-combo .tp-pip-body { animation: tp-pip-body-pulse 0.32s ease-in-out infinite; }',
-      // Cogsworth combo — pendulum swings faster, gears spin double-time
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-leg-l { animation: tp-pip-leg-walk-l 0.28s linear infinite; }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-leg-r { animation: tp-pip-leg-walk-r 0.28s linear infinite 0.14s; }',
+      // Cogsworth combo — pendulum swings faster, gears spin double-time, wings flap
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-pendulum { animation-duration: 0.8s; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-l { animation-duration: 2s; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-r { animation-duration: 2.4s; }',
-      // Vex combo — outer rim pulses neon
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-wing-l { animation: tp-cog-wing-flap-l 0.5s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-wing-r { animation: tp-cog-wing-flap-r 0.5s ease-in-out infinite; }',
+      // Vex combo — outer rim pulses neon, equalizer bounces rapidly
       '.tp-mascot-vex.tp-mascot-combo .tp-vex-rim { animation: tp-vex-rim-pulse 0.8s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-1 { animation: tp-vex-eq-combo 0.3s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-2 { animation: tp-vex-eq-combo 0.25s ease-in-out infinite 0.05s; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-3 { animation: tp-vex-eq-combo 0.28s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-4 { animation: tp-vex-eq-combo 0.22s ease-in-out infinite 0.08s; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-5 { animation: tp-vex-eq-combo 0.27s ease-in-out infinite 0.12s; }',
       // Mochi combo — heart particles + faster tail wag
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text { animation: tp-mochi-heart-pop 1.1s ease-out infinite; }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text:nth-child(2) { animation-delay: 0.35s; }',
@@ -3474,6 +3527,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle:nth-child(3) { animation-delay: 0.5s; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-pupil { animation: tp-inko-pupil-dart 0.8s ease-in-out infinite; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-arm-2, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-3, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-4, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-5, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-6, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-7, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-8, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-9 { animation: tp-inko-arm-flick 0.7s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-fins path { animation-duration: 0.8s; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-bio-wave { animation-duration: 1.0s; }',
       // Attack-out state — throw motion
       '.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1; }',
       '.tp-mascot-vex.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1, tp-vex-glitch 0.7s ease-out 1; }',
@@ -3492,24 +3547,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-win { animation: tp-mascot-celebrate 0.9s ease-in-out 1; }',
       '.tp-mascot-loss { animation: tp-mascot-droop 1s ease-out forwards; }',
       '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tear { opacity: 0.85; transition: opacity 600ms ease-in; }',
-      // Mochi loss — tail droops still
+      // Mochi loss — tail droops still, ears droop down
       '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tail { animation: none; transform: rotate(-15deg); }',
-      // Vex win — boot dots sequence on
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-ear-l { transform: rotate(-18deg); }',
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-ear-r { transform: rotate(18deg); }',
+      // Vex win — boot dots sequence on, equalizer dances
       '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-1 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards; }',
       '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-2 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.15s; }',
       '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-3 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.30s; }',
-      // Vex loss — boot dots reverse-sequence off (power-down)
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-1 { animation: tp-vex-eq-combo 0.3s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-2 { animation: tp-vex-eq-combo 0.25s ease-in-out infinite 0.05s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-3 { animation: tp-vex-eq-combo 0.28s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-4 { animation: tp-vex-eq-combo 0.22s ease-in-out infinite 0.08s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-5 { animation: tp-vex-eq-combo 0.27s ease-in-out infinite 0.12s; }',
+      // Vex loss — boot dots reverse-sequence off (power-down), flatline equalizer
       '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-1 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.30s; }',
       '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-2 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.15s; }',
       '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-3 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards; }',
-      // Pip win — wings flap proud once
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-eq-1, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-2, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-3, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-4, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-5 { animation: none !important; transform: scaleY(0.1); opacity: 0.15; }',
+      // Pip win — wings flap proud once, legs jump
       '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-l { animation: tp-pip-wing-flap 0.5s ease-out 2; }',
       '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.5s ease-out 2; }',
-      // Cogsworth win — pendulum swings dramatic
+      '.tp-mascot-pip.tp-mascot-win .tp-pip-legs { animation: tp-pip-legs-jump 0.5s ease-out infinite; }',
+      // Pip loss — legs tilt, sprout sags
+      '.tp-mascot-pip.tp-mascot-loss .tp-pip-leg-l { transform: rotate(-25deg) translateY(-1px); }',
+      '.tp-mascot-pip.tp-mascot-loss .tp-pip-leg-r { transform: rotate(25deg) translateY(-1px); }',
+      '.tp-mascot-pip.tp-mascot-loss .tp-pip-sprout { transform: rotate(140deg) translate(-2px, 4px) scaleY(0.7); }',
+      // Cogsworth win — pendulum swings dramatic, mechanical wings flap
       '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-pendulum { animation-duration: 0.6s; }',
-      // Inko loss — ink cloud + chromatophore desaturation
+      '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-wing-l { animation: tp-cog-wing-flap-l 0.3s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-wing-r { animation: tp-cog-wing-flap-r 0.3s ease-in-out infinite; }',
+      // Cogsworth loss — wings droop
+      '.tp-mascot-cogsworth.tp-mascot-loss .tp-cog-wing-l { transform: rotate(18deg); }',
+      '.tp-mascot-cogsworth.tp-mascot-loss .tp-cog-wing-r { transform: rotate(-18deg); }',
+      // Mochi win — collar bell swings, paws raise cheer
+      '.tp-mascot-mochi.tp-mascot-win .tp-mochi-bell { animation: tp-mochi-bell-swing 0.3s ease-in-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-win .tp-mochi-paws { animation: tp-mochi-paws-raise 0.4s ease-out 1 forwards; }',
+      // Inko loss — ink cloud + chromatophore desaturation + static fins & waves
       '.tp-mascot-inko.tp-mascot-loss .tp-inko-chrom { animation: none; fill: #475569; opacity: 0.4; }',
       '.tp-mascot-inko.tp-mascot-loss .tp-inko-ink circle { opacity: 0.55; transition: opacity 800ms ease-in; }',
+      '.tp-mascot-inko.tp-mascot-loss .tp-inko-fins path { animation: none; }',
+      '.tp-mascot-inko.tp-mascot-loss .tp-inko-bio-wave { animation: none; opacity: 0.2; }',
       // Inko win — rainbow chromatophore burst + rim glow + bubble joy
       '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom { animation: tp-inko-chrom-wow 0.9s linear infinite; }',
       '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.9s linear infinite 0.45s; }',
@@ -3527,26 +3605,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-l, .tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-r { transform: scaleY(0.1); animation: none; }',
       '.tp-mascot-mochi.tp-mascot-sleep .tp-mochi-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
       '.tp-mascot-vex.tp-mascot-sleep .tp-vex-scanline { animation: none; opacity: 0.2; }',
-      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-l, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-r { animation: none; opacity: 0.3; transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-1, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-2, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-3, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-4, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-5 { animation: none !important; transform: scaleY(0.15); opacity: 0.35; }',
       '.tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-l, .tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-r { animation-duration: 18s; }',
       '.tp-mascot-pip.tp-mascot-danger .tp-pip-eyes circle:not(.tp-pip-pupil-l):not(.tp-pip-pupil-r) { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }',
-      // Pip danger — cheek tufts puff out anxiously
+      // Pip danger — cheek tufts puff out anxiously, sprout shivers
       '.tp-mascot-pip.tp-mascot-danger .tp-pip-cheek { animation: tp-pip-cheek-puff 0.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-pip.tp-mascot-danger .tp-pip-sprout { animation: tp-pip-sprout-shiver 0.15s linear infinite; }',
+      // Cogsworth danger — needle shakes violently, steam drops violently
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-needle { animation: tp-cog-needle-violent 0.12s linear infinite; stroke: #ef4444 !important; }',
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-steam circle { animation: tp-cog-steam-violent 0.35s linear infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-steam circle:nth-child(2) { animation-delay: 0.12s; }',
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-steam circle:nth-child(3) { animation-delay: 0.24s; }',
+      // Vex danger — equalizer fluctuates erratically
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-1 { animation: tp-vex-eq-danger 0.5s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-2 { animation: tp-vex-eq-danger 0.4s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-3 { animation: tp-vex-eq-danger 0.6s ease-in-out infinite 0.05s; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-4 { animation: tp-vex-eq-danger 0.45s ease-in-out infinite 0.15s; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-5 { animation: tp-vex-eq-danger 0.55s ease-in-out infinite 0.08s; }',
+      // Mochi danger — mouth and ears droop
       '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-mouth { transform: translateY(2px) scaleY(-1); transform-origin: 50px 67px; }',
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-ear-l { transform: rotate(-12deg); }',
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-ear-r { transform: rotate(12deg); }',
       // Mochi danger — tail freezes mid-sway
       '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-tail { animation: none; transform: rotate(0deg); }',
-      // Inko danger — chromatophores flash red + pupils dart anxiously
+      // Inko danger — chromatophores flash red + pupils dart anxiously + bio-wave pulses danger
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite; }',
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom-sat { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite 0.25s; }',
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-pupil { animation: tp-inko-pupil-dart 0.4s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-bio-wave { animation: tp-inko-bio-pulse-danger 0.5s ease-in-out infinite !important; }',
       // Inko wow — rainbow burst (long-word clear celebration) + rim flash
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom { animation: tp-inko-chrom-wow 0.7s linear 1; }',
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.7s linear 1 0.35s; }',
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-rim { animation: tp-inko-rim-glow 0.7s ease-out 1; }',
-      // Inko sleep — chromatophores still, fins stop, eyes close (W-pupil scaled flat)
+      // Inko sleep — chromatophores still, fins stop, eyes close (W-pupil scaled flat) + static bio-wave
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-chrom { animation: none; opacity: 0.3; }',
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-fins path { animation: none; }',
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-inko.tp-mascot-sleep .tp-inko-bio-wave { animation: none; opacity: 0.15; }',
       // Reduced motion — stop all mascot animations
       '@media (prefers-reduced-motion: reduce) { .tp-mascot, .tp-mascot *, .tp-mascot.tp-mascot-combo, .tp-mascot.tp-mascot-attack-out, .tp-mascot.tp-mascot-incoming, .tp-mascot.tp-mascot-win, .tp-mascot.tp-mascot-loss { animation: none !important; } }',
       '.tp-pack-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }',
