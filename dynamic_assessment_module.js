@@ -4524,6 +4524,92 @@
         });
     }
 
+    // Regenerate just ONE scaffold step (L1 / L2 / L3 / L4) at the given
+    // item index + level. Keeps all other levels + the rest of the item
+    // intact. Useful when 3 of 4 scaffold rungs are good but one needs
+    // another pass — much cheaper + faster than re-rolling the whole item.
+    // levelNum is 1-4. Returns silently on host/setup errors so the UI
+    // surface (the small ↻ button) can stay quiet on failure.
+    function regenerateOneScaffoldStep(idx, levelNum) {
+      var callGeminiFn = props.callGemini;
+      if (typeof callGeminiFn !== "function") {
+        setGenError("AI regeneration requires the host to provide callGemini.");
+        return;
+      }
+      var item = generatedItems[idx];
+      if (!item) return;
+      var labelByLevel = { 1: "L1 declarative cue", 2: "L2 leading question", 3: "L3 modeling", 4: "L4 direct teach" };
+      var label = labelByLevel[levelNum];
+      if (!label) return;
+      // Build a focused prompt that gives Gemini full context (item, answer,
+      // current ladder) and asks for ONLY the one level to rewrite.
+      var ladder = (item.promptLadder || []).map(function (s) {
+        var ln = s && s.level ? ("L" + s.level) : "?";
+        return ln + ": " + (s && s.text ? s.text : "");
+      }).join("\n");
+      var levelGuidance = ({
+        1: "L1 (declarative cue): Orient the student to the task without revealing the answer. A meta-cue like 'What is the question asking you to find?' is good. An information cue that paraphrases the answer is BAD. Keep it short (1 sentence).",
+        2: "L2 (leading question): Push toward strategy, not toward the answer. Open-ended ('What operation does this call for?' / 'What is the relationship between these details?'). Do NOT use forced binary choices ('Is it X or Y?') because that leaks the answer.",
+        3: "L3 (modeling): Show a PARALLEL example with DIFFERENT surface features (different numbers AND different context), then redirect to the original item. Common failure: L3 just restates the canonical answer with extra steps. Avoid that. Use phrases like 'Imagine a different example…' or 'Suppose…'. Then end with 'Now apply that to [the original item].'",
+        4: "L4 (direct teach): Give the answer AND the reasoning (1-2 sentences). The answer MUST be present + the reasoning MUST connect to the canonical evidence in the prompt."
+      })[levelNum];
+      var sysPrompt = [
+        "You are a senior school psychologist refining ONE scaffold rung of a Dynamic Assessment item. Output ONLY the new text for the requested level, nothing else.",
+        buildLanguageDirective(daOutputLanguage),
+        "",
+        "ITEM PROMPT: " + (item.prompt || ""),
+        "CANONICAL ANSWER: " + (item.correctAnswer || ""),
+        "CONSTRUCT: " + (item.construct || "unspecified"),
+        "GRADE BAND: " + ((customForm && customForm.gradeBand) || "unspecified"),
+        "",
+        "CURRENT LADDER:",
+        ladder,
+        "",
+        "REWRITE THIS LEVEL: " + label,
+        "",
+        "REQUIREMENTS:",
+        levelGuidance,
+        "",
+        "Output the new text for " + label + " ONLY. No 'L4:' prefix, no quotes, no commentary, no markdown. Just the bare new text for that one rung."
+      ].join("\n");
+      setGenBusy(true);
+      setGenError(null);
+      Promise.resolve()
+        .then(function () { return callGeminiFn(sysPrompt); })
+        .then(function (out) {
+          var raw = typeof out === "string" ? out : (out && out.text) || "";
+          var newText = String(raw || "").trim()
+            .replace(/^```(?:json|text)?\s*/i, "")
+            .replace(/\s*```\s*$/i, "")
+            .trim();
+          // Strip a leading "Lx:" or "Lx —" if Gemini added one anyway.
+          newText = newText.replace(/^L\s*[1-4]\s*[:\-—]\s*/i, "").trim();
+          // Strip wrapping quotes if it returned a quoted string.
+          if (newText.length > 2 && /^['"`].*['"`]$/.test(newText)) {
+            newText = newText.slice(1, -1).trim();
+          }
+          if (!newText || newText.length < 4) {
+            setGenBusy(false);
+            setGenError("Regeneration of " + label + " returned empty/too-short text — original kept.");
+            return;
+          }
+          // Apply patch in-place. editGeneratedItem will re-run Phase Y validators.
+          editGeneratedItem(idx, function (i) {
+            var newLadder = (i.promptLadder || []).map(function (s) {
+              if (!s || s.level !== levelNum) return s;
+              return Object.assign({}, s, { text: newText });
+            });
+            return Object.assign({}, i, { promptLadder: newLadder });
+          });
+          setGenBusy(false);
+          announce(label + " regenerated for item " + (idx + 1) + ".");
+        })
+        .catch(function (err) {
+          setGenBusy(false);
+          setGenError("Step regeneration failed: " + (err && err.message ? err.message : "unknown error"));
+        });
+    }
+
     // Regenerate just ONE item at the given index, keeping others intact.
     // Useful when 4 of 5 items are good but one needs another pass.
     function regenerateOneItem(idx) {
@@ -5180,10 +5266,26 @@
 
     // Edit one field of a generated item in place. The clinician can
     // tweak prompt, answer, or any ladder step's text before running.
+    // After the patch lands, re-run the heuristic validators so the
+    // ⚠ warning chip + per-warning list reflect the CURRENT state of
+    // the item — otherwise an edit that resolves a warning leaves the
+    // stale warning visible until full regeneration.
     function editGeneratedItem(idx, patcher) {
       setGeneratedItems(generatedItems.map(function (it, i) {
         if (i !== idx) return it;
-        return patcher(it);
+        var patched = patcher(it);
+        if (patched && typeof patched === "object") {
+          try {
+            // Re-run Phase Y validators on the patched item. We DON'T
+            // touch validateGeneratedItem (the schema-level checks) since
+            // those errors were captured at generation time and shouldn't
+            // come back unless the structure changes. Phase Y validators
+            // are heuristic and should track edits.
+            var fresh = runPhaseYValidators(patched);
+            patched._generationWarnings = fresh;
+          } catch (_) { /* defensive — fall back to whatever was there */ }
+        }
+        return patched;
       }));
     }
 
@@ -8299,7 +8401,26 @@
             (item.promptLadder || []).map(function (step, li) {
               var labels = { cue: "L1 — Cue", leading: "L2 — Leading", model: "L3 — Model", directTeach: "L4 — Direct teach" };
               return h("div", { key: "da-step-" + idx + "-" + li, style: { padding: 8, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6 } },
-                h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#0f172a", marginBottom: 3 } }, labels[step.type] || ("L" + step.level)),
+                h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#0f172a", marginBottom: 3, display: "flex", alignItems: "center", gap: 6 } },
+                  h("span", { style: { flex: 1 } }, labels[step.type] || ("L" + step.level)),
+                  // Per-level regenerate. Hits Gemini with a focused prompt that
+                  // rewrites JUST this rung against the rest of the item — much
+                  // cheaper than ↻ Regenerate (whole item) and preserves any
+                  // edits already made to the other rungs.
+                  h("button", {
+                    "aria-label": "Regenerate " + (labels[step.type] || ("L" + step.level)),
+                    title: "Regenerate just this scaffold level (keeps L1-L" + step.level + " edits)",
+                    onClick: function () { regenerateOneScaffoldStep(idx, step.level); },
+                    disabled: genBusy,
+                    style: {
+                      padding: "2px 8px", borderRadius: 4,
+                      border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569",
+                      fontSize: 10, fontWeight: 700,
+                      cursor: genBusy ? "wait" : "pointer", fontFamily: "inherit",
+                      opacity: genBusy ? 0.5 : 1
+                    }
+                  }, "↻ Regenerate")
+                ),
                 h("textarea", {
                   rows: 2, value: step.text,
                   onChange: function (e) {
