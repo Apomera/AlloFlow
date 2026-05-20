@@ -5771,13 +5771,63 @@ const d = labToolData.artStudio || {};
 
                           };
 
-                          callGemini(storyboardPrompt, true).then(function(poses) {
+                          callGemini(storyboardPrompt, true).then(function(rawResponse) {
+
+                            // callGemini returns the raw text body — with jsonMode=true that's a JSON
+                            // string we have to parse ourselves. Be defensive: some model responses
+                            // wrap the JSON in ```json … ``` fences even when responseMimeType is set.
+                            console.log('[AI Motion] Gemini raw response (first 300 chars):', String(rawResponse).slice(0, 300));
+
+                            var poses;
+
+                            try {
+
+                              if (Array.isArray(rawResponse)) {
+
+                                poses = rawResponse; // already parsed (future-proof)
+
+                              } else if (typeof rawResponse === 'string') {
+
+                                var cleaned = rawResponse.trim()
+
+                                  .replace(/^```(?:json)?\s*/i, '')
+
+                                  .replace(/```\s*$/, '')
+
+                                  .trim();
+
+                                poses = JSON.parse(cleaned);
+
+                                // Some responses come back as { "frames": [...] } or { "poses": [...] }
+                                if (!Array.isArray(poses) && poses && typeof poses === 'object') {
+
+                                  poses = poses.frames || poses.poses || poses.steps || Object.values(poses).find(function(v){ return Array.isArray(v); });
+
+                                }
+
+                              } else {
+
+                                poses = rawResponse;
+
+                              }
+
+                            } catch (parseErr) {
+
+                              console.error('[AI Motion] Failed to parse Gemini storyboard JSON. Raw response:', rawResponse);
+
+                              throw new Error('Could not parse Gemini storyboard: ' + parseErr.message);
+
+                            }
 
                             if (!Array.isArray(poses) || poses.length === 0) {
 
-                              throw new Error('Gemini returned no poses.');
+                              console.error('[AI Motion] Gemini storyboard not an array. Parsed value:', poses);
+
+                              throw new Error('Gemini returned an empty or malformed storyboard (got ' + (Array.isArray(poses) ? 'empty array' : typeof poses) + ').');
 
                             }
+
+                            console.log('[AI Motion] Storyboard parsed:', poses.length + ' poses (requested ' + nF + ')');
 
                             // Normalize to exactly nF entries (pad with last, trim overflow)
                             poses = poses.slice(0, nF);
@@ -5826,6 +5876,8 @@ const d = labToolData.artStudio || {};
                             generateNext(0);
 
                           }).catch(function(err) {
+
+                            console.error('[AI Motion] Storyboard / pipeline failed:', err);
 
                             upd('stereoAnimRendering', false);
 
