@@ -22035,6 +22035,46 @@ ${_toolList}
         .theme-dark .text-emerald-500, .theme-dark .text-emerald-600 { color: #34d399 !important; } /* Emerald-400 */
         .theme-dark .text-violet-500, .theme-dark .text-violet-600 { color: #a78bfa !important; } /* Violet-400 */
         .theme-dark .text-sky-500, .theme-dark .text-sky-600 { color: #38bdf8 !important; } /* Sky-400 */
+
+        /* ── Theme-audit fill-ins (2026-05-19) ──
+         * Newly-covered Tailwind classes used in main-app chrome that lacked
+         * .theme-dark overrides. Pattern mirrors existing rules above:
+         *   - Light shade (-50): rgba(<-900>, 0.4) bg + <-700> border
+         *   - Light shade (-100): rgba(<-800/900>, 0.55) bg + <-600/700> border
+         *   - Dark text (-700/-800/-900): light shade (<-300>) for contrast
+         *   - Slate utility shades: progressively darker as the shade increases
+         */
+        .theme-dark .bg-amber-50    { background-color: rgba(120, 53, 15, 0.4)  !important; border-color: #a16207 !important; }
+        .theme-dark .bg-emerald-50  { background-color: rgba(6, 78, 59, 0.4)    !important; border-color: #047857 !important; }
+        .theme-dark .bg-violet-50   { background-color: rgba(76, 29, 149, 0.4)  !important; border-color: #6d28d9 !important; }
+        .theme-dark .bg-sky-50      { background-color: rgba(12, 74, 110, 0.4)  !important; border-color: #0369a1 !important; }
+        .theme-dark .bg-fuchsia-50  { background-color: rgba(112, 26, 117, 0.4) !important; border-color: #a21caf !important; }
+        .theme-dark .bg-pink-50     { background-color: rgba(131, 24, 67, 0.4)  !important; border-color: #9d174d !important; }
+        .theme-dark .bg-lime-50     { background-color: rgba(54, 83, 20, 0.4)   !important; border-color: #4d7c0f !important; }
+        .theme-dark .bg-lime-100    { background-color: rgba(77, 124, 15, 0.55) !important; border-color: #65a30d !important; }
+        /* Slate utility shades (used as chrome panel backgrounds) */
+        .theme-dark .bg-slate-500   { background-color: #334155 !important; }
+        .theme-dark .bg-slate-600   { background-color: #1e293b !important; }
+        .theme-dark .bg-slate-700   { background-color: #0f172a !important; }
+        .theme-dark .bg-slate-800,
+        .theme-dark .bg-slate-900   { background-color: #020617 !important; }
+        /* Dark text colors for previously-partial families (light-up to -300) */
+        .theme-dark .text-amber-700,   .theme-dark .text-amber-800,   .theme-dark .text-amber-900   { color: #fcd34d !important; } /* Amber-300 */
+        .theme-dark .text-emerald-700, .theme-dark .text-emerald-800, .theme-dark .text-emerald-900 { color: #6ee7b7 !important; } /* Emerald-300 */
+        .theme-dark .text-violet-700,  .theme-dark .text-violet-800,  .theme-dark .text-violet-900  { color: #c4b5fd !important; } /* Violet-300 */
+        .theme-dark .text-sky-700,     .theme-dark .text-sky-800,     .theme-dark .text-sky-900     { color: #7dd3fc !important; } /* Sky-300 */
+        .theme-dark .text-pink-700,    .theme-dark .text-pink-800,    .theme-dark .text-pink-900    { color: #f9a8d4 !important; } /* Pink-300 */
+        .theme-dark .text-fuchsia-500, .theme-dark .text-fuchsia-600, .theme-dark .text-fuchsia-700, .theme-dark .text-fuchsia-800 { color: #f0abfc !important; } /* Fuchsia-300 */
+        .theme-dark .text-lime-500,    .theme-dark .text-lime-600,    .theme-dark .text-lime-700,    .theme-dark .text-lime-800    { color: #bef264 !important; } /* Lime-300 */
+        .theme-dark .text-orange-900   { color: #fdba74 !important; } /* Orange-300, completing -700/-800/-900 */
+        .theme-dark .text-green-900    { color: #86efac !important; } /* Green-300, completing -700/-800/-900 */
+        .theme-dark .text-red-900      { color: #fca5a5 !important; } /* Red-300, completing */
+        .theme-dark .text-yellow-900   { color: #fde047 !important; } /* Yellow-300, completing */
+        .theme-dark .text-blue-900     { color: #93c5fd !important; } /* Blue-300, completing */
+        .theme-dark .text-purple-900   { color: #d8b4fe !important; } /* Purple-300, completing */
+        .theme-dark .text-teal-900     { color: #5eead4 !important; } /* Teal-300, completing */
+        .theme-dark .text-cyan-900     { color: #67e8f9 !important; } /* Cyan-300, completing */
+        .theme-dark .text-rose-900     { color: #fda4af !important; } /* Rose-300, completing */
         .theme-dark { color-scheme: dark; }
         .theme-dark input, .theme-dark textarea, .theme-dark select {
             background-color: #0f172a !important;
@@ -25253,11 +25293,9 @@ ${_toolList}
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowExportPreview, showExportPreview, toggleA11yInspect, updateExportPreview
         })}
-        {showStemLab && (() => {
-            const StemLabComponent = window.AlloModules && window.AlloModules.StemLab;
-            if (StemLabComponent) {
-                return React.createElement(StemLabComponent, {
-                  ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
+        <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
+            {(StemLab) => React.createElement(StemLab, {
+                ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
                   angleChallenge, angleFeedback, angleValue, areaModelDims, areaModelHighlight,
                   assessmentBlocks, base10Challenge, base10Feedback, base10Value,
                   cubeAnswer, cubeBuilderChallenge, cubeBuilderFeedback, cubeBuilderMode,
@@ -25295,55 +25333,31 @@ ${_toolList}
                   activeStation, setActiveStation,
                   theme,
                   activeSessionCode, studentNickname, isTeacherMode
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStemLab(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">⚙️</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'STEM Lab' }) || 'Loading STEM Lab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowStemLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowPoetTree={setShowPoetTree} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
-        {showReportWriter && (() => {
-            if (window.AlloModules && window.AlloModules.ReportWriter) {
-                return React.createElement(window.AlloModules.ReportWriter, {
-                    onClose: () => setShowReportWriter(false),
-                    callGemini: callGemini,
-                    addToast,
-                    t,
-                    studentNickname: studentNickname || '',
-                    behaviorLensData: window.__blSnapshot || null,
+        <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
+            {(ReportWriter) => React.createElement(ReportWriter, {
+                onClose: () => setShowReportWriter(false),
+                callGemini: callGemini,
+                addToast,
+                t,
+                studentNickname: studentNickname || '',
+                behaviorLensData: window.__blSnapshot || null,
+                dashboardData: dashboardData || [],
+                longitudinalData: {
+                    history: history || [],
+                    mathFluencyHistory: mathFluencyHistory || [],
                     dashboardData: dashboardData || [],
-                    longitudinalData: {
-                        history: history || [],
-                        mathFluencyHistory: mathFluencyHistory || [],
-                        dashboardData: dashboardData || [],
-                        exploreScore: exploreScore || 0
-                    }
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowReportWriter(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📝</div>
-                    <p className="text-lg font-bold text-slate-700">{t('report_writer.loading') || 'Loading Report Writer...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('report_writer.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowReportWriter(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isSymbolStudioOpen && (() => {
-            const SS = window.AlloModules && window.AlloModules.SymbolStudio;
-            if (SS) {
-                return React.createElement(SS, {
-                    isOpen: true,
+                    exploreScore: exploreScore || 0
+                }
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="SymbolStudio" isOpen={isSymbolStudioOpen} onClose={() => setIsSymbolStudioOpen(false)} icon="🎨" displayName="Symbol Studio" t={t}>
+            {(SymbolStudio) => React.createElement(SymbolStudio, {
+                isOpen: true,
                     onClose: () => setIsSymbolStudioOpen(false),
                     onCallImagen: callImagen,
                     onCallGeminiImageEdit: callGeminiImageEdit,
@@ -25382,24 +25396,11 @@ ${_toolList}
                             await updateDoc(sRef, { visualSupportsPayload: deleteField() });
                         },
                     } : null,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsSymbolStudioOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🎨</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Symbol Studio' }) || 'Loading Symbol Studio...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAlloHavenOpen && (() => {
-            const AH = window.AlloModules && window.AlloModules.AlloHaven;
-            if (AH) {
-                return React.createElement(AH, {
-                    isOpen: true,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="AlloHaven" isOpen={isAlloHavenOpen} onClose={() => setIsAlloHavenOpen(false)} icon="🏡" displayName="AlloHaven" t={t}>
+            {(AlloHaven) => React.createElement(AlloHaven, {
+                isOpen: true,
                     onClose: () => setIsAlloHavenOpen(false),
                     callImagen,
                     callGemini,
@@ -25456,19 +25457,8 @@ ${_toolList}
                             throw err;
                         }
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAlloHavenOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🌿</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'AlloHaven' }) || 'Loading AlloHaven...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
         <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🔬" displayName="Dynamic Assessment Studio" t={t}>
             {(DA) => (
                 <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
@@ -25531,16 +25521,9 @@ ${_toolList}
                 t,
             })}
         </CDNModuleGate>
-        {false && (() => {
-            return (
-            <div></div>
-            );
-        })()}
-        {showStoryForge && (() => {
-            const SF = window.AlloModules && window.AlloModules.StoryForge;
-            if (SF) {
-                return React.createElement(SF, {
-                    isOpen: true,
+        <CDNModuleGate moduleKey="StoryForge" isOpen={showStoryForge} onClose={() => setShowStoryForge(false)} icon="📖" displayName="StoryForge" t={t}>
+            {(StoryForge) => React.createElement(StoryForge, {
+                isOpen: true,
                     onClose: () => setShowStoryForge(false),
                     onCallImagen: callImagen,
                     onCallGeminiImageEdit: callGeminiImageEdit,
@@ -25581,24 +25564,11 @@ ${_toolList}
                     lessonResources: history.filter(h => ['glossary', 'simplified', 'sentence-frames', 'lesson-plan', 'timeline'].includes(h.type)),
                     codename: studentNickname || 'Creative Writer',
                     onAnalyzeFluency: analyzeFluencyWithGemini,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryForge(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📖</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'StoryForge' }) || 'Loading StoryForge...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showLitLab && (() => {
-            const SS = window.AlloModules && window.AlloModules.LitLab;
-            if (SS) {
-                return React.createElement(SS, {
-                    isOpen: true,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="LitLab" isOpen={showLitLab} onClose={() => setShowLitLab(false)} icon="📚" displayName="Lit Lab" t={t}>
+            {(LitLab) => React.createElement(LitLab, {
+                isOpen: true,
                     onClose: () => setShowLitLab(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
@@ -25621,24 +25591,11 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'litlab-submission', title: '🎭 ' + (submission.storyTitle || 'My Performance'), data: submission, timestamp: new Date(), meta: `${submission.characterCount || 0} characters · ${submission.lineCount || 0} lines` };
                         setHistory(prev => [...prev, item]);
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'LitLab' }) || 'Loading LitLab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showPoetTree && (() => {
-            const PT = window.AlloModules && window.AlloModules.PoetTree;
-            if (PT) {
-                return React.createElement(PT, {
-                    onClose: () => setShowPoetTree(false),
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
+            {(PoetTree) => React.createElement(PoetTree, {
+                onClose: () => setShowPoetTree(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     onCallImagen: callImagen,
@@ -25674,24 +25631,11 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'poettree-submission', title: '🌳 ' + (submission.poemTitle || 'My Poem'), data: submission, timestamp: new Date(), meta: `${submission.lineCount || 0} lines · ${submission.form || 'Free Verse'}` };
                         setHistory(prev => [...prev, item]);
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowPoetTree(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🌳</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'PoetTree' }) || 'Loading PoetTree...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowPoetTree(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showSelHub && (() => {
-            const SH = window.AlloModules && window.AlloModules.SelHub;
-            if (SH) {
-                return React.createElement(SH, {
-                    showSelHub, setShowSelHub,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="SelHub" isOpen={showSelHub} onClose={() => setShowSelHub(false)} icon="❤️" displayName="SEL Hub" t={t}>
+            {(SelHub) => React.createElement(SelHub, {
+                showSelHub, setShowSelHub,
                     selHubTab, setSelHubTab,
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
@@ -25706,24 +25650,11 @@ ${_toolList}
                     onSaveStation: (station) => {
                         setActiveSelStation(station);
                     }
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'SEL Hub' }) || 'Loading SEL Hub...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showBehaviorLens && (() => {
-            const BehaviorLensComponent = window.AlloModules && window.AlloModules.BehaviorLens;
-            if (BehaviorLensComponent) {
-                return React.createElement(BehaviorLensComponent, {
-                    onClose: () => setShowBehaviorLens(false),
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="BehaviorLens" isOpen={showBehaviorLens} onClose={() => setShowBehaviorLens(false)} icon="🔭" displayName="BehaviorLens" t={t}>
+            {(BehaviorLens) => React.createElement(BehaviorLens, {
+                onClose: () => setShowBehaviorLens(false),
                     callGemini,
                     callGeminiVision,
                     callImagen,
@@ -25737,19 +25668,8 @@ ${_toolList}
                     firestore: db,
                     firebaseAuth: auth,
                     isCanvasEnv: _isCanvasEnv
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowBehaviorLens(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">{t('behavior_lens.hub.title') || 'Loading BehaviorLens...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('behavior_lens.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowBehaviorLens(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
       {/* @section READ_THIS_PAGE_PANEL — Floating smart content reader + focus narration toggle */}
       {showReadThisPage && (() => {
           const items = getReadableContent();

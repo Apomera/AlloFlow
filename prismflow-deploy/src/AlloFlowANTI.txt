@@ -22035,6 +22035,46 @@ ${_toolList}
         .theme-dark .text-emerald-500, .theme-dark .text-emerald-600 { color: #34d399 !important; } /* Emerald-400 */
         .theme-dark .text-violet-500, .theme-dark .text-violet-600 { color: #a78bfa !important; } /* Violet-400 */
         .theme-dark .text-sky-500, .theme-dark .text-sky-600 { color: #38bdf8 !important; } /* Sky-400 */
+
+        /* ── Theme-audit fill-ins (2026-05-19) ──
+         * Newly-covered Tailwind classes used in main-app chrome that lacked
+         * .theme-dark overrides. Pattern mirrors existing rules above:
+         *   - Light shade (-50): rgba(<-900>, 0.4) bg + <-700> border
+         *   - Light shade (-100): rgba(<-800/900>, 0.55) bg + <-600/700> border
+         *   - Dark text (-700/-800/-900): light shade (<-300>) for contrast
+         *   - Slate utility shades: progressively darker as the shade increases
+         */
+        .theme-dark .bg-amber-50    { background-color: rgba(120, 53, 15, 0.4)  !important; border-color: #a16207 !important; }
+        .theme-dark .bg-emerald-50  { background-color: rgba(6, 78, 59, 0.4)    !important; border-color: #047857 !important; }
+        .theme-dark .bg-violet-50   { background-color: rgba(76, 29, 149, 0.4)  !important; border-color: #6d28d9 !important; }
+        .theme-dark .bg-sky-50      { background-color: rgba(12, 74, 110, 0.4)  !important; border-color: #0369a1 !important; }
+        .theme-dark .bg-fuchsia-50  { background-color: rgba(112, 26, 117, 0.4) !important; border-color: #a21caf !important; }
+        .theme-dark .bg-pink-50     { background-color: rgba(131, 24, 67, 0.4)  !important; border-color: #9d174d !important; }
+        .theme-dark .bg-lime-50     { background-color: rgba(54, 83, 20, 0.4)   !important; border-color: #4d7c0f !important; }
+        .theme-dark .bg-lime-100    { background-color: rgba(77, 124, 15, 0.55) !important; border-color: #65a30d !important; }
+        /* Slate utility shades (used as chrome panel backgrounds) */
+        .theme-dark .bg-slate-500   { background-color: #334155 !important; }
+        .theme-dark .bg-slate-600   { background-color: #1e293b !important; }
+        .theme-dark .bg-slate-700   { background-color: #0f172a !important; }
+        .theme-dark .bg-slate-800,
+        .theme-dark .bg-slate-900   { background-color: #020617 !important; }
+        /* Dark text colors for previously-partial families (light-up to -300) */
+        .theme-dark .text-amber-700,   .theme-dark .text-amber-800,   .theme-dark .text-amber-900   { color: #fcd34d !important; } /* Amber-300 */
+        .theme-dark .text-emerald-700, .theme-dark .text-emerald-800, .theme-dark .text-emerald-900 { color: #6ee7b7 !important; } /* Emerald-300 */
+        .theme-dark .text-violet-700,  .theme-dark .text-violet-800,  .theme-dark .text-violet-900  { color: #c4b5fd !important; } /* Violet-300 */
+        .theme-dark .text-sky-700,     .theme-dark .text-sky-800,     .theme-dark .text-sky-900     { color: #7dd3fc !important; } /* Sky-300 */
+        .theme-dark .text-pink-700,    .theme-dark .text-pink-800,    .theme-dark .text-pink-900    { color: #f9a8d4 !important; } /* Pink-300 */
+        .theme-dark .text-fuchsia-500, .theme-dark .text-fuchsia-600, .theme-dark .text-fuchsia-700, .theme-dark .text-fuchsia-800 { color: #f0abfc !important; } /* Fuchsia-300 */
+        .theme-dark .text-lime-500,    .theme-dark .text-lime-600,    .theme-dark .text-lime-700,    .theme-dark .text-lime-800    { color: #bef264 !important; } /* Lime-300 */
+        .theme-dark .text-orange-900   { color: #fdba74 !important; } /* Orange-300, completing -700/-800/-900 */
+        .theme-dark .text-green-900    { color: #86efac !important; } /* Green-300, completing -700/-800/-900 */
+        .theme-dark .text-red-900      { color: #fca5a5 !important; } /* Red-300, completing */
+        .theme-dark .text-yellow-900   { color: #fde047 !important; } /* Yellow-300, completing */
+        .theme-dark .text-blue-900     { color: #93c5fd !important; } /* Blue-300, completing */
+        .theme-dark .text-purple-900   { color: #d8b4fe !important; } /* Purple-300, completing */
+        .theme-dark .text-teal-900     { color: #5eead4 !important; } /* Teal-300, completing */
+        .theme-dark .text-cyan-900     { color: #67e8f9 !important; } /* Cyan-300, completing */
+        .theme-dark .text-rose-900     { color: #fda4af !important; } /* Rose-300, completing */
         .theme-dark { color-scheme: dark; }
         .theme-dark input, .theme-dark textarea, .theme-dark select {
             background-color: #0f172a !important;
