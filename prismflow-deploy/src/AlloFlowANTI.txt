@@ -25253,11 +25253,9 @@ ${_toolList}
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowExportPreview, showExportPreview, toggleA11yInspect, updateExportPreview
         })}
-        {showStemLab && (() => {
-            const StemLabComponent = window.AlloModules && window.AlloModules.StemLab;
-            if (StemLabComponent) {
-                return React.createElement(StemLabComponent, {
-                  ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
+        <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
+            {(StemLab) => React.createElement(StemLab, {
+                ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
                   angleChallenge, angleFeedback, angleValue, areaModelDims, areaModelHighlight,
                   assessmentBlocks, base10Challenge, base10Feedback, base10Value,
                   cubeAnswer, cubeBuilderChallenge, cubeBuilderFeedback, cubeBuilderMode,
@@ -25295,55 +25293,31 @@ ${_toolList}
                   activeStation, setActiveStation,
                   theme,
                   activeSessionCode, studentNickname, isTeacherMode
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStemLab(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">⚙️</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'STEM Lab' }) || 'Loading STEM Lab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowStemLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowPoetTree={setShowPoetTree} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
-        {showReportWriter && (() => {
-            if (window.AlloModules && window.AlloModules.ReportWriter) {
-                return React.createElement(window.AlloModules.ReportWriter, {
-                    onClose: () => setShowReportWriter(false),
-                    callGemini: callGemini,
-                    addToast,
-                    t,
-                    studentNickname: studentNickname || '',
-                    behaviorLensData: window.__blSnapshot || null,
+        <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
+            {(ReportWriter) => React.createElement(ReportWriter, {
+                onClose: () => setShowReportWriter(false),
+                callGemini: callGemini,
+                addToast,
+                t,
+                studentNickname: studentNickname || '',
+                behaviorLensData: window.__blSnapshot || null,
+                dashboardData: dashboardData || [],
+                longitudinalData: {
+                    history: history || [],
+                    mathFluencyHistory: mathFluencyHistory || [],
                     dashboardData: dashboardData || [],
-                    longitudinalData: {
-                        history: history || [],
-                        mathFluencyHistory: mathFluencyHistory || [],
-                        dashboardData: dashboardData || [],
-                        exploreScore: exploreScore || 0
-                    }
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowReportWriter(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📝</div>
-                    <p className="text-lg font-bold text-slate-700">{t('report_writer.loading') || 'Loading Report Writer...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('report_writer.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowReportWriter(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isSymbolStudioOpen && (() => {
-            const SS = window.AlloModules && window.AlloModules.SymbolStudio;
-            if (SS) {
-                return React.createElement(SS, {
-                    isOpen: true,
+                    exploreScore: exploreScore || 0
+                }
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="SymbolStudio" isOpen={isSymbolStudioOpen} onClose={() => setIsSymbolStudioOpen(false)} icon="🎨" displayName="Symbol Studio" t={t}>
+            {(SymbolStudio) => React.createElement(SymbolStudio, {
+                isOpen: true,
                     onClose: () => setIsSymbolStudioOpen(false),
                     onCallImagen: callImagen,
                     onCallGeminiImageEdit: callGeminiImageEdit,
@@ -25382,24 +25356,11 @@ ${_toolList}
                             await updateDoc(sRef, { visualSupportsPayload: deleteField() });
                         },
                     } : null,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsSymbolStudioOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🎨</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Symbol Studio' }) || 'Loading Symbol Studio...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAlloHavenOpen && (() => {
-            const AH = window.AlloModules && window.AlloModules.AlloHaven;
-            if (AH) {
-                return React.createElement(AH, {
-                    isOpen: true,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="AlloHaven" isOpen={isAlloHavenOpen} onClose={() => setIsAlloHavenOpen(false)} icon="🏡" displayName="AlloHaven" t={t}>
+            {(AlloHaven) => React.createElement(AlloHaven, {
+                isOpen: true,
                     onClose: () => setIsAlloHavenOpen(false),
                     callImagen,
                     callGemini,
@@ -25456,19 +25417,8 @@ ${_toolList}
                             throw err;
                         }
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAlloHavenOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🌿</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'AlloHaven' }) || 'Loading AlloHaven...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
         <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🔬" displayName="Dynamic Assessment Studio" t={t}>
             {(DA) => (
                 <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
@@ -25531,11 +25481,9 @@ ${_toolList}
                 t,
             })}
         </CDNModuleGate>
-        {showStoryForge && (() => {
-            const SF = window.AlloModules && window.AlloModules.StoryForge;
-            if (SF) {
-                return React.createElement(SF, {
-                    isOpen: true,
+        <CDNModuleGate moduleKey="StoryForge" isOpen={showStoryForge} onClose={() => setShowStoryForge(false)} icon="📖" displayName="StoryForge" t={t}>
+            {(StoryForge) => React.createElement(StoryForge, {
+                isOpen: true,
                     onClose: () => setShowStoryForge(false),
                     onCallImagen: callImagen,
                     onCallGeminiImageEdit: callGeminiImageEdit,
@@ -25576,24 +25524,11 @@ ${_toolList}
                     lessonResources: history.filter(h => ['glossary', 'simplified', 'sentence-frames', 'lesson-plan', 'timeline'].includes(h.type)),
                     codename: studentNickname || 'Creative Writer',
                     onAnalyzeFluency: analyzeFluencyWithGemini,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryForge(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📖</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'StoryForge' }) || 'Loading StoryForge...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showLitLab && (() => {
-            const SS = window.AlloModules && window.AlloModules.LitLab;
-            if (SS) {
-                return React.createElement(SS, {
-                    isOpen: true,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="LitLab" isOpen={showLitLab} onClose={() => setShowLitLab(false)} icon="📚" displayName="Lit Lab" t={t}>
+            {(LitLab) => React.createElement(LitLab, {
+                isOpen: true,
                     onClose: () => setShowLitLab(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
@@ -25616,24 +25551,11 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'litlab-submission', title: '🎭 ' + (submission.storyTitle || 'My Performance'), data: submission, timestamp: new Date(), meta: `${submission.characterCount || 0} characters · ${submission.lineCount || 0} lines` };
                         setHistory(prev => [...prev, item]);
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'LitLab' }) || 'Loading LitLab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showPoetTree && (() => {
-            const PT = window.AlloModules && window.AlloModules.PoetTree;
-            if (PT) {
-                return React.createElement(PT, {
-                    onClose: () => setShowPoetTree(false),
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
+            {(PoetTree) => React.createElement(PoetTree, {
+                onClose: () => setShowPoetTree(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     onCallImagen: callImagen,
@@ -25669,24 +25591,11 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'poettree-submission', title: '🌳 ' + (submission.poemTitle || 'My Poem'), data: submission, timestamp: new Date(), meta: `${submission.lineCount || 0} lines · ${submission.form || 'Free Verse'}` };
                         setHistory(prev => [...prev, item]);
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowPoetTree(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🌳</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'PoetTree' }) || 'Loading PoetTree...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowPoetTree(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showSelHub && (() => {
-            const SH = window.AlloModules && window.AlloModules.SelHub;
-            if (SH) {
-                return React.createElement(SH, {
-                    showSelHub, setShowSelHub,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="SelHub" isOpen={showSelHub} onClose={() => setShowSelHub(false)} icon="❤️" displayName="SEL Hub" t={t}>
+            {(SelHub) => React.createElement(SelHub, {
+                showSelHub, setShowSelHub,
                     selHubTab, setSelHubTab,
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
@@ -25701,24 +25610,11 @@ ${_toolList}
                     onSaveStation: (station) => {
                         setActiveSelStation(station);
                     }
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'SEL Hub' }) || 'Loading SEL Hub...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showBehaviorLens && (() => {
-            const BehaviorLensComponent = window.AlloModules && window.AlloModules.BehaviorLens;
-            if (BehaviorLensComponent) {
-                return React.createElement(BehaviorLensComponent, {
-                    onClose: () => setShowBehaviorLens(false),
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="BehaviorLens" isOpen={showBehaviorLens} onClose={() => setShowBehaviorLens(false)} icon="🔭" displayName="BehaviorLens" t={t}>
+            {(BehaviorLens) => React.createElement(BehaviorLens, {
+                onClose: () => setShowBehaviorLens(false),
                     callGemini,
                     callGeminiVision,
                     callImagen,
@@ -25732,19 +25628,8 @@ ${_toolList}
                     firestore: db,
                     firebaseAuth: auth,
                     isCanvasEnv: _isCanvasEnv
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowBehaviorLens(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">{t('behavior_lens.hub.title') || 'Loading BehaviorLens...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('behavior_lens.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowBehaviorLens(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
       {/* @section READ_THIS_PAGE_PANEL — Floating smart content reader + focus narration toggle */}
       {showReadThisPage && (() => {
           const items = getReadableContent();
