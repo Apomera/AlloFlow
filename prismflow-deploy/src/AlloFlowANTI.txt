@@ -5456,7 +5456,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // would push another snapshot, making undo pop the wrong thing.
     // Cleaner to refuse and prompt the user to use the Cancel button.
     if (voiceRecording) {
-      if (addToast) addToast('Cancel the active recording before undoing.', 'warning');
+      if (addToast) addToast(t('toasts.cancel_active_recording_before_undoing'), 'warning');
       return;
     }
     const stack = annotationUndoStackRef.current;
@@ -5477,7 +5477,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
     setStickers(prev);
     // 2B: visual confirmation so Ctrl/Cmd+Z isn't an invisible action.
-    if (addToast) addToast('↩ Undid last annotation', 'info');
+    if (addToast) addToast(t('toasts.undid_last_annotation'), 'info');
     try {
       const btn = document.querySelector('[data-allo-undo-btn]');
       if (btn) {
@@ -5612,7 +5612,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
     const passage = passages ? passages[form] || passages['A'] : null;
     if (!passage) {
-      addToast('No ORF passage available for grade ' + grade, 'warning');
+      addToast(t('toasts.orf_passage_available_grade') + grade, 'warning');
       return;
     }
     setProbeGradeLevel(grade);
@@ -5630,7 +5630,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setFluencyStatus('ready');
     setFluencyResult(null);
     setActiveView('simplified_read_mode');
-    addToast('ORF passage loaded — press Record to begin', 'info');
+    addToast(t('toasts.orf_passage_loaded_press_record'), 'info');
   };
   const [probeTargetStudent, setProbeTargetStudent] = useState(null);
   const focusStartRef = useRef(Date.now());
@@ -6215,11 +6215,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   React.useEffect(() => {
     const handler = () => {
       if (!isTeacherMode) {
-        addToast && addToast('Live Polling is teacher-mode only.', 'info');
+        addToast && addToast(t('toasts.live_polling_teacher_mode_only'), 'info');
         return;
       }
       if (!activeSessionCode) {
-        addToast && addToast('Start a live session first to use Live Polling.', 'info');
+        addToast && addToast(t('toasts.start_live_session_first_use'), 'info');
         return;
       }
       setShowLivePollingPanel(true);
@@ -6958,10 +6958,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           setInterventionLogs(data.interventionLogs);
           try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
         }
-        if (addToast) addToast('Research data imported successfully', 'success');
+        if (addToast) addToast(t('toasts.research_data_imported_successfully'), 'success');
       } catch (err) {
         warnLog('Failed to import research JSON:', err);
-        if (addToast) addToast('Invalid research data file', 'error');
+        if (addToast) addToast(t('toasts.invalid_research_data_file'), 'error');
       }
     };
     reader.readAsText(file);
@@ -6999,7 +6999,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (nextMode !== 'none') {
           addToast(`Overlay: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)}`, 'info');
       } else {
-          addToast('Overlay disabled', 'info');
+          addToast(t('toasts.overlay_disabled'), 'info');
       }
   };
   const copyToClipboard = (text) => {
@@ -7219,7 +7219,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       label: 'Explore Challenge: ' + (stemLabTool || 'mixed') + ' (' + exploreScore.correct + '/' + exploreScore.total + ')'
     };
     setHistory(prev => [...prev, entry]);
-    if (typeof addToast === 'function') addToast('Explore score saved: ' + exploreScore.correct + '/' + exploreScore.total + ' (' + pct + '%)', 'success');
+    if (typeof addToast === 'function') addToast(t('toasts.explore_score_saved') + exploreScore.correct + '/' + exploreScore.total + ' (' + pct + '%)', 'success');
     setExploreScore({ correct: 0, total: 0 });
   }, [exploreScore, stemLabTool]);
   const handleToggleMathSelfGrade = React.useCallback(() => {
@@ -7253,7 +7253,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       };
       setHistory(prev => [...prev, result]);
-      addToast('Assessment submitted: ' + correct + '/' + total + ' (' + Math.round((correct/total)*100) + '%)', 'success');
+      addToast(t('toasts.assessment_submitted') + correct + '/' + total + ' (' + Math.round((correct/total)*100) + '%)', 'success');
       setMathSelfGradeMode(false);
       setMathStudentAnswers({});
   };
@@ -8158,7 +8158,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const exportFluencyCSV = () => {
     const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
     if (fluencyRecords.length === 0) {
-      addToast('No fluency assessments to export', 'warning');
+      addToast(t('toasts.fluency_assessments_export'), 'warning');
       return;
     }
     const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
@@ -9178,7 +9178,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         setPdfFixLoading(false);
         setPdfFixStep('');
         if (typeof addToast === 'function') {
-          addToast('PDF fix appears stuck — reset. Check network and try again.', 'warning');
+          addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
         }
       }
     }, 10 * 60 * 1000);
@@ -9439,11 +9439,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (typeof _ensureDiffLib === 'function') _ensureDiffLib();
     if (pdfFixMode === 'review') {
       setDiffViewOpen(true);
-      if (typeof addToast === 'function') addToast('Review mode: Diff view opened — inspect source ↔ remediated fidelity.', 'info');
+      if (typeof addToast === 'function') addToast(t('toasts.review_mode_diff_view_opened'), 'info');
     } else if (pdfFixMode === 'expert') {
       setShowExportPreview(true);
       setTimeout(() => { try { updatePdfPreview(); } catch (e) {} }, 200);
-      if (typeof addToast === 'function') addToast('Expert mode: Document Builder opened for markup-level editing.', 'info');
+      if (typeof addToast === 'function') addToast(t('toasts.expert_mode_document_builder_opened'), 'info');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfFixResult, pdfFixLoading]);
@@ -9496,10 +9496,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       input.style.display = 'none';
       let settled = false;
       const finish = (val) => { if (settled) return; settled = true; try { document.body.removeChild(input); } catch {} resolve(val); };
-      input.addEventListener('cancel', () => { addToast('Re-attach cancelled.', 'info'); finish(null); });
+      input.addEventListener('cancel', () => { addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); });
       input.onchange = async (e) => {
         const file = e.target.files?.[0];
-        if (!file) { addToast('Re-attach cancelled.', 'info'); finish(null); return; }
+        if (!file) { addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); return; }
         if (pendingPdfFile && pendingPdfFile.name && pendingPdfFile.size) {
           const nameMismatch = file.name !== pendingPdfFile.name;
           const sizeMismatch = file.size !== pendingPdfFile.size;
@@ -9518,16 +9518,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             const base64 = typeof result === 'string' && result.includes(',')
               ? result.split(',')[1]
               : String(result || '');
-            if (!base64) { addToast('Re-attach failed: empty file.', 'error'); finish(null); return; }
+            if (!base64) { addToast(t('toasts.re_attach_failed_empty_file'), 'error'); finish(null); return; }
             setPendingPdfBase64(base64);
             setPendingPdfFile({ name: file.name, size: file.size });
-            addToast('📎 PDF re-attached — starting remediation.', 'info');
+            addToast(t('toasts.pdf_re_attached_starting_remediation'), 'info');
             finish(base64);
           };
-          reader.onerror = () => { addToast('Failed to read PDF: ' + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
+          reader.onerror = () => { addToast(t('toasts.failed_read_pdf') + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
           reader.readAsDataURL(file);
         } catch (err) {
-          addToast('Failed to read PDF: ' + (err?.message || 'unknown error'), 'error');
+          addToast(t('toasts.failed_read_pdf') + (err?.message || 'unknown error'), 'error');
           finish(null);
         }
       };
@@ -12932,7 +12932,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       });
       teacherGridHtml += '</div>';
       const win = window.open('', '', 'height=700,width=900');
-      if (!win) { addToast('Pop-up blocked — please allow pop-ups for this site to print', 'error'); return; }
+      if (!win) { addToast(t('toasts.pop_up_blocked_allow_pop'), 'error'); return; }
       const pageTitle = t('glossary.print_puzzle_title');
       const answerKeyTitle = t('glossary.print_answer_key');
       const teacherCopySubtitle = t('glossary.print_teacher_copy');
@@ -13613,7 +13613,7 @@ Return ONLY valid JSON in this format:
     const e = _getContentEngine();
     if (e && typeof e[name] === 'function') {
       try { return e[name].apply(this, arguments); }
-      catch(err) { console.error('[ContentEngine] ' + name + ' threw:', err); addToast('Content engine error: ' + err.message, 'error'); }
+      catch(err) { console.error('[ContentEngine] ' + name + ' threw:', err); addToast(t('toasts.content_engine_error') + err.message, 'error'); }
     } else {
       console.error('[ContentEngine] ' + name + ': engine=' + !!e + ', fn=' + (e ? typeof e[name] : 'N/A'));
       return (typeof fallback === 'function' ? fallback.apply(this, arguments) : undefined);
@@ -13623,7 +13623,7 @@ Return ONLY valid JSON in this format:
     console.error('[ContentEngine] handleGenerateSource FALLBACK hit. State bag keys:', Object.keys(window.__contentEngineState || {}));
     console.error('[ContentEngine] AlloModules.createContentEngine exists:', !!(window.AlloModules && window.AlloModules.createContentEngine));
     console.error('[ContentEngine] _contentEngineRef.current:', _contentEngineRef.current);
-    addToast('Content engine loading — please try again in a moment', 'info');
+    addToast(t('toasts.content_engine_loading_try_again'), 'info');
   });
   const addLanguage = _ceFn('addLanguage');
   const addInterest = _ceFn('addInterest');
@@ -14192,7 +14192,7 @@ Return ONLY valid JSON in this format:
   const _docPipeline = _createDocPipeline
     ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); }, getDefaultTitle: function(type) { return typeof getDefaultTitle === 'function' ? getDefaultTitle(type) : ''; } })
     : null;
-  const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
+  const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
   const runAxeAudit = _docPipeline ? _docPipeline.runAxeAudit : async () => ({});
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
@@ -14203,7 +14203,7 @@ Return ONLY valid JSON in this format:
   const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
-  const downloadBatchResults = _docPipeline ? _docPipeline.downloadBatchResults : async () => { addToast('Doc pipeline loading...', 'info'); };
+  const downloadBatchResults = _docPipeline ? _docPipeline.downloadBatchResults : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
 
   const _createTimelineRevision = window.AlloModules && window.AlloModules.createTimelineRevision;
   const _timelineRevision = _createTimelineRevision
@@ -14272,7 +14272,7 @@ Return ONLY valid JSON in this format:
         if (!reVerify) {
           warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
           if (typeof addToast === 'function') {
-            addToast('⚠ Accessibility verification unavailable — auto-continue paused. Try "Fix Remaining" manually.', 'warning');
+            addToast(t('toasts.accessibility_verification_unavailable_auto_contin'), 'warning');
           }
           break;
         }
@@ -14300,11 +14300,11 @@ Return ONLY valid JSON in this format:
         }));
       }
       if (pdfAutoContinueAbortRef.current) {
-        addToast('⏸ Auto-continue stopped', 'info');
+        addToast(t('toasts.auto_continue_stopped'), 'info');
       } else if (cur && cur.axeAudit && cur.axeAudit.totalViolations === 0) {
-        addToast('✅ All violations resolved (score ' + (cur.afterScore || 0) + ')', 'success');
+        addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
-        addToast('🎯 Target score reached: ' + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+        addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
       }
     } finally {
       setPdfFixLoading(false);
@@ -14438,7 +14438,7 @@ Return ONLY valid JSON in this format:
           });
           const isFullDoc = covered.size >= pdfMultiSession.totalPages;
           if (!isFullDoc) {
-            if (addToast) addToast('Auto-fidelity skipped — more page ranges pending. Click Run fidelity check once all ranges are remediated.', 'info');
+            if (addToast) addToast(t('toasts.auto_fidelity_skipped_more_page'), 'info');
             return;
           }
         }
@@ -14460,7 +14460,7 @@ Return ONLY valid JSON in this format:
         const _pipelineFlagged = !!(pdfFixResult && pdfFixResult.integrityWarning);
         const _charCoverageOk = !pdfFixResult || (pdfFixResult.integrityCoverage == null) || pdfFixResult.integrityCoverage >= 98;
         if (missing1.length === 0 && !_pipelineFlagged && _charCoverageOk) {
-          if (addToast) addToast('✓ Fidelity 100% — no words missing.', 'success');
+          if (addToast) addToast(t('toasts.fidelity_100_words_missing'), 'success');
           try {
             if (typeof setPdfFixResult === 'function' && pdfFixResult) {
               setPdfFixResult(prev => prev ? Object.assign({}, prev, {
@@ -15090,7 +15090,7 @@ Return ONLY valid JSON in this format:
       warnLog('[Export preview] getExportPreviewHTML threw:', err);
       if (_exportPreviewErrorRef.current !== msg) {
         _exportPreviewErrorRef.current = msg;
-        addToast && addToast('Preview failed to render — the document pipeline reported an error. Check console for details.', 'error');
+        addToast && addToast(t('toasts.preview_failed_render_document_pipeline'), 'error');
       }
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
@@ -15173,7 +15173,7 @@ Return ONLY valid JSON in this format:
         setShowExportPreview, handleExportSlides
       });
     }
-    addToast && addToast('Export tools still loading — please try again in a moment.', 'error');
+    addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
   };
   const handleExport = async (mode = 'html') => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -15187,7 +15187,7 @@ Return ONLY valid JSON in this format:
         safeDownloadBlob
       });
     }
-    addToast && addToast('Export tools still loading — please try again in a moment.', 'error');
+    addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
   };
   const downloadHtmlBlob = (content) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -15618,7 +15618,7 @@ Return ONLY valid JSON in this format:
       const fakeEvent = { target: { files: [file] } };
       handleLoadProject(fakeEvent);
     } catch (err) {
-      addToast && addToast('Failed to load lesson: ' + (err && err.message), 'error');
+      addToast && addToast(t('toasts.failed_load_lesson') + (err && err.message), 'error');
     }
   };
   const handleRestoreView = (item) => {
@@ -17281,7 +17281,7 @@ Return ONLY valid JSON in this format:
     const updatedContent = { ...generatedContent, data: rest };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-    addToast('Frayer image removed', 'info');
+    addToast(t('toasts.frayer_image_removed'), 'info');
   };
   const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
@@ -17757,7 +17757,7 @@ Return ONLY valid JSON in this format:
   const restoreIntentSnapshot = () => {
       const snap = lastIntentSnapshotRef.current;
       if (!snap || !snap.state) {
-          addToast("Nothing to undo yet.", "info");
+          addToast(t('toasts.nothing_undo_yet'), "info");
           return false;
       }
       const s = snap.state;
@@ -17785,7 +17785,7 @@ Return ONLY valid JSON in this format:
           return true;
       } catch (e) {
           warnLog("restoreIntentSnapshot failed", e);
-          addToast("Undo failed — some settings may not have reverted.", "warning");
+          addToast(t('toasts.undo_failed_some_settings_may'), "warning");
           return false;
       }
   };
@@ -20472,13 +20472,13 @@ ${_toolList}
           if (!payload || !payload.audioBase64) {
               // Recording failed — remove the placeholder.
               setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
-              addToast && addToast('Voice recording failed — no audio captured.', 'error');
+              addToast && addToast(t('toasts.voice_recording_failed_audio_captured'), 'error');
               return;
           }
           const next = _m.attachAudioToVoiceNote(stickers, placeholderId, payload);
           if (next && next.error === 'too-large') {
               setStickers(next.list);
-              addToast && addToast('Voice note too long to save (over 500KB). Try a shorter clip.', 'warning');
+              addToast && addToast(t('toasts.voice_note_too_long_save'), 'warning');
               return;
           }
           setStickers(next);
@@ -20507,7 +20507,7 @@ ${_toolList}
         const payload = JSON.parse(ev.target.result);
         const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
         if (!_m || !_m.importAnnotations) {
-          addToast && addToast('Annotation suite not ready — try again in a moment.', 'error');
+          addToast && addToast(t('toasts.annotation_suite_not_ready_try'), 'error');
           return;
         }
         // Teacher importing student work → force author='student' on
@@ -20516,14 +20516,14 @@ ${_toolList}
         const opts = isTeacherMode ? { forceAuthor: 'student' } : {};
         const result = _m.importAnnotations(stickers, payload, opts);
         if (result.error) {
-          addToast && addToast('Could not import: ' + result.error + '. File must be an annotations JSON.', 'error');
+          addToast && addToast(t('toasts.could_not_import') + result.error + '. File must be an annotations JSON.', 'error');
           return;
         }
         setStickers(result.list);
-        addToast && addToast('Imported ' + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
+        addToast && addToast(t('toasts.imported') + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
       } catch (err) {
         warnLog && warnLog('[Annotations] import failed:', err);
-        addToast && addToast('Could not parse the file. Must be a valid annotations JSON.', 'error');
+        addToast && addToast(t('toasts.could_not_parse_file_must'), 'error');
       }
     };
     reader.readAsText(file);
@@ -22224,7 +22224,7 @@ ${_toolList}
                           reader.onload = (ev) => {
                             try {
                               const project = JSON.parse(ev.target.result);
-                              if (!project.accessibleHtml || !project.version) { addToast('Not a valid AlloFlow project', 'error'); return; }
+                              if (!project.accessibleHtml || !project.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               setPdfAuditResult({
                                 score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
                                 passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
@@ -22239,8 +22239,8 @@ ${_toolList}
                                 htmlChars: project.accessibleHtml.length, extractedChars: 0, issuesFixed: 0, remainingIssues: 0, autoFixPasses: 0,
                               });
                               setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
-                              addToast('📂 Loaded: ' + (project.fileName || 'project'), 'success');
-                            } catch(err) { addToast('Failed: ' + err.message, 'error'); }
+                              addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
+                            } catch(err) { addToast(t('toasts.failed') + err.message, 'error'); }
                           };
                           reader.readAsText(file); e.target.value = '';
                         }} />
@@ -24297,7 +24297,7 @@ ${_toolList}
                   a.click();
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
-                  addToast('Progress report exported!', 'success');
+                  addToast(t('toasts.progress_report_exported'), 'success');
               }}
           />
       )}
