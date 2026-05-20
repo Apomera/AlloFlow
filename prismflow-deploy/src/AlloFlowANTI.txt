@@ -804,6 +804,100 @@ window._upgradeLabelPositions = function () {
 };
 if (window.AlloModules && window.AlloModules.LabelPositions) window._upgradeLabelPositions();
 
+// CDNModuleGate — unified loading-fallback for lazy-loaded CDN modules.
+//
+// Replaces ad-hoc per-component fallbacks that suffered from a real bug:
+// when a module took longer than expected to load, React had no signal to
+// re-render the parent, so the fallback would stay visible until the user
+// triggered a render some other way (close+reopen, mouse-move, etc.). This
+// gate polls `window.AlloModules[moduleKey]` every 200ms while open and
+// not-yet-loaded, then bumps internal state to force a re-evaluation as
+// soon as the module appears.
+//
+// Props:
+//   moduleKey   — string key on window.AlloModules to wait for
+//   isOpen      — when false, renders nothing
+//   onClose     — invoked on backdrop click + Close button (modal variant)
+//   icon        — emoji shown inside the spinner ring
+//   displayName — human-readable name used in the "Loading X..." string
+//   hintVariant — 'long' (with connection hint) or 'short'
+//   size        — 'modal' (centered fixed overlay) or 'inline' (in-flow card)
+//   t           — optional translation function; falls back to English
+//   children    — typically a function (Mod) => ReactElement that builds the
+//                 real UI from the loaded module. Plain children also work.
+const CDNModuleGate = (function () {
+  function tr(t, key, params, fallback) {
+    if (typeof t === 'function') {
+      try { var v = t(key, params); if (v) return v; } catch (_) {}
+    }
+    return fallback;
+  }
+  return function CDNModuleGate(props) {
+    var moduleKey = props.moduleKey;
+    var isOpen = props.isOpen !== false;
+    var onClose = props.onClose;
+    var icon = props.icon || '📦';
+    var displayName = props.displayName || moduleKey || 'module';
+    var hintVariant = props.hintVariant || 'long';
+    var size = props.size || 'modal';
+    var t = props.t;
+    var children = props.children;
+
+    var _tickState = React.useState(0);
+    var setTick = _tickState[1];
+    var Mod = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules[moduleKey] : null;
+
+    React.useEffect(function () {
+      if (!isOpen) return undefined;
+      if (window.AlloModules && window.AlloModules[moduleKey]) return undefined;
+      var id = setInterval(function () {
+        if (window.AlloModules && window.AlloModules[moduleKey]) {
+          setTick(function (v) { return v + 1; });
+          clearInterval(id);
+        }
+      }, 200);
+      return function () { clearInterval(id); };
+    }, [isOpen, moduleKey, !!Mod]);
+
+    if (!isOpen) return null;
+    if (Mod) return typeof children === 'function' ? children(Mod) : (children || null);
+
+    var loadingLabel = tr(t, 'common.loading_module', { name: displayName }, 'Loading ' + displayName + '...');
+    var hintLabel = (hintVariant === 'short')
+      ? tr(t, 'common.cdn_loading_hint_short', null, 'Module loading from CDN.')
+      : tr(t, 'common.cdn_loading_hint_long', null, 'Module loading from CDN. If this persists, check your connection.');
+
+    if (size === 'inline') {
+      return (
+        <div role="status" aria-live="polite" className="bg-slate-50 rounded-xl p-6 text-center border border-slate-400">
+          <div className="relative w-12 h-12 mx-auto mb-3">
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+            <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-xl">{icon}</div>
+          </div>
+          <p className="text-sm font-bold text-slate-700">{loadingLabel}</p>
+          <p className="text-xs text-slate-600 mt-1">{hintLabel}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={onClose}>
+        <div role="status" aria-live="polite" aria-label={loadingLabel} className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={function (e) { e.stopPropagation(); }}>
+          <div className="relative w-14 h-14 mx-auto mb-4">
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+            <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-2xl">{icon}</div>
+          </div>
+          <p className="text-lg font-bold text-slate-700">{loadingLabel}</p>
+          <p className="text-sm text-slate-600 mt-2">{hintLabel}</p>
+          {onClose && <button onClick={onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
+        </div>
+      </div>
+    );
+  };
+})();
+
 const VisualPanelGrid = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.VisualPanelGrid;
     if (Ext) return <Ext {...props} />;
@@ -3808,21 +3902,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloOpenDynamicAssessment = () => setIsDynamicAssessmentOpen(true);
     return () => { try { delete window.__alloOpenDynamicAssessment; } catch(_) {} };
   }, [setIsDynamicAssessmentOpen]);
-  // Auto-resolve the loading fallback once the DA module finishes fetching.
-  // Without this, the fallback stays visible until the user re-triggers a
-  // render (close+reopen), because nothing else watches window.AlloModules.
-  const [_daModuleTick, _setDaModuleTick] = useState(0);
-  React.useEffect(() => {
-    if (!isDynamicAssessmentOpen) return;
-    if (window.AlloModules && window.AlloModules.DynamicAssessment) return;
-    const id = setInterval(() => {
-      if (window.AlloModules && window.AlloModules.DynamicAssessment) {
-        _setDaModuleTick(v => v + 1);
-        clearInterval(id);
-      }
-    }, 200);
-    return () => clearInterval(id);
-  }, [isDynamicAssessmentOpen]);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -25390,10 +25469,8 @@ ${_toolList}
             </div>
             );
         })()}
-        {isDynamicAssessmentOpen && (() => {
-            const DA = window.AlloModules && window.AlloModules.DynamicAssessment;
-            if (DA) {
-                return (
+        <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🔬" displayName="Dynamic Assessment Studio" t={t}>
+            {(DA) => (
                 <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
                     <div className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         {React.createElement(DA, {
@@ -25403,113 +25480,60 @@ ${_toolList}
                             addToast,
                             t,
                             studentNickname: studentNickname || '',
-                            // Recent Math Fluency CBM probes from main history; DA Phase V intake
-                            // can optionally pull these into the existing-assessment-data field.
-                            // Most-recent-first, capped at 5.
                             mathFluencyProbes: Array.isArray(history)
                                 ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
                                 : [],
-                            // Output language for all AI-generated DA content (items, scaffolds,
-                            // IEP goals, accommodations, family letter, teacher handoff, monitoring
-                            // plan). Sourced from the text-adaptation left-panel's leveledTextLanguage.
-                            // The clinician can override per-session inside DA itself.
                             outputLanguage: leveledTextLanguage || 'English'
                         })}
                     </div>
                 </div>
-                );
-            }
+            )}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={() => setIsCommunityCatalogOpen(false)} icon="📚" displayName="Community Catalog" t={t}>
+            {(CC) => React.createElement(CC, {
+                isOpen: true,
+                onClose: () => setIsCommunityCatalogOpen(false),
+                addToast,
+                loadProjectFromJson,
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="AccessibilityLab" isOpen={isAccessibilityLabOpen} onClose={() => setIsAccessibilityLabOpen(false)} icon="🔍" displayName="Accessibility Lab" t={t}>
+            {(AL) => React.createElement(AL, {
+                isOpen: true,
+                onClose: () => setIsAccessibilityLabOpen(false),
+                addToast,
+                history,
+                callTTS: callTTSDirect,
+                renderFormattedText,
+                t,
+                readingTheme, setReadingTheme,
+                baseFontSize, setBaseFontSize,
+                lineHeight, setLineHeight,
+                letterSpacing, setLetterSpacing,
+                selectedFont, setSelectedFont,
+                colorOverlay, setColorOverlay,
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="AuditRemediator" isOpen={isAuditRemediatorOpen} onClose={() => setIsAuditRemediatorOpen(false)} icon="🛠️" displayName="Audit Remediator" t={t}>
+            {(AR) => React.createElement(AR, {
+                isOpen: true,
+                onClose: () => setIsAuditRemediatorOpen(false),
+                generatedContent,
+                history,
+                handleGenerate,
+                callGemini,
+                cleanJson,
+                addToast,
+                setHistory,
+                t,
+            })}
+        </CDNModuleGate>
+        {false && (() => {
             return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
-                <div role="status" aria-live="polite" aria-label="Loading Dynamic Assessment Studio" className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="relative w-14 h-14 mx-auto mb-4">
-                        <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
-                        <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
-                        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-2xl">🔬</div>
-                    </div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Dynamic Assessment Studio' }) || 'Loading Dynamic Assessment Studio...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isCommunityCatalogOpen && (() => {
-            const CC = window.AlloModules && window.AlloModules.CommunityCatalog;
-            if (CC) {
-                return React.createElement(CC, {
-                    isOpen: true,
-                    onClose: () => setIsCommunityCatalogOpen(false),
-                    addToast,
-                    loadProjectFromJson,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsCommunityCatalogOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📚</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Community Catalog' }) || 'Loading Community Catalog...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsCommunityCatalogOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAccessibilityLabOpen && (() => {
-            const AL = window.AlloModules && window.AlloModules.AccessibilityLab;
-            if (AL) {
-                return React.createElement(AL, {
-                    isOpen: true,
-                    onClose: () => setIsAccessibilityLabOpen(false),
-                    addToast,
-                    history,
-                    callTTS: callTTSDirect,
-                    renderFormattedText,
-                    t,
-                    readingTheme, setReadingTheme,
-                    baseFontSize, setBaseFontSize,
-                    lineHeight, setLineHeight,
-                    letterSpacing, setLetterSpacing,
-                    selectedFont, setSelectedFont,
-                    colorOverlay, setColorOverlay,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAccessibilityLabOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Accessibility Lab' }) || 'Loading Accessibility Lab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAccessibilityLabOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAuditRemediatorOpen && (() => {
-            const AR = window.AlloModules && window.AlloModules.AuditRemediator;
-            if (AR) {
-                return React.createElement(AR, {
-                    isOpen: true,
-                    onClose: () => setIsAuditRemediatorOpen(false),
-                    generatedContent,
-                    history,
-                    handleGenerate,
-                    callGemini,
-                    cleanJson,
-                    addToast,
-                    setHistory,
-                    t,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAuditRemediatorOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🛠️</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Audit Remediator' }) || 'Loading Audit Remediator...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAuditRemediatorOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
+            <div></div>
             );
         })()}
         {showStoryForge && (() => {
