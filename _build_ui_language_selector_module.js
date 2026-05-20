@@ -64,6 +64,7 @@ var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState;
 var useRef = React.useRef;
 var useContext = React.useContext;
+var useEffect = React.useEffect;
 var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
