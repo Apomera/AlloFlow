@@ -1110,7 +1110,6 @@
     "resource_assign_failed": "Failed to assign resource.",
     "session_sync_error": "Session sync error."
   ,
-    // ── Auto-migrated from AlloFlowANTI.txt addToast() calls (2026-05-19) ──
     "cancel_active_recording_before_undoing": "Cancel the active recording before undoing.",
     "undid_last_annotation": "↩ Undid last annotation",
     "orf_passage_available_grade": "No ORF passage available for grade ",
