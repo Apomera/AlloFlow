@@ -25473,7 +25473,55 @@ ${_toolList}
                             mathFluencyProbes: Array.isArray(history)
                                 ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
                                 : [],
-                            outputLanguage: leveledTextLanguage || 'English'
+                            outputLanguage: leveledTextLanguage || 'English',
+                            // Phase Z — Supplementary resource generation (reversed Lesson-Plan link pattern).
+                            // DA decides what resources each item needs and asks the host to mint them.
+                            // The host returns { id } so DA can inline-link to the freshly-generated resource.
+                            onGenerateGlossary: async (seedTerms, title, provenance) => {
+                                const safeTerms = (Array.isArray(seedTerms) ? seedTerms : [])
+                                    .map(s => String(s || '').trim()).filter(s => s.length > 1).slice(0, 6);
+                                if (safeTerms.length === 0) throw new Error('No seed terms supplied.');
+                                const lang = leveledTextLanguage || 'English';
+                                const prompt = `Generate a kid-friendly glossary entry for each of these target terms. Output a JSON array; each element has: { "term": string, "definition": string, "exampleSentence": string }. Keep definitions ${gradeLevel || 'grade-appropriate'} and concise (1-2 sentences). Output language: ${lang}. Target terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\nReturn ONLY the JSON array. No prose.`;
+                                const raw = await callGemini(prompt, true);
+                                const cleaned = typeof cleanJson === 'function' ? cleanJson(raw) : raw;
+                                let parsed;
+                                try { parsed = JSON.parse(cleaned); }
+                                catch (e) { throw new Error('Glossary AI response was not valid JSON.'); }
+                                if (!Array.isArray(parsed) || parsed.length === 0) {
+                                    throw new Error('Glossary AI returned an empty list.');
+                                }
+                                const data = parsed.slice(0, 6).map(entry => ({
+                                    term: String(entry.term || '').trim(),
+                                    definition: String(entry.definition || '').trim(),
+                                    exampleSentence: String(entry.exampleSentence || entry.example || '').trim()
+                                })).filter(e => e.term && e.definition);
+                                if (data.length === 0) throw new Error('Glossary AI returned no usable entries.');
+                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                                const newItem = {
+                                    id: newId,
+                                    type: 'glossary',
+                                    data: data,
+                                    title: String(title || `Glossary: ${data.slice(0, 2).map(d => d.term).join(', ')}`).slice(0, 80),
+                                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
+                                    timestamp: new Date(),
+                                    config: {},
+                                    fromDA: true,
+                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
+                                };
+                                setHistory(prev => [...prev, newItem]);
+                                return { id: newId };
+                            },
+                            onOpenResource: (resourceId) => {
+                                const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
+                                if (!item) {
+                                    addToast('Resource not found in history (it may have been deleted).', 'info');
+                                    return;
+                                }
+                                setIsDynamicAssessmentOpen(false);
+                                setTimeout(() => { handleRestoreView(item); }, 50);
+                            }
                         })}
                     </div>
                 </div>
