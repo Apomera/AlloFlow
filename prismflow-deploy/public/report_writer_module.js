@@ -637,7 +637,7 @@
 
         // ── AI-Powered Demo Data Generator ──
         const generateAIDemoCase = async () => {
-            if (!callGemini) { if (addToast) addToast('AI not available', 'error'); return; }
+            if (!callGemini) { if (addToast) addToast(t('toasts.ai_available'), 'error'); return; }
             setGeneratingDemo(true);
             try {
                 const prompt = `You are a clinical data generator for a school psychology training tool. Generate a FICTIONAL but realistic demo case for a psychoeducational evaluation.
@@ -706,7 +706,7 @@ Include 6-10 assessment scores using REAL subtest names from the assessment batt
                 if (addToast) addToast(`AI demo case "${parsed.label}" generated — [FICTIONAL DATA, NOT A REAL STUDENT]`, 'success');
             } catch (err) {
                 warnLog('AI demo generation error:', err);
-                if (addToast) addToast('AI demo generation failed — try again or use a preset case', 'error');
+                if (addToast) addToast(t('toasts.ai_demo_generation_failed_try'), 'error');
             } finally { setGeneratingDemo(false); }
         };
 
@@ -740,7 +740,7 @@ Return ONLY the adapted text, no commentary.`;
                 if (addToast) addToast(`"${section}" adapted for ${targetLevel} reading level`, 'success');
             } catch (err) {
                 warnLog('Grade-level adaptation error:', err);
-                if (addToast) addToast('Adaptation failed', 'error');
+                if (addToast) addToast(t('toasts.adaptation_failed'), 'error');
             } finally { setAdaptingSection(null); }
         };
 
@@ -758,11 +758,11 @@ Return ONLY the adapted text, no commentary.`;
                 if (addToast) addToast(`Report translated to ${translationLang} ✅`, 'success');
             } catch (err) {
                 warnLog('Translation error:', err);
-                if (addToast) addToast('Translation failed', 'error');
+                if (addToast) addToast(t('toasts.translation_failed'), 'error');
             } finally { setTranslating(false); }
         };
         const copyTranslatedReport = () => {
-            navigator.clipboard.writeText(translatedReport).then(() => { if (addToast) addToast('Translated report copied ✅', 'success'); });
+            navigator.clipboard.writeText(translatedReport).then(() => { if (addToast) addToast(t('toasts.translated_report_copied'), 'success'); });
         };
 
         const OBS_TAB_META = [
@@ -917,7 +917,7 @@ Return ONLY the adapted text, no commentary.`;
             setScoreEntries([]); setBgSections({ referralReason: '', developmental: '', medical: '', educational: '', social: '', behavioral: '', observations: '' });
             setFactChunks([]); setReportSections({}); setAccuracyResults([]);
             setCurrentStep(1);
-            if (addToast) addToast('Draft cleared', 'info');
+            if (addToast) addToast(t('toasts.draft_cleared'), 'info');
         };
 
         // ── PII scrubbing ──
@@ -963,12 +963,12 @@ Return ONLY the adapted text, no commentary.`;
                 });
             }
             setBgSections(prev => ({ ...prev, behavioral, observations }));
-            if (addToast) addToast('BehaviorLens data imported ✅', 'success');
+            if (addToast) addToast(t('toasts.behaviorlens_data_imported'), 'success');
         };
 
         // ── Step 2: Import Longitudinal Student Progress ──
         const importStudentProgress = () => {
-            if (!longitudinalData) { if (addToast) addToast('No student progress data available', 'info'); return; }
+            if (!longitudinalData) { if (addToast) addToast(t('toasts.student_progress_data_available'), 'info'); return; }
             let educational = bgSections.educational || '';
             let behavioral = bgSections.behavioral || '';
             // History: summarise topic interactions
@@ -1006,7 +1006,7 @@ Return ONLY the adapted text, no commentary.`;
                 });
             }
             setBgSections(prev => ({ ...prev, educational, behavioral }));
-            if (addToast) addToast('Student progress data imported ✅', 'success');
+            if (addToast) addToast(t('toasts.student_progress_data_imported'), 'success');
         };
 
         // ── Step 3: Extract fact chunks ──
@@ -1056,7 +1056,7 @@ Extract 5-20 key facts. Be precise and factual.`;
                 if (addToast) addToast(`Extracted ${scoreChunks.length + bgChunks.length} fact chunks`, 'success');
             } catch (err) {
                 warnLog('Extract error:', err);
-                if (addToast) addToast('Extraction failed', 'error');
+                if (addToast) addToast(t('toasts.extraction_failed'), 'error');
             } finally { setExtracting(false); }
         };
         const verifyChunk = (chunkId) => {
@@ -1099,10 +1099,10 @@ Extract 5-20 key facts. Be precise and factual.`;
                 const results = {};
                 (parsed.hypotheses || []).forEach(h => { results[h.name] = h; });
                 setDifferentialResults(results);
-                if (addToast) addToast('Differential analysis complete \u2705', 'success');
+                if (addToast) addToast(t('toasts.differential_analysis_complete_u2705'), 'success');
             } catch (err) {
                 warnLog('Differential analysis error:', err);
-                if (addToast) addToast('Differential analysis failed', 'error');
+                if (addToast) addToast(t('toasts.differential_analysis_failed'), 'error');
             } finally { setRunningDifferential(false); }
         };
 
@@ -1167,7 +1167,7 @@ listing only the [chunk-id] values you actually referenced. Return the section t
             if (!callGemini) return;
             setGenerating(true);
             const verifiedChunks = factChunks.filter(c => c.verified);
-            if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast('No verified fact chunks', 'error'); return; }
+            if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast(t('toasts.verified_fact_chunks'), 'error'); return; }
             const sections = blueprint.filter(s => s.enabled).map(s => s.name);
             const generated = {};
             const evidenceMap = {};
@@ -1327,7 +1327,7 @@ Return ONLY JSON:
                     }
                     if (addToast) addToast(`\u26a0\ufe0f Consistency check: ${consistencyCheck.issues.length} issue(s)${criticalIssues.length > 0 ? ' — auto-fixed critical' : ''}`, 'info');
                 } else {
-                    if (addToast) addToast('\u2705 Cross-section consistency verified', 'success');
+                    if (addToast) addToast(t('toasts.u2705_cross_section_consistency_verified'), 'success');
                 }
             } catch(ccErr) { warnLog('[Report] Consistency check failed (non-blocking):', ccErr); }
 
@@ -1335,7 +1335,7 @@ Return ONLY JSON:
             setSectionEvidenceMap(evidenceMap);
             setGenProgress('');
             setGenerating(false);
-            if (addToast) addToast('Report generated with verification \u2728', 'success');
+            if (addToast) addToast(t('toasts.report_generated_with_verification_u2728'), 'success');
         };
 
         // ── Section-by-Section: Regenerate a single section ──
@@ -1491,7 +1491,7 @@ Return ONLY valid JSON:
                 }
             } catch (err) {
                 warnLog('Accuracy check error:', err);
-                if (addToast) addToast('Accuracy check failed', 'error');
+                if (addToast) addToast(t('toasts.accuracy_check_failed'), 'error');
             } finally { setChecking(false); }
         };
         // ── Dual-Pass Reconciliation Engine ──
@@ -1556,7 +1556,7 @@ Return ONLY valid JSON:
             a.download = `report_${(studentName || 'student').replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
-            if (addToast) addToast('JSON exported ✅', 'success');
+            if (addToast) addToast(t('toasts.json_exported'), 'success');
         };
         const importJSON = () => {
             try {
@@ -1570,15 +1570,15 @@ Return ONLY valid JSON:
                 if (data.reportSections) setReportSections(data.reportSections);
                 if (data.accuracyResults) setAccuracyResults(data.accuracyResults);
                 setImportText('');
-                if (addToast) addToast('Report data imported ✅', 'success');
-            } catch { if (addToast) addToast('Invalid JSON', 'error'); }
+                if (addToast) addToast(t('toasts.report_data_imported'), 'success');
+            } catch { if (addToast) addToast(t('toasts.invalid_json'), 'error'); }
         };
         const copyFullReport = () => {
             const draftNotice = `${'═'.repeat(50)}\nCONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT\nThis report requires review and approval by the\nlicensed school psychologist before use in\neducational decision-making.\n${'═'.repeat(50)}\n\n`;
             const header = `${reportTitle}\nStudent: ${studentName || '[Student]'}\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}\nDate: ${new Date().toLocaleDateString()}\n${'─'.repeat(50)}\n\n`;
             const body = Object.entries(reportSections).map(([k, v]) => `${k.toUpperCase()}\n\n${v.replace(/\[Student\]/g, studentName || '[Student]')}`).join('\n\n' + '─'.repeat(50) + '\n\n');
             const footer = `\n\n${'─'.repeat(50)}\nClinician Signature: _______________ Date: ________\nGenerated with AlloFlow Report Writer (AI-Assisted Draft)\n`;
-            navigator.clipboard.writeText(draftNotice + header + body + footer).then(() => { if (addToast) addToast('Report copied to clipboard ✅', 'success'); });
+            navigator.clipboard.writeText(draftNotice + header + body + footer).then(() => { if (addToast) addToast(t('toasts.report_copied_clipboard'), 'success'); });
         };
         const printReport = () => {
             const w = window.open('', '_blank');
@@ -1784,7 +1784,7 @@ Return ONLY valid JSON:
                             });
                         }
                         setClinicalObs(prev => ({ ...prev, behavioral: { ...prev.behavioral, text: obsText } }));
-                        if (addToast) addToast('BehaviorLens data imported to Behavioral observations', 'success');
+                        if (addToast) addToast(t('toasts.behaviorlens_data_imported_behavioral_observations'), 'success');
                     }
                 }, '\u{1F4E5} Import from BehaviorLens (' + (abcEntries?.length || 0) + ' ABC + ' + (observationSessions?.length || 0) + ' observations)'),
                 // Sub-section tabs
@@ -1954,7 +1954,7 @@ Return ONLY valid JSON:
                             h('input', { type: 'text', className: 'w-full text-[11px] border rounded px-2 py-1', placeholder: 'Reference name (e.g., "MUSER Ch. 101")...', value: newRefName, onChange: e => setNewRefName(e.target.value) }),
                             h('textarea', { className: 'w-full text-[11px] border rounded px-2 py-1 h-20 resize-none font-mono', placeholder: 'Paste reference text here...', value: newRefText, onChange: e => setNewRefText(e.target.value) }),
                             newRefName.trim() && newRefText.trim() && h('button', { 'aria-label': 'Add reference', className: 'px-3 py-1 bg-indigo-600 text-white text-[11px] rounded hover:bg-indigo-700',
-                                onClick: () => { setReferenceLibrary(prev => [...prev, { id: uid(), name: newRefName.trim(), text: newRefText.trim(), addedAt: new Date().toISOString() }]); setNewRefName(''); setNewRefText(''); if (addToast) addToast('Reference added', 'success'); }
+                                onClick: () => { setReferenceLibrary(prev => [...prev, { id: uid(), name: newRefName.trim(), text: newRefText.trim(), addedAt: new Date().toISOString() }]); setNewRefName(''); setNewRefText(''); if (addToast) addToast(t('toasts.reference_added'), 'success'); }
                             }, '\u2795 Add Reference')
                         )
                     )
@@ -2367,11 +2367,11 @@ Return ONLY valid JSON:
                         h('span', { className: 'text-lg' }, '💾'),
                         h('span', { className: 'text-[11px] font-medium text-violet-700' }, 'Save JSON')
                     ),
-                    h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before copying — run accuracy audit and fix flagged claims', 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast(t('toasts.resolve_contradictions_before_copying_run'), 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '📋'),
                         h('span', { className: 'text-[11px] font-medium text-indigo-700' }, 'Copy Report')
                     ),
-                    h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-600 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before printing — run accuracy audit and fix flagged claims', 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-600 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast(t('toasts.resolve_contradictions_before_printing_run'), 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '🖨️'),
                         h('span', { className: 'text-[11px] font-medium text-blue-700' }, 'Print / PDF')
                     ),

@@ -543,7 +543,7 @@ const StoryForge = React.memo(({
   const fluencyChunksRef = useRef([]);
 
   const startFluencyReading = async (paragraphId) => {
-    if (!onAnalyzeFluency) { if (addToast) addToast('Fluency analysis not available in this mode', 'info'); return; }
+    if (!onAnalyzeFluency) { if (addToast) addToast(t('toasts.fluency_analysis_available_mode'), 'info'); return; }
     setFluencyReadingId(paragraphId);
     setFluencyResult(null);
     try {
@@ -570,17 +570,17 @@ const StoryForge = React.memo(({
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
           const base64 = reader.result.split(',')[1];
-          if (addToast) addToast('Analyzing your reading...', 'info');
+          if (addToast) addToast(t('toasts.analyzing_reading'), 'info');
           try {
             const result = await onAnalyzeFluency(base64, 'audio/webm', text);
             if (result) {
               setFluencyResult({ paragraphId, ...result });
               awardXP(8, 'Fluency practice');
-              if (result.confidence?.overall >= 7 && addToast) addToast('Great reading! Check your results below.', 'success');
+              if (result.confidence?.overall >= 7 && addToast) addToast(t('toasts.great_reading_check_results_below'), 'success');
             }
           } catch (err) {
             console.warn('Fluency analysis failed:', err);
-            if (addToast) addToast('Analysis failed — try again with clearer audio', 'error');
+            if (addToast) addToast(t('toasts.analysis_failed_try_again_with'), 'error');
           }
           setFluencyReadingId(null);
           resolve();
@@ -648,10 +648,10 @@ const StoryForge = React.memo(({
         }
         setHwResult(parsed);
         setHwLoading(false);
-        if (addToast) addToast('✍️ Handwriting converted!' + (parsed.penmanship ? ' Penmanship: ' + parsed.penmanship.score + '/100' : ''), 'success');
+        if (addToast) addToast(t('toasts.handwriting_converted') + (parsed.penmanship ? ' Penmanship: ' + parsed.penmanship.score + '/100' : ''), 'success');
       } catch {
         setHwLoading(false);
-        if (addToast) addToast('Could not read handwriting — try a clearer photo', 'error');
+        if (addToast) addToast(t('toasts.could_read_handwriting_try_clearer'), 'error');
       }
     };
     reader.readAsDataURL(file);
@@ -871,7 +871,7 @@ const StoryForge = React.memo(({
       return () => clearTimeout(timerRef.current);
     } else if (timerSeconds >= timerDuration && timerActive) {
       setTimerActive(false);
-      if (addToast) addToast('Writing sprint complete!', 'success');
+      if (addToast) addToast(t('toasts.writing_sprint_complete'), 'success');
     }
   }, [timerActive, timerSeconds, timerDuration]);
 
@@ -898,9 +898,9 @@ const StoryForge = React.memo(({
           const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language };
           localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
           setIsDirty(false);
-          if (addToast) addToast('Draft saved!', 'success');
+          if (addToast) addToast(t('toasts.draft_saved'), 'success');
         } catch(err) {
-          if (addToast) addToast('Could not save draft \u2014 browser storage may be full. Export your story as JSON to avoid losing work!', 'error');
+          if (addToast) addToast(t('toasts.could_save_draft_u2014_browser'), 'error');
         }
       }
     };
@@ -953,7 +953,7 @@ const StoryForge = React.memo(({
     if (d.phase) setPhase(d.phase);
     if (d.language) setLanguage(d.language);
     setShowRestorePrompt(false);
-    if (addToast) addToast('Draft restored!', 'success');
+    if (addToast) addToast(t('toasts.draft_restored_2'), 'success');
     sfAnnounce('Draft restored');
   };
 
@@ -977,7 +977,7 @@ const StoryForge = React.memo(({
       if (initialConfig.minParagraphs) {
         setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '', plotBeat: '' })));
       }
-      if (addToast) addToast('Assignment loaded from teacher!', 'success');
+      if (addToast) addToast(t('toasts.assignment_loaded_from_teacher'), 'success');
     }
   }, [initialConfig]);
 
@@ -993,7 +993,7 @@ const StoryForge = React.memo(({
       scaffoldFrames: scaffoldsGenerated ? paragraphs.map(p => p.scaffoldFrame).filter(Boolean) : [],
     };
     onSaveConfig(config);
-    if (addToast) addToast('StoryForge assignment saved to lesson!', 'success');
+    if (addToast) addToast(t('toasts.storyforge_assignment_saved_lesson'), 'success');
   };
 
   // ── Save completed story as submission resource ──
@@ -1018,7 +1018,7 @@ const StoryForge = React.memo(({
       xp: { totalXP: xpData.totalXP, level: currentLevel.name },
     };
     onSaveSubmission(submission);
-    if (addToast) addToast('Story saved to your portfolio!', 'success');
+    if (addToast) addToast(t('toasts.story_saved_portfolio'), 'success');
     awardXP(10, 'Saved story to portfolio');
   };
 
@@ -1035,7 +1035,7 @@ const StoryForge = React.memo(({
       const text = typeof resource.data === 'string' ? resource.data : resource.data?.originalText || '';
       if (text) {
         setStoryPrompt('Write a creative story inspired by this text: ' + text.substring(0, 300));
-        if (addToast) addToast('Imported topic from reading passage!', 'success');
+        if (addToast) addToast(t('toasts.imported_topic_from_reading_passage'), 'success');
       }
     } else if (resource.type === 'sentence-frames') {
       const frames = typeof resource.data === 'string' ? resource.data.split('\n').filter(Boolean) : [];
@@ -1048,7 +1048,7 @@ const StoryForge = React.memo(({
       const planText = typeof resource.data === 'string' ? resource.data : '';
       if (planText) {
         setStoryPrompt(planText.substring(0, 500));
-        if (addToast) addToast('Imported lesson plan as story prompt!', 'success');
+        if (addToast) addToast(t('toasts.imported_lesson_plan_as_story'), 'success');
       }
     } else if (resource.type === 'timeline') {
       const timelineText = typeof resource.data === 'string' ? resource.data : '';
@@ -1178,12 +1178,12 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
         }));
         setParagraphs(newParagraphs);
         setScaffoldsGenerated(true);
-        if (addToast) addToast('Scaffold frames generated!', 'success');
+        if (addToast) addToast(t('toasts.scaffold_frames_generated'), 'success');
         awardXP(5, 'Generated scaffolds');
       }
     } catch (err) {
       console.warn('Scaffold generation failed:', err);
-      if (addToast) addToast('Failed to generate scaffolds', 'error');
+      if (addToast) addToast(t('toasts.failed_generate_scaffolds'), 'error');
     }
     setIsProcessing(false);
   };
@@ -1263,10 +1263,10 @@ Return ONLY JSON:
       }
       setGrammarResults({ ...results, _overallTip: data.overallTip || '' });
       awardXP(5, 'Checked writing style');
-      if (addToast) addToast('Writing check complete!', 'success');
+      if (addToast) addToast(t('toasts.writing_check_complete'), 'success');
     } catch (err) {
       console.warn('Grammar check failed:', err);
-      if (addToast) addToast('Writing check failed — try again', 'error');
+      if (addToast) addToast(t('toasts.writing_check_failed_try_again'), 'error');
     }
     setGrammarLoading(false);
   };
@@ -1319,7 +1319,7 @@ Return ONLY JSON:
     } catch (err) {
       console.warn('Illustration failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
-      if (addToast) addToast('Illustration generation failed', 'error');
+      if (addToast) addToast(t('toasts.illustration_generation_failed'), 'error');
     }
   };
 
@@ -1353,7 +1353,7 @@ Return ONLY JSON:
     } catch (err) {
       console.warn('Illustration failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
-      if (addToast) addToast('Illustration generation failed', 'error');
+      if (addToast) addToast(t('toasts.illustration_generation_failed'), 'error');
     }
   };
 
@@ -1368,7 +1368,7 @@ Return ONLY JSON:
       }
     }
     setIsProcessing(false);
-    if (addToast) addToast('All illustrations generated!', 'success');
+    if (addToast) addToast(t('toasts.all_illustrations_generated'), 'success');
     awardXP(10, 'Illustrated all paragraphs');
   };
 
@@ -1392,7 +1392,7 @@ Return ONLY JSON:
 
   // ── Student-directed image refinement ──
   const refineIllustration = async (paragraphId, editPrompt) => {
-    if (!onCallGeminiImageEdit) { if (addToast) addToast('Image editing not available', 'error'); return; }
+    if (!onCallGeminiImageEdit) { if (addToast) addToast(t('toasts.image_editing_available'), 'error'); return; }
     const current = illustrations[paragraphId];
     if (!current?.imageUrl) return;
     setImageEditState(null);
@@ -1409,12 +1409,12 @@ Return ONLY JSON:
         awardXP(3, 'Refined illustration');
       } else {
         setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false } }));
-        if (addToast) addToast('Refinement didn\'t produce changes — try a different prompt', 'error');
+        if (addToast) addToast(t('toasts.refinement_didn_produce_changes_try'), 'error');
       }
     } catch (err) {
       console.warn('Image refinement failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false } }));
-      if (addToast) addToast('Image refinement failed', 'error');
+      if (addToast) addToast(t('toasts.image_refinement_failed'), 'error');
     }
   };
 
@@ -1433,7 +1433,7 @@ Return ONLY JSON:
       if (imageUrl) setCoverArt(imageUrl);
     } catch (err) {
       console.warn('Cover art generation failed:', err);
-      if (addToast) addToast('Cover art generation failed', 'error');
+      if (addToast) addToast(t('toasts.cover_art_generation_failed'), 'error');
     }
     setCoverArtLoading(false);
   };
@@ -1510,7 +1510,7 @@ Return ONLY JSON:
       }
     }
     setIsProcessing(false);
-    if (addToast) addToast('Narration complete!', 'success');
+    if (addToast) addToast(t('toasts.narration_complete'), 'success');
     awardXP(10, 'Narrated story');
   };
 
@@ -1647,11 +1647,11 @@ Return ONLY JSON:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setGradingResult(data);
-      if (addToast) addToast('Feedback ready!', 'success');
+      if (addToast) addToast(t('toasts.feedback_ready'), 'success');
       awardXP(15, 'Got AI feedback');
     } catch (err) {
       console.warn('Grading failed:', err);
-      if (addToast) addToast('Grading failed — try again', 'error');
+      if (addToast) addToast(t('toasts.grading_failed_try_again'), 'error');
     }
     setIsProcessing(false);
   };
@@ -1683,7 +1683,7 @@ Return ONLY JSON:
     if (!onCallGemini) return;
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
     if (fullText.length < 80) {
-      if (addToast) addToast('Write a bit more before finding a mentor', 'info');
+      if (addToast) addToast(t('toasts.write_bit_more_before_finding'), 'info');
       return;
     }
     setMentorLoading(true);
@@ -1755,13 +1755,13 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
       const parsed = JSON.parse(cleanJson(result));
       parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords };
       setMentorMatch(parsed);
-      if (addToast) addToast('Mentor story found!', 'success');
+      if (addToast) addToast(t('toasts.mentor_story_found'), 'success');
       sfAnnounce('Mentor story found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' — verified via web search.' : '.'));
       awardXP(8, 'Studied a mentor text');
     } catch (err) {
       console.warn('Mentor match failed:', err && err.message);
       setMentorMatch({ error: "Couldn't find a mentor story right now. Try again in a moment." });
-      if (addToast) addToast('Mentor search failed — try again', 'error');
+      if (addToast) addToast(t('toasts.mentor_search_failed_try_again'), 'error');
     }
     setMentorLoading(false);
   };
@@ -1771,7 +1771,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
     if (!onCallGemini) return;
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
     if (fullText.length < 30) {
-      if (addToast) addToast('Write a bit more before checking senses', 'info');
+      if (addToast) addToast(t('toasts.write_bit_more_before_checking'), 'info');
       return;
     }
     setSensesLoading(true);
@@ -1805,12 +1805,12 @@ Return ONLY JSON in this shape:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setSensesResult(data);
-      if (addToast) addToast('Senses check ready!', 'success');
+      if (addToast) addToast(t('toasts.senses_check_ready'), 'success');
       sfAnnounce('Senses check complete. Strongest sense: ' + (data.strongest || 'unknown') + '. Missing: ' + (data.missing || 'unknown'));
       awardXP(5, 'Used senses checker');
     } catch (err) {
       console.warn('Senses check failed:', err);
-      if (addToast) addToast('Senses check failed — try again', 'error');
+      if (addToast) addToast(t('toasts.senses_check_failed_try_again'), 'error');
     }
     setSensesLoading(false);
   };
@@ -1823,7 +1823,7 @@ Return ONLY JSON in this shape:
     if (!onCallGemini) return;
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
     if (fullText.length < 60) {
-      if (addToast) addToast('Write a bit more before checking show vs tell', 'info');
+      if (addToast) addToast(t('toasts.write_bit_more_before_checking_2'), 'info');
       return;
     }
     setShowTellLoading(true);
@@ -1852,13 +1852,13 @@ Return ONLY JSON:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setShowTellResult(data);
-      if (addToast) addToast('Show vs Tell ready!', 'success');
+      if (addToast) addToast(t('toasts.show_vs_tell_ready'), 'success');
       const count = (data.tellings || []).length;
       sfAnnounce(count === 0 ? 'Show vs tell check: no telling sentences found.' : `Show vs tell check: ${count} sentence${count === 1 ? '' : 's'} could become more vivid.`);
       awardXP(5, 'Used show-don\'t-tell coach');
     } catch (err) {
       console.warn('Show-don\'t-tell failed:', err);
-      if (addToast) addToast('Show vs Tell failed — try again', 'error');
+      if (addToast) addToast(t('toasts.show_vs_tell_failed_try'), 'error');
     }
     setShowTellLoading(false);
   };
@@ -1873,7 +1873,7 @@ Return ONLY JSON:
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
     const wordCount = fullText.split(/\s+/).filter(Boolean).length;
     if (wordCount < 80) {
-      if (addToast) addToast('Write a bit more before tracking arcs', 'info');
+      if (addToast) addToast(t('toasts.write_bit_more_before_tracking'), 'info');
       return;
     }
     setArcLoading(true);
@@ -1917,12 +1917,12 @@ Return ONLY JSON:
       data.characters = (data.characters || []).slice(0, 3);
       setArcReport(data);
       const count = data.characters.length;
-      if (addToast) addToast('Character arcs analyzed!', 'success');
+      if (addToast) addToast(t('toasts.character_arcs_analyzed'), 'success');
       sfAnnounce(count === 0 ? 'No named characters found in the story.' : `Character arc tracker: ${count} character${count === 1 ? '' : 's'} analyzed.`);
       awardXP(8, 'Tracked character arcs');
     } catch (err) {
       console.warn('Character arc analysis failed:', err);
-      if (addToast) addToast('Arc tracker failed — try again', 'error');
+      if (addToast) addToast(t('toasts.arc_tracker_failed_try_again'), 'error');
     }
     setArcLoading(false);
   };
@@ -1936,7 +1936,7 @@ Return ONLY JSON:
     if (!onCallGemini) return;
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
     if (!fullText.includes('"') && !fullText.includes('“') && !fullText.includes('”')) {
-      if (addToast) addToast('No dialogue detected — try adding a quoted line', 'info');
+      if (addToast) addToast(t('toasts.dialogue_detected_try_adding_quoted'), 'info');
       setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: 'No dialogue found yet.' });
       return;
     }
@@ -1970,13 +1970,13 @@ Return ONLY JSON:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setDialogueReport(data);
-      if (addToast) addToast('Dialogue tune-up ready!', 'success');
+      if (addToast) addToast(t('toasts.dialogue_tune_up_ready'), 'success');
       const issueCount = (data.issues || []).length;
       sfAnnounce(issueCount === 0 ? 'Dialogue mechanics check: no issues found.' : `Dialogue mechanics check: ${issueCount} suggestion${issueCount === 1 ? '' : 's'}.`);
       awardXP(5, 'Tuned up dialogue');
     } catch (err) {
       console.warn('Dialogue analysis failed:', err);
-      if (addToast) addToast('Dialogue tune-up failed — try again', 'error');
+      if (addToast) addToast(t('toasts.dialogue_tune_up_failed_try'), 'error');
     }
     setDialogueLoading(false);
   };
@@ -2050,12 +2050,12 @@ Return ONLY JSON:
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       setRevisionPlan(data);
-      if (addToast) addToast('Revision plan ready!', 'success');
+      if (addToast) addToast(t('toasts.revision_plan_ready'), 'success');
       sfAnnounce(`Revision plan ready with ${(data.tasks || []).length} prioritized tasks.`);
       awardXP(10, 'Built a revision plan');
     } catch (err) {
       console.warn('Revision plan synthesis failed:', err);
-      if (addToast) addToast('Revision plan failed — try again', 'error');
+      if (addToast) addToast(t('toasts.revision_plan_failed_try_again'), 'error');
     }
     setRevisionPlanLoading(false);
   };
@@ -2232,9 +2232,9 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     try {
       const w = window.open('', '_blank');
       if (w) { w.document.write(html); w.document.close(); }
-      else if (addToast) addToast('Pop-up blocked — allow pop-ups to export', 'error');
+      else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
     } catch (e) {
-      if (addToast) addToast('Export failed', 'error');
+      if (addToast) addToast(t('toasts.export_failed_2'), 'error');
     }
   };
 
@@ -2335,9 +2335,9 @@ show();
     try {
       const w = window.open('', '_blank');
       if (w) { w.document.write(html); w.document.close(); }
-      else if (addToast) addToast('Pop-up blocked — allow pop-ups', 'error');
+      else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_4'), 'error');
     } catch (e) {
-      if (addToast) addToast('Slideshow export failed', 'error');
+      if (addToast) addToast(t('toasts.slideshow_export_failed'), 'error');
     }
   };
 
@@ -2348,7 +2348,7 @@ show();
   const shareToSession = async () => {
     if (!liveSession || !liveSession.push) return;
     if (isCanvasEnv) {
-      if (addToast) addToast('Sharing is disabled in Canvas environment (FERPA)', 'error');
+      if (addToast) addToast(t('toasts.sharing_disabled_canvas_environment_ferpa'), 'error');
       return;
     }
     try {
@@ -2370,11 +2370,11 @@ show();
         readingGrade: readingLevel?.grade || null,
         draftCount,
       });
-      if (addToast) addToast('Storybook shared to class!', 'success');
+      if (addToast) addToast(t('toasts.storybook_shared_class'), 'success');
       awardXP(10, 'Shared to class');
     } catch (err) {
       console.warn('Share failed:', err);
-      if (addToast) addToast('Failed to share — try again', 'error');
+      if (addToast) addToast(t('toasts.failed_share_try_again'), 'error');
     }
   };
 
@@ -2431,7 +2431,7 @@ show();
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    if (addToast) addToast('Draft exported as JSON — share with a classmate!', 'success');
+    if (addToast) addToast(t('toasts.draft_exported_as_json_share'), 'success');
   };
 
   const importDraftJSON = () => {
@@ -2445,7 +2445,7 @@ show();
       reader.onload = (ev) => {
         try {
           const d = JSON.parse(ev.target.result);
-          if (!d._storyForgeVersion) { if (addToast) addToast('Invalid StoryForge file', 'error'); return; }
+          if (!d._storyForgeVersion) { if (addToast) addToast(t('toasts.invalid_storyforge_file'), 'error'); return; }
           if (d.storyTitle) setStoryTitle(d.storyTitle);
           // authorName derived from codename prop — no need to restore
           if (d.genre) setGenre(d.genre);
@@ -2472,7 +2472,7 @@ show();
             if (addToast) addToast(`Draft loaded from ${d.exportedBy || 'classmate'} — keep writing!`, 'success');
           }
         } catch (err) {
-          if (addToast) addToast('Could not read that file', 'error');
+          if (addToast) addToast(t('toasts.could_read_file'), 'error');
         }
       };
       reader.readAsText(file);

@@ -1445,11 +1445,11 @@ var _lazyIcon = function (name) {
       if (!q) return;
       var currentUrl = target === 'question' ? q.imageUrl : Array.isArray(q.optionImageUrls) ? q.optionImageUrls[optIdx] : null;
       if (!currentUrl || typeof currentUrl !== 'string' || currentUrl.indexOf(',') === -1) {
-        if (typeof addToast === 'function') addToast('No image to refine yet.', 'error');
+        if (typeof addToast === 'function') addToast(t('toasts.image_refine_yet'), 'error');
         return;
       }
       if (typeof callGeminiImageEdit !== 'function') {
-        if (typeof addToast === 'function') addToast('Image edit unavailable: callGeminiImageEdit not provided.', 'error');
+        if (typeof addToast === 'function') addToast(t('toasts.image_edit_unavailable_callgeminiimageedit_provide'), 'error');
         return;
       }
       setIsRefiningQuizImage(function (prev) {
@@ -1477,7 +1477,7 @@ var _lazyIcon = function (name) {
           delete next[key];
           return next;
         });
-        if (typeof addToast === 'function') addToast('Image refined.', 'success');
+        if (typeof addToast === 'function') addToast(t('toasts.image_refined'), 'success');
       } catch (err) {
         if (typeof addToast === 'function') addToast(err && err.message || 'Refine failed — try again.', 'error');
       } finally {
@@ -1510,7 +1510,7 @@ var _lazyIcon = function (name) {
         newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
         if (!newText) throw new Error('Empty rewrite');
         handleQuizChange(qIdx, 'option', newText, optIdx);
-        if (typeof addToast === 'function') addToast('Distractor rewritten.', 'success');
+        if (typeof addToast === 'function') addToast(t('toasts.distractor_rewritten'), 'success');
       } catch (err) {
         if (typeof addToast === 'function') addToast(err && err.message || 'Rewrite failed.', 'error');
       } finally {
@@ -1528,7 +1528,7 @@ var _lazyIcon = function (name) {
       if (isBulkImproving) return;
       if (!generatedContent || !generatedContent.data || !Array.isArray(generatedContent.data.questions)) return;
       if (typeof props.callGemini !== 'function' || typeof handleQuizBulkOptionChange !== 'function') {
-        if (typeof addToast === 'function') addToast('Bulk improve unavailable.', 'error');
+        if (typeof addToast === 'function') addToast(t('toasts.bulk_improve_unavailable'), 'error');
         return;
       }
       var tasks = [];
@@ -1549,7 +1549,7 @@ var _lazyIcon = function (name) {
         });
       });
       if (tasks.length === 0) {
-        if (typeof addToast === 'function') addToast('No weak distractors to improve.', 'info');
+        if (typeof addToast === 'function') addToast(t('toasts.weak_distractors_improve'), 'info');
         return;
       }
       setIsBulkImproving(true);
@@ -1560,7 +1560,7 @@ var _lazyIcon = function (name) {
         });
         return next;
       });
-      if (typeof addToast === 'function') addToast('Rewriting ' + tasks.length + ' weak distractor' + (tasks.length === 1 ? '' : 's') + '…', 'info');
+      if (typeof addToast === 'function') addToast(t('toasts.rewriting') + tasks.length + ' weak distractor' + (tasks.length === 1 ? '' : 's') + '…', 'info');
       var grade = props.gradeLevel || 'middle school';
       var results = await Promise.all(tasks.map(function (task) {
         var q = generatedContent.data.questions[task.qIdx];
@@ -1606,7 +1606,7 @@ var _lazyIcon = function (name) {
       setIsBulkImproving(false);
       var failures = tasks.length - updates.length;
       if (typeof addToast === 'function') {
-        if (failures === 0) addToast('Rewrote ' + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');else addToast('Rewrote ' + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
+        if (failures === 0) addToast(t('toasts.rewrote') + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');else addToast(t('toasts.rewrote') + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
       }
     }
     function renderImageRefineOverlay(qIdx, target, optIdx, isCompact) {

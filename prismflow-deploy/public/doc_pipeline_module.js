@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -2547,10 +2547,10 @@ var createDocPipeline = function(deps) {
       const isCorrupt = /invalid|corrupt|unexpected|stream/i.test(msg);
       if (isEncrypted) {
         warnLog('[PDF Det] PDF is password-protected — falling through to Vision OCR');
-        if (typeof addToast === 'function') addToast('PDF appears password-protected — using Vision OCR instead of text layer extraction.', 'info');
+        if (typeof addToast === 'function') addToast(t('toasts.pdf_appears_password_protected_using'), 'info');
       } else if (isCorrupt) {
         warnLog('[PDF Det] PDF may be corrupted:', msg);
-        if (typeof addToast === 'function') addToast('PDF may be corrupted or malformed — attempting Vision OCR fallback.', 'info');
+        if (typeof addToast === 'function') addToast(t('toasts.pdf_may_corrupted_malformed_attempting'), 'info');
       } else {
         warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
       }
@@ -3069,8 +3069,8 @@ var createDocPipeline = function(deps) {
     } catch (e) {
       const msg = e?.message || '';
       warnLog('[DOCX Det] jszip fallback failed:', msg);
-      if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast('DOCX appears password-protected — using Vision OCR instead.', 'info');
-      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast('DOCX may be corrupted — attempting Vision OCR fallback.', 'info');
+      if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_appears_password_protected_using'), 'info');
+      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_may_corrupted_attempting_vision'), 'info');
       return { fullText: '', sourceCharCount: 0, method: 'failed', error: msg };
     }
   };
@@ -3108,8 +3108,8 @@ var createDocPipeline = function(deps) {
     } catch (e) {
       const msg = e?.message || '';
       warnLog('[PPTX Det] extraction failed:', msg);
-      if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast('PPTX appears password-protected — using Vision OCR instead.', 'info');
-      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast('PPTX may be corrupted — attempting Vision OCR fallback.', 'info');
+      if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.pptx_appears_password_protected_using'), 'info');
+      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.pptx_may_corrupted_attempting_vision'), 'info');
       return { fullText: '', slides: [], slideCount: 0, sourceCharCount: 0, method: 'failed', error: msg };
     }
   };
@@ -4689,7 +4689,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
   };
 
   const downloadBatchResults = async () => {
-    if (!window.JSZip) { addToast('ZIP library not loaded', 'error'); return; }
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loaded'), 'error'); return; }
     const zip = new window.JSZip();
     const results = pdfBatchQueue.filter(f => f.status === 'done');
 
@@ -4901,7 +4901,7 @@ If there are no significant images, return: {"images": [], "totalImages": 0}`,
       setInputText(extractedText);
       setPendingPdfBase64(null);
       setPendingPdfFile(null);
-      addToast('PDF transformed to accessible content!', 'success');
+      addToast(t('toasts.pdf_transformed_accessible_content'), 'success');
     } catch (err) {
       warnLog('[PDF Transform] Failed:', err);
       setError('PDF extraction failed. Try copying and pasting the text directly.');
@@ -6673,7 +6673,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const fallbackScore = scoreChunkLocally(chunk);
               accepted = { html: chunk, score: fallbackScore, integrityCheck: { passed: false, reason: 'ai-fix-failed-using-deterministic-only' }, aiVerified: false, wasRetried, usedOriginal: true, deterministicFixCount, surgicalFixCount };
               _pipeLog('AutoFix', 'Chunk ' + (chi + 1) + ' needs manual review — AI fix failed, kept deterministic-only version (' + deterministicFixCount + ' det + ' + surgicalFixCount + ' surgical fixes preserved)', { chunkIndex: chi, reason: 'ai-fix-failed', usedOriginal: true });
-              if (addToast) { try { addToast('Section ' + (chi + 1) + ' needs manual review — AI couldn\'t fix it', 'info'); } catch(e) {} }
+              if (addToast) { try { addToast(t('toasts.section') + (chi + 1) + ' needs manual review — AI couldn\'t fix it', 'info'); } catch(e) {} }
             }
 
             chunkResults.push(accepted);
@@ -7066,7 +7066,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const fb = scoreChunkLocally(chunk);
       accepted = { html: chunk, score: fb, integrityCheck: { passed: false, reason: 'ai-refix-failed' }, aiVerified: false, wasRetried: true, usedOriginal: true, deterministicFixCount, surgicalFixCount };
       _pipeLog('RefixChunk', 'Chunk ' + (chunkIndex + 1) + ' needs manual review — AI re-fix failed, kept deterministic-only version', { chunkIndex: chunkIndex, reason: 'ai-refix-failed', usedOriginal: true });
-      if (addToast) { try { addToast('Section ' + (chunkIndex + 1) + ' couldn\'t be re-fixed automatically — may need manual review', 'info'); } catch(e) {} }
+      if (addToast) { try { addToast(t('toasts.section') + (chunkIndex + 1) + ' couldn\'t be re-fixed automatically — may need manual review', 'info'); } catch(e) {} }
     }
 
     // ── Update chunk state and reassemble ──
@@ -7159,7 +7159,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
-    if (!_base64) { addToast('Cannot fix: PDF data not found in memory. Please re-upload the PDF.', 'error'); return null; }
+    if (!_base64) { addToast(t('toasts.cannot_fix_pdf_data_found'), 'error'); return null; }
     // "Silent mode" = caller is doing its own UI via an onProgress callback
     // (multi-file batch). Partial single-file audits (pageRange only, no
     // onProgress) still need the single-file UI state — otherwise the teacher
@@ -7167,7 +7167,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // at the bottom never fires. Previously this gate was `_isBatch` (== any
     // batchOverrides), which over-suppressed the UI whenever pageRange was set.
     const _silentMode = !!_onProgress;
-    if (!_silentMode && !_auditResult) { addToast('Cannot fix: No audit results found. Please run the audit first.', 'error'); return null; }
+    if (!_silentMode && !_auditResult) { addToast(t('toasts.cannot_fix_audit_results_found'), 'error'); return null; }
     if (!_silentMode) { setPdfFixLoading(true); setPdfFixResult(null); }
 
     const beforeScore = (_auditResult?.score) || 0;
@@ -7325,7 +7325,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // so we do both engines and take the longer output per page. Disagreements are
         // stashed on window globals so the fidelity panel can surface them for review.
         updateProgress(1, 'Scanned PDF detected — running Tesseract + Vision OCR in parallel...');
-        if (typeof addToast === 'function') addToast('Running Tesseract + Vision OCR for maximum accuracy on this scanned PDF…', 'info');
+        if (typeof addToast === 'function') addToast(t('toasts.running_tesseract_vision_ocr_maximum'), 'info');
 
         const _visionChunkedExtract = async () => {
           // Page-range-aware prompts: when the teacher selected a partial
@@ -9610,7 +9610,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[Integrity] Final HTML text: ${finalText} chars / source: ${groundTruth} chars (${integrityCoverage}% coverage, method=${groundTruthMethod})`);
           if (finalText < groundTruth * 0.97) {
             integrityWarning = `Output contains ${finalText.toLocaleString()} chars but source had ${groundTruth.toLocaleString()} (${integrityCoverage}% coverage). Some content may be missing.`;
-            if (!_silentMode) addToast('⚠ Integrity: ' + integrityWarning, 'error');
+            if (!_silentMode) addToast(t('toasts.integrity') + integrityWarning, 'error');
             warnLog('[Integrity] COVERAGE SHORT — ' + integrityWarning);
           } else if (!_silentMode && integrityCoverage >= 98) {
             addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
@@ -9803,20 +9803,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             // manually export the project file.
             warnLog('[MultiSession] Auto-save rejected:', saveErr && saveErr.message, saveErr);
             if (!_silentMode && typeof addToast === 'function') {
-              addToast("⚠ Couldn't save progress for pages " + _pageRange[0] + '-' + _pageRange[1] + " to browser storage (" + (saveErr && saveErr.message ? saveErr.message : 'quota or permission error') + "). Please export the project file manually so you don't lose this range.", 'warning');
+              addToast(t('toasts.couldn_save_progress_pages') + _pageRange[0] + '-' + _pageRange[1] + " to browser storage (" + (saveErr && saveErr.message ? saveErr.message : 'quota or permission error') + "). Please export the project file manually so you don't lose this range.", 'warning');
             }
           });
         } catch (e) {
           warnLog('[MultiSession] Auto-save failed:', e && e.message);
           if (!_silentMode && typeof addToast === 'function') {
-            addToast("⚠ Couldn't save progress for pages " + _pageRange[0] + '-' + _pageRange[1] + " (" + (e && e.message ? e.message : 'unknown error') + "). Export the project file manually to preserve this range.", 'warning');
+            addToast(t('toasts.couldn_save_progress_pages') + _pageRange[0] + '-' + _pageRange[1] + " (" + (e && e.message ? e.message : 'unknown error') + "). Export the project file manually to preserve this range.", 'warning');
           }
         }
       }
 
       // Dual-engine guarantee broken: surface clearly so users don't think an AI-only score is blended.
       if (axeCoreFailed) {
-        addToast('⚠ axe-core verification failed — final score is AI-only. Re-run Fix & Verify for the 50/50 blended score.', 'warning');
+        addToast(t('toasts.axe_core_verification_failed_final'), 'warning');
       }
 
       const scoreGain = finalAfterScore !== null ? finalAfterScore - beforeScore : null;
@@ -9832,7 +9832,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         if (!integrityWarning) { try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {} }
         else { try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {} }
       } else {
-        addToast('PDF transformed to accessible HTML. Verification could not complete.', 'info');
+        addToast(t('toasts.pdf_transformed_accessible_html_verification'), 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       }
 
@@ -9863,7 +9863,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_silentMode) throw err; // Let batch caller handle it
       setPdfFixLoading(false);
       setPdfFixStep('');
-      addToast('PDF remediation failed: ' + (err.message || 'Unknown error'), 'error');
+      addToast(t('toasts.pdf_remediation_failed') + (err.message || 'Unknown error'), 'error');
       // Audio: descending minor tone signals pipeline failure
       try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
     }
@@ -11219,7 +11219,7 @@ tr { page-break-inside: avoid; }
   const downloadAccessiblePdf = (htmlContent, filename) => {
     if (!htmlContent) return;
     const printWindow = window.open('', '_blank');
-    if (!printWindow) { addToast('Pop-up blocked — allow pop-ups to download PDF', 'error'); return; }
+    if (!printWindow) { addToast(t('toasts.pop_up_blocked_allow_pop_2'), 'error'); return; }
     try {
       printWindow.document.write(htmlContent);
     } catch(writeErr) {
@@ -12361,10 +12361,10 @@ Requirements:
 Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       setCustomExportCSS(result.trim());
       setTimeout(() => updateExportPreview(), 100);
-      addToast('Custom style generated! Preview updated.', 'success');
+      addToast(t('toasts.custom_style_generated_preview_updated'), 'success');
     } catch (err) {
       warnLog('[Export Style] Failed:', err);
-      addToast('Style generation failed — try a different description', 'error');
+      addToast(t('toasts.style_generation_failed_try_different'), 'error');
     }
     setIsGeneratingStyle(false);
   };
@@ -17158,11 +17158,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

@@ -159,5 +159,23 @@ if (newToInject.length) {
 fs.writeFileSync(targetFile, updated);
 fs.writeFileSync(stringsFile, strings);
 
+// IMPORTANT: Production loads ui_strings.js from prismflow-deploy/public/ via
+// Firebase Hosting (not from the repo root). If we only update the root file,
+// every migrated t('toasts.xxx') call renders the raw key string in production
+// because the mirror doesn't yet have the new keys. Sync after every write.
+const mirrorStringsFile = path.join(ROOT, 'prismflow-deploy', 'public', 'ui_strings.js');
+if (fs.existsSync(mirrorStringsFile)) {
+  fs.writeFileSync(mirrorStringsFile, strings);
+}
+
+// Also sync the target file to its prismflow-deploy mirror if one exists.
+// This matters for hand-maintained .js modules (no .jsx → no build-script sync).
+// For .jsx sources, the build script handles the sync — but mirroring here too
+// is idempotent and safer.
+const mirrorTargetFile = path.join(ROOT, 'prismflow-deploy', 'public', path.basename(targetFile));
+if (fs.existsSync(mirrorTargetFile) && targetFile.endsWith('.js')) {
+  fs.writeFileSync(mirrorTargetFile, updated);
+}
+
 console.log(`  ✓ Replaced ${appliedCount} addToast literals (${byText.size} unique messages)`);
-console.log(`  ✓ Appended ${newToInject.length} new keys to ui_strings.toasts`);
+console.log(`  ✓ Appended ${newToInject.length} new keys to ui_strings.toasts (root + mirror)`);

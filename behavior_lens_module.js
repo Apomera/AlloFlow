@@ -2707,7 +2707,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     onClick: () => {
                         const header = 'Routine,Count';
                         const rows = routines.map(r => `${r},${matrix[r] || 0}`);
-                        navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast('Hotspot data copied ✅', 'success'); });
+                        navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.hotspot_data_copied'), 'success'); });
                     },
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all'
                 }, '📋 Copy CSV'),
@@ -5065,7 +5065,7 @@ Create student-friendly language and return ONLY valid JSON:
                         canvas.width = 1200; canvas.height = 1600;
                         const ctx = canvas.getContext('2d');
                         const img = new Image();
-                        img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1200, 1600); ctx.drawImage(img, 0, 0, 1200, 1600); const a = document.createElement('a'); a.download = 'traffic_light_poster.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast('Exported as PNG ✅', 'success'); };
+                        img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1200, 1600); ctx.drawImage(img, 0, 0, 1200, 1600); const a = document.createElement('a'); a.download = 'traffic_light_poster.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
                         img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
                     },
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all'
@@ -6743,7 +6743,7 @@ Respond only with the student's words:`;
                     onClick: () => {
                         const header = `Counseling Simulation Transcript\nScenario: ${scenario?.label || 'Unknown'}\nExchanges: ${messages.filter(m => m.role === 'counselor').length}\nSelf-Rating: ${selfRating}/5\nNotes: ${strategyNotes || '(none)'}\n${'─'.repeat(40)}`;
                         const lines = messages.filter(m => m.role !== 'system').map(m => `${m.role === 'counselor' ? 'Counselor' : 'Student'}: ${m.content}`);
-                        navigator.clipboard.writeText([header, ...lines].join('\n')).then(() => { if (addToast) addToast('Transcript copied ✅', 'success'); });
+                        navigator.clipboard.writeText([header, ...lines].join('\n')).then(() => { if (addToast) addToast(t('toasts.transcript_copied'), 'success'); });
                     },
                     className: 'w-full py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all'
                 }, '📋 Export Transcript'),
@@ -8451,7 +8451,7 @@ Rules:
                             }
                         } catch (err) {
                             warnLog('Phase data generation failed:', err);
-                            if (addToast) addToast('Phase data generation failed — try again', 'error');
+                            if (addToast) addToast(t('toasts.phase_data_generation_failed_try'), 'error');
                         } finally { setPhaseGenerating(false); }
                     },
                     disabled: phaseGenerating,
@@ -9150,7 +9150,7 @@ Rules:
             // Reset button
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center pt-2' },
                 h('button', { "aria-label": "Reset All Progress",
-                    onClick: () => { if (confirm('Reset all skill progress? This cannot be undone.')) { setCompleted([]); if (addToast) addToast('Skill progress reset', 'info'); } },
+                    onClick: () => { if (confirm('Reset all skill progress? This cannot be undone.')) { setCompleted([]); if (addToast) addToast(t('toasts.skill_progress_reset'), 'info'); } },
                     className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
                 }, '↺ Reset All Progress')
             )
@@ -9631,8 +9631,8 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                                                     onClick: () => {
                                                         if (!answered) {
                                                             setScenarioAnswer(prev => ({ ...prev, [step.id]: idx }));
-                                                            if (idx === sc.correct && addToast) addToast('Excellent clinical reasoning! ✅', 'success');
-                                                            else if (addToast) addToast('Not quite — review the explanation below.', 'warning');
+                                                            if (idx === sc.correct && addToast) addToast(t('toasts.excellent_clinical_reasoning'), 'success');
+                                                            else if (addToast) addToast(t('toasts.quite_review_explanation_below'), 'warning');
                                                         }
                                                     },
                                                     disabled: answered,
@@ -10979,7 +10979,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         };
 
         const handleGenerate = async () => {
-            if (!callGemini || !incident.trim()) { if (addToast) addToast('Describe the incident first', 'error'); return; }
+            if (!callGemini || !incident.trim()) { if (addToast) addToast(t('toasts.describe_incident_first'), 'error'); return; }
             setGenerating(true);
             try {
                 const prompt = `You are a restorative practices specialist helping a teacher plan restitution — a consequence that is LOGICALLY CONNECTED to the harm caused.
@@ -11003,10 +11003,10 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 setSuggestions(parsed);
                 setSelectedPlan(null);
                 setCompletionSteps([]);
-                if (addToast) addToast('Restitution options generated ✨', 'success');
+                if (addToast) addToast(t('toasts.restitution_options_generated'), 'success');
             } catch (err) {
                 warnLog('Restitution generation failed:', err);
-                if (addToast) addToast('Generation failed — try again', 'error');
+                if (addToast) addToast(t('toasts.generation_failed_try_again'), 'error');
             } finally { setGenerating(false); }
         };
 
@@ -11033,7 +11033,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 plan: selectedPlan, studentVoice, completionSteps, studentName: studentName || 'Student',
             };
             setSavedPlans(prev => [entry, ...prev].slice(0, 20));
-            if (addToast) addToast('Restitution plan saved ✅', 'success');
+            if (addToast) addToast(t('toasts.restitution_plan_saved'), 'success');
         };
 
         const exportPlan = () => {
@@ -11051,7 +11051,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 ...completionSteps.map(s => `  [${s.done ? 'x' : ' '}] ${s.label}`),
             ].filter(Boolean);
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                if (addToast) addToast('Plan copied to clipboard ✅', 'success');
+                if (addToast) addToast(t('toasts.plan_copied_clipboard'), 'success');
             });
         };
 
@@ -11673,9 +11673,9 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 const parsed = JSON.parse(cleaned);
                 if (Array.isArray(parsed)) {
                     parsed.forEach(s => addStrategy(quadrantId, s));
-                    if (addToast) addToast('AI strategies added ✨', 'success');
+                    if (addToast) addToast(t('toasts.ai_strategies_added'), 'success');
                 }
-            } catch { if (addToast) addToast('AI suggestion failed', 'error'); }
+            } catch { if (addToast) addToast(t('toasts.ai_suggestion_failed'), 'error'); }
             setAiLoading(false);
         };
 
@@ -11690,7 +11690,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 }
             });
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                if (addToast) addToast('Toolkit copied to clipboard ✅', 'success');
+                if (addToast) addToast(t('toasts.toolkit_copied_clipboard'), 'success');
             });
         };
 
@@ -12235,13 +12235,13 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                     setHighPBank(prev => [...prev, ...newOnes.map(r => ({ id: Date.now() + Math.random(), request: r, successRate: 100 }))]);
                     if (addToast) addToast(`${newOnes.length} high-p requests added ✨`, 'success');
                 }
-            } catch { if (addToast) addToast('AI suggestion failed', 'error'); }
+            } catch { if (addToast) addToast(t('toasts.ai_suggestion_failed'), 'error'); }
             setAiLoading(false);
         };
 
         const generateSequence = () => {
             if (highPBank.length < 3 || !lowPRequest.trim()) {
-                if (addToast) addToast('Need at least 3 high-p requests and 1 low-p request', 'error');
+                if (addToast) addToast(t('toasts.need_least_high_requests_low'), 'error');
                 return;
             }
             const shuffled = [...highPBank].sort(() => Math.random() - 0.5);
@@ -12253,7 +12253,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
             };
             setSequences(prev => [seq, ...prev].slice(0, 10));
             setActiveView('sequence');
-            if (addToast) addToast('Momentum sequence generated 🚀', 'success');
+            if (addToast) addToast(t('toasts.momentum_sequence_generated'), 'success');
         };
 
         const logAttempt = (seqId, outcome) => {
@@ -14285,7 +14285,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                         onClick: () => {
                             const header = `ABA Knowledge Quiz Results\nScore: ${score}/${QUESTIONS.length} (${pct}%) — ${passed ? 'PASSED ✅' : 'NEEDS REVIEW'}\n${'─'.repeat(40)}`;
                             const rows = QUESTIONS.map((q, i) => `${i + 1}. ${q.q}\n   ${answers[i] === q.answer ? '✅ Correct' : '❌ Incorrect'}: ${q.opts[answers[i]]}${answers[i] !== q.answer ? ` → Correct: ${q.opts[q.answer]}` : ''}`);
-                            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast('Quiz results copied ✅', 'success'); });
+                            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.quiz_results_copied'), 'success'); });
                         },
                         className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all'
                     }, '📋 Copy Results'),
@@ -14368,9 +14368,9 @@ Fill in clinically appropriate values. The replacement behavior should serve the
                     const cleaned = result.replace(/\x60\x60\x60json?\\n?/g, '').replace(/\x60\x60\x60/g, '').trim();
                     const parsed = JSON.parse(cleaned);
                     setModel(prev => ({ ...prev, ...parsed }));
-                    if (addToast) addToast('Model auto-filled from ABC data ✅', 'success');
-                } catch { if (addToast) addToast('Could not parse AI response — try manually', 'warning'); }
-            } catch (e) { if (addToast) addToast('AI analysis failed', 'error'); }
+                    if (addToast) addToast(t('toasts.model_auto_filled_from_abc'), 'success');
+                } catch { if (addToast) addToast(t('toasts.could_parse_ai_response_try'), 'warning'); }
+            } catch (e) { if (addToast) addToast(t('toasts.ai_analysis_failed'), 'error'); }
             setLoading(false);
         };
 
@@ -14399,7 +14399,7 @@ Fill in clinically appropriate values. The replacement behavior should serve the
                 `▸ Competing Consequence: ${model.competingConsequence || '(not specified)'}`,
             ];
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                if (addToast) addToast('Pathways model copied ✅', 'success');
+                if (addToast) addToast(t('toasts.pathways_model_copied'), 'success');
             });
         };
 
@@ -14553,11 +14553,11 @@ Fill in clinically appropriate values. The replacement behavior should serve the
         // ── Dead Man's Test Logic ──
         const handleDeadManYes = () => {
             setDeadManResult('yes');
-            if (addToast) addToast('A dead man CAN do that — let\'s reframe it as an active behavior!', 'warning');
+            if (addToast) addToast(t('toasts.dead_man_let_reframe_as'), 'warning');
         };
         const handleDeadManNo = () => {
             setDeadManResult('no');
-            if (addToast) addToast('Great! This is an active, observable behavior. ✅', 'success');
+            if (addToast) addToast(t('toasts.great_active_observable_behavior'), 'success');
         };
 
         // ── AI Rewrite ──
@@ -14608,9 +14608,9 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                 });
                 setExamples(parsed.examples || '');
                 setNonExamples(parsed.nonExamples || '');
-                if (addToast) addToast('Operational definition generated! Review and edit below.', 'success');
+                if (addToast) addToast(t('toasts.operational_definition_generated_review_edit'), 'success');
             } catch (e) {
-                if (addToast) addToast('AI generation failed. Try again.', 'error');
+                if (addToast) addToast(t('toasts.ai_generation_failed_try_again'), 'error');
             }
             setLoading(false);
         };
@@ -14631,7 +14631,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
 
         const handleCopy = () => {
             navigator.clipboard.writeText(buildFinalText());
-            if (addToast) addToast('Definition copied to clipboard!', 'success');
+            if (addToast) addToast(t('toasts.definition_copied_clipboard'), 'success');
         };
 
         const handleSave = () => {
@@ -14648,7 +14648,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
             const updated = [entry, ...savedDefs].slice(0, 20);
             setSavedDefs(updated);
             try { localStorage.setItem('bl_opdef_saved', JSON.stringify(updated)); } catch {}
-            if (addToast) addToast('Definition saved! (' + updated.length + ' total)', 'success');
+            if (addToast) addToast(t('toasts.definition_saved') + updated.length + ' total)', 'success');
         };
 
         const handleReset = () => {
@@ -14896,7 +14896,7 @@ ${abcContext}
 
 Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific intervention recommendations. Be practical and teacher-friendly.`);
                 setAiInsight(result);
-            } catch { if (addToast) addToast('AI analysis failed', 'error'); }
+            } catch { if (addToast) addToast(t('toasts.ai_analysis_failed'), 'error'); }
             setLoadingAi(false);
         };
 
@@ -14921,7 +14921,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                 aiInsight ? `── AI INTERPRETATION ──\n${aiInsight}` : ''
             ];
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                if (addToast) addToast('Assessment copied ✅', 'success');
+                if (addToast) addToast(t('toasts.assessment_copied'), 'success');
             });
         };
 
@@ -15096,7 +15096,7 @@ RULES:
 
 Respond ONLY as the student. Begin now.`);
                 setConversation([{ role: 'student', text: result }]);
-            } catch { if (addToast) addToast('Failed to start scenario', 'error'); }
+            } catch { if (addToast) addToast(t('toasts.failed_start_scenario'), 'error'); }
             setLoading(false);
         };
 
@@ -15141,7 +15141,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
                 setConversation(prev => [...prev, { role: 'student', text: studentResponse }]);
                 setScores(prev => [...prev, { turn: turnNum, skills: detectedSkills, quality, tip }]);
-            } catch { if (addToast) addToast('AI response failed', 'error'); }
+            } catch { if (addToast) addToast(t('toasts.ai_response_failed'), 'error'); }
             setLoading(false);
         };
 
@@ -15172,7 +15172,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ...scores.map(s => `Turn ${s.turn}: Quality ${s.quality}/5 | Skills: ${s.skills.length > 0 ? s.skills.join(', ') : 'none'} | ${s.tip}`)
             ];
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                if (addToast) addToast('Transcript copied ✅', 'success');
+                if (addToast) addToast(t('toasts.transcript_copied'), 'success');
             });
         };
 
@@ -15364,7 +15364,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 });
             });
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                if (addToast) addToast('Data copied as CSV ✅', 'success');
+                if (addToast) addToast(t('toasts.data_copied_as_csv'), 'success');
             });
         };
 
@@ -16229,7 +16229,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url; a.download = `${(mbTitle || 'multiple_baseline').replace(/\s+/g, '_')}.svg`;
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                            if (addToast) addToast('SVG exported!', 'success');
+                            if (addToast) addToast(t('toasts.svg_exported'), 'success');
                         },
                         className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200'
                     }, '💾 Export SVG')
@@ -16387,7 +16387,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url; a.download = `${(atTitle || 'at_design').replace(/\s+/g, '_')}.svg`;
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                            if (addToast) addToast('SVG exported!', 'success');
+                            if (addToast) addToast(t('toasts.svg_exported'), 'success');
                         },
                         className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200'
                     }, '💾 Export SVG')
@@ -17082,7 +17082,7 @@ Use clinical, professional tone, suitable for an IEP team. Keep it structured an
         const handleSaveEdit = () => {
             setPlan(editedPlan);
             setIsEditing(false);
-            if (addToast) addToast('BIP Updated', 'success');
+            if (addToast) addToast(t('toasts.bip_updated'), 'success');
         };
 
         return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-w-2xl mx-auto space-y-4' },
@@ -17499,7 +17499,7 @@ Provide a concise, professional summary formatted for an IEP or BIP. Identify hi
 Keep it under 150 words.`);
                 setAiAnalysis(res);
             } catch (e) {
-                if (addToast) addToast('Analysis failed', 'error');
+                if (addToast) addToast(t('toasts.analysis_failed_2'), 'error');
             }
             setAnalyzing(false);
         };
@@ -17662,7 +17662,7 @@ Keep it under 150 words.`);
                 }, analyzing ? '🧠 Analyzing...' : '✨ Generate IEP Summary') : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 p-6 rounded-xl border border-indigo-200 mt-6' },
                     h('h4', { className: 'text-sm font-black text-indigo-900 mb-2 flex items-center gap-2' }, '🧠 AI Summary'),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-indigo-800 leading-relaxed' }, aiAnalysis),
-                    h('button', { "aria-label": "Copy Summary", onClick: () => { navigator.clipboard.writeText(aiAnalysis); if(addToast) addToast("Copied to clipboard", "success"); }, className: 'mt-3 text-xs font-bold px-3 py-1.5 bg-indigo-200 text-indigo-900 rounded-lg hover:bg-indigo-300' }, '📋 Copy Summary')
+                    h('button', { "aria-label": "Copy Summary", onClick: () => { navigator.clipboard.writeText(aiAnalysis); if(addToast) addToast(t('toasts.copied_clipboard'), "success"); }, className: 'mt-3 text-xs font-bold px-3 py-1.5 bg-indigo-200 text-indigo-900 rounded-lg hover:bg-indigo-300' }, '📋 Copy Summary')
                 )
             )
         );
@@ -17855,7 +17855,7 @@ Keep it under 150 words.`);
             var d1 = obs1Data.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
             var d2 = obs2Data.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
             if (d1.length === 0 || d2.length === 0) {
-                if (addToast) addToast('Please enter data for both observers', 'error');
+                if (addToast) addToast(t('toasts.enter_data_both_observers'), 'error');
                 return;
             }
             var result = {};
@@ -17918,7 +17918,7 @@ Keep it under 150 words.`);
                 result = { method: 'Exact Count', totalIntervals: maxLen4, agreement: (exactAgree / maxLen4).toFixed(1), interpretation: (exactAgree / maxLen4) >= 80 ? 'Acceptable' : 'Below threshold', details: exactDetails };
             }
             setIoaResults(result);
-            if (addToast) addToast('IOA calculated: ' + result.agreement + '% agreement', 'success');
+            if (addToast) addToast(t('toasts.ioa_calculated') + result.agreement + '% agreement', 'success');
         }
 
         // AI Video/Audio Processing
@@ -17928,7 +17928,7 @@ Keep it under 150 words.`);
             var isVideo = file.type.startsWith('video/');
             var isAudio = file.type.startsWith('audio/');
             if (!isVideo && !isAudio) {
-                if (addToast) addToast('Please upload a video or audio file', 'error');
+                if (addToast) addToast(t('toasts.upload_video_audio_file'), 'error');
                 return;
             }
             setMediaFile(file);
@@ -17943,7 +17943,7 @@ Keep it under 150 words.`);
         function processIOAWithAI() {
             if (!mediaFile || !callGemini) return;
             if (!targetBehaviors.trim()) {
-                if (addToast) addToast('Please define target behavior(s) first', 'error');
+                if (addToast) addToast(t('toasts.define_target_behavior_first'), 'error');
                 return;
             }
             setAiProcessing(true);
@@ -17975,18 +17975,18 @@ Keep it under 150 words.`);
                             var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
                             setAiCoding(parsed);
                             setAiProgress(100);
-                            if (addToast) addToast('AI coding complete: ' + (parsed.intervals || []).length + ' intervals analyzed', 'success');
+                            if (addToast) addToast(t('toasts.ai_coding_complete') + (parsed.intervals || []).length + ' intervals analyzed', 'success');
                             if (practitionerCoding.trim()) {
                                 doIOAComparison(parsed);
                             }
                         } catch (parseErr) {
                             warnLog('AI IOA parse failed', parseErr);
-                            if (addToast) addToast('AI response could not be parsed — try again', 'error');
+                            if (addToast) addToast(t('toasts.ai_response_could_parsed_try'), 'error');
                         }
                     })
                     .catch(function(err) {
                         warnLog('AI IOA processing failed', err);
-                        if (addToast) addToast('Processing failed: ' + (err.message || 'Unknown error'), 'error');
+                        if (addToast) addToast(t('toasts.processing_failed') + (err.message || 'Unknown error'), 'error');
                     })
                     .finally(function() {
                         setAiProcessing(false);
@@ -17994,7 +17994,7 @@ Keep it under 150 words.`);
             };
             reader.onerror = function() {
                 setAiProcessing(false);
-                if (addToast) addToast('Failed to read file', 'error');
+                if (addToast) addToast(t('toasts.failed_read_file'), 'error');
             };
             reader.readAsDataURL(mediaFile);
         }
@@ -18031,17 +18031,17 @@ Keep it under 150 words.`);
                         try {
                             var parsed2 = JSON.parse(result2.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
                             setAiCoding2(parsed2);
-                            if (addToast) addToast('Second AI review complete: ' + (parsed2.intervals || []).length + ' intervals', 'success');
+                            if (addToast) addToast(t('toasts.second_ai_review_complete') + (parsed2.intervals || []).length + ' intervals', 'success');
                             // Auto-run triple comparison
                             doTripleComparison(aiCoding, parsed2);
                         } catch (pe2) {
                             warnLog('AI IOA pass 2 parse failed', pe2);
-                            if (addToast) addToast('Second AI pass could not be parsed — try again', 'error');
+                            if (addToast) addToast(t('toasts.second_ai_pass_could_parsed'), 'error');
                         }
                     })
                     .catch(function(err2) {
                         warnLog('AI IOA pass 2 failed', err2);
-                        if (addToast) addToast('Second pass failed: ' + (err2.message || 'Unknown error'), 'error');
+                        if (addToast) addToast(t('toasts.second_pass_failed') + (err2.message || 'Unknown error'), 'error');
                     })
                     .finally(function() {
                         setAiProcessing2(false);
@@ -18049,7 +18049,7 @@ Keep it under 150 words.`);
             };
             reader2.onerror = function() {
                 setAiProcessing2(false);
-                if (addToast) addToast('Failed to read file for second pass', 'error');
+                if (addToast) addToast(t('toasts.failed_read_file_second_pass'), 'error');
             };
             reader2.readAsDataURL(mediaFile);
         }
@@ -18104,7 +18104,7 @@ Keep it under 150 words.`);
                 var pct2 = maxLen > 0 ? ((agree2 / maxLen) * 100).toFixed(1) : '0';
                 setIoaComparison2({ agreementPct: pct2, totalIntervals: maxLen, agreements: agree2, disagreements: disagree2.length, interpretation: parseFloat(pct2) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold', details: details2 });
             }
-            if (addToast) addToast('Triple comparison: AI-1 × AI-2 = ' + aiPct + '% agreement', 'info');
+            if (addToast) addToast(t('toasts.triple_comparison_ai_ai') + aiPct + '% agreement', 'info');
         }
 
         // Compare Practitioner vs AI Coding
@@ -18113,7 +18113,7 @@ Keep it under 150 words.`);
             if (!ai || !ai.intervals) return;
             var practData = practitionerCoding.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(n) { return !isNaN(n); });
             if (practData.length === 0) {
-                if (addToast) addToast('Please enter your coding data (comma-separated)', 'error');
+                if (addToast) addToast(t('toasts.enter_coding_data_comma_separated'), 'error');
                 return;
             }
             var aiIntervals = ai.intervals;
@@ -18143,7 +18143,7 @@ Keep it under 150 words.`);
             var compResult = { totalIntervals: maxLen, agreements: agreements, disagreements: disagreeList.length, agreementPct: agreePct, interpretation: parseFloat(agreePct) >= 80 ? 'Acceptable (≥80%)' : parseFloat(agreePct) >= 70 ? 'Marginal (70-79%)' : 'Below threshold (<70%)', details: detailList, aiSummary: ai.summary || '', behaviorRate: ai.behavior_rate || '' };
             setIoaComparison(compResult);
             setDiscrepancies(disagreeList);
-            if (addToast) addToast('IOA Comparison: ' + agreePct + '% agreement (' + disagreeList.length + ' discrepancies)', 'info');
+            if (addToast) addToast(t('toasts.ioa_comparison') + agreePct + '% agreement (' + disagreeList.length + ' discrepancies)', 'info');
         }
 
         // Export Report
@@ -18182,7 +18182,7 @@ Keep it under 150 words.`);
                 }
             }
             navigator.clipboard.writeText(lines.join('\n')).then(function() {
-                if (addToast) addToast('Report copied to clipboard', 'success');
+                if (addToast) addToast(t('toasts.report_copied_clipboard_2'), 'success');
             });
         }
 
@@ -18199,7 +18199,7 @@ Keep it under 150 words.`);
             var isVideo = file.type.startsWith('video/');
             var isAudio = file.type.startsWith('audio/');
             if (!isVideo && !isAudio) {
-                if (addToast) addToast('Please upload a video or audio file', 'error');
+                if (addToast) addToast(t('toasts.upload_video_audio_file'), 'error');
                 return;
             }
             setMediaFile(file);
@@ -18212,7 +18212,7 @@ Keep it under 150 words.`);
         function processInteractionAnalysis() {
             if (!mediaFile || !callGemini) return;
             if (!targetBehaviors.trim()) {
-                if (addToast) addToast('Please define target behavior(s) first', 'error');
+                if (addToast) addToast(t('toasts.define_target_behavior_first'), 'error');
                 return;
             }
             setIaProcessing(true);
@@ -18265,15 +18265,15 @@ Keep it under 150 words.`);
                         try {
                             var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
                             setIaResults(parsed);
-                            if (addToast) addToast('Interaction analysis complete: ' + (parsed.intervals || []).length + ' intervals analyzed', 'success');
+                            if (addToast) addToast(t('toasts.interaction_analysis_complete') + (parsed.intervals || []).length + ' intervals analyzed', 'success');
                         } catch (pe) {
                             warnLog('Interaction analysis parse failed', pe);
-                            if (addToast) addToast('AI response could not be parsed — try again', 'error');
+                            if (addToast) addToast(t('toasts.ai_response_could_parsed_try'), 'error');
                         }
                     })
                     .catch(function(err) {
                         warnLog('Interaction analysis failed', err);
-                        if (addToast) addToast('Analysis failed: ' + (err.message || 'Unknown error'), 'error');
+                        if (addToast) addToast(t('toasts.analysis_failed_3') + (err.message || 'Unknown error'), 'error');
                     })
                     .finally(function() {
                         setIaProcessing(false);
@@ -18281,7 +18281,7 @@ Keep it under 150 words.`);
             };
             reader.onerror = function() {
                 setIaProcessing(false);
-                if (addToast) addToast('Failed to read file', 'error');
+                if (addToast) addToast(t('toasts.failed_read_file'), 'error');
             };
             reader.readAsDataURL(mediaFile);
         }
@@ -18316,7 +18316,7 @@ Keep it under 150 words.`);
             lines.push('');
             lines.push('WARNING: AI analysis is supplementary. Clinical decisions require professional judgment.');
             navigator.clipboard.writeText(lines.join('\n')).then(function() {
-                if (addToast) addToast('Interaction report copied to clipboard', 'success');
+                if (addToast) addToast(t('toasts.interaction_report_copied_clipboard'), 'success');
             });
         }
 
@@ -18887,7 +18887,7 @@ Keep it under 150 words.`);
                 return;
             }
             if (!callGemini) {
-                if (addToast) addToast("AI Engine not available.", 'error');
+                if (addToast) addToast(t('toasts.ai_engine_available'), 'error');
                 return;
             }
             
@@ -19594,7 +19594,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             setStimulusTime(null);
         };
 
-        const clearTrials = () => { setTrials([]); if (addToast) addToast('Trials cleared', 'info'); };
+        const clearTrials = () => { setTrials([]); if (addToast) addToast(t('toasts.trials_cleared'), 'info'); };
 
         const validTrials = trials.filter(t => t.latency !== null);
         const meanVal = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : 0;
@@ -19621,14 +19621,14 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             canvas.width = W * 2; canvas.height = H * 2;
             const ctx = canvas.getContext('2d');
             const img = new Image();
-            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'latency_trials.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast('Exported as PNG ✅', 'success'); };
+            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'latency_trials.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         };
 
         const copyCSV = () => {
             const header = 'Trial,Latency(s),Response,Timestamp';
             const rows = trials.map((tr, i) => `${i + 1},${tr.noResponse ? 'NR' : tr.latency},${tr.noResponse ? 'No' : 'Yes'},${tr.timestamp}`);
-            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast('Data copied to clipboard ✅', 'success'); });
+            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.data_copied_clipboard'), 'success'); });
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
@@ -19847,14 +19847,14 @@ Provide a brief narrative interpretation (3-4 sentences) that:
 Keep the language professional but accessible.`;
                 const resp = await callGemini(prompt);
                 setAiInterpretation(resp);
-            } catch (e) { addToast && addToast('AI interpretation failed'); }
+            } catch (e) { addToast && addToast(t('toasts.ai_interpretation_failed')); }
             setAiLoading(false);
         };
 
         const saveForComparison = () => {
             if (!result) return;
             setSavedResults(prev => [...prev, { ...result, responses: { ...responses } }]);
-            addToast && addToast('Result saved for comparison');
+            addToast && addToast(t('toasts.result_saved_comparison'));
         };
 
         const exportReport = () => {
@@ -19874,7 +19874,7 @@ Keep the language professional but accessible.`;
             const a = document.createElement('a'); a.href = url;
             a.download = `social_validity_${new Date().toISOString().split('T')[0]}.txt`;
             a.click(); URL.revokeObjectURL(url);
-            addToast && addToast('Report exported!');
+            addToast && addToast(t('toasts.report_exported'));
         };
 
         // Pre/Post comparison view
@@ -20131,7 +20131,7 @@ Keep the language professional but accessible.`;
             const a = document.createElement('a');
             a.href = url; a.download = `maintenance_summary_${new Date().toISOString().split('T')[0]}.txt`;
             a.click(); URL.revokeObjectURL(url);
-            addToast && addToast('Summary exported!');
+            addToast && addToast(t('toasts.summary_exported'));
         };
 
         const skill = skills.find(s => s.id === selectedSkill);
@@ -20346,7 +20346,7 @@ Keep the language professional but accessible.`;
             if (isNaN(s) || s < 2 || s > dataPoints.length) return;
             setPhases(prev => [...prev, { session: s, label: newPhaseLabel || 'Phase' }]);
             setAddingPhase(false); setNewPhaseSession(''); setNewPhaseLabel('Intervention');
-            if (addToast) addToast('Phase line added ✅', 'success');
+            if (addToast) addToast(t('toasts.phase_line_added'), 'success');
         };
 
         const removePhase = (idx) => setPhases(prev => prev.filter((_, i) => i !== idx));
@@ -20359,14 +20359,14 @@ Keep the language professional but accessible.`;
             canvas.width = W * 2; canvas.height = H * 2;
             const ctx = canvas.getContext('2d');
             const img = new Image();
-            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'cumulative_record.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast('Exported as PNG ✅', 'success'); };
+            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'cumulative_record.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         };
 
         const copyCSV = () => {
             const header = 'Session,Count,Cumulative';
             const rows = dataPoints.map(d => `${d.session},${d.count},${d.cumulative}`);
-            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast('Data copied to clipboard ✅', 'success'); });
+            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.data_copied_clipboard'), 'success'); });
         };
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
@@ -20837,7 +20837,7 @@ Keep the language professional but accessible.`;
 
                     setParsedEntries(entries.map(e => ({ ...e, intensity: Math.min(5, Math.max(1, parseInt(e.intensity) || 3)), timestamp: new Date().toISOString(), source: 'natural_language' })));
 
-                    if (addToast) addToast('Parsed ' + entries.length + ' ABC entries!', 'success');
+                    if (addToast) addToast(t('toasts.parsed') + entries.length + ' ABC entries!', 'success');
 
                 }
 
@@ -22265,7 +22265,7 @@ Keep the language professional but accessible.`;
                 if (final) setTranscript(prev => prev + final);
                 setInterimText(interim);
             };
-            recognition.onerror = (e) => { if (addToast) addToast('Speech recognition error: ' + e.error, 'error'); setIsRecording(false); };
+            recognition.onerror = (e) => { if (addToast) addToast(t('toasts.speech_recognition_error') + e.error, 'error'); setIsRecording(false); };
             recognition.onend = () => { setIsRecording(false); setInterimText(''); };
             recognition.start();
             recognitionRef.current = recognition;
@@ -23176,7 +23176,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
 
         // ── AI Scenario Generator ──
         const generateAiScenario = async () => {
-            if (!callGemini) { if (addToast) addToast('AI not available', 'warning'); return; }
+            if (!callGemini) { if (addToast) addToast(t('toasts.ai_available_2'), 'warning'); return; }
             setGeneratingAi(true);
             try {
                 const topicHint = aiTopicInput.trim() ? `The scenario should relate to: "${aiTopicInput.trim()}".` : 'Choose a realistic school-based scenario.';
@@ -23230,10 +23230,10 @@ IMPORTANT rules for expert keys:
                 setAiScenarios(prev => [...prev, parsed]);
                 setScenarioIdx(ALL_SCENARIOS.length); // Jump to the newly added scenario
                 setAiTopicInput('');
-                if (addToast) addToast('AI scenario generated!', 'success');
+                if (addToast) addToast(t('toasts.ai_scenario_generated'), 'success');
             } catch (err) {
                 console.error('AI scenario generation failed:', err);
-                if (addToast) addToast('Failed to generate scenario. Try again.', 'error');
+                if (addToast) addToast(t('toasts.failed_generate_scenario_try_again'), 'error');
             } finally {
                 setGeneratingAi(false);
             }

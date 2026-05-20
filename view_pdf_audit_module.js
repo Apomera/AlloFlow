@@ -242,10 +242,10 @@ function PdfAuditView(props) {
     ), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const url = document.getElementById("web-audit-url")?.value?.trim();
       if (!url) {
-        addToast("Enter a URL", "info");
+        addToast(t("toasts.enter_url"), "info");
         return;
       }
-      addToast("Fetching website...", "info");
+      addToast(t("toasts.fetching_website"), "info");
       try {
         const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
         const resp = await fetch(proxyUrl);
@@ -256,9 +256,9 @@ function PdfAuditView(props) {
           html = html.replace(/<head([^>]*)>/i, "<head$1>" + baseTag);
         }
         document.getElementById("web-audit-html").value = html;
-        addToast("Website fetched! (" + html.length.toLocaleString() + " chars) \u2014 click Audit to analyze", "success");
+        addToast(t("toasts.website_fetched") + html.length.toLocaleString() + " chars) \u2014 click Audit to analyze", "success");
       } catch (e) {
-        addToast("Could not fetch URL \u2014 try pasting the HTML source instead. Error: " + e.message, "error");
+        addToast(t("toasts.could_fetch_url_try_pasting") + e.message, "error");
       }
     }, className: "px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors", "aria-label": t("pdf_audit.web.fetch_aria") || "Fetch website HTML" }, "\u{1F50D} Fetch")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("pdf_audit.web.or_paste_hint") || "Or paste HTML source code directly below")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase", htmlFor: "web-audit-html" }, t("pdf_audit.web.html_label") || "HTML Source"), /* @__PURE__ */ React.createElement(
       "textarea",
@@ -272,10 +272,10 @@ function PdfAuditView(props) {
     )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const html = document.getElementById("web-audit-html")?.value?.trim();
       if (!html || html.length < 20) {
-        addToast("Paste or fetch HTML first", "info");
+        addToast(t("toasts.paste_fetch_html_first"), "info");
         return;
       }
-      addToast("Running accessibility audit...", "info");
+      addToast(t("toasts.running_accessibility_audit"), "info");
       const [aiResult, axeResult] = await Promise.all([
         auditOutputAccessibility(html),
         runAxeAudit(html)
@@ -305,10 +305,10 @@ function PdfAuditView(props) {
     }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F Audit (AI + axe-core)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const html = document.getElementById("web-audit-html")?.value?.trim();
       if (!html || html.length < 20) {
-        addToast("Paste or fetch HTML first", "info");
+        addToast(t("toasts.paste_fetch_html_first"), "info");
         return;
       }
-      addToast("Auditing & remediating HTML...", "info");
+      addToast(t("toasts.auditing_remediating_html"), "info");
       setPdfFixLoading(true);
       setPdfFixStep("Applying deterministic fixes...");
       try {
@@ -340,7 +340,7 @@ function PdfAuditView(props) {
         setPendingPdfFile({ name: (document.getElementById("web-audit-url")?.value || "website") + "-remediated.html" });
         addToast(`Remediation complete! Score: ${finalScore}/100`, "success");
       } catch (e) {
-        addToast("Remediation failed: " + e.message, "error");
+        addToast(t("toasts.remediation_failed") + e.message, "error");
       }
       setPdfFixLoading(false);
       setPdfFixStep("");
@@ -360,7 +360,7 @@ function PdfAuditView(props) {
           e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-50");
           const files = [...e.dataTransfer.files].filter((f) => f.type === "application/pdf");
           if (files.length === 0) {
-            addToast("Please drop PDF files only", "error");
+            addToast(t("toasts.drop_pdf_files_only"), "error");
             return;
           }
           files.forEach((file) => {
@@ -401,7 +401,7 @@ function PdfAuditView(props) {
             }
           } catch (_) {
           }
-          addToast("Stopping batch \u2014 finishing current file then halting\u2026", "info");
+          addToast(t("toasts.stopping_batch_finishing_current_file"), "info");
         },
         className: "shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-bold",
         "aria-label": t("pdf_audit.batch.stop_aria") || "Stop batch remediation"
@@ -430,7 +430,7 @@ function PdfAuditView(props) {
       const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
       const win = window.open("", "_blank");
       if (!win) {
-        addToast("Pop-up blocked", "error");
+        addToast(t("toasts.pop_up_blocked"), "error");
         return;
       }
       win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Compliance Dashboard</title>
@@ -534,7 +534,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </div>
 </body></html>`);
       win.document.close();
-      addToast("\u{1F4CA} Dashboard opened", "success");
+      addToast(t("toasts.dashboard_opened"), "success");
     }, className: "px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2" }, "\u{1F4CA} Dashboard")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, "PDF Uploaded: ", pdfAuditResult.fileName), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-1" }, (pdfAuditResult.fileSize / (1024 * 1024)).toFixed(1), " MB"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, t("pdf_audit.choose_how") || "Choose how to process this PDF:"), /* @__PURE__ */ React.createElement("details", { open: true, className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "90 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))))), /* @__PURE__ */ React.createElement("details", { className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -559,7 +559,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       /* @__PURE__ */ React.createElement("input", { type: "file", accept: "image/*,.pdf", className: "hidden", onChange: async (e) => {
         const file = e.target.files?.[0];
         if (!file || !callGeminiVision) return;
-        addToast("\u{1F3A8} Extracting brand colors...", "info");
+        addToast(t("toasts.extracting_brand_colors"), "info");
         const reader = new FileReader();
         reader.onload = async (ev) => {
           try {
@@ -584,9 +584,9 @@ Return ONLY JSON:
             window.__pdfBrandMode = "upload";
             document.querySelectorAll("[data-brand-mode]").forEach((b) => b.classList.remove("ring-2", "ring-indigo-400", "bg-indigo-50"));
             document.querySelector('[data-brand-mode="upload"]')?.classList.add("ring-2", "ring-indigo-400", "bg-indigo-50");
-            addToast("\u{1F3A8} Brand colors extracted from " + file.name, "success");
+            addToast(t("toasts.brand_colors_extracted_from") + file.name, "success");
           } catch (err) {
-            addToast("Could not extract brand colors", "error");
+            addToast(t("toasts.could_extract_brand_colors"), "error");
           }
         };
         reader.readAsDataURL(file);
@@ -649,7 +649,7 @@ Return ONLY JSON:
               window.__pdfStylePreference = "custom";
               window.__pdfCustomStyle = s;
               document.querySelectorAll("[data-style-pref]").forEach((b) => b.classList.remove("ring-2", "ring-indigo-400", "bg-indigo-50"));
-              addToast && addToast('Custom style "' + s.name + '" applied!', "success");
+              addToast && addToast(t("toasts.custom_style") + s.name + '" applied!', "success");
             },
             className: "px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50"
           },
@@ -662,12 +662,12 @@ Return ONLY JSON:
             localStorage.setItem("alloflow_custom_styles", JSON.stringify(updated));
           } catch (e) {
           }
-          addToast && addToast('Deleted "' + s.name + '"', "info");
+          addToast && addToast(t("toasts.deleted") + s.name + '"', "info");
         }, className: "px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-600 hover:text-red-600 hover:bg-red-50" }, "\u2715"));
       }))), /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700" }, "+ Create Custom Style"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-slate-50 rounded-lg p-3 border border-slate-400 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "custom-style-name", className: "text-[11px] text-slate-600 font-bold" }, t("pdf_audit.style.name_label") || "Style Name"), /* @__PURE__ */ React.createElement("input", { id: "custom-style-name", type: "text", placeholder: t("pdf_audit.style.name_placeholder") || "My Style", "aria-label": t("pdf_audit.style.name_aria") || "Custom style name", className: "w-full px-2 py-1 text-[11px] border border-slate-400 rounded" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "custom-style-font", className: "text-[11px] text-slate-600 font-bold" }, "Font"), /* @__PURE__ */ React.createElement("select", { id: "custom-style-font", "aria-label": t("pdf_audit.style.font_aria") || "Font family", className: "w-full px-2 py-1 text-[11px] border border-slate-400 rounded" }, /* @__PURE__ */ React.createElement("option", { value: "'Inter', system-ui, sans-serif" }, t("pdf_audit.style.font_inter") || "Inter (Clean)"), /* @__PURE__ */ React.createElement("option", { value: "'Georgia', serif" }, t("pdf_audit.style.font_georgia") || "Georgia (Serif)"), /* @__PURE__ */ React.createElement("option", { value: "'Atkinson Hyperlegible', sans-serif" }, t("pdf_audit.style.font_atkinson") || "Atkinson (A11y)"), /* @__PURE__ */ React.createElement("option", { value: "'Lexend', sans-serif" }, t("pdf_audit.style.font_lexend") || "Lexend (Readable)"), /* @__PURE__ */ React.createElement("option", { value: "'Comic Sans MS', cursive" }, t("pdf_audit.style.font_comic") || "Comic Sans (Fun)"), /* @__PURE__ */ React.createElement("option", { value: "'Times New Roman', serif" }, t("pdf_audit.style.font_times") || "Times (Classic)"), /* @__PURE__ */ React.createElement("option", { value: "'OpenDyslexic', sans-serif" }, "OpenDyslexic")))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "custom-style-heading", className: "text-[11px] text-slate-600 font-bold" }, t("pdf_audit.style.heading_color_label") || "Heading Color"), /* @__PURE__ */ React.createElement("input", { id: "custom-style-heading", type: "color", defaultValue: "#1e3a5f", "aria-label": t("pdf_audit.style.heading_color_aria") || "Heading color", className: "w-full h-6 rounded border border-slate-400 cursor-pointer" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "custom-style-accent", className: "text-[11px] text-slate-600 font-bold" }, t("pdf_audit.style.accent_color_label") || "Accent Color"), /* @__PURE__ */ React.createElement("input", { id: "custom-style-accent", type: "color", defaultValue: "#2563eb", "aria-label": t("pdf_audit.style.accent_color_aria") || "Accent color", className: "w-full h-6 rounded border border-slate-400 cursor-pointer" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "custom-style-bg", className: "text-[11px] text-slate-600 font-bold" }, "Background"), /* @__PURE__ */ React.createElement("input", { id: "custom-style-bg", type: "color", defaultValue: "#ffffff", "aria-label": t("pdf_audit.style.bg_color_aria") || "Background color", className: "w-full h-6 rounded border border-slate-400 cursor-pointer" }))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         var name = document.getElementById("custom-style-name")?.value?.trim();
         if (!name) {
-          addToast && addToast("Please enter a style name", "warning");
+          addToast && addToast(t("toasts.enter_style_name"), "warning");
           return;
         }
         var style = {
@@ -691,11 +691,11 @@ Return ONLY JSON:
         }
         window.__pdfStyleSeed = "custom";
         window.__pdfCustomStyle = style;
-        addToast && addToast('\u{1F3A8} Custom style "' + name + '" saved & applied!', "success");
+        addToast && addToast(t("toasts.custom_style_2") + name + '" saved & applied!', "success");
       }, className: "w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors" }, "Save & Apply Style"))));
     })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", onClick: async () => {
       setPdfAuditResult(null);
-      addToast("Auditing & remediating PDF...", "info");
+      addToast(t("toasts.auditing_remediating_pdf"), "info");
       await runPdfAccessibilityAudit(pendingPdfBase64);
       setTimeout(() => {
         const r = pdfFixResultRef.current;
@@ -749,10 +749,10 @@ Return ONLY JSON:
               if (!freshBase64) return;
               const ok = await _ensurePdfLib();
               if (!ok) {
-                addToast("Couldn't load PDF tagging library (network?). Try again.", "error");
+                addToast(t("toasts.couldn_load_pdf_tagging_library"), "error");
                 return;
               }
-              addToast("Tagging original PDF (baseline)\u2026", "info");
+              addToast(t("toasts.tagging_original_pdf_baseline"), "info");
               const binStr = atob(freshBase64);
               const bytes = new Uint8Array(binStr.length);
               for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
@@ -765,7 +765,7 @@ Return ONLY JSON:
               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
               const summary = _result && _result.summary || null;
               if (!taggedBytes) {
-                addToast("Tagged PDF generation returned no bytes.", "error");
+                addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
                 return;
               }
               const blob = new Blob([taggedBytes], { type: "application/pdf" });
@@ -789,13 +789,13 @@ Return ONLY JSON:
                 }
                 if (summary.pdfUaDeclared) extras.push("PDF/UA-1 declared.");
                 const extrasStr = extras.length ? " " + extras.join(" ") : "";
-                addToast("Baseline Tagged PDF downloaded \u2014 " + detail + extrasStr + " Run Fix & Verify for richer tagging.", "success");
+                addToast(t("toasts.baseline_tagged_pdf_downloaded") + detail + extrasStr + " Run Fix & Verify for richer tagging.", "success");
               } else {
-                addToast("Baseline Tagged PDF downloaded \u2014 original PDF with per-page structure tags. Run Fix & Verify for richer tagging.", "success");
+                addToast(t("toasts.baseline_tagged_pdf_downloaded_original"), "success");
               }
             } catch (err) {
               warnLog("[TaggedPDF baseline] failed:", err);
-              addToast("Baseline Tagged PDF failed: " + (err?.message || "unknown error") + ".", "error");
+              addToast(t("toasts.baseline_tagged_pdf_failed") + (err?.message || "unknown error") + ".", "error");
             }
           },
           className: "px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 hover:border-slate-400 transition-colors flex items-center gap-1.5",
@@ -811,7 +811,7 @@ Return ONLY JSON:
         try {
           const project = JSON.parse(ev.target.result);
           if (!project.accessibleHtml || !project.version) {
-            addToast("Not a valid AlloFlow project file", "error");
+            addToast(t("toasts.valid_alloflow_project_file"), "error");
             return;
           }
           setPdfAuditResult({
@@ -843,9 +843,9 @@ Return ONLY JSON:
             autoFixPasses: 0
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf" });
-          addToast("\u{1F4C2} Loaded: " + (project.fileName || "project") + " \u2014 continue editing!", "success");
+          addToast(t("toasts.loaded_2") + (project.fileName || "project") + " \u2014 continue editing!", "success");
         } catch (err) {
-          addToast("Failed to load: " + err.message, "error");
+          addToast(t("toasts.failed_load") + err.message, "error");
         }
       };
       reader.readAsText(file);
@@ -854,7 +854,7 @@ Return ONLY JSON:
       _closePdfAuditModal();
     }, className: "text-xs text-slate-600 hover:text-slate-600 font-bold" }, "Cancel"))) : pdfAuditLoading ? /* @__PURE__ */ React.createElement("div", { className: "p-12 text-center", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4 animate-pulse", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, t("pdf_audit.loading.title") || "Auditing PDF Accessibility..."), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("pdf_audit.loading.subtitle") || "Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds."), /* @__PURE__ */ React.createElement("div", { className: "mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.loading.progress_aria") || "Audit in progress", "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 rounded-full", style: { animation: "auditProgress 25s ease-out forwards" } })), /* @__PURE__ */ React.createElement("style", null, `@keyframes auditProgress { 0% { width: 5%; } 20% { width: 30%; } 50% { width: 55%; } 75% { width: 75%; } 90% { width: 85%; } 100% { width: 92%; } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`), /* @__PURE__ */ React.createElement("div", { className: "mt-6 text-left bg-gradient-to-br from-white via-indigo-50/50 to-violet-50/40 border border-indigo-200/70 rounded-2xl p-5 space-y-3 mx-auto max-w-lg", style: { animation: "fadeInUp 0.9s ease-out 3s both" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center shadow-lg shadow-indigo-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-white font-black text-base" }, "K")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "Knowbility"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider" }, t("pdf_audit.knowbility.partner_badge") || "Accessibility Partner"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider" }, "501(c)(3) Nonprofit")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mt-1.5" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-700" }, t("pdf_audit.knowbility.mission_lead") || "Creating an inclusive digital world for people with disabilities"), " \u2014 Knowbility is a nonprofit organization based in Austin, TX, and an award-winning leader in accessible information technology since 1999."))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2", style: { animation: "fadeInUp 0.7s ease-out 5s both" } }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5" }, "\u2696\uFE0F Why Digital Accessibility Matters"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-amber-900" }, t("pdf_audit.knowbility.ada_title") || "The Americans with Disabilities Act (ADA) Title II"), " requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published ", /* @__PURE__ */ React.createElement("strong", null, "final regulations"), " mandating ", /* @__PURE__ */ React.createElement("strong", null, t("pdf_audit.knowbility.wcag_label") || "WCAG 2.1 Level AA"), " compliance for all web content and mobile applications, with compliance deadlines ranging from ", /* @__PURE__ */ React.createElement("strong", null, t("pdf_audit.knowbility.deadline_range") || "April 2026 to April 2027"), " depending on population size."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "But compliance is just the baseline. Accessible documents benefit ", /* @__PURE__ */ React.createElement("strong", null, "everyone"), " \u2014 not just the 1 in 4 Americans living with a disability:"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 rounded-lg p-2 border border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-700" }, "\u{1F30D} Broader Reach"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.broader_reach_desc") || "Accessible content works on any device, any bandwidth, any assistive technology \u2014 reaching more users")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 rounded-lg p-2 border border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700" }, "\u{1F50D} Better SEO & Findability"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.seo_desc") || "Structured headings, alt text, and semantic HTML improve search ranking and content discovery")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 rounded-lg p-2 border border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-violet-700" }, "\u{1F9E0} Cognitive Clarity"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.cognitive_desc") || "Clear navigation, consistent layouts, and plain language help all users \u2014 especially in high-cognitive-load contexts")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 rounded-lg p-2 border border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-rose-700" }, "\u26A1 Future-Proofing"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.future_desc") || "WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 italic leading-relaxed" }, t("pdf_audit.knowbility.italic_callout") || "WCAG 2.1 AA isn't just about avoiding litigation \u2014 it's about building documents that are perceivable, operable, understandable, and robust for every human being.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-wider" }, "\u{1F50D} Auditing & Testing"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.audit_service_desc") || "Expert WCAG audits and document remediation by certified professionals")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-wider" }, "\u267F AccessWorks"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.usability_service_desc") || "Real-world usability testing by people who use assistive technology daily")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-wider" }, "\u{1F4C4} Document Remediation"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.docrem_service_desc") || "Specialist team for PDF and MS Office docs \u2014 full usability with assistive technology")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-wider" }, "\u{1F393} Training & AccessU"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.training_service_desc") || "Annual conference and on-demand courses \u2014 beginner to advanced accessibility skills"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white/70 rounded-lg border border-indigo-100 p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-center" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Web"), /* @__PURE__ */ React.createElement("a", { href: "https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation", target: "_blank", rel: "noopener noreferrer", className: "text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300" }, "knowbility.org")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Email"), /* @__PURE__ */ React.createElement("a", { href: "mailto:knowbility@knowbility.org", className: "text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300" }, "knowbility@knowbility.org")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Phone"), /* @__PURE__ */ React.createElement("a", { href: "tel:+15125273138", className: "text-[11px] font-bold text-slate-700 hover:text-indigo-700" }, "512-527-3138"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 pt-2 border-t border-indigo-100 text-center" }, /* @__PURE__ */ React.createElement("a", { href: "https://knowbility.org/services/project-inquiry", target: "_blank", rel: "noopener noreferrer", className: "inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200" }, "Request a Project Inquiry \u2192"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 border-t border-indigo-100" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-600 font-medium uppercase tracking-wider" }, "W3C/WAI \xB7 IAAP-Certified \xB7 Clinton White House Recognized \xB7 FCC Innovation Award"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 border-t border-indigo-100" })))) : pdfAuditResult && pdfAuditResult.score < 0 ? /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded-2xl overflow-hidden border border-slate-400 shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 text-center bg-gradient-to-r from-slate-600 to-slate-700 text-white" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u26A0\uFE0F"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold" }, t("pdf_audit.unavailable.title") || "Audit Unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-sm opacity-80 mt-1" }, t("pdf_audit.unavailable.body") || "The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.")), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-white space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 text-center" }, t("pdf_audit.unavailable.proceed_hint") || "You can still proceed \u2014 Fix & Verify will transform the document and run a full audit afterward."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center" }, /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       setPdfAuditResult(null);
-      addToast("Retrying audit...", "info");
+      addToast(t("toasts.retrying_audit"), "info");
       await runPdfAccessibilityAudit(pendingPdfBase64);
     }, className: "px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors" }, "\u{1F504} Retry Audit"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       _closePdfAuditModal();
@@ -900,7 +900,7 @@ Return ONLY JSON:
           const merged = _docPipeline.mergeRangesToFullHtml(pdfMultiSession.ranges, pdfAuditResult.pageCount || pdfMultiSession.pageCount || 1);
           const blob = new Blob([merged], { type: "text/html;charset=utf-8" });
           safeDownloadBlob(blob, (pendingPdfFile?.name?.replace(/\.pdf$/i, "") || "document") + "_multi-session.html");
-          addToast("Downloaded merged HTML for completed ranges.", "success");
+          addToast(t("toasts.downloaded_merged_html_completed_ranges"), "success");
         },
         className: "text-xs px-2 py-1 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700"
       },
@@ -914,7 +914,7 @@ Return ONLY JSON:
           await _docPipeline.clearMultiSession(pdfMultiSession.sessionId);
           setPdfMultiSession(null);
           setPdfPageRange(null);
-          addToast("Cleared saved progress for this PDF.", "info");
+          addToast(t("toasts.cleared_saved_progress_pdf"), "info");
         },
         className: "text-xs px-2 py-1 bg-white border border-red-300 text-red-700 rounded font-bold hover:bg-red-50"
       },
@@ -1020,9 +1020,9 @@ Return ONLY JSON:
             "Additional Sweep"
           );
         }
-        if (committed) addToast("Sweep complete!", "success");
+        if (committed) addToast(t("toasts.sweep_complete"), "success");
       } catch (e) {
-        addToast("Sweep failed: " + (e?.message || ""), "error");
+        addToast(t("toasts.sweep_failed") + (e?.message || ""), "error");
       } finally {
         setPdfFixLoading(false);
         setPdfFixStep("");
@@ -1180,7 +1180,7 @@ Return ONLY JSON:
         }
       } catch (e) {
         warnLog("Fix remaining failed:", e);
-        addToast("Fix remaining failed: " + (e?.message || "unknown error"), "error");
+        addToast(t("toasts.fix_remaining_failed") + (e?.message || "unknown error"), "error");
       } finally {
         setPdfFixLoading(false);
         setPdfFixStep("");
@@ -1365,7 +1365,7 @@ Return ONLY JSON:
         }
         if (!remediatedText || remediatedText.trim().length < 50) {
           setFidelityResult({ missing: [], totalSrc: 0, totalRem: 0, totalMissing: 0, fidelity: null, notReady: true });
-          if (addToast) addToast("No remediated content to verify yet \u2014 run remediation first, then re-check fidelity.", "info");
+          if (addToast) addToast(t("toasts.remediated_content_verify_yet_run"), "info");
           return;
         }
         setFidelityResult(_buildMissingList(sourceText, remediatedText));
@@ -1400,7 +1400,7 @@ Return ONLY JSON:
       const imgFailCount = imgReport ? (imgReport.missingSrc || []).length + (imgReport.droppedByAi || []).length : 0;
       const _regenerateImage = async (imgIdx, description) => {
         if (typeof callImagen !== "function") {
-          if (addToast) addToast("Image regeneration unavailable", "error");
+          if (addToast) addToast(t("toasts.image_regeneration_unavailable"), "error");
           return;
         }
         if (addToast) addToast(`Regenerating image #${imgIdx}\u2026`, "info");
@@ -1501,7 +1501,7 @@ Return ONLY JSON:
                 const ok = await _ensureDiffLib();
                 if (!ok) {
                   console.warn("[Diff] _ensureDiffLib returned false \u2014 script load failed");
-                  if (typeof addToast === "function") addToast("Diff engine failed to load (network blocked?). Check your connection and try again.", "error");
+                  if (typeof addToast === "function") addToast(t("toasts.diff_engine_failed_load_network"), "error");
                 }
               },
               className: "ml-auto text-[10px] px-2 py-1 bg-white border border-sky-300 text-sky-700 rounded-md hover:bg-sky-50 font-bold inline-flex items-center gap-1 shrink-0",
@@ -1529,7 +1529,7 @@ Return ONLY JSON:
                 const ok = await _ensureDiffLib();
                 if (!ok) {
                   console.warn("[Diff] _ensureDiffLib returned false \u2014 script load failed");
-                  if (typeof addToast === "function") addToast("Diff engine failed to load (network blocked?). Check your connection and try again.", "error");
+                  if (typeof addToast === "function") addToast(t("toasts.diff_engine_failed_load_network"), "error");
                 }
               },
               className: "text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1",
@@ -1564,7 +1564,7 @@ Return ONLY JSON:
               const ok = await _ensureDiffLib();
               if (!ok) {
                 console.warn("[Diff] _ensureDiffLib returned false \u2014 script load failed");
-                if (typeof addToast === "function") addToast("Diff engine failed to load (network blocked?). Check your connection and try again.", "error");
+                if (typeof addToast === "function") addToast(t("toasts.diff_engine_failed_load_network"), "error");
               }
             },
             className: "text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1",
@@ -1615,7 +1615,7 @@ Return ONLY JSON:
               const ok = await _ensureDiffLib();
               if (!ok) {
                 console.warn("[Diff] _ensureDiffLib returned false \u2014 script load failed");
-                if (typeof addToast === "function") addToast("Diff engine failed to load (network blocked?). Check your connection and try again.", "error");
+                if (typeof addToast === "function") addToast(t("toasts.diff_engine_failed_load_network"), "error");
               }
             },
             className: "ml-auto text-[10px] px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-bold inline-flex items-center gap-1",
@@ -1678,12 +1678,12 @@ Return ONLY JSON:
         ps.textContent = "@media print{#print-banner{display:none!important}}";
         w.document.head.appendChild(ps);
       }
-      if (addToast) addToast("Report opened with Save as PDF button", "success");
+      if (addToast) addToast(t("toasts.report_opened_with_save_as"), "success");
     }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors flex items-center gap-2" }, "\u{1F4C4} Formatted Report (PDF)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || "document.pdf");
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
       safeDownloadBlob(blob, `a11y-audit-${(pendingPdfFile?.name || "document").replace(/\.pdf$/i, "")}-${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.html`);
-      if (addToast) addToast("HTML report downloaded", "success");
+      if (addToast) addToast(t("toasts.html_report_downloaded"), "success");
     }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2" }, "\u{1F310} HTML Report"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const reportData = { ...pdfAuditResult, fileName: pendingPdfFile?.name || "document.pdf", auditDate: (/* @__PURE__ */ new Date()).toISOString(), tool: "AlloFlow PDF Accessibility Auditor", standard: "WCAG 2.1 AA" };
       const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: "application/json" });
@@ -1695,7 +1695,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      if (addToast) addToast("JSON data exported", "success");
+      if (addToast) addToast(t("toasts.json_data_exported"), "success");
     }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100" }, "\u{1F4CA} JSON Data (research)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setPdfAuditResult(null);
       proceedWithPdfTransform();
@@ -1752,7 +1752,7 @@ Return ONLY JSON:
                 const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                 if (!reAi) {
                   warnLog("[Re-fix] AI re-verification returned null for section " + (chunk.index + 1) + "; not committing new HTML.");
-                  addToast("\u26A0 Re-fix verification unavailable \u2014 kept previous version. Try again later.", "warning");
+                  addToast(t("toasts.re_fix_verification_unavailable_kept"), "warning");
                 } else {
                   const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
                   setPdfFixResult((prev) => ({
@@ -1935,7 +1935,7 @@ Return ONLY JSON:
         pdfAutoContinueAbortCtrlRef.current?.abort();
       } catch (_) {
       }
-      addToast("Stopping \u2014 aborting in-flight Gemini call\u2026", "info");
+      addToast(t("toasts.stopping_aborting_flight_gemini_call"), "info");
     }, className: "text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors", "aria-label": t("pdf_audit.auto_fix.stop_aria") || "Stop auto-continue remediation" }, "\u23F8 Stop auto-continue"), pdfFixLoading && pdfFixStep.includes("Auto-fix") && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "animate-spin text-sm", "aria-hidden": "true" }, "\u23F3"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700" }, pdfFixStep)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-indigo-100 rounded-full h-2 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.auto_fix.progress_aria") || "Auto-fix progress", "aria-valuenow": pdfFixStep.includes("pass 2") ? 70 : pdfFixStep.includes("Re-check") || pdfFixStep.includes("Re-verif") ? 85 : 40, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-700", style: { width: pdfFixStep.includes("pass 2") ? "70%" : pdfFixStep.includes("Re-check") || pdfFixStep.includes("Re-verif") ? "85%" : "40%" } }))))), !pdfFixResult.axeAudit && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, "axe-core automated check could not run (CDN may be blocked). AI verification above is still valid.")), pdfFixResult.chunkState && pdfFixResult.chunkState.chunkResults && pdfFixResult.chunkState.chunkResults.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl border-2 border-slate-200 p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F9E9}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-800" }, t("pdf_audit.section_map.heading") || "Document Section Map"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, pdfFixResult.chunkState.chunkResults.length, " sections \u2014 re-fix individual sections without affecting others"))), pdfFixResult.chunkWeightedScore != null && /* @__PURE__ */ React.createElement("div", { className: `text-sm font-black ${pdfFixResult.chunkWeightedScore >= 80 ? "text-green-600" : pdfFixResult.chunkWeightedScore >= 60 ? "text-amber-600" : "text-red-600"}` }, pdfFixResult.chunkWeightedScore, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "/100 avg"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, pdfFixResult.chunkState.chunkResults.map((cr, ci) => /* @__PURE__ */ React.createElement("div", { key: ci, className: `flex items-center gap-2 p-1.5 rounded-lg border ${cr.score >= 80 ? "bg-green-50 border-green-200" : cr.score >= 60 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"} transition-all` }, /* @__PURE__ */ React.createElement("div", { className: `w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${cr.score >= 80 ? "bg-green-500" : cr.score >= 60 ? "bg-amber-500" : "bg-red-500"}` }, ci + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, "Section ", ci + 1), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, cr.sizeKB || "?", "KB"), cr.deterministicFixes > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold", title: t("pdf_audit.section_map.rule_based_title") || "Rule-based (deterministic) fixes applied" }, cr.deterministicFixes, " rule-based"), cr.surgicalFixes > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold", title: t("pdf_audit.section_map.targeted_title") || "AI-diagnosed targeted micro-fixes" }, cr.surgicalFixes, " targeted"), cr.usedOriginal && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold", title: t("pdf_audit.section_map.ai_skipped_title") || "AI rewrite was rejected \u2014 only rule-based fixes applied" }, t("pdf_audit.section_map.ai_skipped") || "AI skipped"), cr.wasRetried && !cr.usedOriginal && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-slate-100 text-slate-600 px-1 rounded font-bold" }, "retried")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-0.5", role: "progressbar", "aria-label": `Section ${ci + 1} score: ${cr.score}/100`, "aria-valuenow": cr.score, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full transition-all duration-500 ${cr.score >= 80 ? "bg-green-500" : cr.score >= 60 ? "bg-amber-500" : "bg-red-500"}`, style: { width: `${cr.score}%` } }))), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-black shrink-0 ${cr.score >= 80 ? "text-green-600" : cr.score >= 60 ? "text-amber-600" : "text-red-600"}` }, cr.score), cr.score < 80 && !pdfFixLoading && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1948,7 +1948,7 @@ Return ONLY JSON:
               const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
               if (!reAi) {
                 warnLog("[Re-fix] AI re-verification returned null for section " + (ci + 1) + "; not committing new HTML.");
-                addToast("\u26A0 Re-fix verification unavailable \u2014 kept previous version. Try again later.", "warning");
+                addToast(t("toasts.re_fix_verification_unavailable_kept"), "warning");
               } else {
                 const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
                 setPdfFixResult((prev) => ({
@@ -1987,12 +1987,12 @@ Return ONLY JSON:
       "\u270F\uFE0F Preview & Edit"
     ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (!pendingPdfBase64 || !pdfFixResult?.accessibleHtml) {
-        addToast("Need both original PDF and remediated version", "info");
+        addToast(t("toasts.need_both_original_pdf_remediated"), "info");
         return;
       }
       const win = window.open("", "_blank");
       if (!win) {
-        addToast("Pop-up blocked", "error");
+        addToast(t("toasts.pop_up_blocked"), "error");
         return;
       }
       const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? "?";
@@ -2174,7 +2174,7 @@ Return ONLY JSON:
                           <\/script>
                           </body></html>`);
       win.document.close();
-      addToast("\u{1F4C4} Before/After comparison opened", "success");
+      addToast(t("toasts.before_after_comparison_opened"), "success");
     }, className: "px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5" }, "\u{1F500} Compare"), pdfFixResult.sourceText && pdfFixResult.finalText && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2191,7 +2191,7 @@ Return ONLY JSON:
           const ok = await _ensureDiffLib();
           if (!ok) {
             console.warn("[Diff] _ensureDiffLib returned false \u2014 script load failed");
-            if (typeof addToast === "function") addToast("Diff engine failed to load (network blocked?). Check your connection and try again.", "error");
+            if (typeof addToast === "function") addToast(t("toasts.diff_engine_failed_load_network"), "error");
           }
         },
         className: "px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5",
@@ -2216,10 +2216,10 @@ Return ONLY JSON:
             if (!freshBase64) return;
             const ok = await _ensurePdfLib();
             if (!ok) {
-              addToast("Couldn't load PDF tagging library (network?). Try again or use PDF (from HTML).", "error");
+              addToast(t("toasts.couldn_load_pdf_tagging_library_2"), "error");
               return;
             }
-            addToast("Tagging original PDF\u2026", "info");
+            addToast(t("toasts.tagging_original_pdf"), "info");
             const binStr = atob(freshBase64);
             const bytes = new Uint8Array(binStr.length);
             for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
@@ -2236,7 +2236,7 @@ Return ONLY JSON:
             const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
             const summary = _result && _result.summary || null;
             if (!taggedBytes) {
-              addToast("Tagged PDF generation returned no bytes.", "error");
+              addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
               return;
             }
             const blob = new Blob([taggedBytes], { type: "application/pdf" });
@@ -2261,10 +2261,10 @@ Return ONLY JSON:
               }
               if (summary.pdfUaDeclared) extras.push("PDF/UA-1 declared.");
               const extrasStr = extras.length ? " " + extras.join(" ") : "";
-              addToast("Tagged PDF downloaded \u2014 " + detail + extrasStr + " Verify in PAC 3 or a screen reader.", "success");
+              addToast(t("toasts.tagged_pdf_downloaded") + detail + extrasStr + " Verify in PAC 3 or a screen reader.", "success");
               if (summary.headingHierarchyIssues > 0) {
                 const path = (summary.headingHierarchyPath || []).slice(0, 3).join(", ");
-                addToast("Note: " + summary.headingHierarchyIssues + " heading-level skip" + (summary.headingHierarchyIssues === 1 ? "" : "s") + " detected (" + path + "). Skipped levels are valid HTML but hurt screen-reader navigation \u2014 consider editing the source to use sequential h-tags.", "info");
+                addToast(t("toasts.note") + summary.headingHierarchyIssues + " heading-level skip" + (summary.headingHierarchyIssues === 1 ? "" : "s") + " detected (" + path + "). Skipped levels are valid HTML but hurt screen-reader navigation \u2014 consider editing the source to use sequential h-tags.", "info");
               }
               const _qualityIssues = [];
               if (summary.imagesMissingAlt > 0) {
@@ -2280,14 +2280,14 @@ Return ONLY JSON:
                 _qualityIssues.push(summary.linksGenericText + " link" + (summary.linksGenericText === 1 ? "" : "s") + ' with generic text ("click here", "read more")');
               }
               if (_qualityIssues.length > 0) {
-                addToast("Quality flags: " + _qualityIssues.join(", ") + ". Edit the source HTML and re-tag to address.", "info");
+                addToast(t("toasts.quality_flags") + _qualityIssues.join(", ") + ". Edit the source HTML and re-tag to address.", "info");
               }
             } else {
-              addToast("Tagged PDF downloaded \u2014 original visual layer preserved with accessibility tag tree added.", "success");
+              addToast(t("toasts.tagged_pdf_downloaded_original_visual"), "success");
             }
           } catch (err) {
             warnLog("[TaggedPDF] failed:", err);
-            addToast("Tagged PDF failed: " + (err?.message || "unknown error") + ". Try PDF (from HTML) as a fallback.", "error");
+            addToast(t("toasts.tagged_pdf_failed") + (err?.message || "unknown error") + ". Try PDF (from HTML) as a fallback.", "error");
           }
         },
         className: "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5",
@@ -2304,7 +2304,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("Accessible HTML downloaded", "success");
+      addToast(t("toasts.accessible_html_downloaded"), "success");
     }, className: "px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5" }, "\u{1F4C4} HTML"), /* @__PURE__ */ React.createElement("div", { className: "relative group" }, /* @__PURE__ */ React.createElement("button", { className: "px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5" }, "\u{1F4CA} Report \u25BE"), /* @__PURE__ */ React.createElement("div", { className: "hidden group-hover:block group-focus-within:block absolute bottom-full left-0 mb-1 bg-white border border-slate-400 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _rptAi = pdfFixResult.afterScore;
       const _rptAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -2323,7 +2323,7 @@ Return ONLY JSON:
         ps.textContent = "@media print{#print-banner{display:none!important}}";
         w.document.head.appendChild(ps);
       }
-      addToast("Report opened with Save as PDF button", "success");
+      addToast(t("toasts.report_opened_with_save_as"), "success");
     }, className: "w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors" }, "\u{1F4C4} Formatted Report (PDF)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _dlAi = pdfFixResult.afterScore;
       const _dlAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -2339,7 +2339,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("HTML report downloaded", "success");
+      addToast(t("toasts.html_report_downloaded"), "success");
     }, className: "w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100" }, "\u{1F310} HTML Report"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _jsonAi = pdfFixResult.afterScore;
       const _jsonAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -2354,7 +2354,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("JSON data exported", "success");
+      addToast(t("toasts.json_data_exported"), "success");
     }, className: "w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100" }, "\u{1F4CA} JSON Data (research)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       try {
         const teacherName = (localStorage.getItem("alloflow_teacher_name") || "").trim();
@@ -2488,9 +2488,9 @@ Return ONLY JSON:
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        addToast("Audit trail downloaded \u2014 open in any browser to verify integrity.", "success");
+        addToast(t("toasts.audit_trail_downloaded_open_any"), "success");
       } catch (err) {
-        addToast("Audit trail generation failed: " + (err?.message || "unknown"), "error");
+        addToast(t("toasts.audit_trail_generation_failed") + (err?.message || "unknown"), "error");
       }
     }, className: "w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors border-t border-slate-100" }, "\u{1F4CE} Audit Trail (signed)")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       saveProjectToFile(false);
@@ -2502,7 +2502,7 @@ Return ONLY JSON:
         try {
           const project = JSON.parse(ev.target.result);
           if (!project.accessibleHtml || !project.version) {
-            addToast("Invalid project file", "error");
+            addToast(t("toasts.invalid_project_file_2"), "error");
             return;
           }
           setPdfFixResult({
@@ -2537,14 +2537,14 @@ Return ONLY JSON:
               } catch {
               }
             }
-            addToast("\u{1F4C2} Project loaded: " + (project.fileName || "document") + " \u2014 " + project.multiSession.ranges.length + " prior range" + (project.multiSession.ranges.length === 1 ? "" : "s") + " restored", "success");
+            addToast(t("toasts.project_loaded_2") + (project.fileName || "document") + " \u2014 " + project.multiSession.ranges.length + " prior range" + (project.multiSession.ranges.length === 1 ? "" : "s") + " restored", "success");
           } else {
             setPdfMultiSession(null);
             setPdfPageRange(null);
-            addToast("\u{1F4C2} Project loaded: " + (project.fileName || "document") + " \u2014 continue editing!", "success");
+            addToast(t("toasts.project_loaded_2") + (project.fileName || "document") + " \u2014 continue editing!", "success");
           }
         } catch (err) {
-          addToast("Failed to load project: " + err.message, "error");
+          addToast(t("toasts.failed_load_project") + err.message, "error");
         }
       };
       reader.readAsText(file);
@@ -2610,7 +2610,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast('\u{1F4D0} Template "' + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', "success");
+      addToast(t("toasts.template_2") + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', "success");
     }, className: "w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-600 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2" }, "\u{1F4D0} Save Structure as Template (for future documents)"), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1" }, "\u{1F4D1} Alternative Formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.alt_formats.intro") || "Download the remediated document in accessible alternative formats"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
@@ -2618,7 +2618,7 @@ Return ONLY JSON:
       const textContent = html.replace(/<[^>]*>/g, "").replace(/\s{2,}/g, " ").trim();
       const xmlTitle = title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       if (!window.JSZip) {
-        addToast("ZIP library loading...", "info");
+        addToast(t("toasts.zip_library_loading"), "info");
         return;
       }
       const zip = new window.JSZip();
@@ -2660,7 +2660,7 @@ Return ONLY JSON:
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        addToast("\u{1F4DA} ePub downloaded \u2014 open in any e-reader", "success");
+        addToast(t("toasts.epub_downloaded_open_any_reader"), "success");
       });
     }, className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u{1F4DA} ePub (e-readers, mobile, Kindle)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult?.accessibleHtml;
@@ -2697,7 +2697,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("\u2803\u2817\u2807 Braille file downloaded (Grade 1 BRF)", "success");
+      addToast(t("toasts.braille_file_downloaded_grade_brf"), "success");
     }, className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u2803\u2817\u2807 Electronic Braille (BRF)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
@@ -2711,7 +2711,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("\u{1F4DD} Plain text downloaded", "success");
+      addToast(t("toasts.plain_text_downloaded"), "success");
     }, className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u{1F4DD} Plain Text (screen readers, large print)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
@@ -2728,7 +2728,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("\u{1F4CB} Markdown downloaded", "success");
+      addToast(t("toasts.markdown_downloaded"), "success");
     }, className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u{1F4CB} Markdown (LMS, wiki, docs)"))), /* @__PURE__ */ React.createElement("details", { open: true, className: "bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-600" }, "\u25B8"), "\u{1F916} Expert Workbench", isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700 animate-pulse ml-1" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("form", { className: "flex gap-1", onSubmit: async (e) => {
       e.preventDefault();
       if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
@@ -2753,16 +2753,16 @@ Return ONLY JSON:
             setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           }
           console.info("[ExpertWorkbench] complete command=" + JSON.stringify(cmd) + " score=" + (result.score !== void 0 ? result.score : "n/a"));
-          addToast("\u2705 Command applied!", "success");
+          addToast(t("toasts.command_applied"), "success");
         } else {
           console.warn("[ExpertWorkbench] noop command=" + JSON.stringify(cmd) + " \u2014 no HTML changes");
           setAgentActivityLog((prev) => [...prev, { text: "\u2139 No changes applied", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
-          addToast("\u2139\uFE0F No changes applied", "info");
+          addToast(t("toasts.changes_applied"), "info");
         }
       } catch (err) {
         console.error("[ExpertWorkbench] error command=" + JSON.stringify(cmd), err);
         setAgentActivityLog((prev) => [...prev, { text: "\u274C " + (err && (err.message || err)), type: "error", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
-        addToast("\u274C Workbench failed: " + (err && (err.message || err) || "unknown error"), "error");
+        addToast(t("toasts.workbench_failed") + (err && (err.message || err) || "unknown error"), "error");
       }
       setIsAgentRunning(false);
     } }, /* @__PURE__ */ React.createElement(
@@ -2790,7 +2790,7 @@ Return ONLY JSON:
     }, className: "text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto" }, "Clear"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, "Commands: ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "audit"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "auto"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "contrast"), " \xB7 or describe what to fix in plain language"))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-600 rounded-xl p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase tracking-widest" }, "\u{1F4DA} Differentiate This Document"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (pdfFixResult._preBionicHtml) {
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }));
-        addToast("\u{1F4D6} Bionic reading removed", "info");
+        addToast(t("toasts.bionic_reading_removed"), "info");
       } else {
         let html = pdfFixResult.accessibleHtml;
         const snapshot = html;
@@ -2803,13 +2803,13 @@ Return ONLY JSON:
           return ">" + bionic + "<";
         });
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }));
-        addToast("\u{1F4D6} Bionic reading applied \u2014 click again to remove", "success");
+        addToast(t("toasts.bionic_reading_applied_click_again"), "success");
       }
     }, className: `w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? "bg-violet-100 border-violet-400 text-violet-800" : "bg-white border-violet-600 text-violet-700 hover:bg-violet-100"}` }, /* @__PURE__ */ React.createElement("b", null, "Bi"), "onic ", pdfFixResult._preBionicHtml ? "\u2713 ON (click to remove)" : "Reading"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult.accessibleHtml;
       if (pdfFixResult._preLineGuideHtml) {
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
-        addToast("Line guide removed", "info");
+        addToast(t("toasts.line_guide_removed"), "info");
       } else {
         const snapshot = html;
         const guideCSS = `<style id="alloflow-line-guide">
@@ -2835,15 +2835,15 @@ Return ONLY JSON:
           fixed = guideCSS + fixed;
         }
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
-        addToast("\u{1F4CF} Line guide applied \u2014 alternating stripes help eye tracking", "success");
+        addToast(t("toasts.line_guide_applied_alternating_stripes"), "success");
       }
     }, className: `w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? "bg-violet-100 border-violet-400 text-violet-800" : "bg-white border-violet-600 text-violet-700 hover:bg-violet-100"}` }, "\u{1F4CF} Line Guide ", pdfFixResult._preLineGuideHtml ? "\u2713 ON (click to remove)" : "(reading tracker)"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("input", { id: "pdf-translate-lang", list: "pdf-translate-suggestions", className: "flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700", "aria-label": t("pdf_audit.translate.lang_aria") || "Translation language \u2014 type any language or pick from suggestions", placeholder: t("pdf_audit.translate.lang_placeholder") || "\u{1F310} Type language (e.g. Spanish, Tagalog, Dari...)" }), /* @__PURE__ */ React.createElement("datalist", { id: "pdf-translate-suggestions" }, /* @__PURE__ */ React.createElement("option", { value: "Spanish" }), /* @__PURE__ */ React.createElement("option", { value: "French" }), /* @__PURE__ */ React.createElement("option", { value: "Arabic" }), /* @__PURE__ */ React.createElement("option", { value: "Somali" }), /* @__PURE__ */ React.createElement("option", { value: "Vietnamese" }), /* @__PURE__ */ React.createElement("option", { value: "Portuguese" }), /* @__PURE__ */ React.createElement("option", { value: "Mandarin Chinese" }), /* @__PURE__ */ React.createElement("option", { value: "Korean" }), /* @__PURE__ */ React.createElement("option", { value: "Japanese" }), /* @__PURE__ */ React.createElement("option", { value: "Russian" }), /* @__PURE__ */ React.createElement("option", { value: "Tagalog" }), /* @__PURE__ */ React.createElement("option", { value: "Haitian Creole" }), /* @__PURE__ */ React.createElement("option", { value: "German" }), /* @__PURE__ */ React.createElement("option", { value: "Italian" }), /* @__PURE__ */ React.createElement("option", { value: "Hindi" }), /* @__PURE__ */ React.createElement("option", { value: "Urdu" }), /* @__PURE__ */ React.createElement("option", { value: "Swahili" }), /* @__PURE__ */ React.createElement("option", { value: "Ukrainian" }), /* @__PURE__ */ React.createElement("option", { value: "Polish" }), /* @__PURE__ */ React.createElement("option", { value: "Thai" }), /* @__PURE__ */ React.createElement("option", { value: "Nepali" }), /* @__PURE__ */ React.createElement("option", { value: "Dari" }), /* @__PURE__ */ React.createElement("option", { value: "Pashto" }), /* @__PURE__ */ React.createElement("option", { value: "Burmese" }), /* @__PURE__ */ React.createElement("option", { value: "Amharic" }), /* @__PURE__ */ React.createElement("option", { value: "Tigrinya" }), /* @__PURE__ */ React.createElement("option", { value: "Marshallese" }), /* @__PURE__ */ React.createElement("option", { value: "Chuukese" }), /* @__PURE__ */ React.createElement("option", { value: "Karen" }), /* @__PURE__ */ React.createElement("option", { value: "Khmer" })), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const lang = document.getElementById("pdf-translate-lang")?.value?.trim();
       if (!lang || !callGemini) {
-        addToast("Enter a language first", "info");
+        addToast(t("toasts.enter_language_first"), "info");
         return;
       }
-      addToast("\u{1F310} Translating to " + lang + "...", "info");
+      addToast(t("toasts.translating") + lang + "...", "info");
       try {
         const temp = document.createElement("div");
         temp.innerHTML = pdfFixResult.accessibleHtml;
@@ -2915,12 +2915,12 @@ ${chunks[ci]}
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace("</main>", section + "</main>") }));
         addToast("\u{1F310} " + lang + " translation added!", "success");
       } catch (e) {
-        addToast("Translation failed: " + e.message, "error");
+        addToast(t("toasts.translation_failed_3") + e.message, "error");
       }
     }, className: "px-3 py-2 bg-violet-600 text-white rounded-lg text-[11px] font-bold hover:bg-violet-700 transition-colors shrink-0" }, "Translate")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("select", { id: "pdf-simplify-level", className: "flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700", "aria-label": t("pdf_audit.simplify.level_aria") || "Simplification grade level", defaultValue: "5th" }, /* @__PURE__ */ React.createElement("option", { value: "K" }, "\u{1F4D6} Kindergarten"), /* @__PURE__ */ React.createElement("option", { value: "1st" }, "\u{1F4D6} 1st Grade"), /* @__PURE__ */ React.createElement("option", { value: "2nd" }, "\u{1F4D6} 2nd Grade"), /* @__PURE__ */ React.createElement("option", { value: "3rd" }, "\u{1F4D6} 3rd Grade"), /* @__PURE__ */ React.createElement("option", { value: "4th" }, "\u{1F4D6} 4th Grade"), /* @__PURE__ */ React.createElement("option", { value: "5th" }, "\u{1F4D6} 5th Grade"), /* @__PURE__ */ React.createElement("option", { value: "6th" }, "\u{1F4D6} 6th Grade"), /* @__PURE__ */ React.createElement("option", { value: "7th" }, "\u{1F4D6} 7th Grade"), /* @__PURE__ */ React.createElement("option", { value: "8th" }, "\u{1F4D6} 8th Grade"), /* @__PURE__ */ React.createElement("option", { value: "9th" }, "\u{1F4D6} 9th Grade"), /* @__PURE__ */ React.createElement("option", { value: "10th" }, "\u{1F4D6} 10th Grade")), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const level = document.getElementById("pdf-simplify-level")?.value || "5th";
       if (!callGemini) return;
-      addToast("\u{1F4D6} Simplifying to " + level + " grade...", "info");
+      addToast(t("toasts.simplifying") + level + " grade...", "info");
       try {
         const temp = document.createElement("div");
         temp.innerHTML = pdfFixResult.accessibleHtml;
@@ -2947,23 +2947,23 @@ Return simplified text with # for headings, - for lists.`, false);
         }).join("\n")}
                                 </div>`;
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace("</main>", section + "</main>") }));
-        addToast("\u{1F4D6} Simplified version added!", "success");
+        addToast(t("toasts.simplified_version_added"), "success");
       } catch (e) {
-        addToast("Simplification failed: " + e.message, "error");
+        addToast(t("toasts.simplification_failed_2") + e.message, "error");
       }
     }, className: "px-3 py-2 bg-green-700 text-white rounded-lg text-[11px] font-bold hover:bg-green-700 transition-colors shrink-0" }, "Simplify")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const temp = document.createElement("div");
       temp.innerHTML = pdfFixResult.accessibleHtml;
       setInputText(temp.textContent || temp.innerText || "");
       _closePdfAuditModal();
-      addToast("Content loaded \u2014 generate leveled text, glossary, quiz, and more", "success");
+      addToast(t("toasts.content_loaded_generate_leveled_text"), "success");
     }, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center" }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && /* @__PURE__ */ React.createElement("button", { id: "pdf-audio-dl-btn", onClick: async () => {
       const btn = document.getElementById("pdf-audio-dl-btn");
       const temp = document.createElement("div");
       temp.innerHTML = pdfFixResult.accessibleHtml;
       const fullText = (temp.textContent || "").trim();
       if (!fullText) {
-        addToast("No text content to convert", "error");
+        addToast(t("toasts.text_content_convert"), "error");
         return;
       }
       const segments = [];
@@ -2982,7 +2982,7 @@ Return simplified text with # for headings, - for lists.`, false);
       }
       if (btn) btn.textContent = "\u23F3 0/" + segments.length + "...";
       if (btn) btn.disabled = true;
-      addToast("\u{1F3A7} Generating " + segments.length + " audio segments...", "info");
+      addToast(t("toasts.generating") + segments.length + " audio segments...", "info");
       const audioBlobs = [];
       let failed = 0;
       for (let si = 0; si < segments.length; si++) {
@@ -3004,7 +3004,7 @@ Return simplified text with # for headings, - for lists.`, false);
           warnLog("[Audio DL] Segment " + (si + 1) + " failed:", e?.message || e);
           failed++;
           if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
-            addToast("\u26A0\uFE0F Rate limited \u2014 got " + audioBlobs.length + " of " + segments.length + " segments", "info");
+            addToast(t("toasts.rate_limited_got") + audioBlobs.length + " of " + segments.length + " segments", "info");
             break;
           }
         }
@@ -3014,7 +3014,7 @@ Return simplified text with # for headings, - for lists.`, false);
         btn.disabled = false;
       }
       if (audioBlobs.length === 0) {
-        addToast("Audio generation failed \u2014 TTS may not be available. Try with a Gemini API key.", "error");
+        addToast(t("toasts.audio_generation_failed_tts_may"), "error");
         return;
       }
       const combined = new Blob(audioBlobs, { type: audioBlobs[0].type || "audio/wav" });
@@ -3026,7 +3026,7 @@ Return simplified text with # for headings, - for lists.`, false);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(dlUrl);
-      addToast("\u{1F3A7} Audio downloaded! " + audioBlobs.length + "/" + segments.length + " sections" + (failed > 0 ? " (" + failed + " failed)" : ""), "success");
+      addToast(t("toasts.audio_downloaded") + audioBlobs.length + "/" + segments.length + " sections" + (failed > 0 ? " (" + failed + " failed)" : ""), "success");
     }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors disabled:opacity-50" }, "\u{1F3A7} Download Audio")), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CB} What Changed ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white rounded-lg border border-slate-400 p-3 space-y-1.5 text-xs text-slate-600" }, (() => {
       const changes = [];
       if (pdfFixResult.autoFixPasses > 0) changes.push(`\u{1F527} ${pdfFixResult.autoFixPasses} automated fix pass${pdfFixResult.autoFixPasses > 1 ? "es" : ""} applied`);
@@ -3096,7 +3096,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           }
         }
       } catch (e) {
-        addToast("Summary generation failed", "error");
+        addToast(t("toasts.summary_generation_failed"), "error");
       }
     }, className: "w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2" }, "\u{1F4D6} Generate Summary")))))), showCloseConfirm && /* @__PURE__ */ React.createElement(
       "div",
@@ -3180,7 +3180,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
         onClick: async () => {
           if (!callGemini) return;
           setIsGeneratingStyle(true);
-          addToast("\u2728 Generating " + preset.label.replace(/[^\w\s]/g, "").trim() + " style...", "info");
+          addToast(t("toasts.generating_2") + preset.label.replace(/[^\w\s]/g, "").trim() + " style...", "info");
           try {
             const css = await callGemini(`You are a CSS expert. Create a beautiful, accessible stylesheet.
 
@@ -3210,14 +3210,14 @@ Return ONLY CSS \u2014 no explanation, no markdown fences.`, true);
                   doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, "").replace(/<\/html>\s*$/i, "");
                   addToast(`\u2728 Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, "success");
                 } else {
-                  addToast("\u2728 Style applied!", "success");
+                  addToast(t("toasts.style_applied"), "success");
                 }
               } catch (sanitizeErr) {
-                addToast("\u2728 Style applied!", "success");
+                addToast(t("toasts.style_applied"), "success");
               }
             }
           } catch (err) {
-            addToast("Style failed \u2014 try again", "error");
+            addToast(t("toasts.style_failed_try_again"), "error");
           }
           setIsGeneratingStyle(false);
         },
@@ -3228,12 +3228,12 @@ Return ONLY CSS \u2014 no explanation, no markdown fences.`, true);
       const old = pdfPreviewRef.current?.contentDocument?.getElementById("ai-restyle");
       if (old) {
         old.remove();
-        addToast("AI style removed", "info");
+        addToast(t("toasts.ai_style_removed"), "info");
       }
     }, className: "px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors" }, "\u2715 Reset")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("pdf_audit.preview.ai_restyle_hint") || "One-click AI restyling. These override the theme above.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "\u{1F4CE} Brand Match"), /* @__PURE__ */ React.createElement("label", { className: "w-full flex items-center gap-2 px-2 py-1.5 bg-white border border-dashed border-slate-300 rounded-lg text-[11px] text-slate-600 hover:border-indigo-400 hover:text-indigo-600 cursor-pointer transition-colors" }, "\u{1F4CE} Upload brand reference (PDF, image, or logo)", /* @__PURE__ */ React.createElement("input", { type: "file", accept: "image/*,.pdf", className: "hidden", onChange: async (e) => {
       const file = e.target.files?.[0];
       if (!file || !callGeminiVision) return;
-      addToast("\u{1F3A8} Extracting brand colors...", "info");
+      addToast(t("toasts.extracting_brand_colors"), "info");
       const reader = new FileReader();
       reader.onload = async (ev) => {
         try {
@@ -3270,11 +3270,11 @@ Return ONLY JSON:
                             ${brand.extraCSS || ""}
                           `;
             doc.head.appendChild(style);
-            addToast("\u{1F3A8} Brand theme applied!", "success");
+            addToast(t("toasts.brand_theme_applied"), "success");
           }
         } catch (err) {
           warnLog("[Brand] Extract failed:", err);
-          addToast("Could not extract brand colors", "error");
+          addToast(t("toasts.could_extract_brand_colors"), "error");
         }
       };
       reader.readAsDataURL(file);
@@ -3457,13 +3457,13 @@ Return ONLY JSON:
           const iframe = pdfPreviewRef.current;
           const doc = iframe?.contentDocument;
           if (!doc) {
-            addToast("Preview not ready yet", "error");
+            addToast(t("toasts.preview_ready_yet"), "error");
             return;
           }
           const textInput = document.getElementById("pdf-wordart-text-input");
           const text = textInput?.value?.trim();
           if (!text) {
-            addToast("Please enter word art text first", "info");
+            addToast(t("toasts.enter_word_art_text_first"), "info");
             return;
           }
           const presetBtn = document.querySelector('.pdf-wordart-preset-btn[aria-checked="true"]');
@@ -3491,7 +3491,7 @@ Return ONLY JSON:
             html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + "</div>";
           }
           if (!html) {
-            addToast("Could not render word art", "error");
+            addToast(t("toasts.could_render_word_art"), "error");
             return;
           }
           iframe.contentWindow.focus();
@@ -3523,7 +3523,7 @@ Return ONLY JSON:
             if (node) doc.body.appendChild(node);
           }
           if (textInput) textInput.value = "";
-          addToast("\u2728 Word art inserted", "success");
+          addToast(t("toasts.word_art_inserted"), "success");
         },
         className: "w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
       },
@@ -3724,7 +3724,7 @@ Return ONLY JSON:
           }
         };
       }
-      addToast("Screen reader view opened \u2014 shows what assistive technology announces", "info");
+      addToast(t("toasts.screen_reader_view_opened_shows"), "info");
     }, className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700` }, "\u{1F50A} Screen Reader Simulator"), callImagen && /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F5BC}\uFE0F AI Image Tools ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -3740,7 +3740,7 @@ Return ONLY JSON:
     ), /* @__PURE__ */ React.createElement("button", { id: "pdf-preview-gen-img-btn", onClick: async () => {
       const prompt2 = document.getElementById("pdf-preview-img-prompt")?.value;
       if (!prompt2?.trim()) return;
-      addToast("\u{1F3A8} Generating image...", "info");
+      addToast(t("toasts.generating_image"), "info");
       try {
         const imgUrl = await callImagen(prompt2 + " Professional, clean, educational illustration. No text.", 400, 0.85);
         if (imgUrl) {
@@ -3765,25 +3765,25 @@ Return ONLY JSON:
           } else {
             (doc.querySelector("main") || doc.body).appendChild(figure);
           }
-          addToast("\u{1F3A8} Image inserted!", "success");
+          addToast(t("toasts.image_inserted"), "success");
           document.getElementById("pdf-preview-img-prompt").value = "";
         }
       } catch (e) {
-        addToast("Image generation failed", "error");
+        addToast(t("toasts.image_generation_failed_2"), "error");
       }
     }, className: "w-full mt-1 px-2 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 transition-colors" }, "\u2728 Generate & Insert")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.ai_image.select_hint") || "Click an image in the preview to select it, then:"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const img = selectedPreviewImgRef.current;
       if (!img || !img.src) {
-        addToast("Click an image in the preview to select it first", "info");
+        addToast(t("toasts.click_image_preview_select_first"), "info");
         return;
       }
       if (!callGeminiImageEdit) {
-        addToast("Image editing not available in this build", "error");
+        addToast(t("toasts.image_editing_available_build"), "error");
         return;
       }
       const editPrompt = window.prompt("Describe how to edit this image:");
       if (!editPrompt?.trim()) return;
-      addToast("\u{1F3A8} Editing image...", "info");
+      addToast(t("toasts.editing_image"), "info");
       try {
         let base64 = null;
         if (img.src.startsWith("data:")) {
@@ -3802,24 +3802,24 @@ Return ONLY JSON:
               fr.readAsDataURL(blob);
             });
           } catch (fetchErr) {
-            addToast("Cannot read this image (likely CORS-blocked). Try an AI-generated image.", "error");
+            addToast(t("toasts.cannot_read_image_likely_cors"), "error");
             return;
           }
         }
         if (!base64) {
-          addToast("Cannot extract image data", "error");
+          addToast(t("toasts.cannot_extract_image_data"), "error");
           return;
         }
         const edited = await callGeminiImageEdit(editPrompt + " No text.", base64, 400, 0.85);
         if (edited) {
           img.src = edited;
-          addToast("\u{1F3A8} Image updated!", "success");
+          addToast(t("toasts.image_updated_2"), "success");
         } else {
-          addToast("Image edit returned no result", "error");
+          addToast(t("toasts.image_edit_returned_result"), "error");
         }
       } catch (e) {
         warnLog("[Image Edit] failed:", e);
-        addToast("Image edit failed: " + (e?.message || "unknown error"), "error");
+        addToast(t("toasts.image_edit_failed") + (e?.message || "unknown error"), "error");
       }
     }, className: "w-full px-2 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-colors" }, "\u270F\uFE0F Edit Selected Image (AI)"))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4D0} Layout & Design ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("pdf_audit.layout.insert_blocks") || "Insert Blocks"), (() => {
       const _ALLO_BLOCKS_CSS = `
@@ -5226,7 +5226,7 @@ Return ONLY JSON:
         } catch (_) {
         }
         try {
-          if (typeof addToast === "function") addToast("Inserted: " + block.label, "success");
+          if (typeof addToast === "function") addToast(t("toasts.inserted") + block.label, "success");
         } catch (_) {
         }
         try {
@@ -5365,7 +5365,7 @@ Return ONLY JSON:
       header.innerHTML = '<div style="font-size:28px">\u{1F3DB}\uFE0F</div><div><div style="font-size:18px;font-weight:bold">Institution Name</div><div style="font-size:12px;opacity:0.8">Department \xB7 Document Title \xB7 Date</div></div>';
       const main = doc.querySelector("main") || doc.body;
       main.insertBefore(header, main.firstChild);
-      addToast("Header added \u2014 click to edit text, click again to remove", "info");
+      addToast(t("toasts.header_added_click_edit_text"), "info");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F3DB}\uFE0F Toggle Document Header"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = pdfPreviewRef.current?.contentDocument;
       if (!doc) return;
@@ -5380,7 +5380,7 @@ Return ONLY JSON:
       footer.style.cssText = "border-top:2px solid #e2e8f0;padding:12px 0;margin-top:32px;font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;";
       footer.innerHTML = "<span>Institution Name \xB7 Confidential</span><span>Page __</span>";
       (doc.querySelector("main") || doc.body).appendChild(footer);
-      addToast("Footer added \u2014 click to edit", "info");
+      addToast(t("toasts.footer_added_click_edit"), "info");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F4CB} Toggle Document Footer"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, "Templates"), /* @__PURE__ */ React.createElement("select", { onChange: (e) => {
       if (!e.target.value) return;
       const doc = pdfPreviewRef.current?.contentDocument;
@@ -5404,7 +5404,7 @@ Return ONLY JSON:
         style.id = "template-style";
         style.textContent = css;
         doc.head.appendChild(style);
-        addToast("Template applied: " + e.target.value, "success");
+        addToast(t("toasts.template_applied") + e.target.value, "success");
       }
       e.target.value = "";
     }, className: "w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600", "aria-label": t("pdf_audit.templates.aria") || "Document template", defaultValue: "" }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, t("pdf_audit.templates.apply_placeholder") || "Apply template..."), /* @__PURE__ */ React.createElement("option", { value: "syllabus" }, "\u{1F4DA} Syllabus"), /* @__PURE__ */ React.createElement("option", { value: "handout" }, "\u{1F4DD} Handout"), /* @__PURE__ */ React.createElement("option", { value: "worksheet" }, "\u270F\uFE0F Worksheet"), /* @__PURE__ */ React.createElement("option", { value: "newsletter" }, "\u{1F4F0} Newsletter"), /* @__PURE__ */ React.createElement("option", { value: "report" }, "\u{1F4CB} Formal Report"), /* @__PURE__ */ React.createElement("option", { value: "accessible" }, "\u267F Maximum Accessibility"), /* @__PURE__ */ React.createElement("option", { value: "iep" }, "\u{1F4CB} IEP / Progress Report"), /* @__PURE__ */ React.createElement("option", { value: "intervention" }, "\u{1F3AF} Intervention Plan"), /* @__PURE__ */ React.createElement("option", { value: "parentletter" }, "\u{1F46A} Parent Communication")), (() => {
@@ -5452,7 +5452,7 @@ Return ONLY JSON:
           doc.designMode = "on";
         } catch (e) {
         }
-        addToast('\u{1F4D0} Template "' + tmpl.name + '" applied \u2014 click any text to edit', "success");
+        addToast(t("toasts.template_2") + tmpl.name + '" applied \u2014 click any text to edit', "success");
       }, className: "w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D0} ", tmpl.name), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700" }, tmpl.structure?.filter((s) => s.type === "heading").length || 0, " sections"))))) : null;
     })(), /* @__PURE__ */ React.createElement("label", { className: "mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[11px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors" }, "\u{1F4C2} Load Template File (.json)", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];
@@ -5462,7 +5462,7 @@ Return ONLY JSON:
         try {
           const tmpl = JSON.parse(ev.target.result);
           if (tmpl.type !== "alloflow-template" || !tmpl.structure) {
-            addToast("Invalid template file", "error");
+            addToast(t("toasts.invalid_template_file"), "error");
             return;
           }
           try {
@@ -5473,9 +5473,9 @@ Return ONLY JSON:
             }
           } catch (e2) {
           }
-          addToast('\u{1F4D0} Template "' + tmpl.name + '" loaded! It now appears in Saved Templates above.', "success");
+          addToast(t("toasts.template_2") + tmpl.name + '" loaded! It now appears in Saved Templates above.', "success");
         } catch (err) {
-          addToast("Failed to load template: " + err.message, "error");
+          addToast(t("toasts.failed_load_template") + err.message, "error");
         }
       };
       reader.readAsText(file);
@@ -5484,7 +5484,7 @@ Return ONLY JSON:
       const doc = pdfPreviewRef.current?.contentDocument;
       const text = doc?.body?.textContent || "";
       if (!text.trim()) {
-        addToast("No content to analyze", "info");
+        addToast(t("toasts.content_analyze"), "info");
         return;
       }
       const words = text.split(/\s+/).filter((w) => w.length > 0);
@@ -5538,11 +5538,11 @@ Return ONLY JSON:
         if (["click here", "here", "link", "read more", "more"].includes(txt)) issues.push("\u{1F517} Link " + (i + 1) + ': vague text "' + txt + '"');
       });
       if (issues.length === 0) {
-        addToast("\u2705 No common accessibility issues found!", "success");
+        addToast(t("toasts.common_accessibility_issues_found"), "success");
         return;
       }
       const fixable = issues.length;
-      addToast("\u26A0\uFE0F Found " + fixable + " accessibility issue" + (fixable !== 1 ? "s" : ""), "info");
+      addToast(t("toasts.found") + fixable + " accessibility issue" + (fixable !== 1 ? "s" : ""), "info");
       const overlay = doc.getElementById("a11y-quick-report") || doc.createElement("div");
       overlay.id = "a11y-quick-report";
       overlay.style.cssText = "position:fixed;top:16px;right:16px;background:white;border:2px solid #f59e0b;border-radius:12px;padding:16px;font-family:system-ui;font-size:11px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:320px;max-height:60vh;overflow-y:auto;";
@@ -5554,14 +5554,14 @@ Return ONLY JSON:
       const images = Array.from(doc.querySelectorAll("img"));
       const needsAlt = images.filter((img) => !img.alt || img.alt.trim() === "" || img.alt === "undefined");
       if (images.length === 0) {
-        addToast("No images found in document", "info");
+        addToast(t("toasts.images_found_document"), "info");
         return;
       }
       if (needsAlt.length === 0) {
-        addToast("\u2705 All " + images.length + " images already have alt text!", "success");
+        addToast(t("toasts.all") + images.length + " images already have alt text!", "success");
         return;
       }
-      addToast("\u{1F50D} Generating alt text for " + needsAlt.length + " image(s)...", "info");
+      addToast(t("toasts.generating_alt_text") + needsAlt.length + " image(s)...", "info");
       let fixed = 0;
       for (const img of needsAlt) {
         try {
@@ -5596,14 +5596,14 @@ Return ONLY JSON:
           fixed++;
         }
       }
-      addToast("\u2705 Generated alt text for " + fixed + "/" + needsAlt.length + " images", "success");
+      addToast(t("toasts.generated_alt_text") + fixed + "/" + needsAlt.length + " images", "success");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors" }, "\u{1F5BC}\uFE0F Auto-Generate Alt Text (AI)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = pdfPreviewRef.current?.contentDocument;
       if (!doc) return;
       const existing = doc.getElementById("a11y-compliance-statement");
       if (existing) {
         existing.remove();
-        addToast("Compliance statement removed", "info");
+        addToast(t("toasts.compliance_statement_removed"), "info");
         return;
       }
       const imgs = doc.querySelectorAll("img");
@@ -5655,19 +5655,19 @@ Return ONLY JSON:
                   </div>
                 `;
       (doc.querySelector("main") || doc.body).appendChild(stmt);
-      addToast("\u267F Accessibility compliance statement added", "success");
+      addToast(t("toasts.accessibility_compliance_statement_added"), "success");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5" }, "\u267F Insert Compliance Statement"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = pdfPreviewRef.current?.contentDocument;
       if (!doc) return;
       const existing = doc.getElementById("alloflow-toc");
       if (existing) {
         existing.remove();
-        addToast("Table of contents removed", "info");
+        addToast(t("toasts.table_contents_removed"), "info");
         return;
       }
       const headings = Array.from(doc.querySelectorAll("h1,h2,h3,h4"));
       if (headings.length < 2) {
-        addToast("Need at least 2 headings to generate a TOC", "info");
+        addToast(t("toasts.need_least_headings_generate_toc"), "info");
         return;
       }
       headings.forEach((h, i) => {
@@ -5696,7 +5696,7 @@ Return ONLY JSON:
       toc.innerHTML = '<div style="font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px">\u{1F4D1} Table of Contents</div>' + tocItems + '<div style="font-size:9px;color:#94a3b8;margin-top:8px;text-align:right">Auto-generated \xB7 Click headings to navigate</div>';
       const main = doc.querySelector("main") || doc.body;
       main.insertBefore(toc, main.firstChild);
-      addToast("\u{1F4D1} Table of contents added \u2014 click to remove", "success");
+      addToast(t("toasts.table_contents_added_click_remove"), "success");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4D1} Toggle Table of Contents"), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F512} Watermark & Stamps ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-1" }, [
       { label: "DRAFT", color: "#ef4444", opacity: 0.08 },
       { label: "CONFIDENTIAL", color: "#7c3aed", opacity: 0.07 },
@@ -5713,7 +5713,7 @@ Return ONLY JSON:
           const existing = doc.getElementById("alloflow-watermark");
           if (existing && existing.dataset.label === wm.label) {
             existing.remove();
-            addToast("Watermark removed", "info");
+            addToast(t("toasts.watermark_removed"), "info");
             return;
           }
           if (existing) existing.remove();
@@ -5723,7 +5723,7 @@ Return ONLY JSON:
           el.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:" + wm.color + ";opacity:" + wm.opacity + ";pointer-events:none;z-index:9998;white-space:nowrap;letter-spacing:8px;font-family:system-ui;user-select:none;";
           el.textContent = wm.label;
           doc.body.appendChild(el);
-          addToast('Watermark "' + wm.label + '" added \u2014 click again to remove', "success");
+          addToast(t("toasts.watermark") + wm.label + '" added \u2014 click again to remove', "success");
         },
         className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2",
         "aria-label": `Toggle ${wm.label} watermark`
@@ -5744,20 +5744,20 @@ Return ONLY JSON:
       el.style.cssText = "position:fixed;top:12px;right:12px;background:white;border:2px solid #6366f1;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:#4338ca;font-family:system-ui;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.1);";
       el.textContent = stamp.icon + " " + stamp.label;
       doc.body.appendChild(el);
-      addToast("Version stamp added", "success");
+      addToast(t("toasts.version_stamp_added"), "success");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5" }, stamp.icon, " ", stamp.label))))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = pdfPreviewRef.current?.contentDocument;
       if (!doc) return;
       const existing = doc.getElementById("bilingual-style");
       if (existing) {
         existing.remove();
-        addToast("Bilingual layout removed \u2014 content restored to single column", "info");
+        addToast(t("toasts.bilingual_layout_removed_content_restored"), "info");
         return;
       }
       const main = doc.querySelector("main") || doc.body;
       const sections = Array.from(main.querySelectorAll('.section, section, article, [class*="resource"]'));
       if (sections.length === 0) {
-        addToast("No content sections found to arrange", "info");
+        addToast(t("toasts.content_sections_found_arrange"), "info");
         return;
       }
       const style = doc.createElement("style");
@@ -5802,13 +5802,13 @@ Return ONLY JSON:
         section.parentNode.insertBefore(wrapper, section);
         section.style.display = "none";
       });
-      addToast("\u{1F4D0} Bilingual layout applied \u2014 paste translations in the right column. Click again to remove.", "success");
+      addToast(t("toasts.bilingual_layout_applied_paste_translations"), "success");
     }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F310} Toggle Bilingual Side-by-Side"), callTTS && /* @__PURE__ */ React.createElement("button", { id: "preview-audio-dl-btn", onClick: async () => {
       const btn = document.getElementById("preview-audio-dl-btn");
       const doc = pdfPreviewRef.current?.contentDocument;
       const fullText = (doc?.body?.textContent || "").trim();
       if (!fullText) {
-        addToast("No text to convert", "error");
+        addToast(t("toasts.text_convert"), "error");
         return;
       }
       const segments = [];
@@ -5845,7 +5845,7 @@ Return ONLY JSON:
           warnLog("[Audio] Seg " + si + " failed:", e?.message);
           failed++;
           if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
-            addToast("\u26A0\uFE0F Rate limited \u2014 got " + blobs.length + "/" + segments.length, "info");
+            addToast(t("toasts.rate_limited_got") + blobs.length + "/" + segments.length, "info");
             break;
           }
         }
@@ -5855,7 +5855,7 @@ Return ONLY JSON:
         btn.disabled = false;
       }
       if (blobs.length === 0) {
-        addToast("Audio generation failed \u2014 check TTS/API key", "error");
+        addToast(t("toasts.audio_generation_failed_check_tts"), "error");
         return;
       }
       const combined = new Blob(blobs, { type: blobs[0].type || "audio/wav" });
@@ -5867,10 +5867,10 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(dlUrl);
-      addToast("\u{1F3A7} Downloaded! " + blobs.length + "/" + segments.length + (failed > 0 ? " (" + failed + " failed)" : ""), "success");
+      addToast(t("toasts.downloaded") + blobs.length + "/" + segments.length + (failed > 0 ? " (" + failed + " failed)" : ""), "success");
     }, className: "w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F3A7} Download Audio"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const html = getPdfPreviewHtml();
-      addToast("Running axe-core on edited content...", "info");
+      addToast(t("toasts.running_axe_core_edited_content"), "info");
       const axe = await runAxeAudit(html);
       if (axe) {
         setPdfFixResult((prev) => ({ ...prev, axeAudit: axe, axeScore: axe.score, accessibleHtml: html }));
@@ -5879,10 +5879,10 @@ Return ONLY JSON:
     }, className: "w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2" }, "\u{1F52C} Re-audit (axe-core)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const html = getPdfPreviewHtml();
       if (!html) {
-        addToast("No preview content to audit", "error");
+        addToast(t("toasts.preview_content_audit"), "error");
         return;
       }
-      addToast("Running full AI re-audit...", "info");
+      addToast(t("toasts.running_full_ai_re_audit"), "info");
       try {
         const [aiResult, axeResult] = await Promise.all([
           auditOutputAccessibility(html),
@@ -5901,7 +5901,7 @@ Return ONLY JSON:
           addToast(totalIssues === 0 ? `\u2705 Full re-audit complete! ${totalPasses} checks passing, 0 issues.` : `\u26A0\uFE0F Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? "success" : "info");
         }
       } catch (e) {
-        addToast("Re-audit failed: " + e.message, "error");
+        addToast(t("toasts.re_audit_failed") + e.message, "error");
       }
     }, className: "w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2" }, "\u{1F916} Full Re-audit (AI + axe-core)"), extractedImagesList.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "bg-white border border-indigo-600 rounded-lg p-2", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold text-slate-600 uppercase tracking-widest select-none" }, "\u{1F5BC} Extracted Images (", extractedImagesList.length, ")"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1 mb-2" }, t("pdf_audit.extracted_images.drag_hint") || 'Drag a thumbnail onto any image placeholder in the preview to insert it, or click "\u{1F4F7} Upload" inside a placeholder and choose "Use extracted image".'), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto" }, extractedImagesList.map((img, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group" }, /* @__PURE__ */ React.createElement(
       "img",
@@ -5937,7 +5937,7 @@ Return ONLY JSON:
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast("Saved edited HTML", "success");
+      addToast(t("toasts.saved_edited_html"), "success");
     }, className: "w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2" }, "\u{1F4C4} Save as HTML"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setPdfPreviewOpen(false);
     }, className: "w-full text-[11px] text-slate-600 hover:text-slate-600 font-bold text-center py-1" }, "Close Preview"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("pdf_audit.preview.live_preview") || "Live Preview"), /* @__PURE__ */ React.createElement("span", null, "\u2014 select text, then use the toolbar to format"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-mono" }, pendingPdfFile?.name || "document.pdf")), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("pdf_audit.toolbar.aria") || "Text formatting" }, [

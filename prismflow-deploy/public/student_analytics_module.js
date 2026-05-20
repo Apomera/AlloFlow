@@ -1312,7 +1312,7 @@
 
     // ── Class Screening Report Generator ──
     var printClassScreeningReport = function() {
-      if (importedStudents.length === 0) { addToast && addToast('No students imported', 'info'); return; }
+      if (importedStudents.length === 0) { addToast && addToast(t('toasts.students_imported'), 'info'); return; }
       var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
       var studentData = importedStudents.map(function(s) {
@@ -1423,7 +1423,7 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast('Screening CSV exported', 'success');
+      addToast(t('toasts.screening_csv_exported'), 'success');
     };
     const generateRTICSV = () => {
       if (!importedStudents || importedStudents.length === 0) return;
@@ -1448,7 +1448,7 @@
     const exportFluencyCSV = () => {
       const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
       if (fluencyRecords.length === 0) {
-        addToast('No fluency assessments to export', 'warning');
+        addToast(t('toasts.fluency_assessments_export_2'), 'warning');
         return;
       }
       const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
@@ -1681,13 +1681,13 @@
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      addToast && addToast('Research CSV exported with ' + students.length + ' students', 'success');
+      addToast && addToast(t('toasts.research_csv_exported_with') + students.length + ' students', 'success');
     };
     // ── Session-level CSV export (fidelity log data) ──
     const exportSessionLogCSV = () => {
       var log;
       try { log = JSON.parse(localStorage.getItem('alloflow_fidelity_log') || '[]'); } catch { log = []; }
-      if (!log.length) { addToast && addToast('No session log data to export', 'info'); return; }
+      if (!log.length) { addToast && addToast(t('toasts.session_log_data_export'), 'info'); return; }
       var headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Minutes', 'Study_Name'];
       var rows = log.map(function(s) {
         var d = s.date ? new Date(s.date) : new Date();
@@ -1708,7 +1708,7 @@
       link.download = 'AlloFlow_Session_Log_' + new Date().toISOString().split('T')[0] + '.csv';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      addToast && addToast('Session log exported (' + log.length + ' sessions)', 'success');
+      addToast && addToast(t('toasts.session_log_exported') + log.length + ' sessions)', 'success');
     };
 
     // ── Survey responses CSV export (with timepoints) ──
@@ -1720,7 +1720,7 @@
           allResponses.push(entry);
         });
       });
-      if (!allResponses.length) { addToast && addToast('No survey responses to export', 'info'); return; }
+      if (!allResponses.length) { addToast && addToast(t('toasts.survey_responses_export'), 'info'); return; }
       var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name'];
       var questionIds = new Set();
       allResponses.forEach(function(r) {
@@ -1748,7 +1748,7 @@
       link.download = 'AlloFlow_Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      addToast && addToast('Survey responses exported (' + allResponses.length + ' responses)', 'success');
+      addToast && addToast(t('toasts.survey_responses_exported') + allResponses.length + ' responses)', 'success');
     };
 
     // ── Full study bundle export/import (Canvas-persistence path) ──
@@ -1783,7 +1783,7 @@
       link.download = 'AlloFlow_Study_Bundle_' + safeName + '_' + new Date().toISOString().split('T')[0] + '.json';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      addToast && addToast('Study bundle exported. Re-import to restore in a future Canvas session.', 'success');
+      addToast && addToast(t('toasts.study_bundle_exported_re_import'), 'success');
     };
     const importStudyBundle = (file) => {
       if (!file) return;
@@ -1793,11 +1793,11 @@
         try {
           bundle = JSON.parse(String(e.target.result || '{}'));
         } catch (err) {
-          addToast && addToast('Import failed: invalid JSON', 'error');
+          addToast && addToast(t('toasts.import_failed_invalid_json'), 'error');
           return;
         }
         if (!bundle || typeof bundle !== 'object' || !bundle.schemaVersion) {
-          addToast && addToast('Import failed: not a study bundle', 'error');
+          addToast && addToast(t('toasts.import_failed_study_bundle'), 'error');
           return;
         }
         STUDY_BUNDLE_KEYS.forEach(function (k) {
@@ -1820,9 +1820,9 @@
         try { setExternalCBMScores(bundle.alloflow_external_cbm || {}); } catch {}
         // rtiGoals lives in the parent App scope; notify it so it can re-read.
         try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { keys: STUDY_BUNDLE_KEYS } })); } catch {}
-        addToast && addToast('Study bundle imported. Active study: ' + ((bundle.alloflow_research_mode && bundle.alloflow_research_mode.studyName) || '(none)'), 'success');
+        addToast && addToast(t('toasts.study_bundle_imported_active_study') + ((bundle.alloflow_research_mode && bundle.alloflow_research_mode.studyName) || '(none)'), 'success');
       };
-      reader.onerror = function () { addToast && addToast('Import failed: file read error', 'error'); };
+      reader.onerror = function () { addToast && addToast(t('toasts.import_failed_file_read_error'), 'error'); };
       reader.readAsText(file);
     };
 
@@ -2264,7 +2264,7 @@
     const generateLabelImage = async (prompt, existingImage) => {
       const fn = (typeof window !== 'undefined') && window.callGeminiImageEdit;
       if (typeof fn !== 'function') {
-        addToast && addToast('Image generation unavailable (callGeminiImageEdit not loaded)', 'error');
+        addToast && addToast(t('toasts.image_generation_unavailable_callgeminiimageedit_l'), 'error');
         return null;
       }
       const styled = 'Simple, friendly, flat vector-art icon on a white background. ' + (prompt || 'concept icon');
@@ -2276,7 +2276,7 @@
         return await fn(styled);
       } catch (err) {
         console.warn('[Research Suite] image generation failed:', err && err.message);
-        addToast && addToast('Image generation failed: ' + (err && err.message || 'unknown error'), 'error');
+        addToast && addToast(t('toasts.image_generation_failed') + (err && err.message || 'unknown error'), 'error');
         return null;
       }
     };
@@ -2299,7 +2299,7 @@
       // active, mark inactive so the config saves without auto-prompting.
       toggleResearchMode(Object.assign({}, updatedMode, { active: !!updatedMode.active }));
       setShowCustomQuestions(false);
-      addToast && addToast('Custom questions saved for ' + customQuestionsPopulation + ' survey.', 'success');
+      addToast && addToast(t('toasts.custom_questions_saved') + customQuestionsPopulation + ' survey.', 'success');
     };
     const cqAddQuestion = () => {
       setCustomQuestionsDraft(prev => prev.concat([{
@@ -2860,7 +2860,7 @@
           try {
             localStorage.setItem('alloflow_session_counter', '0');
           } catch {}
-          addToast && addToast('Research Mode activated!', 'success');
+          addToast && addToast(t('toasts.research_mode_activated'), 'success');
         }
       }, '\u{1F52C} Activate Research Mode'))));
     };
@@ -2929,7 +2929,7 @@
         className: 'text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors',
         onClick: () => {
           toggleResearchMode(null);
-          addToast && addToast('Research Mode deactivated', 'info');
+          addToast && addToast(t('toasts.research_mode_deactivated'), 'info');
         }
       }, '\u{23F9} End Study')), React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-3 mb-3'
@@ -3205,14 +3205,14 @@
       const g = grade || mathProbeGrade || '1';
       const f = form || mathProbeForm || 'A';
       if (!window.ORF_SCREENING_PASSAGES || !window.ORF_SCREENING_PASSAGES[g] || !window.ORF_SCREENING_PASSAGES[g][f]) {
-        addToast('ORF passages not loaded yet — loading now', 'error');
+        addToast(t('toasts.orf_passages_loaded_yet_loading'), 'error');
         loadPsychometricProbes();
         return;
       }
       const passages = window.ORF_SCREENING_PASSAGES[g][f];
       const passage = passages[0];
       if (!passage || !passage.text) {
-        addToast('No ORF passage found for Grade ' + g + ' Form ' + f, 'error');
+        addToast(t('toasts.orf_passage_found_grade') + g + ' Form ' + f, 'error');
         return;
       }
       const words = passage.text.split(/\s+/).map((w, i) => ({
@@ -3238,7 +3238,7 @@
           return prev - 1;
         });
       }, 1000);
-      addToast('ORF Probe: ' + passage.title + ' — 60 seconds', 'info');
+      addToast(t('toasts.orf_probe') + passage.title + ' — 60 seconds', 'info');
     };
     const launchBenchmarkProbe = (grade, activity, form = 'A') => {
       const gradeBank = BENCHMARK_PROBE_BANKS && BENCHMARK_PROBE_BANKS[grade];
@@ -3250,7 +3250,7 @@
         return;
       }
       if (!bank || !bank[activity]) {
-        addToast('No probe words available for ' + grade + ' / ' + activity, 'warning');
+        addToast(t('toasts.probe_words_available') + grade + ' / ' + activity, 'warning');
         return;
       }
       const rawWords = bank[activity];
@@ -3326,11 +3326,11 @@
     const launchScreeningSession = (grade, form, student) => {
       const subtests = GRADE_SUBTEST_BATTERIES[grade];
       if (!subtests || subtests.length === 0) {
-        addToast('No subtests available for grade ' + grade, 'warning');
+        addToast(t('toasts.subtests_available_grade') + grade, 'warning');
         return;
       }
       if (!student) {
-        addToast('Please select a student first', 'warning');
+        addToast(t('toasts.select_student_first'), 'warning');
         return;
       }
       const session = {
@@ -3938,7 +3938,7 @@
       a.download = 'my_learning_journey_' + new Date().toISOString().split('T')[0] + '.html';
       a.click();
       URL.revokeObjectURL(url);
-      if (addToast) addToast('\u{1F4CA} Your progress report has been downloaded!', 'success');
+      if (addToast) addToast(t('toasts.1f4ca_progress_report_has_been'), 'success');
     };
     if (!isOpen) return null;
     return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
@@ -4053,7 +4053,7 @@
                   setProbeTargetStudent(next);
                   setMathProbeStudent(next);
                   if (rest.length === 0) setScreeningQueueActive(false);
-                  addToast('Now assessing: ' + next, 'info');
+                  addToast(t('toasts.now_assessing') + next, 'info');
                 }
               },
               className: "text-xs px-2 py-1 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors ml-1"
@@ -4067,7 +4067,7 @@
               setProbeTargetStudent(names[0]);
               setMathProbeStudent(names[0]);
               setScreeningQueueActive(true);
-              addToast('Screening queue started with ' + names.length + ' students', 'info');
+              addToast(t('toasts.screening_queue_started_with') + names.length + ' students', 'info');
             },
             className: "text-xs px-3 py-2 bg-white border border-indigo-600 text-indigo-700 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1"
           }, '\uD83D\uDCCB Start Screening Queue')
@@ -4765,7 +4765,7 @@
         const grade = mathProbeGrade || "1";
         const form = mathProbeForm || "A";
         if (!window.MATH_PROBE_BANKS || !window.MATH_PROBE_BANKS[grade] || !window.MATH_PROBE_BANKS[grade][form]) {
-          addToast("Math probes not loaded yet — please wait and try again", "error");
+          addToast(t('toasts.math_probes_loaded_yet_wait'), "error");
           loadPsychometricProbes();
           return;
         }
@@ -4821,7 +4821,7 @@
         const grade = nwfGrade || 'K';
         const form = nwfForm || 'A';
         if (!window.NWF_PROBE_BANKS || !window.NWF_PROBE_BANKS[grade] || !window.NWF_PROBE_BANKS[grade][form]) {
-          addToast('NWF probes not loaded yet — loading now', 'error');
+          addToast(t('toasts.nwf_probes_loaded_yet_loading'), 'error');
           loadPsychometricProbes();
           return;
         }
@@ -4854,7 +4854,7 @@
         const grade = 'K';
         const form = lnfForm || 'A';
         if (!window.LNF_PROBE_BANKS || !window.LNF_PROBE_BANKS[grade] || !window.LNF_PROBE_BANKS[grade][form]) {
-          addToast('LNF probes not loaded yet — loading now', 'error');
+          addToast(t('toasts.lnf_probes_loaded_yet_loading'), 'error');
           loadPsychometricProbes();
           return;
         }
@@ -4885,7 +4885,7 @@
         const grade = ranGrade || 'K';
         const form = ranForm || 'A';
         if (!window.RAN_PROBE_BANKS || !window.RAN_PROBE_BANKS[grade] || !window.RAN_PROBE_BANKS[grade][form]) {
-          addToast('RAN probes not loaded yet — loading now', 'error');
+          addToast(t('toasts.ran_probes_loaded_yet_loading'), 'error');
           loadPsychometricProbes();
           return;
         }
@@ -5080,7 +5080,7 @@
           grade: nwfProbeGrade,
           form: nwfForm
         });
-        addToast('NWF results saved for ' + mathProbeStudent, 'success');
+        addToast(t('toasts.nwf_results_saved') + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
@@ -5244,7 +5244,7 @@
           grade: 'K',
           form: lnfForm
         });
-        addToast('LNF results saved for ' + mathProbeStudent, 'success');
+        addToast(t('toasts.lnf_results_saved') + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-blue-700 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
@@ -5442,7 +5442,7 @@
           grade: ranProbeResults.grade,
           form: ranForm
         });
-        addToast('RAN results saved for ' + mathProbeStudent, 'success');
+        addToast(t('toasts.ran_results_saved') + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
@@ -5568,7 +5568,7 @@
           form: mathProbeForm,
           title: orfProbeResults.title
         });
-        addToast('ORF results saved for ' + mathProbeStudent, 'success');
+        addToast(t('toasts.orf_results_saved') + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-rose-700 text-white rounded-lg font-bold text-sm hover:bg-rose-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), (() => {
@@ -5658,7 +5658,7 @@
         const form = mnForm || "A";
         const bank = window.MISSING_NUMBER_PROBES;
         if (!bank || !bank[grade] || !bank[grade][form]) {
-          addToast("Missing Number probes not loaded yet", "error");
+          addToast(t('toasts.missing_number_probes_loaded_yet'), "error");
           loadPsychometricProbes();
           return;
         }
@@ -5899,7 +5899,7 @@
         const form = qdForm || "A";
         const bank = window.QUANTITY_DISCRIMINATION_PROBES;
         if (!bank || !bank[grade] || !bank[grade][form]) {
-          addToast("Quantity Discrimination probes not loaded yet", "error");
+          addToast(t('toasts.quantity_discrimination_probes_loaded_yet'), "error");
           loadPsychometricProbes();
           return;
         }
@@ -6763,9 +6763,9 @@
                 metric: 'wcpm',
                 baselineDate: new Date().toISOString()
               });
-              addToast('RTI goal saved for ' + selectedStudent.name, 'success');
+              addToast(t('toasts.rti_goal_saved') + selectedStudent.name, 'success');
             } else {
-              addToast('Please fill in all three fields', 'warning');
+              addToast(t('toasts.fill_all_three_fields'), 'warning');
             }
           },
           style: {
@@ -7121,13 +7121,13 @@
               startDate: startDate || new Date().toISOString().split('T')[0],
               notes
             });
-            addToast('Intervention logged for ' + selectedStudent.name, 'success');
+            addToast(t('toasts.intervention_logged') + selectedStudent.name, 'success');
             ['program', 'freq', 'min', 'group', 'date', 'notes'].forEach(f => {
               const el = document.getElementById(`intv-${f}-${selectedStudent.name}`);
               if (el) el.value = '';
             });
           } else {
-            addToast('Program name and frequency are required', 'warning');
+            addToast(t('toasts.program_name_frequency_required'), 'warning');
           }
         },
         style: {

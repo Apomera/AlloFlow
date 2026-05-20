@@ -869,10 +869,10 @@
         var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img, name: avatarName, description: avatarDesc }) : p; });
         setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
         setStoryStudentName(avatarName);
-        addToast && addToast('Avatar created for ' + (avatarName || 'student') + '!', 'success');
+        addToast && addToast(t('toasts.avatar_created') + (avatarName || 'student') + '!', 'success');
       } catch (e) {
         warnLog("Avatar generation failed:", e);
-        addToast && addToast('Avatar generation failed', 'error');
+        addToast && addToast(t('toasts.avatar_generation_failed'), 'error');
       } finally { setAvatarGenerating(false); }
     }, [avatarDesc, avatarName, activeProfileId, profiles, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -884,7 +884,7 @@
         var img = e2.target.result;
         var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img }) : p; });
         setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
-        addToast && addToast('Avatar photo uploaded!', 'success');
+        addToast && addToast(t('toasts.avatar_photo_uploaded'), 'success');
       };
       reader.readAsDataURL(file);
     }, [activeProfileId, profiles, addToast]);
@@ -934,9 +934,9 @@
         var updated = [entry].concat(gallery);
         setGallery(updated); store(STORAGE_GALLERY, updated);
         setSelectedId(entry.id);
-        addToast && addToast('Symbol created!', 'success');
+        addToast && addToast(t('toasts.symbol_created'), 'success');
       } catch (e) {
-        addToast && addToast('Generation failed: ' + e.message, 'error');
+        addToast && addToast(t('toasts.generation_failed') + e.message, 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[tid]; return n; }); }
     }, [symLabel, symDesc, globalStyle, gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -960,7 +960,7 @@
         addToast && addToast(valid.length + ' symbol(s) created!', 'success');
       }
       if (batchOut.failed.length > 0) {
-        addToast && addToast('Failed to generate: ' + batchOut.failed.join(', '), 'error');
+        addToast && addToast(t('toasts.failed_generate') + batchOut.failed.join(', '), 'error');
       }
       setSymLoading({});
     }, [symBatch, globalStyle, gallery, autoClean, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
@@ -975,17 +975,17 @@
         var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: imageUrl }) : i; });
         setGallery(updated); store(STORAGE_GALLERY, updated);
       } catch (e) {
-        addToast && addToast('Regen failed', 'error');
+        addToast && addToast(t('toasts.regen_failed'), 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     var refineSymbol = useCallback(async function (id, instruction) {
       var item = gallery.find(function (i) { return i.id === id; });
-      if (!item || !instruction.trim()) { addToast && addToast('Please enter an edit instruction', 'error'); return; }
-      if (!onCallGeminiImageEdit) { addToast && addToast('Image editing is not available', 'error'); return; }
-      if (!item.image) { addToast && addToast('No image to refine — generate one first', 'error'); return; }
+      if (!item || !instruction.trim()) { addToast && addToast(t('toasts.enter_edit_instruction'), 'error'); return; }
+      if (!onCallGeminiImageEdit) { addToast && addToast(t('toasts.image_editing_available_2'), 'error'); return; }
+      if (!item.image) { addToast && addToast(t('toasts.image_refine_generate_one_first'), 'error'); return; }
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
-      addToast && addToast('Refining icon…', 'info');
+      addToast && addToast(t('toasts.refining_icon'), 'info');
       try {
         var raw = await ensureBase64(item.image);
         if (!raw) throw new Error('Could not extract image data');
@@ -995,13 +995,13 @@
           var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: refined }) : i; });
           setGallery(updated); store(STORAGE_GALLERY, updated);
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
-          addToast && addToast('Icon refined!', 'success');
+          addToast && addToast(t('toasts.icon_refined'), 'success');
         } else {
-          addToast && addToast('Refinement returned no image', 'error');
+          addToast && addToast(t('toasts.refinement_returned_image'), 'error');
         }
       } catch (e) {
         warnLog('Symbol refinement failed:', e);
-        addToast && addToast('Refinement failed: ' + (e.message || 'Unknown error'), 'error');
+        addToast && addToast(t('toasts.refinement_failed_2') + (e.message || 'Unknown error'), 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [gallery, onCallGeminiImageEdit, addToast]);
 
@@ -1029,7 +1029,7 @@
       if (!window.confirm('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.')) return;
       setGallery([]); store(STORAGE_GALLERY, []);
       setSelectedId(null);
-      addToast && addToast('Gallery cleared', 'info');
+      addToast && addToast(t('toasts.gallery_cleared'), 'info');
     }, [gallery, addToast]);
 
     var exportData = useCallback(function () {
@@ -1058,7 +1058,7 @@
       a.download = 'symbol_studio_' + new Date().toISOString().slice(0, 10) + '.json';
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
-      addToast && addToast('Backup downloaded!', 'success');
+      addToast && addToast(t('toasts.backup_downloaded'), 'success');
     }, [gallery, savedBoards, savedSchedules, profiles, books, familiarity, usageLog, iepGoals, prevGrowthMap, customTemplates, addToast]);
 
     var importData = useCallback(function (ev) {
@@ -1182,7 +1182,7 @@
           addToast && addToast(summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', summary.length ? 'success' : 'info');
         } catch (err) {
           warnLog('Import failed:', err);
-          addToast && addToast('Import failed — check that this is a valid Symbol Studio backup file', 'error');
+          addToast && addToast(t('toasts.import_failed_check_valid_symbol'), 'error');
         }
       };
       reader.readAsText(file);
@@ -1211,11 +1211,11 @@
         };
         await cloudSync.save(data);
         setLastSynced(data.lastSynced); setSyncStatus('synced');
-        addToast && addToast('☁️ Synced to cloud!', 'success');
+        addToast && addToast(t('toasts.synced_cloud'), 'success');
       } catch (e) {
         warnLog('Cloud sync failed:', e);
         setSyncStatus('error');
-        addToast && addToast('Cloud sync failed: ' + e.message, 'error');
+        addToast && addToast(t('toasts.cloud_sync_failed') + e.message, 'error');
       }
     }, [cloudSync, profiles, savedBoards, savedSchedules, gallery, addToast]);
 
@@ -1226,7 +1226,7 @@
         var data = await cloudSync.load();
         if (!data) {
           setSyncStatus('idle');
-          addToast && addToast('No cloud backup found', 'info'); return;
+          addToast && addToast(t('toasts.cloud_backup_found'), 'info'); return;
         }
         var summary = [];
         // Profiles: merge cloud metadata with local images
@@ -1282,11 +1282,11 @@
         }
         if (data.lastSynced) setLastSynced(data.lastSynced);
         setSyncStatus('synced');
-        addToast && addToast('☁️ Loaded from cloud: ' + (summary.length ? summary.join(', ') : 'up to date'), 'success');
+        addToast && addToast(t('toasts.loaded_from_cloud') + (summary.length ? summary.join(', ') : 'up to date'), 'success');
       } catch (e) {
         warnLog('Cloud load failed:', e);
         setSyncStatus('error');
-        addToast && addToast('Cloud load failed: ' + e.message, 'error');
+        addToast && addToast(t('toasts.cloud_load_failed') + e.message, 'error');
       }
     }, [cloudSync, profiles, savedBoards, savedSchedules, addToast]);
 
@@ -1308,14 +1308,14 @@
         addToast && addToast(parsed.length + ' words ready — click Generate Images!', 'success');
       } catch (e) {
         warnLog("Board word gen failed:", e);
-        addToast && addToast('Word list generation failed: ' + e.message, 'error');
+        addToast && addToast(t('toasts.word_list_generation_failed') + e.message, 'error');
       } finally { setBoardGenerating(false); }
     }, [boardTopic, onCallGemini, addToast]);
 
     var generateBoardImages = useCallback(async function () {
       if (!boardWords.length || !onCallImagen) return;
       var items = boardWords.filter(function (w) { return !w.image; });
-      if (!items.length) { addToast && addToast('All images already generated', 'info'); return; }
+      if (!items.length) { addToast && addToast(t('toasts.all_images_already_generated'), 'info'); return; }
       // ── Symbol reuse: check gallery before calling Imagen ──────────────
       var galleryMap = {};
       gallery.forEach(function (g) { if (g.image) galleryMap[g.label.toLowerCase().trim()] = g.image; });
@@ -1332,7 +1332,7 @@
         });
         addToast && addToast(preMatched.length + ' symbol(s) reused from gallery \u2013 saving API calls!', 'info');
       }
-      if (!toGenerate.length) { addToast && addToast('All images ready!', 'success'); return; }
+      if (!toGenerate.length) { addToast && addToast(t('toasts.all_images_ready'), 'success'); return; }
       var loadMap = {};
       toGenerate.forEach(function (i) { loadMap[i.id] = true; });
       setBoardLoading(function (p) { return Object.assign({}, p, loadMap); });
@@ -1346,9 +1346,9 @@
         return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id].image }) : w; });
       });
       setBoardLoading({});
-      addToast && addToast('Board images generated!', 'success');
+      addToast && addToast(t('toasts.board_images_generated'), 'success');
       if (batchOut.failed.length > 0) {
-        addToast && addToast('Failed: ' + batchOut.failed.join(', '), 'error');
+        addToast && addToast(t('toasts.failed_2') + batchOut.failed.join(', '), 'error');
       }
     }, [boardWords, gallery, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1361,7 +1361,7 @@
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 300);
         setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { image: imageUrl }) : w; }); });
       } catch (e) {
-        addToast && addToast('Image failed for ' + (word.label || ''), 'error');
+        addToast && addToast(t('toasts.image_failed') + (word.label || ''), 'error');
       } finally { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1385,12 +1385,12 @@
           maxDurationMs: 10 * 1000, // 10s cap, matches legacy
           preferredMimeType: 'audio/webm;codecs=opus',
           onError: function () {
-            if (addToast) addToast('Microphone access denied', 'error');
+            if (addToast) addToast(t('toasts.microphone_access_denied'), 'error');
             setCellRecording(null);
           }
         });
         if (!ctrl.supported) {
-          if (addToast) addToast('Recording not supported in this browser.', 'error');
+          if (addToast) addToast(t('toasts.recording_supported_browser'), 'error');
           return;
         }
         cellMediaRef.current = ctrl;
@@ -1403,7 +1403,7 @@
                 return w.id === id ? Object.assign({}, w, { audioData: rec.base64 }) : w;
               });
             });
-            if (addToast) addToast('🎙️ Audio recorded for cell!', 'success');
+            if (addToast) addToast(t('toasts.audio_recorded_cell'), 'success');
           }
           if (cellMediaRef.current === ctrl) cellMediaRef.current = null;
           setCellRecording(null);
@@ -1427,7 +1427,7 @@
           reader.onloadend = function () {
             var b64 = reader.result;
             setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { audioData: b64 }) : w; }); });
-            if (addToast) addToast('🎙️ Audio recorded for cell!', 'success');
+            if (addToast) addToast(t('toasts.audio_recorded_cell'), 'success');
           };
           reader.readAsDataURL(blob);
           setCellRecording(null);
@@ -1435,7 +1435,7 @@
         mr.start();
         setTimeout(function () { if (mr.state === 'recording') mr.stop(); }, 10000);
       }).catch(function () {
-        if (addToast) addToast('Microphone access denied', 'error');
+        if (addToast) addToast(t('toasts.microphone_access_denied'), 'error');
       });
     }, [cellRecording, addToast]);
 
@@ -1497,7 +1497,7 @@
       var page1 = { id: uid(), title: boardTitle || boardTopic || 'Page 1', words: boardWords, cols: boardCols };
       setBoardPages([page1]);
       setActivePageIdx(0);
-      addToast && addToast('Multi-page mode enabled — add more pages below', 'info');
+      addToast && addToast(t('toasts.multi_page_mode_enabled_add'), 'info');
     }, [boardWords, boardCols, boardTitle, boardTopic, addToast]);
 
     var saveBoard = useCallback(function () {
@@ -1519,11 +1519,11 @@
       pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
-      addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
+      addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
       // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
       if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
         setTimeout(function () {
-          addToast('🌱 Your words are growing! Check the Word Garden tab to see vocabulary across tools.', 'info');
+          addToast(t('toasts.words_growing_check_word_garden'), 'info');
           store('alloGardenNudgeSeen', true);
         }, 1500);
       }
@@ -1547,7 +1547,7 @@
       var fmap = FCT_MAP[functionId];
       var labels = (FCT_PHASE_TEMPLATES[functionId] && FCT_PHASE_TEMPLATES[functionId][phase]) || [];
       if (!labels.length || !fmap) {
-        addToast && addToast('Invalid FCT template', 'error');
+        addToast && addToast(t('toasts.invalid_fct_template'), 'error');
         return;
       }
       var words = labels.map(function (lbl) {
@@ -1577,7 +1577,7 @@
     // onCallGemini isn't available (offline or School Box mode).
     var buildBoardFromGoal = useCallback(async function (goalText) {
       var goal = String(goalText || '').trim();
-      if (!goal) { addToast && addToast('Enter a communication goal first', 'error'); return; }
+      if (!goal) { addToast && addToast(t('toasts.enter_communication_goal_first'), 'error'); return; }
       // Offline / no-Gemini fallback: empty 6-cell scaffold with the goal as title.
       if (!onCallGemini) {
         var scaffold = [];
@@ -1587,10 +1587,10 @@
         setBoardTopic(goal);
         setBoardCols(3);
         setTab('board');
-        addToast && addToast('AI goal parser unavailable — blank 6-cell board ready to edit', 'info');
+        addToast && addToast(t('toasts.ai_goal_parser_unavailable_blank'), 'info');
         return;
       }
-      addToast && addToast('🧠 Planning symbols for "' + goal + '"…', 'info');
+      addToast && addToast(t('toasts.planning_symbols') + goal + '"…', 'info');
       try {
         var prompt = [
           'You are helping build a communication board for a non-verbal or emerging-communicator student.',
@@ -1609,11 +1609,11 @@
         var stripped = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
         var parsed; try { parsed = JSON.parse(stripped); } catch (pe) { parsed = null; }
         if (!parsed || !Array.isArray(parsed.words) || parsed.words.length === 0) {
-          addToast && addToast('Goal parser returned unexpected output — try rewording', 'error');
+          addToast && addToast(t('toasts.goal_parser_returned_unexpected_output'), 'error');
           return;
         }
         var labels = parsed.words.map(function (w) { return String(w).trim(); }).filter(function (w) { return w; }).slice(0, 6);
-        if (!labels.length) { addToast && addToast('No usable labels from goal — try rewording', 'error'); return; }
+        if (!labels.length) { addToast && addToast(t('toasts.usable_labels_from_goal_try'), 'error'); return; }
         var words = labels.map(function (lbl) {
           return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: '', image: null };
         });
@@ -1627,10 +1627,10 @@
         var fnMap = { attention: 'Attention', escape: 'Escape', tangible: 'Tangible', sensory: 'Sensory' };
         var fnNormalized = fnMap[fnRaw] || null;
         pendingFctMetaRef.current = fnNormalized ? { fctFunction: fnNormalized, fctPhase: null, fctGoal: goal } : { fctGoal: goal };
-        addToast && addToast('🗣 Board ready' + (fnNormalized ? ' (' + fnNormalized + ')' : '') + ' — images generating…', 'success');
+        addToast && addToast(t('toasts.board_ready') + (fnNormalized ? ' (' + fnNormalized + ')' : '') + ' — images generating…', 'success');
         setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
       } catch (err) {
-        addToast && addToast('Could not reach AI goal parser — try again', 'error');
+        addToast && addToast(t('toasts.could_reach_ai_goal_parser'), 'error');
       }
     }, [addToast, onCallGemini, generateBoardImages]);
 
@@ -1643,7 +1643,7 @@
       setBoardPages(pages);
       setActivePageIdx(0);
       setShowBoardGallery(false);
-      addToast && addToast('Board loaded!' + (pages && pages.length > 1 ? ' (' + pages.length + ' pages)' : ''), 'success');
+      addToast && addToast(t('toasts.board_loaded') + (pages && pages.length > 1 ? ' (' + pages.length + ' pages)' : ''), 'success');
     }, [addToast]);
 
     var deleteSavedBoard = useCallback(function (id) {
@@ -1797,7 +1797,7 @@
       var esc = function (s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
 
       if (type === 'firstthen') {
-        if (!ftFirstImage && !ftThenImage) { addToast && addToast('Generate images first', 'error'); return; }
+        if (!ftFirstImage && !ftThenImage) { addToast && addToast(t('toasts.generate_images_first'), 'error'); return; }
         title = 'First-Then Board';
         bodyHTML = '<div class="ft-board" role="group" aria-label="First Then Board">'
           + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftFirstLabel || 'First') + '" aria-label="First: ' + esc(ftFirstLabel || 'activity') + '">'
@@ -1875,7 +1875,7 @@
       a.download = type + '_board.html';
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(a.href);
-      addToast && addToast('Quick Board exported as accessible HTML!', 'success');
+      addToast && addToast(t('toasts.quick_board_exported_as_accessible'), 'success');
     }, [boardLang, ftFirstLabel, ftFirstImage, ftThenLabel, ftThenImage, addToast]);
 
 
@@ -1908,7 +1908,7 @@
         setSentenceMapping(mapped);
       } catch (err) {
         warnLog('Text-to-symbols failed:', err);
-        addToast && addToast('Mapping failed — try rephrasing the sentence', 'error');
+        addToast && addToast(t('toasts.mapping_failed_try_rephrasing_sentence'), 'error');
       } finally { setSentenceParsing(false); }
     }, [sentenceInput, gallery, onCallGemini, addToast]);
 
@@ -1924,7 +1924,7 @@
       setSentenceInput('');
       setSentenceMapping([]);
       var needsGen = newWords.filter(function (w) { return !w.image; }).length;
-      addToast && addToast('Added ' + newWords.length + ' symbol' + (newWords.length !== 1 ? 's' : '') + (needsGen ? ' (' + needsGen + ' need images — click ✨)' : ' from gallery!'), 'success');
+      addToast && addToast(t('toasts.added') + newWords.length + ' symbol' + (newWords.length !== 1 ? 's' : '') + (needsGen ? ' (' + needsGen + ' need images — click ✨)' : ' from gallery!'), 'success');
     }, [sentenceMapping, addToast]);
 
     // ── Word prediction ────────────────────────────────────────────────────
@@ -1963,9 +1963,9 @@
           var updated = [imported].concat(savedBoards);
           setSavedBoards(updated); store(STORAGE_BOARDS, updated);
           setShowBoardGallery(true);
-          addToast && addToast('Board imported: "' + (imported.title || 'Untitled') + '"', 'success');
+          addToast && addToast(t('toasts.board_imported') + (imported.title || 'Untitled') + '"', 'success');
         } catch (err) {
-          addToast && addToast('Import failed — not a valid board file', 'error');
+          addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error');
         }
       };
       reader.readAsText(file);
@@ -2005,7 +2005,7 @@
       var updated = [book].concat(books);
       setBooks(updated); store(STORAGE_BOOKS, updated);
       setNewBookTitle(''); setActiveBookId(book.id);
-      addToast && addToast('Activity Set \u201c' + book.title + '\u201d created!', 'success');
+      addToast && addToast(t('toasts.activity_set_u201c') + book.title + '\u201d created!', 'success');
     }, [newBookTitle, activeProfileId, books, addToast]);
 
     var deleteBook = useCallback(function (bookId) {
@@ -2032,7 +2032,7 @@
 
     var printBook = useCallback(function (book) {
       var boardsInSet = book.boardIds.map(function (id) { return savedBoards.find(function (b) { return b.id === id; }); }).filter(Boolean);
-      if (!boardsInSet.length) { addToast && addToast('No boards in this set yet', 'error'); return; }
+      if (!boardsInSet.length) { addToast && addToast(t('toasts.boards_set_yet'), 'error'); return; }
       var sz = CELL_SIZES[boardCellSz] || 192;
       var imgSz = sz - 28;
       var styleId = 'ss-print-sz-override';
@@ -2091,12 +2091,12 @@
         );
         setSchedItems(batchOut.results);
         setSchedNowId(batchOut.results[0] ? batchOut.results[0].id : null);
-        addToast && addToast('Schedule generated!', 'success');
+        addToast && addToast(t('toasts.schedule_generated'), 'success');
         if (batchOut.failed.length > 0) {
-          addToast && addToast('Failed: ' + batchOut.failed.join(', '), 'error');
+          addToast && addToast(t('toasts.failed_2') + batchOut.failed.join(', '), 'error');
         }
       } catch (e) {
-        addToast && addToast('Schedule generation failed', 'error');
+        addToast && addToast(t('toasts.schedule_generation_failed'), 'error');
       } finally { setSchedGenerating(false); }
     }, [schedInput, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2116,7 +2116,7 @@
       var saved = { id: uid(), title: schedTitle || 'Schedule', items: schedItems, orientation: schedOrientation, createdAt: Date.now() };
       var updated = [saved].concat(savedSchedules);
       setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
-      addToast && addToast('Schedule saved!', 'success');
+      addToast && addToast(t('toasts.schedule_saved'), 'success');
       if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
     }, [schedItems, schedTitle, schedOrientation, savedSchedules, cloudSync, syncToCloud, addToast]);
 
@@ -2131,7 +2131,7 @@
       setSchedOrientation(sched.orientation || 'horizontal');
       setSchedNowId(sched.items.length ? sched.items[0].id : null);
       setShowSchedGallery(false);
-      addToast && addToast('Schedule loaded!', 'success');
+      addToast && addToast(t('toasts.schedule_loaded'), 'success');
     }, [addToast]);
 
     var deleteSavedSchedule = useCallback(function (id) {
@@ -2171,7 +2171,7 @@
         if (!Array.isArray(parsed) || !parsed.length) throw new Error('Could not parse story');
         var pages = parsed.map(function (p) { return { id: uid(), text: p.text || '', imagePrompt: p.imagePrompt || '', image: null }; });
         setStoryPages(pages);
-        addToast && addToast('Story written! Generating illustrations...', 'success');
+        addToast && addToast(t('toasts.story_written_generating_illustrations'), 'success');
         // Auto-generate illustrations — sequential to avoid rate limiting
         if (onCallImagen) {
           var illMap = {};
@@ -2195,7 +2195,7 @@
         }
       } catch (e) {
         warnLog("Story generation failed:", e);
-        addToast && addToast('Story generation failed: ' + e.message, 'error');
+        addToast && addToast(t('toasts.story_generation_failed') + e.message, 'error');
       } finally { setStoryGenerating(false); }
     }, [storySituation, storyStudentName, storyDetails, avatarRef, onCallGemini, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2230,7 +2230,7 @@
         });
       } catch (err) {
         warnLog('Translation failed:', err);
-        addToast && addToast('Translation failed: ' + err.message, 'error');
+        addToast && addToast(t('toasts.translation_failed_2') + err.message, 'error');
         return words;
       } finally { setTranslating(false); }
     }, [onCallGemini, addToast]);
@@ -2359,7 +2359,7 @@
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600);
         setStoryPages(function (prev) { return prev.map(function (pp) { return pp.id === pageId ? Object.assign({}, pp, { image: img }) : pp; }); });
       } catch (e) {
-        addToast && addToast('Illustration failed', 'error');
+        addToast && addToast(t('toasts.illustration_failed'), 'error');
       } finally { setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[pageId]; return n; }); }
     }, [storyPages, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2372,7 +2372,7 @@
         var prompt = buildSymbolPrompt(label, '', globalStyle, avatarRef ? avatarDesc : '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         which === 'first' ? setFtFirstImage(img) : setFtThenImage(img);
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { which === 'first' ? setFtFirstLoading(false) : setFtThenLoading(false); }
     }, [ftFirstLabel, ftThenLabel, globalStyle, avatarRef, avatarDesc, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2384,7 +2384,7 @@
         var prompt = buildSymbolPrompt(item.label, '', globalStyle, avatarRef ? avatarDesc : '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         setCbItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setCbLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [cbItems, globalStyle, avatarRef, avatarDesc, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2395,7 +2395,7 @@
         var prompt = buildSymbolPrompt(tokenRewardLabel, 'a reward or prize', globalStyle, '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setTokenRewardImage(img);
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setTokenRewardLoading(false); }
     }, [tokenRewardLabel, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2441,7 +2441,7 @@
       try {
         var img = await genWithRetry(buildSymbolPrompt(item.label, 'a child asking a question, speech bubble, communication initiation, simple AAC-style symbol', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setAmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setAmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [amItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2453,7 +2453,7 @@
       var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setAmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
       setAmItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
       setAmLoading({});
-      addToast && addToast('Ask Me Board images ready!', 'success');
+      addToast && addToast(t('toasts.ask_me_board_images_ready'), 'success');
     }, [amItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Body Check actions ─────────────────────────────────────────────────
@@ -2464,7 +2464,7 @@
       try {
         var img = await genWithRetry(buildSymbolPrompt(item.label, 'body part for medical communication with a child, simple clear anatomy AAC-style symbol, white background', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setBcItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setBcLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [bcItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2476,7 +2476,7 @@
       var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setBcLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
       setBcItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
       setBcLoading({});
-      addToast && addToast('Body Check images ready!', 'success');
+      addToast && addToast(t('toasts.body_check_images_ready'), 'success');
     }, [bcItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Transition Warning actions ─────────────────────────────────────────
@@ -2487,7 +2487,7 @@
       try {
         var img = await genWithRetry(buildSymbolPrompt(item.label, 'visual schedule transition warning for children, timer or activity change concept, simple AAC-style symbol', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setTwItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setTwLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [twItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2499,7 +2499,7 @@
       var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setTwLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
       setTwItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
       setTwLoading({});
-      addToast && addToast('Transition Warning images ready!', 'success');
+      addToast && addToast(t('toasts.transition_warning_images_ready'), 'success');
     }, [twItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Calming Corner actions ─────────────────────────────────────────────
@@ -2511,7 +2511,7 @@
         var prompt = buildSymbolPrompt(item.label, 'a calming self-regulation strategy for children, peaceful and soothing scene', globalStyle, '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setCmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setCmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [cmItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2531,7 +2531,7 @@
         return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
       });
       setCmLoading({});
-      addToast && addToast('Calming Corner images ready!', 'success');
+      addToast && addToast(t('toasts.calming_corner_images_ready'), 'success');
     }, [cmItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Sensory Needs actions ──────────────────────────────────────────────
@@ -2543,7 +2543,7 @@
         var prompt = buildSymbolPrompt(item.label, 'a sensory regulation need for a child with sensory sensitivities, clear and simple AAC-style symbol', globalStyle, '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setSnItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      } catch (e) { addToast && addToast(t('toasts.generation_failed_2'), 'error'); }
       finally { setSnLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [snItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -2563,7 +2563,7 @@
         return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
       });
       setSnLoading({});
-      addToast && addToast('Sensory Needs images ready!', 'success');
+      addToast && addToast(t('toasts.sensory_needs_images_ready'), 'success');
     }, [snItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Styles ─────────────────────────────────────────────────────────────
@@ -3729,7 +3729,7 @@
       }
       setGardenTranslations(newTranslations);
       setGardenTranslating(false);
-      addToast && addToast('Translated ' + toTranslate.length + ' words to ' + langName + '!', 'success');
+      addToast && addToast(t('toasts.translated') + toTranslate.length + ' words to ' + langName + '!', 'success');
     }, [onCallGemini, gardenTranslations, gardenTranslating, addToast]);
 
     function getTranslation(label, langCode) {
@@ -4516,7 +4516,7 @@
         e('select', { value: gardenSort, onChange: function (ev) { setGardenSort(ev.target.value); }, 'aria-label': 'Sort', style: Object.assign({}, S.input, { width: 'auto', fontSize: '11px' }) },
           e('option', { value: 'growth' }, '↕ Growth'), e('option', { value: 'alpha' }, '↕ A→Z'), e('option', { value: 'contexts' }, '↕ Contexts'), e('option', { value: 'recent' }, '↕ AAC Use')),
         (function () { var wk = bank.filter(function (w) { return (w.growth === 'sprout' || w.growth === 'growing') && w.image; }); if (wk.length < 3) return null;
-          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast('Practicing ' + wk.length + ' growing words!', 'info'); }, 'aria-label': 'Practice weak words', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })(),
+          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast(t('toasts.practicing') + wk.length + ' growing words!', 'info'); }, 'aria-label': 'Practice weak words', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })(),
         // Generate a board from garden data — mastered core + growing words
         (function () {
           var withImages = bank.filter(function (w) { return w.image; });
@@ -4531,7 +4531,7 @@
             setBoardTitle((activeProfile.codename || activeProfile.name || 'Student') + '\'s Garden Board');
             setBoardCols(Math.min(4, Math.ceil(Math.sqrt(newWords.length))));
             setTab('board');
-            addToast && addToast('Garden Board created with ' + newWords.length + ' words!', 'success');
+            addToast && addToast(t('toasts.garden_board_created_with') + newWords.length + ' words!', 'success');
           }, 'aria-label': 'Generate communication board from garden data', style: Object.assign({}, S.btn('#059669', '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
         })(),
         // Phonics Lesson from Garden — bridges to Word Sounds
@@ -4553,7 +4553,7 @@
             if (window.AlloModules && window.AlloModules.GardenBridge) {
               window.AlloModules.GardenBridge._lastPhonicsLesson = wordList;
             }
-            addToast && addToast('📖 Phonics lesson ready! Open Word Sounds Studio — ' + wordList.length + ' garden words loaded: ' + wordList.slice(0, 4).join(', ') + (wordList.length > 4 ? '...' : ''), 'success');
+            addToast && addToast(t('toasts.phonics_lesson_ready_open_word') + wordList.length + ' garden words loaded: ' + wordList.slice(0, 4).join(', ') + (wordList.length > 4 ? '...' : ''), 'success');
           }, 'aria-label': 'Build phonics lesson from garden vocabulary', style: Object.assign({}, S.btn('#2563eb', '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '📖 Phonics Lesson');
         })(),
         // Wish Seed input — plant a word the student wanted but couldn't find
@@ -5115,7 +5115,7 @@
       var a = document.createElement('a');
       a.href = url; a.download = 'garden_' + codename.replace(/\s+/g, '_') + '_' + now + '.csv';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-      addToast && addToast('Research CSV exported!', 'success');
+      addToast && addToast(t('toasts.research_csv_exported'), 'success');
     }
 
     // ── Quick Boards tab ───────────────────────────────────────────────────
@@ -6580,8 +6580,8 @@
                       onClick: function () {
                         var stripped = b.words.map(function (w) { return { word: w.word, wordType: w.wordType }; });
                         liveSession.push({ type: 'board', title: b.title, words: stripped, cols: b.cols || 4 })
-                          .then(function () { addToast('Board pushed to students!', 'success'); })
-                          .catch(function () { addToast('Push failed — check session connection', 'error'); });
+                          .then(function () { addToast(t('toasts.board_pushed_students'), 'success'); })
+                          .catch(function () { addToast(t('toasts.push_failed_check_session_connection'), 'error'); });
                       },
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '📡'),
@@ -6883,8 +6883,8 @@
                   onClick: function () {
                     var stripped = s.items.map(function (item) { return { label: item.label }; });
                     liveSession.push({ type: 'schedule', title: s.title, items: stripped, nowIndex: 0 })
-                      .then(function () { addToast('Schedule pushed to students!', 'success'); })
-                      .catch(function () { addToast('Push failed — check session connection', 'error'); });
+                      .then(function () { addToast(t('toasts.schedule_pushed_students'), 'success'); })
+                      .catch(function () { addToast(t('toasts.push_failed_check_session_connection'), 'error'); });
                   },
                   style: S.btn('#ecfdf5', '#065f46', false)
                 }, '📡'),
@@ -6987,7 +6987,7 @@
                   var tmpl = { label: lbl, situation: storySituation, details: storyDetails };
                   var updated = customTemplates.concat([tmpl]);
                   setCustomTemplates(updated); store(STORAGE_CUSTOM_TEMPLATES, updated);
-                  if (addToast) addToast('⭐ Template "' + lbl + '" saved!', 'success');
+                  if (addToast) addToast(t('toasts.template') + lbl + '" saved!', 'success');
                 },
                 'aria-label': 'Save current story as reusable template', style: { padding: '3px 8px', background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#166534', whiteSpace: 'nowrap', fontWeight: 700 }
               }, '💾 Save as Template')

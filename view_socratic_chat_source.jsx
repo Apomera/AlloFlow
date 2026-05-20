@@ -23,6 +23,7 @@
  * Maximize2, Minimize2, X, RefreshCw, Send
  */
 function SocraticChat({
+  chatStyles = {},
   handleSetShowSocraticChatToFalse,
   handleSocraticSubmit,
   handleToggleIsSocraticExpanded,
@@ -59,10 +60,26 @@ function SocraticChat({
   const RefreshCw = window.RefreshCw || noop;
   const Send = window.Send || noop;
 
+  // Theme-aware classes: fall back to the original teal-on-white styling when
+  // chatStyles is empty (e.g., before the host wires it through), so the
+  // component still renders in any state. When chatStyles is provided, the
+  // container / body / bubbles / input area follow the active theme +
+  // colorOverlay. Teal accent on header buttons, send button, and user
+  // bubble is preserved for Socratic's brand identity in light mode; for
+  // dark / contrast themes we hand off to chatStyles since the teal would
+  // be illegible against those backgrounds.
+  const _container = chatStyles.container || 'bg-white border-2 border-teal-500 shadow-2xl';
+  const _body = chatStyles.body || 'bg-slate-50';
+  const _modelBubble = chatStyles.modelBubble || 'bg-white text-slate-700 border border-slate-400';
+  const _userBubble = chatStyles.userBubble || 'bg-teal-700 text-white';
+  const _inputArea = chatStyles.inputArea || 'bg-white border-t border-slate-100';
+  const _input = chatStyles.input || 'bg-white border-slate-400 text-slate-800 focus:ring-teal-200 focus:border-teal-400';
+  const _thinkingBubble = chatStyles.modelBubble || 'bg-white border border-slate-400 text-slate-600';
+
   return (
     <div
       ref={socraticChatRef}
-      className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'}`}
+      className={`fixed z-[110] ${_container} rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'}`}
       style={{
         right: socraticPosition.x !== null ? 'auto' : '6rem',
         bottom: socraticPosition.y !== null ? 'auto' : '6rem',
@@ -120,23 +137,23 @@ function SocraticChat({
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-3 custom-scrollbar" ref={socraticScrollRef}>
+      <div className={`flex-1 overflow-y-auto p-4 ${_body} space-y-3 custom-scrollbar`} ref={socraticScrollRef}>
         {socraticMessages.map((msg, i) => (
           <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-            <div className={`max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === 'user' ? 'bg-teal-700 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-400 rounded-bl-none'}`}>
+            <div className={`max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === 'user' ? `${_userBubble} rounded-br-none` : `${_modelBubble} rounded-bl-none`}`}>
               {msg.role === 'user' ? msg.text : renderFormattedText(msg.text)}
             </div>
           </div>
         ))}
         {isSocraticThinking && (
           <div className="flex items-start">
-            <div className="bg-white p-2 rounded-xl border border-slate-400 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-1 shadow-sm">
+            <div className={`${_thinkingBubble} p-2 rounded-xl rounded-bl-none text-xs italic flex items-center gap-1 shadow-sm`}>
               <RefreshCw size={10} className="animate-spin"/> {t('socratic.thinking')}
             </div>
           </div>
         )}
       </div>
-      <div className="p-3 bg-white border-t border-slate-100 flex gap-2 shrink-0">
+      <div className={`p-3 ${_inputArea} flex gap-2 shrink-0`}>
         <button
           onClick={() => {
             if (isSocraticDictating) {
@@ -165,7 +182,7 @@ function SocraticChat({
           onChange={(e) => setSocraticInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSocraticSubmit()}
           placeholder={isSocraticDictating ? t('socratic.listening') : t('socratic.placeholder')}
-          className="flex-grow text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none transition-all"
+          className={`flex-grow text-xs p-2 border ${_input} rounded-lg focus:ring-2 outline-none transition-all`}
           autoFocus
           disabled={isSocraticThinking}
         />

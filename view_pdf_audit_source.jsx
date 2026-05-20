@@ -111,8 +111,8 @@ function PdfAuditView(props) {
                           className="flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
                         <button onClick={async () => {
                           const url = document.getElementById('web-audit-url')?.value?.trim();
-                          if (!url) { addToast('Enter a URL', 'info'); return; }
-                          addToast('Fetching website...', 'info');
+                          if (!url) { addToast(t('toasts.enter_url'), 'info'); return; }
+                          addToast(t('toasts.fetching_website'), 'info');
                           try {
                             const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
                             const resp = await fetch(proxyUrl);
@@ -123,9 +123,9 @@ function PdfAuditView(props) {
                               html = html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag);
                             }
                             document.getElementById('web-audit-html').value = html;
-                            addToast('Website fetched! (' + html.length.toLocaleString() + ' chars) — click Audit to analyze', 'success');
+                            addToast(t('toasts.website_fetched') + html.length.toLocaleString() + ' chars) — click Audit to analyze', 'success');
                           } catch (e) {
-                            addToast('Could not fetch URL — try pasting the HTML source instead. Error: ' + e.message, 'error');
+                            addToast(t('toasts.could_fetch_url_try_pasting') + e.message, 'error');
                           }
                         }} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label={t('pdf_audit.web.fetch_aria') || 'Fetch website HTML'}>
                           🔍 Fetch
@@ -146,8 +146,8 @@ function PdfAuditView(props) {
                     <div className="flex gap-3 justify-center">
                       <button onClick={async () => {
                         const html = document.getElementById('web-audit-html')?.value?.trim();
-                        if (!html || html.length < 20) { addToast('Paste or fetch HTML first', 'info'); return; }
-                        addToast('Running accessibility audit...', 'info');
+                        if (!html || html.length < 20) { addToast(t('toasts.paste_fetch_html_first'), 'info'); return; }
+                        addToast(t('toasts.running_accessibility_audit'), 'info');
                         const [aiResult, axeResult] = await Promise.all([
                           auditOutputAccessibility(html),
                           runAxeAudit(html)
@@ -179,8 +179,8 @@ function PdfAuditView(props) {
                       </button>
                       <button onClick={async () => {
                         const html = document.getElementById('web-audit-html')?.value?.trim();
-                        if (!html || html.length < 20) { addToast('Paste or fetch HTML first', 'info'); return; }
-                        addToast('Auditing & remediating HTML...', 'info');
+                        if (!html || html.length < 20) { addToast(t('toasts.paste_fetch_html_first'), 'info'); return; }
+                        addToast(t('toasts.auditing_remediating_html'), 'info');
                         setPdfFixLoading(true);
                         setPdfFixStep('Applying deterministic fixes...');
                         try {
@@ -208,7 +208,7 @@ function PdfAuditView(props) {
                           });
                           setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '-remediated.html' });
                           addToast(`Remediation complete! Score: ${finalScore}/100`, 'success');
-                        } catch (e) { addToast('Remediation failed: ' + e.message, 'error'); }
+                        } catch (e) { addToast(t('toasts.remediation_failed') + e.message, 'error'); }
                         setPdfFixLoading(false);
                         setPdfFixStep('');
                       }} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
@@ -231,7 +231,7 @@ function PdfAuditView(props) {
                           e.preventDefault();
                           e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50');
                           const files = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf');
-                          if (files.length === 0) { addToast('Please drop PDF files only', 'error'); return; }
+                          if (files.length === 0) { addToast(t('toasts.drop_pdf_files_only'), 'error'); return; }
                           files.forEach(file => {
                             const reader = new FileReader();
                             reader.onloadend = () => {
@@ -304,7 +304,7 @@ function PdfAuditView(props) {
                                   window.__alloPdfBatchAbortCtrl.abort();
                                 }
                               } catch (_) { /* noop */ }
-                              addToast('Stopping batch — finishing current file then halting…', 'info');
+                              addToast(t('toasts.stopping_batch_finishing_current_file'), 'info');
                             }}
                             className="shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-bold"
                             aria-label={t('pdf_audit.batch.stop_aria') || 'Stop batch remediation'}
@@ -368,7 +368,7 @@ function PdfAuditView(props) {
                             const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
                             const win = window.open('', '_blank');
-                            if (!win) { addToast('Pop-up blocked', 'error'); return; }
+                            if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); return; }
                             win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Compliance Dashboard</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -472,7 +472,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </div>
 </body></html>`);
                             win.document.close();
-                            addToast('📊 Dashboard opened', 'success');
+                            addToast(t('toasts.dashboard_opened'), 'success');
                           }} className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
                             📊 Dashboard
                           </button>
@@ -551,7 +551,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.upload_guide_desc') || 'Use a different doc/logo'}</div>
                           <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
-                            addToast('🎨 Extracting brand colors...', 'info');
+                            addToast(t('toasts.extracting_brand_colors'), 'info');
                             const reader = new FileReader();
                             reader.onload = async (ev) => {
                               try {
@@ -567,8 +567,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 window.__pdfBrandMode = 'upload';
                                 document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'));
                                 document.querySelector('[data-brand-mode="upload"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50');
-                                addToast('🎨 Brand colors extracted from ' + file.name, 'success');
-                              } catch(err) { addToast('Could not extract brand colors', 'error'); }
+                                addToast(t('toasts.brand_colors_extracted_from') + file.name, 'success');
+                              } catch(err) { addToast(t('toasts.could_extract_brand_colors'), 'error'); }
                             };
                             reader.readAsDataURL(file);
                             e.target.value = '';
@@ -628,7 +628,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           window.__pdfStylePreference = 'custom';
                                           window.__pdfCustomStyle = s;
                                           document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'));
-                                          addToast && addToast('Custom style "' + s.name + '" applied!', 'success');
+                                          addToast && addToast(t('toasts.custom_style') + s.name + '" applied!', 'success');
                                         }}
                                           className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50">
                                           <div className="text-[11px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
@@ -637,7 +637,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <button onClick={() => {
                                           var updated = {...saved}; delete updated[k];
                                           try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
-                                          addToast && addToast('Deleted "' + s.name + '"', 'info');
+                                          addToast && addToast(t('toasts.deleted') + s.name + '"', 'info');
                                         }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-600 hover:text-red-600 hover:bg-red-50">✕</button>
                                       </div>
                                     );
@@ -682,7 +682,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>
                                 <button onClick={() => {
                                   var name = document.getElementById('custom-style-name')?.value?.trim();
-                                  if (!name) { addToast && addToast('Please enter a style name', 'warning'); return; }
+                                  if (!name) { addToast && addToast(t('toasts.enter_style_name'), 'warning'); return; }
                                   var style = {
                                     name: name,
                                     font: document.getElementById('custom-style-font')?.value || "'Inter', sans-serif",
@@ -698,7 +698,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(existing)); } catch(e) {}
                                   window.__pdfStyleSeed = 'custom';
                                   window.__pdfCustomStyle = style;
-                                  addToast && addToast('🎨 Custom style "' + name + '" saved & applied!', 'success');
+                                  addToast && addToast(t('toasts.custom_style_2') + name + '" saved & applied!', 'success');
                                 }} className="w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors">
                                   Save & Apply Style
                                 </button>
@@ -711,7 +711,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
                   </button>
                   <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -822,8 +822,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const freshBase64 = await ensurePdfBase64();
                               if (!freshBase64) return;
                               const ok = await _ensurePdfLib();
-                              if (!ok) { addToast("Couldn't load PDF tagging library (network?). Try again.", 'error'); return; }
-                              addToast('Tagging original PDF (baseline)…', 'info');
+                              if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library'), 'error'); return; }
+                              addToast(t('toasts.tagging_original_pdf_baseline'), 'info');
                               const binStr = atob(freshBase64);
                               const bytes = new Uint8Array(binStr.length);
                               for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
@@ -839,7 +839,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _result = await createTaggedPdf(bytes, shim, { title: baseTitle, lang: 'en', subject: 'Tagged baseline by AlloFlow (pre-remediation)' });
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               const summary = (_result && _result.summary) || null;
-                              if (!taggedBytes) { addToast('Tagged PDF generation returned no bytes.', 'error'); return; }
+                              if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, baseTitle + '-tagged-baseline.pdf');
                               if (summary) {
@@ -863,13 +863,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   }
                                   if (summary.pdfUaDeclared) extras.push('PDF/UA-1 declared.');
                                   const extrasStr = extras.length ? ' ' + extras.join(' ') : '';
-                                  addToast('Baseline Tagged PDF downloaded — ' + detail + extrasStr + ' Run Fix & Verify for richer tagging.', 'success');
+                                  addToast(t('toasts.baseline_tagged_pdf_downloaded') + detail + extrasStr + ' Run Fix & Verify for richer tagging.', 'success');
                               } else {
-                                  addToast('Baseline Tagged PDF downloaded — original PDF with per-page structure tags. Run Fix & Verify for richer tagging.', 'success');
+                                  addToast(t('toasts.baseline_tagged_pdf_downloaded_original'), 'success');
                               }
                             } catch (err) {
                               warnLog('[TaggedPDF baseline] failed:', err);
-                              addToast('Baseline Tagged PDF failed: ' + (err?.message || 'unknown error') + '.', 'error');
+                              addToast(t('toasts.baseline_tagged_pdf_failed') + (err?.message || 'unknown error') + '.', 'error');
                             }
                           }}
                           className="px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 hover:border-slate-400 transition-colors flex items-center gap-1.5"
@@ -892,7 +892,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       reader.onload = (ev) => {
                         try {
                           const project = JSON.parse(ev.target.result);
-                          if (!project.accessibleHtml || !project.version) { addToast('Not a valid AlloFlow project file', 'error'); return; }
+                          if (!project.accessibleHtml || !project.version) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
                           setPdfAuditResult({
                             score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
                             passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
@@ -912,8 +912,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             extractedChars: 0, issuesFixed: 0, remainingIssues: 0, autoFixPasses: 0,
                           });
                           setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
-                          addToast('📂 Loaded: ' + (project.fileName || 'project') + ' — continue editing!', 'success');
-                        } catch(err) { addToast('Failed to load: ' + err.message, 'error'); }
+                          addToast(t('toasts.loaded_2') + (project.fileName || 'project') + ' — continue editing!', 'success');
+                        } catch(err) { addToast(t('toasts.failed_load') + err.message, 'error'); }
                       };
                       reader.readAsText(file);
                       e.target.value = '';
@@ -1041,7 +1041,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.proceed_hint') || 'You can still proceed — Fix & Verify will transform the document and run a full audit afterward.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button onClick={async () => { setPdfAuditResult(null); addToast('Retrying audit...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
+                    <button onClick={async () => { setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
                     <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
@@ -1331,7 +1331,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const merged = _docPipeline.mergeRangesToFullHtml(pdfMultiSession.ranges, pdfAuditResult.pageCount || pdfMultiSession.pageCount || 1);
                                 const blob = new Blob([merged], { type: 'text/html;charset=utf-8' });
                                 safeDownloadBlob(blob, (pendingPdfFile?.name?.replace(/\.pdf$/i, '') || 'document') + '_multi-session.html');
-                                addToast('Downloaded merged HTML for completed ranges.', 'success');
+                                addToast(t('toasts.downloaded_merged_html_completed_ranges'), 'success');
                               }}
                               className="text-xs px-2 py-1 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700"
                             >
@@ -1344,7 +1344,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 await _docPipeline.clearMultiSession(pdfMultiSession.sessionId);
                                 setPdfMultiSession(null);
                                 setPdfPageRange(null);
-                                addToast('Cleared saved progress for this PDF.', 'info');
+                                addToast(t('toasts.cleared_saved_progress_pdf'), 'info');
                               }}
                               className="text-xs px-2 py-1 bg-white border border-red-300 text-red-700 rounded font-bold hover:bg-red-50"
                             >
@@ -1480,8 +1480,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               'Additional Sweep'
                             );
                           }
-                          if (committed) addToast('Sweep complete!', 'success');
-                        } catch(e) { addToast('Sweep failed: ' + (e?.message || ''), 'error'); }
+                          if (committed) addToast(t('toasts.sweep_complete'), 'success');
+                        } catch(e) { addToast(t('toasts.sweep_failed') + (e?.message || ''), 'error'); }
                         finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading && pdfFixModeRef.current === 'sweep' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Sweeping...'}</> : <><Sparkles size={16} /> {t('pdf_audit.fix_pass.additional_sweep') || 'Additional Sweep'}</>}
@@ -1621,7 +1621,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (committed) {
                               addToast(bestIssueCount < startCount ? `Fixed! ${startCount} → ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? 'success' : 'info');
                             }
-                          } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining failed: ' + (e?.message || 'unknown error'), 'error'); }
+                          } catch(e) { warnLog('Fix remaining failed:', e); addToast(t('toasts.fix_remaining_failed') + (e?.message || 'unknown error'), 'error'); }
                           finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                         }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
@@ -2031,7 +2031,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 } catch (e) { remediatedText = ''; }
                                 if (!remediatedText || remediatedText.trim().length < 50) {
                                   setFidelityResult({ missing: [], totalSrc: 0, totalRem: 0, totalMissing: 0, fidelity: null, notReady: true });
-                                  if (addToast) addToast('No remediated content to verify yet — run remediation first, then re-check fidelity.', 'info');
+                                  if (addToast) addToast(t('toasts.remediated_content_verify_yet_run'), 'info');
                                   return;
                                 }
                                 setFidelityResult(_buildMissingList(sourceText, remediatedText));
@@ -2062,7 +2062,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const imgReport = imageReinsertionReport;
                               const imgFailCount = imgReport ? ((imgReport.missingSrc || []).length + (imgReport.droppedByAi || []).length) : 0;
                               const _regenerateImage = async (imgIdx, description) => {
-                                if (typeof callImagen !== 'function') { if (addToast) addToast('Image regeneration unavailable', 'error'); return; }
+                                if (typeof callImagen !== 'function') { if (addToast) addToast(t('toasts.image_regeneration_unavailable'), 'error'); return; }
                                 if (addToast) addToast(`Regenerating image #${imgIdx}…`, 'info');
                                 const _buildImagePrompt = () => {
                                   const desc = (description || '').trim();
@@ -2175,7 +2175,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               const ok = await _ensureDiffLib();
                                               if (!ok) {
                                                 console.warn('[Diff] _ensureDiffLib returned false — script load failed');
-                                                if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                                if (typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network'), 'error');
                                               }
                                             }}
                                             className="ml-auto text-[10px] px-2 py-1 bg-white border border-sky-300 text-sky-700 rounded-md hover:bg-sky-50 font-bold inline-flex items-center gap-1 shrink-0"
@@ -2203,7 +2203,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
                                               console.warn('[Diff] _ensureDiffLib returned false — script load failed');
-                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                              if (typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network'), 'error');
                                             }
                                           }}
                                             className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
@@ -2234,7 +2234,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
                                               console.warn('[Diff] _ensureDiffLib returned false — script load failed');
-                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                              if (typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network'), 'error');
                                             }
                                           }}
                                           className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
@@ -2376,7 +2376,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
                                               console.warn('[Diff] _ensureDiffLib returned false — script load failed');
-                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                              if (typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network'), 'error');
                                             }
                                           }}
                                               className="ml-auto text-[10px] px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-bold inline-flex items-center gap-1"
@@ -2639,7 +2639,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             w.document.body.insertBefore(banner, w.document.body.firstChild);
                             const ps = w.document.createElement('style'); ps.textContent = '@media print{#print-banner{display:none!important}}'; w.document.head.appendChild(ps);
                           }
-                          if (addToast) addToast('Report opened with Save as PDF button', 'success');
+                          if (addToast) addToast(t('toasts.report_opened_with_save_as'), 'success');
                         }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors flex items-center gap-2">
                           📄 Formatted Report (PDF)
                         </button>
@@ -2647,7 +2647,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const html = generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || 'document.pdf');
                           const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
                           safeDownloadBlob(blob, `a11y-audit-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`);
-                          if (addToast) addToast('HTML report downloaded', 'success');
+                          if (addToast) addToast(t('toasts.html_report_downloaded'), 'success');
                         }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                           🌐 HTML Report
                         </button>
@@ -2658,7 +2658,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const a = document.createElement('a'); a.href = url;
                           a.download = `a11y-audit-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.json`;
                           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                          if (addToast) addToast('JSON data exported', 'success');
+                          if (addToast) addToast(t('toasts.json_data_exported'), 'success');
                         }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100">
                           📊 JSON Data (research)
                         </button>
@@ -2779,7 +2779,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                                             if (!reAi) {
                                               warnLog('[Re-fix] AI re-verification returned null for section ' + (chunk.index + 1) + '; not committing new HTML.');
-                                              addToast('⚠ Re-fix verification unavailable — kept previous version. Try again later.', 'warning');
+                                              addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                             } else {
                                               const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
                                               setPdfFixResult(prev => ({
@@ -3176,7 +3176,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </label>
                             )}
                             {pdfAutoContinueRunning && (
-                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast('Stopping — aborting in-flight Gemini call…', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast(t('toasts.stopping_aborting_flight_gemini_call'), 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
                                 ⏸ Stop auto-continue
                               </button>
                             )}
@@ -3251,7 +3251,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                                           if (!reAi) {
                                             warnLog('[Re-fix] AI re-verification returned null for section ' + (ci + 1) + '; not committing new HTML.');
-                                            addToast('⚠ Re-fix verification unavailable — kept previous version. Try again later.', 'warning');
+                                            addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                           } else {
                                             const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
                                             setPdfFixResult(prev => ({
@@ -3331,9 +3331,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           ✏️ Preview & Edit
                         </button>
                         <button onClick={() => {
-                          if (!pendingPdfBase64 || !pdfFixResult?.accessibleHtml) { addToast('Need both original PDF and remediated version', 'info'); return; }
+                          if (!pendingPdfBase64 || !pdfFixResult?.accessibleHtml) { addToast(t('toasts.need_both_original_pdf_remediated'), 'info'); return; }
                           const win = window.open('', '_blank');
-                          if (!win) { addToast('Pop-up blocked', 'error'); return; }
+                          if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); return; }
                           const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? '?';
                           const afterAi = pdfFixResult.afterScore;
                           const afterAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -3511,7 +3511,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </script>
                           </body></html>`);
                           win.document.close();
-                          addToast('📄 Before/After comparison opened', 'success');
+                          addToast(t('toasts.before_after_comparison_opened'), 'success');
                         }} className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
                           🔀 Compare
                         </button>
@@ -3528,7 +3528,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
                                               console.warn('[Diff] _ensureDiffLib returned false — script load failed');
-                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                              if (typeof addToast === 'function') addToast(t('toasts.diff_engine_failed_load_network'), 'error');
                                             }
                                           }}
                             className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5"
@@ -3557,8 +3557,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const freshBase64 = await ensurePdfBase64();
                               if (!freshBase64) return;
                               const ok = await _ensurePdfLib();
-                              if (!ok) { addToast("Couldn't load PDF tagging library (network?). Try again or use PDF (from HTML).", 'error'); return; }
-                              addToast('Tagging original PDF…', 'info');
+                              if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library_2'), 'error'); return; }
+                              addToast(t('toasts.tagging_original_pdf'), 'info');
                               const binStr = atob(freshBase64);
                               const bytes = new Uint8Array(binStr.length);
                               for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
@@ -3577,7 +3577,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // module is still loaded for this user.
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               const summary = (_result && _result.summary) || null;
-                              if (!taggedBytes) { addToast('Tagged PDF generation returned no bytes.', 'error'); return; }
+                              if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged.pdf');
                               // Build a concrete proof-of-tagging string. Most PDF
@@ -3611,7 +3611,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   }
                                   if (summary.pdfUaDeclared) extras.push('PDF/UA-1 declared.');
                                   const extrasStr = extras.length ? ' ' + extras.join(' ') : '';
-                                  addToast('Tagged PDF downloaded — ' + detail + extrasStr + ' Verify in PAC 3 or a screen reader.', 'success');
+                                  addToast(t('toasts.tagged_pdf_downloaded') + detail + extrasStr + ' Verify in PAC 3 or a screen reader.', 'success');
                                   // Heading hierarchy linter: surface as a separate
                                   // gentler 'info' toast so the user notices but
                                   // doesn't conflate it with the success message.
@@ -3620,7 +3620,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   // navigation pain for SR users.
                                   if (summary.headingHierarchyIssues > 0) {
                                       const path = (summary.headingHierarchyPath || []).slice(0, 3).join(', ');
-                                      addToast('Note: ' + summary.headingHierarchyIssues + ' heading-level skip' + (summary.headingHierarchyIssues === 1 ? '' : 's') + ' detected (' + path + '). Skipped levels are valid HTML but hurt screen-reader navigation — consider editing the source to use sequential h-tags.', 'info');
+                                      addToast(t('toasts.note') + summary.headingHierarchyIssues + ' heading-level skip' + (summary.headingHierarchyIssues === 1 ? '' : 's') + ' detected (' + path + '). Skipped levels are valid HTML but hurt screen-reader navigation — consider editing the source to use sequential h-tags.', 'info');
                                   }
                                   // ── Quality lints: surface a single rolled-up info toast
                                   // listing the structural issues that the tagging pass can't
@@ -3641,14 +3641,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       _qualityIssues.push(summary.linksGenericText + ' link' + (summary.linksGenericText === 1 ? '' : 's') + ' with generic text ("click here", "read more")');
                                   }
                                   if (_qualityIssues.length > 0) {
-                                      addToast('Quality flags: ' + _qualityIssues.join(', ') + '. Edit the source HTML and re-tag to address.', 'info');
+                                      addToast(t('toasts.quality_flags') + _qualityIssues.join(', ') + '. Edit the source HTML and re-tag to address.', 'info');
                                   }
                               } else {
-                                  addToast('Tagged PDF downloaded — original visual layer preserved with accessibility tag tree added.', 'success');
+                                  addToast(t('toasts.tagged_pdf_downloaded_original_visual'), 'success');
                               }
                             } catch (err) {
                               warnLog('[TaggedPDF] failed:', err);
-                              addToast('Tagged PDF failed: ' + (err?.message || 'unknown error') + '. Try PDF (from HTML) as a fallback.', 'error');
+                              addToast(t('toasts.tagged_pdf_failed') + (err?.message || 'unknown error') + '. Try PDF (from HTML) as a fallback.', 'error');
                             }
                           }}
                           className="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
@@ -3662,7 +3662,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const a = document.createElement('a');
                           a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-accessible.html`;
                           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                          addToast('Accessible HTML downloaded', 'success');
+                          addToast(t('toasts.accessible_html_downloaded'), 'success');
                         }} className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5">
                           📄 HTML
                         </button>
@@ -3683,7 +3683,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 w.document.body.insertBefore(banner, w.document.body.firstChild);
                                 const ps = w.document.createElement('style'); ps.textContent = '@media print{#print-banner{display:none!important}}'; w.document.head.appendChild(ps);
                               }
-                              addToast('Report opened with Save as PDF button', 'success');
+                              addToast(t('toasts.report_opened_with_save_as'), 'success');
                             }} className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors">
                               📄 Formatted Report (PDF)
                             </button>
@@ -3695,7 +3695,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`;
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                              addToast('HTML report downloaded', 'success');
+                              addToast(t('toasts.html_report_downloaded'), 'success');
                             }} className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
                               🌐 HTML Report
                             </button>
@@ -3706,7 +3706,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                              addToast('JSON data exported', 'success');
+                              addToast(t('toasts.json_data_exported'), 'success');
                             }} className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
                               📊 JSON Data (research)
                             </button>
@@ -3841,9 +3841,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 a.download = `a11y-audit-trail-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`;
                                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                                 URL.revokeObjectURL(url);
-                                addToast('Audit trail downloaded — open in any browser to verify integrity.', 'success');
+                                addToast(t('toasts.audit_trail_downloaded_open_any'), 'success');
                               } catch (err) {
-                                addToast('Audit trail generation failed: ' + (err?.message || 'unknown'), 'error');
+                                addToast(t('toasts.audit_trail_generation_failed') + (err?.message || 'unknown'), 'error');
                               }
                             }} className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors border-t border-slate-100">
                               📎 Audit Trail (signed)
@@ -3865,7 +3865,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             reader.onload = (ev) => {
                               try {
                                 const project = JSON.parse(ev.target.result);
-                                if (!project.accessibleHtml || !project.version) { addToast('Invalid project file', 'error'); return; }
+                                if (!project.accessibleHtml || !project.version) { addToast(t('toasts.invalid_project_file_2'), 'error'); return; }
                                 setPdfFixResult({
                                   accessibleHtml: project.accessibleHtml,
                                   beforeScore: project.beforeScore,
@@ -3897,13 +3897,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     try {
                                     } catch {}
                                   }
-                                  addToast('📂 Project loaded: ' + (project.fileName || 'document') + ' — ' + project.multiSession.ranges.length + ' prior range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ' restored', 'success');
+                                  addToast(t('toasts.project_loaded_2') + (project.fileName || 'document') + ' — ' + project.multiSession.ranges.length + ' prior range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ' restored', 'success');
                                 } else {
                                   setPdfMultiSession(null);
                                   setPdfPageRange(null);
-                                  addToast('📂 Project loaded: ' + (project.fileName || 'document') + ' — continue editing!', 'success');
+                                  addToast(t('toasts.project_loaded_2') + (project.fileName || 'document') + ' — continue editing!', 'success');
                                 }
-                              } catch(err) { addToast('Failed to load project: ' + err.message, 'error'); }
+                              } catch(err) { addToast(t('toasts.failed_load_project') + err.message, 'error'); }
                             };
                             reader.readAsText(file);
                             e.target.value = '';
@@ -3968,7 +3968,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const a = document.createElement('a'); a.href = url;
                         a.download = templateName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() + '.alloflow-template.json';
                         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                        addToast('📐 Template "' + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
+                        addToast(t('toasts.template_2') + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
                       }} className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-600 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
                         📐 Save Structure as Template (for future documents)
                       </button>
@@ -3988,7 +3988,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
                             const textContent = html.replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim();
                             const xmlTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                            if (!window.JSZip) { addToast('ZIP library loading...', 'info'); return; }
+                            if (!window.JSZip) { addToast(t('toasts.zip_library_loading'), 'info'); return; }
                             const zip = new window.JSZip();
                             zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
                             zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
@@ -4025,7 +4025,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = title + '.epub';
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                              addToast('📚 ePub downloaded — open in any e-reader', 'success');
+                              addToast(t('toasts.epub_downloaded_open_any_reader'), 'success');
                             });
                           }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📚 ePub (e-readers, mobile, Kindle)
@@ -4063,7 +4063,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const a = document.createElement('a'); a.href = url;
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                            addToast('⠃⠗⠇ Braille file downloaded (Grade 1 BRF)', 'success');
+                            addToast(t('toasts.braille_file_downloaded_grade_brf'), 'success');
                           }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             ⠃⠗⠇ Electronic Braille (BRF)
                           </button>
@@ -4082,7 +4082,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const a = document.createElement('a'); a.href = url;
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.txt';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                            addToast('📝 Plain text downloaded', 'success');
+                            addToast(t('toasts.plain_text_downloaded'), 'success');
                           }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📝 Plain Text (screen readers, large print)
                           </button>
@@ -4107,7 +4107,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const a = document.createElement('a'); a.href = url;
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.md';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                            addToast('📋 Markdown downloaded', 'success');
+                            addToast(t('toasts.markdown_downloaded'), 'success');
                           }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📋 Markdown (LMS, wiki, docs)
                           </button>
@@ -4146,16 +4146,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               }
                               console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a'));
-                              addToast('✅ Command applied!', 'success');
+                              addToast(t('toasts.command_applied'), 'success');
                             } else {
                               console.warn('[ExpertWorkbench] noop command=' + JSON.stringify(cmd) + ' — no HTML changes');
                               setAgentActivityLog(prev => [...prev, { text: 'ℹ No changes applied', type: 'info', time: new Date().toLocaleTimeString() }]);
-                              addToast('ℹ️ No changes applied', 'info');
+                              addToast(t('toasts.changes_applied'), 'info');
                             }
                           } catch (err) {
                             console.error('[ExpertWorkbench] error command=' + JSON.stringify(cmd), err);
                             setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
-                            addToast('❌ Workbench failed: ' + (err && (err.message || err) || 'unknown error'), 'error');
+                            addToast(t('toasts.workbench_failed') + (err && (err.message || err) || 'unknown error'), 'error');
                           }
                           setIsAgentRunning(false);
                         }}>
@@ -4202,7 +4202,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button onClick={() => {
                           if (pdfFixResult._preBionicHtml) {
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }));
-                            addToast('📖 Bionic reading removed', 'info');
+                            addToast(t('toasts.bionic_reading_removed'), 'info');
                           } else {
                             let html = pdfFixResult.accessibleHtml;
                             const snapshot = html;
@@ -4215,7 +4215,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               return '>' + bionic + '<';
                             });
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }));
-                            addToast('📖 Bionic reading applied — click again to remove', 'success');
+                            addToast(t('toasts.bionic_reading_applied_click_again'), 'success');
                           }
                         }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-600 text-violet-700 hover:bg-violet-100'}`}>
                           <b>Bi</b>onic {pdfFixResult._preBionicHtml ? '✓ ON (click to remove)' : 'Reading'}
@@ -4226,7 +4226,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const html = pdfFixResult.accessibleHtml;
                           if (pdfFixResult._preLineGuideHtml) {
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
-                            addToast('Line guide removed', 'info');
+                            addToast(t('toasts.line_guide_removed'), 'info');
                           } else {
                             const snapshot = html;
                             const guideCSS = `<style id="alloflow-line-guide">
@@ -4249,7 +4249,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (fixed.includes('</head>')) { fixed = fixed.replace('</head>', guideCSS + '</head>'); }
                             else { fixed = guideCSS + fixed; }
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
-                            addToast('📏 Line guide applied — alternating stripes help eye tracking', 'success');
+                            addToast(t('toasts.line_guide_applied_alternating_stripes'), 'success');
                           }
                         }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-600 text-violet-700 hover:bg-violet-100'}`}>
                           📏 Line Guide {pdfFixResult._preLineGuideHtml ? '✓ ON (click to remove)' : '(reading tracker)'}
@@ -4272,8 +4272,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </datalist>
                           <button onClick={async () => {
                             const lang = document.getElementById('pdf-translate-lang')?.value?.trim();
-                            if (!lang || !callGemini) { addToast('Enter a language first', 'info'); return; }
-                            addToast('🌐 Translating to ' + lang + '...', 'info');
+                            if (!lang || !callGemini) { addToast(t('toasts.enter_language_first'), 'info'); return; }
+                            addToast(t('toasts.translating') + lang + '...', 'info');
                             try {
                               const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                               const textContent = temp.textContent || '';
@@ -4331,7 +4331,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>`;
                               setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace('</main>', section + '</main>') }));
                               addToast('🌐 ' + lang + ' translation added!', 'success');
-                            } catch(e) { addToast('Translation failed: ' + e.message, 'error'); }
+                            } catch(e) { addToast(t('toasts.translation_failed_3') + e.message, 'error'); }
                           }} className="px-3 py-2 bg-violet-600 text-white rounded-lg text-[11px] font-bold hover:bg-violet-700 transition-colors shrink-0">
                             Translate
                           </button>
@@ -4355,7 +4355,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={async () => {
                             const level = document.getElementById('pdf-simplify-level')?.value || '5th';
                             if (!callGemini) return;
-                            addToast('📖 Simplifying to ' + level + ' grade...', 'info');
+                            addToast(t('toasts.simplifying') + level + ' grade...', 'info');
                             try {
                               const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                               const textContent = (temp.textContent || '').substring(0, 8000);
@@ -4375,8 +4375,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 }).join('\n')}
                                 </div>`;
                               setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace('</main>', section + '</main>') }));
-                              addToast('📖 Simplified version added!', 'success');
-                            } catch(e) { addToast('Simplification failed: ' + e.message, 'error'); }
+                              addToast(t('toasts.simplified_version_added'), 'success');
+                            } catch(e) { addToast(t('toasts.simplification_failed_2') + e.message, 'error'); }
                           }} className="px-3 py-2 bg-green-700 text-white rounded-lg text-[11px] font-bold hover:bg-green-700 transition-colors shrink-0">
                             Simplify
                           </button>
@@ -4387,7 +4387,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
-                          addToast('Content loaded — generate leveled text, glossary, quiz, and more', 'success');
+                          addToast(t('toasts.content_loaded_generate_leveled_text'), 'success');
                         }} className="w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
                           ✨ Full Differentiation Pipeline
                         </button>
@@ -4399,7 +4399,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const btn = document.getElementById('pdf-audio-dl-btn');
                           const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                           const fullText = (temp.textContent || '').trim();
-                          if (!fullText) { addToast('No text content to convert', 'error'); return; }
+                          if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           const segments = [];
                           let remaining = fullText;
                           while (remaining.length > 0) {
@@ -4412,7 +4412,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           }
                           if (btn) btn.textContent = '⏳ 0/' + segments.length + '...';
                           if (btn) btn.disabled = true;
-                          addToast('🎧 Generating ' + segments.length + ' audio segments...', 'info');
+                          addToast(t('toasts.generating') + segments.length + ' audio segments...', 'info');
                           const audioBlobs = [];
                           let failed = 0;
                           for (let si = 0; si < segments.length; si++) {
@@ -4432,13 +4432,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               warnLog('[Audio DL] Segment ' + (si+1) + ' failed:', e?.message || e);
                               failed++;
                               if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
-                                addToast('⚠️ Rate limited — got ' + audioBlobs.length + ' of ' + segments.length + ' segments', 'info');
+                                addToast(t('toasts.rate_limited_got') + audioBlobs.length + ' of ' + segments.length + ' segments', 'info');
                                 break;
                               }
                             }
                           }
                           if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
-                          if (audioBlobs.length === 0) { addToast('Audio generation failed — TTS may not be available. Try with a Gemini API key.', 'error'); return; }
+                          if (audioBlobs.length === 0) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
                           const combined = new Blob(audioBlobs, { type: audioBlobs[0].type || 'audio/wav' });
                           const dlUrl = URL.createObjectURL(combined);
                           const a = document.createElement('a');
@@ -4446,7 +4446,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-audio.' + (audioBlobs[0].type?.includes('mp3') ? 'mp3' : 'wav');
                           document.body.appendChild(a); a.click(); document.body.removeChild(a);
                           URL.revokeObjectURL(dlUrl);
-                          addToast('🎧 Audio downloaded! ' + audioBlobs.length + '/' + segments.length + ' sections' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+                          addToast(t('toasts.audio_downloaded') + audioBlobs.length + '/' + segments.length + ' sections' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
                         }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors disabled:opacity-50">
                           🎧 Download Audio
                         </button>}
@@ -4558,7 +4558,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                                   addToast(`📖 ${lang} summary generated!`, 'success');
                                 }
                               }
-                            } catch (e) { addToast('Summary generation failed', 'error'); }
+                            } catch (e) { addToast(t('toasts.summary_generation_failed'), 'error'); }
                           }} className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2">
                             📖 Generate Summary
                           </button>
@@ -4664,7 +4664,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <button key={preset.label} disabled={isGeneratingStyle} onClick={async () => {
                       if (!callGemini) return;
                       setIsGeneratingStyle(true);
-                      addToast('✨ Generating ' + preset.label.replace(/[^\w\s]/g, '').trim() + ' style...', 'info');
+                      addToast(t('toasts.generating_2') + preset.label.replace(/[^\w\s]/g, '').trim() + ' style...', 'info');
                       try {
                         const css = await callGemini(`You are a CSS expert. Create a beautiful, accessible stylesheet.\n\nThe user wants: "${preset.prompt}"\n\nTarget these elements: body, h1, h2, h3, h4, p, main, section, table, th, td, a, blockquote, figure, figcaption, header, footer, nav, ul, ol, li, img, code, pre.\n\nRequirements:\n- WCAG AA contrast (4.5:1 for text)\n- Min 12px font size\n- Include @import for Google Fonts if used\n- Include print styles (@media print)\n\nReturn ONLY CSS — no explanation, no markdown fences.`, true);
                         if (css && pdfPreviewRef.current?.contentDocument) {
@@ -4681,13 +4681,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, '').replace(/<\/html>\s*$/i, '');
                               addToast(`✨ Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, 'success');
                             } else {
-                              addToast('✨ Style applied!', 'success');
+                              addToast(t('toasts.style_applied'), 'success');
                             }
                           } catch(sanitizeErr) {
-                            addToast('✨ Style applied!', 'success');
+                            addToast(t('toasts.style_applied'), 'success');
                           }
                         }
-                      } catch(err) { addToast('Style failed — try again', 'error'); }
+                      } catch(err) { addToast(t('toasts.style_failed_try_again'), 'error'); }
                       setIsGeneratingStyle(false);
                     }}
                       className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700'}`}
@@ -4696,7 +4696,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
                     <button onClick={() => {
                       const old = pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle');
-                      if (old) { old.remove(); addToast('AI style removed', 'info'); }
+                      if (old) { old.remove(); addToast(t('toasts.ai_style_removed'), 'info'); }
                     }} className="px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
                   )}
                 </div>
@@ -4710,7 +4710,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   📎 Upload brand reference (PDF, image, or logo)
                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
-                    addToast('🎨 Extracting brand colors...', 'info');
+                    addToast(t('toasts.extracting_brand_colors'), 'info');
                     const reader = new FileReader();
                     reader.onload = async (ev) => {
                       try {
@@ -4737,9 +4737,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             ${brand.extraCSS || ''}
                           `;
                           doc.head.appendChild(style);
-                          addToast('🎨 Brand theme applied!', 'success');
+                          addToast(t('toasts.brand_theme_applied'), 'success');
                         }
-                      } catch(err) { warnLog('[Brand] Extract failed:', err); addToast('Could not extract brand colors', 'error'); }
+                      } catch(err) { warnLog('[Brand] Extract failed:', err); addToast(t('toasts.could_extract_brand_colors'), 'error'); }
                     };
                     reader.readAsDataURL(file);
                     e.target.value = '';
@@ -4908,10 +4908,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     onClick={() => {
                       const iframe = pdfPreviewRef.current;
                       const doc = iframe?.contentDocument;
-                      if (!doc) { addToast('Preview not ready yet', 'error'); return; }
+                      if (!doc) { addToast(t('toasts.preview_ready_yet'), 'error'); return; }
                       const textInput = document.getElementById('pdf-wordart-text-input');
                       const text = textInput?.value?.trim();
-                      if (!text) { addToast('Please enter word art text first', 'info'); return; }
+                      if (!text) { addToast(t('toasts.enter_word_art_text_first'), 'info'); return; }
                       const presetBtn = document.querySelector('.pdf-wordart-preset-btn[aria-checked="true"]');
                       const sizeBtn = document.querySelector('.pdf-wordart-size-btn[aria-checked="true"]');
                       const alignBtn = document.querySelector('.pdf-wordart-align-btn[aria-checked="true"]');
@@ -4936,7 +4936,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const wrapped = preset === 'chalkboard' ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + '</span>' : inner;
                         html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + '</div>';
                       }
-                      if (!html) { addToast('Could not render word art', 'error'); return; }
+                      if (!html) { addToast(t('toasts.could_render_word_art'), 'error'); return; }
                       iframe.contentWindow.focus();
                       try { doc.designMode = 'on'; } catch (e) {}
                       const sel = doc.getSelection();
@@ -4960,7 +4960,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         if (node) doc.body.appendChild(node);
                       }
                       if (textInput) textInput.value = '';
-                      addToast('✨ Word art inserted', 'success');
+                      addToast(t('toasts.word_art_inserted'), 'success');
                     }}
                     className="w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
                   >✨ Insert Word Art</button>
@@ -5117,7 +5117,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     if (currentAudio) { try { currentAudio.pause(); } catch(_) {} }
                   };
                 }
-                addToast('Screen reader view opened — shows what assistive technology announces', 'info');
+                addToast(t('toasts.screen_reader_view_opened_shows'), 'info');
               }} className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700`}>
                 🔊 Screen Reader Simulator
               </button>
@@ -5137,7 +5137,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       <button id="pdf-preview-gen-img-btn" onClick={async () => {
                         const prompt = document.getElementById('pdf-preview-img-prompt')?.value;
                         if (!prompt?.trim()) return;
-                        addToast('🎨 Generating image...', 'info');
+                        addToast(t('toasts.generating_image'), 'info');
                         try {
                           const imgUrl = await callImagen(prompt + ' Professional, clean, educational illustration. No text.', 400, 0.85);
                           if (imgUrl) {
@@ -5155,10 +5155,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             } else {
                               (doc.querySelector('main') || doc.body).appendChild(figure);
                             }
-                            addToast('🎨 Image inserted!', 'success');
+                            addToast(t('toasts.image_inserted'), 'success');
                             document.getElementById('pdf-preview-img-prompt').value = '';
                           }
-                        } catch(e) { addToast('Image generation failed', 'error'); }
+                        } catch(e) { addToast(t('toasts.image_generation_failed_2'), 'error'); }
                       }} className="w-full mt-1 px-2 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 transition-colors">
                         ✨ Generate & Insert
                       </button>
@@ -5166,11 +5166,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <p className="text-[11px] text-slate-600">{t('pdf_audit.ai_image.select_hint') || 'Click an image in the preview to select it, then:'}</p>
                     <button onClick={async () => {
                       const img = selectedPreviewImgRef.current;
-                      if (!img || !img.src) { addToast('Click an image in the preview to select it first', 'info'); return; }
-                      if (!callGeminiImageEdit) { addToast('Image editing not available in this build', 'error'); return; }
+                      if (!img || !img.src) { addToast(t('toasts.click_image_preview_select_first'), 'info'); return; }
+                      if (!callGeminiImageEdit) { addToast(t('toasts.image_editing_available_build'), 'error'); return; }
                       const editPrompt = window.prompt('Describe how to edit this image:');
                       if (!editPrompt?.trim()) return;
-                      addToast('🎨 Editing image...', 'info');
+                      addToast(t('toasts.editing_image'), 'info');
                       try {
                         let base64 = null;
                         if (img.src.startsWith('data:')) {
@@ -5185,13 +5185,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               fr.onerror = () => reject(fr.error);
                               fr.readAsDataURL(blob);
                             });
-                          } catch(fetchErr) { addToast('Cannot read this image (likely CORS-blocked). Try an AI-generated image.', 'error'); return; }
+                          } catch(fetchErr) { addToast(t('toasts.cannot_read_image_likely_cors'), 'error'); return; }
                         }
-                        if (!base64) { addToast('Cannot extract image data', 'error'); return; }
+                        if (!base64) { addToast(t('toasts.cannot_extract_image_data'), 'error'); return; }
                         const edited = await callGeminiImageEdit(editPrompt + ' No text.', base64, 400, 0.85);
-                        if (edited) { img.src = edited; addToast('🎨 Image updated!', 'success'); }
-                        else { addToast('Image edit returned no result', 'error'); }
-                      } catch(e) { warnLog('[Image Edit] failed:', e); addToast('Image edit failed: ' + (e?.message || 'unknown error'), 'error'); }
+                        if (edited) { img.src = edited; addToast(t('toasts.image_updated_2'), 'success'); }
+                        else { addToast(t('toasts.image_edit_returned_result'), 'error'); }
+                      } catch(e) { warnLog('[Image Edit] failed:', e); addToast(t('toasts.image_edit_failed') + (e?.message || 'unknown error'), 'error'); }
                     }} className="w-full px-2 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-colors">
                       ✏️ Edit Selected Image (AI)
                     </button>
@@ -6381,7 +6381,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const lr = doc.getElementById('allo-blocks-live');
                         if (lr) { lr.textContent = ''; setTimeout(() => { lr.textContent = 'Inserted ' + block.label; }, 30); }
                       } catch (_) {}
-                      try { if (typeof addToast === 'function') addToast('Inserted: ' + block.label, 'success'); } catch (_) {}
+                      try { if (typeof addToast === 'function') addToast(t('toasts.inserted') + block.label, 'success'); } catch (_) {}
                       try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
                       // Track recently used (session-only; max 5; dedup; most-recent-first)
                       try { setInsertBlockRecent(prev => [block.label, ...prev.filter(l => l !== block.label)].slice(0, 5)); } catch (_) {}
@@ -6516,7 +6516,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     header.innerHTML = '<div style="font-size:28px">🏛️</div><div><div style="font-size:18px;font-weight:bold">Institution Name</div><div style="font-size:12px;opacity:0.8">Department · Document Title · Date</div></div>';
                     const main = doc.querySelector('main') || doc.body;
                     main.insertBefore(header, main.firstChild);
-                    addToast('Header added — click to edit text, click again to remove', 'info');
+                    addToast(t('toasts.header_added_click_edit_text'), 'info');
                   }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     🏛️ Toggle Document Header
                   </button>
@@ -6531,7 +6531,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     footer.style.cssText = 'border-top:2px solid #e2e8f0;padding:12px 0;margin-top:32px;font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;';
                     footer.innerHTML = '<span>Institution Name · Confidential</span><span>Page __</span>';
                     (doc.querySelector('main') || doc.body).appendChild(footer);
-                    addToast('Footer added — click to edit', 'info');
+                    addToast(t('toasts.footer_added_click_edit'), 'info');
                   }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     📋 Toggle Document Footer
                   </button>
@@ -6558,7 +6558,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       style.id = 'template-style';
                       style.textContent = css;
                       doc.head.appendChild(style);
-                      addToast('Template applied: ' + e.target.value, 'success');
+                      addToast(t('toasts.template_applied') + e.target.value, 'success');
                     }
                     e.target.value = '';
                   }} className="w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600" aria-label={t('pdf_audit.templates.aria') || 'Document template'} defaultValue="">
@@ -6610,7 +6610,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               html += '</main></body></html>';
                               doc.open(); doc.write(html); doc.close();
                               try { doc.designMode = 'on'; } catch(e) {}
-                              addToast('📐 Template "' + tmpl.name + '" applied — click any text to edit', 'success');
+                              addToast(t('toasts.template_2') + tmpl.name + '" applied — click any text to edit', 'success');
                             }} className="w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
                               <span>📐 {tmpl.name}</span>
                               <span className="text-[11px] text-amber-700">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
@@ -6630,13 +6630,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       reader.onload = (ev) => {
                         try {
                           const tmpl = JSON.parse(ev.target.result);
-                          if (tmpl.type !== 'alloflow-template' || !tmpl.structure) { addToast('Invalid template file', 'error'); return; }
+                          if (tmpl.type !== 'alloflow-template' || !tmpl.structure) { addToast(t('toasts.invalid_template_file'), 'error'); return; }
                           try {
                             const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]');
                             if (!saved.some(s => s.name === tmpl.name)) { saved.push(tmpl); localStorage.setItem('alloflow_templates', JSON.stringify(saved)); }
                           } catch(e) {}
-                          addToast('📐 Template "' + tmpl.name + '" loaded! It now appears in Saved Templates above.', 'success');
-                        } catch(err) { addToast('Failed to load template: ' + err.message, 'error'); }
+                          addToast(t('toasts.template_2') + tmpl.name + '" loaded! It now appears in Saved Templates above.', 'success');
+                        } catch(err) { addToast(t('toasts.failed_load_template') + err.message, 'error'); }
                       };
                       reader.readAsText(file);
                       e.target.value = '';
@@ -6654,7 +6654,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <button onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument;
                     const text = doc?.body?.textContent || '';
-                    if (!text.trim()) { addToast('No content to analyze', 'info'); return; }
+                    if (!text.trim()) { addToast(t('toasts.content_analyze'), 'info'); return; }
                     const words = text.split(/\s+/).filter(w => w.length > 0);
                     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
                     const syllables = words.reduce((sum, w) => {
@@ -6707,9 +6707,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     headings.forEach(h => { const level = parseInt(h.tagName[1]); if (level > prevLevel + 1 && prevLevel > 0) issues.push('📑 Heading skip: h' + prevLevel + ' → h' + level + ' ("' + h.textContent.substring(0,30) + '...")'); prevLevel = level; });
                     doc.querySelectorAll('table').forEach((tbl, i) => { if (!tbl.querySelector('th') && !tbl.querySelector('thead')) issues.push('📊 Table ' + (i+1) + ': no header cells (th)'); if (!tbl.querySelector('caption') && !tbl.getAttribute('aria-label')) issues.push('📊 Table ' + (i+1) + ': no caption or aria-label'); });
                     doc.querySelectorAll('a[href]').forEach((a, i) => { const txt = a.textContent.trim().toLowerCase(); if (['click here','here','link','read more','more'].includes(txt)) issues.push('🔗 Link ' + (i+1) + ': vague text "' + txt + '"'); });
-                    if (issues.length === 0) { addToast('✅ No common accessibility issues found!', 'success'); return; }
+                    if (issues.length === 0) { addToast(t('toasts.common_accessibility_issues_found'), 'success'); return; }
                     const fixable = issues.length;
-                    addToast('⚠️ Found ' + fixable + ' accessibility issue' + (fixable !== 1 ? 's' : ''), 'info');
+                    addToast(t('toasts.found') + fixable + ' accessibility issue' + (fixable !== 1 ? 's' : ''), 'info');
                     const overlay = doc.getElementById('a11y-quick-report') || doc.createElement('div');
                     overlay.id = 'a11y-quick-report';
                     overlay.style.cssText = 'position:fixed;top:16px;right:16px;background:white;border:2px solid #f59e0b;border-radius:12px;padding:16px;font-family:system-ui;font-size:11px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:320px;max-height:60vh;overflow-y:auto;';
@@ -6723,9 +6723,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const images = Array.from(doc.querySelectorAll('img'));
                     const needsAlt = images.filter(img => !img.alt || img.alt.trim() === '' || img.alt === 'undefined');
-                    if (images.length === 0) { addToast('No images found in document', 'info'); return; }
-                    if (needsAlt.length === 0) { addToast('✅ All ' + images.length + ' images already have alt text!', 'success'); return; }
-                    addToast('🔍 Generating alt text for ' + needsAlt.length + ' image(s)...', 'info');
+                    if (images.length === 0) { addToast(t('toasts.images_found_document'), 'info'); return; }
+                    if (needsAlt.length === 0) { addToast(t('toasts.all') + images.length + ' images already have alt text!', 'success'); return; }
+                    addToast(t('toasts.generating_alt_text') + needsAlt.length + ' image(s)...', 'info');
                     let fixed = 0;
                     for (const img of needsAlt) {
                       try {
@@ -6755,7 +6755,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         }
                       } catch(e) { warnLog('[Alt Gen] Failed for image:', e); img.alt = 'Image'; fixed++; }
                     }
-                    addToast('✅ Generated alt text for ' + fixed + '/' + needsAlt.length + ' images', 'success');
+                    addToast(t('toasts.generated_alt_text') + fixed + '/' + needsAlt.length + ' images', 'success');
                   }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
                     🖼️ Auto-Generate Alt Text (AI)
                   </button>
@@ -6766,7 +6766,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               <button onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('a11y-compliance-statement');
-                if (existing) { existing.remove(); addToast('Compliance statement removed', 'info'); return; }
+                if (existing) { existing.remove(); addToast(t('toasts.compliance_statement_removed'), 'info'); return; }
                 const imgs = doc.querySelectorAll('img');
                 const imgsWithAlt = Array.from(imgs).filter(i => i.alt && i.alt.trim()).length;
                 const headings = doc.querySelectorAll('h1,h2,h3,h4,h5,h6').length;
@@ -6816,7 +6816,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                 `;
                 (doc.querySelector('main') || doc.body).appendChild(stmt);
-                addToast('♿ Accessibility compliance statement added', 'success');
+                addToast(t('toasts.accessibility_compliance_statement_added'), 'success');
               }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
                 ♿ Insert Compliance Statement
               </button>
@@ -6826,9 +6826,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 const doc = pdfPreviewRef.current?.contentDocument;
                 if (!doc) return;
                 const existing = doc.getElementById('alloflow-toc');
-                if (existing) { existing.remove(); addToast('Table of contents removed', 'info'); return; }
+                if (existing) { existing.remove(); addToast(t('toasts.table_contents_removed'), 'info'); return; }
                 const headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4'));
-                if (headings.length < 2) { addToast('Need at least 2 headings to generate a TOC', 'info'); return; }
+                if (headings.length < 2) { addToast(t('toasts.need_least_headings_generate_toc'), 'info'); return; }
                 headings.forEach((h, i) => { if (!h.id) h.id = 'toc-heading-' + i; });
                 const tocItems = headings.map((h, i) => {
                   const level = parseInt(h.tagName[1]);
@@ -6854,7 +6854,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   '<div style="font-size:9px;color:#94a3b8;margin-top:8px;text-align:right">Auto-generated · Click headings to navigate</div>';
                 const main = doc.querySelector('main') || doc.body;
                 main.insertBefore(toc, main.firstChild);
-                addToast('📑 Table of contents added — click to remove', 'success');
+                addToast(t('toasts.table_contents_added_click_remove'), 'success');
               }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 📑 Toggle Table of Contents
               </button>
@@ -6875,7 +6875,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <button key={wm.label} onClick={() => {
                       const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                       const existing = doc.getElementById('alloflow-watermark');
-                      if (existing && existing.dataset.label === wm.label) { existing.remove(); addToast('Watermark removed', 'info'); return; }
+                      if (existing && existing.dataset.label === wm.label) { existing.remove(); addToast(t('toasts.watermark_removed'), 'info'); return; }
                       if (existing) existing.remove();
                       const el = doc.createElement('div');
                       el.id = 'alloflow-watermark';
@@ -6883,7 +6883,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:' + wm.color + ';opacity:' + wm.opacity + ';pointer-events:none;z-index:9998;white-space:nowrap;letter-spacing:8px;font-family:system-ui;user-select:none;';
                       el.textContent = wm.label;
                       doc.body.appendChild(el);
-                      addToast('Watermark "' + wm.label + '" added — click again to remove', 'success');
+                      addToast(t('toasts.watermark') + wm.label + '" added — click again to remove', 'success');
                     }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2"
                       aria-label={`Toggle ${wm.label} watermark`}>
                       🔒 {wm.label}
@@ -6905,7 +6905,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         el.style.cssText = 'position:fixed;top:12px;right:12px;background:white;border:2px solid #6366f1;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:#4338ca;font-family:system-ui;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.1);';
                         el.textContent = stamp.icon + ' ' + stamp.label;
                         doc.body.appendChild(el);
-                        addToast('Version stamp added', 'success');
+                        addToast(t('toasts.version_stamp_added'), 'success');
                       }} className="w-full text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5">
                         {stamp.icon} {stamp.label}
                       </button>
@@ -6918,10 +6918,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
               <button onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('bilingual-style');
-                if (existing) { existing.remove(); addToast('Bilingual layout removed — content restored to single column', 'info'); return; }
+                if (existing) { existing.remove(); addToast(t('toasts.bilingual_layout_removed_content_restored'), 'info'); return; }
                 const main = doc.querySelector('main') || doc.body;
                 const sections = Array.from(main.querySelectorAll('.section, section, article, [class*="resource"]'));
-                if (sections.length === 0) { addToast('No content sections found to arrange', 'info'); return; }
+                if (sections.length === 0) { addToast(t('toasts.content_sections_found_arrange'), 'info'); return; }
                 const style = doc.createElement('style');
                 style.id = 'bilingual-style';
                 style.textContent = `
@@ -6960,7 +6960,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   section.parentNode.insertBefore(wrapper, section);
                   section.style.display = 'none';
                 });
-                addToast('📐 Bilingual layout applied — paste translations in the right column. Click again to remove.', 'success');
+                addToast(t('toasts.bilingual_layout_applied_paste_translations'), 'success');
               }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 🌐 Toggle Bilingual Side-by-Side
               </button>
@@ -6971,7 +6971,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   const btn = document.getElementById('preview-audio-dl-btn');
                   const doc = pdfPreviewRef.current?.contentDocument;
                   const fullText = (doc?.body?.textContent || '').trim();
-                  if (!fullText) { addToast('No text to convert', 'error'); return; }
+                  if (!fullText) { addToast(t('toasts.text_convert'), 'error'); return; }
                   const segments = [];
                   let rem = fullText;
                   while (rem.length > 0) {
@@ -6996,19 +6996,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       warnLog('[Audio] Seg ' + si + ' failed:', e?.message);
                       failed++;
                       if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
-                        addToast('⚠️ Rate limited — got ' + blobs.length + '/' + segments.length, 'info'); break;
+                        addToast(t('toasts.rate_limited_got') + blobs.length + '/' + segments.length, 'info'); break;
                       }
                     }
                   }
                   if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
-                  if (blobs.length === 0) { addToast('Audio generation failed — check TTS/API key', 'error'); return; }
+                  if (blobs.length === 0) { addToast(t('toasts.audio_generation_failed_check_tts'), 'error'); return; }
                   const combined = new Blob(blobs, { type: blobs[0].type || 'audio/wav' });
                   const dlUrl = URL.createObjectURL(combined);
                   const a = document.createElement('a');
                   a.href = dlUrl; a.download = 'document-audio.' + (blobs[0].type?.includes('mp3') ? 'mp3' : 'wav');
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   URL.revokeObjectURL(dlUrl);
-                  addToast('🎧 Downloaded! ' + blobs.length + '/' + segments.length + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+                  addToast(t('toasts.downloaded') + blobs.length + '/' + segments.length + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
                 }} className="w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50">
                   🎧 Download Audio
                 </button>
@@ -7017,7 +7017,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Re-run axe-core on edited content */}
               <button onClick={async () => {
                 const html = getPdfPreviewHtml();
-                addToast('Running axe-core on edited content...', 'info');
+                addToast(t('toasts.running_axe_core_edited_content'), 'info');
                 const axe = await runAxeAudit(html);
                 if (axe) {
                   setPdfFixResult(prev => ({ ...prev, axeAudit: axe, axeScore: axe.score, accessibleHtml: html }));
@@ -7028,8 +7028,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
               </button>
               <button onClick={async () => {
                 const html = getPdfPreviewHtml();
-                if (!html) { addToast('No preview content to audit', 'error'); return; }
-                addToast('Running full AI re-audit...', 'info');
+                if (!html) { addToast(t('toasts.preview_content_audit'), 'error'); return; }
+                addToast(t('toasts.running_full_ai_re_audit'), 'info');
                 try {
                   const [aiResult, axeResult] = await Promise.all([
                     auditOutputAccessibility(html),
@@ -7049,7 +7049,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       ? `✅ Full re-audit complete! ${totalPasses} checks passing, 0 issues.`
                       : `⚠️ Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? 'success' : 'info');
                   }
-                } catch(e) { addToast('Re-audit failed: ' + e.message, 'error'); }
+                } catch(e) { addToast(t('toasts.re_audit_failed') + e.message, 'error'); }
               }} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2">
                 🤖 Full Re-audit (AI + axe-core)
               </button>
@@ -7104,7 +7104,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a'); a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-accessible.html`;
                   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                  addToast('Saved edited HTML', 'success');
+                  addToast(t('toasts.saved_edited_html'), 'success');
                 }} className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
                   📄 Save as HTML
                 </button>
