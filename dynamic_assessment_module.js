@@ -2856,13 +2856,32 @@
     // Each level should be at least as informative as the previous.
     // Heuristic: monotonically non-decreasing text length is a rough
     // gradient check. Not perfect but catches obvious failures.
+    // EXCEPTION (added Phase Y.1): L4's job is "give the answer + reasoning",
+    // which is often pithier than the L3 modeled-parallel-example. Don't
+    // flag an L4 < 60% of L3 if the L4 (a) is at least 50 chars long AND
+    // (b) references the canonical answer. Those two conditions together
+    // mean L4 is doing its job, just succinctly.
     var prevLen = 0;
+    var l4ContainsAns = function (text) {
+      if (!text || !item.correctAnswer) return false;
+      var _norm = function (s) {
+        return String(s || "").toLowerCase()
+          .replace(/[\s ]+/g, " ")
+          .replace(/^[\s.,;:!?\-—'"`]+|[\s.,;:!?\-—'"`]+$/g, "").trim();
+      };
+      return _norm(text).indexOf(_norm(item.correctAnswer)) >= 0;
+    };
     for (var i = 0; i < ladder.length; i++) {
       var step = ladder[i];
       if (!step || !step.text) continue;
       var len = step.text.length;
       if (i > 0 && len < prevLen * 0.6) {
-        warnings.push("L" + step.level + " is much shorter than the prior step — gradient may be reversed");
+        // Suppress for an L4 that's substantive + references the answer.
+        if (step.level === 4 && len >= 50 && l4ContainsAns(step.text)) {
+          // Looks fine — L4 is shorter but it's an answer+reasoning sentence, that's expected.
+        } else {
+          warnings.push("L" + step.level + " is much shorter than the prior step — gradient may be reversed");
+        }
       }
       prevLen = len;
     }
@@ -2895,9 +2914,35 @@
     var ladder = item.promptLadder || [];
     var l4 = ladder.filter(function (s) { return s && s.level === 4; })[0];
     if (!l4 || !l4.text || !item.correctAnswer) return warnings;
-    var l4Lower = l4.text.toLowerCase();
-    var ansLower = item.correctAnswer.toLowerCase();
-    if (ansLower.length >= 2 && l4Lower.indexOf(ansLower) < 0) {
+    // Normalize both sides: lowercase, strip leading/trailing punctuation +
+    // whitespace, collapse internal whitespace. Otherwise "Bees work together
+    // to survive." (canonical, period) doesn't match "bees work together to
+    // survive," (L4, comma) and we'd false-positive.
+    var _norm = function (s) {
+      return String(s || "")
+        .toLowerCase()
+        .replace(/[\s ]+/g, " ")
+        .replace(/^[\s.,;:!?\-—'"`]+|[\s.,;:!?\-—'"`]+$/g, "")
+        .trim();
+    };
+    var l4Lower = _norm(l4.text);
+    var ansLower = _norm(item.correctAnswer);
+    if (!ansLower || ansLower.length < 2) return warnings;
+    // Direct substring (after normalization) — covers most "L4 quotes the answer" cases.
+    if (l4Lower.indexOf(ansLower) >= 0) return warnings;
+    // Fallback: word-overlap heuristic. If L4 contains ≥70% of the answer's
+    // content words (≥3 letters), treat it as "references the answer." This
+    // covers paraphrased L4s like "the answer is that bees cooperate so the
+    // colony survives" when the canonical is "bees work together to survive."
+    var stopWords = { the:1, a:1, an:1, of:1, in:1, to:1, is:1, are:1, was:1, were:1, and:1, or:1, but:1, for:1, with:1, on:1, at:1, by:1, as:1, it:1, this:1, that:1, be:1, will:1 };
+    var ansWords = ansLower.split(/\s+/).filter(function (w) { return w.length >= 3 && !stopWords[w]; });
+    if (ansWords.length === 0) return warnings;
+    var l4Tokens = {};
+    l4Lower.split(/\s+/).forEach(function (w) { l4Tokens[w] = true; });
+    var hits = 0;
+    ansWords.forEach(function (w) { if (l4Tokens[w]) hits++; });
+    var coverage = hits / ansWords.length;
+    if (coverage < 0.7) {
       warnings.push("L4 direct teach does not reference the canonical answer — direct teach should include both the answer AND reasoning");
     }
     return warnings;
