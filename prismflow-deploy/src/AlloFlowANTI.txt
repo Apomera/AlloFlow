@@ -3808,6 +3808,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloOpenDynamicAssessment = () => setIsDynamicAssessmentOpen(true);
     return () => { try { delete window.__alloOpenDynamicAssessment; } catch(_) {} };
   }, [setIsDynamicAssessmentOpen]);
+  // Auto-resolve the loading fallback once the DA module finishes fetching.
+  // Without this, the fallback stays visible until the user re-triggers a
+  // render (close+reopen), because nothing else watches window.AlloModules.
+  const [_daModuleTick, _setDaModuleTick] = useState(0);
+  React.useEffect(() => {
+    if (!isDynamicAssessmentOpen) return;
+    if (window.AlloModules && window.AlloModules.DynamicAssessment) return;
+    const id = setInterval(() => {
+      if (window.AlloModules && window.AlloModules.DynamicAssessment) {
+        _setDaModuleTick(v => v + 1);
+        clearInterval(id);
+      }
+    }, 200);
+    return () => clearInterval(id);
+  }, [isDynamicAssessmentOpen]);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -21819,32 +21834,45 @@ ${_toolList}
          * get corresponding palettes.
          */
         :root, .theme-default {
-            --allo-stem-canvas:    #ffffff;
-            --allo-stem-panel:     #f8fafc;
-            --allo-stem-deeper:    #e2e8f0;
-            --allo-stem-text:      #0f172a;
-            --allo-stem-text-soft: #475569;
-            --allo-stem-border:    #cbd5e1;
+            --allo-stem-canvas:       #ffffff;
+            --allo-stem-panel:        #f8fafc;
+            --allo-stem-deeper:       #e2e8f0;
+            --allo-stem-text:         #0f172a;
+            --allo-stem-text-soft:    #475569;
+            --allo-stem-border:       #cbd5e1;
+            --allo-stem-button-bg:    #f1f5f9;
+            --allo-stem-button-text:  #0f172a;
+            --allo-stem-button-border:#cbd5e1;
         }
         .theme-dark {
-            --allo-stem-canvas:    #0f172a;
-            --allo-stem-panel:     #1e293b;
-            --allo-stem-deeper:    #020617;
-            --allo-stem-text:      #e2e8f0;
-            --allo-stem-text-soft: #94a3b8;
-            --allo-stem-border:    #334155;
+            --allo-stem-canvas:       #0f172a;
+            --allo-stem-panel:        #1e293b;
+            --allo-stem-deeper:       #020617;
+            --allo-stem-text:         #e2e8f0;
+            --allo-stem-text-soft:    #94a3b8;
+            --allo-stem-border:       #334155;
+            --allo-stem-button-bg:    #1e293b;
+            --allo-stem-button-text:  #e2e8f0;
+            --allo-stem-button-border:#334155;
 
             background-color: #0B1120; /* Deepest Slate */
             background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%); /* Subtle top spotlight */
             color: #f1f5f9;
         }
+        /* High-contrast palette aligned to existing .theme-contrast rules:
+         * black canvas + yellow text/borders + green-on-black for buttons.
+         * Pure binary — no soft variants. Matches main-app pattern used at
+         * AlloFlowANTI.txt:21957-21966 ( bg:#000, color:#ffff00, button:#00ff00 ). */
         .theme-contrast {
-            --allo-stem-canvas:    #000000;
-            --allo-stem-panel:     #1a1a1a;
-            --allo-stem-deeper:    #000000;
-            --allo-stem-text:      #ffffff;
-            --allo-stem-text-soft: #fbbf24;
-            --allo-stem-border:    #ffffff;
+            --allo-stem-canvas:       #000000;
+            --allo-stem-panel:        #000000;
+            --allo-stem-deeper:       #000000;
+            --allo-stem-text:         #ffff00;
+            --allo-stem-text-soft:    #ffff00;
+            --allo-stem-border:       #ffff00;
+            --allo-stem-button-bg:    #000000;
+            --allo-stem-button-text:  #00ff00;
+            --allo-stem-button-border:#00ff00;
         }
         .theme-dark .bg-white {
             background-color: #162032 !important; /* Slightly lighter than bg */
@@ -25393,8 +25421,12 @@ ${_toolList}
             }
             return (
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔬</div>
+                <div role="status" aria-live="polite" aria-label="Loading Dynamic Assessment Studio" className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative w-14 h-14 mx-auto mb-4">
+                        <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
+                        <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+                        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-2xl">🔬</div>
+                    </div>
                     <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Dynamic Assessment Studio' }) || 'Loading Dynamic Assessment Studio...'}</p>
                     <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
