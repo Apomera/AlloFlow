@@ -2591,18 +2591,21 @@
       "7. Use grade-appropriate vocabulary. No PII in any field.",
       "8. acceptableAnswers should include the canonical form plus reasonable variants (e.g., '7', 'seven', '7 apples').",
       "",
-      "SUPPLEMENTARY RESOURCES (NEW — Phase Z):",
-      "Include an OPTIONAL supplementaryResources array per item. The host will use these to auto-generate genuine resources (a glossary card, a number-line, etc.) and inject inline clickable links into the indicated scaffold rung at session time.",
-      "Use this to attach exactly the support a struggling student would benefit from at the rung where the scaffold escalates to it. Examples:",
-      "- A reading-comprehension item with Tier-2/3 vocabulary → attach a glossary entry pulling those 2-3 words; anchorRung=1 (so the L1 cue can preview vocab).",
-      "- A math word problem about fractions → attach a number-line glossary card explaining 'numerator' and 'denominator'; anchorRung=2 (so the L2 leading question can reference shared terms).",
-      "- A language item using specialized vocab → attach a glossary for the key word, anchorRung=1.",
+      "SUPPLEMENTARY RESOURCES (REQUIRED for most items — Phase Z):",
+      "Every item gets a `supplementaryResources` array. The host auto-generates the resource (a glossary card) and injects an inline clickable link into the named scaffold rung, alongside a one-line usage hint the host writes for the clinician.",
+      "DEFAULT BEHAVIOR: include EXACTLY ONE glossary entry per item, unless the prompt + ladder genuinely have zero domain-specific vocabulary (a rare case — most academic items have at least one Tier-2 word worth previewing). When in doubt, attach a glossary.",
+      "Examples that ALWAYS warrant a glossary:",
+      "- Reading-comprehension or reading-intervention items (domain=reading) → glossary of the 2-3 Tier-2/3 words appearing in the prompt; anchorRung=1.",
+      "- Language-domain items (domain=language) → glossary of the target vocabulary; anchorRung=1.",
+      "- Math word problems → glossary of the operation/concept terms (e.g., 'numerator', 'remainder', 'product'); anchorRung=2 (the leading question naturally references them).",
+      "- Working-memory items that reference categorical vocabulary → glossary of those category labels; anchorRung=1.",
       "Rules for supplementaryResources:",
-      "- Phase 1 supports ONLY kind=\"glossary\" (more kinds will land in later phases — do not invent others).",
-      "- Include AT MOST 1 glossary entry per item. Skip entirely if no vocabulary support would help — empty array (or omit field) is the correct answer for items where the construct doesn't rely on unfamiliar words.",
-      "- seedTerms: 2-4 specific words actually appearing in the prompt or that the L3 model might reference. Lowercase, no punctuation.",
-      "- anchorRung: 1 if vocabulary previewing helps before any other scaffold; 2 if the leading question naturally references the vocab.",
+      "- Phase 1 supports ONLY kind=\"glossary\" (do not invent other kinds).",
+      "- Include AT MOST 1 glossary entry per item.",
+      "- seedTerms: 2-4 specific words actually appearing in the prompt OR the L3 model. Lowercase, no punctuation, no proper nouns.",
+      "- anchorRung: pick the rung at which a struggling student would benefit most from the vocabulary preview. Default to 1 (preview before the student attempts the item). Use 2 when the leading question itself is the natural place to share the terms.",
       "- title: a concise human-readable label that will appear as the link text (e.g., 'Glossary: photosynthesis terms').",
+      "- If — and only if — the item truly has no terminology a struggling student might stumble on, omit the field or send an empty array. Do not pad with off-topic vocabulary.",
       "",
       "Output STRICT JSON ARRAY only. No markdown fences. No commentary. No leading/trailing text."
     ].join("\n");
@@ -2745,20 +2748,33 @@
     return "[" + safeTitle + "](resource:" + String(resourceId) + ")";
   }
 
-  // Inject a resource link token at the end of a ladder rung's text.
-  // Idempotent: if the same resource:id is already linked from this rung,
-  // skip (e.g., re-running generateDaSupports after a partial failure).
-  function appendLinkTokenToRung(item, anchorRung, token, resourceId) {
+  // Usage-guidance string for the clinician — varies by rung level so it
+  // reads as a natural instruction at the moment of escalation. Plain text
+  // (the link token is appended after this string).
+  function usageHintForAnchorRung(level, kind) {
+    if (kind !== "glossary") return "";
+    if (level === 1) return "💡 Before asking, pre-teach these terms with the student:";
+    if (level === 2) return "💡 As you ask the leading question, point to these terms together:";
+    if (level === 3) return "💡 Use these terms in the model alongside the example:";
+    if (level === 4) return "💡 Reinforce these terms as you give the direct answer:";
+    return "💡 Use this resource with the student:";
+  }
+
+  // Inject a resource link token + a usage hint at the end of a ladder rung's
+  // text so the clinician sees BOTH the link AND a one-line instruction on
+  // how to use it at that rung. Idempotent: if the same resource:id is already
+  // linked from this rung, skip (e.g., re-running after partial failure).
+  function appendLinkTokenToRung(item, anchorRung, token, resourceId, kind) {
     var ladder = (item.promptLadder || []).slice();
     var idx = ladder.findIndex(function (s) { return s && s.level === anchorRung; });
     if (idx < 0) return item;
     var step = ladder[idx];
     var existing = String(step.text || "");
-    // Already linked? Skip.
     if (resourceId && existing.indexOf("resource:" + resourceId) >= 0) return item;
-    // Append on a new visual line (a soft separator the link rewriter ignores).
-    var sep = existing.length > 0 && existing.charAt(existing.length - 1) !== "\n" ? "  " : "";
-    ladder[idx] = Object.assign({}, step, { text: existing + sep + token });
+    var hint = usageHintForAnchorRung(anchorRung, kind || "glossary");
+    var sep = existing.length > 0 && existing.charAt(existing.length - 1) !== "\n" ? "\n\n" : "";
+    var joined = existing + sep + (hint ? hint + " " : "") + token;
+    ladder[idx] = Object.assign({}, step, { text: joined });
     return Object.assign({}, item, { promptLadder: ladder });
   }
 
@@ -2794,7 +2810,7 @@
               var nextSupps = currentItem.supplementaryResources.slice();
               nextSupps[si] = Object.assign({}, sr, { status: "generated", resourceId: res.id });
               var withSupps = Object.assign({}, currentItem, { supplementaryResources: nextSupps });
-              return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id);
+              return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
             })
             .catch(function (err) {
               try { console.warn("[DA Phase Z] Glossary generation failed for item " + idx + ":", err && err.message); } catch (_) {}
@@ -8514,6 +8530,78 @@
     }
 
     // ─── Helper: editable item card for the review screen ───
+    // Phase Z — On-demand "Add inline glossary" trigger from the review screen.
+    // For items Gemini didn't auto-attach a support to (or where the clinician
+    // wants a different one). Asks Gemini to pick seed terms from the prompt
+    // text, then runs the same Phase Z orchestrator path so the result lands
+    // in history + the rung gets the inline link + usage hint.
+    function addManualGlossaryToItem(idx) {
+      var item = generatedItems[idx];
+      if (!item) return;
+      if (typeof props.onGenerateGlossary !== "function") {
+        addToast("Glossary generation isn't wired in this host.");
+        return;
+      }
+      // Decide seed terms: lowercase words ≥4 chars from prompt that aren't
+      // common stop words. This is heuristic — Gemini's own seeding (during
+      // item gen) is better, but this gives the clinician an immediate manual
+      // path without a second Gemini round-trip.
+      var STOP = { the:1, and:1, that:1, with:1, this:1, from:1, have:1, were:1, your:1, what:1, when:1, then:1, them:1, they:1, into:1, much:1, many:1, will:1, would:1, could:1, about:1, after:1, before:1, which:1, there:1, their:1, where:1, while:1, these:1, those:1, been:1, just:1, more:1, like:1, also:1, some:1 };
+      var promptText = String(item.prompt || "");
+      var terms = (promptText.toLowerCase().match(/\b[a-z][a-z'-]{3,}\b/g) || [])
+        .filter(function (w) { return !STOP[w]; });
+      // Dedupe, take first 3 distinct
+      var seen = {}, seedTerms = [];
+      for (var ti = 0; ti < terms.length && seedTerms.length < 3; ti++) {
+        if (!seen[terms[ti]]) { seen[terms[ti]] = 1; seedTerms.push(terms[ti]); }
+      }
+      if (seedTerms.length === 0) {
+        addToast("Couldn't find vocabulary worth defining in this prompt. Edit the prompt or seed terms manually.");
+        return;
+      }
+      var newSupp = {
+        kind: "glossary",
+        title: "Glossary: " + seedTerms.slice(0, 2).join(", "),
+        seedTerms: seedTerms,
+        anchorRung: 1,
+        status: "generating",
+        resourceId: null
+      };
+      // Optimistic UI: show the supps panel right away with status=generating
+      editGeneratedItem(idx, function (i) {
+        var existing = Array.isArray(i.supplementaryResources) ? i.supplementaryResources : [];
+        return Object.assign({}, i, { supplementaryResources: existing.concat([newSupp]) });
+      });
+      addToast("Generating inline glossary…");
+      var provenance = { fromDA: true, daItemIndex: idx, daItemPrompt: promptText.slice(0, 80) };
+      props.onGenerateGlossary(seedTerms, newSupp.title, provenance)
+        .then(function (res) {
+          if (!res || !res.id) throw new Error("Glossary callback returned no id.");
+          var token = makeResourceLinkToken(newSupp.title, res.id);
+          editGeneratedItem(idx, function (i) {
+            var supps = (i.supplementaryResources || []).slice();
+            // Find the entry we added by matching seedTerms + status=generating
+            var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.seedTerms && s.seedTerms[0] === seedTerms[0]; });
+            if (sIdx < 0) sIdx = supps.length - 1;
+            supps[sIdx] = Object.assign({}, supps[sIdx], { status: "generated", resourceId: res.id });
+            var withSupps = Object.assign({}, i, { supplementaryResources: supps });
+            return appendLinkTokenToRung(withSupps, 1, token, res.id, "glossary");
+          });
+          addToast("Inline glossary attached.");
+        })
+        .catch(function (err) {
+          editGeneratedItem(idx, function (i) {
+            var supps = (i.supplementaryResources || []).slice();
+            var sIdx = supps.findIndex(function (s) { return s && s.status === "generating" && s.seedTerms && s.seedTerms[0] === seedTerms[0]; });
+            if (sIdx >= 0) {
+              supps[sIdx] = Object.assign({}, supps[sIdx], { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
+            }
+            return Object.assign({}, i, { supplementaryResources: supps });
+          });
+          addToast("Glossary generation failed: " + (err && err.message ? err.message : "unknown"));
+        });
+    }
+
     function renderEditableItem(item, idx) {
       var warnings = Array.isArray(item._generationWarnings) ? item._generationWarnings : [];
       var isExcluded = !!item._excluded;
@@ -8602,33 +8690,57 @@
             style: { width: "100%", padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
           })
         ),
-        // Phase Z — Supplementary resources panel (auto-generated glossary, etc.)
-        (Array.isArray(item.supplementaryResources) && item.supplementaryResources.length > 0) ? h("div", {
+        // Phase Z — Supplementary resources panel.
+        // Always rendered: shows existing supports with status, AND a small
+        // "+ Add inline glossary" button for items that came back without one
+        // (Gemini judgment varies). The button calls Gemini for a glossary
+        // tied to vocabulary in this item's prompt.
+        h("div", {
           style: { marginBottom: 8, padding: 8, background: "#eef2ff", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 11, lineHeight: 1.5 }
         },
-          h("div", { style: { fontWeight: 800, color: "#3730a3", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
-            "🔗 Inline supports for this item"),
-          item.supplementaryResources.map(function (sr, sri) {
-            var statusColor = sr.status === "generated" ? "#15803d"
-                            : sr.status === "failed" ? "#b91c1c"
-                            : sr.status === "generating" ? "#a16207"
-                            : "#64748b";
-            var statusLabel = sr.status === "generated" ? "✓ generated"
-                            : sr.status === "failed" ? "✗ failed"
-                            : sr.status === "generating" ? "… generating"
-                            : "· suggested";
-            return h("div", { key: "da-supp-" + idx + "-" + sri, style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 } },
-              h("span", { style: { fontWeight: 700, color: "#3730a3" } }, (sr.kind === "glossary" ? "📚 " : "🔗 ") + (sr.title || "Resource")),
-              h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
-              h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
-              sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
-                onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
-                style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-              }, "Open") : null,
-              sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
-            );
-          })
-        ) : null,
+          h("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } },
+            h("span", { style: { fontWeight: 800, color: "#3730a3", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 } },
+              "🔗 Inline supports for this item"),
+            // "+ Add glossary" button — visible when no support is currently attached or generating
+            (!Array.isArray(item.supplementaryResources) || item.supplementaryResources.length === 0
+              || !item.supplementaryResources.some(function (sr) { return sr && (sr.status === "generated" || sr.status === "generating"); }))
+              ? h("button", {
+                  onClick: function () { addManualGlossaryToItem(idx); },
+                  disabled: typeof props.onGenerateGlossary !== "function",
+                  title: typeof props.onGenerateGlossary === "function" ? "Generate a glossary for vocabulary in this prompt" : "Host glossary callback not wired",
+                  style: {
+                    padding: "2px 10px", borderRadius: 4,
+                    border: "1px solid #6366f1", background: "#ffffff", color: "#4338ca",
+                    fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateGlossary === "function" ? "pointer" : "not-allowed",
+                    fontFamily: "inherit"
+                  }
+                }, "+ Add inline glossary")
+              : null
+          ),
+          (Array.isArray(item.supplementaryResources) && item.supplementaryResources.length > 0)
+            ? h("div", null, item.supplementaryResources.map(function (sr, sri) {
+                var statusColor = sr.status === "generated" ? "#15803d"
+                                : sr.status === "failed" ? "#b91c1c"
+                                : sr.status === "generating" ? "#a16207"
+                                : "#64748b";
+                var statusLabel = sr.status === "generated" ? "✓ generated"
+                                : sr.status === "failed" ? "✗ failed"
+                                : sr.status === "generating" ? "… generating"
+                                : "· suggested";
+                return h("div", { key: "da-supp-" + idx + "-" + sri, style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 } },
+                  h("span", { style: { fontWeight: 700, color: "#3730a3" } }, (sr.kind === "glossary" ? "📚 " : "🔗 ") + (sr.title || "Resource")),
+                  h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
+                  h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
+                  sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
+                    onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
+                    style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  }, "Open") : null,
+                  sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
+                );
+              }))
+            : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },
+                "No inline supports attached. Use ", h("strong", null, "+ Add inline glossary"), " to pre-teach vocabulary from this item's prompt at the L1 cue.")
+        ),
         // Correct answer field
         h("div", { style: { marginBottom: 8, display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8 } },
           h("div", null,
