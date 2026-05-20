@@ -7780,35 +7780,34 @@
     // workflow. Surfaces automatically on first ever open (when
     // sessions.length === 0 AND onboardingSeen is false). Re-launchable
     // anytime via the "🧭 Tour" button on the start screen.
-    var TOUR_STEPS = [
-      {
-        icon: "🔬",
-        title: "What is Dynamic Assessment?",
-        body: "Dynamic Assessment measures a student's modifiability — how much they change with structured scaffolding — rather than static ability alone. Vygotsky called this the Zone of Proximal Development. Feuerstein turned it into a clinical methodology. This tool brings that methodology to a workflow you can run in a single session."
-      },
-      {
-        icon: "📋",
-        title: "Three (sometimes four) phases per session",
-        body: "Every session runs as: Pretest (unscaffolded baseline) → Mediation (you deliver scaffolds; the system tracks which level each item required) → Posttest (re-test alone) → Transfer probe (novel items, same construct — present when items have transfer twins). The Modifiability Index summarizes growth as a proportion of available change."
-      },
-      {
-        icon: "🪜",
-        title: "The graduated prompt ladder",
-        body: "Every item ships with a 4-level scaffold ladder: L1 declarative cue (orient) → L2 leading question (nudge toward strategy) → L3 modeling (show a parallel solve) → L4 direct teaching (give the answer with reasoning). In clinician-led mode you decide when to escalate. In AI-mediated mode the AI decides, using the same hand-authored scaffolds."
-      },
-      {
-        icon: "📝",
-        title: "From session to report",
-        body: "When you finish, you can: print a self-contained clinical packet (B&W, paste-ready), send findings to Report Writer as fact chunks + a pre-drafted section, or export raw JSON for archival. Important caveat: these are clinical probes, not standardized measures. Use as supplementary observation with parent consent."
-      }
-    ];
-
     function startTour() { setTourStep(0); }
     function closeTour() {
       setTourStep(null);
       if (!state.onboardingSeen) patch({ onboardingSeen: true });
     }
     function renderOnboardingTour() {
+      var TOUR_STEPS = [
+        {
+          icon: "🔬",
+          title: "What is Dynamic Assessment?",
+          body: "Dynamic Assessment measures a student's modifiability — how much they change with structured scaffolding — rather than static ability alone. Vygotsky called this the Zone of Proximal Development. Feuerstein turned it into a clinical methodology. This tool brings that methodology to a workflow you can run in a single session."
+        },
+        {
+          icon: "📋",
+          title: "Three (sometimes four) phases per session",
+          body: "Every session runs as: Pretest (unscaffolded baseline) → Mediation (you deliver scaffolds; the system tracks which level each item required) → Posttest (re-test alone) → Transfer probe (novel items, same construct — present when items have transfer twins). The Modifiability Index summarizes growth as a proportion of available change."
+        },
+        {
+          icon: "🪜",
+          title: "The graduated prompt ladder",
+          body: "Every item ships with a 4-level scaffold ladder: L1 declarative cue (orient) → L2 leading question (nudge toward strategy) → L3 modeling (show a parallel solve) → L4 direct teaching (give the answer with reasoning). In clinician-led mode you decide when to escalate. In AI-mediated mode the AI decides, using the same hand-authored scaffolds."
+        },
+        {
+          icon: "📝",
+          title: "From session to report",
+          body: "When you finish, you can: print a self-contained clinical packet (B&W, paste-ready), send findings to Report Writer as fact chunks + a pre-drafted section, or export raw JSON for archival. Important caveat: these are clinical probes, not standardized measures. Use as supplementary observation with parent consent."
+        }
+      ];
       var step = TOUR_STEPS[tourStep] || TOUR_STEPS[0];
       var isLast = tourStep >= TOUR_STEPS.length - 1;
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 620, margin: "0 auto", padding: 20 } },
