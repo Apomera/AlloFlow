@@ -1329,10 +1329,56 @@ const useTranslation = (targetLanguage, apiKey) => {
         const helpFlat = {};
         Object.entries(_helpStrings).forEach(([k, v]) => { helpFlat['help_mode.' + k] = v; });
         const flatStrings = { ...flattenObject(UI_STRINGS), ...helpFlat };
-        const chunks = chunkObject(flatStrings, 200);
+
+        // ── Resume support ──
+        // Load any existing partial/complete pack from the device. This lets a
+        // user who closed the tab mid-generation pick up where they left off,
+        // and lets a user with a previously-translated pack auto-fill ONLY the
+        // keys that have been added since last time (e.g., after Aaron ships
+        // new ui_strings.js keys). The accumulator starts pre-populated; the
+        // chunk loop only processes keys not already present.
+        let resumeFromFlatPack = {};
+        try {
+            const existing = await storageDB.get(storageKey);
+            if (existing && typeof existing === 'object') {
+                resumeFromFlatPack = flattenObject(existing);
+            }
+        } catch (_) {}
+
+        const missingFlatStrings = {};
+        for (const k in flatStrings) {
+            if (!(k in resumeFromFlatPack)) missingFlatStrings[k] = flatStrings[k];
+        }
+        const resumeCount = Object.keys(resumeFromFlatPack).length;
+        const missingCount = Object.keys(missingFlatStrings).length;
+        const expectedCount = Object.keys(flatStrings).length;
+
+        // If nothing missing AND we have a substantive existing pack → done.
+        if (missingCount === 0 && resumeCount > 50) {
+            const finalPack = unflattenObject(resumeFromFlatPack);
+            setLanguagePack(finalPack);
+            setStatusMessage(t('language_selector.status_complete'));
+            setTimeout(() => setIsTranslating(false), 500);
+            return;
+        }
+        if (resumeCount > 0 && missingCount > 0) {
+            debugLog('[useTranslation] Resuming ' + targetLanguage + ': ' + resumeCount + '/' + expectedCount + ' keys already done, filling ' + missingCount + ' missing');
+            setStatusMessage(t('language_selector.status_resuming', { done: resumeCount, total: expectedCount }) || ('Resuming translation (' + resumeCount + '/' + expectedCount + ')…'));
+            // Surface the partial pack immediately so the user sees translations
+            // for what's already done while the missing keys fill in.
+            try { setLanguagePack(unflattenObject(resumeFromFlatPack)); } catch (_) {}
+        }
+
+        const chunks = chunkObject(missingFlatStrings, 200);
         const CONCURRENCY = 3;
-        let accumulatedFlatPack = {};
+        // Start the accumulator with whatever was already done — so the partial
+        // pack is preserved as the new keys get filled in.
+        let accumulatedFlatPack = { ...resumeFromFlatPack };
         let completed = 0;
+        // Pre-set progress to reflect what's already done.
+        if (resumeCount > 0 && expectedCount > 0) {
+            setProgress(Math.round((resumeCount / expectedCount) * 100));
+        }
         const processChunk = async (chunk, i) => {
             let translatedChunk = null;
             let chunkAttempt = 0;
@@ -1354,7 +1400,23 @@ const useTranslation = (targetLanguage, apiKey) => {
                 accumulatedFlatPack = { ...accumulatedFlatPack, ...translated };
             }
             completed += windowChunks.length;
-            setProgress(Math.round((completed / chunks.length) * 100));
+            // Progress accounts for both resumed-from baseline AND new completions.
+            const accumulatedCount = Object.keys(accumulatedFlatPack).length;
+            setProgress(expectedCount > 0 ? Math.min(100, Math.round((accumulatedCount / expectedCount) * 100)) : 0);
+
+            // ── Incremental save after every batch ──
+            // Before this, the whole pack was only written at the very end —
+            // so tab close, Gemini quota error, or network hiccup mid-flight
+            // meant ALL prior work was lost. Now each batch persists, and the
+            // user can resume from the last successful batch on next load.
+            try {
+                const partialPack = unflattenObject(accumulatedFlatPack);
+                await storageDB.set(storageKey, partialPack);
+                // Also surface the partial pack to the UI so newly-translated
+                // keys start rendering as they're filled in.
+                setLanguagePack(partialPack);
+            } catch (e) { warnLog('Incremental save failed:', e?.message || e); }
+
             if (w + CONCURRENCY < chunks.length) await new Promise(r => setTimeout(r, 300));
         }
         const accumulatedPack = unflattenObject(accumulatedFlatPack);

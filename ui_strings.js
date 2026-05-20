@@ -313,6 +313,8 @@
     "no_phonemes_add_hint": "No phonemes - click \"Add Sound\" to build"
   },
   "common": {
+    "enter_value": "Enter value",
+    "ok": "OK",
     "student_analytics": "Student Analytics",
     "add_this_term_to_glossary": "Add this term to glossary",
     "ai_calculated_metrics": "AI-Calculated Metrics",
@@ -5346,7 +5348,8 @@
     "font_comic_sans": "Comic Sans",
     "crawl_speed_aria": "Crawl speed",
     "auto_advance_aria": "Auto-advance to next sentence",
-    "playback_speed_aria": "Playback speed"
+    "playback_speed_aria": "Playback speed",
+    "toggle_play_aria": "Toggle playback"
   },
   "timer": {
     "title": "Task Timer",
@@ -5788,7 +5791,9 @@
     "group_name": "Group name",
     "submissions_active": "Submissions On",
     "setup_submissions": "Set up offline submissions",
-    "import_submissions": "Import submissions"
+    "import_submissions": "Import submissions",
+    "set_group_color": "Set group color",
+    "new_group_color": "New group color"
   },
   "adventure": {
     "title": "Adventure Mode",
@@ -6361,7 +6366,8 @@
     "upload_portrait": "Upload your own portrait image",
     "aria_free_response": "Free response",
     "portrait_refine_placeholder": "e.g. Add green glasses",
-    "appearance_placeholder": "Appearance (e.g. tall, silver hair, blue robe)"
+    "appearance_placeholder": "Appearance (e.g. tall, silver hair, blue robe)",
+    "portrait_refine_aria": "Refine character portrait"
   },
   "grades": {
     "k": "Kindergarten",
@@ -6901,7 +6907,8 @@
     "score": "Score",
     "achieved_level": "Achieved Level",
     "instruction": "Write your response below. Focus on the rubric criteria.",
-    "placeholder": "Start typing here..."
+    "placeholder": "Start typing here...",
+    "draft_aria": "Draft version select"
   },
   "blueprint": {
     "header": "Lesson Blueprint",
@@ -9862,7 +9869,9 @@
     "community_catalog_desc": "Browse open-licensed lessons from the AlloFlow community, or submit your own for review",
     "magnifying_glass_emoji_aria": "magnifying glass",
     "accessibility_lab_title": "Accessibility Lab",
-    "accessibility_lab_desc": "Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay)."
+    "accessibility_lab_desc": "Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay).",
+    "dynamic_assessment_title": "Dynamic Assessment",
+    "dynamic_assessment_desc": "Create dynamic, standard-aligned assessment tasks for diagnostic checks"
   },
   "report_writer": {
     "loading": "Loading Report Writer...",
