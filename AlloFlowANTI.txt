@@ -21819,32 +21819,45 @@ ${_toolList}
          * get corresponding palettes.
          */
         :root, .theme-default {
-            --allo-stem-canvas:    #ffffff;
-            --allo-stem-panel:     #f8fafc;
-            --allo-stem-deeper:    #e2e8f0;
-            --allo-stem-text:      #0f172a;
-            --allo-stem-text-soft: #475569;
-            --allo-stem-border:    #cbd5e1;
+            --allo-stem-canvas:       #ffffff;
+            --allo-stem-panel:        #f8fafc;
+            --allo-stem-deeper:       #e2e8f0;
+            --allo-stem-text:         #0f172a;
+            --allo-stem-text-soft:    #475569;
+            --allo-stem-border:       #cbd5e1;
+            --allo-stem-button-bg:    #f1f5f9;
+            --allo-stem-button-text:  #0f172a;
+            --allo-stem-button-border:#cbd5e1;
         }
         .theme-dark {
-            --allo-stem-canvas:    #0f172a;
-            --allo-stem-panel:     #1e293b;
-            --allo-stem-deeper:    #020617;
-            --allo-stem-text:      #e2e8f0;
-            --allo-stem-text-soft: #94a3b8;
-            --allo-stem-border:    #334155;
+            --allo-stem-canvas:       #0f172a;
+            --allo-stem-panel:        #1e293b;
+            --allo-stem-deeper:       #020617;
+            --allo-stem-text:         #e2e8f0;
+            --allo-stem-text-soft:    #94a3b8;
+            --allo-stem-border:       #334155;
+            --allo-stem-button-bg:    #1e293b;
+            --allo-stem-button-text:  #e2e8f0;
+            --allo-stem-button-border:#334155;
 
             background-color: #0B1120; /* Deepest Slate */
             background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%); /* Subtle top spotlight */
             color: #f1f5f9;
         }
+        /* High-contrast palette aligned to existing .theme-contrast rules:
+         * black canvas + yellow text/borders + green-on-black for buttons.
+         * Pure binary — no soft variants. Matches main-app pattern used at
+         * AlloFlowANTI.txt:21957-21966 ( bg:#000, color:#ffff00, button:#00ff00 ). */
         .theme-contrast {
-            --allo-stem-canvas:    #000000;
-            --allo-stem-panel:     #1a1a1a;
-            --allo-stem-deeper:    #000000;
-            --allo-stem-text:      #ffffff;
-            --allo-stem-text-soft: #fbbf24;
-            --allo-stem-border:    #ffffff;
+            --allo-stem-canvas:       #000000;
+            --allo-stem-panel:        #000000;
+            --allo-stem-deeper:       #000000;
+            --allo-stem-text:         #ffff00;
+            --allo-stem-text-soft:    #ffff00;
+            --allo-stem-border:       #ffff00;
+            --allo-stem-button-bg:    #000000;
+            --allo-stem-button-text:  #00ff00;
+            --allo-stem-button-border:#00ff00;
         }
         .theme-dark .bg-white {
             background-color: #162032 !important; /* Slightly lighter than bg */

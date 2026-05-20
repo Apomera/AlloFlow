@@ -3435,7 +3435,7 @@
           var statusLabel = cs.doneCount === 0 ? 'Untouched'
             : cs.doneCount === cs.questions.length ? '✓ All mastered'
             : cs.doneCount + ' / ' + cs.questions.length;
-          var statusColor = cs.doneCount === 0 ? '#64748b'
+          var statusColor = cs.doneCount === 0 ? '#94a3b8'
             : cs.doneCount === cs.questions.length ? '#22c55e'
             : cs.concept.color;
           return h('div', {
@@ -3463,14 +3463,14 @@
                   style: {
                     display: 'flex', alignItems: 'flex-start', gap: 6,
                     fontSize: 11,
-                    color: done ? '#cbd5e1' : '#64748b',
+                    color: done ? '#cbd5e1' : '#94a3b8',
                     lineHeight: 1.45
                   }
                 },
                   h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#475569', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
                   h('span', { style: { flex: 1, minWidth: 0 } },
                     q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
-                    done && entry.firstCorrectAt && h('span', { style: { color: '#64748b', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
+                    done && entry.firstCorrectAt && h('span', { style: { color: '#94a3b8', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
                   )
                 );
               })
@@ -11437,7 +11437,7 @@
         h('input', { type: 'range', min: 100, max: 10000, step: 1, value: lambdaNm,
           onChange: function(e) { upd('photonLambdaNm', parseFloat(e.target.value)); },
           style: { width: '100%' } }),
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 4 } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', marginTop: 4 } },
           h('span', null, '100 nm (UV)'), h('span', null, '550 nm (green)'), h('span', null, '10 μm (IR)')
         )
       ),
@@ -11445,23 +11445,23 @@
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'FREQUENCY'),
           h('div', { style: { fontSize: 18, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, (freq / 1e12).toFixed(3) + ' THz'),
-          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, freq.toExponential(3) + ' Hz')),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, freq.toExponential(3) + ' Hz')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'ENERGY (eV)'),
           h('div', { style: { fontSize: 18, fontWeight: 900, color: '#d8b4fe', fontFamily: 'monospace' } }, energyEv.toFixed(4) + ' eV'),
-          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, energyJ.toExponential(3) + ' J')),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, energyJ.toExponential(3) + ' J')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'MOMENTUM'),
           h('div', { style: { fontSize: 18, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, momentum.toExponential(3)),
-          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'kg·m/s')),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'kg·m/s')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, '# PER WATT'),
           h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fcd34d', fontFamily: 'monospace' } }, (1 / energyJ).toExponential(2)),
-          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'photons/sec')),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'photons/sec')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'kJ/mol'),
           h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fb7185', fontFamily: 'monospace' } }, (energyJ * 6.022e23 / 1000).toFixed(1)),
-          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'molar energy'))
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'molar energy'))
       ),
       h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10, padding: 12, marginTop: 12 } },
         h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
@@ -11701,19 +11701,19 @@
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 12 } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'FOCAL LENGTH'),
           h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, fLength.toFixed(0) + ' mm'),
-          h('div', { style: { fontSize: 9, color: '#64748b' } }, (fLength / 25.4).toFixed(1) + ' in')),
+          h('div', { style: { fontSize: 9, color: '#94a3b8' } }, (fLength / 25.4).toFixed(1) + ' in')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 12 } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'DIFFRACTION LIMIT'),
           h('div', { style: { fontSize: 16, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, rayleighArcsec.toFixed(2) + '"'),
-          h('div', { style: { fontSize: 9, color: '#64748b' } }, 'Rayleigh criterion')),
+          h('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'Rayleigh criterion')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 12 } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'LIGHT GATHERING'),
           h('div', { style: { fontSize: 16, fontWeight: 900, color: '#d8b4fe', fontFamily: 'monospace' } }, lightGather.toFixed(0) + 'x'),
-          h('div', { style: { fontSize: 9, color: '#64748b' } }, 'vs dark-adapted eye')),
+          h('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'vs dark-adapted eye')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: 12 } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'MAX USEFUL MAG'),
           h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fcd34d', fontFamily: 'monospace' } }, maxMag.toFixed(0) + 'x'),
-          h('div', { style: { fontSize: 9, color: '#64748b' } }, '~50x per inch'))
+          h('div', { style: { fontSize: 9, color: '#94a3b8' } }, '~50x per inch'))
       ),
       h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
         h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
@@ -11817,7 +11817,7 @@
         h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 6 } }, 'log₁₀(frequency): ' + logFreq.toFixed(2) + ' (frequency = ' + freq.toExponential(2) + ' Hz)'),
         h('input', { type: 'range', min: 3, max: 22, step: 0.01, value: logFreq,
           onChange: function(e) { upd('emLogFreq', parseFloat(e.target.value)); }, style: { width: '100%' } }),
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 4 } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', marginTop: 4 } },
           h('span', null, 'kHz'), h('span', null, 'MHz'), h('span', null, 'GHz'), h('span', null, 'THz'), h('span', null, 'visible'), h('span', null, 'X-ray'), h('span', null, 'γ-ray')),
         h('div', { style: { width: '100%', height: 32, background: 'linear-gradient(90deg, #1e293b 0%, #475569 25%, #4f46e5 45%, #ef4444 50%, #fbbf24 53%, #22c55e 56%, #06b6d4 59%, #6366f1 63%, #475569 75%, #1e293b 100%)', borderRadius: 6, marginTop: 12, position: 'relative' } },
           h('div', { style: { position: 'absolute', top: -6, left: ((logFreq - 3) / 19 * 100) + '%', width: 4, height: 44, background: '#fbbf24', borderRadius: 2, boxShadow: '0 0 8px #fbbf24', transform: 'translateX(-50%)' } }))),

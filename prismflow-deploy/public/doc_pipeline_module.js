@@ -16660,28 +16660,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         }
                     } catch (e) { /* private mode / quota */ }
                     // ── Character counter ──
-                    // Idempotent: if a counter sibling already exists (re-init
-                    // can happen if the iframe doc.write re-fires DOMContentLoaded
-                    // in the preview pane, or if this script is injected twice),
-                    // reuse it instead of stacking a duplicate "0 / 1500" line.
                     const max = parseInt(tx.getAttribute('maxlength') || '', 10) || _DEFAULT_MAX;
                     if (!tx.getAttribute('maxlength')) tx.setAttribute('maxlength', String(max));
-                    let counter = tx.nextElementSibling && tx.nextElementSibling.classList && tx.nextElementSibling.classList.contains('allo-ta-counter')
-                        ? tx.nextElementSibling
-                        : null;
-                    if (!counter) {
-                        counter = document.createElement('div');
-                        counter.className = 'allo-ta-counter';
-                        counter.setAttribute('aria-live', 'polite');
-                        counter.style.cssText = 'font-size:11px;color:#64748b;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
-                        tx.parentNode.insertBefore(counter, tx.nextSibling);
-                    }
+                    const counter = document.createElement('div');
+                    counter.className = 'allo-ta-counter';
+                    counter.setAttribute('aria-live', 'polite');
+                    counter.style.cssText = 'font-size:11px;color:#64748b;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
                     const updateCounter = () => {
                         const len = tx.value.length;
                         const pct = len / max;
                         counter.textContent = len + ' / ' + max + (len > 0 ? ' characters' : '');
                         counter.style.color = pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#ca8a04' : '#64748b';
                     };
+                    tx.parentNode.insertBefore(counter, tx.nextSibling);
                     updateCounter();
                     // ── Debounced autosave on input ──
                     let saveTimer = null;
