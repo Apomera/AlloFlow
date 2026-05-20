@@ -21806,10 +21806,45 @@ ${_toolList}
             animation: indeterminate-slide 1.5s infinite linear;
             background: linear-gradient(90deg, transparent, #4f46e5, transparent);
         }
+        /* ── STEM Lab theme variables ──
+         * Inline React styles in STEM tools can't be overridden by
+         * the .theme-dark .bg-X CSS rules (those only touch Tailwind
+         * utility classes). These custom properties give inline styles
+         * a theme-responsive backing: tools use var(--allo-stem-X) and
+         * the variable resolves per-theme.
+         *
+         * The dark palette below is preserved from the original
+         * hardcoded values in stem_lab_module.js + many tool files —
+         * those become the dark-theme variant. Light + contrast themes
+         * get corresponding palettes.
+         */
+        :root, .theme-default {
+            --allo-stem-canvas:    #ffffff;
+            --allo-stem-panel:     #f8fafc;
+            --allo-stem-deeper:    #e2e8f0;
+            --allo-stem-text:      #0f172a;
+            --allo-stem-text-soft: #475569;
+            --allo-stem-border:    #cbd5e1;
+        }
         .theme-dark {
+            --allo-stem-canvas:    #0f172a;
+            --allo-stem-panel:     #1e293b;
+            --allo-stem-deeper:    #020617;
+            --allo-stem-text:      #e2e8f0;
+            --allo-stem-text-soft: #94a3b8;
+            --allo-stem-border:    #334155;
+
             background-color: #0B1120; /* Deepest Slate */
             background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%); /* Subtle top spotlight */
             color: #f1f5f9;
+        }
+        .theme-contrast {
+            --allo-stem-canvas:    #000000;
+            --allo-stem-panel:     #1a1a1a;
+            --allo-stem-deeper:    #000000;
+            --allo-stem-text:      #ffffff;
+            --allo-stem-text-soft: #fbbf24;
+            --allo-stem-border:    #ffffff;
         }
         .theme-dark .bg-white {
             background-color: #162032 !important; /* Slightly lighter than bg */
