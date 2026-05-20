@@ -4123,6 +4123,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js');
     loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js');
+    // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
+    // The generic loadModule() doesn't accept post-load callbacks, and the
+    // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
+    // has been fetched, so they no-op. Without this poll, the stub
+    // `isRtlLang = (n) => false` never gets replaced — meaning dir="rtl" never
+    // gets set when the user picks Arabic/Hebrew, and the page layout stays
+    // LTR despite the dir-attribute logic in LanguageProvider at line ~1430.
+    // Bug discovered 2026-05-19 when RTL Phase 1 (logical Tailwind classes) was
+    // deployed and Arabic mode still rendered LTR.
+    (function awaitModuleScopeExtras(tries) {
+      if (tries <= 0) {
+        console.warn('[CDN] ModuleScopeExtras never registered — RTL detection will stay on stub');
+        return;
+      }
+      if (window.AlloModules && window.AlloModules.ModuleScopeExtras) {
+        try {
+          if (typeof window._upgradeLanguageUtils === 'function') window._upgradeLanguageUtils();
+          if (typeof window._upgradeSessionAssets === 'function') window._upgradeSessionAssets();
+          // Re-evaluate dir now that isRtlLang is real — in case the user
+          // already picked an RTL language before the upgrade fired (the
+          // LanguageProvider useEffect won't re-fire on its own without a
+          // dependency change).
+          try {
+            const cur = (_ttsLiveRef && _ttsLiveRef.current && _ttsLiveRef.current.currentUiLanguage) || 'English';
+            if (typeof isRtlLang === 'function') {
+              document.documentElement.dir = isRtlLang(cur) ? 'rtl' : 'ltr';
+            }
+          } catch (_) {}
+          console.log('[CDN] ModuleScopeExtras post-load upgrades fired (isRtlLang + dir refreshed)');
+        } catch (e) {
+          console.error('[CDN] ModuleScopeExtras post-load error:', e);
+        }
+        return;
+      }
+      setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
+    })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js');
