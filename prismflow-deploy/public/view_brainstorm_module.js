@@ -147,7 +147,7 @@
     size: 14
   }), t('brainstorm.student_worksheet') || 'Student Worksheet', /*#__PURE__*/React.createElement("span", {
     className: "text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform"
-  }, "\u25BE")), /*#__PURE__*/React.createElement("div", {
+  }, "▾")), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 bg-emerald-50/40 rounded-lg p-4 text-sm text-slate-700 border border-emerald-200",
     "data-help-key": "brainstorm_worksheet"
   }, idea.coverImage && /*#__PURE__*/React.createElement("div", {

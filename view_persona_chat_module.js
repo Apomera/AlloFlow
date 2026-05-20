@@ -308,7 +308,7 @@
       });
     })(), !isUser && /*#__PURE__*/React.createElement("span", {
       className: "block text-[11px] text-slate-600 mt-1 opacity-70"
-    }, "\uD83D\uDD0A Click any sentence to listen")), /*#__PURE__*/React.createElement("span", {
+    }, "🔊 Click any sentence to listen")), /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider"
     }, speakerLabel));
   }), personaState.isLoading && /*#__PURE__*/React.createElement("div", {

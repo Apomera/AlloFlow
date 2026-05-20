@@ -1,51 +1,21 @@
-// Build view_image_module.js — extracted from
-// AlloFlowANTI.txt activeView==='image' block (post-Brainstorm, 153 lines).
+#!/usr/bin/env node
+/**
+ * Build view_image_module.js from view_image_source.jsx
+ * Auto-migrated to source-wrapped format.
+ */
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('view_image_source.jsx', 'utf-8');
+const source = fs.readFileSync('view_image_source.jsx', 'utf-8');
 
-const wrapped = `
-function ImageView(props) {
-  var t = props.t;
-  var leveledTextLanguage = props.leveledTextLanguage;
-  var fillInTheBlank = props.fillInTheBlank;
-  var generatedContent = props.generatedContent;
-  var singleImageOverride = props.singleImageOverride;
-  var isTeacherMode = props.isTeacherMode;
-  var imageRefinementInput = props.imageRefinementInput;
-  var isProcessing = props.isProcessing;
-  var singleImageFileRef = props.singleImageFileRef;
-  var setLabelChallengeResults = props.setLabelChallengeResults;
-  var setSingleImageOverride = props.setSingleImageOverride;
-  var setHistory = props.setHistory;
-  var setGeneratedContent = props.setGeneratedContent;
-  var setImageRefinementInput = props.setImageRefinementInput;
-  var handleRefinePanel = props.handleRefinePanel;
-  var handleUpdateVisualLabel = props.handleUpdateVisualLabel;
-  var handleSpeak = props.handleSpeak;
-  var handleScoreUpdate = props.handleScoreUpdate;
-  var handleRestoreImage = props.handleRestoreImage;
-  var handleRefineImage = props.handleRefineImage;
-  var handleDownloadImage = props.handleDownloadImage;
-  var callGemini = props.callGemini;
-  var addToast = props.addToast;
-  var VisualPanelGrid = props.VisualPanelGrid;
-  return (
-${inner}
-  );
-}
-`;
-
-const result = babel.transformSync(wrapped, {
+const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
   babelrc: false,
   configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
-
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
-const transformedFn = result.code;
 
 const moduleSrc = `/**
  * AlloFlow View - Image Renderer
@@ -76,7 +46,7 @@ const moduleSrc = `/**
   var Send = _lazyIcon('Send');
   var Download = _lazyIcon('Download');
 
-  ${transformedFn}
+  ` + result.code + `
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ImageView = ImageView;

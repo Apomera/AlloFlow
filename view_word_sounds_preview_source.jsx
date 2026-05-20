@@ -1,3 +1,11 @@
+
+function WordSoundsPreviewView(props) {
+  var generatedContent = props.generatedContent;
+  var wsActivitySequence = props.wsActivitySequence;
+  var setWordSoundsActivity = props.setWordSoundsActivity;
+  var setIsWordSoundsMode = props.setIsWordSoundsMode;
+  var setWordSoundsAutoReview = props.setWordSoundsAutoReview;
+  return (
                   <div className="space-y-6">
                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
                       <div className="text-4xl mb-3">🎵</div>
@@ -24,4 +32,6 @@
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </div>
+  );
+}

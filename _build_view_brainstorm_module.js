@@ -1,41 +1,21 @@
-// Build view_brainstorm_module.js — extracted from
-// AlloFlowANTI.txt activeView==='brainstorm' block (post-SF, 163 lines).
+#!/usr/bin/env node
+/**
+ * Build view_brainstorm_module.js from view_brainstorm_source.jsx
+ * Auto-migrated to source-wrapped format.
+ */
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('view_brainstorm_source.jsx', 'utf-8');
+const source = fs.readFileSync('view_brainstorm_source.jsx', 'utf-8');
 
-const wrapped = `
-function BrainstormView(props) {
-  var t = props.t;
-  var generatedContent = props.generatedContent;
-  var isTeacherMode = props.isTeacherMode;
-  var isEditingBrainstorm = props.isEditingBrainstorm;
-  var isGeneratingGuide = props.isGeneratingGuide;
-  var isGeneratingWorksheet = props.isGeneratingWorksheet;
-  var isGeneratingWorksheetCover = props.isGeneratingWorksheetCover;
-  var handleToggleIsEditingBrainstorm = props.handleToggleIsEditingBrainstorm;
-  var handleBrainstormChange = props.handleBrainstormChange;
-  var handleGenerateGuide = props.handleGenerateGuide;
-  var handleGenerateWorksheet = props.handleGenerateWorksheet;
-  var handleGenerateWorksheetCover = props.handleGenerateWorksheetCover;
-  var getRows = props.getRows;
-  var renderFormattedText = props.renderFormattedText;
-  return (
-${inner}
-  );
-}
-`;
-
-const result = babel.transformSync(wrapped, {
+const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
   babelrc: false,
   configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
-
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
-const transformedFn = result.code;
 
 const moduleSrc = `/**
  * AlloFlow View - Brainstorm Renderer
@@ -69,7 +49,7 @@ const moduleSrc = `/**
   var FileText = _lazyIcon('FileText');
   var ImageIcon = _lazyIcon('ImageIcon');
 
-  ${transformedFn}
+  ` + result.code + `
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.BrainstormView = BrainstormView;

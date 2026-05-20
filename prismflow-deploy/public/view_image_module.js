@@ -148,12 +148,12 @@
     title: t('visuals.upload_image') || 'Upload your own image',
     onClick: () => singleImageFileRef.current?.click(),
     className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
-  }, "\uD83D\uDCF7 ", t('visuals.replace_image') || 'Replace'), singleImageOverride && /*#__PURE__*/React.createElement("button", {
+  }, "📷 ", t('visuals.replace_image') || 'Replace'), singleImageOverride && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('visuals.restore_ai_image') || 'Restore AI image',
     title: t('visuals.restore_ai_image') || 'Restore AI image',
     onClick: () => setSingleImageOverride(null),
     className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-all shadow-sm cursor-pointer"
-  }, "\u21A9\uFE0F ", t('visuals.restore_original') || 'Restore'))) : /*#__PURE__*/React.createElement("div", {
+  }, "↩️ ", t('visuals.restore_original') || 'Restore'))) : /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center p-8 text-slate-600 gap-4 w-full"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-200 p-4 rounded-full"
@@ -192,7 +192,7 @@
     className: "flex items-center gap-2 mb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-8 h-8 bg-yellow-200 rounded-full flex items-center justify-center text-lg"
-  }, "\uD83C\uDF4C"), /*#__PURE__*/React.createElement("div", {
+  }, "🍌"), /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-bold text-yellow-800"
   }, t('visuals.refiner_title'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -248,7 +248,7 @@
     style: {
       fontSize: '18px'
     }
-  }, "\uD83D\uDCF7")), /*#__PURE__*/React.createElement("button", {
+  }, "📷")), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.regenerate'),
     onClick: handleRestoreImage,
     "data-help-key": "visuals_regenerate",

@@ -122,7 +122,7 @@
     style: {
       fontSize: '14px'
     }
-  }, "\uD83C\uDF10"), /*#__PURE__*/React.createElement("span", {
+  }, "🌐"), /*#__PURE__*/React.createElement("span", {
     style: {
       maxWidth: '140px',
       overflow: 'hidden',
@@ -262,7 +262,7 @@
     style: {
       fontSize: '24px'
     }
-  }, "\uD83C\uDFA4"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, "🎤"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '14px',
       fontWeight: 700,
@@ -285,7 +285,7 @@
       lineHeight: '1.5',
       fontWeight: 600
     }
-  }, "\u26A0\uFE0F ", t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ ", t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '12px',
@@ -330,7 +330,7 @@
       margin: 0,
       fontWeight: 700
     }
-  }, "\u2705 Microphone enabled!"), micPermissionStatus === 'denied' && /*#__PURE__*/React.createElement("p", {
+  }, "✅ Microphone enabled!"), micPermissionStatus === 'denied' && /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '11px',
       color: '#f87171',
@@ -371,7 +371,7 @@
       animation: 'float 3s ease-in-out infinite'
     },
     "aria-hidden": "true"
-  }, "\uD83D\uDE80"), /*#__PURE__*/React.createElement("h2", {
+  }, "🚀"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: '18px',
       fontWeight: 800,
@@ -419,7 +419,7 @@
       animationDelay: '0.5s'
     },
     "aria-hidden": "true"
-  }, "\uD83E\uDDED"), /*#__PURE__*/React.createElement("h2", {
+  }, "🧭"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: '18px',
       fontWeight: 800,
@@ -532,7 +532,7 @@
       animationDelay: '1.5s'
     },
     "aria-hidden": "true"
-  }, "\uD83D\uDEE0\uFE0F"), /*#__PURE__*/React.createElement("h2", {
+  }, "🛠️"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: '18px',
       fontWeight: 800,

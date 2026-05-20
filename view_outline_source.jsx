@@ -1,3 +1,80 @@
+
+function OutlineView(props) {
+  // Pure data + state reads
+  var t = props.t;
+  var generatedContent = props.generatedContent;
+  var history = props.history;
+  var inputText = props.inputText;
+  var leveledTextLanguage = props.leveledTextLanguage;
+  var standardsInput = props.standardsInput;
+  var isTeacherMode = props.isTeacherMode;
+  var gradeLevel = props.gradeLevel;
+  var handleGenerate = props.handleGenerate;
+  // Outline-specific state
+  var isEditingOutline = props.isEditingOutline;
+  var outlineType = props.outlineType;
+  var structureType = props.structureType;
+  var draggedNodeId = props.draggedNodeId;
+  var conceptMapNodes = props.conceptMapNodes;
+  var conceptMapEdges = props.conceptMapEdges;
+  var isMapLocked = props.isMapLocked;
+  var isInteractiveMap = props.isInteractiveMap;
+  var isInteractiveVenn = props.isInteractiveVenn;
+  var isVennPlaying = props.isVennPlaying;
+  var connectingSourceId = props.connectingSourceId;
+  var isConceptMapReady = props.isConceptMapReady;
+  var isChallengeActive = props.isChallengeActive;
+  var mapAddInput = props.mapAddInput;
+  var branches = props.branches;
+  var isProcessing = props.isProcessing;
+  // Setters
+  var setIsEditingOutline = props.setIsEditingOutline;
+  var setOutlineType = props.setOutlineType;
+  var setIsMapLocked = props.setIsMapLocked;
+  var setIsInteractiveMap = props.setIsInteractiveMap;
+  var setMapAddInput = props.setMapAddInput;
+  var setConceptMapNodes = props.setConceptMapNodes;
+  var setConceptMapEdges = props.setConceptMapEdges;
+  var setIsInteractiveVenn = props.setIsInteractiveVenn;
+  var setIsVennPlaying = props.setIsVennPlaying;
+  var setConnectingSourceId = props.setConnectingSourceId;
+  // Handlers
+  var handleOutlineChange = props.handleOutlineChange;
+  var handleToggleIsEditingOutline = props.handleToggleIsEditingOutline;
+  var handleSetIsEditingOutlineToFalse = props.handleSetIsEditingOutlineToFalse;
+  var handleAddOutlineSection = props.handleAddOutlineSection;
+  var handleDeleteOutlineSection = props.handleDeleteOutlineSection;
+  var handleAddSubPoint = props.handleAddSubPoint;
+  var handleDeleteSubPoint = props.handleDeleteSubPoint;
+  var handleSubPointChange = props.handleSubPointChange;
+  var handleSectionTitleChange = props.handleSectionTitleChange;
+  var handleAddToMapList = props.handleAddToMapList;
+  var handleRemoveFromMapList = props.handleRemoveFromMapList;
+  var handleInitializeMap = props.handleInitializeMap;
+  var handleInitializeVenn = props.handleInitializeVenn;
+  var handleNodeChange = props.handleNodeChange;
+  var handleNodeDelete = props.handleNodeDelete;
+  var handleAddNode = props.handleAddNode;
+  var handleEdgeDelete = props.handleEdgeDelete;
+  var handleAddEdge = props.handleAddEdge;
+  var handleStartConnect = props.handleStartConnect;
+  var handleCompleteConnect = props.handleCompleteConnect;
+  var handleNodeDragStart = props.handleNodeDragStart;
+  var handleNodeDrag = props.handleNodeDrag;
+  var handleNodeDragEnd = props.handleNodeDragEnd;
+  var handleVennToggle = props.handleVennToggle;
+  var handleAddVennItem = props.handleAddVennItem;
+  var handleVennDragStart = props.handleVennDragStart;
+  var handleVennDrop = props.handleVennDrop;
+  var renderInteractiveMap = props.renderInteractiveMap;
+  var renderOutlineContent = props.renderOutlineContent;
+  // Pure helpers
+  var addToast = props.addToast;
+  var copyToClipboard = props.copyToClipboard;
+  var safeDownloadBlob = props.safeDownloadBlob;
+  // Components
+  var ErrorBoundary = props.ErrorBoundary;
+  return (
                   <div className="space-y-6 h-full">
                       <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex justify-between items-start gap-4">
                         <div className="text-sm text-orange-800">
@@ -107,4 +184,6 @@
                     ) : (
                         renderOutlineContent()
                     )}
-                  </div>
+                  </div>
+  );
+}

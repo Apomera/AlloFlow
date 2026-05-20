@@ -1,3 +1,10 @@
+
+function ProjectSettingsView(props) {
+  var t = props.t;
+  var studentProjectSettings = props.studentProjectSettings;
+  var setStudentProjectSettings = props.setStudentProjectSettings;
+  var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
+  return (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetIsProjectSettingsOpenToFalse}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <button onClick={handleSetIsProjectSettingsOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={20}/></button>
@@ -220,4 +227,6 @@
                 </div>
             </div>
           </div>
-        </div>
+        </div>
+  );
+}

@@ -37,7 +37,7 @@
     className: "bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-4xl mb-3"
-  }, "\uD83C\uDFB5"), /*#__PURE__*/React.createElement("h3", {
+  }, "🎵"), /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-bold text-slate-800 mb-2"
   }, generatedContent?.title || 'Word Sounds Studio'), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 mb-1"

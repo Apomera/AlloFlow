@@ -121,10 +121,10 @@
   }), showMathAnswers ? t('math.display.hide_answers') : t('math.display.reveal_answers')), /*#__PURE__*/React.createElement("button", {
     onClick: handleToggleMathSelfGrade,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50'}`
-  }, "\u270F\uFE0F ", mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')), mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
+  }, "✏️ ", mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')), mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
     onClick: submitMathSelfGrade,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:from-emerald-600 hover:to-teal-600 transition-all"
-  }, "\uD83D\uDCCA Submit Assessment"), /*#__PURE__*/React.createElement("button", {
+  }, "📊 Submit Assessment"), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.copy'),
     onClick: () => {
       const text = generatedContent?.data.problems.map((p, i) => `${i + 1}. ${formatMathQuestion(p)}\nAnswer: ${p.answer}`).join('\n\n');
@@ -203,11 +203,11 @@
     className: "flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-lg"
-  }, "\uD83D\uDCC2"), " Open Visual Support (", problem.manipulativeSupport.tool, ")"), problem.manipulativeResponse ? /*#__PURE__*/React.createElement("div", {
+  }, "📂"), " Open Visual Support (", problem.manipulativeSupport.tool, ")"), problem.manipulativeResponse ? /*#__PURE__*/React.createElement("div", {
     className: "bg-emerald-50 bg-opacity-50 p-4 rounded-xl border border-emerald-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-emerald-800 font-bold mb-3 flex items-center gap-2"
-  }, "\uD83E\uDDE9 Solve this problem using the ", problem.manipulativeResponse.tool, " manipulative instead of typing."), /*#__PURE__*/React.createElement("div", {
+  }, "🧩 Solve this problem using the ", problem.manipulativeResponse.tool, " manipulative instead of typing."), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
@@ -452,7 +452,7 @@
         className: "animate-spin"
       }), " Thinking...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
         className: "text-sm"
-      }, "\uD83D\uDCA1"), " ", hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)')));
+      }, "💡"), " ", hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)')));
     })(), checkResult?.checked && /*#__PURE__*/React.createElement("div", {
       className: `rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' : checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' : 'border-red-300 bg-red-50'}`
     }, /*#__PURE__*/React.createElement("div", {
@@ -465,7 +465,7 @@
       className: `font-black text-sm uppercase tracking-wider ${checkResult.verdict === 'correct' ? 'text-green-700' : checkResult.verdict === 'partial' ? 'text-amber-700' : 'text-red-700'}`
     }, checkResult.verdict === 'correct' ? t('math.check.verdict_correct') || 'Correct!' : checkResult.verdict === 'partial' ? t('math.check.verdict_partial') || 'Partially Correct' : t('math.check.verdict_incorrect') || 'Not Quite Right')), /*#__PURE__*/React.createElement("div", {
       className: `px-3 py-1 rounded-full text-xs font-black ${checkResult.score >= 80 ? 'bg-green-200 text-green-800' : checkResult.score >= 40 ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800'}`
-    }, checkResult.score, "% \xB7 ", checkResult.hintsUsed > 0 ? `-${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''} · ` : '', "+", Math.round(checkResult.score / 10 * Math.max(0.25, 1 - (checkResult.hintsUsed || 0) * 0.25)), " XP")), /*#__PURE__*/React.createElement("div", {
+    }, checkResult.score, "% · ", checkResult.hintsUsed > 0 ? `-${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''} · ` : '', "+", Math.round(checkResult.score / 10 * Math.max(0.25, 1 - (checkResult.hintsUsed || 0) * 0.25)), " XP")), /*#__PURE__*/React.createElement("div", {
       className: "px-4 py-3"
     }, /*#__PURE__*/React.createElement("p", {
       className: `text-sm leading-relaxed font-medium ${checkResult.verdict === 'correct' ? 'text-green-800' : checkResult.verdict === 'partial' ? 'text-amber-800' : 'text-red-800'}`
@@ -482,7 +482,7 @@
       className: "flex items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-sm"
-    }, "\uD83D\uDCD6"), /*#__PURE__*/React.createElement("span", {
+    }, "📖"), /*#__PURE__*/React.createElement("span", {
       className: "text-xs font-bold text-blue-700"
     }, t('math.show_solution_steps') || 'Show Solution Steps'), /*#__PURE__*/React.createElement(ChevronDown, {
       size: 14,
@@ -513,7 +513,7 @@
       className: "p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-sm"
-    }, "\u2705"), /*#__PURE__*/React.createElement("span", {
+    }, "✅"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-green-700"
     }, "Answer: ", problem.answer), (mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
@@ -533,7 +533,7 @@
         }
       },
       className: "ml-auto text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm"
-    }, "\uD83D\uDCE6 Try with cubes")))));
+    }, "📦 Try with cubes")))));
   })()))), (generatedContent?.data.problems?.length === 1 || !generatedContent?.data.problems && generatedContent?.data.problem) && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 flex justify-center pb-4"
   }, /*#__PURE__*/React.createElement("button", {
@@ -554,7 +554,7 @@
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-sm"
-  }, "\u270F\uFE0F"), /*#__PURE__*/React.createElement("span", {
+  }, "✏️"), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-indigo-700"
   }, t('math.edit_with_allobot')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-indigo-400 font-medium"

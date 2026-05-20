@@ -1,3 +1,30 @@
+
+function ImageView(props) {
+  var t = props.t;
+  var leveledTextLanguage = props.leveledTextLanguage;
+  var fillInTheBlank = props.fillInTheBlank;
+  var generatedContent = props.generatedContent;
+  var singleImageOverride = props.singleImageOverride;
+  var isTeacherMode = props.isTeacherMode;
+  var imageRefinementInput = props.imageRefinementInput;
+  var isProcessing = props.isProcessing;
+  var singleImageFileRef = props.singleImageFileRef;
+  var setLabelChallengeResults = props.setLabelChallengeResults;
+  var setSingleImageOverride = props.setSingleImageOverride;
+  var setHistory = props.setHistory;
+  var setGeneratedContent = props.setGeneratedContent;
+  var setImageRefinementInput = props.setImageRefinementInput;
+  var handleRefinePanel = props.handleRefinePanel;
+  var handleUpdateVisualLabel = props.handleUpdateVisualLabel;
+  var handleSpeak = props.handleSpeak;
+  var handleScoreUpdate = props.handleScoreUpdate;
+  var handleRestoreImage = props.handleRestoreImage;
+  var handleRefineImage = props.handleRefineImage;
+  var handleDownloadImage = props.handleDownloadImage;
+  var callGemini = props.callGemini;
+  var addToast = props.addToast;
+  var VisualPanelGrid = props.VisualPanelGrid;
+  return (
                   <div className="space-y-3">
                     <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-3">
                         <p className="text-sm text-purple-800"><strong>UDL Goal:</strong> Providing options for perception. Images and diagrams clarify abstract concepts and vocabulary for visual learners.<span className="block mt-1 font-semibold">Language Target: {leveledTextLanguage} {fillInTheBlank ? "(Worksheet Mode)" : ""}</span></p>
@@ -148,4 +175,6 @@
                         </div>
                         )}
                     </div>
-                  </div>
+                  </div>
+  );
+}

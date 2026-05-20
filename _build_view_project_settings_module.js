@@ -1,24 +1,19 @@
+#!/usr/bin/env node
+/**
+ * Build view_project_settings_module.js from view_project_settings_source.jsx
+ * Auto-migrated to source-wrapped format.
+ */
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('view_project_settings_source.jsx', 'utf-8');
+const source = fs.readFileSync('view_project_settings_source.jsx', 'utf-8');
 
-const wrapped = `
-function ProjectSettingsView(props) {
-  var t = props.t;
-  var studentProjectSettings = props.studentProjectSettings;
-  var setStudentProjectSettings = props.setStudentProjectSettings;
-  var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
-  return (
-${inner}
-  );
-}
-`;
-
-const result = babel.transformSync(wrapped, {
+const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
-  babelrc: false, configFile: false,
+  babelrc: false,
+  configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
 
@@ -51,13 +46,14 @@ const moduleSrc = `/**
   var Lock = _lazyIcon('Lock');
   var CircleHelp = _lazyIcon('CircleHelp');
 
-  ${result.code}
+  ` + result.code + `
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ProjectSettingsView = ProjectSettingsView;
   window.AlloModules.ViewProjectSettingsModule = true;
 })();
 `;
+
 fs.writeFileSync('view_project_settings_module.js', moduleSrc);
 fs.writeFileSync('prismflow-deploy/public/view_project_settings_module.js', moduleSrc);
 console.log('Wrote view_project_settings_module.js (' + moduleSrc.length + ' bytes)');

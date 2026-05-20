@@ -1,26 +1,19 @@
+#!/usr/bin/env node
+/**
+ * Build view_spotlight_tour_module.js from view_spotlight_tour_source.jsx
+ * Auto-migrated to source-wrapped format.
+ */
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('view_spotlight_tour_source.jsx', 'utf-8');
+const source = fs.readFileSync('view_spotlight_tour_source.jsx', 'utf-8');
 
-const wrapped = `
-function SpotlightTourView(props) {
-  var t = props.t;
-  var debugLog = props.debugLog;
-  var tourRect = props.tourRect;
-  var spotlightMessage = props.spotlightMessage;
-  var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
-  var setIsSpotlightMode = props.setIsSpotlightMode;
-  return (
-${inner}
-  );
-}
-`;
-
-const result = babel.transformSync(wrapped, {
+const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
-  babelrc: false, configFile: false,
+  babelrc: false,
+  configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
 
@@ -48,13 +41,14 @@ const moduleSrc = `/**
   var Sparkles = _lazyIcon('Sparkles');
   var X = _lazyIcon('X');
 
-  ${result.code}
+  ` + result.code + `
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SpotlightTourView = SpotlightTourView;
   window.AlloModules.ViewSpotlightTourModule = true;
 })();
 `;
+
 fs.writeFileSync('view_spotlight_tour_module.js', moduleSrc);
 fs.writeFileSync('prismflow-deploy/public/view_spotlight_tour_module.js', moduleSrc);
 console.log('Wrote view_spotlight_tour_module.js (' + moduleSrc.length + ' bytes)');

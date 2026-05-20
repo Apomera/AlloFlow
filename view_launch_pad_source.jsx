@@ -1,3 +1,38 @@
+
+function LaunchPadView(props) {
+  var React = window.React;
+  var useState = React.useState;
+  var useContext = React.useContext;
+  var t = props.t;
+  var micBannerDismissed = props.micBannerDismissed;
+  var _isCanvasEnv = props._isCanvasEnv;
+  var micPermissionStatus = props.micPermissionStatus;
+  var APP_CONFIG = props.APP_CONFIG;
+  var requestMicPermission = props.requestMicPermission;
+  var setHasSelectedMode = props.setHasSelectedMode;
+  var setMicBannerDismissed = props.setMicBannerDismissed;
+  var setGuidedMode = props.setGuidedMode;
+  var setHasSelectedRole = props.setHasSelectedRole;
+  var setShowWizard = props.setShowWizard;
+  var setIsTeacherMode = props.setIsTeacherMode;
+  var setShowLearningHub = props.setShowLearningHub;
+  var setShowEducatorHub = props.setShowEducatorHub;
+  var setPendingRole = props.setPendingRole;
+  var setIsGateOpen = props.setIsGateOpen;
+  var setShowAIBackendModal = props.setShowAIBackendModal;
+  // Compact language switcher state (LanguageContext is mirrored to window.AlloLanguageContext at AlloFlowANTI.txt:1583)
+  var _langCtx = useContext(window.AlloLanguageContext) || {};
+  var currentUiLanguage = _langCtx.currentUiLanguage || 'English';
+  var setUiLanguage = _langCtx.setUiLanguage || function(){};
+  var isTranslating = !!_langCtx.isTranslating;
+  var _langMenu = useState(false);
+  var langMenuOpen = _langMenu[0];
+  var setLangMenuOpen = _langMenu[1];
+  var LAUNCH_PAD_LANGS = [
+    'English', 'Spanish', 'French', 'Arabic', 'Chinese (Simplified)',
+    'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole'
+  ];
+  return (
         <div role="region" aria-label="Choose how to use AlloFlow" style={{
           position: 'fixed', inset: 0, zIndex: 99998,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -192,4 +227,6 @@
               <span>AI Backend Settings</span>
             </button>
           )}
-        </div>
+        </div>
+  );
+}

@@ -1,3 +1,36 @@
+
+function LessonPlanView(props) {
+  var t = props.t;
+  var generatedContent = props.generatedContent;
+  var sourceTopic = props.sourceTopic;
+  var gradeLevel = props.gradeLevel;
+  var isTeacherMode = props.isTeacherMode;
+  var isIndependentMode = props.isIndependentMode;
+  var isParentMode = props.isParentMode;
+  var isEditingLessonPlan = props.isEditingLessonPlan;
+  var history = props.history;
+  var isGeneratingExtensionGuide = props.isGeneratingExtensionGuide;
+  var progressionData = props.progressionData;
+  var isGeneratingProgression = props.isGeneratingProgression;
+  var setActiveStation = props.setActiveStation;
+  var setStemLabTool = props.setStemLabTool;
+  var setShowStemLab = props.setShowStemLab;
+  var setStemLabTab = props.setStemLabTab;
+  var handleToggleIsEditingLessonPlan = props.handleToggleIsEditingLessonPlan;
+  var handleCopyToClipboard = props.handleCopyToClipboard;
+  var handleExportPDF = props.handleExportPDF;
+  var handleLessonPlanChange = props.handleLessonPlanChange;
+  var handleGenerateExtensionGuide = props.handleGenerateExtensionGuide;
+  var handleExport = props.handleExport;
+  var handleGenerateProgression = props.handleGenerateProgression;
+  var handleSetProgressionDataToNull = props.handleSetProgressionDataToNull;
+  var handleActivateNextLesson = props.handleActivateNextLesson;
+  var getRows = props.getRows;
+  var normalizeMaterialItem = props.normalizeMaterialItem;
+  var renderFormattedText = props.renderFormattedText;
+  var addToast = props.addToast;
+  var BilingualFieldRenderer = props.BilingualFieldRenderer;
+  return (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
                              <div className="flex justify-between items-start mb-4">
@@ -408,4 +441,6 @@
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </div>
+  );
+}

@@ -1,31 +1,19 @@
-// Build view_word_sounds_module.js — extracted from
-// AlloFlowANTI.txt activeView==='word-sounds' preview-card block (27 lines body).
-// Note: only the preview/launcher card is extracted. The main word-sounds
-// modal launcher (sibling block guarded by isWordSoundsMode) is already a
-// CDN-module invocation in host scope and remains there.
+#!/usr/bin/env node
+/**
+ * Build view_word_sounds_preview_module.js from view_word_sounds_preview_source.jsx
+ * Auto-migrated to source-wrapped format.
+ */
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const inner = fs.readFileSync('view_word_sounds_preview_source.jsx', 'utf-8');
+const source = fs.readFileSync('view_word_sounds_preview_source.jsx', 'utf-8');
 
-const wrapped = `
-function WordSoundsPreviewView(props) {
-  var generatedContent = props.generatedContent;
-  var wsActivitySequence = props.wsActivitySequence;
-  var setWordSoundsActivity = props.setWordSoundsActivity;
-  var setIsWordSoundsMode = props.setIsWordSoundsMode;
-  var setWordSoundsAutoReview = props.setWordSoundsAutoReview;
-  return (
-${inner}
-  );
-}
-`;
-
-const result = babel.transformSync(wrapped, {
+const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
   babelrc: false,
   configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  generatorOpts: { jsescOption: { minimal: true } },
 });
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }
 
@@ -56,7 +44,7 @@ const moduleSrc = `/**
   var BookOpen = _lazyIcon('BookOpen');
   var Play = _lazyIcon('Play');
 
-  ${result.code}
+  ` + result.code + `
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.WordSoundsPreviewView = WordSoundsPreviewView;

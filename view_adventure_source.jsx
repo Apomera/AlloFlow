@@ -1,3 +1,123 @@
+
+function AdventureView(props) {
+  // State (object-bundle)
+  var adventureState = props.adventureState;
+  // State reads
+  var t = props.t;
+  var globalPoints = props.globalPoints;
+  var soundEnabled = props.soundEnabled;
+  var activeView = props.activeView;
+  var showLedger = props.showLedger;
+  var isProcessing = props.isProcessing;
+  var adventureImageSize = props.adventureImageSize;
+  var adventureAutoRead = props.adventureAutoRead;
+  var isDictationMode = props.isDictationMode;
+  var adventureTextInput = props.adventureTextInput;
+  var adventureInputMode = props.adventureInputMode;
+  var adventureArtStyle = props.adventureArtStyle;
+  var adventureCustomArtStyle = props.adventureCustomArtStyle;
+  var useLowQualityVisuals = props.useLowQualityVisuals;
+  var enableFactionResources = props.enableFactionResources;
+  var isZenMode = props.isZenMode;
+  var showNewGameSetup = props.showNewGameSetup;
+  var hasSavedAdventure = props.hasSavedAdventure;
+  var isEditingOptions = props.isEditingOptions;
+  var editingOptionsBuffer = props.editingOptionsBuffer;
+  var adventureChanceMode = props.adventureChanceMode;
+  var isAdventureStoryMode = props.isAdventureStoryMode;
+  var adventureConsistentCharacters = props.adventureConsistentCharacters;
+  var adventureFreeResponseEnabled = props.adventureFreeResponseEnabled;
+  var adventureDifficulty = props.adventureDifficulty;
+  var adventureLanguageMode = props.adventureLanguageMode;
+  var selectedLanguages = props.selectedLanguages;
+  var adventureCustomInstructions = props.adventureCustomInstructions;
+  var isTeacherMode = props.isTeacherMode;
+  var studentProjectSettings = props.studentProjectSettings;
+  var failedAdventureAction = props.failedAdventureAction;
+  var selectedInventoryItem = props.selectedInventoryItem;
+  var showImmersiveInventory = props.showImmersiveInventory;
+  var immersiveHideUI = props.immersiveHideUI;
+  var immersiveShowChoices = props.immersiveShowChoices;
+  var sessionData = props.sessionData;
+  var activeSessionCode = props.activeSessionCode;
+  var isPlaying = props.isPlaying;
+  var playbackState = props.playbackState;
+  var playingContentId = props.playingContentId;
+  var theme = props.theme;
+  var STYLE_IMAGE_PIXELATED = props.STYLE_IMAGE_PIXELATED;
+  // Refs
+  var adventureScrollRef = props.adventureScrollRef;
+  var adventureInputRef = props.adventureInputRef;
+  // Setters
+  var setAdventureInputMode = props.setAdventureInputMode;
+  var setAdventureDifficulty = props.setAdventureDifficulty;
+  var setAdventureLanguageMode = props.setAdventureLanguageMode;
+  var setAdventureFreeResponseEnabled = props.setAdventureFreeResponseEnabled;
+  var setAdventureChanceMode = props.setAdventureChanceMode;
+  var setIsAdventureStoryMode = props.setIsAdventureStoryMode;
+  var setAdventureConsistentCharacters = props.setAdventureConsistentCharacters;
+  var setAdventureArtStyle = props.setAdventureArtStyle;
+  var setAdventureCustomArtStyle = props.setAdventureCustomArtStyle;
+  var setUseLowQualityVisuals = props.setUseLowQualityVisuals;
+  var setEnableFactionResources = props.setEnableFactionResources;
+  var setAdventureCustomInstructions = props.setAdventureCustomInstructions;
+  var setAdventureTextInput = props.setAdventureTextInput;
+  var setIsDictationMode = props.setIsDictationMode;
+  var setSelectedInventoryItem = props.setSelectedInventoryItem;
+  var setShowImmersiveInventory = props.setShowImmersiveInventory;
+  var setShowLedger = props.setShowLedger;
+  var setShowStorybookExportModal = props.setShowStorybookExportModal;
+  var setAdventureImageSize = props.setAdventureImageSize;
+  var setAdventureAutoRead = props.setAdventureAutoRead;
+  // Handlers (lifted in this session's prep + existing)
+  var handleToggleAdventureImmersive = props.handleToggleAdventureImmersive;
+  var handleExitAdventureImmersive = props.handleExitAdventureImmersive;
+  var handleSetEnableAutoClimax = props.handleSetEnableAutoClimax;
+  var handleSetClimaxMinTurns = props.handleSetClimaxMinTurns;
+  var handleAddOptionSlot = props.handleAddOptionSlot;
+  var handleAdventureChoice = props.handleAdventureChoice;
+  var handleAdventureCrashRecovery = props.handleAdventureCrashRecovery;
+  var handleAdventureTextSubmit = props.handleAdventureTextSubmit;
+  var handleBroadcastOptions = props.handleBroadcastOptions;
+  var handleCloseShop = props.handleCloseShop;
+  var handleOptionBufferChange = props.handleOptionBufferChange;
+  var handleRemoveOptionSlot = props.handleRemoveOptionSlot;
+  var handleResumeAdventure = props.handleResumeAdventure;
+  var handleRetryAdventureTurn = props.handleRetryAdventureTurn;
+  var handleSelectInventoryItem = props.handleSelectInventoryItem;
+  var handleSetIsEditingOptionsToFalse = props.handleSetIsEditingOptionsToFalse;
+  var handleSetIsZenModeToTrue = props.handleSetIsZenModeToTrue;
+  var handleSetSelectedInventoryItemToNull = props.handleSetSelectedInventoryItemToNull;
+  var handleSetShowLedgerToFalse = props.handleSetShowLedgerToFalse;
+  var handleSetShowLedgerToTrue = props.handleSetShowLedgerToTrue;
+  var handleSetShowNewGameSetupToFalse = props.handleSetShowNewGameSetupToFalse;
+  var handleSetShowNewGameSetupToTrue = props.handleSetShowNewGameSetupToTrue;
+  var handleSetShowStorybookExportModalToTrue = props.handleSetShowStorybookExportModalToTrue;
+  var handleShopPurchase = props.handleShopPurchase;
+  var handleSpeak = props.handleSpeak;
+  var handleStartAdventure = props.handleStartAdventure;
+  var handleStartOptionEdit = props.handleStartOptionEdit;
+  var handleStartSequel = props.handleStartSequel;
+  var handleToggleImmersiveHideUI = props.handleToggleImmersiveHideUI;
+  var handleToggleImmersiveShowChoices = props.handleToggleImmersiveShowChoices;
+  var handleUseItem = props.handleUseItem;
+  var toggleDemocracyMode = props.toggleDemocracyMode;
+  // Pure helpers
+  var renderFormattedText = props.renderFormattedText;
+  var formatInteractiveText = props.formatInteractiveText;
+  var splitTextToSentences = props.splitTextToSentences;
+  var stopPlayback = props.stopPlayback;
+  var executeStartAdventure = props.executeStartAdventure;
+  var adventureEffects = props.adventureEffects;
+  // Components
+  var ErrorBoundary = props.ErrorBoundary;
+  var AdventureAmbience = props.AdventureAmbience;
+  var AdventureShop = props.AdventureShop;
+  var AnimatedNumber = props.AnimatedNumber;
+  var ClimaxProgressBar = props.ClimaxProgressBar;
+  var ConfettiExplosion = props.ConfettiExplosion;
+  var InventoryGrid = props.InventoryGrid;
+  return (
                   <ErrorBoundary
                       title={t('adventure.error.title')}
                       fallbackMessage={t('adventure.error.fallback')}
@@ -1301,4 +1421,6 @@
                         </div>
                     )}
                   </div>
-                  </ErrorBoundary>
+                  </ErrorBoundary>
+  );
+}

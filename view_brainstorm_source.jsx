@@ -1,3 +1,20 @@
+
+function BrainstormView(props) {
+  var t = props.t;
+  var generatedContent = props.generatedContent;
+  var isTeacherMode = props.isTeacherMode;
+  var isEditingBrainstorm = props.isEditingBrainstorm;
+  var isGeneratingGuide = props.isGeneratingGuide;
+  var isGeneratingWorksheet = props.isGeneratingWorksheet;
+  var isGeneratingWorksheetCover = props.isGeneratingWorksheetCover;
+  var handleToggleIsEditingBrainstorm = props.handleToggleIsEditingBrainstorm;
+  var handleBrainstormChange = props.handleBrainstormChange;
+  var handleGenerateGuide = props.handleGenerateGuide;
+  var handleGenerateWorksheet = props.handleGenerateWorksheet;
+  var handleGenerateWorksheetCover = props.handleGenerateWorksheetCover;
+  var getRows = props.getRows;
+  var renderFormattedText = props.renderFormattedText;
+  return (
                   <div className="space-y-6" data-help-key="brainstorm_panel">
                       <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 mb-6 flex justify-between items-center gap-4">
                         <p className="text-sm text-yellow-800 flex-grow"><strong>UDL Goal:</strong> Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation.</p>
@@ -158,4 +175,6 @@
                              </div>
                           ))}
                     </div>
-                  </div>
+                  </div>
+  );
+}

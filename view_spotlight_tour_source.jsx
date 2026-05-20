@@ -1,3 +1,12 @@
+
+function SpotlightTourView(props) {
+  var t = props.t;
+  var debugLog = props.debugLog;
+  var tourRect = props.tourRect;
+  var spotlightMessage = props.spotlightMessage;
+  var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
+  var setIsSpotlightMode = props.setIsSpotlightMode;
+  return (
         <>
             <div
                 data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
@@ -108,4 +117,6 @@
                       }}
                  ></div>
             </div>
-        </>
+        </>
+  );
+}

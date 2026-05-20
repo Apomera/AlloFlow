@@ -274,7 +274,7 @@
     className: "text-yellow-700"
   }), " ", t('adventure.title')), adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83C\uDFDB\uFE0F"), " System Sim"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "🏛️"), " System Sim"), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-2 relative shrink-0"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-yellow-700"
@@ -313,7 +313,7 @@
     title: t('adventure.tooltips.gold', {
       value: adventureState.gold
     })
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCB0"), " ", adventureState.gold, adventureState.activeGoldBuffTurns > 0 && /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, "💰"), " ", adventureState.gold, adventureState.activeGoldBuffTurns > 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] ml-1 bg-yellow-400 text-black px-1 rounded-full"
   }, adventureState.activeGoldBuffTurns)), /*#__PURE__*/React.createElement(InventoryGrid, {
     inventory: adventureState.inventory,
@@ -611,7 +611,7 @@
     className: "w-4 h-4 text-violet-600 rounded focus:ring-violet-500 cursor-pointer disabled:cursor-not-allowed"
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-bold text-slate-700"
-  }, "\uD83C\uDFAD ", t('adventure.consistent_characters_label') || 'Consistent Characters'), /*#__PURE__*/React.createElement("span", {
+  }, "🎭 ", t('adventure.consistent_characters_label') || 'Consistent Characters'), /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] text-slate-600 opacity-80"
   }, t('adventure.consistent_characters_desc') || 'Persistent visual cast across scenes'))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 p-2 rounded-lg border border-indigo-100 bg-indigo-50/50"
@@ -619,26 +619,26 @@
     className: "flex-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-bold text-slate-700"
-  }, "\uD83C\uDFA8 ", t('adventure.art_style_label') || 'Art Style'), /*#__PURE__*/React.createElement("select", {
+  }, "🎨 ", t('adventure.art_style_label') || 'Art Style'), /*#__PURE__*/React.createElement("select", {
     "aria-label": t('adventure.art_style_label') || 'Art style',
     value: adventureArtStyle,
     onChange: e => setAdventureArtStyle(e.target.value),
     className: "mt-1 w-full text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer"
   }, /*#__PURE__*/React.createElement("option", {
     value: "auto"
-  }, "\uD83C\uDFA8 ", t('adventure.art_auto') || 'Auto (default)'), /*#__PURE__*/React.createElement("option", {
+  }, "🎨 ", t('adventure.art_auto') || 'Auto (default)'), /*#__PURE__*/React.createElement("option", {
     value: "storybook"
-  }, "\uD83D\uDCDA ", t('adventure.art_storybook') || 'Storybook'), /*#__PURE__*/React.createElement("option", {
+  }, "📚 ", t('adventure.art_storybook') || 'Storybook'), /*#__PURE__*/React.createElement("option", {
     value: "pixel"
-  }, "\uD83C\uDFAE ", t('adventure.art_pixel') || 'Pixel Art'), /*#__PURE__*/React.createElement("option", {
+  }, "🎮 ", t('adventure.art_pixel') || 'Pixel Art'), /*#__PURE__*/React.createElement("option", {
     value: "cinematic"
-  }, "\uD83C\uDFAC ", t('adventure.art_cinematic') || 'Cinematic'), /*#__PURE__*/React.createElement("option", {
+  }, "🎬 ", t('adventure.art_cinematic') || 'Cinematic'), /*#__PURE__*/React.createElement("option", {
     value: "anime"
-  }, "\uD83C\uDFA8 ", t('adventure.art_anime') || 'Anime'), /*#__PURE__*/React.createElement("option", {
+  }, "🎨 ", t('adventure.art_anime') || 'Anime'), /*#__PURE__*/React.createElement("option", {
     value: "crayon"
-  }, "\uD83D\uDD8D\uFE0F ", t('adventure.art_crayon') || 'Hand-drawn'), /*#__PURE__*/React.createElement("option", {
+  }, "🖍️ ", t('adventure.art_crayon') || 'Hand-drawn'), /*#__PURE__*/React.createElement("option", {
     value: "custom"
-  }, "\u270F\uFE0F ", t('adventure.art_custom') || 'Custom...')), adventureArtStyle === 'custom' && /*#__PURE__*/React.createElement("input", {
+  }, "✏️ ", t('adventure.art_custom') || 'Custom...')), adventureArtStyle === 'custom' && /*#__PURE__*/React.createElement("input", {
     type: "text",
     "aria-label": t('adventure.custom_art_style_placeholder') || 'Custom art style',
     value: adventureCustomArtStyle,
@@ -746,7 +746,7 @@
     className: "flex items-center gap-2 mb-1.5"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-amber-600 font-bold text-xs uppercase tracking-wider"
-  }, "\u2694\uFE0F ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
+  }, "⚔️ ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-800 text-sm font-medium italic leading-relaxed"
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-700 text-xs mt-2 animate-pulse"
@@ -900,7 +900,7 @@
     className: "bg-black/60 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold w-fit shadow-sm"
   }, t('common.level_abbrev'), " ", adventureState.level), adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-amber-600/80 to-amber-800/80 backdrop-blur-md text-amber-100 border border-amber-400/50 px-3 py-1 rounded-full text-[11px] font-bold w-fit shadow-lg flex items-center gap-1.5 animate-pulse"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83C\uDFDB\uFE0F"), " ", t('adventure.system_simulation')), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "🏛️"), " ", t('adventure.system_simulation')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm",
     title: adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
       value: adventureState.energy
@@ -978,7 +978,7 @@
     className: "bg-black/50 backdrop-blur-md text-yellow-700 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-sm"
-  }, "\uD83D\uDCB0"), " ", adventureState.gold), /*#__PURE__*/React.createElement("div", {
+  }, "💰"), " ", adventureState.gold), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("button", {
     "data-help-key": "adventure_immersive_inventory",
@@ -996,7 +996,7 @@
     className: "border-b border-amber-500/30 pb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1 flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCCA"), " ", t('adventure.system_state')), (adventureState.systemResources || []).length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "📊"), " ", t('adventure.system_state')), (adventureState.systemResources || []).length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-1"
   }, adventureState.systemResources.map((resource, idx) => /*#__PURE__*/React.createElement("div", {
     key: `${resource.name}-${idx}`,
@@ -1016,7 +1016,7 @@
     className: "text-center text-[11px] text-amber-200/50 py-1 italic"
   }, "No state variables yet")), /*#__PURE__*/React.createElement("div", null, adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-1 flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDC"), " Policies & Agreements"), adventureState.inventory.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "📜"), " Policies & Agreements"), adventureState.inventory.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-4 gap-2"
   }, adventureState.inventory.map(item => /*#__PURE__*/React.createElement("button", {
     key: item.id,
@@ -1155,7 +1155,7 @@
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-amber-700 font-bold text-xs uppercase tracking-wider"
-  }, "\u2694\uFE0F ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
+  }, "⚔️ ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-100 text-sm font-medium italic leading-relaxed"
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mt-3"

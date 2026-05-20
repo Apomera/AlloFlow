@@ -1,3 +1,66 @@
+
+function MathView(props) {
+  // State reads
+  var t = props.t;
+  var generatedContent = props.generatedContent;
+  var isTeacherMode = props.isTeacherMode;
+  var isIndependentMode = props.isIndependentMode;
+  var isProcessing = props.isProcessing;
+  var showMathAnswers = props.showMathAnswers;
+  var mathSelfGradeMode = props.mathSelfGradeMode;
+  var mathEditInput = props.mathEditInput;
+  var isMathEditingChat = props.isMathEditingChat;
+  var mathHintData = props.mathHintData;
+  var mathCheckResults = props.mathCheckResults;
+  var mathSubject = props.mathSubject;
+  var studentResponses = props.studentResponses;
+  var gridPoints = props.gridPoints;
+  var base10Value = props.base10Value;
+  var numberLineMarkers = props.numberLineMarkers;
+  var fractionPieces = props.fractionPieces;
+  var cubeDims = props.cubeDims;
+  var angleValue = props.angleValue;
+  var labToolData = props.labToolData;
+  var cubeBuilderMode = props.cubeBuilderMode;
+  var cubePositions = props.cubePositions;
+  // Setters
+  var setStemLabTool = props.setStemLabTool;
+  var setStemLabTab = props.setStemLabTab;
+  var setShowStemLab = props.setShowStemLab;
+  var setGridPoints = props.setGridPoints;
+  var setBase10Value = props.setBase10Value;
+  var setNumberLineRange = props.setNumberLineRange;
+  var setFractionPieces = props.setFractionPieces;
+  var setCubeDims = props.setCubeDims;
+  var setAngleValue = props.setAngleValue;
+  var setMathEditInput = props.setMathEditInput;
+  var setCubeBuilderMode = props.setCubeBuilderMode;
+  var setCubePositions = props.setCubePositions;
+  var setCubeBuilderChallenge = props.setCubeBuilderChallenge;
+  var setCubeBuilderFeedback = props.setCubeBuilderFeedback;
+  // Handlers
+  var handleToggleShowMathAnswers = props.handleToggleShowMathAnswers;
+  var handleSetShowMathAnswersToTrue = props.handleSetShowMathAnswersToTrue;
+  var handleToggleMathSelfGrade = props.handleToggleMathSelfGrade;
+  var submitMathSelfGrade = props.submitMathSelfGrade;
+  var handleStudentInput = props.handleStudentInput;
+  var handleMathProblemEdit = props.handleMathProblemEdit;
+  var handleCheckMathWork = props.handleCheckMathWork;
+  var handleResetMathCheck = props.handleResetMathCheck;
+  var handleGetMathHint = props.handleGetMathHint;
+  var handleGenerateSimilar = props.handleGenerateSimilar;
+  var handleMathEdit = props.handleMathEdit;
+  var isMathEditing = props.isMathEditing;
+  var toggleMathEdit = props.toggleMathEdit;
+  // Pure helpers
+  var formatMathQuestion = props.formatMathQuestion;
+  var formatInlineText = props.formatInlineText;
+  var sanitizeHtml = props.sanitizeHtml;
+  var copyToClipboard = props.copyToClipboard;
+  var addToast = props.addToast;
+  // Components
+  var MathSymbol = props.MathSymbol;
+  return (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_panel">
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
                             <div className="flex justify-between items-start mb-3">
@@ -562,4 +625,6 @@
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>
+  );
+}

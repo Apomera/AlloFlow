@@ -1,3 +1,45 @@
+
+function SentenceFramesView(props) {
+  // State reads
+  var t = props.t;
+  var generatedContent = props.generatedContent;
+  var studentWorkStatus = props.studentWorkStatus;
+  var isTeacherMode = props.isTeacherMode;
+  var isScaffoldComplete = props.isScaffoldComplete;
+  var isEditingScaffolds = props.isEditingScaffolds;
+  var gradingSession = props.gradingSession;
+  var studentResponses = props.studentResponses;
+  var isIndependentMode = props.isIndependentMode;
+  var isParentMode = props.isParentMode;
+  var isGeneratingRubric = props.isGeneratingRubric;
+  var rubricZoom = props.rubricZoom;
+  var gradingResult = props.gradingResult;
+  var studentWorkInput = props.studentWorkInput;
+  var isGrading = props.isGrading;
+  var leveledTextLanguage = props.leveledTextLanguage;
+  // Setters
+  var setGradingSession = props.setGradingSession;
+  var setStudentWorkInput = props.setStudentWorkInput;
+  // Handlers
+  var handleResetScaffolds = props.handleResetScaffolds;
+  var launchGradingSession = props.launchGradingSession;
+  var handleToggleIsEditingScaffolds = props.handleToggleIsEditingScaffolds;
+  var submitGradingSession = props.submitGradingSession;
+  var handleScaffoldChange = props.handleScaffoldChange;
+  var handleStudentInput = props.handleStudentInput;
+  var handleScaffoldTextChange = props.handleScaffoldTextChange;
+  var handleGenerateRubric = props.handleGenerateRubric;
+  var handleToggleRubricZoom = props.handleToggleRubricZoom;
+  var handleAutoGrade = props.handleAutoGrade;
+  var handleSetGradingResultToNull = props.handleSetGradingResultToNull;
+  // Pure helpers
+  var getRows = props.getRows;
+  var renderFormattedText = props.renderFormattedText;
+  var copyToClipboard = props.copyToClipboard;
+  // Components
+  var DraftFeedbackInterface = props.DraftFeedbackInterface;
+  var ErrorBoundary = props.ErrorBoundary;
+  return (
                   <div className="space-y-6">
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex justify-between items-center gap-4" data-help-key="scaffolds_goal_panel">
                         <p className="text-sm text-rose-800 flex-grow"><strong>UDL Goal:</strong> Providing options for Action & Expression. Scaffolding writing helps students organize their thoughts.</p>
@@ -286,4 +328,6 @@
                         )}
                     </div>
                     )}
-                  </div>
+                  </div>
+  );
+}
