@@ -6147,7 +6147,43 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("button", { "aria-label": "Reset stereogram animation",
 
-                      onClick: function() { _stopStereoAnim(); _stereoAnimRef.frames = []; upd('stereoAnimHasFrames', false); upd('stereoAnimPlaying', false); upd('stereoAnimProgress', 0); },
+                      onClick: function() {
+
+                        _stopStereoAnim();
+
+                        _stereoAnimRef.frames = [];
+
+                        // Also clear the output canvas and repaint the placeholder
+                        // banner. Without this the last rendered frame stays painted
+                        // forever (the canvas init ref only fires once via
+                        // canvas._animInit, so it never re-blanks on later resets).
+                        try {
+
+                          var rc = document.getElementById('stereoAnimCanvas');
+
+                          if (rc) {
+
+                            var rctx = rc.getContext('2d');
+
+                            rctx.fillStyle = '#1a1a2e'; rctx.fillRect(0, 0, rc.width, rc.height);
+
+                            rctx.fillStyle = '#888'; rctx.font = '14px sans-serif'; rctx.textAlign = 'center';
+
+                            rctx.fillText('Pick a source and click Render Animation', rc.width / 2, rc.height / 2);
+
+                          }
+
+                        } catch (_) {}
+
+                        upd('stereoAnimHasFrames', false);
+
+                        upd('stereoAnimPlaying', false);
+
+                        upd('stereoAnimProgress', 0);
+
+                        upd('stereoAnimAiMotionStatus', '');
+
+                      },
 
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100"
 
