@@ -15464,56 +15464,33 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="hc"] .alloflow-anno-sb-pills .active { background: #000000; color: #ffff00; }
 
           /* ─── Dark theme ─── */
-          /* Palette goals (WCAG AAA where possible):
-             - Page bg #0b1220 (deeper navy reduces blue-light fatigue vs slate-900)
-             - Card bg #18223a (lifts off the page so cards read as distinct surfaces)
-             - Body text #f1f5f9 (slate-100, ~16:1 vs page bg)
-             - Secondary text #cbd5e1 (slate-300, ~10:1)
-             - Links #93c5fd (sky-300, ~10:1 — avoids browser-default purple)
-             - Code / pre #fbbf24 on #1e1f2c (amber stands out vs body text) */
-          html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0b1220 !important; color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] body { background: #0b1220 !important; color: #f1f5f9 !important; }
-          /* Catch-all: any descendant inherits the light text unless an explicit override below applies. */
-          html[data-alloflow-theme="dark"] body * { color: inherit; }
-          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4, html[data-alloflow-theme="dark"] h5, html[data-alloflow-theme="dark"] h6 { color: #ffffff !important; }
-          html[data-alloflow-theme="dark"] p, html[data-alloflow-theme="dark"] li, html[data-alloflow-theme="dark"] span, html[data-alloflow-theme="dark"] dd, html[data-alloflow-theme="dark"] dt { color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] a { color: #93c5fd !important; text-decoration-color: rgba(147,197,253,0.5); }
-          html[data-alloflow-theme="dark"] a:hover { color: #bfdbfe !important; text-decoration-color: #bfdbfe; }
-          html[data-alloflow-theme="dark"] strong, html[data-alloflow-theme="dark"] b { color: #ffffff !important; }
-          html[data-alloflow-theme="dark"] em, html[data-alloflow-theme="dark"] i { color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] small, html[data-alloflow-theme="dark"] .caption, html[data-alloflow-theme="dark"] .muted { color: #cbd5e1 !important; }
-          html[data-alloflow-theme="dark"] blockquote { background: #18223a !important; border-left-color: #6366f1 !important; color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] code, html[data-alloflow-theme="dark"] kbd, html[data-alloflow-theme="dark"] samp { background: #1e1f2c !important; color: #fbbf24 !important; border-radius: 3px; padding: 0 4px; }
-          html[data-alloflow-theme="dark"] pre { background: #0f172a !important; color: #e2e8f0 !important; border: 1px solid #334155 !important; }
-          html[data-alloflow-theme="dark"] pre code { background: transparent !important; color: #e2e8f0 !important; padding: 0; }
-          html[data-alloflow-theme="dark"] hr { border-color: #334155 !important; }
-          html[data-alloflow-theme="dark"] mark { background: #422006 !important; color: #fde68a !important; }
-          html[data-alloflow-theme="dark"] .section { background: #18223a !important; color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #18223a !important; border-color: #334155 !important; color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] .resource-header { color: #ffffff !important; background: #18223a !important; }
-          html[data-alloflow-theme="dark"] th { background: #1e293b !important; color: #ffffff !important; border-color: #334155 !important; }
-          html[data-alloflow-theme="dark"] td { color: #f1f5f9 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
+          html[data-alloflow-theme="dark"] body { background: #0f172a !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4 { color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] .section { background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .resource-header { color: #e2e8f0 !important; background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] th { background: #1e293b !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] td { color: #e2e8f0 !important; border-color: #334155 !important; }
           html[data-alloflow-theme="dark"] tbody tr { background: #0f172a !important; }
-          html[data-alloflow-theme="dark"] tbody tr:nth-child(even) { background: #18223a !important; }
-          html[data-alloflow-theme="dark"] tbody tr:hover { background: #2c3a5a !important; }
-          html[data-alloflow-theme="dark"] .interactive-textarea { background: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
+          html[data-alloflow-theme="dark"] tbody tr:nth-child(even) { background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] tbody tr:hover { background: #334155 !important; }
+          html[data-alloflow-theme="dark"] .interactive-textarea { background: #1e293b !important; color: #e2e8f0 !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
           html[data-alloflow-theme="dark"] .interactive-blank { color: #93c5fd !important; border-bottom-color: #475569 !important; }
-          html[data-alloflow-theme="dark"] .mcq-label { color: #f1f5f9 !important; }
-          html[data-alloflow-theme="dark"] .mcq-label:hover { background: #2c3a5a !important; }
+          html[data-alloflow-theme="dark"] .mcq-label { color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .mcq-label:hover { background: #334155 !important; }
           html[data-alloflow-theme="dark"] .mcq-label:has(input[type="radio"]:checked) { background: #312e81 !important; border-color: #818cf8 !important; }
-          html[data-alloflow-theme="dark"] .reflection-block { background: rgba(99,102,241,0.16) !important; border-left-color: #818cf8 !important; color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] .reflection-block { background: rgba(79,70,229,0.12) !important; border-left-color: #6366f1 !important; }
           html[data-alloflow-theme="dark"] .reflection-block > p:first-child { color: #c7d2fe !important; }
-          html[data-alloflow-theme="dark"] details { background: #18223a !important; border-color: #334155 !important; color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] details { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
           html[data-alloflow-theme="dark"] details summary, html[data-alloflow-theme="dark"] details summary h3 { color: #93c5fd !important; }
-          html[data-alloflow-theme="dark"] .alloflow-reading-tools { background: rgba(11,18,32,0.96); border-bottom-color: #334155; }
-          html[data-alloflow-theme="dark"] .alloflow-reading-tools-group { background: #18223a; border-color: #475569; }
-          html[data-alloflow-theme="dark"] .alloflow-reading-tools-label { background: #0b1220; color: #cbd5e1; border-right-color: #475569; }
-          html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #e2e8f0; border-left-color: #475569; }
-          html[data-alloflow-theme="dark"] .alloflow-rt-btn:hover { background: #2c3a5a; }
-          html[data-alloflow-theme="dark"] .alloflow-rt-btn[aria-pressed="true"] { background: #6366f1; color: #ffffff; }
-          html[data-alloflow-theme="dark"] input, html[data-alloflow-theme="dark"] select, html[data-alloflow-theme="dark"] textarea { background: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
-          html[data-alloflow-theme="dark"] input::placeholder, html[data-alloflow-theme="dark"] textarea::placeholder { color: #94a3b8 !important; opacity: 1; }
-          html[data-alloflow-theme="dark"] img { opacity: 0.95; }
+          html[data-alloflow-theme="dark"] .alloflow-reading-tools { background: rgba(15,23,42,0.96); border-bottom-color: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-reading-tools-group { background: #1e293b; border-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-reading-tools-label { background: #0f172a; color: #94a3b8; border-right-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #cbd5e1; border-left-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-btn:hover { background: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-btn[aria-pressed="true"] { background: #6366f1; color: white; }
+          html[data-alloflow-theme="dark"] img { opacity: 0.92; }
 
           /* ─── Sepia theme (warm, low-glare; popular for dyslexic readers) ─── */
           html[data-alloflow-theme="sepia"] { background: #f5ecd9 !important; }
@@ -15613,12 +15590,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             var initial = null;
             try { initial = localStorage.getItem(KEY); } catch (e) {}
-            // Honor an explicit saved choice, but never auto-default to dark
-            // from prefers-color-scheme — teachers consistently expect the
-            // exported document to open in the light/print-friendly theme
-            // they configured during authoring. Students can opt into dark
-            // from the Reading Tools bar at the top of the export.
-            if (initial && initial !== 'light') applyTheme(initial, false);
+            if (!initial && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              initial = 'dark';
+            }
+            if (initial) applyTheme(initial, false);
             document.addEventListener('click', function (e) {
               var btn = e.target && e.target.closest && e.target.closest('[data-rt-theme]');
               if (!btn) return;
@@ -16685,19 +16660,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         }
                     } catch (e) { /* private mode / quota */ }
                     // ── Character counter ──
+                    // Idempotent: if a counter sibling already exists (re-init
+                    // can happen if the iframe doc.write re-fires DOMContentLoaded
+                    // in the preview pane, or if this script is injected twice),
+                    // reuse it instead of stacking a duplicate "0 / 1500" line.
                     const max = parseInt(tx.getAttribute('maxlength') || '', 10) || _DEFAULT_MAX;
                     if (!tx.getAttribute('maxlength')) tx.setAttribute('maxlength', String(max));
-                    const counter = document.createElement('div');
-                    counter.className = 'allo-ta-counter';
-                    counter.setAttribute('aria-live', 'polite');
-                    counter.style.cssText = 'font-size:11px;color:#64748b;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
+                    let counter = tx.nextElementSibling && tx.nextElementSibling.classList && tx.nextElementSibling.classList.contains('allo-ta-counter')
+                        ? tx.nextElementSibling
+                        : null;
+                    if (!counter) {
+                        counter = document.createElement('div');
+                        counter.className = 'allo-ta-counter';
+                        counter.setAttribute('aria-live', 'polite');
+                        counter.style.cssText = 'font-size:11px;color:#64748b;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
+                        tx.parentNode.insertBefore(counter, tx.nextSibling);
+                    }
                     const updateCounter = () => {
                         const len = tx.value.length;
                         const pct = len / max;
                         counter.textContent = len + ' / ' + max + (len > 0 ? ' characters' : '');
                         counter.style.color = pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#ca8a04' : '#64748b';
                     };
-                    tx.parentNode.insertBefore(counter, tx.nextSibling);
                     updateCounter();
                     // ── Debounced autosave on input ──
                     let saveTimer = null;
