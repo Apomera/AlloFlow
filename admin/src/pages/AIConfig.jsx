@@ -38,6 +38,8 @@ export default function AIConfig() {
   const [nvidiaApiKey, setNvidiaApiKey] = useState(process.env.REACT_APP_NVIDIA_API_KEY || '');
   const [showNvidiaKey, setShowNvidiaKey] = useState(false);
   const [nvidiaModel, setNvidiaModel] = useState('nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
+  const [nvidiaTextModel, setNvidiaTextModel] = useState('meta/llama-3.3-70b-instruct');
+  const [nvidiaOmniModel, setNvidiaOmniModel] = useState('nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
   const [nvidiaReasoningMode, setNvidiaReasoningMode] = useState(true);
 
   useEffect(() => {
@@ -91,6 +93,8 @@ export default function AIConfig() {
         setCopilotEndpoint(aiCfg.copilot?.endpoint || '');
         setNvidiaApiKey(aiCfg.nvidiaApiKey || process.env.REACT_APP_NVIDIA_API_KEY || '');
         setNvidiaModel(aiCfg.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
+        setNvidiaTextModel(aiCfg.nvidiaTextModel || 'meta/llama-3.3-70b-instruct');
+        setNvidiaOmniModel(aiCfg.nvidiaOmniModel || aiCfg.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
         setNvidiaReasoningMode(aiCfg.nvidiaReasoningMode !== false);
       }
     } catch (err) {
@@ -143,6 +147,8 @@ export default function AIConfig() {
           } : undefined,
           nvidiaApiKey:       nvidiaApiKey.trim() || undefined,
           nvidiaModel:        nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
+          nvidiaTextModel:    nvidiaTextModel || 'meta/llama-3.3-70b-instruct',
+          nvidiaOmniModel:    nvidiaOmniModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
           nvidiaReasoningMode: nvidiaReasoningMode,
         });
       }
@@ -620,7 +626,7 @@ export default function AIConfig() {
             {/* Status badge */}
             {nvidiaApiKey ? (
               <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--color-success)', fontWeight: 600 }}>
-                ✓ API key configured — model: <strong>{nvidiaModel}</strong>
+                ✓ API key configured · text: <strong>{nvidiaTextModel}</strong> · omni: <strong>{nvidiaOmniModel}</strong>
               </div>
             ) : (
               <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '6px', fontSize: '0.8rem', color: '#f59e0b' }}>
@@ -659,33 +665,38 @@ export default function AIConfig() {
               </div>
             </div>
 
-            {/* Model selector */}
+            {/* Text Generation Model */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Model</label>
-              <select value={nvidiaModel} onChange={e => setNvidiaModel(e.target.value)} style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning">nvidia/nemotron-3-nano-omni-30b-a3b-reasoning (Omni — text/image/audio/video + reasoning)</option>
-                <option value="nvidia/nemotron-nano-12b-v2-vl">nvidia/nemotron-nano-12b-v2-vl (Vision-Language, fast)</option>
-                <option value="nvidia/llama-3.1-nemotron-nano-vl-8b-v1">nvidia/llama-3.1-nemotron-nano-vl-8b-v1 (Llama-based VL, 8B)</option>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.2rem' }}>
+                🧠 Text Generation Model
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0 0 0.35rem 0' }}>
+                Used for content engine, outlines, and all text-only AI calls. Choose a fast instruct model.
+              </p>
+              <select value={nvidiaTextModel} onChange={e => setNvidiaTextModel(e.target.value)} style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                <option value="meta/llama-3.3-70b-instruct">meta/llama-3.3-70b-instruct (recommended — fast, high quality)</option>
+                <option value="meta/llama-3.1-70b-instruct">meta/llama-3.1-70b-instruct</option>
+                <option value="nvidia/llama-3.1-nemotron-70b-instruct-hf">nvidia/llama-3.1-nemotron-70b-instruct-hf (NVIDIA-optimized)</option>
+                <option value="mistralai/mixtral-8x7b-instruct-v0.1">mistralai/mixtral-8x7b-instruct-v0.1 (Mixtral MoE)</option>
+                <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning">nvidia/nemotron-3-nano-omni-30b-a3b-reasoning (Omni reasoning — slower)</option>
               </select>
             </div>
 
-            {/* Reasoning mode toggle */}
-            <label style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem',
-              backgroundColor: nvidiaReasoningMode ? 'rgba(118,185,0,0.06)' : 'var(--color-bg)',
-              borderRadius: '8px', border: `2px solid ${nvidiaReasoningMode ? 'rgba(118,185,0,0.4)' : 'var(--color-border)'}`,
-              cursor: 'pointer'
-            }}>
-              <input type="checkbox" checked={nvidiaReasoningMode} onChange={e => setNvidiaReasoningMode(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#76b900' }} />
-              <div>
-                <div style={{ fontWeight: 600, marginBottom: '0.2rem' }}>
-                  {nvidiaReasoningMode ? '✓ Reasoning Mode ON (/think)' : 'Reasoning Mode OFF (/no_think)'}
-                </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                  Reasoning ON gives deeper answers (temp 0.6). OFF is faster and required for audio/video inputs (temp 0).
-                </div>
-              </div>
-            </label>
+            {/* Multimodal / Omni Model */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.2rem' }}>
+                🎤 Multimodal Model (audio / video / image)
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0 0 0.35rem 0' }}>
+                Used for student voice input, fluency recordings, video transcription, and file upload. Must support audio/video.
+              </p>
+              <select value={nvidiaOmniModel} onChange={e => setNvidiaOmniModel(e.target.value)} style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning">nvidia/nemotron-3-nano-omni-30b-a3b-reasoning (Omni — text/image/audio/video)</option>
+                <option value="nvidia/nemotron-nano-12b-v2-vl">nvidia/nemotron-nano-12b-v2-vl (Vision-Language, image only)</option>
+                <option value="nvidia/llama-3.1-nemotron-nano-vl-8b-v1">nvidia/llama-3.1-nemotron-nano-vl-8b-v1 (Llama VL, image only)</option>
+                <option value="meta/llama-3.2-90b-vision-instruct">meta/llama-3.2-90b-vision-instruct (Llama vision, image only)</option>
+              </select>
+            </div>
 
             <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', margin: 0 }}>
               API key saved to <code>~/.alloflow/ai_config.json</code> — local only, never uploaded. See <strong>NVIDIA_SETUP.md</strong> for full setup guide.

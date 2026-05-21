@@ -1,7 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  AlloFlow — Local App                                               ║
 // ║  Auto-assembled by local_build.js — DO NOT EDIT MANUALLY            ║
-// ║  Built: 2026-05-19T20:12:44.672Z
+// ║  Built: 2026-05-20T17:37:28.189Z
 // ╚══════════════════════════════════════════════════════════════════════╝
 // @mode react
 
@@ -246,6 +246,25 @@ const setGlobalMute = (muted) => {
 const isGlobalMuted = () => globalMuteEnabled;
 // [LOCAL] Also provide callOllama alias so any sections that call callGemini work after C1 stripping
 const callOllama = (...args) => {
+    const _prov = window.__alloLocalConfig?.aiProvider;
+    if (_prov === 'nvidia') {
+        const [prompt, jsonMode] = args;
+        const _nvModel = window.__alloLocalConfig?.nvidiaTextModel || 'meta/llama-3.3-70b-instruct';
+        const _nvPayload = {
+            model: _nvModel,
+            messages: [{ role: 'user', content: typeof prompt === 'string' ? prompt : String(prompt || '') }],
+            max_tokens: 4096,
+            stream: false,
+        };
+        return fetch(`${window.location.origin}/api/nvidia/proxy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(_nvPayload),
+        }).then(r => r.json()).then(d => {
+            const text = d.choices?.[0]?.message?.content || '';
+            return jsonMode ? (text || '{}') : (text || '');
+        }).catch(() => (args[1] ? '{}' : ''));
+    }
     if (AIProvider && typeof AIProvider.chat === 'function') return AIProvider.chat(...args);
     // Return valid JSON when jsonMode is true (2nd arg), empty string otherwise
     const jsonMode = args[1];
@@ -16452,7 +16471,7 @@ Return only the corrected version of this exact text:`;
 // ─────────────────────────────────────────────────────────────────────
 // Section: BILINGUAL_RENDERER
 // ─────────────────────────────────────────────────────────────────────
-// AlloFlow Section: BILINGUAL_RENDERER
+﻿// AlloFlow Section: BILINGUAL_RENDERER
 // Module: modules/reader
 // Variant: local (cloud-stripped)
 // Source lines: 15092–26530
@@ -17028,14 +17047,27 @@ const parseTaggedContent = (text) => {
     // In local mode with cloud provider, tokens are ALWAYS server-side in ~/.alloflow/
     // Just proceed to the proxy call — let the proxy validate the token and return 401 if missing
     if (_aiProv === 'nvidia') {
-      // Route through NVIDIA NIM proxy using OpenAI-compatible format
+      // Route through NVIDIA NIM proxy with SSE streaming for real-time think-token progress
       try {
-        const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
+        const _base = window.location.origin; // always the admin server that served this page (works on any port or domain)
+        // Use the dedicated text model for content generation (fast, non-reasoning).
+        // Falls back to nvidiaModel (which may be omni/reasoning) if nvidiaTextModel is not set.
+        const _nvModel = window.__alloLocalConfig?.nvidiaTextModel || window.__alloLocalConfig?.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+        // Only send reasoning_effort for known reasoning/omni models — instruct models ignore or reject it
+        const _isReasoningModel = _nvModel.includes('reasoning') || _nvModel.includes('omni');
         const _nvPayload = {
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 4096,
+          model: _nvModel,
+          messages: [
+            // System message limits reasoning depth — without this, NVIDIA reasoning models
+            // exhaust the full max_tokens budget in delta.reasoning_content and produce no delta.content
+            { role: 'system', content: 'You are an efficient educational content writer. Think briefly, then write the full requested response immediately.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 8192,        // output budget; reasoning tokens are separate for this model
+          stream: true,              // enables SSE so reasoning tokens display progressively
+          ...(_isReasoningModel ? { reasoning_effort: 'low' } : {}),
           ...(temperature !== null ? { temperature } : {}),
-          ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+          // response_format intentionally omitted — the prompt text requests format, which is sufficient
         };
         const _nvRes = await fetch(`${_base}/api/nvidia/proxy`, {
           method: 'POST',
@@ -17046,13 +17078,61 @@ const parseTaggedContent = (text) => {
           const _errData = await _nvRes.json().catch(() => ({}));
           throw new Error(_errData.error || `NVIDIA proxy ${_nvRes.status}`);
         }
-        const _nvData = await _nvRes.json();
-        const _nvRaw = _nvData?.choices?.[0]?.message?.content || '';
-        // Reasoning models (nemotron) prefix output with <think>...</think> — strip it
-        // Also strip markdown code fences (```json ... ```) that some models add
-        let _nvText = _nvRaw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-        _nvText = _nvText.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
-        console.log(`[callGemini] NVIDIA response: raw=${_nvRaw.length}ch, cleaned=${_nvText.length}ch, finish=${_nvData?.choices?.[0]?.finish_reason}`);
+        // Read SSE stream — collect delta.reasoning_content for display, delta.content for output.
+        // NVIDIA reasoning models put thinking in reasoning_content, NOT inline <think> tags.
+        const _sseReader = _nvRes.body.getReader();
+        const _sseDec = new TextDecoder();
+        let _accumulated = ''; // delta.content tokens only (clean output)
+        let _thinkBuf = '';    // delta.reasoning_content tokens (display only, not returned)
+        let _leftover = '';    // incomplete SSE line carried across chunk boundaries
+        let _finishReason = 'stop';
+        const _updateStep = (msg) => { try { if (typeof setGenerationStep === 'function') setGenerationStep(msg); } catch (_) {} };
+        _updateStep('🧠 NVIDIA is reasoning…');
+        try {
+          while (true) {
+            const { done, value } = await _sseReader.read();
+            if (done) break;
+            const _raw = _leftover + _sseDec.decode(value, { stream: true });
+            const _lines = _raw.split('\n');
+            _leftover = _lines.pop() || '';
+            for (const _ln of _lines) {
+              if (!_ln.startsWith('data: ')) continue;
+              const _d = _ln.slice(6).trim();
+              if (_d === '[DONE]') continue;
+              try {
+                const _chunk = JSON.parse(_d);
+                const _delta = _chunk.choices?.[0]?.delta?.content || '';
+                if (_chunk.choices?.[0]?.finish_reason) _finishReason = _chunk.choices[0].finish_reason;
+                const _reasoning = _chunk.choices?.[0]?.delta?.reasoning_content || '';
+                if (!_delta && !_reasoning) continue;
+                if (_reasoning) {
+                  // Show rolling snippet of reasoning progress in generation step
+                  const _snippet = (_thinkBuf += _reasoning).replace(/\n/g, ' ').slice(-120).trim();
+                  if (_snippet.length > 10) _updateStep(`🧠 Reasoning: "…${_snippet}"`);
+                }
+                if (_delta) {
+                  if (_thinkBuf.length > 0 && _accumulated.length === 0) {
+                    _updateStep('✍️ Writing response…'); // first content token — reasoning phase done
+                  }
+                  _accumulated += _delta;
+                }
+              } catch (_e) { /* skip malformed SSE chunk */ }
+            }
+          }
+        } finally {
+          _sseReader.releaseLock();
+        }
+        // _accumulated contains only delta.content (already clean; no <think> tags in NVIDIA SSE)
+        // Strip code fences that some models add around JSON
+        let _nvText = _accumulated.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
+        console.log(`[callGemini] NVIDIA stream: content=${_accumulated.length}ch, thinking=${_thinkBuf.length}ch, finish=${_finishReason}`);
+        // Fallback: if the model produced no delta.content but left extensive reasoning, the
+        // reasoning_content itself often contains the actual answer (the model wrote it as part
+        // of its thinking chain before hitting the token limit). Return it rather than empty string.
+        if (!_nvText && _thinkBuf.length > 100) {
+          console.warn(`[callGemini] NVIDIA: no delta.content (finish=${_finishReason}, thinking=${_thinkBuf.length}ch). Using reasoning_content as output fallback.`);
+          _nvText = _thinkBuf.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
+        }
         if (useSearch) return { text: _nvText, groundingMetadata: null };
         return _nvText;
       } catch (nvErr) {
@@ -17765,13 +17845,49 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   const callGeminiVision = async (prompt, base64Data, mimeType) => {
-    // Vision analysis is Gemini-only feature
     const _aiProv = window.__alloLocalConfig?.aiProvider;
-    if (_aiProv && _aiProv !== 'gemini' && _aiProv !== 'copilot') {
-      console.warn('[callGeminiVision] Vision analysis not available in local mode');
-      throw new Error("Vision analysis requires Gemini or Copilot provider in cloud mode");
+
+    // NVIDIA path: translate Gemini inlineData format → OpenAI-compatible multimodal content array.
+    // Routes to the omni model (nvidiaOmniModel) which supports image, audio, and video inputs.
+    if (_aiProv === 'nvidia') {
+      const _omniModel = window.__alloLocalConfig?.nvidiaOmniModel || window.__alloLocalConfig?.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+      const _mime = mimeType || 'image/jpeg';
+      const _contentType = _mime.startsWith('video/') ? 'video_url' : _mime.startsWith('audio/') ? 'audio_url' : 'image_url';
+      const _nvPayload = {
+        model: _omniModel,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: _contentType, [_contentType]: { url: `data:${_mime};base64,${base64Data}` } },
+          ],
+        }],
+        max_tokens: 8192,
+        stream: false,
+      };
+      const _nvRes = await fetch(`${window.location.origin}/api/nvidia/proxy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(_nvPayload),
+      });
+      if (!_nvRes.ok) {
+        const _e = await _nvRes.json().catch(() => ({}));
+        throw new Error(_e.error || `NVIDIA vision/audio proxy error ${_nvRes.status}`);
+      }
+      const _nvData = await _nvRes.json();
+      const _text = _nvData.choices?.[0]?.message?.content;
+      if (!_text) throw new Error('No content returned from NVIDIA omni model');
+      return _text;
     }
-    
+
+    // Local providers (LM Studio, Ollama, etc.) don't support multimodal input.
+    // Require a cloud provider (Gemini, Copilot, or NVIDIA) for vision/audio/video analysis.
+    if (_aiProv && _aiProv !== 'gemini' && _aiProv !== 'copilot') {
+      const _msg = `Vision, audio, and video input requires a cloud AI provider (Gemini, Copilot, or NVIDIA). Current provider: ${_aiProv}`;
+      console.warn('[callGeminiVision]', _msg);
+      throw new Error(_msg);
+    }
+
     const url = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/gemini-2.5-flash`;
     const payload = {
       contents: [{
@@ -18297,6 +18413,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   const imagenQueueRef = React.useRef(Promise.resolve());
   const imagenRateLimitedRef = React.useRef(false);
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
+    // Imagen is Gemini-specific -- skip gracefully for non-Gemini providers
+    const _imgProv = window.__alloLocalConfig?.aiProvider;
+    if (_imgProv && _imgProv !== 'gemini' && _imgProv !== 'copilot') {
+        console.log('[Imagen] Skipping -- provider is', _imgProv, '(not Gemini)');
+        return null;
+    }
     console.log("[Imagen] Calling Imagen API for:", prompt.substring(0, 50));
     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict${apiKey ? `?key=${apiKey}` : ''}`;
     const payload = {
@@ -29006,7 +29128,7 @@ Return ONLY JSON.`;
         } else {
         setGenerationStep(t('status_steps.rendering_diagram'));
         let imageBase64; try { imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual); } catch(e) { warnLog('Image generation failed:', e); }
-        if (fillInTheBlank || noText || creativeMode) {
+        if (imageBase64 && (fillInTheBlank || noText || creativeMode)) {
              try {
                  setGenerationStep(t('status.refining_image'));
                  const rawBase64 = imageBase64.split(',')[1];

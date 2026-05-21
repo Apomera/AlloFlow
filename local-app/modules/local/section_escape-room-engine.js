@@ -921,7 +921,7 @@
         } else {
         setGenerationStep(t('status_steps.rendering_diagram'));
         let imageBase64; try { imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual); } catch(e) { warnLog('Image generation failed:', e); }
-        if (fillInTheBlank || noText || creativeMode) {
+        if (imageBase64 && (fillInTheBlank || noText || creativeMode)) {
              try {
                  setGenerationStep(t('status.refining_image'));
                  const rawBase64 = imageBase64.split(',')[1];

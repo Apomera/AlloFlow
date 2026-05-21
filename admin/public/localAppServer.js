@@ -87,8 +87,12 @@ function buildLocalConfigScript() {
             if (ai.copilot?.endpoint) cfg.copilotEndpoint = ai.copilot.endpoint;
             // Expose configured Gemini model so client UI can display it
             if (ai.geminiModel) cfg.geminiModel = ai.geminiModel;            if (ai.geminiTtsModel)      cfg.geminiTtsModel = ai.geminiTtsModel;
-            // Expose NVIDIA config (model only — API key stays server-side)
+            // Expose NVIDIA config (models only — API key stays server-side).
+            // Always provide defaults so fresh installs route to the correct model
+            // without requiring the user to open Settings and click Save first.
             if (ai.nvidiaModel) cfg.nvidiaModel = ai.nvidiaModel;
+            cfg.nvidiaTextModel = ai.nvidiaTextModel || 'meta/llama-3.3-70b-instruct';
+            cfg.nvidiaOmniModel = ai.nvidiaOmniModel || ai.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
             if (ai.nvidiaReasoningMode !== undefined) cfg.nvidiaReasoningMode = ai.nvidiaReasoningMode;
         }
     } catch (_) {}
@@ -624,7 +628,9 @@ async function handleNvidiaProxy(req, res, body) {
         return res.end(JSON.stringify({ error: 'NVIDIA API key not configured — add it in Settings → AI Config' }));
     }
 
-    const effectiveModel = loadNvidiaModel();
+    // Respect client-specified model (enables per-call routing: text model vs omni model).
+    // Fall back to the configured default from ai_config.json when not specified.
+    const effectiveModel = (body.model && body.model !== 'local') ? body.model : loadNvidiaModel();
     // Allow stream:true from client (enables SSE passthrough for real-time think-token progress)
     const wantsStream = (body.stream === true);
     const nvidiaBody = { ...body, model: effectiveModel, stream: wantsStream };
@@ -655,7 +661,7 @@ async function handleNvidiaProxy(req, res, body) {
 
         console.log(`[nvidia-proxy] Upstream responded — status: ${upstream.status}, content-type: ${upstream.headers.get('content-type')}`);
 
-        // Streaming mode: pipe SSE through directly so the client can display real-time think tokens
+        // Streaming mode: pipe SSE through to client AND collect for post-stream logging
         if (wantsStream && upstream.status === 200) {
             logAIProxy('/api/nvidia/proxy (stream)', 'nvidia', 200, Date.now() - t0);
             res.writeHead(200, {
@@ -665,11 +671,13 @@ async function handleNvidiaProxy(req, res, body) {
                 'X-Accel-Buffering': 'no',
             });
             const sseReader = upstream.body.getReader();
+            const sseChunks = []; // collect copy for post-stream logging
             try {
                 while (true) {
                     const { done, value } = await sseReader.read();
                     if (done) break;
                     res.write(value);
+                    sseChunks.push(Buffer.from(value));
                 }
             } catch (sseErr) {
                 console.error('[nvidia-proxy] SSE pipe error:', sseErr.message);
@@ -677,6 +685,27 @@ async function handleNvidiaProxy(req, res, body) {
                 sseReader.releaseLock();
                 res.end();
             }
+            // Parse collected chunks and write to response log
+            try {
+                const sseText = Buffer.concat(sseChunks).toString('utf8');
+                const sseLines = sseText.split('\n').filter(l => l.startsWith('data: ') && !l.includes('[DONE]'));
+                let logContent = '', logReasoning = '', logFinish = 'unknown';
+                for (const line of sseLines) {
+                    try {
+                        const ch = JSON.parse(line.slice(6).trim());
+                        logContent   += ch.choices?.[0]?.delta?.content           || '';
+                        logReasoning += ch.choices?.[0]?.delta?.reasoning_content || '';
+                        if (ch.choices?.[0]?.finish_reason) logFinish = ch.choices[0].finish_reason;
+                    } catch {} // skip malformed SSE lines
+                }
+                const _promptMsg = (body.messages || []).filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+                logNvidiaToFile(_promptMsg, {
+                    choices: [{ finish_reason: logFinish, message: {
+                        content: logContent || `[no delta.content — reasoning_content: ${logReasoning.length}ch]`,
+                        reasoning_summary: logReasoning.slice(0, 500) + (logReasoning.length > 500 ? '…' : ''),
+                    }}],
+                }, Date.now() - t0);
+            } catch (_) { /* never crash over logging */ }
             return;
         }
 

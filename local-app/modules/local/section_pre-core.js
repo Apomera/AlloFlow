@@ -251,6 +251,25 @@ const setGlobalMute = (muted) => {
 const isGlobalMuted = () => globalMuteEnabled;
 // [LOCAL] Also provide callOllama alias so any sections that call callGemini work after C1 stripping
 const callOllama = (...args) => {
+    const _prov = window.__alloLocalConfig?.aiProvider;
+    if (_prov === 'nvidia') {
+        const [prompt, jsonMode] = args;
+        const _nvModel = window.__alloLocalConfig?.nvidiaTextModel || 'meta/llama-3.3-70b-instruct';
+        const _nvPayload = {
+            model: _nvModel,
+            messages: [{ role: 'user', content: typeof prompt === 'string' ? prompt : String(prompt || '') }],
+            max_tokens: 4096,
+            stream: false,
+        };
+        return fetch(`${window.location.origin}/api/nvidia/proxy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(_nvPayload),
+        }).then(r => r.json()).then(d => {
+            const text = d.choices?.[0]?.message?.content || '';
+            return jsonMode ? (text || '{}') : (text || '');
+        }).catch(() => (args[1] ? '{}' : ''));
+    }
     if (AIProvider && typeof AIProvider.chat === 'function') return AIProvider.chat(...args);
     // Return valid JSON when jsonMode is true (2nd arg), empty string otherwise
     const jsonMode = args[1];
