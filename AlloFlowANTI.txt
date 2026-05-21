@@ -25560,9 +25560,16 @@ ${_toolList}
                                         const term = data[i].term;
                                         const definition = data[i].def;
                                         const imgPrompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
+                                        // Flip the per-term spinner the GlossaryView already renders
+                                        // (same state used by manual handleGenerateTermImage at line 20103).
+                                        // The "Creating icon…" copy + animated RefreshCw appear automatically.
+                                        setIsGeneratingTermImage(prev => ({ ...prev, [i]: true }));
                                         try {
                                             let imageUrl = await callImagen(imgPrompt);
-                                            if (!imageUrl) continue;
+                                            if (!imageUrl) {
+                                                setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
+                                                continue;
+                                            }
                                             if (autoRemoveWords) {
                                                 try {
                                                     const rawBase64 = imageUrl.split(',')[1];
@@ -25590,6 +25597,8 @@ ${_toolList}
                                             });
                                         } catch (imgErr) {
                                             console.warn('[DA glossary] Image gen failed for term:', term, imgErr && imgErr.message);
+                                        } finally {
+                                            setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
                                         }
                                     }
                                 })();
