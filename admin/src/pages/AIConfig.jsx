@@ -82,8 +82,10 @@ export default function AIConfig() {
       // Load AI config (aiProvider, image provider + OAuth creds)
       const aiCfg = await window.alloAPI?.readAIConfig?.();
       if (aiCfg) {
-        setAiProvider(aiCfg.aiProvider || 'local');
-        setImageProvider(aiCfg.imageProvider || 'flux');
+        const loadedProvider = aiCfg.aiProvider || 'local';
+        setAiProvider(['gemini', 'copilot'].includes(loadedProvider) ? 'local' : loadedProvider);
+        const loadedImageProvider = aiCfg.imageProvider || 'flux';
+        setImageProvider(['gemini', 'copilot'].includes(loadedImageProvider) ? 'flux' : loadedImageProvider);
         setGoogleClientId(aiCfg.googleClientId || '');
         setGoogleClientSecret(aiCfg.googleClientSecret || '');
         setGeminiApiKey(aiCfg.geminiApiKey || process.env.REACT_APP_GEMINI_API_KEY || '');
@@ -336,8 +338,8 @@ export default function AIConfig() {
           {/* AI Provider radio */}
           {[
             { value: 'local',   label: '🦙 Local AI (LM Studio)',   desc: 'Run LLMs locally via llama.cpp. No internet needed.' },
-            { value: 'gemini',  label: '✨ Google Gemini',           desc: 'Cloud AI via Google — text + image generation. Requires a Gemini API key.' },
-            { value: 'copilot', label: '🤖 Microsoft Copilot',      desc: 'Cloud AI via Azure OpenAI — text + DALL-E images. Requires Entra ID sign-in.' },
+            { value: 'gemini',  label: '✨ Google Gemini',           desc: 'Cloud AI via Google — text + image generation. Requires a Gemini API key.', comingSoon: true },
+            { value: 'copilot', label: '🤖 Microsoft Copilot',      desc: 'Cloud AI via Azure OpenAI — text + DALL-E images. Requires Entra ID sign-in.', comingSoon: true },
             { value: 'nvidia',  label: '⚡ NVIDIA NIM',             desc: 'Multimodal AI (text/image/audio/video) via NVIDIA. Free API key at build.nvidia.com.' },
           ].map(opt => (
             <label key={opt.value} style={{
@@ -345,16 +347,22 @@ export default function AIConfig() {
               backgroundColor: aiProvider === opt.value ? 'rgba(26,115,232,0.08)' : 'var(--color-bg)',
               borderRadius: '8px',
               border: `2px solid ${aiProvider === opt.value ? '#1a73e8' : 'var(--color-border)'}`,
-              cursor: 'pointer'
+              cursor: opt.comingSoon ? 'not-allowed' : 'pointer',
+              opacity: opt.comingSoon ? 0.5 : 1,
+              pointerEvents: opt.comingSoon ? 'none' : undefined,
             }}>
               <input
                 type="radio" name="aiProvider" value={opt.value}
                 checked={aiProvider === opt.value}
                 onChange={() => setAiProvider(opt.value)}
+                disabled={opt.comingSoon}
                 style={{ marginTop: '2px', accentColor: '#1a73e8' }}
               />
-              <div>
-                <div style={{ fontWeight: 600 }}>{opt.label}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {opt.label}
+                  {opt.comingSoon && <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', background: 'var(--color-border)', borderRadius: '4px', padding: '1px 6px', letterSpacing: '0.05em' }}>COMING SOON</span>}
+                </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{opt.desc}</div>
               </div>
             </label>
@@ -369,24 +377,30 @@ export default function AIConfig() {
               </p>
               {[
                 { value: 'flux',    label: '🖥️ Local Flux (default)',       desc: 'Runs on your GPU via the local Flux server at port 7860.' },
-                { value: 'gemini',  label: '✨ Google Gemini Imagen',       desc: 'Cloud image generation via Google AI. Requires Google sign-in.' },
-                { value: 'copilot', label: '🤖 Microsoft Copilot (DALL-E)', desc: 'Cloud image generation via Azure OpenAI DALL-E 3.' },
+                { value: 'gemini',  label: '✨ Google Gemini Imagen',       desc: 'Cloud image generation via Google AI. Requires Google sign-in.', comingSoon: true },
+                { value: 'copilot', label: '🤖 Microsoft Copilot (DALL-E)', desc: 'Cloud image generation via Azure OpenAI DALL-E 3.', comingSoon: true },
               ].map(opt => (
                 <label key={opt.value} style={{
                   display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', marginBottom: '0.5rem',
                   backgroundColor: imageProvider === opt.value ? 'rgba(26,115,232,0.06)' : 'transparent',
                   borderRadius: '6px',
                   border: `1px solid ${imageProvider === opt.value ? '#1a73e8' : 'var(--color-border)'}`,
-                  cursor: 'pointer'
+                  cursor: opt.comingSoon ? 'not-allowed' : 'pointer',
+                  opacity: opt.comingSoon ? 0.5 : 1,
+                  pointerEvents: opt.comingSoon ? 'none' : undefined,
                 }}>
                   <input
                     type="radio" name="imageProvider" value={opt.value}
                     checked={imageProvider === opt.value}
                     onChange={() => setImageProvider(opt.value)}
+                    disabled={opt.comingSoon}
                     style={{ marginTop: '2px', accentColor: '#1a73e8' }}
                   />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{opt.label}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {opt.label}
+                      {opt.comingSoon && <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', background: 'var(--color-border)', borderRadius: '4px', padding: '1px 5px', letterSpacing: '0.05em' }}>COMING SOON</span>}
+                    </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{opt.desc}</div>
                   </div>
                 </label>

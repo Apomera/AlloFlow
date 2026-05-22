@@ -439,8 +439,8 @@ export default function SetupWizard({ onComplete }) {
             <div className="services-grid">
               {[
                 { id: 'llm-engine', name: 'Local AI (LM Studio)', icon: '🦙', description: 'Run LLMs locally on your machine using llama.cpp. No internet needed after setup.' },
-                { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud AI via Google Gemini — text + image generation. Requires Google sign-in.' },
-                { id: 'copilot', name: 'Microsoft Copilot', icon: '🤖', description: 'Cloud AI via Azure OpenAI — text + DALL-E images. Requires Microsoft Entra ID sign-in.' },
+                { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud AI via Google Gemini — text + image generation. Requires Google sign-in.', comingSoon: true },
+                { id: 'copilot', name: 'Microsoft Copilot', icon: '🤖', description: 'Cloud AI via Azure OpenAI — text + DALL-E images. Requires Microsoft Entra ID sign-in.', comingSoon: true },
                 { id: 'nvidia', name: 'NVIDIA NIM', icon: '⚡', description: 'Cloud AI via NVIDIA NIM — multimodal: text, images, audio & video. Free API key at build.nvidia.com.' },
               ].map(provider => {
                 const isSelected = selectedAiProvider === provider.id;
@@ -448,11 +448,15 @@ export default function SetupWizard({ onComplete }) {
                   <div
                     key={provider.id}
                     className={`service-card ${isSelected ? 'selected' : ''}`}
-                    onClick={() => selectAiProvider(provider.id)}
+                    onClick={() => !provider.comingSoon && selectAiProvider(provider.id)}
+                    style={provider.comingSoon ? { opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' } : {}}
                   >
                     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
                       <span className="service-icon">{provider.icon}</span>
-                      <input type="radio" name="aiProvider" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                      {provider.comingSoon
+                        ? <span style={{fontSize: '0.65rem', fontWeight: 700, color: '#64748b', background: '#e2e8f0', borderRadius: '4px', padding: '2px 6px', letterSpacing: '0.05em'}}>COMING SOON</span>
+                        : <input type="radio" name="aiProvider" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                      }
                     </div>
                     <h3>{provider.name}</h3>
                     <p className="service-description">{provider.description}</p>
@@ -471,19 +475,23 @@ export default function SetupWizard({ onComplete }) {
               <div className="services-grid">
                 {[
                   { id: 'flux', name: 'Local Flux', icon: '🎨', description: 'AI image generation on your GPU. Requires dedicated GPU with 8GB+ VRAM.' },
-                  { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud image generation via Google AI. Free tier: ~15 images/day.' },
-                  { id: 'copilot', name: 'Microsoft Copilot (DALL-E)', icon: '🤖', description: 'Cloud image generation via Azure OpenAI DALL-E 3.' },
+                  { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud image generation via Google AI. Free tier: ~15 images/day.', comingSoon: true },
+                  { id: 'copilot', name: 'Microsoft Copilot (DALL-E)', icon: '🤖', description: 'Cloud image generation via Azure OpenAI DALL-E 3.', comingSoon: true },
                 ].filter(p => services.some(s => s.id === p.id || (p.id !== 'llm-engine'))).map(provider => {
                   const isSelected = selectedServices.includes(provider.id) && selectedAiProvider !== provider.id;
                   return (
                     <div
                       key={provider.id}
                       className={`service-card ${isSelected ? 'selected' : ''}`}
-                      onClick={() => selectImageProvider(provider.id)}
+                      onClick={() => !provider.comingSoon && selectImageProvider(provider.id)}
+                      style={provider.comingSoon ? { opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' } : {}}
                     >
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
                         <span className="service-icon">{provider.icon}</span>
-                        <input type="radio" name="imageProvider" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                        {provider.comingSoon
+                          ? <span style={{fontSize: '0.65rem', fontWeight: 700, color: '#64748b', background: '#e2e8f0', borderRadius: '4px', padding: '2px 6px', letterSpacing: '0.05em'}}>COMING SOON</span>
+                          : <input type="radio" name="imageProvider" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                        }
                       </div>
                       <h3>{provider.name}</h3>
                       <p className="service-description">{provider.description}</p>
