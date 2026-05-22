@@ -1,0 +1,54 @@
+appId: org.alloflow.client
+productName: AlloFlow Client
+directories:
+  buildResources: assets
+  output: dist
+
+files:
+  - from: .
+    to: .
+    filter:
+      - package.json
+      - main.js
+      - preload.js
+      - src/**/*
+      - "!dist"
+      - "!build"
+      - "!node_modules"
+      - "!.git"
+  - from: build
+    to: .
+
+extraMetadata:
+  main: main.js
+  role: ${ROLE:-student}
+
+win:
+  target:
+    - nsis
+  certificateFile: null
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: AlloFlow Client
+
+mac:
+  target:
+    - dmg
+    - zip
+  icon: null
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+      type: file
+    - x: 438
+      y: 220
+      type: link
+      path: /Applications
+
+publish: null

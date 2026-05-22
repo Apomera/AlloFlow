@@ -7,7 +7,7 @@
     <title>Cost Savings Calculator | AlloFlow</title>
     <meta name="description"
         content="See how much your school could save by replacing multiple EdTech subscriptions with AlloFlow — the free, open-source AI classroom assistant.">
-    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="shared/shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .calc-hero {
@@ -743,7 +743,7 @@
 
         // Copy Link
         function copyCanvasLink() {
-            const link = "https://gemini.google.com/share/c8baf80a46cc";
+            const link = "https://gemini.google.com/share/544cba6b9967";
             navigator.clipboard.writeText(link).then(() => {
                 document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
             }).catch(() => alert("Failed to copy. Check permissions."));

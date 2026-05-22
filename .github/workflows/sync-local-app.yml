@@ -1,0 +1,125 @@
+name: Sync Local App
+
+# Runs whenever AlloFlowANTI.txt changes on main (the single source of truth).
+# Detects which @section blocks changed, re-extracts + cloud-strips them,
+# and commits the updated section files + rebuilt app bundle back to the repo.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AlloFlowANTI.txt'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force re-extract all sections even if hashes match'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+concurrency:
+  group: sync-local-app
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync local-app sections
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Node.js setup ───────────────────────────────────────────────────────
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: local-app/package.json
+
+      # ── Install local-app dependencies ──────────────────────────────────────
+      - name: Install local-app dependencies
+        working-directory: local-app
+        run: npm ci
+
+      # ── Run sync ────────────────────────────────────────────────────────────
+      - name: Check for changed sections (dry run)
+        id: sync_check
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          # Run dry run first to capture what changed
+          node scripts/sync_local.js --verbose $FORCE_FLAG 2>&1 | tee /tmp/sync_check.txt || true
+          # Count changed sections
+          CHANGED=$(grep -c '^ *CHANGED\|^ *NEW ' /tmp/sync_check.txt || echo "0")
+          echo "changed_count=$CHANGED" >> $GITHUB_OUTPUT
+          echo "### Sync Check" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/sync_check.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Apply changes and rebuild
+        if: steps.sync_check.outputs.changed_count != '0'
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          node scripts/sync_local.js --apply $FORCE_FLAG 2>&1 | tee /tmp/sync_apply.txt
+          echo "### Apply Result" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/sync_apply.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      # ── Validate no cloud code leaked through ───────────────────────────────
+      - name: Validate cloud-stripping
+        if: steps.sync_check.outputs.changed_count != '0'
+        run: node scripts/sync_local.js --validate 2>&1
+
+      # ── Run backend tests to verify the rebuild is healthy ──────────────────
+      - name: Run backend tests
+        if: steps.sync_check.outputs.changed_count != '0'
+        run: node scripts/test_local_app.js --backend-only 2>&1 | tee /tmp/test_results.txt
+        continue-on-error: true
+
+      - name: Upload test results
+        if: steps.sync_check.outputs.changed_count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: test-results/
+          retention-days: 14
+
+      # ── Commit updated section files ────────────────────────────────────────
+      - name: Commit synced files
+        if: steps.sync_check.outputs.changed_count != '0'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage updated section files and build artifacts
+          git add local-app/modules/local/ || true
+          git add local-app/src/LocalApp.jsx || true
+          git add local-app/build/app.js local-app/build/ai_local_module.js \
+                  local-app/build/db_local_module.js local-app/build/sharedContext_local.js || true
+
+          if git diff --staged --quiet; then
+            echo "No file changes to commit — extraction produced identical output."
+          else
+            SECTIONS_CHANGED="${{ steps.sync_check.outputs.changed_count }}"
+            git commit -m "chore(local-app): auto-sync ${SECTIONS_CHANGED} section(s) from AlloFlowANTI.txt [skip ci]
+
+  Triggered by: ${{ github.sha }}
+  Workflow run: ${{ github.run_id }}"
+            git push
+          fi

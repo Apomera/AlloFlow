@@ -103,6 +103,28 @@ function flattenPath(...segments) {
     return { collection: segments[0] || 'unknown', docId: null, meta: {} };
 }
 
+// ─── Path Parameter Validation (Week 3 Security) ──────────────────────────────
+// Validates appId and sessionId/code to prevent path traversal attacks.
+// Whitelist: alphanumeric, underscore, hyphen only.
+// Throws error if validation fails (fail-safe approach).
+
+const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+function validatePathParameter(value, paramName) {
+    if (typeof value !== 'string') {
+        throw new TypeError(`${paramName} must be a string, got ${typeof value}`);
+    }
+    if (value.length === 0) {
+        throw new Error(`${paramName} cannot be empty`);
+    }
+    if (value.length > 255) {
+        throw new Error(`${paramName} exceeds maximum length of 255 characters`);
+    }
+    if (!SAFE_ID_REGEX.test(value)) {
+        throw new Error(`${paramName} contains invalid characters. Only alphanumeric, underscore, and hyphen allowed. Got: ${value}`);
+    }
+}
+
 // ─── AlloData High-Level API ─────────────────────────────────────────────────
 // Wraps the raw DataProvider with convenience methods that handle path
 // flattening transparently, so the main app doesn't need to change its
@@ -230,6 +252,8 @@ class AlloData {
 
     /** Session-specific shortcut (most common pattern in the codebase) */
     async updateSession(appId, code, data) {
+        validatePathParameter(appId, 'appId');
+        validatePathParameter(code, 'sessionId');
         return this.updateDoc(
             ['artifacts', appId, 'public', 'data', 'sessions', code],
             data
@@ -238,6 +262,8 @@ class AlloData {
 
     /** Session-specific shortcut: get session doc */
     async getSession(appId, code) {
+        validatePathParameter(appId, 'appId');
+        validatePathParameter(code, 'sessionId');
         return this.getDoc(
             ['artifacts', appId, 'public', 'data', 'sessions', code]
         );
@@ -245,6 +271,8 @@ class AlloData {
 
     /** Session-specific shortcut: create session doc */
     async createSession(appId, code, data) {
+        validatePathParameter(appId, 'appId');
+        validatePathParameter(code, 'sessionId');
         return this.setDoc(
             ['artifacts', appId, 'public', 'data', 'sessions', code],
             data
@@ -253,6 +281,8 @@ class AlloData {
 
     /** Session-specific shortcut: listen to session changes */
     onSessionSnapshot(appId, code, callback) {
+        validatePathParameter(appId, 'appId');
+        validatePathParameter(code, 'sessionId');
         return this.onSnapshot(
             ['artifacts', appId, 'public', 'data', 'sessions', code],
             callback

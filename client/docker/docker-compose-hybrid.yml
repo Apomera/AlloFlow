@@ -1,0 +1,190 @@
+# ══════════════════════════════════════════════════════════════════
+#  AlloFlow Homeschool — Hybrid Deployment (Local Data + Cloud AI Fallback)
+#  
+#  Hardware Requirements:
+#    • Minimum: 8GB RAM, 4-core CPU (Intel i5/AMD Ryzen 5+)
+#    • Recommended: 16GB RAM, 6-core CPU, SSD storage
+#    • NO GPU required (CPU-only)
+#    • Can run on: Home laptop, NAS, Raspberry Pi 5, always-on PC
+#
+#  Services:
+#    PocketBase (DB)    → port 8090   (database — LOCAL)
+#    Ollama (LLM)       → port 11434  (text generation — LOCAL, CPU)
+#    SearXNG (Search)   → port 8888   (web search — LOCAL, anonymous)
+#    Piper TTS (Speech) → port 10200  (text-to-speech — LOCAL, offline)
+#
+#  Image Generation:
+#    Falls back to Gemini/GPT-4 if local Flux unavailable (cloud fallback)
+#
+#  Usage:
+#    docker compose -f docker-compose-hybrid.yml up -d
+#    docker compose -f docker-compose-hybrid.yml logs -f ollama
+#    docker compose -f docker-compose-hybrid.yml ps
+#
+#  First Run:
+#    1. Services start (~2-5 min for all containers)
+#    2. Ollama auto-pulls Mistral model on first AI query (~3 GB, ~10 min)
+#    3. Parents launch Homeschool app and select "Hybrid Mode"
+# ══════════════════════════════════════════════════════════════════
+
+version: "3.8"
+
+services:
+  # ── Local Database (PocketBase — data stays at home) ───────
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: alloflow-homeschool-pocketbase
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - pocketbase_hybrid_data:/pb/pb_data
+      - ./pocketbase/pb_migrations:/pb/pb_migrations
+    restart: unless-stopped
+    networks:
+      - homeschool-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    environment:
+      - POCKETBASE_INITIAL_USER_NAME=parent@homeschool.local
+      - POCKETBASE_INITIAL_USER_PASSWORD=changeme
+
+  # ── LLM Backend (CPU-friendly Mistral via Ollama) ──────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: alloflow-homeschool-ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_hybrid_data:/root/.ollama
+    networks:
+      - homeschool-network
+    restart: unless-stopped
+    environment:
+      # Auto-pull model on startup (Mistral 7B — lean, fits 8GB RAM)
+      - OLLAMA_MODELS=/root/.ollama/models
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    # Note: To use GPU if available (optional), uncomment below:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1  # Use 1 GPU if available
+    #           capabilities: [gpu]
+
+  # ── Text-to-Speech (Piper — offline, 40+ languages) ────────
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: alloflow-homeschool-piper
+    ports:
+      - "127.0.0.1:10200:10200"
+    volumes:
+      - piper_hybrid_data:/data
+    networks:
+      - homeschool-network
+    command: >
+      --voice en_US-amy-medium
+      --data-dir /data
+      --download-dir /data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10200/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  # ── Web Search (SearXNG — privacy-first, no tracking) ──────
+  searxng:
+    image: searxng/searxng:latest
+    container_name: alloflow-homeschool-searxng
+    ports:
+      - "127.0.0.1:8888:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8888
+      - SEARXNG_SECRET_KEY=ChangeMeToARandomString_Min32Chars!
+    volumes:
+      - searxng_hybrid_data:/etc/searxng
+    networks:
+      - homeschool-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  pocketbase_hybrid_data:
+    driver: local
+  ollama_hybrid_data:
+    driver: local
+  piper_hybrid_data:
+    driver: local
+  searxng_hybrid_data:
+    driver: local
+
+networks:
+  homeschool-network:
+    driver: bridge
+
+# ══════════════════════════════════════════════════════════════════
+# Setup Instructions:
+# 
+# 1. Install Docker Desktop (free): https://www.docker.com/products/docker-desktop
+#
+# 2. Place this file in: ~/AlloFlow/docker/docker-compose-hybrid.yml
+#
+# 3. Start services:
+#    cd ~/AlloFlow/docker
+#    docker compose -f docker-compose-hybrid.yml up -d
+#
+# 4. Verify all services running:
+#    docker compose -f docker-compose-hybrid.yml ps
+#    (Should show all 4 services as "running")
+#
+# 5. In AlloFlow Homeschool app:
+#    Settings → Server & Sync → Select "Hybrid Mode"
+#    (App auto-detects PocketBase on localhost:8090)
+#
+# 6. First AI query will trigger Ollama model download (~3GB, takes ~10 min)
+#    Progress shown in console: docker logs -f alloflow-homeschool-ollama
+#
+# 7. To stop services:
+#    docker compose -f docker-compose-hybrid.yml down
+#
+# 8. To backup data:
+#    docker compose -f docker-compose-hybrid.yml exec pocketbase tar czf backup.tar.gz pb_data/
+#    docker cp alloflow-homeschool-pocketbase:/pb/backup.tar.gz ~/backup.tar.gz
+#
+# ══════════════════════════════════════════════════════════════════

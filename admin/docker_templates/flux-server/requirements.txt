@@ -1,0 +1,13 @@
+# torch is installed by nativeProcessManager (pip install torch)
+# GPU acceleration via ONNX Runtime + DirectML (AMD/Intel/NVIDIA on Windows)
+onnxruntime-directml
+optimum[onnxruntime]
+diffusers>=0.30.0
+transformers
+accelerate
+safetensors
+sentencepiece
+protobuf
+fastapi
+uvicorn[standard]
+Pillow

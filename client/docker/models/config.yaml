@@ -1,0 +1,73 @@
+# AlloFlow LocalAI Model Configuration
+#
+# This file defines the models available in the self-hosted deployment.
+# LocalAI will download and serve these models automatically.
+#
+# Model selection rationale:
+#   - Text (fast): Llama 3.1 8B — excellent general-purpose, fast inference
+#   - Text (quality): Qwen 2.5 72B Q4 — top-tier for clinical reports
+#   - Image gen: FLUX.2 klein — text-to-image generation
+#   - Image edit: FLUX.1 Kontext dev — purpose-built image editing
+#   - TTS (English+7): Kokoro 82M — #1 ranked TTS Arena
+#   - TTS (40+ langs): Piper — broad multilingual coverage
+#   - Safety: Llama Guard 3 — content classification
+#   - Vision: Qwen 2.5 VL 7B — image/video analysis
+#
+# Hardware requirements per tier:
+#   Minimal (8GB VRAM):  llama-3.1-8b + kokoro + piper
+#   Standard (16GB VRAM): + flux.2-klein + qwen-2.5-vl-7b
+#   Full (24GB+ VRAM):    + flux.1-kontext-dev + llama-guard-3
+#   Max (48GB+ VRAM):     + qwen-2.5-72b-q4
+
+# ─── Text Generation ────────────────────────────────────────────────
+
+# Fast general-purpose model — glossary, adventures, conversations
+- name: llama-3.1-8b
+  url: "github:mudler/LocalAI/gallery/llama-3.1-8b-instruct.yaml"
+  overrides:
+    parameters:
+      model: llama-3.1-8b-instruct
+    context_size: 4096
+
+# High-quality model — clinical reports, detailed analysis
+# (Optional — requires 40GB+ VRAM or CPU offloading)
+# - name: qwen-2.5-72b-q4
+#   url: "github:mudler/LocalAI/gallery/qwen2.5-72b-instruct.yaml"
+#   overrides:
+#     parameters:
+#       model: qwen-2.5-72b-instruct-q4
+#     context_size: 8192
+
+# ─── Image Generation ───────────────────────────────────────────────
+
+# Text-to-image — glossary icons, adventure scenes, visual panels
+- name: flux.2-klein
+  url: "github:mudler/LocalAI/gallery/flux2-klein.yaml"
+
+# Image-to-image editing — text removal, character consistency, refinement
+# This is the FLUX.1 Kontext model, purpose-built for image editing
+- name: flux.1-kontext-dev
+  url: "github:mudler/LocalAI/gallery/flux1-kontext-dev.yaml"
+
+# ─── Text-to-Speech ─────────────────────────────────────────────────
+
+# Primary TTS — English + 7 major languages
+# #1 ranked in TTS Arena for quality
+- name: kokoro-82m
+  url: "github:mudler/LocalAI/gallery/kokoro.yaml"
+
+# Multilingual TTS — 40+ languages for AlloFlow's i18n support
+- name: piper
+  url: "github:mudler/LocalAI/gallery/piper.yaml"
+
+# ─── Vision / Multimodal ────────────────────────────────────────────
+
+# Image analysis — educational content analysis, diagram interpretation
+- name: qwen-2.5-vl-7b
+  url: "github:mudler/LocalAI/gallery/qwen2.5-vl-7b.yaml"
+
+# ─── Safety ─────────────────────────────────────────────────────────
+
+# Content safety classification — student content moderation
+- name: llama-guard-3
+  url: "github:mudler/LocalAI/gallery/llama-guard-3.yaml"

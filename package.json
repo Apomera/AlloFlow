@@ -49,7 +49,8 @@
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js"
   },
   "dependencies": {
-    "acorn": "^8.16.0"
+    "acorn": "^8.16.0",
+    "lucide-react": "^1.7.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
