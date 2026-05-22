@@ -31,7 +31,8 @@ const DEV_MODE = args.includes('--dev');
 // ── Paths ─────────────────────────────────────────────────────────────────────
 const ROOT = path.resolve(__dirname);
 const LOCAL_APP = path.join(ROOT, 'local-app');
-const MODULES_LOCAL = path.join(LOCAL_APP, 'modules', 'local');
+const MODULES_LOCAL = path.join(LOCAL_APP, 'modules', 'local');   // local overrides (modified sections only)
+const MODULES_RAW  = path.join(LOCAL_APP, 'modules', 'raw');     // pristine upstream extracts (auto-synced)
 const SRC_DIR = path.join(LOCAL_APP, 'src');
 const BUILD_DIR = path.join(LOCAL_APP, 'build');
 const OUT_JSX = path.join(SRC_DIR, 'LocalApp.jsx');
@@ -109,15 +110,21 @@ function assembleLocalApp() {
     let missing = 0;
     for (const sectionName of SECTION_ORDER) {
         const fileName = sectionFilename(sectionName);
-        const filePath = path.join(MODULES_LOCAL, fileName);
+        const localPath = path.join(MODULES_LOCAL, fileName);
+        const rawPath   = path.join(MODULES_RAW,   fileName);
 
-        if (!fs.existsSync(filePath)) {
-            console.warn(`  ⚠️  Section file missing: ${fileName} — skipping`);
+        let content, sourceLabel;
+        if (fs.existsSync(localPath)) {
+            content     = fs.readFileSync(localPath, 'utf-8');
+            sourceLabel = '[local]';
+        } else if (fs.existsSync(rawPath)) {
+            content     = fs.readFileSync(rawPath, 'utf-8');
+            sourceLabel = '[raw]  ';
+        } else {
+            console.warn(`  ⚠️  Section missing in both local/ and raw/: ${fileName} — skipping`);
             missing++;
             continue;
         }
-
-        let content = fs.readFileSync(filePath, 'utf-8');
 
         // Strip the metadata header comments (lines starting with // up to the blank line)
         // so they don't pollute the JSX output.
@@ -130,7 +137,7 @@ function assembleLocalApp() {
             content
         );
 
-        console.log(`  ✅ ${sectionName.padEnd(25)} ${fileName}`);
+        console.log(`  ✅ ${sourceLabel} ${sectionName.padEnd(25)} ${fileName}`);
     }
 
     if (missing > 0) {
