@@ -31,8 +31,13 @@
   }
 
   var React = window.React;
+  var ReactDOM = window.ReactDOM;
   if (!React) {
     console.error('[CDN] AccessibilityLab requires window.React');
+    return;
+  }
+  if (!ReactDOM || typeof ReactDOM.createPortal !== 'function') {
+    console.error('[CDN] AccessibilityLab requires window.ReactDOM with createPortal');
     return;
   }
   var e = React.createElement;
@@ -78,7 +83,118 @@
     { value: 'loose',  label: 'Loose',  cssLineHeight: '2.0' },
   ];
 
+  // The app stores letterSpacing as a unitless em multiplier (default 0).
+  // Lab buckets cover the common accessibility recommendations.
+  var LETTER_SPACINGS = [
+    { value: 'normal', label: 'Normal', em: 0 },
+    { value: 'wide',   label: 'Wide',   em: 0.05 },
+    { value: 'wider',  label: 'Wider',  em: 0.10 },
+  ];
+
+  // ----- Live-app <-> Lab settings mapping ------------------------------------
+  // The app's accessibility settings (AlloFlowANTI.txt:5885-5951) use a richer
+  // enum than the Lab's preview controls. These helpers translate at the
+  // boundary so the Lab can read the teacher's current real settings and write
+  // a chosen preview combination back to the live app.
+
+  // App readingTheme -> Lab theme. Unmapped app themes return null so the UI
+  // can surface a "switch in main settings" note.
+  function appThemeToLab(rt) {
+    if (rt === 'dark') return 'dark';
+    if (rt === 'highContrast') return 'hc';
+    if (rt === 'sepia') return 'sepia';
+    if (rt === 'default' || !rt) return 'light';
+    return null;
+  }
+  function labThemeToApp(t) {
+    if (t === 'dark') return 'dark';
+    if (t === 'hc')   return 'highContrast';
+    if (t === 'sepia') return 'sepia';
+    return 'default';
+  }
+  // App selectedFont id (FONT_OPTIONS) -> Lab fontFamily value.
+  function appFontToLab(id) {
+    if (id === 'opendyslexic') return 'dyslexic';
+    if (id === 'merriweather' || id === 'gentium' || id === 'lora' || id === 'playfair') return 'serif';
+    if (!id || id === 'default') return 'system';
+    return 'sans';
+  }
+  function labFontToApp(v) {
+    if (v === 'dyslexic') return 'opendyslexic';
+    if (v === 'serif')    return 'merriweather';
+    if (v === 'sans')     return 'atkinson';
+    return 'default';
+  }
+  // Round arbitrary numeric baseFontSize to the nearest lab bucket.
+  function appSizeToLab(px) {
+    var n = typeof px === 'number' ? px : parseFloat(px);
+    if (!isFinite(n)) return 'md';
+    var best = FONT_SIZES[0], bestDist = Math.abs(n - FONT_SIZES[0].px);
+    for (var i = 1; i < FONT_SIZES.length; i++) {
+      var d = Math.abs(n - FONT_SIZES[i].px);
+      if (d < bestDist) { best = FONT_SIZES[i]; bestDist = d; }
+    }
+    return best.value;
+  }
+  function labSizeToApp(v) {
+    var found = FONT_SIZES.find(function (s) { return s.value === v; });
+    return found ? found.px : 17;
+  }
+  function appLineHeightToLab(lh) {
+    var n = typeof lh === 'number' ? lh : parseFloat(lh);
+    if (!isFinite(n)) return 'normal';
+    if (n <= 1.45) return 'tight';
+    if (n >= 1.8)  return 'loose';
+    return 'normal';
+  }
+  function labLineHeightToApp(v) {
+    if (v === 'tight') return 1.3;
+    if (v === 'loose') return 2.0;
+    return 1.6;
+  }
+  function appLetterSpacingToLab(ls) {
+    var n = typeof ls === 'number' ? ls : parseFloat(ls);
+    if (!isFinite(n)) return 'normal';
+    if (n >= 0.08) return 'wider';
+    if (n >= 0.03) return 'wide';
+    return 'normal';
+  }
+  function labLetterSpacingToApp(v) {
+    var found = LETTER_SPACINGS.find(function (s) { return s.value === v; });
+    return found ? found.em : 0;
+  }
+
   // ----- Helpers --------------------------------------------------------------
+
+  // Stable, locale-independent selector for excluding the lab from its own
+  // scans. The dialog's aria-label is translated, so we use a data attribute
+  // instead. Both the portal wrapper and the dialog carry this attribute, so
+  // a single querySelector will find one of them, and .contains(el) then
+  // catches every focusable/landmark element inside the lab.
+  var LAB_EXCLUDE_SELECTOR = '[data-alloflow-a11y-lab]';
+
+  function prefersReducedMotion() {
+    try {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (_) { return false; }
+  }
+  function scrollBehavior() {
+    return prefersReducedMotion() ? 'auto' : 'smooth';
+  }
+
+  // Translator wrapper. The host passes `t` (the app's i18n function); when
+  // a key is missing it commonly returns the key back unchanged, so we treat
+  // both "no t" and "t returned the key" as a miss and fall back to English.
+  function makeTr(t) {
+    return function tr(key, fallback) {
+      if (typeof t !== 'function') return fallback;
+      try {
+        var v = t(key);
+        if (v && v !== key) return v;
+      } catch (_) {}
+      return fallback;
+    };
+  }
 
   function asString(value) {
     if (value === null || value === undefined) return '';
@@ -91,10 +207,12 @@
     var family = FONT_FAMILIES.find(function (f) { return f.value === settings.fontFamily; }) || FONT_FAMILIES[0];
     var size = FONT_SIZES.find(function (s) { return s.value === settings.fontSize; }) || FONT_SIZES[1];
     var spacing = LINE_SPACINGS.find(function (s) { return s.value === settings.lineSpacing; }) || LINE_SPACINGS[1];
+    var ls = LETTER_SPACINGS.find(function (s) { return s.value === settings.letterSpacing; }) || LETTER_SPACINGS[0];
     return {
       fontFamily: family.css,
       fontSize: size.px + 'px',
       lineHeight: spacing.cssLineHeight,
+      letterSpacing: ls.em + 'em',
       backgroundColor: theme.bg,
       color: theme.fg,
       padding: '20px',
@@ -103,21 +221,40 @@
     };
   }
 
+  // Strip citation-style markdown links like `[^(1)](https://...)` or
+  // `[(1)](https://...)` — these are reference markers that add noise to a
+  // student-facing preview. Returns plain text with the parenthesized number
+  // preserved (so context like "evaporation [1]" still reads naturally) and
+  // the URL discarded.
+  function stripCitations(text) {
+    if (typeof text !== 'string') return text;
+    return text.replace(/\[\^?\((\d+)\)\]\([^)]+\)/g, '[$1]');
+  }
+
   // Render a single history item in a student-friendly layout. Different
   // history types have different data shapes; we pick out the parts that
   // make sense to display in a preview.
-  function renderHistoryItemContent(item, theme) {
+  function renderHistoryItemContent(item, theme, renderFormattedText) {
     if (!item || !item.data) {
       return e('p', { style: { color: theme.sub, fontStyle: 'italic' } }, 'No content available for this lesson item.');
     }
     var data = item.data;
 
-    // analysis: source text + concepts
+    // analysis: source text + concepts.
+    // Source text often contains markdown (headings, links, citation refs).
+    // Strip citation links (noise in a student preview), then route through
+    // the host's renderFormattedText when available so headings/links/lists
+    // actually render. Fall back to plain pre-wrap text if the host did not
+    // wire renderFormattedText through.
     if (item.type === 'analysis') {
+      var cleanedSourceText = stripCitations(asString(data.originalText));
+      var sourceBody = (typeof renderFormattedText === 'function')
+        ? e('div', { className: 'a11y-rendered-markdown' }, renderFormattedText(cleanedSourceText, false, false))
+        : e('p', { style: { whiteSpace: 'pre-wrap' } }, cleanedSourceText);
       return e('div', null,
         data.originalText && e('section', { style: { marginBottom: '24px' } },
           e('h4', { style: { fontWeight: 700, marginBottom: '12px' } }, 'Source text'),
-          e('p', { style: { whiteSpace: 'pre-wrap' } }, asString(data.originalText))
+          sourceBody
         ),
         Array.isArray(data.concepts) && data.concepts.length > 0 && e('section', { style: { marginBottom: '24px' } },
           e('h4', { style: { fontWeight: 700, marginBottom: '12px' } }, 'Key concepts'),
@@ -233,22 +370,43 @@
   function PreviewTab(props) {
     var history = props.history || [];
     var callTTS = props.callTTS;
+    var renderFormattedText = props.renderFormattedText;
     var addToast = props.addToast;
+    var tr = makeTr(props.t);
+
+    // Whether the host passed setters for the real app's accessibility state.
+    // When true, the Preview tab can sync from and write back to the live app.
+    var canApplyToApp = (
+      typeof props.setReadingTheme === 'function' &&
+      typeof props.setBaseFontSize === 'function' &&
+      typeof props.setLineHeight    === 'function' &&
+      typeof props.setSelectedFont  === 'function'
+    );
+
+    function settingsFromApp() {
+      var mappedTheme = appThemeToLab(props.readingTheme);
+      return {
+        fontFamily: appFontToLab(props.selectedFont),
+        fontSize:   appSizeToLab(props.baseFontSize),
+        theme:      mappedTheme || 'light',
+        lineSpacing: appLineHeightToLab(props.lineHeight),
+        letterSpacing: appLetterSpacingToLab(props.letterSpacing),
+      };
+    }
 
     var sel$ = useState(null);
     var selectedItem = sel$[0], setSelectedItem = sel$[1];
 
-    var settings$ = useState({
-      fontSize: 'md',
-      fontFamily: 'system',
-      theme: 'light',
-      lineSpacing: 'normal',
-    });
+    var settings$ = useState(settingsFromApp);
     var settings = settings$[0], setSettings = settings$[1];
 
     var theme = useMemo(function () {
       return THEMES.find(function (t) { return t.value === settings.theme; }) || THEMES[0];
     }, [settings.theme]);
+
+    // True when the current app readingTheme has no equivalent in the lab's
+    // simplified theme enum (e.g., warm, blue, green, rose, dyslexia overlay).
+    var unmappedAppTheme = appThemeToLab(props.readingTheme) === null;
 
     function update(key, value) {
       var next = {};
@@ -256,22 +414,43 @@
       setSettings(Object.assign({}, settings, next));
     }
 
+    function handleApplyToApp() {
+      if (!canApplyToApp) return;
+      try {
+        props.setReadingTheme(labThemeToApp(settings.theme));
+        props.setBaseFontSize(labSizeToApp(settings.fontSize));
+        props.setLineHeight(labLineHeightToApp(settings.lineSpacing));
+        props.setSelectedFont(labFontToApp(settings.fontFamily));
+        if (typeof props.setLetterSpacing === 'function') {
+          props.setLetterSpacing(labLetterSpacingToApp(settings.letterSpacing));
+        }
+        addToast && addToast(tr('a11y_lab.preview.apply_success', 'Applied to the live app for all students using this device.'), 'success');
+      } catch (err) {
+        addToast && addToast(tr('a11y_lab.preview.apply_error', 'Could not apply settings: ') + (err && err.message), 'error');
+      }
+    }
+
+    function handleResetFromApp() {
+      setSettings(settingsFromApp());
+      addToast && addToast(tr('a11y_lab.preview.reset_success', 'Reset to the live app\'s current settings.'), 'info');
+    }
+
     function handleReadAloud() {
       if (!callTTS || typeof callTTS !== 'function') {
-        addToast && addToast('Read aloud is not available in this build.', 'error');
+        addToast && addToast(tr('a11y_lab.preview.read_aloud_unavailable', 'Read aloud is not available in this build.'), 'error');
         return;
       }
       // Read the visible content of the preview pane
       var pane = document.getElementById('alloflow-a11y-preview-pane');
       var text = pane ? pane.innerText : '';
       if (!text || !text.trim()) {
-        addToast && addToast('Nothing to read in the current preview.', 'info');
+        addToast && addToast(tr('a11y_lab.preview.read_aloud_empty', 'Nothing to read in the current preview.'), 'info');
         return;
       }
       try {
         callTTS(text);
       } catch (err) {
-        addToast && addToast('Could not start read-aloud: ' + (err && err.message), 'error');
+        addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + (err && err.message), 'error');
       }
     }
 
@@ -280,13 +459,13 @@
       var validHistory = history.filter(function (item) { return item && item.type && item.type !== 'image'; });
       return e('div', { className: 'flex flex-col gap-4' },
         e('div', null,
-          e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Preview a lesson as your student'),
+          e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.preview.heading', 'Preview a lesson as your student')),
           e('p', { className: 'text-sm text-slate-600 mt-1' },
-            'Choose a saved lesson to preview with student accessibility settings applied (font, size, contrast, line spacing). This shows you what the content looks like for students using accommodations.')
+            tr('a11y_lab.preview.select_intro', 'Choose a saved lesson to preview with student accessibility settings applied (font, size, contrast, line spacing). This shows you what the content looks like for students using accommodations.'))
         ),
         validHistory.length === 0
           ? e('div', { className: 'p-8 text-center bg-slate-50 rounded-lg border border-slate-200 text-slate-600' },
-              'No saved lessons yet. Generate a lesson in Teacher Mode first, then come back to preview it.')
+              tr('a11y_lab.preview.no_lessons', 'No saved lessons yet. Generate a lesson in Teacher Mode first, then come back to preview it.'))
           : e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               validHistory.map(function (item) {
                 return e('button', {
@@ -296,7 +475,7 @@
                 },
                   e('div', { className: 'flex items-center gap-2' },
                     e('span', { className: 'text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800' }, item.type),
-                    e('span', { className: 'font-bold text-sm text-slate-800' }, asString(item.title) || '(untitled)')
+                    e('span', { className: 'font-bold text-sm text-slate-800' }, asString(item.title) || tr('a11y_lab.preview.untitled', '(untitled)'))
                   ),
                   item.meta && e('span', { className: 'text-xs text-slate-500 truncate w-full' }, asString(item.meta))
                 );
@@ -311,17 +490,17 @@
         e('button', {
           onClick: function () { setSelectedItem(null); },
           className: 'text-sm text-indigo-700 hover:underline flex items-center gap-1',
-        }, '← Back to lesson list'),
+        }, tr('a11y_lab.preview.back', '← Back to lesson list')),
         e('div', { className: 'text-xs text-slate-500' },
-          'Previewing: ', e('strong', null, asString(selectedItem.title) || '(untitled)'),
+          tr('a11y_lab.preview.previewing_prefix', 'Previewing: '), e('strong', null, asString(selectedItem.title) || tr('a11y_lab.preview.untitled', '(untitled)')),
           ' (', selectedItem.type, ')'
         )
       ),
 
       // Settings strip
-      e('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3 grid grid-cols-2 md:grid-cols-5 gap-3' },
+      e('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3' },
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, 'Font'),
+          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.font_label', 'Font')),
           e('select', {
             value: settings.fontFamily,
             onChange: function (ev) { update('fontFamily', ev.target.value); },
@@ -329,7 +508,7 @@
           }, FONT_FAMILIES.map(function (f) { return e('option', { key: f.value, value: f.value }, f.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, 'Size'),
+          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.size_label', 'Size')),
           e('select', {
             value: settings.fontSize,
             onChange: function (ev) { update('fontSize', ev.target.value); },
@@ -337,7 +516,7 @@
           }, FONT_SIZES.map(function (s) { return e('option', { key: s.value, value: s.value }, s.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, 'Theme'),
+          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.theme_label', 'Theme')),
           e('select', {
             value: settings.theme,
             onChange: function (ev) { update('theme', ev.target.value); },
@@ -345,29 +524,58 @@
           }, THEMES.map(function (t) { return e('option', { key: t.value, value: t.value }, t.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, 'Line spacing'),
+          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.spacing_label', 'Line spacing')),
           e('select', {
             value: settings.lineSpacing,
             onChange: function (ev) { update('lineSpacing', ev.target.value); },
             className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
           }, LINE_SPACINGS.map(function (s) { return e('option', { key: s.value, value: s.value }, s.label); }))
         ),
+        e('div', null,
+          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.letter_spacing_label', 'Letter spacing')),
+          e('select', {
+            value: settings.letterSpacing,
+            onChange: function (ev) { update('letterSpacing', ev.target.value); },
+            className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
+          }, LETTER_SPACINGS.map(function (s) { return e('option', { key: s.value, value: s.value }, s.label); }))
+        ),
         e('div', { className: 'flex flex-col justify-end' },
           e('button', {
             onClick: handleReadAloud,
             className: 'w-full px-2 py-1 text-xs font-semibold border border-emerald-600 text-emerald-700 rounded hover:bg-emerald-50',
-          }, '🔊 Read aloud')
+          }, tr('a11y_lab.preview.read_aloud', '🔊 Read aloud'))
         )
       ),
 
+      // Unmapped-theme note: surfaced when the app's current readingTheme has
+      // no equivalent in the lab's simplified theme enum.
+      unmappedAppTheme && e('div', { className: 'p-2 text-xs bg-blue-50 border border-blue-200 rounded text-blue-900' },
+        tr('a11y_lab.preview.unmapped_theme_note', 'Note: the app is currently using a reading theme (warm, blue, green, rose, or dyslexia overlay) that is not represented in this preview yet. Switch it in the main accessibility settings to preview it accurately.')
+      ),
+
       // Preview pane (the actual student-eye view)
-      e('div', { id: 'alloflow-a11y-preview-pane', style: settingsStyle(settings, theme), 'aria-label': 'Student preview pane' },
-        renderHistoryItemContent(selectedItem, theme)
+      e('div', { id: 'alloflow-a11y-preview-pane', style: settingsStyle(settings, theme), 'aria-label': tr('a11y_lab.preview.pane_aria', 'Student preview pane') },
+        renderHistoryItemContent(selectedItem, theme, renderFormattedText)
+      ),
+
+      // Apply / Reset buttons (only when host passed the setters)
+      canApplyToApp && e('div', { className: 'flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200' },
+        e('button', {
+          onClick: handleApplyToApp,
+          className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
+        }, tr('a11y_lab.preview.apply_button', 'Apply these settings to the app')),
+        e('button', {
+          onClick: handleResetFromApp,
+          className: 'px-3 py-1.5 text-xs font-semibold border border-slate-300 text-slate-700 rounded hover:bg-slate-50',
+        }, tr('a11y_lab.preview.reset_button', 'Reset to app defaults')),
+        e('span', { className: 'text-xs text-slate-500' },
+          tr('a11y_lab.preview.apply_explanation', 'Applies the font, size, theme, line spacing, and letter spacing above to the live app for all students using this device.')
+        )
       ),
 
       // Hint
       e('div', { className: 'text-xs text-slate-500 italic' },
-        'Tip: switch the theme to High contrast and try Extra Large font to simulate low-vision usage. Switch the font to OpenDyslexic to simulate a dyslexia-friendly view.')
+        tr('a11y_lab.preview.tip', 'Tip: switch the theme to High contrast and try Extra Large font to simulate low-vision usage. Switch the font to OpenDyslexic to simulate a dyslexia-friendly view.'))
     );
   }
 
@@ -533,6 +741,7 @@
 
   function KeyboardTab(props) {
     var addToast = props.addToast;
+    var tr = makeTr(props.t);
 
     var scanResult$ = useState(null);
     var scanResult = scanResult$[0], setScanResult = scanResult$[1];
@@ -571,30 +780,32 @@
       try {
         // Exclude the lab modal itself from the scan so we audit the
         // underlying app surface, not our own UI.
-        var result = scanKeyboardAccessibility('[aria-label="Accessibility Lab"]');
+        var result = scanKeyboardAccessibility(LAB_EXCLUDE_SELECTOR);
         setScanResult(result);
+        var issueCount = result.suspicious.length + result.positiveTabindex.length + result.noLabel.length;
         addToast && addToast(
-          'Keyboard scan: ' + result.total + ' focusable elements, ' +
-          (result.suspicious.length + result.positiveTabindex.length + result.noLabel.length) + ' issues',
+          tr('a11y_lab.keyboard.scan_result_prefix', 'Keyboard scan: ') + result.total +
+          tr('a11y_lab.keyboard.scan_result_middle', ' focusable elements, ') + issueCount +
+          tr('a11y_lab.keyboard.scan_result_suffix', ' issues'),
           'info'
         );
       } catch (err) {
-        addToast && addToast('Keyboard scan failed: ' + (err && err.message), 'error');
+        addToast && addToast(tr('a11y_lab.keyboard.scan_failed', 'Keyboard scan failed: ') + (err && err.message), 'error');
       }
     }
 
     function handleFocusElement(el) {
       try {
         el.focus();
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
       } catch (err) { /* ignore */ }
     }
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', null,
-        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Keyboard accessibility audit'),
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.keyboard.heading', 'Keyboard accessibility audit')),
         e('p', { className: 'text-sm text-slate-600 mt-1' },
-          'Scan the underlying lesson view for keyboard-accessible elements. Identifies tab order, "fake buttons" (divs with cursor:pointer that aren\'t keyboard-reachable), positive tabindex anti-patterns, and elements missing accessible names.')
+          tr('a11y_lab.keyboard.description', 'Scan the underlying lesson view for keyboard-accessible elements. Identifies tab order, "fake buttons" (divs with cursor:pointer that aren\'t keyboard-reachable), positive tabindex anti-patterns, and elements missing accessible names.'))
       ),
 
       // Action buttons
@@ -602,19 +813,19 @@
         e('button', {
           onClick: handleScan,
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
-        }, scanResult ? 'Re-scan' : '🔍 Run keyboard scan'),
+        }, scanResult ? tr('a11y_lab.keyboard.rescan', 'Re-scan') : tr('a11y_lab.keyboard.run_scan', '🔍 Run keyboard scan')),
         scanResult && e('button', {
           onClick: function () { setShowOverlay(!showOverlay); },
           className: 'px-4 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
-        }, showOverlay ? '🔢 Hide tab-order overlay' : '🔢 Show tab-order overlay')
+        }, showOverlay ? tr('a11y_lab.keyboard.hide_overlay', '🔢 Hide tab-order overlay') : tr('a11y_lab.keyboard.show_overlay', '🔢 Show tab-order overlay'))
       ),
 
       showOverlay && e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900' },
-        'Tab-order overlay is active. Numbered red badges show the tab sequence on the page behind this lab. Close the lab or click the toggle above to hide.'
+        tr('a11y_lab.keyboard.overlay_active', 'Tab-order overlay is active. Numbered red badges show the tab sequence on the page behind this lab. Close the lab or click the toggle above to hide.')
       ),
 
       !scanResult && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
-        'Click "Run keyboard scan" to audit the current view. The lab modal itself is excluded from the scan; what gets audited is the underlying app surface (the lesson, sidebar, controls, etc. behind the lab).'
+        tr('a11y_lab.keyboard.idle', 'Click "Run keyboard scan" to audit the current view. The lab modal itself is excluded from the scan; what gets audited is the underlying app surface (the lesson, sidebar, controls, etc. behind the lab).')
       ),
 
       scanResult && e('div', { className: 'flex flex-col gap-3' },
@@ -622,32 +833,32 @@
         e('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
           e('div', { className: 'p-3 bg-slate-50 border border-slate-200 rounded text-center' },
             e('div', { className: 'text-2xl font-bold text-slate-800' }, scanResult.total),
-            e('div', { className: 'text-xs text-slate-600' }, 'Focusable elements')
+            e('div', { className: 'text-xs text-slate-600' }, tr('a11y_lab.keyboard.summary_focusable', 'Focusable elements'))
           ),
           e('div', {
             className: 'p-3 border rounded text-center ' + (scanResult.suspicious.length > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-300')
           },
             e('div', { className: 'text-2xl font-bold ' + (scanResult.suspicious.length > 0 ? 'text-amber-800' : 'text-emerald-800') }, scanResult.suspicious.length),
-            e('div', { className: 'text-xs ' + (scanResult.suspicious.length > 0 ? 'text-amber-700' : 'text-emerald-700') }, 'Fake buttons')
+            e('div', { className: 'text-xs ' + (scanResult.suspicious.length > 0 ? 'text-amber-700' : 'text-emerald-700') }, tr('a11y_lab.keyboard.summary_fakes', 'Fake buttons'))
           ),
           e('div', {
             className: 'p-3 border rounded text-center ' + (scanResult.positiveTabindex.length > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-300')
           },
             e('div', { className: 'text-2xl font-bold ' + (scanResult.positiveTabindex.length > 0 ? 'text-amber-800' : 'text-emerald-800') }, scanResult.positiveTabindex.length),
-            e('div', { className: 'text-xs ' + (scanResult.positiveTabindex.length > 0 ? 'text-amber-700' : 'text-emerald-700') }, 'Positive tabindex')
+            e('div', { className: 'text-xs ' + (scanResult.positiveTabindex.length > 0 ? 'text-amber-700' : 'text-emerald-700') }, tr('a11y_lab.keyboard.summary_pos_tabindex', 'Positive tabindex'))
           ),
           e('div', {
             className: 'p-3 border rounded text-center ' + (scanResult.noLabel.length > 0 ? 'bg-rose-50 border-rose-300' : 'bg-emerald-50 border-emerald-300')
           },
             e('div', { className: 'text-2xl font-bold ' + (scanResult.noLabel.length > 0 ? 'text-rose-800' : 'text-emerald-800') }, scanResult.noLabel.length),
-            e('div', { className: 'text-xs ' + (scanResult.noLabel.length > 0 ? 'text-rose-700' : 'text-emerald-700') }, 'Missing names')
+            e('div', { className: 'text-xs ' + (scanResult.noLabel.length > 0 ? 'text-rose-700' : 'text-emerald-700') }, tr('a11y_lab.keyboard.summary_no_label', 'Missing names'))
           )
         ),
 
         // Tab-order list
         scanResult.total > 0 && e('details', { className: 'bg-slate-50 border border-slate-200 rounded p-3' },
           e('summary', { className: 'cursor-pointer font-semibold text-sm text-slate-800' },
-            'Tab order (' + scanResult.total + ' elements)'),
+            tr('a11y_lab.keyboard.tab_order_heading', 'Tab order') + ' (' + scanResult.total + ')'),
           e('ol', { className: 'mt-2 max-h-64 overflow-y-auto pl-6 text-xs space-y-1' },
             scanResult.orderedFocusable.map(function (el, i) {
               return e('li', { key: i, className: 'text-slate-700' },
@@ -663,9 +874,9 @@
         // Issues
         scanResult.suspicious.length > 0 && e('details', { className: 'bg-amber-50 border border-amber-300 rounded p-3' },
           e('summary', { className: 'cursor-pointer font-semibold text-sm text-amber-900' },
-            '⚠ Fake buttons (' + scanResult.suspicious.length + ')'),
+            tr('a11y_lab.keyboard.fakes_heading', '⚠ Fake buttons') + ' (' + scanResult.suspicious.length + ')'),
           e('p', { className: 'text-xs text-amber-800 mt-1' },
-            'Elements with cursor:pointer that look clickable but cannot be reached by keyboard. Common cause: a div with onClick instead of a real <button>. Fix: convert to <button>, OR add tabindex="0" + role="button" + keyboard event handlers.'),
+            tr('a11y_lab.keyboard.fakes_help', 'Elements with cursor:pointer that look clickable but cannot be reached by keyboard. Common cause: a div with onClick instead of a real <button>. Fix: convert to <button>, OR add tabindex="0" + role="button" + keyboard event handlers.')),
           e('ul', { className: 'mt-2 max-h-48 overflow-y-auto pl-5 text-xs list-disc space-y-1' },
             scanResult.suspicious.slice(0, 30).map(function (el, i) {
               return e('li', { key: i, className: 'text-amber-900' },
@@ -680,16 +891,16 @@
 
         scanResult.positiveTabindex.length > 0 && e('details', { className: 'bg-amber-50 border border-amber-300 rounded p-3' },
           e('summary', { className: 'cursor-pointer font-semibold text-sm text-amber-900' },
-            '⚠ Positive tabindex (' + scanResult.positiveTabindex.length + ')'),
+            tr('a11y_lab.keyboard.pos_heading', '⚠ Positive tabindex') + ' (' + scanResult.positiveTabindex.length + ')'),
           e('p', { className: 'text-xs text-amber-800 mt-1' },
-            'Elements with tabindex > 0 break natural document tab order and confuse keyboard users. Fix: use tabindex="0" (default order) or rely on default focusability for buttons/links.')
+            tr('a11y_lab.keyboard.pos_help', 'Elements with tabindex > 0 break natural document tab order and confuse keyboard users. Fix: use tabindex="0" (default order) or rely on default focusability for buttons/links.'))
         ),
 
         scanResult.noLabel.length > 0 && e('details', { className: 'bg-rose-50 border border-rose-300 rounded p-3' },
           e('summary', { className: 'cursor-pointer font-semibold text-sm text-rose-900' },
-            '🔴 Missing accessible names (' + scanResult.noLabel.length + ')'),
+            tr('a11y_lab.keyboard.no_label_heading', '🔴 Missing accessible names') + ' (' + scanResult.noLabel.length + ')'),
           e('p', { className: 'text-xs text-rose-800 mt-1' },
-            'Focusable elements without text, aria-label, aria-labelledby, or title. Screen reader users would hear only the tag name, e.g., "button" with no context. Fix: add aria-label or visible text.'),
+            tr('a11y_lab.keyboard.no_label_help', 'Focusable elements without text, aria-label, aria-labelledby, or title. Screen reader users would hear only the tag name, e.g., "button" with no context. Fix: add aria-label or visible text.')),
           e('ul', { className: 'mt-2 max-h-48 overflow-y-auto pl-5 text-xs list-disc space-y-1' },
             scanResult.noLabel.slice(0, 30).map(function (el, i) {
               return e('li', { key: i, className: 'text-rose-900' },
@@ -704,7 +915,7 @@
 
         // Tip
         e('div', { className: 'text-xs text-slate-500 italic mt-2' },
-          'Tip: navigate the page behind the lab using only Tab, Shift+Tab, Enter, and Esc. Click on any element name in the lists above to focus it (the page will scroll if needed).')
+          tr('a11y_lab.keyboard.tip', 'Tip: navigate the page behind the lab using only Tab, Shift+Tab, Enter, and Esc. Click on any element name in the lists above to focus it (the page will scroll if needed).'))
       )
     );
   }
@@ -776,13 +987,21 @@
     minor:    { bg: '#f1f5f9', border: '#cbd5e1', text: '#475569', label: 'Minor'    },
   };
 
-  function teacherFriendly(violation) {
-    if (TEACHER_FRIENDLY_RULES[violation.id]) return TEACHER_FRIENDLY_RULES[violation.id];
+  function teacherFriendly(violation, tr) {
+    var english = TEACHER_FRIENDLY_RULES[violation.id];
+    if (english) {
+      // Convert axe rule id (e.g., 'color-contrast') to a translation key
+      // segment ('color_contrast') so translators can localize each one.
+      var keySegment = violation.id.replace(/-/g, '_');
+      if (tr) return tr('a11y_lab.audit.rules.' + keySegment, english);
+      return english;
+    }
     return violation.help || violation.description || violation.id;
   }
 
   function AuditTab(props) {
     var addToast = props.addToast;
+    var tr = makeTr(props.t);
 
     var status$ = useState('idle'); // idle | loading | running | done | error
     var status = status$[0], setStatus = status$[1];
@@ -798,7 +1017,7 @@
         .then(function (axe) {
           setStatus('running');
           return axe.run(
-            { exclude: [['[aria-label="Accessibility Lab"]']] },
+            { exclude: [[LAB_EXCLUDE_SELECTOR]] },
             {
               runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
               resultTypes: ['violations', 'passes', 'incomplete'],
@@ -812,14 +1031,17 @@
             return sum + (v.nodes ? v.nodes.length : 0);
           }, 0);
           addToast && addToast(
-            'Audit complete: ' + (axeResult.violations || []).length + ' violations across ' + totalNodes + ' elements; ' + (axeResult.passes || []).length + ' rules passed.',
+            tr('a11y_lab.audit.complete_prefix', 'Audit complete: ') + (axeResult.violations || []).length +
+            tr('a11y_lab.audit.complete_violations_middle', ' violations across ') + totalNodes +
+            tr('a11y_lab.audit.complete_elements_middle', ' elements; ') + (axeResult.passes || []).length +
+            tr('a11y_lab.audit.complete_passes_suffix', ' rules passed.'),
             (axeResult.violations || []).length === 0 ? 'success' : 'info'
           );
         })
         .catch(function (err) {
           setError(err && err.message ? err.message : String(err));
           setStatus('error');
-          addToast && addToast('Audit failed: ' + (err && err.message ? err.message : 'unknown error'), 'error');
+          addToast && addToast(tr('a11y_lab.audit.error_toast_prefix', 'Audit failed: ') + (err && err.message ? err.message : tr('a11y_lab.audit.unknown_error', 'unknown error')), 'error');
         });
     }
 
@@ -832,7 +1054,7 @@
         var el = document.querySelector(selector);
         if (el) {
           el.focus();
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
           // Briefly highlight
           var origOutline = el.style.outline;
           var origOffset = el.style.outlineOffset;
@@ -860,9 +1082,9 @@
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', null,
-        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Live in-app accessibility audit'),
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.audit.heading', 'Live in-app accessibility audit')),
         e('p', { className: 'text-sm text-slate-600 mt-1' },
-          'Runs axe-core (industry-standard accessibility engine, used by browsers, the Deque team, and many enterprise audits) against the current view. Reports WCAG 2.1 A and AA violations in plain language framed by student impact. The lab modal itself is excluded.')
+          tr('a11y_lab.audit.description', 'Runs axe-core (industry-standard accessibility engine, used by browsers, the Deque team, and many enterprise audits) against the current view. Reports WCAG 2.1 A and AA violations in plain language framed by student impact. The lab modal itself is excluded.'))
       ),
 
       // Action button + status
@@ -871,17 +1093,17 @@
           onClick: handleRunAudit,
           disabled: status === 'loading' || status === 'running',
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50',
-        }, status === 'loading' ? 'Loading axe-core...' : status === 'running' ? 'Running audit...' : (result ? 'Re-run audit' : '🔍 Run audit')),
+        }, status === 'loading' ? tr('a11y_lab.audit.loading', 'Loading axe-core...') : status === 'running' ? tr('a11y_lab.audit.running', 'Running audit...') : (result ? tr('a11y_lab.audit.rerun', 'Re-run audit') : tr('a11y_lab.audit.run', '🔍 Run audit'))),
         result && e('span', { className: 'text-xs text-slate-500' },
-          'Last run: ' + new Date().toLocaleTimeString())
+          tr('a11y_lab.audit.last_run_prefix', 'Last run: ') + new Date().toLocaleTimeString())
       ),
 
       status === 'error' && e('div', { className: 'p-3 bg-rose-50 border border-rose-300 rounded text-sm text-rose-900' },
-        'Audit failed: ' + error + '. Check your network connection (axe-core loads from cdn.jsdelivr.net) and try again.'
+        tr('a11y_lab.audit.error_prefix', 'Audit failed: ') + error + tr('a11y_lab.audit.error_suffix', '. Check your network connection (axe-core loads from cdn.jsdelivr.net) and try again.')
       ),
 
       !result && status !== 'error' && status !== 'loading' && status !== 'running' && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
-        'Click "Run audit" to scan the current view for WCAG 2.1 A and AA violations. The first run takes ~2 seconds to load axe-core (~350 KB minified) from a CDN; subsequent runs are instant.'
+        tr('a11y_lab.audit.idle', 'Click "Run audit" to scan the current view for WCAG 2.1 A and AA violations. The first run takes ~2 seconds to load axe-core (~350 KB minified) from a CDN; subsequent runs are instant.')
       ),
 
       result && e('div', { className: 'flex flex-col gap-3' },
@@ -891,25 +1113,25 @@
             className: 'p-3 border rounded text-center ' + (result.violations.length === 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')
           },
             e('div', { className: 'text-2xl font-bold ' + (result.violations.length === 0 ? 'text-emerald-800' : 'text-rose-800') }, result.violations.length),
-            e('div', { className: 'text-xs ' + (result.violations.length === 0 ? 'text-emerald-700' : 'text-rose-700') }, 'Violations')
+            e('div', { className: 'text-xs ' + (result.violations.length === 0 ? 'text-emerald-700' : 'text-rose-700') }, tr('a11y_lab.audit.summary_violations', 'Violations'))
           ),
           e('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded text-center' },
             e('div', { className: 'text-2xl font-bold text-emerald-800' }, (result.passes || []).length),
-            e('div', { className: 'text-xs text-emerald-700' }, 'Rules passed')
+            e('div', { className: 'text-xs text-emerald-700' }, tr('a11y_lab.audit.summary_passes', 'Rules passed'))
           ),
           e('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-center' },
             e('div', { className: 'text-2xl font-bold text-blue-800' }, (result.incomplete || []).length),
-            e('div', { className: 'text-xs text-blue-700' }, 'Need review')
+            e('div', { className: 'text-xs text-blue-700' }, tr('a11y_lab.audit.summary_review', 'Need review'))
           ),
           e('div', { className: 'p-3 bg-slate-50 border border-slate-300 rounded text-center' },
             e('div', { className: 'text-2xl font-bold text-slate-800' },
               (result.violations || []).reduce(function (sum, v) { return sum + (v.nodes ? v.nodes.length : 0); }, 0)),
-            e('div', { className: 'text-xs text-slate-700' }, 'Affected elements')
+            e('div', { className: 'text-xs text-slate-700' }, tr('a11y_lab.audit.summary_affected', 'Affected elements'))
           )
         ),
 
         result.violations.length === 0 && e('div', { className: 'p-4 bg-emerald-50 border border-emerald-300 rounded text-sm text-emerald-900 text-center' },
-          '✅ No WCAG 2.1 A/AA violations found in the current view by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, screen-reader preview, and manual review.)'
+          tr('a11y_lab.audit.no_violations', '✅ No WCAG 2.1 A/AA violations found in the current view by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, screen-reader preview, and manual review.)')
         ),
 
         // Violations grouped by impact
@@ -927,13 +1149,17 @@
               className: 'cursor-pointer font-semibold text-sm flex items-center gap-2',
               style: { color: styles.text },
             },
-              styles.label + ' (' + rules.length + ' rule' + (rules.length === 1 ? '' : 's') + ')',
+              (impact === 'critical' ? tr('a11y_lab.audit.impact.critical_label', 'Critical') :
+               impact === 'serious'  ? tr('a11y_lab.audit.impact.serious_label',  'Serious')  :
+               impact === 'moderate' ? tr('a11y_lab.audit.impact.moderate_label', 'Moderate') :
+                                       tr('a11y_lab.audit.impact.minor_label',    'Minor')) +
+              ' (' + rules.length + ' ' + (rules.length === 1 ? tr('a11y_lab.audit.rule_singular', 'rule') : tr('a11y_lab.audit.rule_plural', 'rules')) + ')',
               e('span', {
                 className: 'text-xs font-normal opacity-75',
-              }, impact === 'critical' ? 'Blocks access for some users' :
-                  impact === 'serious'  ? 'Significantly degrades the experience' :
-                  impact === 'moderate' ? 'Causes friction or confusion' :
-                                          'Minor improvement')
+              }, impact === 'critical' ? tr('a11y_lab.audit.impact.critical_desc', 'Blocks access for some users') :
+                  impact === 'serious'  ? tr('a11y_lab.audit.impact.serious_desc',  'Significantly degrades the experience') :
+                  impact === 'moderate' ? tr('a11y_lab.audit.impact.moderate_desc', 'Causes friction or confusion') :
+                                          tr('a11y_lab.audit.impact.minor_desc',    'Minor improvement'))
             ),
             e('div', { className: 'mt-3 flex flex-col gap-2' },
               rules.map(function (v, i) {
@@ -946,25 +1172,25 @@
                     e('div', { className: 'font-semibold text-sm', style: { color: styles.text } },
                       v.id, ' ',
                       e('span', { className: 'text-xs font-normal text-slate-500' },
-                        '(' + v.nodes.length + ' element' + (v.nodes.length === 1 ? '' : 's') + ')')
+                        '(' + v.nodes.length + ' ' + (v.nodes.length === 1 ? tr('a11y_lab.audit.element_singular', 'element') : tr('a11y_lab.audit.element_plural', 'elements')) + ')')
                     ),
                     e('div', { className: 'flex gap-1' },
                       v.nodes.length > 0 && e('button', {
                         onClick: function () { handleFocusFirstNode(v); },
                         className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
-                      }, 'Show me'),
+                      }, tr('a11y_lab.audit.show_me', 'Show me')),
                       v.helpUrl && e('a', {
                         href: v.helpUrl,
                         target: '_blank',
                         rel: 'noopener noreferrer',
                         className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
-                      }, 'Learn more ↗')
+                      }, tr('a11y_lab.audit.learn_more', 'Learn more ↗'))
                     )
                   ),
-                  e('p', { className: 'text-xs text-slate-700' }, teacherFriendly(v)),
+                  e('p', { className: 'text-xs text-slate-700' }, teacherFriendly(v, tr)),
                   v.nodes.length > 1 && e('details', { className: 'mt-2' },
                     e('summary', { className: 'text-xs text-slate-500 cursor-pointer hover:text-slate-700' },
-                      'Affected elements (' + v.nodes.length + ')'),
+                      tr('a11y_lab.audit.affected_heading', 'Affected elements') + ' (' + v.nodes.length + ')'),
                     e('ul', { className: 'mt-1 max-h-40 overflow-y-auto pl-5 text-xs list-disc text-slate-600 space-y-0.5' },
                       v.nodes.slice(0, 50).map(function (node, j) {
                         return e('li', { key: j, className: 'font-mono break-all' },
@@ -978,9 +1204,53 @@
           );
         }),
 
+        // Incomplete rules (need manual review)
+        (result.incomplete || []).length > 0 && e('details', {
+          className: 'rounded p-3 border bg-blue-50 border-blue-300',
+        },
+          e('summary', {
+            className: 'cursor-pointer font-semibold text-sm text-blue-900',
+          },
+            tr('a11y_lab.audit.incomplete_heading', 'Needs manual review') +
+            ' (' + result.incomplete.length + ')'
+          ),
+          e('p', { className: 'text-xs text-blue-800 mt-1 mb-2' },
+            tr('a11y_lab.audit.incomplete_help', 'These rules could not be automatically verified by axe-core. They commonly involve things like color contrast on gradient backgrounds, scrolling regions, or color meaning. A human needs to look and decide.')),
+          e('div', { className: 'flex flex-col gap-2' },
+            result.incomplete.map(function (v) {
+              return e('div', {
+                key: v.id,
+                className: 'p-3 bg-white border border-blue-300 rounded',
+              },
+                e('div', { className: 'flex items-start justify-between gap-2 mb-1' },
+                  e('div', { className: 'font-semibold text-sm text-blue-900' },
+                    v.id, ' ',
+                    e('span', { className: 'text-xs font-normal text-slate-500' },
+                      '(' + (v.nodes || []).length + ' ' +
+                      ((v.nodes || []).length === 1 ? tr('a11y_lab.audit.element_singular', 'element') : tr('a11y_lab.audit.element_plural', 'elements')) + ')')
+                  ),
+                  e('div', { className: 'flex gap-1' },
+                    (v.nodes || []).length > 0 && e('button', {
+                      onClick: function () { handleFocusFirstNode(v); },
+                      className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
+                    }, tr('a11y_lab.audit.show_me', 'Show me')),
+                    v.helpUrl && e('a', {
+                      href: v.helpUrl,
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                      className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
+                    }, tr('a11y_lab.audit.learn_more', 'Learn more ↗'))
+                  )
+                ),
+                e('p', { className: 'text-xs text-slate-700' }, teacherFriendly(v, tr))
+              );
+            })
+          )
+        ),
+
         // Tip
         e('div', { className: 'text-xs text-slate-500 italic mt-2' },
-          'Tip: critical and serious issues are open by default. Click "Show me" on any rule to focus and highlight the first affected element. axe-core covers ~30-50% of real accessibility issues; combine with the keyboard tour, screen-reader preview, and manual review.')
+          tr('a11y_lab.audit.tip', 'Tip: critical and serious issues are open by default. Click "Show me" on any rule to focus and highlight the first affected element. axe-core covers ~30-50% of real accessibility issues; combine with the keyboard tour, screen-reader preview, and manual review.'))
       )
     );
   }
@@ -1065,12 +1335,28 @@
   }
 
   function getScreenReaderState(el) {
+    var hidden = el.getAttribute('aria-hidden');
+    if (hidden === 'true') return null; // skip aria-hidden elements entirely
     var states = [];
-    if (el.disabled) states.push('disabled');
+    if (el.disabled || el.getAttribute('aria-disabled') === 'true') states.push('disabled');
     if (el.required || el.getAttribute('aria-required') === 'true') states.push('required');
-    if (el.checked) states.push('checked');
-    if (el.type === 'checkbox' && !el.checked) states.push('not checked');
-    if (el.type === 'radio' && !el.checked) states.push('not selected');
+    if (el.getAttribute('aria-busy') === 'true') states.push('busy');
+    var invalid = el.getAttribute('aria-invalid');
+    if (invalid === 'true') states.push('invalid');
+    else if (invalid === 'grammar' || invalid === 'spelling') states.push('invalid, ' + invalid);
+    var current = el.getAttribute('aria-current');
+    if (current && current !== 'false') {
+      states.push(current === 'true' ? 'current' : 'current ' + current);
+    }
+    if (el.type === 'checkbox') {
+      if (el.indeterminate) states.push('partially checked');
+      else if (el.checked) states.push('checked');
+      else states.push('not checked');
+    } else if (el.type === 'radio') {
+      states.push(el.checked ? 'selected' : 'not selected');
+    } else if (el.checked) {
+      states.push('checked');
+    }
     var expanded = el.getAttribute('aria-expanded');
     if (expanded === 'true') states.push('expanded');
     else if (expanded === 'false') states.push('collapsed');
@@ -1079,8 +1365,7 @@
     else if (pressed === 'false') states.push('not pressed');
     var selected = el.getAttribute('aria-selected');
     if (selected === 'true') states.push('selected');
-    var hidden = el.getAttribute('aria-hidden');
-    if (hidden === 'true') return null; // skip aria-hidden elements entirely
+    else if (selected === 'false' && el.getAttribute('role') === 'tab') states.push('not selected');
     return states.length > 0 ? states.join(', ') : '';
   }
 
@@ -1150,7 +1435,7 @@
     var origOffset = el.style.outlineOffset;
     el.style.outline = '3px solid #f59e0b';
     el.style.outlineOffset = '2px';
-    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    try { el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); } catch (_) {}
     return function unhighlight() {
       el.style.outline = origOutline;
       el.style.outlineOffset = origOffset;
@@ -1159,6 +1444,7 @@
 
   function ScreenReaderTab(props) {
     var addToast = props.addToast;
+    var tr = makeTr(props.t);
 
     var queue$ = useState(null);
     var queue = queue$[0], setQueue = queue$[1];
@@ -1169,12 +1455,33 @@
     var rate$ = useState(1.0);
     var rate = rate$[0], setRate = rate$[1];
 
-    // Stop any in-progress announcements when the tab unmounts
+    // Refs let in-flight playback see the latest rate (mid-play slider
+    // changes take effect on the next utterance) and let cleanup find the
+    // current highlight + stop function without polluting `window`.
+    var rateRef = useRef(rate);
+    useEffect(function () { rateRef.current = rate; }, [rate]);
+    var unhighlightRef = useRef(null);
+    var stopRef = useRef(null);
+
+    function clearHighlight() {
+      if (unhighlightRef.current) {
+        try { unhighlightRef.current(); } catch (_) {}
+        unhighlightRef.current = null;
+      }
+    }
+
+    // Stop any in-progress announcements and remove residual highlights when
+    // the tab unmounts (covers closing the lab mid-playback).
     useEffect(function () {
       return function () {
+        if (stopRef.current) {
+          try { stopRef.current(); } catch (_) {}
+          stopRef.current = null;
+        }
         try {
           if (window.speechSynthesis) window.speechSynthesis.cancel();
         } catch (_) {}
+        clearHighlight();
       };
     }, []);
 
@@ -1182,23 +1489,23 @@
 
     function buildQueue() {
       try {
-        var items = buildScreenReaderQueue('[aria-label="Accessibility Lab"]');
+        var items = buildScreenReaderQueue(LAB_EXCLUDE_SELECTOR);
         setQueue(items);
-        addToast && addToast('Built ' + items.length + ' announcements (headings, landmarks, links, controls, and images with alt text).', 'info');
+        addToast && addToast(tr('a11y_lab.screenreader.queue_built_prefix', 'Built ') + items.length + tr('a11y_lab.screenreader.queue_built_suffix', ' announcements (headings, landmarks, links, controls, and images with alt text).'), 'info');
       } catch (err) {
-        addToast && addToast('Failed to build queue: ' + (err && err.message), 'error');
+        addToast && addToast(tr('a11y_lab.screenreader.queue_failed', 'Failed to build queue: ') + (err && err.message), 'error');
       }
     }
 
     function speakOne(item, onEnd) {
       if (!ttsAvailable) {
-        addToast && addToast('Browser speech synthesis not available.', 'error');
+        addToast && addToast(tr('a11y_lab.screenreader.tts_unavailable', 'Browser speech synthesis not available.'), 'error');
         onEnd && onEnd();
         return;
       }
       try { window.speechSynthesis.cancel(); } catch (_) {}
       var utter = new SpeechSynthesisUtterance(item.text);
-      utter.rate = rate;
+      utter.rate = rateRef.current;
       utter.pitch = 1.0;
       utter.lang = (document.documentElement.lang || 'en-US');
       utter.onend = onEnd;
@@ -1209,43 +1516,45 @@
     function playAll() {
       if (!queue || queue.length === 0) return;
       if (!ttsAvailable) {
-        addToast && addToast('Browser speech synthesis not available.', 'error');
+        addToast && addToast(tr('a11y_lab.screenreader.tts_unavailable', 'Browser speech synthesis not available.'), 'error');
         return;
       }
+      // Clear any leftover state from a previous play session.
+      stopAll();
       var i = 0;
       var stopped = false;
-      var unhighlight = null;
       function next() {
         if (stopped || i >= queue.length) {
-          if (unhighlight) { unhighlight(); unhighlight = null; }
+          clearHighlight();
           setPlayingIndex(null);
+          stopRef.current = null;
           return;
         }
-        if (unhighlight) { unhighlight(); unhighlight = null; }
+        clearHighlight();
         var item = queue[i];
         setPlayingIndex(i);
-        unhighlight = highlightForScreenReader(item.el);
+        unhighlightRef.current = highlightForScreenReader(item.el);
         speakOne(item, function () {
           i++;
           next();
         });
       }
-      // expose stop via closure on the global flag
-      window.__alloflowSrStopAll = function () {
+      stopRef.current = function () {
         stopped = true;
         try { window.speechSynthesis.cancel(); } catch (_) {}
-        if (unhighlight) { unhighlight(); unhighlight = null; }
+        clearHighlight();
         setPlayingIndex(null);
       };
       next();
     }
 
     function stopAll() {
-      if (window.__alloflowSrStopAll) {
-        window.__alloflowSrStopAll();
-        delete window.__alloflowSrStopAll;
+      if (stopRef.current) {
+        try { stopRef.current(); } catch (_) {}
+        stopRef.current = null;
       } else {
         try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+        clearHighlight();
         setPlayingIndex(null);
       }
     }
@@ -1254,23 +1563,29 @@
       if (!queue) return;
       stopAll();
       var item = queue[i];
-      var unhighlight = highlightForScreenReader(item.el);
+      unhighlightRef.current = highlightForScreenReader(item.el);
       setPlayingIndex(i);
-      speakOne(item, function () {
-        unhighlight();
+      stopRef.current = function () {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+        clearHighlight();
         setPlayingIndex(null);
+      };
+      speakOne(item, function () {
+        clearHighlight();
+        setPlayingIndex(null);
+        stopRef.current = null;
       });
     }
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', null,
-        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Screen-reader announcement preview'),
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.screenreader.heading', 'Screen-reader announcement preview')),
         e('p', { className: 'text-sm text-slate-600 mt-1' },
-          "Build the list of what a screen reader would announce while moving through the page in reading order, then listen. Headings, landmarks, links, form controls, and images with alt text are included. The lab modal itself is excluded. Uses your browser's built-in speech synthesis (the same kind of TTS engine real screen readers use, so the audio quality is representative of what students actually hear).")
+          tr('a11y_lab.screenreader.description', "Build the list of what a screen reader would announce while moving through the page in reading order, then listen. Headings, landmarks, links, form controls, and images with alt text are included. The lab modal itself is excluded. Uses your browser's built-in speech synthesis (the same kind of TTS engine real screen readers use, so the audio quality is representative of what students actually hear)."))
       ),
 
       !ttsAvailable && e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-amber-900' },
-        'Your browser does not expose the Web Speech API. Try Chrome, Edge, or Firefox. The list will still build; you just will not hear the audio.'
+        tr('a11y_lab.screenreader.no_speech_warning', 'Your browser does not expose the Web Speech API. Try Chrome, Edge, or Firefox. The list will still build; you just will not hear the audio.')
       ),
 
       // Action buttons
@@ -1278,32 +1593,33 @@
         e('button', {
           onClick: buildQueue,
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
-        }, queue ? 'Re-scan page' : '🔊 Build announcement queue'),
+        }, queue ? tr('a11y_lab.screenreader.rescan', 'Re-scan page') : tr('a11y_lab.screenreader.build', '🔊 Build announcement queue')),
         queue && queue.length > 0 && e('button', {
           onClick: playingIndex !== null ? stopAll : playAll,
           className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 ' +
             (playingIndex !== null ? 'bg-emerald-600 text-white' : 'text-emerald-700 hover:bg-emerald-50') +
             ' rounded',
-        }, playingIndex !== null ? '⏹ Stop' : '▶ Play all'),
+        }, playingIndex !== null ? tr('a11y_lab.screenreader.stop', '⏹ Stop') : tr('a11y_lab.screenreader.play_all', '▶ Play all')),
         queue && e('label', { className: 'text-xs text-slate-700 flex items-center gap-2' },
-          'Speed: ', e('input', {
+          tr('a11y_lab.screenreader.speed_label', 'Speed: '), e('input', {
             type: 'range', min: '0.5', max: '2.0', step: '0.1',
             value: rate, onChange: function (ev) { setRate(parseFloat(ev.target.value)); },
             className: 'w-24',
+            'aria-label': tr('a11y_lab.screenreader.speed_aria', 'Playback speed'),
           }), e('span', { className: 'font-mono w-10' }, rate.toFixed(1) + 'x'))
       ),
 
       !queue && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
-        'Click "Build announcement queue" to scan the page (excluding this lab) for everything a screen reader would announce: headings, landmarks, links, buttons, form controls, and images with alt text. You can then play the whole queue or any single item.'
+        tr('a11y_lab.screenreader.idle', 'Click "Build announcement queue" to scan the page (excluding this lab) for everything a screen reader would announce: headings, landmarks, links, buttons, form controls, and images with alt text. You can then play the whole queue or any single item.')
       ),
 
       queue && queue.length === 0 && e('div', { className: 'p-6 text-center bg-amber-50 rounded-lg border border-amber-300 text-sm text-amber-900' },
-        'No announceable elements found. The page might be empty, or the visible content is all behind aria-hidden, or all the elements lack both a role and an accessible name. This is itself a problem worth investigating.'
+        tr('a11y_lab.screenreader.empty', 'No announceable elements found. The page might be empty, or the visible content is all behind aria-hidden, or all the elements lack both a role and an accessible name. This is itself a problem worth investigating.')
       ),
 
       queue && queue.length > 0 && e('div', { className: 'flex flex-col gap-2' },
         e('div', { className: 'text-xs text-slate-600 mb-1' },
-          queue.length + ' announcements queued. Click any item to hear it. The element is highlighted on the page while it speaks.'),
+          queue.length + ' ' + tr('a11y_lab.screenreader.queue_count_hint', 'announcements queued. Click any item to hear it. The element is highlighted on the page while it speaks.')),
         e('div', { className: 'border border-slate-200 rounded max-h-96 overflow-y-auto bg-white' },
           queue.map(function (item, i) {
             var isPlaying = playingIndex === i;
@@ -1315,8 +1631,8 @@
                 onClick: function () { playOne(i); },
                 disabled: !ttsAvailable,
                 className: 'shrink-0 w-7 h-7 rounded-full ' + (isPlaying ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300') + ' flex items-center justify-center text-xs font-bold disabled:opacity-50',
-                title: 'Play this announcement',
-                'aria-label': 'Play announcement ' + (i + 1),
+                title: tr('a11y_lab.screenreader.play_one_title', 'Play this announcement'),
+                'aria-label': tr('a11y_lab.screenreader.play_one_aria', 'Play announcement') + ' ' + (i + 1),
               }, isPlaying ? '▶' : (i + 1)),
               e('div', { className: 'flex-1 min-w-0' },
                 e('div', { className: 'text-xs text-slate-500 font-mono' }, '<' + item.tag + '>'),
@@ -1326,7 +1642,7 @@
           })
         ),
         e('div', { className: 'text-xs text-slate-500 italic mt-2' },
-          'Tip: try playing the whole queue with your eyes closed. That is a meaningful approximation of how a student using a screen reader navigates the page. If the announcements feel disorienting or skip critical content, that is a problem to fix.')
+          tr('a11y_lab.screenreader.tip', 'Tip: try playing the whole queue with your eyes closed. That is a meaningful approximation of how a student using a screen reader navigates the page. If the announcements feel disorienting or skip critical content, that is a problem to fix.'))
       )
     );
   }
@@ -1355,37 +1671,40 @@
 
   // CSS rules applied via body class. Excludes the lab modal so the teacher
   // can keep using the Lab UI clearly while the underlying app is filtered.
-  // Note: child selectors `> *` ensure only direct children of body get
-  // filtered (so the Lab modal as a body-direct sibling stays unfiltered).
+  // The lab portals itself directly under <body> with
+  // data-alloflow-a11y-lab="root", so the :not(...) match works correctly.
+  var SIM_EXCLUDE = ':not([data-alloflow-a11y-lab]):not([aria-label="Accessibility Lab"]):not([aria-hidden="true"])';
   var SIM_CSS = '\
 :root { --alloflow-sim-blur: 2px; }\
-body.alloflow-sim-blur > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+body.alloflow-sim-blur > ' + SIM_EXCLUDE + ' {\
   filter: blur(var(--alloflow-sim-blur, 2px));\
 }\
-body.alloflow-sim-protanopia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+body.alloflow-sim-protanopia > ' + SIM_EXCLUDE + ' {\
   filter: url("#alloflow-sim-protanopia");\
 }\
-body.alloflow-sim-deuteranopia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+body.alloflow-sim-deuteranopia > ' + SIM_EXCLUDE + ' {\
   filter: url("#alloflow-sim-deuteranopia");\
 }\
-body.alloflow-sim-tritanopia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+body.alloflow-sim-tritanopia > ' + SIM_EXCLUDE + ' {\
   filter: url("#alloflow-sim-tritanopia");\
 }\
-body.alloflow-sim-achromatopsia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+body.alloflow-sim-achromatopsia > ' + SIM_EXCLUDE + ' {\
   filter: url("#alloflow-sim-achromatopsia");\
 }\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
   filter: blur(0.4px) contrast(0.85);\
   letter-spacing: 0.04em;\
   word-spacing: 0.12em;\
 }\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) p,\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) li,\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) span,\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) h1,\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) h2,\
-body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) h3 {\
-  animation: alloflow-sim-dyslexia-jitter 6s infinite;\
+@media (prefers-reduced-motion: no-preference) {\
+  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' p,\
+  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' li,\
+  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' span,\
+  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' h1,\
+  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' h2,\
+  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' h3 {\
+    animation: alloflow-sim-dyslexia-jitter 6s infinite;\
+  }\
 }\
 @keyframes alloflow-sim-dyslexia-jitter {\
   0%, 100% { letter-spacing: 0.04em; word-spacing: 0.12em; }\
@@ -1440,55 +1759,61 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
     SIM_CLASSES.forEach(function (c) { body.classList.remove(c); });
   }
 
-  var SIMULATORS = [
-    {
-      key: 'blur',
-      label: 'Low-vision blur',
-      icon: '🔭',
-      description: 'Approximates uncorrected low vision (visual acuity worse than 20/40). Roughly 4% of the population has uncorrected refractive error or other low-vision conditions; this share is much higher among older adults and students with visual impairments.',
-      hasSlider: true,
-    },
-    {
-      key: 'protanopia',
-      label: 'Protanopia (red-blind)',
-      icon: '🔴',
-      description: 'Severe red-green color vision deficiency, missing the L-cone. About 1% of males and very rare in females. Reds appear darker; reds and greens are confused.',
-    },
-    {
-      key: 'deuteranopia',
-      label: 'Deuteranopia (green-blind)',
-      icon: '🟢',
-      description: 'The most common form of color blindness, missing the M-cone. About 6% of males. Reds and greens appear similar; the most common form of red-green color vision deficiency.',
-    },
-    {
-      key: 'tritanopia',
-      label: 'Tritanopia (blue-blind)',
-      icon: '🔵',
-      description: 'Rare form, missing the S-cone. About 0.01% of the population. Blues appear greenish; yellow-blue distinctions are lost.',
-    },
-    {
-      key: 'achromatopsia',
-      label: 'Achromatopsia (no color)',
-      icon: '⚫',
-      description: 'Complete absence of color vision. Affects roughly 0.003% of the population (about 1 in 30,000). The world appears in shades of grey.',
-    },
-    {
-      key: 'dyslexia',
-      label: 'Dyslexia visual stress',
-      icon: '🌀',
-      description: 'A LIMITED simulation of one common visual-stress experience some dyslexic readers report (slight blur, lower contrast, shifting spacing). Dyslexia is highly individual; this is one slice, not a definitive rendering. About 5-10% of students have dyslexia.',
-    },
-    {
-      key: 'motor-info',
-      label: 'Motor impairments',
-      icon: '🖱️',
-      description: 'Motor impairments resist visual simulation. The most authentic test is to use the OS-level tools real students use: Windows Sticky Keys, macOS Slow Keys, dwell-click software, switch access (e.g., the iOS Switch Control or Android Switch Access). Try completing a lesson using only one hand, only the keyboard, or only one finger.',
-      isInfo: true,
-    },
-  ];
+  // Translatable simulators list. Built per-render because labels and
+  // descriptions go through the host's t() function.
+  function buildSimulators(tr) {
+    return [
+      {
+        key: 'blur',
+        label: tr('a11y_lab.simulators.items.blur_label', 'Low-vision blur'),
+        icon: '🔭',
+        description: tr('a11y_lab.simulators.items.blur_desc', 'Approximates uncorrected low vision (visual acuity worse than 20/40). Roughly 4% of the population has uncorrected refractive error or other low-vision conditions; this share is much higher among older adults and students with visual impairments.'),
+        hasSlider: true,
+      },
+      {
+        key: 'protanopia',
+        label: tr('a11y_lab.simulators.items.protanopia_label', 'Protanopia (red-blind)'),
+        icon: '🔴',
+        description: tr('a11y_lab.simulators.items.protanopia_desc', 'Severe red-green color vision deficiency, missing the L-cone. About 1% of males and very rare in females. Reds appear darker; reds and greens are confused.'),
+      },
+      {
+        key: 'deuteranopia',
+        label: tr('a11y_lab.simulators.items.deuteranopia_label', 'Deuteranopia (green-blind)'),
+        icon: '🟢',
+        description: tr('a11y_lab.simulators.items.deuteranopia_desc', 'The most common form of color blindness, missing the M-cone. About 6% of males. Reds and greens appear similar; the most common form of red-green color vision deficiency.'),
+      },
+      {
+        key: 'tritanopia',
+        label: tr('a11y_lab.simulators.items.tritanopia_label', 'Tritanopia (blue-blind)'),
+        icon: '🔵',
+        description: tr('a11y_lab.simulators.items.tritanopia_desc', 'Rare form, missing the S-cone. About 0.01% of the population. Blues appear greenish; yellow-blue distinctions are lost.'),
+      },
+      {
+        key: 'achromatopsia',
+        label: tr('a11y_lab.simulators.items.achromatopsia_label', 'Achromatopsia (no color)'),
+        icon: '⚫',
+        description: tr('a11y_lab.simulators.items.achromatopsia_desc', 'Complete absence of color vision. Affects roughly 0.003% of the population (about 1 in 30,000). The world appears in shades of grey.'),
+      },
+      {
+        key: 'dyslexia',
+        label: tr('a11y_lab.simulators.items.dyslexia_label', 'Dyslexia visual stress'),
+        icon: '🌀',
+        description: tr('a11y_lab.simulators.items.dyslexia_desc', 'A LIMITED simulation of one common visual-stress experience some dyslexic readers report (slight blur, lower contrast, shifting spacing). Dyslexia is highly individual; this is one slice, not a definitive rendering. About 5-10% of students have dyslexia.'),
+      },
+      {
+        key: 'motor-info',
+        label: tr('a11y_lab.simulators.items.motor_label', 'Motor impairments'),
+        icon: '🖱️',
+        description: tr('a11y_lab.simulators.items.motor_desc', 'Motor impairments resist visual simulation. The most authentic test is to use the OS-level tools real students use: Windows Sticky Keys, macOS Slow Keys, dwell-click software, switch access (e.g., the iOS Switch Control or Android Switch Access). Try completing a lesson using only one hand, only the keyboard, or only one finger.'),
+        isInfo: true,
+      },
+    ];
+  }
 
   function SimulatorsTab(props) {
     var addToast = props.addToast;
+    var tr = makeTr(props.t);
+    var SIMULATORS = buildSimulators(tr);
 
     var active$ = useState('none');
     var active = active$[0], setActive = active$[1];
@@ -1509,22 +1834,22 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
       } else {
         setActive(key);
         if (key === 'motor-info') {
-          addToast && addToast('Motor impairment simulation: see the info card.', 'info');
+          addToast && addToast(tr('a11y_lab.simulators.motor_toast', 'Motor impairment simulation: see the info card.'), 'info');
         }
       }
     }
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', null,
-        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Disability simulators'),
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.simulators.heading', 'Disability simulators')),
         e('p', { className: 'text-sm text-slate-600 mt-1' },
-          'Toggle a simulator to apply a CSS filter to the page behind this lab. The lab itself stays unfiltered so you can keep using these controls. Click a tile to enable; click again to disable. Only one simulator runs at a time.')
+          tr('a11y_lab.simulators.description', 'Toggle a simulator to apply a CSS filter to the page behind this lab. The lab itself stays unfiltered so you can keep using these controls. Click a tile to enable; click again to disable. Only one simulator runs at a time.'))
       ),
 
       // Honest framing card
       e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900' },
-        e('strong', null, 'Important framing: '),
-        'simulators are imperfect approximations. They are useful for empathy-building and quick checks, NOT for verifying compliance. A protanopia filter is NOT the same as protanopia. Real users have lived with their condition; you are seeing it for 60 seconds. Use simulators to surface obvious problems (color-only information, low contrast, illegible text), then test with real users when stakes matter.'
+        e('strong', null, tr('a11y_lab.simulators.framing_strong', 'Important framing: ')),
+        tr('a11y_lab.simulators.framing_body', 'simulators are imperfect approximations. They are useful for empathy-building and quick checks, NOT for verifying compliance. A protanopia filter is NOT the same as protanopia. Real users have lived with their condition; you are seeing it for 60 seconds. Use simulators to surface obvious problems (color-only information, low contrast, illegible text), then test with real users when stakes matter.')
       ),
 
       // Simulator tiles
@@ -1544,8 +1869,8 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
             e('div', null,
               e('div', { className: 'font-bold text-sm flex items-center gap-2' },
                 sim.label,
-                isActive && !sim.isInfo && e('span', { className: 'text-xs font-normal opacity-80' }, '· active'),
-                isActive && sim.isInfo && e('span', { className: 'text-xs font-normal opacity-80' }, '· info')
+                isActive && !sim.isInfo && e('span', { className: 'text-xs font-normal opacity-80' }, tr('a11y_lab.simulators.active_suffix', '· active')),
+                isActive && sim.isInfo && e('span', { className: 'text-xs font-normal opacity-80' }, tr('a11y_lab.simulators.info_suffix', '· info'))
               ),
               e('p', { className: 'text-xs mt-1 ' + (isActive ? 'opacity-95' : 'text-slate-600') },
                 sim.description)
@@ -1557,14 +1882,14 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
       // Blur slider when blur is active
       active === 'blur' && e('div', { className: 'p-3 bg-slate-50 border border-slate-200 rounded' },
         e('label', { className: 'block text-xs font-semibold text-slate-700 mb-2' },
-          'Blur amount: ', e('span', { className: 'font-mono' }, blurPx + 'px'),
-          ' ', e('span', { className: 'font-normal text-slate-500' }, '(2px ≈ mild low vision; 5-8px ≈ severe)')),
+          tr('a11y_lab.simulators.blur_amount_label', 'Blur amount: '), e('span', { className: 'font-mono' }, blurPx + 'px'),
+          ' ', e('span', { className: 'font-normal text-slate-500' }, tr('a11y_lab.simulators.blur_amount_hint', '(2px ≈ mild low vision; 5-8px ≈ severe)'))),
         e('input', {
           type: 'range', min: '0', max: '8', step: '0.5',
           value: blurPx,
           onChange: function (ev) { setBlurPx(parseFloat(ev.target.value)); },
           className: 'w-full',
-          'aria-label': 'Blur amount in pixels',
+          'aria-label': tr('a11y_lab.simulators.blur_amount_aria', 'Blur amount in pixels'),
         })
       ),
 
@@ -1573,22 +1898,12 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
         e('button', {
           onClick: function () { setActive('none'); },
           className: 'px-4 py-2 text-sm font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50',
-        }, 'Stop simulator')
+        }, tr('a11y_lab.simulators.stop', 'Stop simulator'))
       ),
 
       // Helpful tips
       e('div', { className: 'text-xs text-slate-500 italic' },
-        'Tip: try the color-blindness simulators on a lesson that uses red/green to convey meaning (correct/incorrect, warning/safe). If the meaning is lost in the simulation, the original design is failing students with that condition. Add icons, labels, or patterns alongside color.')
-    );
-  }
-
-  // ----- ComingSoon stub (no longer used; kept for safety) ------------------
-
-  function ComingSoon(props) {
-    return e('div', { className: 'p-10 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300' },
-      e('div', { className: 'text-5xl mb-3' }, props.icon || '🚧'),
-      e('h3', { className: 'font-bold text-lg text-slate-800 mb-2' }, props.title),
-      e('p', { className: 'text-sm text-slate-600 max-w-md mx-auto' }, props.description)
+        tr('a11y_lab.simulators.tip', 'Tip: try the color-blindness simulators on a lesson that uses red/green to convey meaning (correct/incorrect, warning/safe). If the meaning is lost in the simulation, the original design is failing students with that condition. Add icons, labels, or patterns alongside color.'))
     );
   }
 
@@ -1597,64 +1912,171 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
   function AccessibilityLab(props) {
     if (!props.isOpen) return null;
 
+    var tr = makeTr(props.t);
+    var tabLabels = {
+      preview:      tr('a11y_lab.tabs.preview',      'Preview as student'),
+      keyboard:     tr('a11y_lab.tabs.keyboard',     'Keyboard tour'),
+      audit:        tr('a11y_lab.tabs.audit',        'Audit'),
+      screenreader: tr('a11y_lab.tabs.screenreader', 'Screen reader'),
+      simulators:   tr('a11y_lab.tabs.simulators',   'Simulators'),
+    };
+
     var tab$ = useState('preview');
     var tab = tab$[0], setTab = tab$[1];
 
+    var closeBtnRef = useRef(null);
+    var previousFocusRef = useRef(null);
+    var dialogRef = useRef(null);
+    var tabRefs = useRef({});
+
     // Clear any active simulator when the lab is closed.
     // (Simulators persist across tab switches; only a full close resets them.)
+    // Also: capture the previously-focused element on mount and restore focus
+    // to it on unmount, so closing the lab returns the teacher to the Educator
+    // Hub button that opened it.
     useEffect(function () {
+      previousFocusRef.current = document.activeElement;
+      if (closeBtnRef.current && typeof closeBtnRef.current.focus === 'function') {
+        try { closeBtnRef.current.focus(); } catch (_) {}
+      }
       return function () {
         clearAllSimulators();
+        var prev = previousFocusRef.current;
+        if (prev && typeof prev.focus === 'function' && document.contains(prev)) {
+          try { prev.focus(); } catch (_) {}
+        }
       };
     }, []);
 
-    function tabBtn(t) {
-      var active = tab === t.key;
-      var disabled = !t.ready;
+    // Escape closes the lab.
+    useEffect(function () {
+      function onKey(ev) {
+        if (ev.key === 'Escape') {
+          ev.stopPropagation();
+          props.onClose();
+        }
+      }
+      document.addEventListener('keydown', onKey);
+      return function () { document.removeEventListener('keydown', onKey); };
+    }, [props.onClose]);
+
+    function tabBtn(tab_) {
+      var active = tab === tab_.key;
+      var disabled = !tab_.ready;
       return e('button', {
-        key: t.key,
-        onClick: function () { if (t.ready) setTab(t.key); },
+        key: tab_.key,
+        ref: function (el) { tabRefs.current[tab_.key] = el; },
+        role: 'tab',
+        id: 'a11y-lab-tab-' + tab_.key,
+        'aria-selected': active,
+        'aria-controls': 'a11y-lab-panel-' + tab_.key,
+        // Roving tabindex: only the active tab is in the document tab order;
+        // arrow keys on the tablist move between siblings.
+        tabIndex: active ? 0 : -1,
+        onClick: function () { if (tab_.ready) setTab(tab_.key); },
         disabled: disabled,
-        title: disabled ? 'Coming in a future phase' : null,
-        className: 'px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1 ' +
+        title: disabled ? tr('a11y_lab.dialog.coming_soon', 'Coming in a future phase') : null,
+        className: 'px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 ' +
           (active ? 'bg-indigo-600 text-white' :
            disabled ? 'text-slate-400 bg-slate-100 cursor-not-allowed' :
            'text-slate-700 hover:bg-slate-100'),
-      }, e('span', { 'aria-hidden': 'true' }, t.icon), t.label);
+      }, e('span', { 'aria-hidden': 'true' }, tab_.icon), tabLabels[tab_.key] || tab_.label);
     }
 
-    return e('div', {
+    function handleTablistKeyDown(ev) {
+      var readyTabs = TABS.filter(function (t) { return t.ready; });
+      if (readyTabs.length === 0) return;
+      var idx = readyTabs.findIndex(function (t) { return t.key === tab; });
+      if (idx < 0) return;
+      var nextIdx = idx;
+      if (ev.key === 'ArrowRight') nextIdx = (idx + 1) % readyTabs.length;
+      else if (ev.key === 'ArrowLeft') nextIdx = (idx - 1 + readyTabs.length) % readyTabs.length;
+      else if (ev.key === 'Home') nextIdx = 0;
+      else if (ev.key === 'End')  nextIdx = readyTabs.length - 1;
+      else return;
+      ev.preventDefault();
+      var nextKey = readyTabs[nextIdx].key;
+      setTab(nextKey);
+      var nextEl = tabRefs.current[nextKey];
+      if (nextEl && typeof nextEl.focus === 'function') {
+        try { nextEl.focus(); } catch (_) {}
+      }
+    }
+
+    function handleDialogKeyDown(ev) {
+      if (ev.key !== 'Tab' || !dialogRef.current) return;
+      var nodes = Array.prototype.slice.call(dialogRef.current.querySelectorAll(FOCUSABLE_SELECTOR))
+        .filter(function (el) {
+          if (el.disabled) return false;
+          if (el.getAttribute('tabindex') === '-1') return false;
+          // Tab buttons use roving tabindex; only the active one is reachable.
+          if (el.getAttribute('role') === 'tab' && el.tabIndex !== 0) return false;
+          var rect = el.getBoundingClientRect();
+          return rect.width > 0 || rect.height > 0;
+        });
+      if (nodes.length === 0) return;
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      var activeEl = document.activeElement;
+      if (ev.shiftKey && activeEl === first) {
+        ev.preventDefault();
+        try { last.focus(); } catch (_) {}
+      } else if (!ev.shiftKey && activeEl === last) {
+        ev.preventDefault();
+        try { first.focus(); } catch (_) {}
+      }
+    }
+
+    var modal = e('div', {
       className: 'fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4',
+      'data-alloflow-a11y-lab': 'root',
       onClick: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); },
     },
       e('div', {
+        ref: dialogRef,
         className: 'bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col',
         role: 'dialog',
-        'aria-label': 'Accessibility Lab',
+        'aria-modal': 'true',
+        'aria-labelledby': 'a11y-lab-title',
+        // Stable data attribute (locale-independent) used by lab-exclusion
+        // selectors in scan/audit/screen-reader queue builders.
+        'data-alloflow-a11y-lab': 'dialog',
+        onKeyDown: handleDialogKeyDown,
       },
         // Header
         e('div', { className: 'flex items-center justify-between px-5 py-4 border-b border-slate-200' },
           e('div', { className: 'flex items-center gap-3' },
             e('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🔍'),
             e('div', null,
-              e('h2', { className: 'font-bold text-lg text-slate-800' }, 'Accessibility Lab'),
-              e('p', { className: 'text-xs text-slate-500' }, 'Verify the student experience: preview, audit, listen, simulate.')
+              e('h2', { id: 'a11y-lab-title', className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.dialog.title', 'Accessibility Lab')),
+              e('p', { className: 'text-xs text-slate-500' }, tr('a11y_lab.dialog.subtitle', 'Verify the student experience: preview, audit, listen, simulate.'))
             )
           ),
           e('button', {
+            ref: closeBtnRef,
             className: 'px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
             onClick: props.onClose,
-            'aria-label': 'Close Accessibility Lab',
-          }, 'Close')
+            'aria-label': tr('a11y_lab.dialog.close_aria', 'Close Accessibility Lab'),
+          }, tr('a11y_lab.dialog.close', 'Close'))
         ),
 
         // Tab strip
-        e('div', { className: 'flex items-center gap-1 px-5 py-2 border-b border-slate-200 overflow-x-auto', role: 'tablist' },
+        e('div', {
+          className: 'flex items-center gap-1 px-5 py-2 border-b border-slate-200 overflow-x-auto',
+          role: 'tablist',
+          'aria-label': tr('a11y_lab.dialog.tablist_aria', 'Lab sections'),
+          onKeyDown: handleTablistKeyDown,
+        },
           TABS.map(tabBtn)
         ),
 
-        // Body
-        e('div', { className: 'flex-1 overflow-y-auto px-5 py-4' },
+        // Body (tabpanel)
+        e('div', {
+          className: 'flex-1 overflow-y-auto px-5 py-4',
+          role: 'tabpanel',
+          id: 'a11y-lab-panel-' + tab,
+          'aria-labelledby': 'a11y-lab-tab-' + tab,
+          tabIndex: 0,
+        },
           tab === 'preview'      ? e(PreviewTab, props) :
           tab === 'keyboard'     ? e(KeyboardTab, props) :
           tab === 'audit'        ? e(AuditTab, props) :
@@ -1663,11 +2085,18 @@ body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-h
         )
       )
     );
+
+    // Portal to body so the simulator CSS selector
+    //   body.alloflow-sim-* > *:not([aria-label="Accessibility Lab"])
+    // can correctly exclude the lab. Also avoids the ancestor-`filter`
+    // containing-block trap that would otherwise re-anchor this fixed modal
+    // when a simulator is toggled.
+    return ReactDOM.createPortal(modal, document.body);
   }
 
   // ----- Register -------------------------------------------------------------
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AccessibilityLab = AccessibilityLab;
-  console.log('[CDN] AccessibilityLab loaded (Phase 1 active; Phases 2-5 stubbed)');
+  console.log('[CDN] AccessibilityLab loaded');
 })();

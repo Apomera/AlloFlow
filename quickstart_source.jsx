@@ -338,7 +338,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                           <p className="text-slate-600 mb-4 text-sm">{t('wizard.learning_goal_desc')}</p>
                           <div className="flex flex-col sm:flex-row gap-2">
                               {!isIndependentMode && (
-                              <input aria-label={t('common.enter_region')}
+                              <input dir="auto" aria-label={t('common.enter_region')}
                                   type="text"
                                   value={region}
                                   onChange={(e) => setRegion(e.target.value)}
@@ -348,7 +348,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               />
                               )}
                               <div className="flex-grow flex gap-2">
-                                  <input aria-label={t('common.enter_learning_goal')}
+                                  <input dir="auto" aria-label={t('common.enter_learning_goal')}
                                     type="text"
                                     value={learningGoal}
                                     onChange={(e) => setLearningGoal(e.target.value)}
@@ -475,7 +475,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.import_web')}</label>
                               <p className="text-slate-600 mb-4 text-sm">{t('wizard.url_helper')}</p>
                               <div className="flex gap-2 mb-6">
-                                  <input aria-label={t('common.enter_url_input')}
+                                  <input dir="auto" aria-label={t('common.enter_url_input')}
                                       type="url"
                                       autoComplete="url"
                                       value={urlInput}
@@ -522,7 +522,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.ai_search')}</label>
                               <p className="text-slate-600 mb-4 text-sm">{t('wizard.search_helper')}</p>
                               <div className="flex gap-2 mb-6">
-                                  <input aria-label={t('common.enter_local_data')}
+                                  <input dir="auto" aria-label={t('common.enter_local_data')}
                                       type="text"
                                       value={localData.searchQuery}
                                       onChange={(e) => setLocalData(prev => ({ ...prev, searchQuery: e.target.value }))}
@@ -629,6 +629,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               <Type size={14} className="text-slate-600" />
                                           </div>
                                           <input
+                                              dir="auto"
                                               type="text"
                                               value={localData.topic}
                                               onChange={(e) => setLocalData(prev => ({ ...prev, topic: e.target.value }))}
@@ -648,6 +649,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   <MessageSquare size={14} className="text-slate-600" />
                                               </div>
                                               <select
+                                                  dir="auto"
                                                   value={localData.tone}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, tone: e.target.value }))}
                                                   className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
@@ -670,6 +672,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   <AlignJustify size={14} className="text-slate-600" />
                                               </div>
                                               <select
+                                                  dir="auto"
                                                   value={localData.length}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, length: e.target.value }))}
                                                   className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
@@ -693,6 +696,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   <GraduationCap size={14} className="text-slate-600" />
                                               </div>
                                               <select
+                                                  dir="auto"
                                                   value={localData.grade}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, grade: e.target.value }))}
                                                   className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
@@ -725,6 +729,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   <Brain size={14} className="text-slate-600" />
                                               </div>
                                               <select
+                                                  dir="auto"
                                                   value={localData.dokLevel}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, dokLevel: e.target.value }))}
                                                   className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
@@ -770,7 +775,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                             <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
                                                 <div className="flex gap-2">
                                                     {!isIndependentMode && (
-                                                    <input aria-label={t('common.common_standards_region_placeholder')}
+                                                    <input dir="auto" aria-label={t('common.common_standards_region_placeholder')}
                                                         type="text"
                                                         value={aiStandardRegion}
                                                         onChange={(e) => setAiStandardRegion(e.target.value)}
@@ -778,7 +783,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                         className="w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                                     />
                                                     )}
-                                                    <input aria-label={t('common.enter_ai_standard_query')}
+                                                    <input dir="auto" aria-label={t('common.enter_ai_standard_query')}
                                                         type="text"
                                                         value={aiStandardQuery}
                                                         onChange={(e) => setAiStandardQuery(e.target.value)}
@@ -833,7 +838,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                             </div>
                                         ) : (
                                             <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                <input aria-label={t('common.enter_standard_input_value')}
+                                                <input dir="auto" aria-label={t('common.enter_standard_input_value')}
                                                     type="text"
                                                     value={standardInputValue}
                                                     onChange={(e) => setStandardInputValue(e.target.value)}
@@ -885,6 +890,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                             <Languages size={14} className="text-slate-600" />
                                         </div>
                                         <input
+                                          dir="auto"
                                           type="text"
                                           value={localData.vocabulary}
                                           onChange={(e) => setLocalData(prev => ({ ...prev, vocabulary: e.target.value }))}
@@ -902,6 +908,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               <Wrench size={14} className="text-slate-600" />
                                           </div>
                                           <textarea
+                                              dir="auto"
                                               aria-label={t('wizard.input_instructions_label') || 'Custom instructions'}
                                               value={localData.sourceCustomInstructions}
                                               onChange={(e) => setLocalData(prev => ({ ...prev, sourceCustomInstructions: e.target.value }))}
@@ -912,7 +919,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       </div>
                                   </div>
                                   <div className="flex items-center gap-2 bg-purple-50 p-3 rounded-xl border border-purple-100">
-                                      <input aria-label={t('common.toggle_verification')}
+                                      <input dir="auto" aria-label={t('common.toggle_verification')}
                                           type="checkbox"
                                           data-help-key="wizard_verify_checkbox" id="wiz-verify"
                                           checked={localData.verification}
@@ -966,7 +973,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                           <div className="space-y-4">
                               <div>
                                   <label className="block text-sm font-bold text-slate-600 mb-2">{t('wizard.output_format')}</label>
-                                  <select aria-label={t('common.selection')}
+                                  <select dir="auto" aria-label={t('common.selection')}
                                     value={localData.format}
                                     data-help-key="wizard_format_select"
                                     onChange={(e) => setLocalData({...localData, format: e.target.value})}
@@ -985,7 +992,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <div>
                                   <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.output_languages_label')}</label>
                                   <div className="flex gap-2 mb-2">
-                                      <input aria-label={t('common.enter_wiz_lang_input')}
+                                      <input dir="auto" aria-label={t('common.enter_wiz_lang_input')}
                                         type="text"
                                         value={wizLangInput}
                                         onChange={(e) => setWizLangInput(e.target.value)}
@@ -1004,7 +1011,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                         <Plus size={20} />
                                       </button>
                                   </div>
-                                  <select aria-label={t('common.selection')}
+                                  <select dir="auto" aria-label={t('common.selection')}
                                       data-help-key="wizard_lang_common_select"
                                       onChange={(e) => { addCommonLanguage(e.target.value); e.target.value = ""; }}
                                       className="w-full text-xs border border-slate-400 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer"
@@ -1041,7 +1048,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <div>
                                   <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-600 font-normal"> (Optional)</span></label>
                                   <div className="flex gap-2 mb-2">
-                                      <input aria-label={t('common.enter_wiz_interest_input')}
+                                      <input dir="auto" aria-label={t('common.enter_wiz_interest_input')}
                                         type="text"
                                         value={wizInterestInput}
                                         onChange={(e) => setWizInterestInput(e.target.value)}

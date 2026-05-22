@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-19T19:41:12.951Z",
+  "generated": "2026-05-19T23:31:16.686Z",
   "count": 9,
   "total_keys_expected": 9307,
   "available": [
@@ -35,8 +35,8 @@
     {
       "slug": "hebrew",
       "display": "Hebrew",
-      "keys": 533,
-      "bytes": 29861,
+      "keys": 6688,
+      "bytes": 643205,
       "updated": "2026-05-19"
     },
     {
@@ -63,8 +63,8 @@
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
-      "keys": 4730,
-      "bytes": 382043,
+      "keys": 9285,
+      "bytes": 1209911,
       "updated": "2026-05-19"
     }
   ]

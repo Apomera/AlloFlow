@@ -77,8 +77,12 @@
           if (!ctx || !ctx.React) return rendered;
           return ctx.React.createElement('div', {
             style: {
-              background: '#0f172a',
-              color: '#e2e8f0',
+              // Theme-aware: --allo-stem-canvas resolves to the existing
+              // #0f172a in .theme-dark (Aaron's original design preserved)
+              // and to light/contrast equivalents in the other themes.
+              // Variables defined in AlloFlowANTI.txt near .theme-dark.
+              background: 'var(--allo-stem-canvas, #0f172a)',
+              color: 'var(--allo-stem-text, #e2e8f0)',
               borderRadius: 12,
               minHeight: 'calc(100vh - 32px)'
             },

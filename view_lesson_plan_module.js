@@ -335,7 +335,7 @@
     className: "flex items-center justify-between mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-emerald-900 flex items-center gap-2"
-  }, "\uD83D\uDD2C Recommended STEM Lab Tools"), /*#__PURE__*/React.createElement("button", {
+  }, "🔬 Recommended STEM Lab Tools"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       const tools = generatedContent.data.recommendedStemTools.map(t => t.id);
       const station = {
@@ -353,7 +353,7 @@
       addToast && addToast('✅ STEM Station created! Open STEM Lab to see your curated tools.');
     },
     className: "flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
-  }, "\uD83D\uDCCC Create Station")), /*#__PURE__*/React.createElement("div", {
+  }, "📌 Create Station")), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, generatedContent.data.recommendedStemTools.map((tool, idx) => {
     const registry = window.STEM_TOOL_REGISTRY || [];
@@ -371,7 +371,7 @@
       className: "text-xs text-emerald-700 mt-0.5"
     }, tool.rationale), tool.suggestedActivity && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-teal-600 mt-1 italic"
-    }, "\uD83D\uDCA1 ", tool.suggestedActivity)), /*#__PURE__*/React.createElement("button", {
+    }, "💡 ", tool.suggestedActivity)), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const toolId = tool.id;
         setStemLabTool && setStemLabTool(toolId);
@@ -379,7 +379,7 @@
         setStemLabTab && setStemLabTab('explore');
       },
       className: "text-xs font-bold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
-    }, "Open Tool \u2192"));
+    }, "Open Tool →"));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center pb-8"
   }, /*#__PURE__*/React.createElement("button", {

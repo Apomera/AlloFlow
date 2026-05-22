@@ -19,32 +19,31 @@
   var Fragment = React.Fragment;
 
   // Lazy Lucide icon resolution from window.AlloIcons (populated by
-  // host at AlloFlowANTI.txt:4930). Avoids threading 16 icon
-  // components as props. Mirrors view_renderers_module.js pattern.
-  var _lazyIcon = function (name) {
-    return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
-      return I ? React.createElement(I, props) : null;
-    };
+// host at AlloFlowANTI.txt:4930). Avoids threading 16 icon
+// components as props. Mirrors view_renderers_module.js pattern.
+var _lazyIcon = function (name) {
+  return function (props) {
+    var I = window.AlloIcons && window.AlloIcons[name];
+    return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
-  var AlertCircle = _lazyIcon('AlertCircle');
-  var AlertTriangle = _lazyIcon('AlertTriangle');
-  var Ban = _lazyIcon('Ban');
-  var CheckCircle2 = _lazyIcon('CheckCircle2');
-  var Gamepad2 = _lazyIcon('Gamepad2');
-  var GripVertical = _lazyIcon('GripVertical');
-  var ImageIcon = _lazyIcon('ImageIcon');
-  var ListOrdered = _lazyIcon('ListOrdered');
-  var Loader2 = _lazyIcon('Loader2');
-  var Pencil = _lazyIcon('Pencil');
-  var Plus = _lazyIcon('Plus');
-  var RefreshCw = _lazyIcon('RefreshCw');
-  var Send = _lazyIcon('Send');
-  var Sparkles = _lazyIcon('Sparkles');
-  var Trash2 = _lazyIcon('Trash2');
-  var X = _lazyIcon('X');
-
-  function TimelineView(props) {
+};
+var AlertCircle = _lazyIcon('AlertCircle');
+var AlertTriangle = _lazyIcon('AlertTriangle');
+var Ban = _lazyIcon('Ban');
+var CheckCircle2 = _lazyIcon('CheckCircle2');
+var Gamepad2 = _lazyIcon('Gamepad2');
+var GripVertical = _lazyIcon('GripVertical');
+var ImageIcon = _lazyIcon('ImageIcon');
+var ListOrdered = _lazyIcon('ListOrdered');
+var Loader2 = _lazyIcon('Loader2');
+var Pencil = _lazyIcon('Pencil');
+var Plus = _lazyIcon('Plus');
+var RefreshCw = _lazyIcon('RefreshCw');
+var Send = _lazyIcon('Send');
+var Sparkles = _lazyIcon('Sparkles');
+var Trash2 = _lazyIcon('Trash2');
+var X = _lazyIcon('X');
+function TimelineView(props) {
   // Pure data refs
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -92,6 +91,7 @@
   // Components from host scope
   var ErrorBoundary = props.ErrorBoundary;
   var TimelineGame = props.TimelineGame;
+  var playSound = props.playSound;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -204,9 +204,9 @@
     className: "bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors",
     title: t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations',
     "aria-label": t('timeline.click_to_lock_aria') || 'Click to lock this mode'
-  }, "\u2728 ", t('timeline.detected_label') || 'Detected', ": ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label) : /*#__PURE__*/React.createElement("span", {
+  }, "✨ ", t('timeline.detected_label') || 'Detected', ": ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label) : /*#__PURE__*/React.createElement("span", {
     className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm"
-  }, "\uD83D\uDD12 ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label))), /*#__PURE__*/React.createElement("div", {
+  }, "🔒 ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label))), /*#__PURE__*/React.createElement("div", {
     className: "absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"
   }), isEditingTimeline ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
@@ -411,7 +411,7 @@
     className: "text-emerald-600"
   }), t('timeline.validation.verified') || 'Verified', /*#__PURE__*/React.createElement("span", {
     className: "text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform"
-  }, "\u25BE")), /*#__PURE__*/React.createElement("div", {
+  }, "▾")), /*#__PURE__*/React.createElement("div", {
     className: "mt-1.5 text-[11px] bg-emerald-50/50 border-l-2 border-emerald-300 px-2 py-1.5 text-emerald-900/90 leading-relaxed rounded-r"
   }, item.verification.rationale)) : /*#__PURE__*/React.createElement("div", {
     className: "mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800"

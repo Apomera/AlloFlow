@@ -911,9 +911,19 @@ function ExportPreviewView(props) {
                 doc.body.spellcheck = true;
                 const editStyle = doc.createElement("style");
                 editStyle.textContent = `
-                              [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
-                              img { cursor: move; transition: outline 0.2s; }
-                              img:hover { outline: 2px dashed #6366f1; }
+                              /* Scoped focus ring: only interactive widgets the user actually targets,
+                                 NOT every block the cursor brushes over. Previously the bare *:focus
+                                 selector turned every paragraph/div/list-item into a flashing outlined
+                                 box as designMode shifted focus while editing. */
+                              a:focus-visible, button:focus-visible, input:focus-visible,
+                              textarea:focus-visible, select:focus-visible,
+                              [contenteditable=true]:focus-visible {
+                                outline: 2px solid #6366f1 !important;
+                                outline-offset: 2px;
+                                border-radius: 4px;
+                              }
+                              img { cursor: move; }
+                              img:hover { outline: 2px dashed #6366f1; outline-offset: 2px; }
                               ::selection { background: #c7d2fe; }
                             `;
                 doc.head.appendChild(editStyle);

@@ -5534,15 +5534,35 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
 
-                        React.createElement("div", { className: "flex gap-1" },
+                        React.createElement("div", { className: "grid grid-cols-5 gap-1" },
 
-                          [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
+                          [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }, { id: 'ai-motion', label: '\uD83C\uDFAD AI Motion' }].map(function(t) {
 
-                            return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                            return React.createElement("button", { key: t.id, onClick: function() {
 
-                              className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
+                              upd('stereoAnimTransform', t.id);
+
+                              // AI Motion is much heavier per frame than mechanical transforms,
+                              // so seed a lower default frame count if the user is still on the
+                              // pre-AI default. Caps to 30 max via slider; <=8 generates in
+                              // ~30-45s end-to-end on Google's tier.
+                              if (t.id === 'ai-motion' && (typeof d.stereoAnimFrameCount !== 'number' || d.stereoAnimFrameCount === 12)) {
+
+                                upd('stereoAnimFrameCount', 8);
+
+                              }
+
+                            },
+
+                              className: "px-1 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
 
                           })
+
+                        ),
+
+                        (d.stereoAnimTransform === 'ai-motion') && React.createElement("p", { className: "text-[10px] text-purple-700 mt-1 italic" },
+
+                          "AI Motion calls Gemini to plan poses then Imagen to render each frame as its own depth map. ~5\u20137s per frame; rate-limit-safe."
 
                         )
 
@@ -5566,7 +5586,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
 
-                      React.createElement("input", { type: "range", min: 6, max: 24, value: d.stereoAnimFrameCount || 12, 'aria-label': 'Frame count', onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 6, max: 30, value: d.stereoAnimFrameCount || 12, 'aria-label': 'Frame count', onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
                     ),
 
@@ -5655,6 +5675,299 @@ const d = labToolData.artStudio || {};
                         upd('stereoAnimRendering', true);
 
                         upd('stereoAnimProgress', 0);
+
+                        upd('stereoAnimAiMotionStatus', '');
+
+
+
+                        // ═══ AI MOTION (Gemini storyboard + Imagen per-frame) ═══
+                        // Only valid when the depth source is AI. Gemini plans a
+                        // looped N-frame pose sequence; each pose is rendered as
+                        // its own grayscale depth map via Imagen; the existing
+                        // stereogram converter then runs frame-by-frame. callImagen
+                        // already has exponential backoff + auto-serialization on
+                        // 429, so an N-frame batch is rate-limit-safe (it'll slow
+                        // down, not fail). Frames cap at 30 via the slider.
+
+                        if (source === 'ai' && (d.stereoAnimTransform === 'ai-motion')) {
+
+                          if (typeof callGemini !== 'function' || typeof callImagen !== 'function') {
+
+                            upd('stereoAnimRendering', false);
+
+                            if (typeof addToast === 'function') addToast('AI Motion needs Gemini + Imagen — switch transforms or check AI setup.', 'error');
+
+                            return;
+
+                          }
+
+                          var motionPrompt = (d.stereoAnimAiPrompt || '').trim();
+
+                          if (!motionPrompt) {
+
+                            upd('stereoAnimRendering', false);
+
+                            if (typeof addToast === 'function') addToast('Need an AI prompt for AI Motion mode.', 'warning');
+
+                            return;
+
+                          }
+
+                          upd('stereoAnimAiMotionStatus', 'Planning pose sequence with Gemini…');
+
+                          upd('stereoAnimProgress', 1);
+
+                          var storyboardPrompt =
+                            'You are a storyboard artist planning a looping ' + nF + '-frame stereogram animation.\n\n' +
+                            'Subject: "' + motionPrompt + '"\n\n' +
+                            'Plan exactly ' + nF + ' frames showing this subject in continuous motion.\n' +
+                            'Rules (CRITICAL):\n' +
+                            '1. The subject must look IDENTICAL across all frames — same anatomy, proportions, breed/species/style. Repeat the subject phrase verbatim at the start of every pose.\n' +
+                            '2. Only pose / limb angles / position change between adjacent frames. No costume changes, no camera moves.\n' +
+                            '3. The motion must LOOP smoothly — frame ' + nF + ' should flow naturally back into frame 1.\n' +
+                            '4. Use small incremental changes (no huge jumps between adjacent frames).\n' +
+                            '5. Always full-body, centered, fills the square frame, looking toward camera unless the motion requires otherwise.\n\n' +
+                            'Return ONLY a JSON array of exactly ' + nF + ' strings (one per frame). Each string is a single sentence describing the pose in that frame, in present tense. No object keys, no commentary, no markdown — just the bare JSON array.';
+
+                          // Imagen call wrapped in a promise that resolves with the ImageData-shaped keyframe.
+
+                          var generateFrame = function(idx, pose, fallbackKf) {
+
+                            return new Promise(function(resolve) {
+
+                              var dpPrompt = 'A smooth high-quality grayscale depth map: ' + pose + ' ' +
+                                'Closest parts pure white, furthest pure black. No text or artifacts. ' +
+                                'Fill the entire square frame. Subject style: ' + motionPrompt + '.';
+
+                              callImagen(dpPrompt, 400).then(function(base64) {
+
+                                var img = new Image();
+
+                                img.onload = function() {
+
+                                  var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+
+                                  c.getContext('2d').drawImage(img, 0, 0, 400, 400);
+
+                                  var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
+
+                                  resolve({ width: 400, height: 400, data: imgData.data });
+
+                                };
+
+                                img.onerror = function() { resolve(fallbackKf); };
+
+                                img.src = base64;
+
+                              }).catch(function(err) {
+
+                                console.warn('[AI Motion] Imagen failed for frame ' + idx + ':', err && err.message);
+
+                                resolve(fallbackKf);
+
+                              });
+
+                            });
+
+                          };
+
+                          callGemini(storyboardPrompt, true).then(function(rawResponse) {
+
+                            // callGemini returns the raw text body — with jsonMode=true that's a JSON
+                            // string we have to parse ourselves. Be defensive: some model responses
+                            // wrap the JSON in ```json … ``` fences even when responseMimeType is set.
+                            console.log('[AI Motion] Gemini raw response (first 300 chars):', String(rawResponse).slice(0, 300));
+
+                            var poses;
+
+                            try {
+
+                              if (Array.isArray(rawResponse)) {
+
+                                poses = rawResponse; // already parsed (future-proof)
+
+                              } else if (typeof rawResponse === 'string') {
+
+                                var cleaned = rawResponse.trim()
+
+                                  .replace(/^```(?:json)?\s*/i, '')
+
+                                  .replace(/```\s*$/, '')
+
+                                  .trim();
+
+                                poses = JSON.parse(cleaned);
+
+                                // Some responses come back as { "frames": [...] } or { "poses": [...] }
+                                if (!Array.isArray(poses) && poses && typeof poses === 'object') {
+
+                                  poses = poses.frames || poses.poses || poses.steps || Object.values(poses).find(function(v){ return Array.isArray(v); });
+
+                                }
+
+                              } else {
+
+                                poses = rawResponse;
+
+                              }
+
+                            } catch (parseErr) {
+
+                              console.error('[AI Motion] Failed to parse Gemini storyboard JSON. Raw response:', rawResponse);
+
+                              throw new Error('Could not parse Gemini storyboard: ' + parseErr.message);
+
+                            }
+
+                            if (!Array.isArray(poses) || poses.length === 0) {
+
+                              console.error('[AI Motion] Gemini storyboard not an array. Parsed value:', poses);
+
+                              throw new Error('Gemini returned an empty or malformed storyboard (got ' + (Array.isArray(poses) ? 'empty array' : typeof poses) + ').');
+
+                            }
+
+                            console.log('[AI Motion] Storyboard parsed:', poses.length + ' poses (requested ' + nF + ')');
+
+                            // Normalize to exactly nF entries (pad with last, trim overflow)
+                            poses = poses.slice(0, nF);
+
+                            while (poses.length < nF) poses.push(poses[poses.length - 1] || motionPrompt);
+
+                            // Original AI-generated depth map serves as identity anchor for fallbacks
+                            var anchorKf = d.stereoAnimAiDepth || null;
+
+                            // Generate sequentially — callImagen auto-serializes anyway on rate limits,
+                            // and sequential keeps frame N's "fallback to N-1" logic simple.
+
+                            var keyframes = [];
+
+                            var generateNext = function(i) {
+
+                              if (i >= nF) {
+
+                                // All depth maps generated — hand off to stereogram render
+                                upd('stereoAnimAiMotionStatus', 'Rendering stereograms…');
+
+                                upd('stereoAnimProgress', 50);
+
+                                runStereoRender(keyframes);
+
+                                return;
+
+                              }
+
+                              upd('stereoAnimAiMotionStatus', 'Generating depth map ' + (i + 1) + ' of ' + nF + '…');
+
+                              var fallback = keyframes.length > 0 ? keyframes[keyframes.length - 1] : anchorKf;
+
+                              generateFrame(i, String(poses[i] || motionPrompt), fallback).then(function(kf) {
+
+                                keyframes.push(kf || anchorKf);
+
+                                upd('stereoAnimProgress', Math.round((i + 1) / nF * 50));
+
+                                generateNext(i + 1);
+
+                              });
+
+                            };
+
+                            generateNext(0);
+
+                          }).catch(function(err) {
+
+                            console.error('[AI Motion] Storyboard / pipeline failed:', err);
+
+                            upd('stereoAnimRendering', false);
+
+                            upd('stereoAnimAiMotionStatus', '');
+
+                            upd('stereoAnimProgress', 0);
+
+                            if (typeof addToast === 'function') addToast('AI Motion failed: ' + (err && err.message ? err.message : 'unknown'), 'error');
+
+                          });
+
+                          // Stereogram render once depth-map keyframes are ready.
+
+                          function runStereoRender(kfs) {
+
+                            var W = 512, H = 512, dmW = 400, dmH = 400;
+
+                            var renderedFrames = []; var fi2 = 0;
+
+                            function step() {
+
+                              if (fi2 >= nF) {
+
+                                _stereoAnimRef.frames = renderedFrames;
+
+                                upd('stereoAnimRendering', false);
+
+                                upd('stereoAnimAiMotionStatus', '');
+
+                                upd('stereoAnimProgress', 100);
+
+                                upd('stereoAnimHasFrames', true);
+
+                                if (typeof addToast === 'function') addToast('🎭 AI Motion: ' + renderedFrames.length + ' frames rendered!', 'success');
+
+                                upd('stereoAnimPlaying', true);
+
+                                _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd);
+
+                                return;
+
+                              }
+
+                              var kf = kfs[fi2];
+
+                              if (!kf || !kf.data) { fi2++; requestAnimationFrame(step); return; }
+
+                              // Normalize the keyframe's data buffer to a Uint8ClampedArray for _sirdsRenderSync.
+
+                              var depthArr;
+
+                              if (kf.data instanceof Uint8ClampedArray) {
+
+                                depthArr = kf.data;
+
+                              } else {
+
+                                var tc = document.createElement('canvas'); tc.width = kf.width; tc.height = kf.height;
+
+                                var tctx = tc.getContext('2d');
+
+                                var tid = tctx.createImageData(kf.width, kf.height);
+
+                                for (var ti = 0; ti < kf.data.length; ti++) tid.data[ti] = kf.data[ti];
+
+                                tctx.putImageData(tid, 0, 0);
+
+                                depthArr = tctx.getImageData(0, 0, kf.width, kf.height).data;
+
+                              }
+
+                              var f = _sirdsRenderSync(W, H, depthArr, dmW, dmH, pType, pWidth, maxShift, aiPat);
+
+                              renderedFrames.push(f);
+
+                              fi2++;
+
+                              upd('stereoAnimProgress', 50 + Math.round(fi2 / nF * 50));
+
+                              requestAnimationFrame(step);
+
+                            }
+
+                            requestAnimationFrame(step);
+
+                          }
+
+                          return; // skip the normal render flow below
+
+                        }
 
 
 
@@ -5830,11 +6143,47 @@ const d = labToolData.artStudio || {};
 
                       className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50 shadow-md transition-all"
 
-                    }, d.stereoAnimRendering ? ('\u23F3 Rendering... ' + (d.stereoAnimProgress || 0) + '%') : '\uD83C\uDFAC Render Animation'),
+                    }, d.stereoAnimRendering ? (d.stereoAnimAiMotionStatus ? ('\u23F3 ' + d.stereoAnimAiMotionStatus + ' ' + (d.stereoAnimProgress || 0) + '%') : ('\u23F3 Rendering... ' + (d.stereoAnimProgress || 0) + '%')) : '\uD83C\uDFAC Render Animation'),
 
                     React.createElement("button", { "aria-label": "Reset stereogram animation",
 
-                      onClick: function() { _stopStereoAnim(); _stereoAnimRef.frames = []; upd('stereoAnimHasFrames', false); upd('stereoAnimPlaying', false); upd('stereoAnimProgress', 0); },
+                      onClick: function() {
+
+                        _stopStereoAnim();
+
+                        _stereoAnimRef.frames = [];
+
+                        // Also clear the output canvas and repaint the placeholder
+                        // banner. Without this the last rendered frame stays painted
+                        // forever (the canvas init ref only fires once via
+                        // canvas._animInit, so it never re-blanks on later resets).
+                        try {
+
+                          var rc = document.getElementById('stereoAnimCanvas');
+
+                          if (rc) {
+
+                            var rctx = rc.getContext('2d');
+
+                            rctx.fillStyle = '#1a1a2e'; rctx.fillRect(0, 0, rc.width, rc.height);
+
+                            rctx.fillStyle = '#888'; rctx.font = '14px sans-serif'; rctx.textAlign = 'center';
+
+                            rctx.fillText('Pick a source and click Render Animation', rc.width / 2, rc.height / 2);
+
+                          }
+
+                        } catch (_) {}
+
+                        upd('stereoAnimHasFrames', false);
+
+                        upd('stereoAnimPlaying', false);
+
+                        upd('stereoAnimProgress', 0);
+
+                        upd('stereoAnimAiMotionStatus', '');
+
+                      },
 
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100"
 

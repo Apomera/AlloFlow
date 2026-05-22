@@ -20,8 +20,43 @@
 const UiLanguageSelector = () => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
   const [manualInput, setManualInput] = useState('');
+  const [deployedLanguages, setDeployedLanguages] = useState([]); // sorted display names from manifest
   const fileInputRef = useRef(null);
-  const commonLanguages = ["English", "Spanish", "French", "Arabic", "Chinese (Mandarin)", "Vietnamese", "Russian", "Portuguese"];
+  // Fetch the language-pack manifest from Cloudflare on mount. The dropdown
+  // shows only languages with actual deployed packs (plus English as the source
+  // language, plus Custom… for free-form input that triggers regenerateLanguage).
+  // Mirrors the URL+fallback pattern used by language_matcher_module.js so it
+  // works even when CF Pages is briefly unavailable.
+  useEffect(() => {
+    let cancelled = false;
+    const urls = [
+      'https://alloflow-cdn.pages.dev/lang/manifest.json',
+      'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json'
+    ];
+    (async () => {
+      for (const u of urls) {
+        try {
+          const r = await fetch(u, { cache: 'no-cache' });
+          if (!r.ok) continue;
+          const m = await r.json();
+          if (m && Array.isArray(m.available)) {
+            const displays = m.available
+              .map(e => e && e.display)
+              .filter(Boolean)
+              .sort((a, b) => a.localeCompare(b));
+            if (!cancelled) setDeployedLanguages(displays);
+            return;
+          }
+        } catch (_) { /* try next URL */ }
+      }
+      // Silent fallback — picker still works with English + Custom only.
+    })();
+    return () => { cancelled = true; };
+  }, []);
+  // English is always available (it's the source language, not in the manifest).
+  // Other languages come from the Cloudflare manifest so the picker stays in sync
+  // with what's actually been built and deployed.
+  const commonLanguages = ['English', ...deployedLanguages.filter(d => d !== 'English')];
   const handleChange = (e) => {
     const val = e.target.value;
     if (val !== "Custom") {

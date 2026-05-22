@@ -1,0 +1,345 @@
+[
+  {
+    "key": "cancel_active_recording_before_undoing",
+    "text": "Cancel the active recording before undoing.",
+    "line": 5459,
+    "fullMatch": "addToast('Cancel the active recording before undoing.'",
+    "quote": "'"
+  },
+  {
+    "key": "undid_last_annotation",
+    "text": "↩ Undid last annotation",
+    "line": 5480,
+    "fullMatch": "addToast('↩ Undid last annotation'",
+    "quote": "'"
+  },
+  {
+    "key": "orf_passage_available_grade",
+    "text": "No ORF passage available for grade ",
+    "line": 5615,
+    "fullMatch": "addToast('No ORF passage available for grade '",
+    "quote": "'"
+  },
+  {
+    "key": "orf_passage_loaded_press_record",
+    "text": "ORF passage loaded — press Record to begin",
+    "line": 5633,
+    "fullMatch": "addToast('ORF passage loaded — press Record to begin'",
+    "quote": "'"
+  },
+  {
+    "key": "live_polling_teacher_mode_only",
+    "text": "Live Polling is teacher-mode only.",
+    "line": 6218,
+    "fullMatch": "addToast('Live Polling is teacher-mode only.'",
+    "quote": "'"
+  },
+  {
+    "key": "start_live_session_first_use",
+    "text": "Start a live session first to use Live Polling.",
+    "line": 6222,
+    "fullMatch": "addToast('Start a live session first to use Live Polling.'",
+    "quote": "'"
+  },
+  {
+    "key": "research_data_imported_successfully",
+    "text": "Research data imported successfully",
+    "line": 6961,
+    "fullMatch": "addToast('Research data imported successfully'",
+    "quote": "'"
+  },
+  {
+    "key": "invalid_research_data_file",
+    "text": "Invalid research data file",
+    "line": 6964,
+    "fullMatch": "addToast('Invalid research data file'",
+    "quote": "'"
+  },
+  {
+    "key": "overlay_disabled",
+    "text": "Overlay disabled",
+    "line": 7002,
+    "fullMatch": "addToast('Overlay disabled'",
+    "quote": "'"
+  },
+  {
+    "key": "explore_score_saved",
+    "text": "Explore score saved: ",
+    "line": 7222,
+    "fullMatch": "addToast('Explore score saved: '",
+    "quote": "'"
+  },
+  {
+    "key": "assessment_submitted",
+    "text": "Assessment submitted: ",
+    "line": 7256,
+    "fullMatch": "addToast('Assessment submitted: '",
+    "quote": "'"
+  },
+  {
+    "key": "fluency_assessments_export",
+    "text": "No fluency assessments to export",
+    "line": 8161,
+    "fullMatch": "addToast('No fluency assessments to export'",
+    "quote": "'"
+  },
+  {
+    "key": "pdf_fix_appears_stuck_reset",
+    "text": "PDF fix appears stuck — reset. Check network and try again.",
+    "line": 9181,
+    "fullMatch": "addToast('PDF fix appears stuck — reset. Check network and try again.'",
+    "quote": "'"
+  },
+  {
+    "key": "review_mode_diff_view_opened",
+    "text": "Review mode: Diff view opened — inspect source ↔ remediated fidelity.",
+    "line": 9442,
+    "fullMatch": "addToast('Review mode: Diff view opened — inspect source ↔ remediated fidelity.'",
+    "quote": "'"
+  },
+  {
+    "key": "expert_mode_document_builder_opened",
+    "text": "Expert mode: Document Builder opened for markup-level editing.",
+    "line": 9446,
+    "fullMatch": "addToast('Expert mode: Document Builder opened for markup-level editing.'",
+    "quote": "'"
+  },
+  {
+    "key": "re_attach_cancelled",
+    "text": "Re-attach cancelled.",
+    "line": 9499,
+    "fullMatch": "addToast('Re-attach cancelled.'",
+    "quote": "'"
+  },
+  {
+    "key": "re_attach_cancelled_2",
+    "text": "Re-attach cancelled.",
+    "line": 9502,
+    "fullMatch": "addToast('Re-attach cancelled.'",
+    "quote": "'"
+  },
+  {
+    "key": "re_attach_failed_empty_file",
+    "text": "Re-attach failed: empty file.",
+    "line": 9521,
+    "fullMatch": "addToast('Re-attach failed: empty file.'",
+    "quote": "'"
+  },
+  {
+    "key": "pdf_re_attached_starting_remediation",
+    "text": "📎 PDF re-attached — starting remediation.",
+    "line": 9524,
+    "fullMatch": "addToast('📎 PDF re-attached — starting remediation.'",
+    "quote": "'"
+  },
+  {
+    "key": "failed_read_pdf",
+    "text": "Failed to read PDF: ",
+    "line": 9527,
+    "fullMatch": "addToast('Failed to read PDF: '",
+    "quote": "'"
+  },
+  {
+    "key": "failed_read_pdf_2",
+    "text": "Failed to read PDF: ",
+    "line": 9530,
+    "fullMatch": "addToast('Failed to read PDF: '",
+    "quote": "'"
+  },
+  {
+    "key": "pop_up_blocked_allow_pop",
+    "text": "Pop-up blocked — please allow pop-ups for this site to print",
+    "line": 12935,
+    "fullMatch": "addToast('Pop-up blocked — please allow pop-ups for this site to print'",
+    "quote": "'"
+  },
+  {
+    "key": "content_engine_error",
+    "text": "Content engine error: ",
+    "line": 13616,
+    "fullMatch": "addToast('Content engine error: '",
+    "quote": "'"
+  },
+  {
+    "key": "content_engine_loading_try_again",
+    "text": "Content engine loading — please try again in a moment",
+    "line": 13626,
+    "fullMatch": "addToast('Content engine loading — please try again in a moment'",
+    "quote": "'"
+  },
+  {
+    "key": "doc_pipeline_loading",
+    "text": "Doc pipeline loading...",
+    "line": 14195,
+    "fullMatch": "addToast('Doc pipeline loading...'",
+    "quote": "'"
+  },
+  {
+    "key": "doc_pipeline_loading_2",
+    "text": "Doc pipeline loading...",
+    "line": 14206,
+    "fullMatch": "addToast('Doc pipeline loading...'",
+    "quote": "'"
+  },
+  {
+    "key": "accessibility_verification_unavailable_auto_contin",
+    "text": "⚠ Accessibility verification unavailable — auto-continue paused. Try \"Fix Remaining\" manually.",
+    "line": 14275,
+    "fullMatch": "addToast('⚠ Accessibility verification unavailable — auto-continue paused. Try \"Fix Remaining\" manually.'",
+    "quote": "'"
+  },
+  {
+    "key": "auto_continue_stopped",
+    "text": "⏸ Auto-continue stopped",
+    "line": 14303,
+    "fullMatch": "addToast('⏸ Auto-continue stopped'",
+    "quote": "'"
+  },
+  {
+    "key": "all_violations_resolved_score",
+    "text": "✅ All violations resolved (score ",
+    "line": 14305,
+    "fullMatch": "addToast('✅ All violations resolved (score '",
+    "quote": "'"
+  },
+  {
+    "key": "target_score_reached",
+    "text": "🎯 Target score reached: ",
+    "line": 14307,
+    "fullMatch": "addToast('🎯 Target score reached: '",
+    "quote": "'"
+  },
+  {
+    "key": "auto_fidelity_skipped_more_page",
+    "text": "Auto-fidelity skipped — more page ranges pending. Click Run fidelity check once all ranges are remediated.",
+    "line": 14441,
+    "fullMatch": "addToast('Auto-fidelity skipped — more page ranges pending. Click Run fidelity check once all ranges are remediated.'",
+    "quote": "'"
+  },
+  {
+    "key": "fidelity_100_words_missing",
+    "text": "✓ Fidelity 100% — no words missing.",
+    "line": 14463,
+    "fullMatch": "addToast('✓ Fidelity 100% — no words missing.'",
+    "quote": "'"
+  },
+  {
+    "key": "preview_failed_render_document_pipeline",
+    "text": "Preview failed to render — the document pipeline reported an error. Check console for details.",
+    "line": 15093,
+    "fullMatch": "addToast('Preview failed to render — the document pipeline reported an error. Check console for details.'",
+    "quote": "'"
+  },
+  {
+    "key": "export_tools_still_loading_try",
+    "text": "Export tools still loading — please try again in a moment.",
+    "line": 15176,
+    "fullMatch": "addToast('Export tools still loading — please try again in a moment.'",
+    "quote": "'"
+  },
+  {
+    "key": "export_tools_still_loading_try_2",
+    "text": "Export tools still loading — please try again in a moment.",
+    "line": 15190,
+    "fullMatch": "addToast('Export tools still loading — please try again in a moment.'",
+    "quote": "'"
+  },
+  {
+    "key": "failed_load_lesson",
+    "text": "Failed to load lesson: ",
+    "line": 15621,
+    "fullMatch": "addToast('Failed to load lesson: '",
+    "quote": "'"
+  },
+  {
+    "key": "frayer_image_removed",
+    "text": "Frayer image removed",
+    "line": 17284,
+    "fullMatch": "addToast('Frayer image removed'",
+    "quote": "'"
+  },
+  {
+    "key": "nothing_undo_yet",
+    "text": "Nothing to undo yet.",
+    "line": 17760,
+    "fullMatch": "addToast(\"Nothing to undo yet.\"",
+    "quote": "\""
+  },
+  {
+    "key": "undo_failed_some_settings_may",
+    "text": "Undo failed — some settings may not have reverted.",
+    "line": 17788,
+    "fullMatch": "addToast(\"Undo failed — some settings may not have reverted.\"",
+    "quote": "\""
+  },
+  {
+    "key": "voice_recording_failed_audio_captured",
+    "text": "Voice recording failed — no audio captured.",
+    "line": 20475,
+    "fullMatch": "addToast('Voice recording failed — no audio captured.'",
+    "quote": "'"
+  },
+  {
+    "key": "voice_note_too_long_save",
+    "text": "Voice note too long to save (over 500KB). Try a shorter clip.",
+    "line": 20481,
+    "fullMatch": "addToast('Voice note too long to save (over 500KB). Try a shorter clip.'",
+    "quote": "'"
+  },
+  {
+    "key": "annotation_suite_not_ready_try",
+    "text": "Annotation suite not ready — try again in a moment.",
+    "line": 20510,
+    "fullMatch": "addToast('Annotation suite not ready — try again in a moment.'",
+    "quote": "'"
+  },
+  {
+    "key": "could_not_import",
+    "text": "Could not import: ",
+    "line": 20519,
+    "fullMatch": "addToast('Could not import: '",
+    "quote": "'"
+  },
+  {
+    "key": "imported",
+    "text": "Imported ",
+    "line": 20523,
+    "fullMatch": "addToast('Imported '",
+    "quote": "'"
+  },
+  {
+    "key": "could_not_parse_file_must",
+    "text": "Could not parse the file. Must be a valid annotations JSON.",
+    "line": 20526,
+    "fullMatch": "addToast('Could not parse the file. Must be a valid annotations JSON.'",
+    "quote": "'"
+  },
+  {
+    "key": "not_valid_alloflow_project",
+    "text": "Not a valid AlloFlow project",
+    "line": 22227,
+    "fullMatch": "addToast('Not a valid AlloFlow project'",
+    "quote": "'"
+  },
+  {
+    "key": "loaded",
+    "text": "📂 Loaded: ",
+    "line": 22242,
+    "fullMatch": "addToast('📂 Loaded: '",
+    "quote": "'"
+  },
+  {
+    "key": "failed",
+    "text": "Failed: ",
+    "line": 22243,
+    "fullMatch": "addToast('Failed: '",
+    "quote": "'"
+  },
+  {
+    "key": "progress_report_exported",
+    "text": "Progress report exported!",
+    "line": 24300,
+    "fullMatch": "addToast('Progress report exported!'",
+    "quote": "'"
+  }
+]

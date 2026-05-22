@@ -138,8 +138,8 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
     setPlacement(`${newVert}-${newHoriz}`);
   }, [isVisible, text, variant]);
   const posClasses = {
-    "top-right": `bottom-full right-0 ${variant === "thought" ? "mb-1 mr-12" : "mb-4"} origin-bottom-right`,
-    "top-left": `bottom-full left-0 ${variant === "thought" ? "mb-1 ml-12" : "mb-4"} origin-bottom-left`,
+    "top-right": `bottom-full right-0 ${variant === "thought" ? "mb-1 me-12" : "mb-4"} origin-bottom-right`,
+    "top-left": `bottom-full left-0 ${variant === "thought" ? "mb-1 ms-12" : "mb-4"} origin-bottom-left`,
     "bottom-right": "top-full right-0 mt-4 origin-top-right",
     "bottom-left": "top-full left-0 mt-4 origin-top-left"
   };

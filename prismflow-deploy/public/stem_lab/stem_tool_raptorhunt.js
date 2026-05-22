@@ -6798,6 +6798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     title: 'Raptor Hunt: Predator Physics + Biology',
     description: 'Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.',
     category: 'science',
+    icon: '🦅',
     render: function(ctx) {
       var React = ctx.React, h = React.createElement;
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useMemo = React.useMemo;

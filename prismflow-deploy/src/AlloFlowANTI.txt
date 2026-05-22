@@ -804,6 +804,113 @@ window._upgradeLabelPositions = function () {
 };
 if (window.AlloModules && window.AlloModules.LabelPositions) window._upgradeLabelPositions();
 
+// CDNModuleGate — unified loading-fallback for lazy-loaded CDN modules.
+//
+// Replaces ad-hoc per-component fallbacks that suffered from a real bug:
+// when a module took longer than expected to load, React had no signal to
+// re-render the parent, so the fallback would stay visible until the user
+// triggered a render some other way (close+reopen, mouse-move, etc.). This
+// gate polls `window.AlloModules[moduleKey]` every 200ms while open and
+// not-yet-loaded, then bumps internal state to force a re-evaluation as
+// soon as the module appears.
+//
+// Props:
+//   moduleKey   — string key on window.AlloModules to wait for
+//   isOpen      — when false, renders nothing
+//   onClose     — invoked on backdrop click + Close button (modal variant)
+//   icon        — emoji shown inside the spinner ring
+//   displayName — human-readable name used in the "Loading X..." string
+//   hintVariant — 'long' (with connection hint) or 'short'
+//   size        — 'modal' (centered fixed overlay) or 'inline' (in-flow card)
+//   t           — optional translation function; falls back to English
+//   children    — typically a function (Mod) => ReactElement that builds the
+//                 real UI from the loaded module. Plain children also work.
+const CDNModuleGate = (function () {
+  function tr(t, key, params, fallback) {
+    if (typeof t === 'function') {
+      try { var v = t(key, params); if (v) return v; } catch (_) {}
+    }
+    return fallback;
+  }
+  return function CDNModuleGate(props) {
+    var moduleKey = props.moduleKey;
+    var isOpen = props.isOpen !== false;
+    var onClose = props.onClose;
+    var icon = props.icon || '📦';
+    var displayName = props.displayName || moduleKey || 'module';
+    var hintVariant = props.hintVariant || 'long';
+    var size = props.size || 'modal';
+    var t = props.t;
+    var children = props.children;
+
+    var _tickState = React.useState(0);
+    var setTick = _tickState[1];
+    // moduleKey may be either a flat key ("DynamicAssessment") or a dotted
+    // path ("EducatorHubModal.EducatorHubModal") for modules that export
+    // an object with the component as a property of the same name.
+    var resolve = function () {
+      if (typeof window === 'undefined' || !window.AlloModules) return null;
+      var parts = String(moduleKey).split('.');
+      var cur = window.AlloModules;
+      for (var i = 0; i < parts.length; i++) {
+        if (!cur) return null;
+        cur = cur[parts[i]];
+      }
+      return cur || null;
+    };
+    var Mod = resolve();
+
+    React.useEffect(function () {
+      if (!isOpen) return undefined;
+      if (resolve()) return undefined;
+      var id = setInterval(function () {
+        if (resolve()) {
+          setTick(function (v) { return v + 1; });
+          clearInterval(id);
+        }
+      }, 200);
+      return function () { clearInterval(id); };
+    }, [isOpen, moduleKey, !!Mod]);
+
+    if (!isOpen) return null;
+    if (Mod) return typeof children === 'function' ? children(Mod) : (children || null);
+
+    var loadingLabel = tr(t, 'common.loading_module', { name: displayName }, 'Loading ' + displayName + '...');
+    var hintLabel = (hintVariant === 'short')
+      ? tr(t, 'common.cdn_loading_hint_short', null, 'Module loading from CDN.')
+      : tr(t, 'common.cdn_loading_hint_long', null, 'Module loading from CDN. If this persists, check your connection.');
+
+    if (size === 'inline') {
+      return (
+        <div role="status" aria-live="polite" className="bg-slate-50 rounded-xl p-6 text-center border border-slate-400">
+          <div className="relative w-12 h-12 mx-auto mb-3">
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+            <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-xl">{icon}</div>
+          </div>
+          <p className="text-sm font-bold text-slate-700">{loadingLabel}</p>
+          <p className="text-xs text-slate-600 mt-1">{hintLabel}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={onClose}>
+        <div role="status" aria-live="polite" aria-label={loadingLabel} className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={function (e) { e.stopPropagation(); }}>
+          <div className="relative w-14 h-14 mx-auto mb-4">
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
+            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+            <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-2xl">{icon}</div>
+          </div>
+          <p className="text-lg font-bold text-slate-700">{loadingLabel}</p>
+          <p className="text-sm text-slate-600 mt-2">{hintLabel}</p>
+          {onClose && <button onClick={onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
+        </div>
+      </div>
+    );
+  };
+})();
+
 const VisualPanelGrid = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.VisualPanelGrid;
     if (Ext) return <Ext {...props} />;
@@ -1329,10 +1436,56 @@ const useTranslation = (targetLanguage, apiKey) => {
         const helpFlat = {};
         Object.entries(_helpStrings).forEach(([k, v]) => { helpFlat['help_mode.' + k] = v; });
         const flatStrings = { ...flattenObject(UI_STRINGS), ...helpFlat };
-        const chunks = chunkObject(flatStrings, 200);
+
+        // ── Resume support ──
+        // Load any existing partial/complete pack from the device. This lets a
+        // user who closed the tab mid-generation pick up where they left off,
+        // and lets a user with a previously-translated pack auto-fill ONLY the
+        // keys that have been added since last time (e.g., after Aaron ships
+        // new ui_strings.js keys). The accumulator starts pre-populated; the
+        // chunk loop only processes keys not already present.
+        let resumeFromFlatPack = {};
+        try {
+            const existing = await storageDB.get(storageKey);
+            if (existing && typeof existing === 'object') {
+                resumeFromFlatPack = flattenObject(existing);
+            }
+        } catch (_) {}
+
+        const missingFlatStrings = {};
+        for (const k in flatStrings) {
+            if (!(k in resumeFromFlatPack)) missingFlatStrings[k] = flatStrings[k];
+        }
+        const resumeCount = Object.keys(resumeFromFlatPack).length;
+        const missingCount = Object.keys(missingFlatStrings).length;
+        const expectedCount = Object.keys(flatStrings).length;
+
+        // If nothing missing AND we have a substantive existing pack → done.
+        if (missingCount === 0 && resumeCount > 50) {
+            const finalPack = unflattenObject(resumeFromFlatPack);
+            setLanguagePack(finalPack);
+            setStatusMessage(t('language_selector.status_complete'));
+            setTimeout(() => setIsTranslating(false), 500);
+            return;
+        }
+        if (resumeCount > 0 && missingCount > 0) {
+            debugLog('[useTranslation] Resuming ' + targetLanguage + ': ' + resumeCount + '/' + expectedCount + ' keys already done, filling ' + missingCount + ' missing');
+            setStatusMessage(t('language_selector.status_resuming', { done: resumeCount, total: expectedCount }) || ('Resuming translation (' + resumeCount + '/' + expectedCount + ')…'));
+            // Surface the partial pack immediately so the user sees translations
+            // for what's already done while the missing keys fill in.
+            try { setLanguagePack(unflattenObject(resumeFromFlatPack)); } catch (_) {}
+        }
+
+        const chunks = chunkObject(missingFlatStrings, 200);
         const CONCURRENCY = 3;
-        let accumulatedFlatPack = {};
+        // Start the accumulator with whatever was already done — so the partial
+        // pack is preserved as the new keys get filled in.
+        let accumulatedFlatPack = { ...resumeFromFlatPack };
         let completed = 0;
+        // Pre-set progress to reflect what's already done.
+        if (resumeCount > 0 && expectedCount > 0) {
+            setProgress(Math.round((resumeCount / expectedCount) * 100));
+        }
         const processChunk = async (chunk, i) => {
             let translatedChunk = null;
             let chunkAttempt = 0;
@@ -1354,7 +1507,23 @@ const useTranslation = (targetLanguage, apiKey) => {
                 accumulatedFlatPack = { ...accumulatedFlatPack, ...translated };
             }
             completed += windowChunks.length;
-            setProgress(Math.round((completed / chunks.length) * 100));
+            // Progress accounts for both resumed-from baseline AND new completions.
+            const accumulatedCount = Object.keys(accumulatedFlatPack).length;
+            setProgress(expectedCount > 0 ? Math.min(100, Math.round((accumulatedCount / expectedCount) * 100)) : 0);
+
+            // ── Incremental save after every batch ──
+            // Before this, the whole pack was only written at the very end —
+            // so tab close, Gemini quota error, or network hiccup mid-flight
+            // meant ALL prior work was lost. Now each batch persists, and the
+            // user can resume from the last successful batch on next load.
+            try {
+                const partialPack = unflattenObject(accumulatedFlatPack);
+                await storageDB.set(storageKey, partialPack);
+                // Also surface the partial pack to the UI so newly-translated
+                // keys start rendering as they're filled in.
+                setLanguagePack(partialPack);
+            } catch (e) { warnLog('Incremental save failed:', e?.message || e); }
+
             if (w + CONCURRENCY < chunks.length) await new Promise(r => setTimeout(r, 300));
         }
         const accumulatedPack = unflattenObject(accumulatedFlatPack);
@@ -1846,13 +2015,13 @@ const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
   const { t } = useContext(LanguageContext) || { t: (k) => undefined };
   return (
-  <div className="relative inline-block group ml-1 align-middle z-10">
+  <div className="relative inline-block group ms-1 align-middle z-10">
     <button type="button" aria-describedby={tooltipId} className="text-slate-600 cursor-help hover:text-indigo-500 focus:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded-full" aria-label={t('common.more_information') || 'More information'}>
       <HelpCircle size={12} />
     </button>
     <div id={tooltipId} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none leading-tight invisible group-hover:visible group-focus-within:visible text-center border border-slate-600 z-50">
       {text}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 -mt-1 border-b border-r border-slate-600"></div>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 -mt-1 border-b border-e border-slate-600"></div>
     </div>
   </div>
   );
@@ -1953,7 +2122,7 @@ const SESSION_TIER1_LEAVES = new Set([
   // over WebRTC to assigned drawers, never to Firestore.
   'pictionaryRound',
   // Visual-organizer interactive mode (teacher-armed): { type: 'tchart'|'venn'|...,
-  // armedAt: ms-timestamp } | null. type is an enum from a small fixed set in code;
+  // armedAt: ml-timestamp } | null. type is an enum from a small fixed set in code;
   // armedAt is a numeric timestamp used by students to distinguish new arm events
   // from arm events they've already dismissed. No student-typed content; Tier-1 safe.
   'interactiveOrganizer',
@@ -2109,8 +2278,8 @@ const ComplexityGauge = React.memo(({ level }) => {
   return (
     <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-400 relative mt-2">
       <div className="absolute inset-0 flex">
-          <div className="flex-1 border-r border-white/50"></div>
-          <div className="flex-1 border-r border-white/50"></div>
+          <div className="flex-1 border-e border-white/50"></div>
+          <div className="flex-1 border-e border-white/50"></div>
           <div className="flex-1"></div>
       </div>
       <div
@@ -4123,6 +4292,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js');
     loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js');
+    // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
+    // The generic loadModule() doesn't accept post-load callbacks, and the
+    // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
+    // has been fetched, so they no-op. Without this poll, the stub
+    // `isRtlLang = (n) => false` never gets replaced — meaning dir="rtl" never
+    // gets set when the user picks Arabic/Hebrew, and the page layout stays
+    // LTR despite the dir-attribute logic in LanguageProvider at line ~1430.
+    // Bug discovered 2026-05-19 when RTL Phase 1 (logical Tailwind classes) was
+    // deployed and Arabic mode still rendered LTR.
+    (function awaitModuleScopeExtras(tries) {
+      if (tries <= 0) {
+        console.warn('[CDN] ModuleScopeExtras never registered — RTL detection will stay on stub');
+        return;
+      }
+      if (window.AlloModules && window.AlloModules.ModuleScopeExtras) {
+        try {
+          if (typeof window._upgradeLanguageUtils === 'function') window._upgradeLanguageUtils();
+          if (typeof window._upgradeSessionAssets === 'function') window._upgradeSessionAssets();
+          // Re-evaluate dir now that isRtlLang is real — in case the user
+          // already picked an RTL language before the upgrade fired (the
+          // LanguageProvider useEffect won't re-fire on its own without a
+          // dependency change).
+          try {
+            const cur = (_ttsLiveRef && _ttsLiveRef.current && _ttsLiveRef.current.currentUiLanguage) || 'English';
+            if (typeof isRtlLang === 'function') {
+              document.documentElement.dir = isRtlLang(cur) ? 'rtl' : 'ltr';
+            }
+          } catch (_) {}
+          console.log('[CDN] ModuleScopeExtras post-load upgrades fired (isRtlLang + dir refreshed)');
+        } catch (e) {
+          console.error('[CDN] ModuleScopeExtras post-load error:', e);
+        }
+        return;
+      }
+      setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
+    })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js');
@@ -5420,7 +5625,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // would push another snapshot, making undo pop the wrong thing.
     // Cleaner to refuse and prompt the user to use the Cancel button.
     if (voiceRecording) {
-      if (addToast) addToast('Cancel the active recording before undoing.', 'warning');
+      if (addToast) addToast(t('toasts.cancel_active_recording_before_undoing'), 'warning');
       return;
     }
     const stack = annotationUndoStackRef.current;
@@ -5441,7 +5646,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
     setStickers(prev);
     // 2B: visual confirmation so Ctrl/Cmd+Z isn't an invisible action.
-    if (addToast) addToast('↩ Undid last annotation', 'info');
+    if (addToast) addToast(t('toasts.undid_last_annotation'), 'info');
     try {
       const btn = document.querySelector('[data-allo-undo-btn]');
       if (btn) {
@@ -5576,7 +5781,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
     const passage = passages ? passages[form] || passages['A'] : null;
     if (!passage) {
-      addToast('No ORF passage available for grade ' + grade, 'warning');
+      addToast(t('toasts.orf_passage_available_grade') + grade, 'warning');
       return;
     }
     setProbeGradeLevel(grade);
@@ -5594,7 +5799,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setFluencyStatus('ready');
     setFluencyResult(null);
     setActiveView('simplified_read_mode');
-    addToast('ORF passage loaded — press Record to begin', 'info');
+    addToast(t('toasts.orf_passage_loaded_press_record'), 'info');
   };
   const [probeTargetStudent, setProbeTargetStudent] = useState(null);
   const focusStartRef = useRef(Date.now());
@@ -5888,7 +6093,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
-  const [dyslexicFont, setDyslexicFont] = useState(false);
   const [fontTheme, setFontTheme] = useState('Default');
   const [selectedFont, setSelectedFont] = useState('default');
   const [focusMode, setFocusMode] = useState(false);
@@ -6180,11 +6384,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   React.useEffect(() => {
     const handler = () => {
       if (!isTeacherMode) {
-        addToast && addToast('Live Polling is teacher-mode only.', 'info');
+        addToast && addToast(t('toasts.live_polling_teacher_mode_only'), 'info');
         return;
       }
       if (!activeSessionCode) {
-        addToast && addToast('Start a live session first to use Live Polling.', 'info');
+        addToast && addToast(t('toasts.start_live_session_first_use'), 'info');
         return;
       }
       setShowLivePollingPanel(true);
@@ -6923,10 +7127,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           setInterventionLogs(data.interventionLogs);
           try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
         }
-        if (addToast) addToast('Research data imported successfully', 'success');
+        if (addToast) addToast(t('toasts.research_data_imported_successfully'), 'success');
       } catch (err) {
         warnLog('Failed to import research JSON:', err);
-        if (addToast) addToast('Invalid research data file', 'error');
+        if (addToast) addToast(t('toasts.invalid_research_data_file'), 'error');
       }
     };
     reader.readAsText(file);
@@ -6964,7 +7168,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (nextMode !== 'none') {
           addToast(`Overlay: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)}`, 'info');
       } else {
-          addToast('Overlay disabled', 'info');
+          addToast(t('toasts.overlay_disabled'), 'info');
       }
   };
   const copyToClipboard = (text) => {
@@ -7184,7 +7388,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       label: 'Explore Challenge: ' + (stemLabTool || 'mixed') + ' (' + exploreScore.correct + '/' + exploreScore.total + ')'
     };
     setHistory(prev => [...prev, entry]);
-    if (typeof addToast === 'function') addToast('Explore score saved: ' + exploreScore.correct + '/' + exploreScore.total + ' (' + pct + '%)', 'success');
+    if (typeof addToast === 'function') addToast(t('toasts.explore_score_saved') + exploreScore.correct + '/' + exploreScore.total + ' (' + pct + '%)', 'success');
     setExploreScore({ correct: 0, total: 0 });
   }, [exploreScore, stemLabTool]);
   const handleToggleMathSelfGrade = React.useCallback(() => {
@@ -7218,7 +7422,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       };
       setHistory(prev => [...prev, result]);
-      addToast('Assessment submitted: ' + correct + '/' + total + ' (' + Math.round((correct/total)*100) + '%)', 'success');
+      addToast(t('toasts.assessment_submitted') + correct + '/' + total + ' (' + Math.round((correct/total)*100) + '%)', 'success');
       setMathSelfGradeMode(false);
       setMathStudentAnswers({});
   };
@@ -8123,7 +8327,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const exportFluencyCSV = () => {
     const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
     if (fluencyRecords.length === 0) {
-      addToast('No fluency assessments to export', 'warning');
+      addToast(t('toasts.fluency_assessments_export'), 'warning');
       return;
     }
     const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
@@ -9143,7 +9347,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         setPdfFixLoading(false);
         setPdfFixStep('');
         if (typeof addToast === 'function') {
-          addToast('PDF fix appears stuck — reset. Check network and try again.', 'warning');
+          addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
         }
       }
     }, 10 * 60 * 1000);
@@ -9404,11 +9608,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (typeof _ensureDiffLib === 'function') _ensureDiffLib();
     if (pdfFixMode === 'review') {
       setDiffViewOpen(true);
-      if (typeof addToast === 'function') addToast('Review mode: Diff view opened — inspect source ↔ remediated fidelity.', 'info');
+      if (typeof addToast === 'function') addToast(t('toasts.review_mode_diff_view_opened'), 'info');
     } else if (pdfFixMode === 'expert') {
       setShowExportPreview(true);
       setTimeout(() => { try { updatePdfPreview(); } catch (e) {} }, 200);
-      if (typeof addToast === 'function') addToast('Expert mode: Document Builder opened for markup-level editing.', 'info');
+      if (typeof addToast === 'function') addToast(t('toasts.expert_mode_document_builder_opened'), 'info');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfFixResult, pdfFixLoading]);
@@ -9461,10 +9665,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       input.style.display = 'none';
       let settled = false;
       const finish = (val) => { if (settled) return; settled = true; try { document.body.removeChild(input); } catch {} resolve(val); };
-      input.addEventListener('cancel', () => { addToast('Re-attach cancelled.', 'info'); finish(null); });
+      input.addEventListener('cancel', () => { addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); });
       input.onchange = async (e) => {
         const file = e.target.files?.[0];
-        if (!file) { addToast('Re-attach cancelled.', 'info'); finish(null); return; }
+        if (!file) { addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); return; }
         if (pendingPdfFile && pendingPdfFile.name && pendingPdfFile.size) {
           const nameMismatch = file.name !== pendingPdfFile.name;
           const sizeMismatch = file.size !== pendingPdfFile.size;
@@ -9483,16 +9687,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             const base64 = typeof result === 'string' && result.includes(',')
               ? result.split(',')[1]
               : String(result || '');
-            if (!base64) { addToast('Re-attach failed: empty file.', 'error'); finish(null); return; }
+            if (!base64) { addToast(t('toasts.re_attach_failed_empty_file'), 'error'); finish(null); return; }
             setPendingPdfBase64(base64);
             setPendingPdfFile({ name: file.name, size: file.size });
-            addToast('📎 PDF re-attached — starting remediation.', 'info');
+            addToast(t('toasts.pdf_re_attached_starting_remediation'), 'info');
             finish(base64);
           };
-          reader.onerror = () => { addToast('Failed to read PDF: ' + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
+          reader.onerror = () => { addToast(t('toasts.failed_read_pdf') + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
           reader.readAsDataURL(file);
         } catch (err) {
-          addToast('Failed to read PDF: ' + (err?.message || 'unknown error'), 'error');
+          addToast(t('toasts.failed_read_pdf') + (err?.message || 'unknown error'), 'error');
           finish(null);
         }
       };
@@ -11598,7 +11802,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           <div className="leading-relaxed">
              {renderFormattedText(targetText)}
           </div>
-          <div className="relative mt-2 pl-4 border-l-4 border-indigo-300 bg-slate-50 p-4 rounded-r-xl">
+          <div className="relative mt-2 ps-4 border-s-4 border-indigo-300 bg-slate-50 p-4 rounded-e-xl">
              <div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">
                English Translation
              </div>
@@ -11663,7 +11867,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               </div>
               <ol className="list-decimal list-inside space-y-2 text-sm text-slate-700 leading-relaxed marker:text-indigo-500 marker:font-bold">
                   {items.map((item, i) => (
-                      <li key={i} className="pl-1">
+                      <li key={i} className="ps-1">
                           {item.url ? (
                               <a href={item.url} target="_blank" rel="noopener noreferrer"
                                  className="text-indigo-700 underline hover:text-indigo-900 break-words">
@@ -12897,7 +13101,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       });
       teacherGridHtml += '</div>';
       const win = window.open('', '', 'height=700,width=900');
-      if (!win) { addToast('Pop-up blocked — please allow pop-ups for this site to print', 'error'); return; }
+      if (!win) { addToast(t('toasts.pop_up_blocked_allow_pop'), 'error'); return; }
       const pageTitle = t('glossary.print_puzzle_title');
       const answerKeyTitle = t('glossary.print_answer_key');
       const teacherCopySubtitle = t('glossary.print_teacher_copy');
@@ -13578,7 +13782,7 @@ Return ONLY valid JSON in this format:
     const e = _getContentEngine();
     if (e && typeof e[name] === 'function') {
       try { return e[name].apply(this, arguments); }
-      catch(err) { console.error('[ContentEngine] ' + name + ' threw:', err); addToast('Content engine error: ' + err.message, 'error'); }
+      catch(err) { console.error('[ContentEngine] ' + name + ' threw:', err); addToast(t('toasts.content_engine_error') + err.message, 'error'); }
     } else {
       console.error('[ContentEngine] ' + name + ': engine=' + !!e + ', fn=' + (e ? typeof e[name] : 'N/A'));
       return (typeof fallback === 'function' ? fallback.apply(this, arguments) : undefined);
@@ -13588,7 +13792,7 @@ Return ONLY valid JSON in this format:
     console.error('[ContentEngine] handleGenerateSource FALLBACK hit. State bag keys:', Object.keys(window.__contentEngineState || {}));
     console.error('[ContentEngine] AlloModules.createContentEngine exists:', !!(window.AlloModules && window.AlloModules.createContentEngine));
     console.error('[ContentEngine] _contentEngineRef.current:', _contentEngineRef.current);
-    addToast('Content engine loading — please try again in a moment', 'info');
+    addToast(t('toasts.content_engine_loading_try_again'), 'info');
   });
   const addLanguage = _ceFn('addLanguage');
   const addInterest = _ceFn('addInterest');
@@ -14157,7 +14361,7 @@ Return ONLY valid JSON in this format:
   const _docPipeline = _createDocPipeline
     ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); }, getDefaultTitle: function(type) { return typeof getDefaultTitle === 'function' ? getDefaultTitle(type) : ''; } })
     : null;
-  const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
+  const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
   const runAxeAudit = _docPipeline ? _docPipeline.runAxeAudit : async () => ({});
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
@@ -14168,7 +14372,7 @@ Return ONLY valid JSON in this format:
   const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
-  const downloadBatchResults = _docPipeline ? _docPipeline.downloadBatchResults : async () => { addToast('Doc pipeline loading...', 'info'); };
+  const downloadBatchResults = _docPipeline ? _docPipeline.downloadBatchResults : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
 
   const _createTimelineRevision = window.AlloModules && window.AlloModules.createTimelineRevision;
   const _timelineRevision = _createTimelineRevision
@@ -14237,7 +14441,7 @@ Return ONLY valid JSON in this format:
         if (!reVerify) {
           warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
           if (typeof addToast === 'function') {
-            addToast('⚠ Accessibility verification unavailable — auto-continue paused. Try "Fix Remaining" manually.', 'warning');
+            addToast(t('toasts.accessibility_verification_unavailable_auto_contin'), 'warning');
           }
           break;
         }
@@ -14265,11 +14469,11 @@ Return ONLY valid JSON in this format:
         }));
       }
       if (pdfAutoContinueAbortRef.current) {
-        addToast('⏸ Auto-continue stopped', 'info');
+        addToast(t('toasts.auto_continue_stopped'), 'info');
       } else if (cur && cur.axeAudit && cur.axeAudit.totalViolations === 0) {
-        addToast('✅ All violations resolved (score ' + (cur.afterScore || 0) + ')', 'success');
+        addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
-        addToast('🎯 Target score reached: ' + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+        addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
       }
     } finally {
       setPdfFixLoading(false);
@@ -14403,7 +14607,7 @@ Return ONLY valid JSON in this format:
           });
           const isFullDoc = covered.size >= pdfMultiSession.totalPages;
           if (!isFullDoc) {
-            if (addToast) addToast('Auto-fidelity skipped — more page ranges pending. Click Run fidelity check once all ranges are remediated.', 'info');
+            if (addToast) addToast(t('toasts.auto_fidelity_skipped_more_page'), 'info');
             return;
           }
         }
@@ -14425,7 +14629,7 @@ Return ONLY valid JSON in this format:
         const _pipelineFlagged = !!(pdfFixResult && pdfFixResult.integrityWarning);
         const _charCoverageOk = !pdfFixResult || (pdfFixResult.integrityCoverage == null) || pdfFixResult.integrityCoverage >= 98;
         if (missing1.length === 0 && !_pipelineFlagged && _charCoverageOk) {
-          if (addToast) addToast('✓ Fidelity 100% — no words missing.', 'success');
+          if (addToast) addToast(t('toasts.fidelity_100_words_missing'), 'success');
           try {
             if (typeof setPdfFixResult === 'function' && pdfFixResult) {
               setPdfFixResult(prev => prev ? Object.assign({}, prev, {
@@ -15055,7 +15259,7 @@ Return ONLY valid JSON in this format:
       warnLog('[Export preview] getExportPreviewHTML threw:', err);
       if (_exportPreviewErrorRef.current !== msg) {
         _exportPreviewErrorRef.current = msg;
-        addToast && addToast('Preview failed to render — the document pipeline reported an error. Check console for details.', 'error');
+        addToast && addToast(t('toasts.preview_failed_render_document_pipeline'), 'error');
       }
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
@@ -15138,7 +15342,7 @@ Return ONLY valid JSON in this format:
         setShowExportPreview, handleExportSlides
       });
     }
-    addToast && addToast('Export tools still loading — please try again in a moment.', 'error');
+    addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
   };
   const handleExport = async (mode = 'html') => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -15152,7 +15356,7 @@ Return ONLY valid JSON in this format:
         safeDownloadBlob
       });
     }
-    addToast && addToast('Export tools still loading — please try again in a moment.', 'error');
+    addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
   };
   const downloadHtmlBlob = (content) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -15583,7 +15787,7 @@ Return ONLY valid JSON in this format:
       const fakeEvent = { target: { files: [file] } };
       handleLoadProject(fakeEvent);
     } catch (err) {
-      addToast && addToast('Failed to load lesson: ' + (err && err.message), 'error');
+      addToast && addToast(t('toasts.failed_load_lesson') + (err && err.message), 'error');
     }
   };
   const handleRestoreView = (item) => {
@@ -17246,7 +17450,7 @@ Return ONLY valid JSON in this format:
     const updatedContent = { ...generatedContent, data: rest };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-    addToast('Frayer image removed', 'info');
+    addToast(t('toasts.frayer_image_removed'), 'info');
   };
   const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
@@ -17722,7 +17926,7 @@ Return ONLY valid JSON in this format:
   const restoreIntentSnapshot = () => {
       const snap = lastIntentSnapshotRef.current;
       if (!snap || !snap.state) {
-          addToast("Nothing to undo yet.", "info");
+          addToast(t('toasts.nothing_undo_yet'), "info");
           return false;
       }
       const s = snap.state;
@@ -17750,7 +17954,7 @@ Return ONLY valid JSON in this format:
           return true;
       } catch (e) {
           warnLog("restoreIntentSnapshot failed", e);
-          addToast("Undo failed — some settings may not have reverted.", "warning");
+          addToast(t('toasts.undo_failed_some_settings_may'), "warning");
           return false;
       }
   };
@@ -20437,13 +20641,13 @@ ${_toolList}
           if (!payload || !payload.audioBase64) {
               // Recording failed — remove the placeholder.
               setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
-              addToast && addToast('Voice recording failed — no audio captured.', 'error');
+              addToast && addToast(t('toasts.voice_recording_failed_audio_captured'), 'error');
               return;
           }
           const next = _m.attachAudioToVoiceNote(stickers, placeholderId, payload);
           if (next && next.error === 'too-large') {
               setStickers(next.list);
-              addToast && addToast('Voice note too long to save (over 500KB). Try a shorter clip.', 'warning');
+              addToast && addToast(t('toasts.voice_note_too_long_save'), 'warning');
               return;
           }
           setStickers(next);
@@ -20472,7 +20676,7 @@ ${_toolList}
         const payload = JSON.parse(ev.target.result);
         const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
         if (!_m || !_m.importAnnotations) {
-          addToast && addToast('Annotation suite not ready — try again in a moment.', 'error');
+          addToast && addToast(t('toasts.annotation_suite_not_ready_try'), 'error');
           return;
         }
         // Teacher importing student work → force author='student' on
@@ -20481,14 +20685,14 @@ ${_toolList}
         const opts = isTeacherMode ? { forceAuthor: 'student' } : {};
         const result = _m.importAnnotations(stickers, payload, opts);
         if (result.error) {
-          addToast && addToast('Could not import: ' + result.error + '. File must be an annotations JSON.', 'error');
+          addToast && addToast(t('toasts.could_not_import') + result.error + '. File must be an annotations JSON.', 'error');
           return;
         }
         setStickers(result.list);
-        addToast && addToast('Imported ' + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
+        addToast && addToast(t('toasts.imported') + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
       } catch (err) {
         warnLog && warnLog('[Annotations] import failed:', err);
-        addToast && addToast('Could not parse the file. Must be a valid annotations JSON.', 'error');
+        addToast && addToast(t('toasts.could_not_parse_file_must'), 'error');
       }
     };
     reader.readAsText(file);
@@ -21709,10 +21913,58 @@ ${_toolList}
             animation: indeterminate-slide 1.5s infinite linear;
             background: linear-gradient(90deg, transparent, #4f46e5, transparent);
         }
+        /* ── STEM Lab theme variables ──
+         * Inline React styles in STEM tools can't be overridden by
+         * the .theme-dark .bg-X CSS rules (those only touch Tailwind
+         * utility classes). These custom properties give inline styles
+         * a theme-responsive backing: tools use var(--allo-stem-X) and
+         * the variable resolves per-theme.
+         *
+         * The dark palette below is preserved from the original
+         * hardcoded values in stem_lab_module.js + many tool files —
+         * those become the dark-theme variant. Light + contrast themes
+         * get corresponding palettes.
+         */
+        :root, .theme-default {
+            --allo-stem-canvas:       #ffffff;
+            --allo-stem-panel:        #f8fafc;
+            --allo-stem-deeper:       #e2e8f0;
+            --allo-stem-text:         #0f172a;
+            --allo-stem-text-soft:    #475569;
+            --allo-stem-border:       #cbd5e1;
+            --allo-stem-button-bg:    #f1f5f9;
+            --allo-stem-button-text:  #0f172a;
+            --allo-stem-button-border:#cbd5e1;
+        }
         .theme-dark {
+            --allo-stem-canvas:       #0f172a;
+            --allo-stem-panel:        #1e293b;
+            --allo-stem-deeper:       #020617;
+            --allo-stem-text:         #e2e8f0;
+            --allo-stem-text-soft:    #94a3b8;
+            --allo-stem-border:       #334155;
+            --allo-stem-button-bg:    #1e293b;
+            --allo-stem-button-text:  #e2e8f0;
+            --allo-stem-button-border:#334155;
+
             background-color: #0B1120; /* Deepest Slate */
             background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%); /* Subtle top spotlight */
             color: #f1f5f9;
+        }
+        /* High-contrast palette aligned to existing .theme-contrast rules:
+         * black canvas + yellow text/borders + green-on-black for buttons.
+         * Pure binary — no soft variants. Matches main-app pattern used at
+         * AlloFlowANTI.txt:21957-21966 ( bg:#000, color:#ffff00, button:#00ff00 ). */
+        .theme-contrast {
+            --allo-stem-canvas:       #000000;
+            --allo-stem-panel:        #000000;
+            --allo-stem-deeper:       #000000;
+            --allo-stem-text:         #ffff00;
+            --allo-stem-text-soft:    #ffff00;
+            --allo-stem-border:       #ffff00;
+            --allo-stem-button-bg:    #000000;
+            --allo-stem-button-text:  #00ff00;
+            --allo-stem-button-border:#00ff00;
         }
         .theme-dark .bg-white {
             background-color: #162032 !important; /* Slightly lighter than bg */
@@ -21796,6 +22048,46 @@ ${_toolList}
         .theme-dark .text-emerald-500, .theme-dark .text-emerald-600 { color: #34d399 !important; } /* Emerald-400 */
         .theme-dark .text-violet-500, .theme-dark .text-violet-600 { color: #a78bfa !important; } /* Violet-400 */
         .theme-dark .text-sky-500, .theme-dark .text-sky-600 { color: #38bdf8 !important; } /* Sky-400 */
+
+        /* ── Theme-audit fill-ins (2026-05-19) ──
+         * Newly-covered Tailwind classes used in main-app chrome that lacked
+         * .theme-dark overrides. Pattern mirrors existing rules above:
+         *   - Light shade (-50): rgba(<-900>, 0.4) bg + <-700> border
+         *   - Light shade (-100): rgba(<-800/900>, 0.55) bg + <-600/700> border
+         *   - Dark text (-700/-800/-900): light shade (<-300>) for contrast
+         *   - Slate utility shades: progressively darker as the shade increases
+         */
+        .theme-dark .bg-amber-50    { background-color: rgba(120, 53, 15, 0.4)  !important; border-color: #a16207 !important; }
+        .theme-dark .bg-emerald-50  { background-color: rgba(6, 78, 59, 0.4)    !important; border-color: #047857 !important; }
+        .theme-dark .bg-violet-50   { background-color: rgba(76, 29, 149, 0.4)  !important; border-color: #6d28d9 !important; }
+        .theme-dark .bg-sky-50      { background-color: rgba(12, 74, 110, 0.4)  !important; border-color: #0369a1 !important; }
+        .theme-dark .bg-fuchsia-50  { background-color: rgba(112, 26, 117, 0.4) !important; border-color: #a21caf !important; }
+        .theme-dark .bg-pink-50     { background-color: rgba(131, 24, 67, 0.4)  !important; border-color: #9d174d !important; }
+        .theme-dark .bg-lime-50     { background-color: rgba(54, 83, 20, 0.4)   !important; border-color: #4d7c0f !important; }
+        .theme-dark .bg-lime-100    { background-color: rgba(77, 124, 15, 0.55) !important; border-color: #65a30d !important; }
+        /* Slate utility shades (used as chrome panel backgrounds) */
+        .theme-dark .bg-slate-500   { background-color: #334155 !important; }
+        .theme-dark .bg-slate-600   { background-color: #1e293b !important; }
+        .theme-dark .bg-slate-700   { background-color: #0f172a !important; }
+        .theme-dark .bg-slate-800,
+        .theme-dark .bg-slate-900   { background-color: #020617 !important; }
+        /* Dark text colors for previously-partial families (light-up to -300) */
+        .theme-dark .text-amber-700,   .theme-dark .text-amber-800,   .theme-dark .text-amber-900   { color: #fcd34d !important; } /* Amber-300 */
+        .theme-dark .text-emerald-700, .theme-dark .text-emerald-800, .theme-dark .text-emerald-900 { color: #6ee7b7 !important; } /* Emerald-300 */
+        .theme-dark .text-violet-700,  .theme-dark .text-violet-800,  .theme-dark .text-violet-900  { color: #c4b5fd !important; } /* Violet-300 */
+        .theme-dark .text-sky-700,     .theme-dark .text-sky-800,     .theme-dark .text-sky-900     { color: #7dd3fc !important; } /* Sky-300 */
+        .theme-dark .text-pink-700,    .theme-dark .text-pink-800,    .theme-dark .text-pink-900    { color: #f9a8d4 !important; } /* Pink-300 */
+        .theme-dark .text-fuchsia-500, .theme-dark .text-fuchsia-600, .theme-dark .text-fuchsia-700, .theme-dark .text-fuchsia-800 { color: #f0abfc !important; } /* Fuchsia-300 */
+        .theme-dark .text-lime-500,    .theme-dark .text-lime-600,    .theme-dark .text-lime-700,    .theme-dark .text-lime-800    { color: #bef264 !important; } /* Lime-300 */
+        .theme-dark .text-orange-900   { color: #fdba74 !important; } /* Orange-300, completing -700/-800/-900 */
+        .theme-dark .text-green-900    { color: #86efac !important; } /* Green-300, completing -700/-800/-900 */
+        .theme-dark .text-red-900      { color: #fca5a5 !important; } /* Red-300, completing */
+        .theme-dark .text-yellow-900   { color: #fde047 !important; } /* Yellow-300, completing */
+        .theme-dark .text-blue-900     { color: #93c5fd !important; } /* Blue-300, completing */
+        .theme-dark .text-purple-900   { color: #d8b4fe !important; } /* Purple-300, completing */
+        .theme-dark .text-teal-900     { color: #5eead4 !important; } /* Teal-300, completing */
+        .theme-dark .text-cyan-900     { color: #67e8f9 !important; } /* Cyan-300, completing */
+        .theme-dark .text-rose-900     { color: #fda4af !important; } /* Rose-300, completing */
         .theme-dark { color-scheme: dark; }
         .theme-dark input, .theme-dark textarea, .theme-dark select {
             background-color: #0f172a !important;
@@ -22147,7 +22439,7 @@ ${_toolList}
         )}
         <aside
             aria-label={t('sidebar.tools_header')}
-            className={`flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 ${(isFullscreen || isZenMode) ? 'hidden' : 'block'} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
+            className={`flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 ${(isFullscreen || isZenMode) ? 'hidden' : 'block'} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
@@ -22189,7 +22481,7 @@ ${_toolList}
                           reader.onload = (ev) => {
                             try {
                               const project = JSON.parse(ev.target.result);
-                              if (!project.accessibleHtml || !project.version) { addToast('Not a valid AlloFlow project', 'error'); return; }
+                              if (!project.accessibleHtml || !project.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               setPdfAuditResult({
                                 score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
                                 passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
@@ -22204,8 +22496,8 @@ ${_toolList}
                                 htmlChars: project.accessibleHtml.length, extractedChars: 0, issuesFixed: 0, remainingIssues: 0, autoFixPasses: 0,
                               });
                               setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
-                              addToast('📂 Loaded: ' + (project.fileName || 'project'), 'success');
-                            } catch(err) { addToast('Failed: ' + err.message, 'error'); }
+                              addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
+                            } catch(err) { addToast(t('toasts.failed') + err.message, 'error'); }
                           };
                           reader.readAsText(file); e.target.value = '';
                         }} />
@@ -22459,7 +22751,7 @@ ${_toolList}
                     data-help-key="tool_scaffolds"
                     onClick={() => toggleTool('sentence-frames')}
                     aria-expanded={expandedTools.includes('sentence-frames')}
-                    className="flex-1 p-3 flex justify-between items-center text-left"
+                    className="flex-1 p-3 flex justify-between items-center text-start"
                   >
                     <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
                       <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
@@ -22469,7 +22761,7 @@ ${_toolList}
                   <button
                     type="button"
                     onClick={() => setShowStoryForge(true)}
-                    className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
+                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
                     aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
                   >
                     {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
@@ -22586,7 +22878,7 @@ ${_toolList}
                     data-help-key="tool_math"
                     aria-expanded={expandedTools.includes('math')}
                     onClick={() => toggleTool('math')}
-                    className="flex-1 p-3 flex justify-between items-center text-left"
+                    className="flex-1 p-3 flex justify-between items-center text-start"
                   >
                     <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Calculator size={16}/> {t('math.title')}</div>
                     {expandedTools.includes('math') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
@@ -22594,7 +22886,7 @@ ${_toolList}
                   <button
                     type="button"
                     onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
-                    className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
+                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
                     aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}
                   >
                     🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
@@ -22721,7 +23013,7 @@ ${_toolList}
                             value={fullPackTargetGroup}
                             onChange={(e) => setFullPackTargetGroup(e.target.value)}
                             aria-label={t('fullpack.group_tooltip') || 'Target group for generation'}
-                            className="text-[11px] font-bold text-purple-800 bg-white/90 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-purple-300 border-transparent cursor-pointer shadow-sm ml-1"
+                            className="text-[11px] font-bold text-purple-800 bg-white/90 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-purple-300 border-transparent cursor-pointer shadow-sm ms-1"
                             title={t('fullpack.group_tooltip') || 'Generate for a specific group or all groups'}
                         >
                             <option value="none">{t('fullpack.group_current') || 'Current Settings'}</option>
@@ -22737,7 +23029,7 @@ ${_toolList}
                     data-help-key="fullpack_generate"
                     onClick={handleGenerateFullPack}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
-                    className="w-full p-3 bg-white rounded-2xl text-left flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
+                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                 >
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
@@ -22754,7 +23046,7 @@ ${_toolList}
                     data-help-key="tool_alignment"
                     onClick={() => handleGenerate('alignment-report')}
                     disabled={!hasSourceOrAnalysis || isProcessing}
-                    className="w-full p-3 bg-white rounded-2xl text-left flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
+                    className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                     title={t('alignment.generate')}
                 >
                     <div>
@@ -22796,7 +23088,7 @@ ${_toolList}
                 onMouseDown={startResizing}
             >
                 <div className="h-16 w-1 bg-slate-300 rounded-full flex items-center justify-center group-hover:bg-indigo-400 transition-colors">
-                    <GripVertical size={12} className="text-slate-600 -ml-1.5" />
+                    <GripVertical size={12} className="text-slate-600 -ms-1.5" />
                 </div>
             </div>
         )}
@@ -22848,8 +23140,8 @@ ${_toolList}
                     >
                         {isPaused ? <MonitorPlay size={20} className="fill-current text-yellow-700"/> : <AudioWave />}
                     </button>
-                    <div className="flex items-center gap-2 px-2 border-l border-slate-600 pl-4">
-                        <span className="text-[11px] font-bold text-slate-600 w-8 text-right tabular-nums">{playbackRate}x</span>
+                    <div className="flex items-center gap-2 px-2 border-s border-slate-600 ps-4">
+                        <span className="text-[11px] font-bold text-slate-600 w-8 text-end tabular-nums">{playbackRate}x</span>
                         <input aria-label={t('common.range_slider')}
                             type="range"
                             min="0.5"
@@ -22902,7 +23194,7 @@ ${_toolList}
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h3>
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
-                    <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ml-2">
+                    <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ms-2">
                         {(() => {
                             // Annotation suite toolbar — sticker + note mode
                             // toggles + per-tool sub-controls. Delegates to
@@ -22944,7 +23236,7 @@ ${_toolList}
                                     data-allo-undo-btn="true"
                                     onClick={canUndo ? handleAnnotationUndo : undefined}
                                     disabled={!canUndo}
-                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
                                     title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
                                     aria-label={t('annotation.undo_aria') || 'Undo last annotation'}
                                 >
@@ -22961,14 +23253,14 @@ ${_toolList}
                                 <button
                                     type="button"
                                     onClick={() => setShowAnnotationSidebar(prev => !prev)}
-                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
                                     title={t('annotation.show_all_tooltip') || 'Show all annotations'}
                                     aria-label={t('annotation.toggle_list_aria') || 'Toggle annotation list'}
                                     aria-pressed={showAnnotationSidebar}
                                 >
                                     {t('annotation.list_button') || '📋 List'}
                                     {total > 0 && (
-                                        <span className="ml-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
+                                        <span className="ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
                                             {total}
                                         </span>
                                     )}
@@ -22978,7 +23270,7 @@ ${_toolList}
                     {generatedContent && (activeView === 'math') && (
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
-                            className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ml-1"
+                            className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ms-1"
                             aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}>
                             🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                         </span>
@@ -23161,7 +23453,7 @@ ${_toolList}
                     <div className="w-full max-w-sm p-6 flex flex-col items-center text-center relative z-20">
                         <div className="relative mb-6">
                             <div className="w-16 h-16 border-4 border-slate-100 rounded-full"></div>
-                            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-indigo-600 border-e-indigo-600 border-b-transparent border-s-transparent rounded-full animate-spin"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <Sparkles className="text-indigo-600 fill-current animate-pulse" size={20} />
                             </div>
@@ -23740,7 +24032,7 @@ ${_toolList}
                     handleTimelineChange, handleTimelineDragEnd, handleTimelineDragOver, handleTimelineDragStart,
                     handleTimelineRevision, handleToggleIsEditingTimeline, handleVerifyTimelineAccuracy,
                     closeTimeline,
-                    ErrorBoundary, TimelineGame
+                    ErrorBoundary, TimelineGame, playSound
                 })}
                 {activeView === 'concept-sort' && window.AlloModules && window.AlloModules.ConceptSortView && React.createElement(window.AlloModules.ConceptSortView, {
                     t, isTeacherMode, isIndependentMode, generatedContent,
@@ -23767,7 +24059,7 @@ ${_toolList}
                 {activeView === 'math-fluency-maze' && (() => {
                     const FluencyMazeComponent = window.AlloModules && window.AlloModules.FluencyMaze;
                     return (
-                        <div className="space-y-4 max-w-6xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_fluency_maze_panel">
+                        <div className="space-y-4 max-w-6xl mx-auto h-full overflow-y-auto pe-2 pb-10" data-help-key="math_fluency_maze_panel">
                             <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border-2 border-amber-200 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
@@ -23827,7 +24119,7 @@ ${_toolList}
                     BilingualFieldRenderer
                 })}
                 {activeView === 'gemini-bridge' && generatedContent && (
-                    <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
+                    <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pe-2 pb-10">
                         <div className="bg-slate-900 text-slate-600 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
                                 <div className="flex items-center gap-2 text-green-700 font-bold">
@@ -23871,7 +24163,7 @@ ${_toolList}
                 {/* ── DBQ Interactive View ── */}
                 {activeView === 'dbq' && generatedContent?.data && window.AlloModules && window.AlloModules.DbqView && React.createElement(window.AlloModules.DbqView, {
                     generatedContent, studentResponses, handleStudentInput, callGemini, cleanJson,
-                    addToast, handleScoreUpdate, gradeLevel, t, isTeacherMode, callTTS
+                    addToast, handleScoreUpdate, gradeLevel, t, isTeacherMode, callTTS, selectedVoice
                 })}
                 {activeView === 'persona' && (
                     <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
@@ -23881,7 +24173,7 @@ ${_toolList}
                                 <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-200 text-yellow-700 shrink-0">
                                     <History size={20} />
                                 </div>
-                                <div className="text-left flex-grow">
+                                <div className="text-start flex-grow">
                                     <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
                                     <p className="text-slate-600 text-xs truncate max-w-[300px] hidden sm:block">
                                         {personaState.mode === 'single'
@@ -24142,7 +24434,7 @@ ${_toolList}
               hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
-      {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && <SocraticChat handleSetShowSocraticChatToFalse={handleSetShowSocraticChatToFalse} handleSocraticSubmit={handleSocraticSubmit} handleToggleIsSocraticExpanded={handleToggleIsSocraticExpanded} handleToggleSocraticAutoRead={handleToggleSocraticAutoRead} handleToggleSocraticAutoSend={handleToggleSocraticAutoSend} isSocraticDictating={isSocraticDictating} isSocraticDragging={isSocraticDragging} isSocraticExpanded={isSocraticExpanded} isSocraticThinking={isSocraticThinking} recognitionRef={recognitionRef} renderFormattedText={renderFormattedText} setIsSocraticDictating={setIsSocraticDictating} setIsSocraticDragging={setIsSocraticDragging} setSocraticInput={setSocraticInput} socraticAutoRead={socraticAutoRead} socraticAutoSend={socraticAutoSend} socraticChatRef={socraticChatRef} socraticDragOffset={socraticDragOffset} socraticInput={socraticInput} socraticLivePos={socraticLivePos} socraticMessages={socraticMessages} socraticPosition={socraticPosition} socraticScrollRef={socraticScrollRef} t={t} warnLog={warnLog} />}
+      {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && <SocraticChat chatStyles={chatStyles} handleSetShowSocraticChatToFalse={handleSetShowSocraticChatToFalse} handleSocraticSubmit={handleSocraticSubmit} handleToggleIsSocraticExpanded={handleToggleIsSocraticExpanded} handleToggleSocraticAutoRead={handleToggleSocraticAutoRead} handleToggleSocraticAutoSend={handleToggleSocraticAutoSend} isSocraticDictating={isSocraticDictating} isSocraticDragging={isSocraticDragging} isSocraticExpanded={isSocraticExpanded} isSocraticThinking={isSocraticThinking} recognitionRef={recognitionRef} renderFormattedText={renderFormattedText} setIsSocraticDictating={setIsSocraticDictating} setIsSocraticDragging={setIsSocraticDragging} setSocraticInput={setSocraticInput} socraticAutoRead={socraticAutoRead} socraticAutoSend={socraticAutoSend} socraticChatRef={socraticChatRef} socraticDragOffset={socraticDragOffset} socraticInput={socraticInput} socraticLivePos={socraticLivePos} socraticMessages={socraticMessages} socraticPosition={socraticPosition} socraticScrollRef={socraticScrollRef} t={t} warnLog={warnLog} />}
       {isSocraticDragging && (
         <div
             className="fixed inset-0 z-[109] cursor-grabbing"
@@ -24262,7 +24554,7 @@ ${_toolList}
                   a.click();
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
-                  addToast('Progress report exported!', 'success');
+                  addToast(t('toasts.progress_report_exported'), 'success');
               }}
           />
       )}
@@ -24528,7 +24820,7 @@ ${_toolList}
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
                     />
-                    <p className="text-xs text-slate-600 mt-2 italic text-right">{t('modals.save_project.extension_note')}</p>
+                    <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
                 </div>
                 <div className="flex gap-3 justify-end">
                     <button
@@ -24598,7 +24890,7 @@ ${_toolList}
                         <Cloud size={32} />
                     </div>
                     <h3 className="text-2xl font-black text-slate-800 mb-2">{t('modals.cloud_sync.title')}</h3>
-                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-left mb-6">
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-start mb-6">
                         <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2 flex items-center gap-1">
                             <AlertCircle size={12}/> {t('modals.cloud_sync.privacy_warning')}
                         </p>
@@ -25014,11 +25306,9 @@ ${_toolList}
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowExportPreview, showExportPreview, toggleA11yInspect, updateExportPreview
         })}
-        {showStemLab && (() => {
-            const StemLabComponent = window.AlloModules && window.AlloModules.StemLab;
-            if (StemLabComponent) {
-                return React.createElement(StemLabComponent, {
-                  ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
+        <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
+            {(StemLab) => React.createElement(StemLab, {
+                ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,
                   angleChallenge, angleFeedback, angleValue, areaModelDims, areaModelHighlight,
                   assessmentBlocks, base10Challenge, base10Feedback, base10Value,
                   cubeAnswer, cubeBuilderChallenge, cubeBuilderFeedback, cubeBuilderMode,
@@ -25056,55 +25346,31 @@ ${_toolList}
                   activeStation, setActiveStation,
                   theme,
                   activeSessionCode, studentNickname, isTeacherMode
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStemLab(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">⚙️</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'STEM Lab' }) || 'Loading STEM Lab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowStemLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
+            })}
+        </CDNModuleGate>
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowPoetTree={setShowPoetTree} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
-        {showReportWriter && (() => {
-            if (window.AlloModules && window.AlloModules.ReportWriter) {
-                return React.createElement(window.AlloModules.ReportWriter, {
-                    onClose: () => setShowReportWriter(false),
-                    callGemini: callGemini,
-                    addToast,
-                    t,
-                    studentNickname: studentNickname || '',
-                    behaviorLensData: window.__blSnapshot || null,
+        <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
+            {(ReportWriter) => React.createElement(ReportWriter, {
+                onClose: () => setShowReportWriter(false),
+                callGemini: callGemini,
+                addToast,
+                t,
+                studentNickname: studentNickname || '',
+                behaviorLensData: window.__blSnapshot || null,
+                dashboardData: dashboardData || [],
+                longitudinalData: {
+                    history: history || [],
+                    mathFluencyHistory: mathFluencyHistory || [],
                     dashboardData: dashboardData || [],
-                    longitudinalData: {
-                        history: history || [],
-                        mathFluencyHistory: mathFluencyHistory || [],
-                        dashboardData: dashboardData || [],
-                        exploreScore: exploreScore || 0
-                    }
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowReportWriter(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📝</div>
-                    <p className="text-lg font-bold text-slate-700">{t('report_writer.loading') || 'Loading Report Writer...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('report_writer.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowReportWriter(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isSymbolStudioOpen && (() => {
-            const SS = window.AlloModules && window.AlloModules.SymbolStudio;
-            if (SS) {
-                return React.createElement(SS, {
-                    isOpen: true,
+                    exploreScore: exploreScore || 0
+                }
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="SymbolStudio" isOpen={isSymbolStudioOpen} onClose={() => setIsSymbolStudioOpen(false)} icon="🎨" displayName="Symbol Studio" t={t}>
+            {(SymbolStudio) => React.createElement(SymbolStudio, {
+                isOpen: true,
                     onClose: () => setIsSymbolStudioOpen(false),
                     onCallImagen: callImagen,
                     onCallGeminiImageEdit: callGeminiImageEdit,
@@ -25143,24 +25409,11 @@ ${_toolList}
                             await updateDoc(sRef, { visualSupportsPayload: deleteField() });
                         },
                     } : null,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsSymbolStudioOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🎨</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Symbol Studio' }) || 'Loading Symbol Studio...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAlloHavenOpen && (() => {
-            const AH = window.AlloModules && window.AlloModules.AlloHaven;
-            if (AH) {
-                return React.createElement(AH, {
-                    isOpen: true,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="AlloHaven" isOpen={isAlloHavenOpen} onClose={() => setIsAlloHavenOpen(false)} icon="🏡" displayName="AlloHaven" t={t}>
+            {(AlloHaven) => React.createElement(AlloHaven, {
+                isOpen: true,
                     onClose: () => setIsAlloHavenOpen(false),
                     callImagen,
                     callGemini,
@@ -25217,23 +25470,31 @@ ${_toolList}
                             throw err;
                         }
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAlloHavenOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🌿</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'AlloHaven' }) || 'Loading AlloHaven...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isDynamicAssessmentOpen && (() => {
-            const DA = window.AlloModules && window.AlloModules.DynamicAssessment;
-            if (DA) {
-                return (
+            })}
+        </CDNModuleGate>
+        {/* Phase Z — Floating "Return to Dynamic Assessment" pill.
+            Shown whenever the user is viewing a resource that DA generated
+            (item.fromDA === true) AND DA is not already open. One click
+            reopens DA so the clinician can continue working on the probe.
+            Note: DA's internal state resets when the module closes, so
+            re-opening starts at the home screen — the resource itself
+            still lives in history and can be re-attached if needed. */}
+        {generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen && (
+            <button
+                onClick={() => setIsDynamicAssessmentOpen(true)}
+                title="This resource was generated by Dynamic Assessment. Click to reopen the DA module."
+                aria-label="Return to Dynamic Assessment"
+                className="fixed bottom-4 right-4 z-[1000] bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-full shadow-2xl border-2 border-violet-300 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 animate-in slide-in-from-bottom-2 duration-300"
+            >
+                <span className="text-base">🔬</span>
+                <span>Return to Dynamic Assessment</span>
+                {typeof generatedContent.daItemIndex === 'number' && (
+                    <span className="bg-violet-800 px-1.5 py-0.5 rounded text-[10px] font-black">item {generatedContent.daItemIndex + 1}</span>
+                )}
+            </button>
+        )}
+        <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🔬" displayName="Dynamic Assessment Studio" t={t}>
+            {(DA) => (
                 <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
                     <div className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         {React.createElement(DA, {
@@ -25242,100 +25503,166 @@ ${_toolList}
                             callGemini: callGemini,
                             addToast,
                             t,
-                            studentNickname: studentNickname || ''
+                            studentNickname: studentNickname || '',
+                            mathFluencyProbes: Array.isArray(history)
+                                ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
+                                : [],
+                            outputLanguage: leveledTextLanguage || 'English',
+                            // Phase Z — Supplementary resource generation (reversed Lesson-Plan link pattern).
+                            // DA decides what resources each item needs and asks the host to mint them.
+                            // The host returns { id } so DA can inline-link to the freshly-generated resource.
+                            onGenerateGlossary: async (seedTerms, title, provenance) => {
+                                const safeTerms = (Array.isArray(seedTerms) ? seedTerms : [])
+                                    .map(s => String(s || '').trim()).filter(s => s.length > 1).slice(0, 6);
+                                if (safeTerms.length === 0) throw new Error('No seed terms supplied.');
+                                const lang = leveledTextLanguage || 'English';
+                                // Mirror handleQuickAddGlossary's prompt shape exactly — same field
+                                // names (term/def/tier/translations) the main GlossaryView consumes.
+                                const wantTranslations = Array.isArray(selectedLanguages) && selectedLanguages.length > 0;
+                                const prompt = wantTranslations
+                                    ? `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n  3. Provide translations into: ${selectedLanguages.join(', ')}. Format each translation as "Translated Term: Translated Definition".\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific", "translations": { "<Lang>": "TranslatedTerm: TranslatedDef", ... } }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
+                                    : `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific" }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
+                                const raw = await callGemini(prompt, true);
+                                const cleaned = typeof cleanJson === 'function' ? cleanJson(raw) : raw;
+                                let parsed;
+                                try { parsed = JSON.parse(cleaned); }
+                                catch (e) { throw new Error('Glossary AI response was not valid JSON.'); }
+                                if (!Array.isArray(parsed) || parsed.length === 0) {
+                                    throw new Error('Glossary AI returned an empty list.');
+                                }
+                                const data = parsed.slice(0, 6).map(entry => ({
+                                    term: String(entry.term || '').trim(),
+                                    def: String(entry.def || entry.definition || '').trim(),
+                                    tier: entry.tier === 'Domain-Specific' || entry.tier === 'Academic' ? entry.tier : undefined,
+                                    translations: entry.translations && typeof entry.translations === 'object' ? entry.translations : {}
+                                })).filter(e => e.term && e.def);
+                                if (data.length === 0) throw new Error('Glossary AI returned no usable entries.');
+                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                                const newItem = {
+                                    id: newId,
+                                    type: 'glossary',
+                                    data: data,
+                                    title: String(title || `Glossary: ${data.slice(0, 2).map(d => d.term).join(', ')}`).slice(0, 80),
+                                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
+                                    timestamp: new Date(),
+                                    config: {},
+                                    fromDA: true,
+                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
+                                };
+                                setHistory(prev => [...prev, newItem]);
+                                // Fire-and-forget icon generation, mirroring handleQuickAddGlossary's
+                                // pipeline EXACTLY: callImagen for the icon, then (if autoRemoveWords)
+                                // callGeminiImageEdit to strip any letters the model leaked in. Sequential
+                                // so we don't burst the rate limiter; per-term failures tolerated.
+                                (async () => {
+                                    for (let i = 0; i < data.length; i++) {
+                                        const term = data[i].term;
+                                        const definition = data[i].def;
+                                        const imgPrompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
+                                        // Flip the per-term spinner the GlossaryView already renders
+                                        // (same state used by manual handleGenerateTermImage at line 20103).
+                                        // The "Creating icon…" copy + animated RefreshCw appear automatically.
+                                        setIsGeneratingTermImage(prev => ({ ...prev, [i]: true }));
+                                        try {
+                                            let imageUrl = await callImagen(imgPrompt);
+                                            if (!imageUrl) {
+                                                setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
+                                                continue;
+                                            }
+                                            if (autoRemoveWords) {
+                                                try {
+                                                    const rawBase64 = imageUrl.split(',')[1];
+                                                    const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
+                                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                                } catch (editErr) {
+                                                    console.warn('[DA glossary] Auto-remove text failed for term:', term, editErr && editErr.message);
+                                                }
+                                            }
+                                            setHistory(prev => prev.map(it => {
+                                                if (it.id !== newId || !Array.isArray(it.data)) return it;
+                                                const newData = it.data.slice();
+                                                const liveIdx = newData.findIndex(d => d && d.term === term);
+                                                if (liveIdx < 0) return it;
+                                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+                                                return { ...it, data: newData };
+                                            }));
+                                            setGeneratedContent(prev => {
+                                                if (!prev || prev.id !== newId || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+                                                const newData = prev.data.slice();
+                                                const liveIdx = newData.findIndex(d => d && d.term === term);
+                                                if (liveIdx < 0) return prev;
+                                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+                                                return { ...prev, data: newData };
+                                            });
+                                        } catch (imgErr) {
+                                            console.warn('[DA glossary] Image gen failed for term:', term, imgErr && imgErr.message);
+                                        } finally {
+                                            setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
+                                        }
+                                    }
+                                })();
+                                return { id: newId };
+                            },
+                            onOpenResource: (resourceId) => {
+                                const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
+                                if (!item) {
+                                    addToast('Resource not found in history (it may have been deleted).', 'info');
+                                    return;
+                                }
+                                setIsDynamicAssessmentOpen(false);
+                                setTimeout(() => { handleRestoreView(item); }, 50);
+                            }
                         })}
                     </div>
                 </div>
-                );
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔬</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Dynamic Assessment Studio' }) || 'Loading Dynamic Assessment Studio...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isCommunityCatalogOpen && (() => {
-            const CC = window.AlloModules && window.AlloModules.CommunityCatalog;
-            if (CC) {
-                return React.createElement(CC, {
-                    isOpen: true,
-                    onClose: () => setIsCommunityCatalogOpen(false),
-                    addToast,
-                    loadProjectFromJson,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsCommunityCatalogOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📚</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Community Catalog' }) || 'Loading Community Catalog...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsCommunityCatalogOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAccessibilityLabOpen && (() => {
-            const AL = window.AlloModules && window.AlloModules.AccessibilityLab;
-            if (AL) {
-                return React.createElement(AL, {
-                    isOpen: true,
-                    onClose: () => setIsAccessibilityLabOpen(false),
-                    addToast,
-                    history,
-                    callTTS,
-                    callGemini,
-                    t,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAccessibilityLabOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Accessibility Lab' }) || 'Loading Accessibility Lab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAccessibilityLabOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {isAuditRemediatorOpen && (() => {
-            const AR = window.AlloModules && window.AlloModules.AuditRemediator;
-            if (AR) {
-                return React.createElement(AR, {
-                    isOpen: true,
-                    onClose: () => setIsAuditRemediatorOpen(false),
-                    generatedContent,
-                    history,
-                    handleGenerate,
-                    callGemini,
-                    cleanJson,
-                    addToast,
-                    setHistory,
-                    t,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAuditRemediatorOpen(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🛠️</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Audit Remediator' }) || 'Loading Audit Remediator...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setIsAuditRemediatorOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showStoryForge && (() => {
-            const SF = window.AlloModules && window.AlloModules.StoryForge;
-            if (SF) {
-                return React.createElement(SF, {
-                    isOpen: true,
+            )}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={() => setIsCommunityCatalogOpen(false)} icon="📚" displayName="Community Catalog" t={t}>
+            {(CC) => React.createElement(CC, {
+                isOpen: true,
+                onClose: () => setIsCommunityCatalogOpen(false),
+                addToast,
+                loadProjectFromJson,
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="AccessibilityLab" isOpen={isAccessibilityLabOpen} onClose={() => setIsAccessibilityLabOpen(false)} icon="🔍" displayName="Accessibility Lab" t={t}>
+            {(AL) => React.createElement(AL, {
+                isOpen: true,
+                onClose: () => setIsAccessibilityLabOpen(false),
+                addToast,
+                history,
+                callTTS: callTTSDirect,
+                renderFormattedText,
+                t,
+                readingTheme, setReadingTheme,
+                baseFontSize, setBaseFontSize,
+                lineHeight, setLineHeight,
+                letterSpacing, setLetterSpacing,
+                selectedFont, setSelectedFont,
+                colorOverlay, setColorOverlay,
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="AuditRemediator" isOpen={isAuditRemediatorOpen} onClose={() => setIsAuditRemediatorOpen(false)} icon="🛠️" displayName="Audit Remediator" t={t}>
+            {(AR) => React.createElement(AR, {
+                isOpen: true,
+                onClose: () => setIsAuditRemediatorOpen(false),
+                generatedContent,
+                history,
+                handleGenerate,
+                callGemini,
+                cleanJson,
+                addToast,
+                setHistory,
+                t,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="StoryForge" isOpen={showStoryForge} onClose={() => setShowStoryForge(false)} icon="📖" displayName="StoryForge" t={t}>
+            {(StoryForge) => React.createElement(StoryForge, {
+                isOpen: true,
                     onClose: () => setShowStoryForge(false),
                     onCallImagen: callImagen,
                     onCallGeminiImageEdit: callGeminiImageEdit,
@@ -25376,24 +25703,11 @@ ${_toolList}
                     lessonResources: history.filter(h => ['glossary', 'simplified', 'sentence-frames', 'lesson-plan', 'timeline'].includes(h.type)),
                     codename: studentNickname || 'Creative Writer',
                     onAnalyzeFluency: analyzeFluencyWithGemini,
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryForge(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">📖</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'StoryForge' }) || 'Loading StoryForge...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showLitLab && (() => {
-            const SS = window.AlloModules && window.AlloModules.LitLab;
-            if (SS) {
-                return React.createElement(SS, {
-                    isOpen: true,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="LitLab" isOpen={showLitLab} onClose={() => setShowLitLab(false)} icon="📚" displayName="Lit Lab" t={t}>
+            {(LitLab) => React.createElement(LitLab, {
+                isOpen: true,
                     onClose: () => setShowLitLab(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
@@ -25416,24 +25730,11 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'litlab-submission', title: '🎭 ' + (submission.storyTitle || 'My Performance'), data: submission, timestamp: new Date(), meta: `${submission.characterCount || 0} characters · ${submission.lineCount || 0} lines` };
                         setHistory(prev => [...prev, item]);
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'LitLab' }) || 'Loading LitLab...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showPoetTree && (() => {
-            const PT = window.AlloModules && window.AlloModules.PoetTree;
-            if (PT) {
-                return React.createElement(PT, {
-                    onClose: () => setShowPoetTree(false),
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
+            {(PoetTree) => React.createElement(PoetTree, {
+                onClose: () => setShowPoetTree(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     onCallImagen: callImagen,
@@ -25469,24 +25770,11 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'poettree-submission', title: '🌳 ' + (submission.poemTitle || 'My Poem'), data: submission, timestamp: new Date(), meta: `${submission.lineCount || 0} lines · ${submission.form || 'Free Verse'}` };
                         setHistory(prev => [...prev, item]);
                     },
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowPoetTree(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🌳</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'PoetTree' }) || 'Loading PoetTree...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowPoetTree(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showSelHub && (() => {
-            const SH = window.AlloModules && window.AlloModules.SelHub;
-            if (SH) {
-                return React.createElement(SH, {
-                    showSelHub, setShowSelHub,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="SelHub" isOpen={showSelHub} onClose={() => setShowSelHub(false)} icon="❤️" displayName="SEL Hub" t={t}>
+            {(SelHub) => React.createElement(SelHub, {
+                showSelHub, setShowSelHub,
                     selHubTab, setSelHubTab,
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
@@ -25501,24 +25789,11 @@ ${_toolList}
                     onSaveStation: (station) => {
                         setActiveSelStation(station);
                     }
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
-                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'SEL Hub' }) || 'Loading SEL Hub...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-                </div>
-            </div>
-            );
-        })()}
-        {showBehaviorLens && (() => {
-            const BehaviorLensComponent = window.AlloModules && window.AlloModules.BehaviorLens;
-            if (BehaviorLensComponent) {
-                return React.createElement(BehaviorLensComponent, {
-                    onClose: () => setShowBehaviorLens(false),
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="BehaviorLens" isOpen={showBehaviorLens} onClose={() => setShowBehaviorLens(false)} icon="🔭" displayName="BehaviorLens" t={t}>
+            {(BehaviorLens) => React.createElement(BehaviorLens, {
+                onClose: () => setShowBehaviorLens(false),
                     callGemini,
                     callGeminiVision,
                     callImagen,
@@ -25532,19 +25807,8 @@ ${_toolList}
                     firestore: db,
                     firebaseAuth: auth,
                     isCanvasEnv: _isCanvasEnv
-                });
-            }
-            return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowBehaviorLens(false)}>
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">{t('behavior_lens.hub.title') || 'Loading BehaviorLens...'}</p>
-                    <p className="text-sm text-slate-600 mt-2">{t('behavior_lens.loading_hint') || 'Module loading from CDN. If this persists, check your connection.'}</p>
-                    <button onClick={() => setShowBehaviorLens(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">{t('common.close') || 'Close'}</button>
-                </div>
-            </div>
-            );
-        })()}
+            })}
+        </CDNModuleGate>
       {/* @section READ_THIS_PAGE_PANEL — Floating smart content reader + focus narration toggle */}
       {showReadThisPage && (() => {
           const items = getReadableContent();
@@ -25605,7 +25869,7 @@ ${_toolList}
               }
           };
           return (
-              <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-l-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
+              <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
                   style={{ background: theme === 'contrast' ? '#000' : '#0f172a', color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}
                   role="complementary" aria-label={t('read_this_page.panel_aria') || 'Read This Page panel'}
               >
@@ -25625,7 +25889,7 @@ ${_toolList}
                               style={{ background: '#dc2626' }}
                           >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
                           <button onClick={() => { handleStop(); setShowReadThisPage(false); setFocusNarrationEnabled(false); }}
-                              className="ml-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
+                              className="ms-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
                           >{'\u2715'}</button>
                       </div>
                   </div>
@@ -25650,7 +25914,7 @@ ${_toolList}
                               aria-label={`Click to hear: ${item.text.substring(0, 80)}`}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(idx); } }}
                           >
-                              <span className="mr-1">{typeIcons[item.type] || '\u{1F50A}'}</span>
+                              <span className="me-1">{typeIcons[item.type] || '\u{1F50A}'}</span>
                               {item.text}
                           </div>
                       ))}
@@ -25710,9 +25974,11 @@ class AlloFlowErrorBoundary extends React.Component {
 
 // ── KokoroOfferModal extracted to view_kokoro_offer_modal_module.js (CDN) ──
 function KokoroOfferModal(props) {
-    var Real = window.AlloModules && window.AlloModules.KokoroOfferModal && window.AlloModules.KokoroOfferModal.KokoroOfferModal;
-    if (Real && Real !== KokoroOfferModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="KokoroOfferModal.KokoroOfferModal" icon="🎙️" displayName="Kokoro Voice Pack" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── ConfirmDialog extracted to view_confirm_dialog_module.js (CDN) ──
 function ConfirmDialog(props) {
@@ -25728,33 +25994,43 @@ function PromptDialog(props) {
 }
 // ── HintsModal extracted to view_hints_modal_module.js (CDN) ──
 function HintsModal(props) {
-    var Real = window.AlloModules && window.AlloModules.HintsModal && window.AlloModules.HintsModal.HintsModal;
-    if (Real && Real !== HintsModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="HintsModal.HintsModal" icon="💡" displayName="Hints" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── XPModal extracted to view_xp_modal_module.js (CDN) ──
 function XPModal(props) {
-    var Real = window.AlloModules && window.AlloModules.XPModal && window.AlloModules.XPModal.XPModal;
-    if (Real && Real !== XPModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="XPModal.XPModal" icon="🏆" displayName="XP Summary" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── StorybookExportModal extracted to view_storybook_export_modal_module.js (CDN) ──
 function StorybookExportModal(props) {
-    var Real = window.AlloModules && window.AlloModules.StorybookExportModal && window.AlloModules.StorybookExportModal.StorybookExportModal;
-    if (Real && Real !== StorybookExportModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="StorybookExportModal.StorybookExportModal" icon="📖" displayName="Storybook Export" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── InfoModal extracted to view_info_modal_module.js (CDN) ──
 function InfoModal(props) {
-    var Real = window.AlloModules && window.AlloModules.InfoModal && window.AlloModules.InfoModal.InfoModal;
-    if (Real && Real !== InfoModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="InfoModal.InfoModal" icon="ℹ️" displayName="Info" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── SessionModal extracted to view_session_modal_module.js (CDN) ──
 function SessionModal(props) {
-    var Real = window.AlloModules && window.AlloModules.SessionModal && window.AlloModules.SessionModal.SessionModal;
-    if (Real && Real !== SessionModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="SessionModal.SessionModal" icon="💾" displayName="Session Modal" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── SocraticChat extracted to view_socratic_chat_module.js (CDN) ──
 function SocraticChat(props) {
@@ -25764,9 +26040,11 @@ function SocraticChat(props) {
 }
 // ── GlobalLevelUpModal extracted to view_global_level_up_module.js (CDN) ──
 function GlobalLevelUpModal(props) {
-    var Real = window.AlloModules && window.AlloModules.GlobalLevelUpModal && window.AlloModules.GlobalLevelUpModal.GlobalLevelUpModal;
-    if (Real && Real !== GlobalLevelUpModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="GlobalLevelUpModal.GlobalLevelUpModal" icon="🎉" displayName="Level Up" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── HeaderBar extracted to view_header_module.js (CDN) ──
 function HeaderBar(props) {
@@ -25824,27 +26102,35 @@ function FabStack(props) {
 }
 // ── StudyTimerModal extracted to view_study_timer_modal_module.js (CDN) ──
 function StudyTimerModal(props) {
-    var Real = window.AlloModules && window.AlloModules.StudyTimerModal && window.AlloModules.StudyTimerModal.StudyTimerModal;
-    if (Real && Real !== StudyTimerModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="StudyTimerModal.StudyTimerModal" icon="⏱️" displayName="Study Timer" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── EducatorHubModal extracted to view_educator_hub_modal_module.js (CDN) ──
 function EducatorHubModal(props) {
-    var Real = window.AlloModules && window.AlloModules.EducatorHubModal && window.AlloModules.EducatorHubModal.EducatorHubModal;
-    if (Real && Real !== EducatorHubModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="EducatorHubModal.EducatorHubModal" icon="🛠️" displayName="Educator Tools" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── VisualSupportsModal extracted to view_visual_supports_modal_module.js (CDN) ──
 function VisualSupportsModal(props) {
-    var Real = window.AlloModules && window.AlloModules.VisualSupportsModal && window.AlloModules.VisualSupportsModal.VisualSupportsModal;
-    if (Real && Real !== VisualSupportsModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="VisualSupportsModal.VisualSupportsModal" icon="👁️" displayName="Visual Supports" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── LearningHubModal extracted to view_learning_hub_modal_module.js (CDN) ──
 function LearningHubModal(props) {
-    var Real = window.AlloModules && window.AlloModules.LearningHubModal && window.AlloModules.LearningHubModal.LearningHubModal;
-    if (Real && Real !== LearningHubModal) return React.createElement(Real, props);
-    return null;
+    return (
+        <CDNModuleGate moduleKey="LearningHubModal.LearningHubModal" icon="📚" displayName="Learning Tools" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
 }
 // ── ClozeInteractionPanel extracted to view_cloze_interaction_panel_module.js (CDN) ──
 function ClozeInteractionPanel(props) {

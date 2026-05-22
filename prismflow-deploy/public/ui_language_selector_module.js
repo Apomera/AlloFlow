@@ -6,6 +6,7 @@ var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState;
 var useRef = React.useRef;
 var useContext = React.useContext;
+var useEffect = React.useEffect;
 var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
@@ -20,29 +21,34 @@ var ArrowRight = _lazyIcon('ArrowRight');
 const UiLanguageSelector = () => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
   const [manualInput, setManualInput] = useState("");
+  const [deployedLanguages, setDeployedLanguages] = useState([]);
   const fileInputRef = useRef(null);
-  // Common languages + regional variants. Variants in parentheses are passed
-  // through to the translation model so it picks the right vocabulary + register
-  // (e.g. ustedes vs vosotros, simplified vs traditional characters).
-  const commonLanguages = [
-    "English",
-    "Spanish (Latin America)",
-    "Spanish (Castilian)",
-    "French",
-    "French (Canadian)",
-    "Arabic",
-    "Chinese (Simplified)",
-    "Chinese (Traditional)",
-    "Vietnamese",
-    "Russian",
-    "Portuguese (Brazil)",
-    "Portuguese (Portugal)",
-    "Somali",
-    "Tagalog",
-    "Korean",
-    "Japanese",
-    "Haitian Creole"
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    const urls = [
+      "https://alloflow-cdn.pages.dev/lang/manifest.json",
+      "https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json"
+    ];
+    (async () => {
+      for (const u of urls) {
+        try {
+          const r = await fetch(u, { cache: "no-cache" });
+          if (!r.ok) continue;
+          const m = await r.json();
+          if (m && Array.isArray(m.available)) {
+            const displays = m.available.map((e) => e && e.display).filter(Boolean).sort((a, b) => a.localeCompare(b));
+            if (!cancelled) setDeployedLanguages(displays);
+            return;
+          }
+        } catch (_) {
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const commonLanguages = ["English", ...deployedLanguages.filter((d) => d !== "English")];
   const handleChange = (e) => {
     const val = e.target.value;
     if (val !== "Custom") {

@@ -13,6 +13,7 @@
   if (!React) { console.error('[SocraticChat] React not found on window'); return; }
 
 function SocraticChat({
+  chatStyles = {},
   handleSetShowSocraticChatToFalse,
   handleSocraticSubmit,
   handleToggleIsSocraticExpanded,
@@ -48,11 +49,18 @@ function SocraticChat({
   const X = window.X || noop;
   const RefreshCw = window.RefreshCw || noop;
   const Send = window.Send || noop;
+  const _container = chatStyles.container || "bg-white border-2 border-teal-500 shadow-2xl";
+  const _body = chatStyles.body || "bg-slate-50";
+  const _modelBubble = chatStyles.modelBubble || "bg-white text-slate-700 border border-slate-400";
+  const _userBubble = chatStyles.userBubble || "bg-teal-700 text-white";
+  const _inputArea = chatStyles.inputArea || "bg-white border-t border-slate-100";
+  const _input = chatStyles.input || "bg-white border-slate-400 text-slate-800 focus:ring-teal-200 focus:border-teal-400";
+  const _thinkingBubble = chatStyles.modelBubble || "bg-white border border-slate-400 text-slate-600";
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: socraticChatRef,
-      className: `fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? "w-[48rem] h-[44rem]" : "w-80 h-[28rem]"}`,
+      className: `fixed z-[110] ${_container} rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? "w-[48rem] h-[44rem]" : "w-80 h-[28rem]"}`,
       style: {
         right: socraticPosition.x !== null ? "auto" : "6rem",
         bottom: socraticPosition.y !== null ? "auto" : "6rem",
@@ -109,8 +117,8 @@ function SocraticChat({
         isSocraticExpanded ? /* @__PURE__ */ React.createElement(Minimize2, { size: 14 }) : /* @__PURE__ */ React.createElement(Maximize2, { size: 14 })
       ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "socratic_close", "data-help-ignore": true, onClick: handleSetShowSocraticChatToFalse, className: "hover:bg-teal-700 p-1.5 rounded text-teal-100 hover:text-white transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 14 })))
     ),
-    /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 bg-slate-50 space-y-3 custom-scrollbar", ref: socraticScrollRef }, socraticMessages.map((msg, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, /* @__PURE__ */ React.createElement("div", { className: `max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === "user" ? "bg-teal-700 text-white rounded-br-none" : "bg-white text-slate-700 border border-slate-400 rounded-bl-none"}` }, msg.role === "user" ? msg.text : renderFormattedText(msg.text)))), isSocraticThinking && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-2 rounded-xl border border-slate-400 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-1 shadow-sm" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("socratic.thinking")))),
-    /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-white border-t border-slate-100 flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: `flex-1 overflow-y-auto p-4 ${_body} space-y-3 custom-scrollbar`, ref: socraticScrollRef }, socraticMessages.map((msg, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, /* @__PURE__ */ React.createElement("div", { className: `max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === "user" ? `${_userBubble} rounded-br-none` : `${_modelBubble} rounded-bl-none`}` }, msg.role === "user" ? msg.text : renderFormattedText(msg.text)))), isSocraticThinking && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `${_thinkingBubble} p-2 rounded-xl rounded-bl-none text-xs italic flex items-center gap-1 shadow-sm` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("socratic.thinking")))),
+    /* @__PURE__ */ React.createElement("div", { className: `p-3 ${_inputArea} flex gap-2 shrink-0` }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -144,7 +152,7 @@ function SocraticChat({
         onChange: (e) => setSocraticInput(e.target.value),
         onKeyDown: (e) => e.key === "Enter" && !e.shiftKey && handleSocraticSubmit(),
         placeholder: isSocraticDictating ? t("socratic.listening") : t("socratic.placeholder"),
-        className: "flex-grow text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none transition-all",
+        className: `flex-grow text-xs p-2 border ${_input} rounded-lg focus:ring-2 outline-none transition-all`,
         autoFocus: true,
         disabled: isSocraticThinking
       }

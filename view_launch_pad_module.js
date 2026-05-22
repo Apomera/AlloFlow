@@ -23,6 +23,9 @@
   var Unplug = _lazyIcon('Unplug');
 
   function LaunchPadView(props) {
+  var React = window.React;
+  var useState = React.useState;
+  var useContext = React.useContext;
   var t = props.t;
   var micBannerDismissed = props.micBannerDismissed;
   var _isCanvasEnv = props._isCanvasEnv;
@@ -40,6 +43,15 @@
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  // Compact language switcher state (LanguageContext is mirrored to window.AlloLanguageContext at AlloFlowANTI.txt:1583)
+  var _langCtx = useContext(window.AlloLanguageContext) || {};
+  var currentUiLanguage = _langCtx.currentUiLanguage || 'English';
+  var setUiLanguage = _langCtx.setUiLanguage || function () {};
+  var isTranslating = !!_langCtx.isTranslating;
+  var _langMenu = useState(false);
+  var langMenuOpen = _langMenu[0];
+  var setLangMenuOpen = _langMenu[1];
+  var LAUNCH_PAD_LANGS = ['English', 'Spanish', 'French', 'Arabic', 'Chinese (Simplified)', 'Hebrew', 'Portuguese (Brazil)', 'Somali', 'Vietnamese', 'Haitian Creole'];
   return /*#__PURE__*/React.createElement("div", {
     role: "region",
     "aria-label": "Choose how to use AlloFlow",
@@ -64,7 +76,126 @@
             @media (max-width: 600px) { .lp-grid { grid-template-columns: 1fr !important; } }
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(99,102,241,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
+            .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
           `), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: '20px',
+      right: '20px',
+      zIndex: 100000
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setLangMenuOpen(!langMenuOpen),
+    "aria-label": (t('launch_pad.change_language') || 'Change language') + '. ' + (t('launch_pad.current_language') || 'Current') + ': ' + currentUiLanguage,
+    "aria-expanded": langMenuOpen,
+    "aria-haspopup": "listbox",
+    disabled: isTranslating,
+    style: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      padding: '8px 12px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255,255,255,0.15)',
+      background: 'rgba(255,255,255,0.08)',
+      backdropFilter: 'blur(20px)',
+      color: '#e0e7ff',
+      fontSize: '12px',
+      fontWeight: 600,
+      cursor: isTranslating ? 'wait' : 'pointer',
+      transition: 'all 0.2s',
+      opacity: isTranslating ? 0.6 : 1
+    },
+    onMouseOver: e => {
+      if (!isTranslating) {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+      }
+    },
+    onMouseOut: e => {
+      e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      fontSize: '14px'
+    }
+  }, "🌐"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      maxWidth: '140px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }
+  }, currentUiLanguage), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    style: {
+      fontSize: '9px',
+      opacity: 0.7
+    }
+  }, langMenuOpen ? '▲' : '▼')), langMenuOpen && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    onClick: () => setLangMenuOpen(false),
+    "aria-hidden": "true",
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 99999
+    }
+  }), /*#__PURE__*/React.createElement("ul", {
+    role: "listbox",
+    "aria-label": t('launch_pad.available_languages') || 'Available languages',
+    style: {
+      position: 'absolute',
+      top: 'calc(100% + 6px)',
+      right: 0,
+      background: 'rgba(15,23,42,0.96)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.15)',
+      borderRadius: '12px',
+      padding: '6px',
+      minWidth: '220px',
+      margin: 0,
+      listStyle: 'none',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      maxHeight: '60vh',
+      overflowY: 'auto',
+      zIndex: 100001
+    }
+  }, LAUNCH_PAD_LANGS.map(langName => {
+    var selected = langName === currentUiLanguage;
+    return /*#__PURE__*/React.createElement("li", {
+      key: langName,
+      role: "option",
+      "aria-selected": selected,
+      style: {
+        margin: 0
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "lp-lang-item",
+      disabled: isTranslating,
+      onClick: () => {
+        setLangMenuOpen(false);
+        if (!selected) setUiLanguage(langName);
+      },
+      style: {
+        display: 'block',
+        width: '100%',
+        textAlign: 'start',
+        padding: '9px 12px',
+        borderRadius: '8px',
+        border: 'none',
+        background: selected ? 'rgba(99,102,241,0.3)' : 'transparent',
+        color: 'white',
+        fontSize: '13px',
+        fontWeight: selected ? 700 : 500,
+        cursor: isTranslating ? 'wait' : 'pointer',
+        transition: 'background 0.15s'
+      }
+    }, selected ? '✓ ' : '  ', langName));
+  })))), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       marginBottom: '48px',
@@ -131,7 +262,7 @@
     style: {
       fontSize: '24px'
     }
-  }, "\uD83C\uDFA4"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, "🎤"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '14px',
       fontWeight: 700,
@@ -154,7 +285,7 @@
       lineHeight: '1.5',
       fontWeight: 600
     }
-  }, "\u26A0\uFE0F ", t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ ", t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '12px',
@@ -199,7 +330,7 @@
       margin: 0,
       fontWeight: 700
     }
-  }, "\u2705 Microphone enabled!"), micPermissionStatus === 'denied' && /*#__PURE__*/React.createElement("p", {
+  }, "✅ Microphone enabled!"), micPermissionStatus === 'denied' && /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '11px',
       color: '#f87171',
@@ -240,7 +371,7 @@
       animation: 'float 3s ease-in-out infinite'
     },
     "aria-hidden": "true"
-  }, "\uD83D\uDE80"), /*#__PURE__*/React.createElement("h2", {
+  }, "🚀"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: '18px',
       fontWeight: 800,
@@ -288,7 +419,7 @@
       animationDelay: '0.5s'
     },
     "aria-hidden": "true"
-  }, "\uD83E\uDDED"), /*#__PURE__*/React.createElement("h2", {
+  }, "🧭"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: '18px',
       fontWeight: 800,
@@ -401,7 +532,7 @@
       animationDelay: '1.5s'
     },
     "aria-hidden": "true"
-  }, "\uD83D\uDEE0\uFE0F"), /*#__PURE__*/React.createElement("h2", {
+  }, "🛠️"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: '18px',
       fontWeight: 800,

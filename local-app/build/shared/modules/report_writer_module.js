@@ -637,7 +637,7 @@
 
         // ── AI-Powered Demo Data Generator ──
         const generateAIDemoCase = async () => {
-            if (!callGemini) { if (addToast) addToast('AI not available', 'error'); return; }
+            if (!callGemini) { if (addToast) addToast(t('toasts.ai_available'), 'error'); return; }
             setGeneratingDemo(true);
             try {
                 const prompt = `You are a clinical data generator for a school psychology training tool. Generate a FICTIONAL but realistic demo case for a psychoeducational evaluation.
@@ -706,7 +706,7 @@ Include 6-10 assessment scores using REAL subtest names from the assessment batt
                 if (addToast) addToast(`AI demo case "${parsed.label}" generated — [FICTIONAL DATA, NOT A REAL STUDENT]`, 'success');
             } catch (err) {
                 warnLog('AI demo generation error:', err);
-                if (addToast) addToast('AI demo generation failed — try again or use a preset case', 'error');
+                if (addToast) addToast(t('toasts.ai_demo_generation_failed_try'), 'error');
             } finally { setGeneratingDemo(false); }
         };
 
@@ -740,7 +740,7 @@ Return ONLY the adapted text, no commentary.`;
                 if (addToast) addToast(`"${section}" adapted for ${targetLevel} reading level`, 'success');
             } catch (err) {
                 warnLog('Grade-level adaptation error:', err);
-                if (addToast) addToast('Adaptation failed', 'error');
+                if (addToast) addToast(t('toasts.adaptation_failed'), 'error');
             } finally { setAdaptingSection(null); }
         };
 
@@ -758,11 +758,11 @@ Return ONLY the adapted text, no commentary.`;
                 if (addToast) addToast(`Report translated to ${translationLang} ✅`, 'success');
             } catch (err) {
                 warnLog('Translation error:', err);
-                if (addToast) addToast('Translation failed', 'error');
+                if (addToast) addToast(t('toasts.translation_failed'), 'error');
             } finally { setTranslating(false); }
         };
         const copyTranslatedReport = () => {
-            navigator.clipboard.writeText(translatedReport).then(() => { if (addToast) addToast('Translated report copied ✅', 'success'); });
+            navigator.clipboard.writeText(translatedReport).then(() => { if (addToast) addToast(t('toasts.translated_report_copied'), 'success'); });
         };
 
         const OBS_TAB_META = [
@@ -917,7 +917,7 @@ Return ONLY the adapted text, no commentary.`;
             setScoreEntries([]); setBgSections({ referralReason: '', developmental: '', medical: '', educational: '', social: '', behavioral: '', observations: '' });
             setFactChunks([]); setReportSections({}); setAccuracyResults([]);
             setCurrentStep(1);
-            if (addToast) addToast('Draft cleared', 'info');
+            if (addToast) addToast(t('toasts.draft_cleared'), 'info');
         };
 
         // ── PII scrubbing ──
@@ -963,12 +963,12 @@ Return ONLY the adapted text, no commentary.`;
                 });
             }
             setBgSections(prev => ({ ...prev, behavioral, observations }));
-            if (addToast) addToast('BehaviorLens data imported ✅', 'success');
+            if (addToast) addToast(t('toasts.behaviorlens_data_imported'), 'success');
         };
 
         // ── Step 2: Import Longitudinal Student Progress ──
         const importStudentProgress = () => {
-            if (!longitudinalData) { if (addToast) addToast('No student progress data available', 'info'); return; }
+            if (!longitudinalData) { if (addToast) addToast(t('toasts.student_progress_data_available'), 'info'); return; }
             let educational = bgSections.educational || '';
             let behavioral = bgSections.behavioral || '';
             // History: summarise topic interactions
@@ -1006,7 +1006,7 @@ Return ONLY the adapted text, no commentary.`;
                 });
             }
             setBgSections(prev => ({ ...prev, educational, behavioral }));
-            if (addToast) addToast('Student progress data imported ✅', 'success');
+            if (addToast) addToast(t('toasts.student_progress_data_imported'), 'success');
         };
 
         // ── Step 3: Extract fact chunks ──
@@ -1056,7 +1056,7 @@ Extract 5-20 key facts. Be precise and factual.`;
                 if (addToast) addToast(`Extracted ${scoreChunks.length + bgChunks.length} fact chunks`, 'success');
             } catch (err) {
                 warnLog('Extract error:', err);
-                if (addToast) addToast('Extraction failed', 'error');
+                if (addToast) addToast(t('toasts.extraction_failed'), 'error');
             } finally { setExtracting(false); }
         };
         const verifyChunk = (chunkId) => {
@@ -1099,10 +1099,10 @@ Extract 5-20 key facts. Be precise and factual.`;
                 const results = {};
                 (parsed.hypotheses || []).forEach(h => { results[h.name] = h; });
                 setDifferentialResults(results);
-                if (addToast) addToast('Differential analysis complete \u2705', 'success');
+                if (addToast) addToast(t('toasts.differential_analysis_complete_u2705'), 'success');
             } catch (err) {
                 warnLog('Differential analysis error:', err);
-                if (addToast) addToast('Differential analysis failed', 'error');
+                if (addToast) addToast(t('toasts.differential_analysis_failed'), 'error');
             } finally { setRunningDifferential(false); }
         };
 
@@ -1167,7 +1167,7 @@ listing only the [chunk-id] values you actually referenced. Return the section t
             if (!callGemini) return;
             setGenerating(true);
             const verifiedChunks = factChunks.filter(c => c.verified);
-            if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast('No verified fact chunks', 'error'); return; }
+            if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast(t('toasts.verified_fact_chunks'), 'error'); return; }
             const sections = blueprint.filter(s => s.enabled).map(s => s.name);
             const generated = {};
             const evidenceMap = {};
@@ -1327,7 +1327,7 @@ Return ONLY JSON:
                     }
                     if (addToast) addToast(`\u26a0\ufe0f Consistency check: ${consistencyCheck.issues.length} issue(s)${criticalIssues.length > 0 ? ' — auto-fixed critical' : ''}`, 'info');
                 } else {
-                    if (addToast) addToast('\u2705 Cross-section consistency verified', 'success');
+                    if (addToast) addToast(t('toasts.u2705_cross_section_consistency_verified'), 'success');
                 }
             } catch(ccErr) { warnLog('[Report] Consistency check failed (non-blocking):', ccErr); }
 
@@ -1335,7 +1335,7 @@ Return ONLY JSON:
             setSectionEvidenceMap(evidenceMap);
             setGenProgress('');
             setGenerating(false);
-            if (addToast) addToast('Report generated with verification \u2728', 'success');
+            if (addToast) addToast(t('toasts.report_generated_with_verification_u2728'), 'success');
         };
 
         // ── Section-by-Section: Regenerate a single section ──
@@ -1491,7 +1491,7 @@ Return ONLY valid JSON:
                 }
             } catch (err) {
                 warnLog('Accuracy check error:', err);
-                if (addToast) addToast('Accuracy check failed', 'error');
+                if (addToast) addToast(t('toasts.accuracy_check_failed'), 'error');
             } finally { setChecking(false); }
         };
         // ── Dual-Pass Reconciliation Engine ──
@@ -1556,7 +1556,7 @@ Return ONLY valid JSON:
             a.download = `report_${(studentName || 'student').replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
-            if (addToast) addToast('JSON exported ✅', 'success');
+            if (addToast) addToast(t('toasts.json_exported'), 'success');
         };
         const importJSON = () => {
             try {
@@ -1570,15 +1570,15 @@ Return ONLY valid JSON:
                 if (data.reportSections) setReportSections(data.reportSections);
                 if (data.accuracyResults) setAccuracyResults(data.accuracyResults);
                 setImportText('');
-                if (addToast) addToast('Report data imported ✅', 'success');
-            } catch { if (addToast) addToast('Invalid JSON', 'error'); }
+                if (addToast) addToast(t('toasts.report_data_imported'), 'success');
+            } catch { if (addToast) addToast(t('toasts.invalid_json'), 'error'); }
         };
         const copyFullReport = () => {
             const draftNotice = `${'═'.repeat(50)}\nCONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT\nThis report requires review and approval by the\nlicensed school psychologist before use in\neducational decision-making.\n${'═'.repeat(50)}\n\n`;
             const header = `${reportTitle}\nStudent: ${studentName || '[Student]'}\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}\nDate: ${new Date().toLocaleDateString()}\n${'─'.repeat(50)}\n\n`;
             const body = Object.entries(reportSections).map(([k, v]) => `${k.toUpperCase()}\n\n${v.replace(/\[Student\]/g, studentName || '[Student]')}`).join('\n\n' + '─'.repeat(50) + '\n\n');
             const footer = `\n\n${'─'.repeat(50)}\nClinician Signature: _______________ Date: ________\nGenerated with AlloFlow Report Writer (AI-Assisted Draft)\n`;
-            navigator.clipboard.writeText(draftNotice + header + body + footer).then(() => { if (addToast) addToast('Report copied to clipboard ✅', 'success'); });
+            navigator.clipboard.writeText(draftNotice + header + body + footer).then(() => { if (addToast) addToast(t('toasts.report_copied_clipboard'), 'success'); });
         };
         const printReport = () => {
             const w = window.open('', '_blank');
@@ -1644,6 +1644,25 @@ Return ONLY valid JSON:
                     )
                 )
             ) : null,
+            // ── DA launch CTA — shown when no payload is queued. ──
+            // Lets the clinician open Dynamic Assessment Studio directly from
+            // Report Writer when they realize they need DA data. Triggers the
+            // host's __alloOpenDynamicAssessment() hook installed by AlloFlowANTI.
+            !daExportPayload && typeof window !== 'undefined' && typeof window.__alloOpenDynamicAssessment === 'function' ? h('div', {
+                className: 'rounded-xl px-4 py-2.5 border border-slate-200 bg-slate-50 flex items-center justify-between gap-3',
+                role: 'region',
+                'aria-label': 'Launch Dynamic Assessment Studio'
+            },
+                h('div', { className: 'flex items-center gap-2 text-xs text-slate-600' },
+                    h('span', { className: 'text-base flex-shrink-0' }, '🔬'),
+                    h('span', null, 'Need Dynamic Assessment data? Run a probe to capture modifiability + scaffold-response findings — they will flow into this report automatically.')
+                ),
+                h('button', {
+                    onClick: function () { try { window.__alloOpenDynamicAssessment(); } catch (e) {} },
+                    className: 'px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold transition-colors flex-shrink-0',
+                    'aria-label': 'Open Dynamic Assessment Studio'
+                }, 'Run a probe →')
+            ) : null,
             // Header
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-5 border border-violet-200' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
@@ -1657,7 +1676,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'flex items-center gap-2' },
                         h('label', { className: 'text-[11px] text-slate-600' }, 'Age:'),
                         h('input', { type: 'number', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'yrs', 'aria-label': 'Student age', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 }),
-                        h('label', { className: 'text-[11px] text-slate-600 ml-2' }, 'Grade:'),
+                        h('label', { className: 'text-[11px] text-slate-600 ms-2' }, 'Grade:'),
                         h('input', { type: 'text', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'e.g. 3', 'aria-label': 'Student grade', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
                     )
                 ),
@@ -1723,18 +1742,18 @@ Return ONLY valid JSON:
                     h('div', { className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[11px] text-amber-600' }, 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.'),
                         Object.entries(DEMO_CASES).map(([key, demo]) =>
-                            h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-left px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-[11px] transition-colors',
+                            h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-start px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-[11px] transition-colors',
                                 onClick: () => loadDemoCase(key)
                             }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
                         ),
                         h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
-                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
+                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-start px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
                                 onClick: generateAIDemoCase,
                                 disabled: generatingDemo
                             },
                                 generatingDemo ? h('span', { className: 'inline-block animate-spin w-3 h-3 border border-violet-400 border-t-violet-700 rounded-full' }) : h('span', null, '🤖'),
                                 h('span', { className: 'font-medium text-violet-800' }, generatingDemo ? 'Generating random case...' : '🎲 Generate Random AI Case'),
-                                !generatingDemo && h('span', { className: 'text-[11px] text-violet-500 ml-auto' }, 'Unique each time')
+                                !generatingDemo && h('span', { className: 'text-[11px] text-violet-500 ms-auto' }, 'Unique each time')
                             )
                         )
                     )
@@ -1765,7 +1784,7 @@ Return ONLY valid JSON:
                             });
                         }
                         setClinicalObs(prev => ({ ...prev, behavioral: { ...prev.behavioral, text: obsText } }));
-                        if (addToast) addToast('BehaviorLens data imported to Behavioral observations', 'success');
+                        if (addToast) addToast(t('toasts.behaviorlens_data_imported_behavioral_observations'), 'success');
                     }
                 }, '\u{1F4E5} Import from BehaviorLens (' + (abcEntries?.length || 0) + ' ABC + ' + (observationSessions?.length || 0) + ' observations)'),
                 // Sub-section tabs
@@ -1872,7 +1891,7 @@ Return ONLY valid JSON:
                                 h('span', { className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
                                 h('span', { className: `px-2 py-0.5 rounded-full text-[11px] ${cBadge(s.classColor)}` }, s.classification),
                                 s.percentile !== null && h('span', { className: 'text-slate-600' }, `${s.percentile}%ile`),
-                                h('button', { 'aria-label': 'Remove score entry', className: 'ml-2 text-red-600 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
+                                h('button', { 'aria-label': 'Remove score entry', className: 'ms-2 text-red-600 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
                             )
                         )
                     )
@@ -1928,14 +1947,14 @@ Return ONLY valid JSON:
                                     h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
                                     h('span', { className: 'text-slate-600 text-[11px]' }, ref.text.substring(0, 80) + '...')
                                 ),
-                                h('button', { 'aria-label': 'Remove reference', className: 'ml-2 text-red-600 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
+                                h('button', { 'aria-label': 'Remove reference', className: 'ms-2 text-red-600 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
                             )
                         ),
                         h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
                             h('input', { type: 'text', className: 'w-full text-[11px] border rounded px-2 py-1', placeholder: 'Reference name (e.g., "MUSER Ch. 101")...', value: newRefName, onChange: e => setNewRefName(e.target.value) }),
                             h('textarea', { className: 'w-full text-[11px] border rounded px-2 py-1 h-20 resize-none font-mono', placeholder: 'Paste reference text here...', value: newRefText, onChange: e => setNewRefText(e.target.value) }),
                             newRefName.trim() && newRefText.trim() && h('button', { 'aria-label': 'Add reference', className: 'px-3 py-1 bg-indigo-600 text-white text-[11px] rounded hover:bg-indigo-700',
-                                onClick: () => { setReferenceLibrary(prev => [...prev, { id: uid(), name: newRefName.trim(), text: newRefText.trim(), addedAt: new Date().toISOString() }]); setNewRefName(''); setNewRefText(''); if (addToast) addToast('Reference added', 'success'); }
+                                onClick: () => { setReferenceLibrary(prev => [...prev, { id: uid(), name: newRefName.trim(), text: newRefText.trim(), addedAt: new Date().toISOString() }]); setNewRefName(''); setNewRefText(''); if (addToast) addToast(t('toasts.reference_added'), 'success'); }
                             }, '\u2795 Add Reference')
                         )
                     )
@@ -1955,7 +1974,7 @@ Return ONLY valid JSON:
                     h('span', { className: 'text-[11px] font-medium text-green-600' }, `✅ ${verifiedCount} verified`),
                     h('span', { className: 'text-[11px] font-medium text-slate-600' }, `⏳ ${totalChunks - verifiedCount} pending`),
                     deficitCount > 0 && h('span', { className: 'text-[11px] font-medium text-red-600' }, `⚠️ ${deficitCount} deficits`),
-                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ml-auto text-[11px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
+                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ms-auto text-[11px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
                     }, '✅ Verify All')
                 ),
                 extracting && h('div', { className: 'text-center py-6' },
@@ -2029,7 +2048,7 @@ Return ONLY valid JSON:
                                 differentialResults[hyp] && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[11px] font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
                                 }, differentialResults[hyp].strengthScore + '/10')
                             ),
-                            hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': 'Remove hypothesis', className: 'text-red-600 hover:text-red-600 ml-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
+                            hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': 'Remove hypothesis', className: 'text-red-600 hover:text-red-600 ms-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
                         )
                     ),
                     h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\u2611\uFE0F Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')
@@ -2056,15 +2075,15 @@ Return ONLY valid JSON:
                             h('div', { className: 'px-3 pb-2 space-y-1 text-[11px]' },
                                 data.evidenceFor && data.evidenceFor.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-green-700' }, '\u2705 Evidence For:'),
-                                    data.evidenceFor.map((e, i) => h('p', { key: i, className: 'ml-3 text-slate-600' }, '- ' + e.fact + ' (' + e.strength + ': ' + (e.explanation || '') + ')'))
+                                    data.evidenceFor.map((e, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + e.fact + ' (' + e.strength + ': ' + (e.explanation || '') + ')'))
                                 ),
                                 data.evidenceAgainst && data.evidenceAgainst.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-red-600' }, '\u274C Evidence Against:'),
-                                    data.evidenceAgainst.map((e, i) => h('p', { key: i, className: 'ml-3 text-slate-600' }, '- ' + e.fact + ': ' + (e.explanation || '')))
+                                    data.evidenceAgainst.map((e, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + e.fact + ': ' + (e.explanation || '')))
                                 ),
                                 data.evidenceGaps && data.evidenceGaps.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-amber-600' }, '\u26A0\uFE0F Evidence Gaps:'),
-                                    data.evidenceGaps.map((g, i) => h('p', { key: i, className: 'ml-3 text-slate-600' }, '- ' + g))
+                                    data.evidenceGaps.map((g, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + g))
                                 )
                             )
                         )
@@ -2243,7 +2262,7 @@ Return ONLY valid JSON:
                                 ),
                             // Evidence chips
                             (sectionEvidenceMap[section] || []).length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-2 pt-1 border-t border-slate-100' },
-                                h('span', { className: 'text-[11px] text-slate-600 mr-1 self-center' }, 'Evidence:'),
+                                h('span', { className: 'text-[11px] text-slate-600 me-1 self-center' }, 'Evidence:'),
                                 (sectionEvidenceMap[section] || []).map(chunkId => {
                                     const chunk = factChunks.find(c => c.id === chunkId);
                                     const chipColor = chunk ? (chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') : 'bg-slate-100 text-slate-600';
@@ -2291,7 +2310,7 @@ Return ONLY valid JSON:
                             h('p', { className: 'text-lg font-bold text-purple-600' }, accuracyResults.filter(r => r.status === 'discrepancy').length),
                             h('p', { className: 'text-[11px] text-slate-600' }, '\u26A0\uFE0F Discrepancy')
                         ),
-                        h('div', { className: 'ml-auto text-center' },
+                        h('div', { className: 'ms-auto text-center' },
                             h('p', { className: 'text-lg font-bold text-violet-700' }, `${accuracyResults.length > 0 ? Math.round((accuracyResults.filter(r => r.status === 'verified').length / accuracyResults.length) * 100) : 0}%`),
                             h('p', { className: 'text-[11px] text-slate-600' }, 'Accuracy')
                         ),
@@ -2306,7 +2325,7 @@ Return ONLY valid JSON:
                                     h('p', { className: 'font-medium text-slate-800 break-words' }, r.claim),
                                     h('p', { className: 'text-slate-600 mt-0.5' }, r.explanation || ''),
                                     r.confidence && h('span', { className: 'inline-block mt-0.5 text-[11px] px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600') }, r.confidence === 'high' ? 'High Confidence' : r.confidence === 'needs-review' ? 'Needs Review' : 'Medium'),
-                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { className: 'inline-block mt-0.5 ml-1 text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
+                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { className: 'inline-block mt-0.5 ms-1 text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
                                 )
                             )
                         )
@@ -2348,11 +2367,11 @@ Return ONLY valid JSON:
                         h('span', { className: 'text-lg' }, '💾'),
                         h('span', { className: 'text-[11px] font-medium text-violet-700' }, 'Save JSON')
                     ),
-                    h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before copying — run accuracy audit and fix flagged claims', 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast(t('toasts.resolve_contradictions_before_copying_run'), 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '📋'),
                         h('span', { className: 'text-[11px] font-medium text-indigo-700' }, 'Copy Report')
                     ),
-                    h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-600 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before printing — run accuracy audit and fix flagged claims', 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-600 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast(t('toasts.resolve_contradictions_before_printing_run'), 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '🖨️'),
                         h('span', { className: 'text-[11px] font-medium text-blue-700' }, 'Print / PDF')
                     ),
@@ -2411,7 +2430,7 @@ Return ONLY valid JSON:
                                     h('span', { className: 'font-medium text-slate-800 truncate block' }, r.name),
                                     h('span', { className: 'text-slate-600' }, new Date(r.savedAt).toLocaleDateString() + ' • ' + (r.scoreEntries?.length || 0) + ' scores')
                                 ),
-                                h('div', { className: 'flex gap-1 ml-2' },
+                                h('div', { className: 'flex gap-1 ms-2' },
                                     h('button', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 rounded hover:bg-violet-200', onClick: () => loadSavedReport(r) }, 'Load'),
                                     h('button', { 'aria-label': 'Delete saved report', className: 'px-2 py-0.5 bg-red-50 text-red-500 rounded hover:bg-red-100', onClick: () => deleteSavedReport(r.id) }, '✕')
                                 )

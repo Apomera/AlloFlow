@@ -523,34 +523,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Pip the typing chick',
       style: { display: 'block', overflow: 'visible' }
     },
+      h('defs', null,
+        // Gradient for Pip's body - 3D volume radial highlight
+        h('radialGradient', { id: 'tp-grad-pip-body', cx: '35%', cy: '35%', r: '65%' },
+          h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+          h('stop', { offset: '45%', stopColor: bodyColor }),
+          h('stop', { offset: '100%', stopColor: '#d97706' })
+        ),
+        // Gradient for Pip's wings
+        h('linearGradient', { id: 'tp-grad-pip-wing', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+          h('stop', { offset: '0%', stopColor: '#fef08a' }),
+          h('stop', { offset: '100%', stopColor: '#eab308' })
+        ),
+        // Soft pink blush gradient for cheeks
+        h('radialGradient', { id: 'tp-grad-pip-cheek', cx: '50%', cy: '50%', r: '50%' },
+          h('stop', { offset: '0%', stopColor: '#fda4af', stopOpacity: 0.95 }),
+          h('stop', { offset: '100%', stopColor: '#fda4af', stopOpacity: 0 })
+        )
+      ),
       // Floating Z's — only visible in sleep state via CSS
       h('text', { x: 70, y: 30, fill: '#94a3b8', fontSize: 8, fontWeight: 700, opacity: 0, className: 'tp-mascot-z' }, 'z'),
       h('text', { x: 76, y: 22, fill: '#94a3b8', fontSize: 6, fontWeight: 700, opacity: 0, className: 'tp-mascot-z tp-mascot-z-2' }, 'z'),
       // Legs
       h('g', { className: 'tp-pip-legs' },
-        h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
-        h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
-        h('path', { d: 'M 38 92 L 42 92 L 46 92 M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+        h('g', { className: 'tp-pip-leg-l', style: { transformOrigin: '42px 80px', transformBox: 'fill-box' } },
+          h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+          h('path', { d: 'M 38 92 L 42 92 L 46 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+        ),
+        h('g', { className: 'tp-pip-leg-r', style: { transformOrigin: '58px 80px', transformBox: 'fill-box' } },
+          h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+          h('path', { d: 'M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+        )
+      ),
+      // Tiny ribbon bowtie around the neck
+      h('g', { className: 'tp-pip-bowtie', style: { transformOrigin: '50px 72px', transformBox: 'fill-box' } },
+        h('polygon', { points: '42,69 48,72 42,75', fill: '#ef4444', stroke: '#b91c1c', strokeWidth: 0.5 }),
+        h('polygon', { points: '58,69 52,72 58,75', fill: '#ef4444', stroke: '#b91c1c', strokeWidth: 0.5 }),
+        h('circle', { cx: 50, cy: 72, r: 2.5, fill: '#ef4444', stroke: '#b91c1c', strokeWidth: 0.5 })
       ),
       // Body — round yellow blob. Class lets danger state add a subtle puff.
-      h('ellipse', { cx: 50, cy: 56, rx: 30, ry: 28, fill: bodyColor, stroke: '#eab308', strokeWidth: 1.5, className: 'tp-pip-body', style: { transformOrigin: '50px 56px', transformBox: 'fill-box' } }),
+      h('ellipse', { cx: 50, cy: 56, rx: 30, ry: 28, fill: 'url(#tp-grad-pip-body)', stroke: '#ca8a04', strokeWidth: 1.5, className: 'tp-pip-body', style: { transformOrigin: '50px 56px', transformBox: 'fill-box' } }),
+      // Head Sprout - cute leaves that sway gently on top of the head
+      h('g', { className: 'tp-pip-sprout', style: { transformOrigin: '50px 28px', transformBox: 'fill-box' } },
+        h('path', { d: 'M 50 28 Q 48 20 44 18 Q 48 16 50 24', fill: '#4ade80', stroke: '#15803d', strokeWidth: 1, strokeLinecap: 'round' }),
+        h('path', { d: 'M 50 28 Q 52 18 56 16 Q 54 14 50 24', fill: '#4ade80', stroke: '#15803d', strokeWidth: 1, strokeLinecap: 'round' })
+      ),
       // Left wing — flaps in combo via CSS rotate around shoulder pivot
-      h('path', { d: 'M 26 56 Q 22 64 30 70 L 36 64 Z', fill: '#facc15', opacity: 0.7, className: 'tp-pip-wing tp-pip-wing-l', style: { transformOrigin: '32px 60px', transformBox: 'fill-box' } }),
+      h('path', { d: 'M 26 56 Q 22 64 30 70 L 36 64 Z', fill: 'url(#tp-grad-pip-wing)', stroke: '#ca8a04', strokeWidth: 0.8, opacity: 0.95, className: 'tp-pip-wing tp-pip-wing-l', style: { transformOrigin: '32px 60px', transformBox: 'fill-box' } }),
       // Right wing — symmetrical, opposite phase so the flap reads as bilateral
-      h('path', { d: 'M 74 56 Q 78 64 70 70 L 64 64 Z', fill: '#facc15', opacity: 0.7, className: 'tp-pip-wing tp-pip-wing-r', style: { transformOrigin: '68px 60px', transformBox: 'fill-box' } }),
+      h('path', { d: 'M 74 56 Q 78 64 70 70 L 64 64 Z', fill: 'url(#tp-grad-pip-wing)', stroke: '#ca8a04', strokeWidth: 0.8, opacity: 0.95, className: 'tp-pip-wing tp-pip-wing-r', style: { transformOrigin: '68px 60px', transformBox: 'fill-box' } }),
       // Eye whites + pupils
       h('g', { className: 'tp-pip-eyes' },
         h('circle', { cx: 42, cy: 50, r: 5.5, fill: '#fff' }),
         h('circle', { cx: 58, cy: 50, r: 5.5, fill: '#fff' }),
-        h('circle', { cx: 43, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-l' }),
-        h('circle', { cx: 59, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-r' })
+        // Pupils with glassy reflections
+        h('g', { className: 'tp-pip-pupils' },
+          h('circle', { cx: 43, cy: 51, r: 2.8, fill: eyeColor, className: 'tp-pip-pupil-l' }),
+          h('circle', { cx: 59, cy: 51, r: 2.8, fill: eyeColor, className: 'tp-pip-pupil-r' }),
+          // Specular highlights
+          h('circle', { cx: 41.8, cy: 49.8, r: 1, fill: '#fff' }),
+          h('circle', { cx: 57.8, cy: 49.8, r: 1, fill: '#fff' }),
+          h('circle', { cx: 44.2, cy: 52.2, r: 0.5, fill: '#fff' }),
+          h('circle', { cx: 60.2, cy: 52.2, r: 0.5, fill: '#fff' })
+        )
       ),
       // Beak — diamond pointing down. Class lets it open slightly during
       // attack-out (the chirp / peck moment) via CSS scaleY.
       h('polygon', { points: '50,58 45,62 55,62', fill: beakColor, stroke: '#c2410c', strokeWidth: 1, className: 'tp-pip-beak', style: { transformOrigin: '50px 60px', transformBox: 'fill-box' } }),
-      // Cheek-tuft feathers — class lets them puff in danger state
-      h('circle', { cx: 30, cy: 62, r: 2, fill: '#facc15', opacity: 0.6, className: 'tp-pip-cheek tp-pip-cheek-l' }),
-      h('circle', { cx: 70, cy: 62, r: 2, fill: '#facc15', opacity: 0.6, className: 'tp-pip-cheek tp-pip-cheek-r' })
+      // Cheek-tuft feathers — class lets them puff in danger state, colored with radial pink blush
+      h('circle', { cx: 30, cy: 62, r: 5, fill: 'url(#tp-grad-pip-cheek)', className: 'tp-pip-cheek tp-pip-cheek-l' }),
+      h('circle', { cx: 70, cy: 62, r: 5, fill: 'url(#tp-grad-pip-cheek)', className: 'tp-pip-cheek tp-pip-cheek-r' })
     );
   }
 
@@ -570,55 +612,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Cogsworth the clockwork owl',
       style: { display: 'block', overflow: 'visible' }
     },
+      h('defs', null,
+        // Metallic brass gradient (3D cylinder effect)
+        h('linearGradient', { id: 'tp-grad-brass', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+          h('stop', { offset: '0%', stopColor: '#fef08a' }),
+          h('stop', { offset: '40%', stopColor: '#eab308' }),
+          h('stop', { offset: '80%', stopColor: '#a16207' }),
+          h('stop', { offset: '100%', stopColor: '#713f12' })
+        ),
+        // Metallic copper gradient
+        h('linearGradient', { id: 'tp-grad-copper', x1: '0%', y1: '100%', x2: '100%', y2: '0%' },
+          h('stop', { offset: '0%', stopColor: '#7c2d12' }),
+          h('stop', { offset: '50%', stopColor: '#ea580c' }),
+          h('stop', { offset: '100%', stopColor: '#ffedd5' })
+        ),
+        // Glowing cyan lamp lens gradient
+        h('radialGradient', { id: 'tp-grad-lens', cx: '45%', cy: '45%', r: '55%' },
+          h('stop', { offset: '0%', stopColor: '#ffffff' }),
+          h('stop', { offset: '30%', stopColor: '#e0f2fe' }),
+          h('stop', { offset: '70%', stopColor: '#38bdf8' }),
+          h('stop', { offset: '100%', stopColor: '#0369a1' })
+        ),
+        // Dial gradient for gauge
+        h('radialGradient', { id: 'tp-grad-dial', cx: '50%', cy: '50%', r: '50%' },
+          h('stop', { offset: '75%', stopColor: '#ffffff' }),
+          h('stop', { offset: '90%', stopColor: '#e2e8f0' }),
+          h('stop', { offset: '100%', stopColor: '#94a3b8' })
+        )
+      ),
       // Steam puff (decorative — animated when in combo state)
       h('g', { className: 'tp-cog-steam', style: { transformOrigin: '50px 12px' } },
-        h('circle', { cx: 44, cy: 14, r: 3.5, fill: '#fef3c7', opacity: 0 }),
-        h('circle', { cx: 50, cy: 8, r: 4, fill: '#fef3c7', opacity: 0 }),
-        h('circle', { cx: 58, cy: 14, r: 3, fill: '#fef3c7', opacity: 0 })
+        h('circle', { cx: 44, cy: 14, r: 3.5, fill: '#f1f5f9', opacity: 0 }),
+        h('circle', { cx: 50, cy: 8, r: 4, fill: '#f1f5f9', opacity: 0 }),
+        h('circle', { cx: 58, cy: 14, r: 3, fill: '#f1f5f9', opacity: 0 })
+      ),
+      // Chimney pipe on the head
+      h('g', { className: 'tp-cog-chimney' },
+        h('rect', { x: 47, y: 18, width: 6, height: 7, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 }),
+        h('ellipse', { cx: 50, cy: 18, rx: 4, ry: 1.5, fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.6 })
       ),
       // Left rotating gear (ear)
       h('g', { className: 'tp-cog-gear-l', style: { transformOrigin: '24px 30px' } },
-        h('circle', { cx: 24, cy: 30, r: 8, fill: brassLight, stroke: brassDark, strokeWidth: 1.5 }),
+        h('circle', { cx: 24, cy: 30, r: 8, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 1.5 }),
         h('circle', { cx: 24, cy: 30, r: 3, fill: brassDark }),
         // Six teeth
         [0, 60, 120, 180, 240, 300].map(function(deg, i) {
           var rad = deg * Math.PI / 180;
           var x = 24 + Math.cos(rad) * 10;
           var y = 30 + Math.sin(rad) * 10;
-          return h('rect', { key: 'tl' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: brassLight, stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
+          return h('rect', { key: 'tl' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
         })
       ),
       // Right rotating gear (ear)
       h('g', { className: 'tp-cog-gear-r', style: { transformOrigin: '76px 30px' } },
-        h('circle', { cx: 76, cy: 30, r: 8, fill: brassLight, stroke: brassDark, strokeWidth: 1.5 }),
+        h('circle', { cx: 76, cy: 30, r: 8, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 1.5 }),
         h('circle', { cx: 76, cy: 30, r: 3, fill: brassDark }),
         [30, 90, 150, 210, 270, 330].map(function(deg, i) {
           var rad = deg * Math.PI / 180;
           var x = 76 + Math.cos(rad) * 10;
           var y = 30 + Math.sin(rad) * 10;
-          return h('rect', { key: 'tr' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: brassLight, stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
+          return h('rect', { key: 'tr' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
         })
       ),
+      // Mechanical Segmented Wings (Left & Right)
+      h('g', { className: 'tp-cog-wings' },
+        // Left Wing (with transformOrigin at shoulder hinge)
+        h('g', { className: 'tp-cog-wing-l', style: { transformOrigin: '24px 55px', transformBox: 'fill-box' } },
+          h('path', { d: 'M 24 55 Q 12 52 14 62 L 24 64 Z', fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 }),
+          h('path', { d: 'M 24 60 Q 14 62 18 72 L 25 70 Z', fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 })
+        ),
+        // Right Wing (with transformOrigin at shoulder hinge)
+        h('g', { className: 'tp-cog-wing-r', style: { transformOrigin: '76px 55px', transformBox: 'fill-box' } },
+          h('path', { d: 'M 76 55 Q 88 52 86 62 L 76 64 Z', fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 }),
+          h('path', { d: 'M 76 60 Q 86 62 82 72 L 75 70 Z', fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 0.8 })
+        )
+      ),
       // Owl body
-      h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 28, fill: bodyColor, stroke: brassDark, strokeWidth: 2, className: 'tp-cog-body' }),
+      h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 28, fill: 'url(#tp-grad-brass)', stroke: brassDark, strokeWidth: 2, className: 'tp-cog-body' }),
+      // Riveted brass plate chest panels (Left/Right)
+      h('path', { d: 'M 50 32 A 26 28 0 0 0 24 60 A 26 28 0 0 0 50 88 Z', fill: 'none', stroke: brassDark, strokeWidth: 1, strokeDasharray: '2,4', opacity: 0.85 }),
+      h('path', { d: 'M 50 32 A 26 28 0 0 1 76 60 A 26 28 0 0 1 50 88 Z', fill: 'none', stroke: brassDark, strokeWidth: 1, strokeDasharray: '2,4', opacity: 0.85 }),
       // Brass plate chest seam
-      h('line', { x1: 50, y1: 38, x2: 50, y2: 84, stroke: brassDark, strokeWidth: 1, opacity: 0.5 }),
-      h('circle', { cx: 50, cy: 50, r: 1.2, fill: brassDark }),
-      h('circle', { cx: 50, cy: 60, r: 1.2, fill: brassDark }),
-      h('circle', { cx: 50, cy: 70, r: 1.2, fill: brassDark }),
-      // Pendulum — small brass weight visible behind chest seam, swings
-      // metronomically in idle (slow), faster in combo. Counterweighted
-      // by the gear ears so the silhouette stays balanced.
+      h('line', { x1: 50, y1: 32, x2: 50, y2: 88, stroke: brassDark, strokeWidth: 1.5, opacity: 0.6 }),
+      // Pendulum — small brass weight visible behind chest seam
       h('g', { className: 'tp-cog-pendulum', style: { transformOrigin: '50px 50px', transformBox: 'fill-box' } },
         h('line', { x1: 50, y1: 50, x2: 50, y2: 78, stroke: brassDark, strokeWidth: 0.8, opacity: 0.7 }),
-        h('circle', { cx: 50, cy: 78, r: 2.2, fill: brassLight, stroke: brassDark, strokeWidth: 0.8 })
+        h('circle', { cx: 50, cy: 78, r: 2.2, fill: 'url(#tp-grad-copper)', stroke: brassDark, strokeWidth: 0.8 })
+      ),
+      // Pressure Gauge on chest (replace simple rivets with interactive steam dial)
+      h('g', { className: 'tp-cog-gauge-panel' },
+        h('circle', { cx: 50, cy: 66, r: 7, fill: 'url(#tp-grad-dial)', stroke: brassDark, strokeWidth: 1 }),
+        // Ticks
+        h('line', { x1: 45, y1: 66, x2: 46.5, y2: 66, stroke: brassDark, strokeWidth: 0.6 }),
+        h('line', { x1: 55, y1: 66, x2: 53.5, y2: 66, stroke: brassDark, strokeWidth: 0.6 }),
+        h('line', { x1: 50, y1: 61, x2: 50, y2: 62.5, stroke: brassDark, strokeWidth: 0.6 }),
+        h('line', { x1: 50, y1: 71, x2: 50, y2: 69.5, stroke: brassDark, strokeWidth: 0.6 }),
+        // Shaking needle
+        h('line', { x1: 50, y1: 66, x2: 52, y2: 61.5, stroke: '#ef4444', strokeWidth: 1, strokeLinecap: 'round', className: 'tp-cog-needle' }),
+        h('circle', { cx: 50, cy: 66, r: 1.2, fill: brassDark })
       ),
       // Goggles — round brass-rim circles with lamp-glow lenses
       h('g', { className: 'tp-cog-eyes' },
-        h('circle', { cx: 40, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
-        h('circle', { cx: 60, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
-        h('circle', { cx: 40, cy: 52, r: 3, fill: '#0c0a09' }),
-        h('circle', { cx: 60, cy: 52, r: 3, fill: '#0c0a09' }),
+        h('circle', { cx: 40, cy: 52, r: 9, fill: 'url(#tp-grad-lens)', stroke: goggleRim, strokeWidth: 2.5 }),
+        h('circle', { cx: 60, cy: 52, r: 9, fill: 'url(#tp-grad-lens)', stroke: goggleRim, strokeWidth: 2.5 }),
+        h('circle', { cx: 40, cy: 52, r: 3, fill: '#0f172a' }),
+        h('circle', { cx: 60, cy: 52, r: 3, fill: '#0f172a' }),
         // Goggle highlight
         h('circle', { cx: 38, cy: 50, r: 1.5, fill: '#fff', opacity: 0.8 }),
         h('circle', { cx: 58, cy: 50, r: 1.5, fill: '#fff', opacity: 0.8 })
@@ -643,15 +741,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Vex the cyberpunk grid-face',
       style: { display: 'block', overflow: 'visible' }
     },
+      h('defs', null,
+        // Neon grid pattern for Vex background face plate
+        h('pattern', { id: 'tp-vex-grid', width: 8, height: 8, patternUnits: 'userSpaceOnUse' },
+          h('path', { d: 'M 8 0 L 0 0 0 8', fill: 'none', stroke: '#083344', strokeWidth: 0.5 })
+        ),
+        // Neon Linear Gradient
+        h('linearGradient', { id: 'tp-grad-vex-neon', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+          h('stop', { offset: '0%', stopColor: '#06b6d4' }),
+          h('stop', { offset: '50%', stopColor: '#a855f7' }),
+          h('stop', { offset: '100%', stopColor: '#ec4899' })
+        ),
+        // Visor glass gradient
+        h('linearGradient', { id: 'tp-grad-vex-visor', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+          h('stop', { offset: '0%', stopColor: '#0f172a' }),
+          h('stop', { offset: '100%', stopColor: '#1e1b4b' })
+        )
+      ),
+      // Floating Cyber Sparks / Particles (cyan & magenta)
+      h('g', { className: 'tp-vex-sparks' },
+        h('rect', { x: 18, y: 15, width: 2, height: 2, fill: '#ec4899', className: 'tp-vex-spark', style: { '--dx': '-12px', '--dy': '-10px', animationDelay: '0.2s' } }),
+        h('rect', { x: 82, y: 22, width: 1.5, height: 1.5, fill: '#06b6d4', className: 'tp-vex-spark', style: { '--dx': '15px', '--dy': '-12px', animationDelay: '0.8s' } }),
+        h('polygon', { points: '84,55 86,57 84,59 82,57', fill: '#ec4899', className: 'tp-vex-spark', style: { '--dx': '12px', '--dy': '14px', animationDelay: '1.4s' } }),
+        h('rect', { x: 12, y: 62, width: 2, height: 2, fill: '#06b6d4', className: 'tp-vex-spark', style: { '--dx': '-14px', '--dy': '10px', animationDelay: '2s' } })
+      ),
       // Hex/diamond face panel — gets hue-shift / clip distortion on attack
       h('polygon', {
         points: '50,8 86,30 86,70 50,92 14,70 14,30',
-        fill: bgColor, stroke: bodyColor, strokeWidth: 2,
+        fill: bgColor, stroke: 'url(#tp-grad-vex-neon)', strokeWidth: 2,
         className: 'tp-vex-panel',
         style: { transformOrigin: '50px 50px', transformBox: 'fill-box' }
       }),
-      // Outer rim glow ring — duplicate hex outline that pulses brighter
-      // on combo (the "rendering at full power" cue)
+      // Neon grid fill on the face panel
+      h('polygon', {
+        points: '50,10 84,31 84,69 50,90 16,69 16,31',
+        fill: 'url(#tp-vex-grid)', opacity: 0.8, pointerEvents: 'none'
+      }),
+      // Outer rim glow ring — duplicate hex outline that pulses brighter on combo
       h('polygon', {
         points: '50,4 90,28 90,72 50,96 10,72 10,28',
         fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0,
@@ -660,11 +786,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // Inner face panel (slightly smaller, neon outlined)
       h('polygon', {
         points: '50,16 78,34 78,66 50,84 22,66 22,34',
-        fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0.4
+        fill: 'none', stroke: 'url(#tp-grad-vex-neon)', strokeWidth: 0.8, opacity: 0.4
       }),
-      // Boot-strip dots — three small dots along the bottom edge that
-      // sequentially light up during win, evoke a power-on sequence;
-      // they fade in reverse during loss (power-down).
+      // PCB Circuit Tracks on face plate
+      h('g', { className: 'tp-vex-circuits', opacity: 0.35 },
+        h('path', { d: 'M 20 32 L 32 32 L 38 38', stroke: glowColor, strokeWidth: 0.8, fill: 'none' }),
+        h('circle', { cx: 38, cy: 38, r: 1.2, fill: glowColor }),
+        h('path', { d: 'M 80 32 L 68 32 L 62 38', stroke: glowColor, strokeWidth: 0.8, fill: 'none' }),
+        h('circle', { cx: 62, cy: 38, r: 1.2, fill: glowColor }),
+        h('path', { d: 'M 20 68 L 32 68 L 35 62', stroke: glowColor, strokeWidth: 0.8, fill: 'none' }),
+        h('circle', { cx: 35, cy: 62, r: 1.2, fill: glowColor }),
+        h('path', { d: 'M 80 68 L 68 68 L 65 62', stroke: glowColor, strokeWidth: 0.8, fill: 'none' }),
+        h('circle', { cx: 65, cy: 62, r: 1.2, fill: glowColor })
+      ),
+      // Boot-strip dots
       h('g', { className: 'tp-vex-boot' },
         h('rect', { x: 38, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-1' }),
         h('rect', { x: 48, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-2' }),
@@ -675,11 +810,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         x: 22, y: 32, width: 56, height: 1.5, fill: glowColor, opacity: 0.5,
         className: 'tp-vex-scanline'
       }),
-      // Eye — single horizontal LED bar (visor style)
+      // Visor Eye Frame
       h('g', { className: 'tp-vex-eyes' },
-        h('rect', { x: 28, y: 46, width: 44, height: 6, rx: 3, fill: bgColor, stroke: bodyColor, strokeWidth: 1.5 }),
-        h('rect', { x: 30, y: 47.5, width: 16, height: 3, fill: bodyColor, opacity: 0.95, className: 'tp-vex-eye-l' }),
-        h('rect', { x: 54, y: 47.5, width: 16, height: 3, fill: bodyColor, opacity: 0.95, className: 'tp-vex-eye-r' })
+        h('rect', { x: 28, y: 44, width: 44, height: 12, rx: 3, fill: 'url(#tp-grad-vex-visor)', stroke: 'url(#tp-grad-vex-neon)', strokeWidth: 1.5 }),
+        // Equalizer Visor Bars (Replacing simple static lines)
+        h('g', { className: 'tp-vex-eq' },
+          h('rect', { x: 34, y: 46, width: 4, height: 8, rx: 1, fill: bodyColor, className: 'tp-vex-eq-1', style: { transformOrigin: '36px 54px' } }),
+          h('rect', { x: 42, y: 46, width: 4, height: 8, rx: 1, fill: '#ec4899', className: 'tp-vex-eq-2', style: { transformOrigin: '44px 54px' } }),
+          h('rect', { x: 50, y: 46, width: 4, height: 8, rx: 1, fill: glowColor, className: 'tp-vex-eq-3', style: { transformOrigin: '52px 54px' } }),
+          h('rect', { x: 58, y: 46, width: 4, height: 8, rx: 1, fill: '#ec4899', className: 'tp-vex-eq-4', style: { transformOrigin: '60px 54px' } }),
+          h('rect', { x: 66, y: 46, width: 4, height: 8, rx: 1, fill: bodyColor, className: 'tp-vex-eq-5', style: { transformOrigin: '68px 54px' } })
+        )
       ),
       // Mouth grid (3x3 dot pattern)
       h('g', { className: 'tp-vex-mouth' },
@@ -687,7 +828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           return [0, 1, 2].map(function(col) {
             return h('circle', {
               key: 'd-' + row + '-' + col,
-              cx: 42 + col * 8, cy: 64 + row * 5, r: 1.5,
+              cx: 42 + col * 8, cy: 65 + row * 5, r: 1.5,
               fill: bodyColor, opacity: 0.6 + (row * 0.15)
             });
           });
@@ -699,8 +840,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       h('polyline', { points: '14,64 14,70 20,72', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
       h('polyline', { points: '86,64 86,70 80,72', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
       // Alert overlay (red — only shows in incoming state via CSS opacity)
-      h('rect', {
-        x: 14, y: 8, width: 72, height: 84, fill: alertColor, opacity: 0,
+      h('polygon', {
+        points: '50,8 86,30 86,70 50,92 14,70 14,30',
+        fill: alertColor, opacity: 0,
         className: 'tp-vex-alert'
       })
     );
@@ -722,9 +864,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Mochi the kawaii kitten',
       style: { display: 'block', overflow: 'visible' }
     },
-      // Floating sparkles (animated only on combo) + heart particles for
-      // combo. Hearts feel right for Mochi's personality — they pop in
-      // sync with the sparkles for a "kawaii burst" effect.
+      h('defs', null,
+        // Head creamy pink radial gradient
+        h('radialGradient', { id: 'tp-grad-mochi-body', cx: '45%', cy: '40%', r: '60%' },
+          h('stop', { offset: '0%', stopColor: '#fff1f2' }),
+          h('stop', { offset: '70%', stopColor: bodyColor }),
+          h('stop', { offset: '100%', stopColor: '#f472b6' })
+        ),
+        // Inner ear linear gradient
+        h('linearGradient', { id: 'tp-grad-mochi-ear', x1: '0%', y1: '100%', x2: '100%', y2: '0%' },
+          h('stop', { offset: '0%', stopColor: '#fbcfe8' }),
+          h('stop', { offset: '100%', stopColor: '#fda4af' })
+        ),
+        // Gold bell radial gradient
+        h('radialGradient', { id: 'tp-grad-mochi-bell', cx: '35%', cy: '35%', r: '65%' },
+          h('stop', { offset: '0%', stopColor: '#fef08a' }),
+          h('stop', { offset: '50%', stopColor: '#facc15' }),
+          h('stop', { offset: '100%', stopColor: '#b45309' })
+        ),
+        // Cheek radial gradient
+        h('radialGradient', { id: 'tp-grad-mochi-cheek', cx: '50%', cy: '50%', r: '50%' },
+          h('stop', { offset: '0%', stopColor: '#fbcfe8', stopOpacity: 0.95 }),
+          h('stop', { offset: '100%', stopColor: '#fbcfe8', stopOpacity: 0 })
+        )
+      ),
+      // Floating sparkles (animated only on combo) + heart particles for combo
       h('g', { className: 'tp-mochi-sparkles' },
         h('text', { x: 18, y: 22, fill: bowColor, fontSize: 8, opacity: 0 }, '✦'),
         h('text', { x: 78, y: 28, fill: bowColor, fontSize: 6, opacity: 0 }, '✦'),
@@ -736,8 +900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         h('text', { x: 86, y: 44, fill: bowColor, fontSize: 8, opacity: 0 }, '♡'),
         h('text', { x: 50, y: 14, fill: bowColor, fontSize: 7, opacity: 0 }, '♡')
       ),
-      // Tail — curls behind the head, sways in idle. Drawn first so the
-      // head occludes its connection to the body.
+      // Tail — curls behind the head, sways in idle.
       h('path', {
         d: 'M 78 78 Q 88 76 92 64 Q 88 70 84 74',
         fill: 'none', stroke: trimColor, strokeWidth: 3, strokeLinecap: 'round',
@@ -745,41 +908,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         style: { transformOrigin: '78px 78px', transformBox: 'fill-box' }
       }),
       // Left ear (triangle with pink inner)
-      h('polygon', { points: '24,40 28,16 42,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
-      h('polygon', { points: '28,32 30,22 38,30', fill: '#fbcfe8' }),
+      h('g', { className: 'tp-mochi-ear-l', style: { transformOrigin: '24px 40px', transformBox: 'fill-box' } },
+        h('polygon', { points: '24,40 28,16 42,32', fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.5 }),
+        h('polygon', { points: '28,32 30,22 38,30', fill: 'url(#tp-grad-mochi-ear)' })
+      ),
       // Right ear
-      h('polygon', { points: '76,40 72,16 58,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
-      h('polygon', { points: '72,32 70,22 62,30', fill: '#fbcfe8' }),
+      h('g', { className: 'tp-mochi-ear-r', style: { transformOrigin: '76px 40px', transformBox: 'fill-box' } },
+        h('polygon', { points: '76,40 72,16 58,32', fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.5 }),
+        h('polygon', { points: '72,32 70,22 62,30', fill: 'url(#tp-grad-mochi-ear)' })
+      ),
       // Head — round
-      h('circle', { cx: 50, cy: 56, r: 30, fill: bodyColor, stroke: trimColor, strokeWidth: 1.8, className: 'tp-mochi-head' }),
+      h('circle', { cx: 50, cy: 56, r: 30, fill: 'url(#tp-grad-mochi-body)', stroke: trimColor, strokeWidth: 1.8, className: 'tp-mochi-head' }),
       // Cheeks
-      h('circle', { cx: 32, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
-      h('circle', { cx: 68, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
-      // Eyes — big sparkly. Each eye wrapped in its own class so a CSS
-      // scaleY blink animation can squish them shut occasionally
-      // (parity with Pip + Vex). Highlights stay outside the blinking
-      // group so the white spec doesn't disappear during the blink.
+      h('circle', { cx: 32, cy: 64, r: 5, fill: 'url(#tp-grad-mochi-cheek)' }),
+      h('circle', { cx: 68, cy: 64, r: 5, fill: 'url(#tp-grad-mochi-cheek)' }),
+      // Eyes — big sparkly with refined specular highlights
       h('g', { className: 'tp-mochi-eyes' },
         h('ellipse', { cx: 40, cy: 54, rx: 4.5, ry: 6, fill: eyeColor, className: 'tp-mochi-eye-l', style: { transformOrigin: '40px 54px', transformBox: 'fill-box' } }),
         h('ellipse', { cx: 60, cy: 54, rx: 4.5, ry: 6, fill: eyeColor, className: 'tp-mochi-eye-r', style: { transformOrigin: '60px 54px', transformBox: 'fill-box' } }),
-        // Eye highlights
+        // Shiny anime-style reflections
         h('circle', { cx: 41.5, cy: 51, r: 1.5, fill: '#fff' }),
         h('circle', { cx: 61.5, cy: 51, r: 1.5, fill: '#fff' }),
-        h('circle', { cx: 39, cy: 56, r: 0.8, fill: '#fff' }),
-        h('circle', { cx: 59, cy: 56, r: 0.8, fill: '#fff' })
+        h('circle', { cx: 38.5, cy: 56.5, r: 0.8, fill: '#fff' }),
+        h('circle', { cx: 58.5, cy: 56.5, r: 0.8, fill: '#fff' }),
+        h('circle', { cx: 42, cy: 55, r: 0.5, fill: '#fff', opacity: 0.7 }),
+        h('circle', { cx: 62, cy: 55, r: 0.5, fill: '#fff', opacity: 0.7 })
       ),
-      // Whiskers — three thin lines per side, fanning slightly. Adds
-      // unmistakable kitten silhouette without clutter. Behind cheeks.
-      h('g', { className: 'tp-mochi-whiskers', stroke: '#475569', strokeWidth: 0.6, strokeLinecap: 'round', opacity: 0.7 },
-        h('line', { x1: 22, y1: 60, x2: 32, y2: 62 }),
-        h('line', { x1: 22, y1: 64, x2: 32, y2: 64 }),
-        h('line', { x1: 22, y1: 68, x2: 32, y2: 66 }),
-        h('line', { x1: 78, y1: 60, x2: 68, y2: 62 }),
-        h('line', { x1: 78, y1: 64, x2: 68, y2: 64 }),
-        h('line', { x1: 78, y1: 68, x2: 68, y2: 66 })
+      // Whiskers — curved paths for a organic soft kawaii look
+      h('g', { className: 'tp-mochi-whiskers', stroke: '#475569', strokeWidth: 0.7, strokeLinecap: 'round', fill: 'none', opacity: 0.75 },
+        h('path', { d: 'M 22 59 Q 28 61 32 62' }),
+        h('path', { d: 'M 21 63 Q 28 64 32 64' }),
+        h('path', { d: 'M 22 67 Q 28 66 31 66' }),
+        h('path', { d: 'M 78 59 Q 72 61 68 62' }),
+        h('path', { d: 'M 79 63 Q 72 64 68 64' }),
+        h('path', { d: 'M 78 67 Q 72 66 69 66' })
       ),
       // Tiny mouth — happy curve
-      h('path', { d: 'M 47 66 Q 50 70 53 66', stroke: eyeColor, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', className: 'tp-mochi-mouth' }),
+      h('path', { d: 'M 47 66 Q 50 69 53 66', stroke: eyeColor, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', className: 'tp-mochi-mouth' }),
       // Tiny nose
       h('path', { d: 'M 49 62 L 51 62 L 50 64 Z', fill: bowColor }),
       // Bow on left ear — wiggles on combo + win via CSS
@@ -787,6 +952,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         h('circle', { cx: 0, cy: 0, r: 4, fill: bowColor }),
         h('polygon', { points: '-7,-4 -2,0 -7,4', fill: bowColor }),
         h('polygon', { points: '7,-4 2,0 7,4', fill: bowColor })
+      ),
+      // Collar with golden bell
+      h('g', { className: 'tp-mochi-collar-group' },
+        // Collar ribbon
+        h('rect', { x: 38, y: 73, width: 24, height: 3, fill: '#ef4444', rx: 1.5 }),
+        // Shiny golden bell
+        h('g', { className: 'tp-mochi-bell', style: { transformOrigin: '50px 74.5px', transformBox: 'fill-box' } },
+          h('circle', { cx: 50, cy: 74.5, r: 4, fill: 'url(#tp-grad-mochi-bell)', stroke: '#b45309', strokeWidth: 0.6 }),
+          h('circle', { cx: 50, cy: 76, r: 1, fill: '#78350f' })
+        )
+      ),
+      // Tiny cute paws peeking up at the bottom
+      h('g', { className: 'tp-mochi-paws' },
+        h('ellipse', { cx: 40, cy: 82, rx: 4.5, ry: 3.5, fill: '#fff', stroke: trimColor, strokeWidth: 1 }),
+        h('ellipse', { cx: 60, cy: 82, rx: 4.5, ry: 3.5, fill: '#fff', stroke: trimColor, strokeWidth: 1 }),
+        // Claw details
+        h('circle', { cx: 38, cy: 80, r: 0.6, fill: trimColor }),
+        h('circle', { cx: 40, cy: 79.5, r: 0.6, fill: trimColor }),
+        h('circle', { cx: 42, cy: 80, r: 0.6, fill: trimColor }),
+        h('circle', { cx: 58, cy: 80, r: 0.6, fill: trimColor }),
+        h('circle', { cx: 60, cy: 79.5, r: 0.6, fill: trimColor }),
+        h('circle', { cx: 62, cy: 80, r: 0.6, fill: trimColor })
       ),
       // Tear (only visible in loss state via CSS)
       h('ellipse', { cx: 60, cy: 64, rx: 1.5, ry: 3, fill: '#7dd3fc', opacity: 0, className: 'tp-mochi-tear' })
@@ -849,6 +1036,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Inko the color-changing cuttlefish',
       style: { display: 'block', overflow: 'visible' }
     },
+      h('defs', null,
+        // Linear gradient for mantle bioluminescence
+        h('linearGradient', { id: 'tp-grad-inko-mantle', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+          h('stop', { offset: '0%', stopColor: '#22d3ee' }),
+          h('stop', { offset: '50%', stopColor: bodyColor }),
+          h('stop', { offset: '100%', stopColor: '#4f46e5' })
+        ),
+        // Translucent iridescent fin gradient
+        h('linearGradient', { id: 'tp-grad-inko-fin', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+          h('stop', { offset: '0%', stopColor: '#22d3ee', stopOpacity: 0.7 }),
+          h('stop', { offset: '50%', stopColor: '#a5f3fc', stopOpacity: 0.4 }),
+          h('stop', { offset: '100%', stopColor: '#818cf8', stopOpacity: 0.6 })
+        ),
+        // Chromatophore pulse radial gradient
+        h('radialGradient', { id: 'tp-grad-inko-chrom', cx: '45%', cy: '45%', r: '55%' },
+          h('stop', { offset: '0%', stopColor: '#a5f3fc' }),
+          h('stop', { offset: '55%', stopColor: '#22d3ee' }),
+          h('stop', { offset: '100%', stopColor: '#0891b2' })
+        ),
+        // Glow shadow filter for W-shaped pupil bioluminescence
+        h('filter', { id: 'tp-glow-inko-pupil' },
+          h('feGaussianBlur', { stdDeviation: '0.8', result: 'blur' }),
+          h('feComposite', { in: 'SourceGraphic', in2: 'blur', operator: 'over' })
+        )
+      ),
       // Ink cloud — only visible during attack-out / loss states via CSS
       h('g', { className: 'tp-inko-ink' },
         h('circle', { cx: 78, cy: 50, r: 12, fill: inkColor, opacity: 0 }),
@@ -861,35 +1073,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         h('circle', { cx: 16, cy: 22, r: 1.2, fill: '#f0fdfa', opacity: 0, stroke: '#67e8f9', strokeWidth: 0.4 }),
         h('circle', { cx: 12, cy: 14, r: 0.9, fill: '#f0fdfa', opacity: 0, stroke: '#67e8f9', strokeWidth: 0.4 })
       ),
-      // Side fins — undulating membranes that run along the mantle edges.
-      // Two soft wavy paths, one per side, with low opacity so they
-      // read as gauzy / translucent.
+      // Side fins — undulating membranes that run along the mantle edges
       h('g', { className: 'tp-inko-fins' },
         h('path', {
           d: 'M 22 28 Q 14 36 16 50 Q 18 64 22 72 Q 24 60 26 50 Q 24 38 22 28 Z',
-          fill: finColor, opacity: 0.55, stroke: mantleEdge, strokeWidth: 0.6
+          fill: 'url(#tp-grad-inko-fin)', stroke: mantleEdge, strokeWidth: 0.6
         }),
         h('path', {
           d: 'M 78 28 Q 86 36 84 50 Q 82 64 78 72 Q 76 60 74 50 Q 76 38 78 28 Z',
-          fill: finColor, opacity: 0.55, stroke: mantleEdge, strokeWidth: 0.6
+          fill: 'url(#tp-grad-inko-fin)', stroke: mantleEdge, strokeWidth: 0.6
         })
       ),
-      // Mantle (main body) — torpedo / shield shape, wider at top and
-      // tapering toward the arms. Cuttlefish silhouette is unmistakably
-      // dome-on-top, narrow-at-base.
+      // Mantle (main body) — torpedo / shield shape
       h('path', {
         d: 'M 28 30 Q 50 14 72 30 Q 76 50 70 68 L 30 68 Q 24 50 28 30 Z',
-        fill: bodyColor, stroke: mantleEdge, strokeWidth: 1.5, className: 'tp-inko-mantle'
+        fill: 'url(#tp-grad-inko-mantle)', stroke: mantleEdge, strokeWidth: 1.5, className: 'tp-inko-mantle'
       }),
       // Underbelly shadow stripe (subtle depth)
       h('path', {
         d: 'M 32 60 Q 50 66 68 60 L 68 68 L 32 68 Z',
         fill: bodyDeep, opacity: 0.25
       }),
-      // Zebra display — vertical stripes that real cuttlefish flash for
-      // territorial display + courtship. Mostly hidden (opacity 0); CSS
-      // briefly fades them in during the signature window. Clipped to the
-      // mantle path via parent group structure so they stay inside the body.
+      // Bioluminescent glowing wave outlines along the mantle edges
+      h('path', {
+        d: 'M 32 32 Q 50 24 68 32 M 32 46 Q 50 38 68 46 M 34 60 Q 50 52 66 60',
+        fill: 'none', stroke: '#22d3ee', strokeWidth: 0.8, opacity: 0.5,
+        className: 'tp-inko-bio-wave', strokeDasharray: '3,3'
+      }),
+      // Zebra display
       h('g', { className: 'tp-inko-zebra', opacity: 0 },
         h('path', { d: 'M 36 22 L 36 60', stroke: bodyDeep, strokeWidth: 1.4, opacity: 0.5 }),
         h('path', { d: 'M 44 18 L 44 62', stroke: bodyDeep, strokeWidth: 1.6, opacity: 0.55 }),
@@ -897,90 +1108,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         h('path', { d: 'M 56 18 L 56 62', stroke: bodyDeep, strokeWidth: 1.6, opacity: 0.55 }),
         h('path', { d: 'M 64 22 L 64 60', stroke: bodyDeep, strokeWidth: 1.4, opacity: 0.5 })
       ),
-      // Bioluminescent rim glow — concentric outline of the mantle that
-      // brightens during win/wow states (and stays soft otherwise). Fills
-      // 'none' so it reads purely as a halo around the silhouette.
+      // Bioluminescent rim glow
       h('path', {
         d: 'M 28 30 Q 50 14 72 30 Q 76 50 70 68 L 30 68 Q 24 50 28 30 Z',
         fill: 'none', stroke: '#67e8f9', strokeWidth: 0.8, opacity: 0,
         className: 'tp-inko-rim'
       }),
-      // Chromatophore dots — color-cycling pigment cells. Large + satellite
-      // sub-classes let the small dots pulse half-beat off for richer
-      // skin texture. Each gets its own animation-delay (inline) so the
-      // color wave travels across the body instead of strobing.
+      // Chromatophore dots — color-cycling pigment cells.
       h('g', { className: 'tp-inko-chromatophores' },
         chromatophores.map(function(c, i) {
           return h('circle', {
             key: 'chrom-' + i,
             cx: c.cx, cy: c.cy, r: c.r,
-            fill: '#22d3ee',
-            opacity: c.small ? 0.5 : 0.7,
+            fill: 'url(#tp-grad-inko-chrom)',
+            opacity: c.small ? 0.6 : 0.8,
             className: 'tp-inko-chrom' + (c.small ? ' tp-inko-chrom-sat' : ''),
             style: { animationDelay: c.d }
           });
         })
       ),
-      // Eyes — outer ring + W-shaped pupil (the real cuttlefish trick).
-      // The W is drawn as a polyline path, sitting inside a sclera oval.
-      // Each pupil sits inside its own group (tp-inko-pupil-l/r) so a
-      // small CSS translate can simulate eye-tracking — used during
-      // combo (alert) and danger (darting) states.
+      // Eyes — outer ring + W-shaped pupil
       h('g', { className: 'tp-inko-eyes' },
         // Left eye sclera
         h('ellipse', { cx: 40, cy: 40, rx: 5.5, ry: 4.5, fill: eyeWhite, stroke: eyeRing, strokeWidth: 1 }),
-        // Left W-pupil — wrapped for movement
+        // Left W-pupil
         h('g', { className: 'tp-inko-pupil tp-inko-pupil-l', style: { transformOrigin: '40px 40px', transformBox: 'fill-box' } },
           h('path', {
             d: 'M 36 40 L 38 42.5 L 40 39.5 L 42 42.5 L 44 40',
-            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
+            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round',
+            filter: 'url(#tp-glow-inko-pupil)'
           })
         ),
-        // Eye highlight — small white spec, suggests wetness
+        // Eye highlight
         h('circle', { cx: 38, cy: 38, r: 0.8, fill: '#fff', opacity: 0.85 }),
         // Right eye sclera
         h('ellipse', { cx: 60, cy: 40, rx: 5.5, ry: 4.5, fill: eyeWhite, stroke: eyeRing, strokeWidth: 1 }),
-        // Right W-pupil — wrapped for movement
+        // Right W-pupil
         h('g', { className: 'tp-inko-pupil tp-inko-pupil-r', style: { transformOrigin: '60px 40px', transformBox: 'fill-box' } },
           h('path', {
             d: 'M 56 40 L 58 42.5 L 60 39.5 L 62 42.5 L 64 40',
-            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
+            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round',
+            filter: 'url(#tp-glow-inko-pupil)'
           })
         ),
         h('circle', { cx: 58, cy: 38, r: 0.8, fill: '#fff', opacity: 0.85 })
       ),
-      // Eight short arms + two long feeding tentacles. Each arm carries its
-      // own className (tp-inko-arm-0..9) so a stagger-delayed CSS sway
-      // animation makes the row read as a slow underwater wave rather than
-      // a frozen fan. Origin pinned at the mantle base so the arm-tip
-      // travels while the connection point stays put.
+      // Eight short arms + two long feeding tentacles
       h('g', { className: 'tp-inko-arms' },
-        // Long feeding tentacles (center pair) — slowest, deepest sway.
-        // Three small sucker dots on each tentacle for cuttlefish
-        // anatomical authenticity (real feeding tentacles have suction
-        // pads along their inner edge).
-        h('path', { d: 'M 46 68 Q 44 80 42 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(0), style: { transformOrigin: '46px 68px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 54 68 Q 56 80 58 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(1), style: { transformOrigin: '54px 68px', transformBox: 'fill-box' } }),
-        // Sucker dots — anchored to the body so they stay put while the
-        // arm-paths sway around them. Subtle, easy to miss at small sizes,
-        // visible at 64px+.
-        h('circle', { cx: 45, cy: 76, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
-        h('circle', { cx: 44, cy: 82, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
-        h('circle', { cx: 43, cy: 88, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
-        h('circle', { cx: 55, cy: 76, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
-        h('circle', { cx: 56, cy: 82, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
-        h('circle', { cx: 57, cy: 88, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
-        // Short arms — 4 per side, fanning outward
-        h('path', { d: 'M 38 68 Q 34 76 30 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(2), style: { transformOrigin: '38px 68px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 34 68 Q 28 74 22 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(3), style: { transformOrigin: '34px 68px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 32 66 Q 24 70 18 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(4), style: { transformOrigin: '32px 66px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 30 64 Q 22 64 14 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(5), style: { transformOrigin: '30px 64px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 62 68 Q 66 76 70 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(6), style: { transformOrigin: '62px 68px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 66 68 Q 72 74 78 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(7), style: { transformOrigin: '66px 68px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 68 66 Q 76 70 82 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(8), style: { transformOrigin: '68px 66px', transformBox: 'fill-box' } }),
-        h('path', { d: 'M 70 64 Q 78 64 86 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(9), style: { transformOrigin: '70px 64px', transformBox: 'fill-box' } })
+        // Long feeding tentacles (center pair)
+        h('path', { d: 'M 46 68 Q 44 80 42 92', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(0), style: { transformOrigin: '46px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 54 68 Q 56 80 58 92', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(1), style: { transformOrigin: '54px 68px', transformBox: 'fill-box' } }),
+        // Sucker dots (Suction Cups on long feeding tentacles)
+        h('circle', { cx: 45, cy: 76, r: 1, fill: '#e0f2fe', stroke: bodyDeep, strokeWidth: 0.4, opacity: 0.85 }),
+        h('circle', { cx: 44, cy: 82, r: 1, fill: '#e0f2fe', stroke: bodyDeep, strokeWidth: 0.4, opacity: 0.85 }),
+        h('circle', { cx: 43, cy: 88, r: 1, fill: '#e0f2fe', stroke: bodyDeep, strokeWidth: 0.4, opacity: 0.85 }),
+        h('circle', { cx: 55, cy: 76, r: 1, fill: '#e0f2fe', stroke: bodyDeep, strokeWidth: 0.4, opacity: 0.85 }),
+        h('circle', { cx: 56, cy: 82, r: 1, fill: '#e0f2fe', stroke: bodyDeep, strokeWidth: 0.4, opacity: 0.85 }),
+        h('circle', { cx: 57, cy: 88, r: 1, fill: '#e0f2fe', stroke: bodyDeep, strokeWidth: 0.4, opacity: 0.85 }),
+        // Short arms — 4 per side, fanning outward, with tiny suction cup details
+        h('path', { d: 'M 38 68 Q 34 76 30 84', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(2), style: { transformOrigin: '38px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 34 68 Q 28 74 22 80', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(3), style: { transformOrigin: '34px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 32 66 Q 24 70 18 74', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(4), style: { transformOrigin: '32px 66px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 30 64 Q 22 64 14 64', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(5), style: { transformOrigin: '30px 64px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 62 68 Q 66 76 70 84', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(6), style: { transformOrigin: '62px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 66 68 Q 72 74 78 80', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(7), style: { transformOrigin: '66px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 68 66 Q 76 70 82 74', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(8), style: { transformOrigin: '68px 66px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 70 64 Q 78 64 86 64', fill: 'none', stroke: 'url(#tp-grad-inko-mantle)', strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(9), style: { transformOrigin: '70px 64px', transformBox: 'fill-box' } })
       ),
-      // Tiny mantle highlight — wet sheen on the top of the dome
+      // Tiny mantle highlight
       h('path', {
         d: 'M 36 22 Q 50 16 64 22',
         fill: 'none', stroke: '#f0fdfa', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.6
@@ -2838,6 +3033,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-pip-wing-flap-r { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-8deg); } }',
       '@keyframes tp-pip-wing-sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); } }',
       '@keyframes tp-pip-wing-sway-r { 0%, 100% { transform: rotate(1deg); } 50% { transform: rotate(-2deg); } }',
+      // Pip leg animations
+      '@keyframes tp-pip-leg-walk-l { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2px) rotate(-15deg); } }',
+      '@keyframes tp-pip-leg-walk-r { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2px) rotate(15deg); } }',
+      '@keyframes tp-pip-legs-jump { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-5px) scaleY(0.7); } }',
+      // Pip sprout shiver during danger
+      '@keyframes tp-pip-sprout-shiver { 0%, 100% { transform: rotate(0deg) scale(0.95); } 25% { transform: rotate(-8deg) scale(0.9); } 75% { transform: rotate(8deg) scale(0.9); } }',
+      // Cogsworth mechanical wings flap
+      '@keyframes tp-cog-wing-flap-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-22deg); } }',
+      '@keyframes tp-cog-wing-flap-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(22deg); } }',
+      // Cogsworth needle violent shake
+      '@keyframes tp-cog-needle-violent { 0%, 100% { transform: rotate(15deg); } 50% { transform: rotate(65deg); } }',
+      // Cogsworth violent steam release
+      '@keyframes tp-cog-steam-violent { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 50% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-12px) scale(1.6); } }',
+      // Vex equalizer visor animations
+      '@keyframes tp-vex-eq-idle { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1.3); } }',
+      '@keyframes tp-vex-eq-combo { 0%, 100% { transform: scaleY(0.2); } 50% { transform: scaleY(1.8); } }',
+      '@keyframes tp-vex-eq-danger { 0%, 100% { transform: scaleY(0.3); } 20% { transform: scaleY(1.4); } 40% { transform: scaleY(0.1); } 60% { transform: scaleY(1.5); } 80% { transform: scaleY(0.2); } }',
+      // Mochi paw cheer
+      '@keyframes tp-mochi-paws-raise { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-5px) scale(1.1); } }',
+      // Mochi ear twitch
+      '@keyframes tp-mochi-ear-twitch-l { 0%, 90%, 100% { transform: rotate(0deg); } 93% { transform: rotate(-10deg); } 96% { transform: rotate(5deg); } }',
+      '@keyframes tp-mochi-ear-twitch-r { 0%, 92%, 100% { transform: rotate(0deg); } 95% { transform: rotate(10deg); } 98% { transform: rotate(-5deg); } }',
+      // Inko bio-wave pulse danger
+      '@keyframes tp-inko-bio-pulse-danger { 0%, 100% { stroke: #fb7185; opacity: 0.4; } 50% { stroke: #dc2626; opacity: 1; } }',
       // Pip cheek puff — tiny scale on cheek tufts during danger
       '@keyframes tp-pip-cheek-puff { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.6); } }',
       // Pip beak chirp — open vertically during attack-out
@@ -2879,6 +3098,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // Whiskers twitch on combo
       '@keyframes tp-mochi-whiskers-twitch { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-whiskers { animation: tp-mochi-whiskers-twitch 0.4s ease-in-out infinite; transform-origin: 50px 64px; }',
+      // Sprout sway for Pip
+      '@keyframes tp-pip-sprout-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }',
+      '.tp-mascot-pip .tp-pip-sprout { animation: tp-pip-sprout-sway 3s ease-in-out infinite; }',
+      // Bowtie wiggle for Pip
+      '@keyframes tp-pip-bowtie-wiggle { 0%, 100% { transform: rotate(-8deg) scale(1); } 50% { transform: rotate(8deg) scale(1.1); } }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-bowtie { animation: tp-pip-bowtie-wiggle 0.4s ease-in-out infinite; }',
+      // Needle shake for Cogsworth
+      '@keyframes tp-cog-needle-shake { 0%, 100% { transform: rotate(0deg); } 20% { transform: rotate(-10deg); } 40% { transform: rotate(15deg); } 60% { transform: rotate(-15deg); } 80% { transform: rotate(10deg); } }',
+      '.tp-mascot-cogsworth .tp-cog-needle { animation: tp-cog-needle-shake 0.8s ease-in-out infinite; transform-origin: 50px 66px; transform-box: fill-box; }',
+      // Spark drift for Vex
+      '@keyframes tp-vex-spark-drift { 0% { transform: translate(0, 0) scale(0.8); opacity: 0; } 20% { opacity: 0.8; } 80% { opacity: 0.8; } 100% { transform: translate(var(--dx, 6px), var(--dy, -8px)) scale(1.2); opacity: 0; } }',
+      '.tp-mascot-vex .tp-vex-spark { animation: tp-vex-spark-drift 2.5s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      // Bell swing for Mochi
+      '@keyframes tp-mochi-bell-swing { 0%, 100% { transform: rotate(-15deg); } 50% { transform: rotate(15deg); } }',
+      '.tp-mascot-mochi .tp-mochi-bell { animation: tp-mochi-bell-swing 2s ease-in-out infinite; transform-origin: 50px 74.5px; transform-box: fill-box; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-bell { animation: tp-mochi-bell-swing 0.6s ease-in-out infinite; transform-origin: 50px 74.5px; transform-box: fill-box; }',
+      // Paw pat for Mochi
+      '@keyframes tp-mochi-paws-pat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-paws { animation: tp-mochi-paws-pat 0.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      // Biowave pulse for Inko
+      '@keyframes tp-inko-bio-pulse { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }',
+      '.tp-mascot-inko .tp-inko-bio-wave { animation: tp-inko-bio-pulse 3s linear infinite; }',
       // ─── Per-mascot signature moves ────────────────────────────────────
       // Each mascot has one unique gesture that fires every ~14-18s in idle.
       // Identifiable by silhouette alone — adds character depth without
@@ -3201,8 +3442,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-cogsworth .tp-cog-pendulum { animation: tp-cog-pendulum 2.4s ease-in-out infinite; }',
       // Mochi idle tail sway
       '.tp-mascot-mochi .tp-mochi-tail { animation: tp-mochi-tail-sway 2.8s ease-in-out infinite; }',
-      // Vex eye-bar idle pulse — slow LED-readout heartbeat
-      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { animation: tp-vex-eye-blink 4.5s ease-in-out infinite, tp-vex-eye-pulse 1.6s ease-in-out infinite; }',
+      // Mochi idle ears twitch occasionally
+      '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-ear-l { animation: tp-mochi-ear-twitch-l 15s ease-in-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-ear-r { animation: tp-mochi-ear-twitch-r 15s ease-in-out infinite; }',
+      // Vex equalizer visor idle animations
+      '.tp-mascot-vex .tp-vex-eq-1 { animation: tp-vex-eq-idle 1.2s ease-in-out infinite; }',
+      '.tp-mascot-vex .tp-vex-eq-2 { animation: tp-vex-eq-idle 0.9s ease-in-out infinite 0.2s; }',
+      '.tp-mascot-vex .tp-vex-eq-3 { animation: tp-vex-eq-idle 1.4s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex .tp-vex-eq-4 { animation: tp-vex-eq-idle 1.0s ease-in-out infinite 0.3s; }',
+      '.tp-mascot-vex .tp-vex-eq-5 { animation: tp-vex-eq-idle 1.3s ease-in-out infinite 0.15s; }',
       // Cogsworth chest-rivets glow softly in alternating phase
       '.tp-mascot-cogsworth .tp-cog-body ~ circle:nth-of-type(1) { animation: tp-cog-rivet-glow 3s ease-in-out infinite; }',
       // Inko center tentacles fidget every ~10s in idle
@@ -3217,7 +3465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-sparkles text:first-child { animation: tp-mochi-sparkle-drift 8s ease-out infinite; }',
       '.tp-mascot-pip.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-pip-twitch 9s ease-in-out infinite; }',
       '.tp-mascot-vex .tp-vex-scanline { animation: tp-vex-scan 2.4s linear infinite; }',
-      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { transform-origin: center; transform-box: fill-box; animation: tp-vex-eye-blink 4.5s ease-in-out infinite; }',
+      // Vex visor scan line movement
       // Inko idle — chromatophore wash + fin undulation + arm sway + mantle
       // breathing + satellite half-beat pulse. Each dot uses its own inline
       // animationDelay so the color wave moves left-to-right; the long
@@ -3243,16 +3491,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-combo { animation: tp-mascot-pop 0.6s ease-out 1, tp-mascot-bob 3.2s ease-in-out infinite 0.6s; }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-sparkles text { animation: tp-mochi-sparkle 0.8s ease-out forwards; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-steam circle { animation: tp-cog-steam 0.9s ease-out forwards; }',
-      // Pip combo — wings flap fast, body pulses
+      // Pip combo — wings flap fast, body pulses, legs run
       '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-l { animation: tp-pip-wing-flap 0.32s ease-in-out infinite; }',
       '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.32s ease-in-out infinite; }',
       '.tp-mascot-pip.tp-mascot-combo .tp-pip-body { animation: tp-pip-body-pulse 0.32s ease-in-out infinite; }',
-      // Cogsworth combo — pendulum swings faster, gears spin double-time
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-leg-l { animation: tp-pip-leg-walk-l 0.28s linear infinite; }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-leg-r { animation: tp-pip-leg-walk-r 0.28s linear infinite 0.14s; }',
+      // Cogsworth combo — pendulum swings faster, gears spin double-time, wings flap
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-pendulum { animation-duration: 0.8s; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-l { animation-duration: 2s; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-r { animation-duration: 2.4s; }',
-      // Vex combo — outer rim pulses neon
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-wing-l { animation: tp-cog-wing-flap-l 0.5s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-wing-r { animation: tp-cog-wing-flap-r 0.5s ease-in-out infinite; }',
+      // Vex combo — outer rim pulses neon, equalizer bounces rapidly
       '.tp-mascot-vex.tp-mascot-combo .tp-vex-rim { animation: tp-vex-rim-pulse 0.8s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-1 { animation: tp-vex-eq-combo 0.3s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-2 { animation: tp-vex-eq-combo 0.25s ease-in-out infinite 0.05s; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-3 { animation: tp-vex-eq-combo 0.28s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-4 { animation: tp-vex-eq-combo 0.22s ease-in-out infinite 0.08s; }',
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-eq-5 { animation: tp-vex-eq-combo 0.27s ease-in-out infinite 0.12s; }',
       // Mochi combo — heart particles + faster tail wag
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text { animation: tp-mochi-heart-pop 1.1s ease-out infinite; }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text:nth-child(2) { animation-delay: 0.35s; }',
@@ -3270,6 +3527,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle:nth-child(3) { animation-delay: 0.5s; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-pupil { animation: tp-inko-pupil-dart 0.8s ease-in-out infinite; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-arm-2, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-3, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-4, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-5, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-6, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-7, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-8, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-9 { animation: tp-inko-arm-flick 0.7s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-fins path { animation-duration: 0.8s; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-bio-wave { animation-duration: 1.0s; }',
       // Attack-out state — throw motion
       '.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1; }',
       '.tp-mascot-vex.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1, tp-vex-glitch 0.7s ease-out 1; }',
@@ -3288,24 +3547,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-win { animation: tp-mascot-celebrate 0.9s ease-in-out 1; }',
       '.tp-mascot-loss { animation: tp-mascot-droop 1s ease-out forwards; }',
       '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tear { opacity: 0.85; transition: opacity 600ms ease-in; }',
-      // Mochi loss — tail droops still
+      // Mochi loss — tail droops still, ears droop down
       '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tail { animation: none; transform: rotate(-15deg); }',
-      // Vex win — boot dots sequence on
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-ear-l { transform: rotate(-18deg); }',
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-ear-r { transform: rotate(18deg); }',
+      // Vex win — boot dots sequence on, equalizer dances
       '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-1 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards; }',
       '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-2 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.15s; }',
       '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-3 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.30s; }',
-      // Vex loss — boot dots reverse-sequence off (power-down)
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-1 { animation: tp-vex-eq-combo 0.3s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-2 { animation: tp-vex-eq-combo 0.25s ease-in-out infinite 0.05s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-3 { animation: tp-vex-eq-combo 0.28s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-4 { animation: tp-vex-eq-combo 0.22s ease-in-out infinite 0.08s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-eq-5 { animation: tp-vex-eq-combo 0.27s ease-in-out infinite 0.12s; }',
+      // Vex loss — boot dots reverse-sequence off (power-down), flatline equalizer
       '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-1 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.30s; }',
       '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-2 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.15s; }',
       '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-3 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards; }',
-      // Pip win — wings flap proud once
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-eq-1, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-2, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-3, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-4, .tp-mascot-vex.tp-mascot-loss .tp-vex-eq-5 { animation: none !important; transform: scaleY(0.1); opacity: 0.15; }',
+      // Pip win — wings flap proud once, legs jump
       '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-l { animation: tp-pip-wing-flap 0.5s ease-out 2; }',
       '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.5s ease-out 2; }',
-      // Cogsworth win — pendulum swings dramatic
+      '.tp-mascot-pip.tp-mascot-win .tp-pip-legs { animation: tp-pip-legs-jump 0.5s ease-out infinite; }',
+      // Pip loss — legs tilt, sprout sags
+      '.tp-mascot-pip.tp-mascot-loss .tp-pip-leg-l { transform: rotate(-25deg) translateY(-1px); }',
+      '.tp-mascot-pip.tp-mascot-loss .tp-pip-leg-r { transform: rotate(25deg) translateY(-1px); }',
+      '.tp-mascot-pip.tp-mascot-loss .tp-pip-sprout { transform: rotate(140deg) translate(-2px, 4px) scaleY(0.7); }',
+      // Cogsworth win — pendulum swings dramatic, mechanical wings flap
       '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-pendulum { animation-duration: 0.6s; }',
-      // Inko loss — ink cloud + chromatophore desaturation
+      '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-wing-l { animation: tp-cog-wing-flap-l 0.3s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-wing-r { animation: tp-cog-wing-flap-r 0.3s ease-in-out infinite; }',
+      // Cogsworth loss — wings droop
+      '.tp-mascot-cogsworth.tp-mascot-loss .tp-cog-wing-l { transform: rotate(18deg); }',
+      '.tp-mascot-cogsworth.tp-mascot-loss .tp-cog-wing-r { transform: rotate(-18deg); }',
+      // Mochi win — collar bell swings, paws raise cheer
+      '.tp-mascot-mochi.tp-mascot-win .tp-mochi-bell { animation: tp-mochi-bell-swing 0.3s ease-in-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-win .tp-mochi-paws { animation: tp-mochi-paws-raise 0.4s ease-out 1 forwards; }',
+      // Inko loss — ink cloud + chromatophore desaturation + static fins & waves
       '.tp-mascot-inko.tp-mascot-loss .tp-inko-chrom { animation: none; fill: #475569; opacity: 0.4; }',
       '.tp-mascot-inko.tp-mascot-loss .tp-inko-ink circle { opacity: 0.55; transition: opacity 800ms ease-in; }',
+      '.tp-mascot-inko.tp-mascot-loss .tp-inko-fins path { animation: none; }',
+      '.tp-mascot-inko.tp-mascot-loss .tp-inko-bio-wave { animation: none; opacity: 0.2; }',
       // Inko win — rainbow chromatophore burst + rim glow + bubble joy
       '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom { animation: tp-inko-chrom-wow 0.9s linear infinite; }',
       '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.9s linear infinite 0.45s; }',
@@ -3323,26 +3605,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-l, .tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-r { transform: scaleY(0.1); animation: none; }',
       '.tp-mascot-mochi.tp-mascot-sleep .tp-mochi-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
       '.tp-mascot-vex.tp-mascot-sleep .tp-vex-scanline { animation: none; opacity: 0.2; }',
-      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-l, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-r { animation: none; opacity: 0.3; transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-1, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-2, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-3, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-4, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eq-5 { animation: none !important; transform: scaleY(0.15); opacity: 0.35; }',
       '.tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-l, .tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-r { animation-duration: 18s; }',
       '.tp-mascot-pip.tp-mascot-danger .tp-pip-eyes circle:not(.tp-pip-pupil-l):not(.tp-pip-pupil-r) { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }',
-      // Pip danger — cheek tufts puff out anxiously
+      // Pip danger — cheek tufts puff out anxiously, sprout shivers
       '.tp-mascot-pip.tp-mascot-danger .tp-pip-cheek { animation: tp-pip-cheek-puff 0.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-pip.tp-mascot-danger .tp-pip-sprout { animation: tp-pip-sprout-shiver 0.15s linear infinite; }',
+      // Cogsworth danger — needle shakes violently, steam drops violently
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-needle { animation: tp-cog-needle-violent 0.12s linear infinite; stroke: #ef4444 !important; }',
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-steam circle { animation: tp-cog-steam-violent 0.35s linear infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-steam circle:nth-child(2) { animation-delay: 0.12s; }',
+      '.tp-mascot-cogsworth.tp-mascot-danger .tp-cog-steam circle:nth-child(3) { animation-delay: 0.24s; }',
+      // Vex danger — equalizer fluctuates erratically
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-1 { animation: tp-vex-eq-danger 0.5s ease-in-out infinite; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-2 { animation: tp-vex-eq-danger 0.4s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-3 { animation: tp-vex-eq-danger 0.6s ease-in-out infinite 0.05s; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-4 { animation: tp-vex-eq-danger 0.45s ease-in-out infinite 0.15s; }',
+      '.tp-mascot-vex.tp-mascot-danger .tp-vex-eq-5 { animation: tp-vex-eq-danger 0.55s ease-in-out infinite 0.08s; }',
+      // Mochi danger — mouth and ears droop
       '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-mouth { transform: translateY(2px) scaleY(-1); transform-origin: 50px 67px; }',
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-ear-l { transform: rotate(-12deg); }',
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-ear-r { transform: rotate(12deg); }',
       // Mochi danger — tail freezes mid-sway
       '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-tail { animation: none; transform: rotate(0deg); }',
-      // Inko danger — chromatophores flash red + pupils dart anxiously
+      // Inko danger — chromatophores flash red + pupils dart anxiously + bio-wave pulses danger
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite; }',
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom-sat { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite 0.25s; }',
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-pupil { animation: tp-inko-pupil-dart 0.4s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-bio-wave { animation: tp-inko-bio-pulse-danger 0.5s ease-in-out infinite !important; }',
       // Inko wow — rainbow burst (long-word clear celebration) + rim flash
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom { animation: tp-inko-chrom-wow 0.7s linear 1; }',
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.7s linear 1 0.35s; }',
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-rim { animation: tp-inko-rim-glow 0.7s ease-out 1; }',
-      // Inko sleep — chromatophores still, fins stop, eyes close (W-pupil scaled flat)
+      // Inko sleep — chromatophores still, fins stop, eyes close (W-pupil scaled flat) + static bio-wave
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-chrom { animation: none; opacity: 0.3; }',
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-fins path { animation: none; }',
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-inko.tp-mascot-sleep .tp-inko-bio-wave { animation: none; opacity: 0.15; }',
       // Reduced motion — stop all mascot animations
       '@media (prefers-reduced-motion: reduce) { .tp-mascot, .tp-mascot *, .tp-mascot.tp-mascot-combo, .tp-mascot.tp-mascot-attack-out, .tp-mascot.tp-mascot-incoming, .tp-mascot.tp-mascot-win, .tp-mascot.tp-mascot-loss { animation: none !important; } }',
       '.tp-pack-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }',

@@ -1474,14 +1474,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, cat.emoji + ' ' + cat.label),
                 el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   cat.opts.map(function(opt, oi) {
-                    return optBtn(val === oi, function() {
+                    return React.cloneElement(optBtn(val === oi, function() {
                       upd(stateKey, oi);
                       playSound('calculate');
                       if (!badges.firstCalc) { earnBadge('firstCalc'); }
                       // Check low footprint after update
                       var newTotal = carbonTotal().total; // recompute
                       if (newTotal < 2000 && !badges.lowFootprint) earnBadge('lowFootprint');
-                    }, opt.emoji, opt.label, opt.kg + ' kg/yr');
+                    }, opt.emoji, opt.label, opt.kg + ' kg/yr'), { key: oi });
                   })
                 ),
                 el('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } },
