@@ -24,6 +24,12 @@ function ExportPreviewView(props) {
     toggleA11yInspect, updateExportPreview
   } = props;
 
+  const hasGlossary = (history || []).some(h => h && h.type === 'glossary');
+  const hasTimeline = (history || []).some(h => h && h.type === 'timeline');
+  const hasBrainstorm = (history || []).some(h => h && h.type === 'brainstorm');
+  const hasConceptSort = (history || []).some(h => h && h.type === 'concept-sort');
+  const showDisplayModes = hasGlossary || hasTimeline || hasBrainstorm || hasConceptSort;
+
   if (!showExportPreview) return null;
 
   return (
@@ -402,158 +408,168 @@ function ExportPreviewView(props) {
                 </div>
 
                 {/* Display Modes — switches the rendered layout for specific resource types */}
-                <div>
-                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Display modes</div>
+                {showDisplayModes && (
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Display modes</div>
 
-                  {/* Glossary display: table / flash cards / language cards */}
-                  <div className={`mb-2 ${exportConfig.includeGlossary ? '' : 'opacity-50'}`}>
-                    <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
-                    <div className="space-y-0.5">
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="glossaryDisplayMode" checked={(exportConfig.glossaryDisplayMode || 'table') === 'table'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'table' }))} disabled={!exportConfig.includeGlossary} />
-                        Table (default)
-                      </label>
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'flash-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'flash-cards' }))} disabled={!exportConfig.includeGlossary} />
-                        🃏 Flash cards (fold-and-cut for paper, flip for digital)
-                      </label>
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'language-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'language-cards' }))} disabled={!exportConfig.includeGlossary} />
-                        🌐 Language cards (emphasizes translations)
-                      </label>
-                    </div>
-                    {/* Image size — only relevant for table mode (cards have their own sizing). */}
-                    {(exportConfig.glossaryDisplayMode || 'table') === 'table' && (
-                      <div className="mt-2 pl-1">
-                        <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
-                        <div className="flex flex-wrap gap-1">
-                          {[
-                            { v: 'small',  label: 'S',  px: 40 },
-                            { v: 'medium', label: 'M',  px: 64 },
-                            { v: 'large',  label: 'L',  px: 96 },
-                            { v: 'xl',     label: 'XL', px: 140 },
-                          ].map(opt => {
-                            const cur = exportConfig.glossaryImageSize || 'medium';
-                            const isActive = cur === opt.v;
-                            return (
-                              <button
-                                key={opt.v}
-                                type="button"
-                                disabled={!exportConfig.includeGlossary}
-                                onClick={() => setExportConfigAndRefresh(p => ({ ...p, glossaryImageSize: opt.v }))}
-                                title={opt.label + ' (' + opt.px + ' px)'}
-                                aria-label={'Glossary image size ' + opt.label + ' ' + opt.px + ' pixels'}
-                                aria-pressed={isActive}
-                                className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
-                                  ? 'bg-emerald-600 text-white border-emerald-700'
-                                  : 'bg-white text-slate-600 border-slate-300 hover:bg-emerald-50')}
-                              >
-                                {opt.label}
-                              </button>
-                            );
-                          })}
+                    {/* Glossary display: table / flash cards / language cards */}
+                    {hasGlossary && (
+                      <div className={`mb-2 ${exportConfig.includeGlossary ? '' : 'opacity-50'}`}>
+                        <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
+                        <div className="space-y-0.5">
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="glossaryDisplayMode" checked={(exportConfig.glossaryDisplayMode || 'table') === 'table'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'table' }))} disabled={!exportConfig.includeGlossary} />
+                            Table (default)
+                          </label>
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'flash-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'flash-cards' }))} disabled={!exportConfig.includeGlossary} />
+                            🃏 Flash cards (fold-and-cut for paper, flip for digital)
+                          </label>
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'language-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'language-cards' }))} disabled={!exportConfig.includeGlossary} />
+                            🌐 Language cards (emphasizes translations)
+                          </label>
+                        </div>
+                        {/* Image size — only relevant for table mode (cards have their own sizing). */}
+                        {(exportConfig.glossaryDisplayMode || 'table') === 'table' && (
+                          <div className="mt-2 pl-1">
+                            <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
+                            <div className="flex flex-wrap gap-1">
+                              {[
+                                { v: 'small',  label: 'S',  px: 40 },
+                                { v: 'medium', label: 'M',  px: 64 },
+                                { v: 'large',  label: 'L',  px: 96 },
+                                { v: 'xl',     label: 'XL', px: 140 },
+                              ].map(opt => {
+                                const cur = exportConfig.glossaryImageSize || 'medium';
+                                const isActive = cur === opt.v;
+                                return (
+                                  <button
+                                    key={opt.v}
+                                    type="button"
+                                    disabled={!exportConfig.includeGlossary}
+                                    onClick={() => setExportConfigAndRefresh(p => ({ ...p, glossaryImageSize: opt.v }))}
+                                    title={opt.label + ' (' + opt.px + ' px)'}
+                                    aria-label={'Glossary image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                                    aria-pressed={isActive}
+                                    className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                      ? 'bg-emerald-600 text-white border-emerald-700'
+                                      : 'bg-white text-slate-600 border-slate-300 hover:bg-emerald-50')}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Timeline display: list / cuttable strips */}
+                    {hasTimeline && (
+                      <div className="mb-2">
+                        <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Timeline</div>
+                        <div className="space-y-0.5">
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="timelineDisplayMode" checked={(exportConfig.timelineDisplayMode || 'list') === 'list'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'list' }))} />
+                            List (default)
+                          </label>
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="timelineDisplayMode" checked={exportConfig.timelineDisplayMode === 'cuttable-strips'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'cuttable-strips' }))} />
+                            ✂ Cuttable chronology strips
+                          </label>
+                        </div>
+                        {/* Image size — same SMLXL pattern as glossary. Affects both list + strips modes. */}
+                        <div className="mt-2 pl-1">
+                          <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
+                          <div className="flex flex-wrap gap-1">
+                            {[
+                              { v: 'small',  label: 'S',  px: 48 },
+                              { v: 'medium', label: 'M',  px: 64 },
+                              { v: 'large',  label: 'L',  px: 96 },
+                              { v: 'xl',     label: 'XL', px: 140 },
+                            ].map(opt => {
+                              const cur = exportConfig.timelineImageSize || 'medium';
+                              const isActive = cur === opt.v;
+                              return (
+                                <button
+                                  key={opt.v}
+                                  type="button"
+                                  onClick={() => setExportConfigAndRefresh(p => ({ ...p, timelineImageSize: opt.v }))}
+                                  title={opt.label + ' (' + opt.px + ' px)'}
+                                  aria-label={'Timeline image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                                  aria-pressed={isActive}
+                                  className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                    ? 'bg-indigo-600 text-white border-indigo-700'
+                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')}
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Brainstorm display: grid / mind-map */}
+                    {hasBrainstorm && (
+                      <div className={`mb-2 ${exportConfig.includeBrainstorm ? '' : 'opacity-50'}`}>
+                        <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Brainstorm</div>
+                        <div className="space-y-0.5">
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="brainstormDisplayMode" checked={(exportConfig.brainstormDisplayMode || 'grid') === 'grid'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, brainstormDisplayMode: 'grid' }))} disabled={!exportConfig.includeBrainstorm} />
+                            Card grid (default)
+                          </label>
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                            <input type="radio" name="brainstormDisplayMode" checked={exportConfig.brainstormDisplayMode === 'mindmap'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, brainstormDisplayMode: 'mindmap' }))} disabled={!exportConfig.includeBrainstorm} />
+                            🌟 Mind-map graphic organizer
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Concept-sort interactive + image size */}
+                    {hasConceptSort && (
+                      <div>
+                        <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                          <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))} className="rounded" />
+                          🧩 Concept sort: drag-to-sort on digital
+                        </label>
+                        <div className="mt-1 pl-1">
+                          <div className="text-[10px] font-semibold text-slate-500 mb-1">Sort strip image size</div>
+                          <div className="flex flex-wrap gap-1">
+                            {[
+                              { v: 'small',  label: 'S',  px: 56 },
+                              { v: 'medium', label: 'M',  px: 80 },
+                              { v: 'large',  label: 'L',  px: 110 },
+                              { v: 'xl',     label: 'XL', px: 150 },
+                            ].map(opt => {
+                              const cur = exportConfig.conceptSortImageSize || 'medium';
+                              const isActive = cur === opt.v;
+                              return (
+                                <button
+                                  key={opt.v}
+                                  type="button"
+                                  onClick={() => setExportConfigAndRefresh(p => ({ ...p, conceptSortImageSize: opt.v }))}
+                                  title={opt.label + ' (' + opt.px + ' px)'}
+                                  aria-label={'Concept sort image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                                  aria-pressed={isActive}
+                                  className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                    ? 'bg-rose-600 text-white border-rose-700'
+                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-rose-50')}
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
-
-                  {/* Timeline display: list / cuttable strips */}
-                  <div className="mb-2">
-                    <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Timeline</div>
-                    <div className="space-y-0.5">
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="timelineDisplayMode" checked={(exportConfig.timelineDisplayMode || 'list') === 'list'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'list' }))} />
-                        List (default)
-                      </label>
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="timelineDisplayMode" checked={exportConfig.timelineDisplayMode === 'cuttable-strips'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'cuttable-strips' }))} />
-                        ✂ Cuttable chronology strips
-                      </label>
-                    </div>
-                    {/* Image size — same SMLXL pattern as glossary. Affects both list + strips modes. */}
-                    <div className="mt-2 pl-1">
-                      <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
-                      <div className="flex flex-wrap gap-1">
-                        {[
-                          { v: 'small',  label: 'S',  px: 48 },
-                          { v: 'medium', label: 'M',  px: 64 },
-                          { v: 'large',  label: 'L',  px: 96 },
-                          { v: 'xl',     label: 'XL', px: 140 },
-                        ].map(opt => {
-                          const cur = exportConfig.timelineImageSize || 'medium';
-                          const isActive = cur === opt.v;
-                          return (
-                            <button
-                              key={opt.v}
-                              type="button"
-                              onClick={() => setExportConfigAndRefresh(p => ({ ...p, timelineImageSize: opt.v }))}
-                              title={opt.label + ' (' + opt.px + ' px)'}
-                              aria-label={'Timeline image size ' + opt.label + ' ' + opt.px + ' pixels'}
-                              aria-pressed={isActive}
-                              className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
-                                ? 'bg-indigo-600 text-white border-indigo-700'
-                                : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')}
-                            >
-                              {opt.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Brainstorm display: grid / mind-map */}
-                  <div className={`mb-2 ${exportConfig.includeBrainstorm ? '' : 'opacity-50'}`}>
-                    <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Brainstorm</div>
-                    <div className="space-y-0.5">
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="brainstormDisplayMode" checked={(exportConfig.brainstormDisplayMode || 'grid') === 'grid'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, brainstormDisplayMode: 'grid' }))} disabled={!exportConfig.includeBrainstorm} />
-                        Card grid (default)
-                      </label>
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                        <input type="radio" name="brainstormDisplayMode" checked={exportConfig.brainstormDisplayMode === 'mindmap'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, brainstormDisplayMode: 'mindmap' }))} disabled={!exportConfig.includeBrainstorm} />
-                        🌟 Mind-map graphic organizer
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Concept-sort interactive + image size */}
-                  <div>
-                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                      <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))} className="rounded" />
-                      🧩 Concept sort: drag-to-sort on digital
-                    </label>
-                    <div className="mt-1 pl-1">
-                      <div className="text-[10px] font-semibold text-slate-500 mb-1">Sort strip image size</div>
-                      <div className="flex flex-wrap gap-1">
-                        {[
-                          { v: 'small',  label: 'S',  px: 56 },
-                          { v: 'medium', label: 'M',  px: 80 },
-                          { v: 'large',  label: 'L',  px: 110 },
-                          { v: 'xl',     label: 'XL', px: 150 },
-                        ].map(opt => {
-                          const cur = exportConfig.conceptSortImageSize || 'medium';
-                          const isActive = cur === opt.v;
-                          return (
-                            <button
-                              key={opt.v}
-                              type="button"
-                              onClick={() => setExportConfigAndRefresh(p => ({ ...p, conceptSortImageSize: opt.v }))}
-                              title={opt.label + ' (' + opt.px + ' px)'}
-                              aria-label={'Concept sort image size ' + opt.label + ' ' + opt.px + ' pixels'}
-                              aria-pressed={isActive}
-                              className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
-                                ? 'bg-rose-600 text-white border-rose-700'
-                                : 'bg-white text-slate-600 border-slate-300 hover:bg-rose-50')}
-                            >
-                              {opt.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 {/* Audio Embedding */}
                 <div className={exportPreviewMode !== 'html' ? 'opacity-50' : ''}>

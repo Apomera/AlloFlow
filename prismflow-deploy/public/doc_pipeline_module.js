@@ -14895,8 +14895,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     },
     dark: {
       name: 'Dark Mode', emoji: '🌙', wcagLevel: 'AA',
-      promptInstructions: 'STYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), soft white text (#e2e8f0), indigo accents (#818cf8), subtle borders, excellent contrast. All text must be light on dark.',
-      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#e2e8f0', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#e2e8f0', extraCSS: 'body { color: #e2e8f0; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #e2e8f0; } td { color: #cbd5e1; }' },
+      promptInstructions: 'STYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), white text (#ffffff), indigo accents (#818cf8), subtle borders, excellent contrast. All text must be light on dark.',
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#ffffff', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#ffffff', extraCSS: 'body { color: #ffffff; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #ffffff; } td { color: #ffffff; }' },
     },
     magazine: {
       name: 'Magazine', emoji: '📰', wcagLevel: 'AA',
@@ -15445,18 +15445,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           @media print { .alloflow-anno-sb { display: none !important; } }
 
           /* ─── Sidebar dark/sepia/HC overrides ─── */
-          html[data-alloflow-theme="dark"] .alloflow-anno-sb { background: #1e293b; border-color: #334155; color: #e2e8f0; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+          html[data-alloflow-theme="dark"] .alloflow-anno-sb { background: #1e293b; border-color: #334155; color: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
           html[data-alloflow-theme="dark"] .alloflow-anno-sb-header { background: #0f172a; border-bottom-color: #334155; }
-          html[data-alloflow-theme="dark"] .alloflow-anno-sb-title { color: #e2e8f0; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-sb-title { color: #ffffff; }
           html[data-alloflow-theme="dark"] .alloflow-anno-sb-pills { border-bottom-color: #334155; }
-          html[data-alloflow-theme="dark"] .alloflow-anno-pill { background: #334155; color: #cbd5e1; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-pill { background: #334155; color: #ffffff; }
           html[data-alloflow-theme="dark"] .alloflow-anno-pill.active { background: #6366f1; color: white; }
           html[data-alloflow-theme="dark"] .alloflow-anno-item.teacher { background: rgba(99,102,241,0.18); border-left-color: #818cf8; }
           html[data-alloflow-theme="dark"] .alloflow-anno-item.teacher:hover { background: rgba(99,102,241,0.28); }
           html[data-alloflow-theme="dark"] .alloflow-anno-item.student { background: rgba(251,191,36,0.12); border-left-color: #fbbf24; }
           html[data-alloflow-theme="dark"] .alloflow-anno-item.student:hover { background: rgba(251,191,36,0.20); }
-          html[data-alloflow-theme="dark"] .alloflow-anno-item-text { color: #e2e8f0; }
-          html[data-alloflow-theme="dark"] .alloflow-anno-item-meta { color: #94a3b8; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item-text { color: #ffffff; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item-meta { color: #cbd5e1; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb { background: #fdf6e3; border-color: #d4c5a0; color: #5b4636; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb-header { background: #f5ecd9; border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb-title { color: #4a3a2a; }
@@ -15465,24 +15465,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           /* ─── Dark theme ─── */
           html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
-          html[data-alloflow-theme="dark"] body { background: #0f172a !important; color: #e2e8f0 !important; }
-          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4 { color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] body { background: #0f172a !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4 { color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .section { background: #1e293b !important; }
-          html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
-          html[data-alloflow-theme="dark"] .resource-header { color: #e2e8f0 !important; background: #1e293b !important; }
-          html[data-alloflow-theme="dark"] th { background: #1e293b !important; color: #f1f5f9 !important; border-color: #334155 !important; }
-          html[data-alloflow-theme="dark"] td { color: #e2e8f0 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #1e293b !important; border-color: #334155 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .resource-header { color: #ffffff !important; background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] th { background: #1e293b !important; color: #ffffff !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] td { color: #ffffff !important; border-color: #334155 !important; }
           html[data-alloflow-theme="dark"] tbody tr { background: #0f172a !important; }
           html[data-alloflow-theme="dark"] tbody tr:nth-child(even) { background: #1e293b !important; }
           html[data-alloflow-theme="dark"] tbody tr:hover { background: #334155 !important; }
-          html[data-alloflow-theme="dark"] .interactive-textarea { background: #1e293b !important; color: #e2e8f0 !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
+          html[data-alloflow-theme="dark"] .interactive-textarea { background: #1e293b !important; color: #ffffff !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
           html[data-alloflow-theme="dark"] .interactive-blank { color: #93c5fd !important; border-bottom-color: #475569 !important; }
-          html[data-alloflow-theme="dark"] .mcq-label { color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .mcq-label { color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .mcq-label:hover { background: #334155 !important; }
           html[data-alloflow-theme="dark"] .mcq-label:has(input[type="radio"]:checked) { background: #312e81 !important; border-color: #818cf8 !important; }
           html[data-alloflow-theme="dark"] .reflection-block { background: rgba(79,70,229,0.12) !important; border-left-color: #6366f1 !important; }
           html[data-alloflow-theme="dark"] .reflection-block > p:first-child { color: #c7d2fe !important; }
-          html[data-alloflow-theme="dark"] details { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] details { background: #1e293b !important; border-color: #334155 !important; color: #ffffff !important; }
           html[data-alloflow-theme="dark"] details summary, html[data-alloflow-theme="dark"] details summary h3 { color: #93c5fd !important; }
           html[data-alloflow-theme="dark"] .alloflow-reading-tools { background: rgba(15,23,42,0.96); border-bottom-color: #334155; }
           html[data-alloflow-theme="dark"] .alloflow-reading-tools-group { background: #1e293b; border-color: #475569; }
@@ -15590,8 +15590,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             var initial = null;
             try { initial = localStorage.getItem(KEY); } catch (e) {}
-            if (!initial && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              initial = 'dark';
+            if (!initial) {
+              initial = 'light';
             }
             if (initial) applyTheme(initial, false);
             document.addEventListener('click', function (e) {
