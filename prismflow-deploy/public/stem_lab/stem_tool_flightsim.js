@@ -8967,8 +8967,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (!window.THREE) return;
         try {
           var THREE = window.THREE;
-          var W = canvas.clientWidth || 800;
-          var H = canvas.clientHeight || 500;
+          var W = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
+          var H = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
 
           var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
           renderer.setSize(W, H, false);
@@ -8990,7 +8990,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           scene.add(dirLight);
 
           var skyGeo = new THREE.SphereGeometry(250000, 16, 16);
-          skyGeo.scale(-1, 1, 1);
           var skyMat = new THREE.MeshBasicMaterial({ color: 0x5078a0, side: THREE.BackSide, flatShading: true });
           var skyMesh = new THREE.Mesh(skyGeo, skyMat);
           scene.add(skyMesh);
