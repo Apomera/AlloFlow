@@ -377,13 +377,13 @@ if (!window._galaxyHasLoadedOnce) {
             } else if (mass < 0.8) {
               stages.push({ id: 'main_sequence', name: 'Red Dwarf', emoji: '\uD83D\uDD34', desc: 'Burns slowly for hundreds of billions of years.', color: '#dc2626' });
               stages.push({ id: 'blue_dwarf', name: 'Blue Dwarf', emoji: '\uD83D\uDD35', desc: 'Theoretical phase where a red dwarf heats up as its opacity changes.', color: '#3b82f6' });
-              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: '#e2e8f0' });
+              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
               stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
             } else if (mass < 8) {
               stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for billions of years.', color: '#fbbf24' });
               stages.push({ id: 'red_giant', name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' });
               stages.push({ id: 'planetary_nebula', name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' });
-              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: '#e2e8f0' });
+              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
               stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
             } else if (mass < 25) {
               stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hot and enormous. Burns through fuel in millions of years.', color: '#60a5fa' });
@@ -609,7 +609,16 @@ if (!window._galaxyHasLoadedOnce) {
 
             camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
 
-            var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+            var renderer;
+            try {
+              renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+            } catch (e) {
+              console.error('[Galaxy] WebGLRenderer creation failed:', e);
+              setTimeout(function() {
+                upd('webglError', true);
+              }, 0);
+              return;
+            }
 
             renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x020208);
 
@@ -1475,9 +1484,24 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
 
-                React.createElement("canvas", {
+                d.webglError ?
+                  React.createElement("div", {
+                    className: "flex flex-col items-center justify-center p-6 text-center text-white",
+                    style: { height: "100%", background: "rgba(5, 5, 16, 0.85)" }
+                  },
+                    React.createElement("span", { style: { fontSize: "48px", marginBottom: "16px" } }, "⚠️"),
+                    React.createElement("h4", { className: "text-lg font-bold text-red-400 mb-2" }, "Galaxy Explorer 3D Mode Unresolved"),
+                    React.createElement("p", { className: "text-xs text-slate-300 max-w-sm mb-6" }, "WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration."),
+                    React.createElement("button", {
+                      onClick: function () {
+                        upd("webglError", false);
+                      },
+                      className: "px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-md transition-colors"
+                    }, "Retry 3D Mode")
+                  ) :
+                  React.createElement("canvas", {
 
-                  "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
+                    "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) { canvasRefCb(null); return; } el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
 
                     var cv = e.target; if (!cv || !cv._galaxyOrbit) return;
 

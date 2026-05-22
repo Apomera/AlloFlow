@@ -353,7 +353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
   // ── WALL MATERIALS FOR TAB 2 ──
   var WALL_MATERIALS = [
-    { id: 'concrete', label: 'Concrete', reflection: 0.95, color: '#94a3b8' },
+    { id: 'concrete', label: 'Concrete', reflection: 0.95, color: 'var(--allo-stem-text-soft, #94a3b8)' },
     { id: 'wood', label: 'Wood', reflection: 0.60, color: '#d97706' },
     { id: 'carpet', label: 'Carpet', reflection: 0.15, color: '#7c3aed' },
     { id: 'foam', label: 'Acoustic Foam', reflection: 0.05, color: '#374151' }
@@ -629,6 +629,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var threeLoaded = (ctx.toolData && ctx.toolData._threeLoaded) || !!window.THREE;
 
       // ── State ──
+      var webglErrState = useState(false);
+      var webglError = webglErrState[0];
+      var setWebglError = webglErrState[1];
       var tab = d.tab || 'sonar';
       var TABS = [
         { id: 'sonar', label: 'Sonar Vision', icon: '\uD83E\uDD87' },
@@ -851,7 +854,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           var cnv = document.createElement('canvas');
           cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
           container.appendChild(cnv);
-          eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+          try {
+            eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+            setWebglError(false);
+          } catch (err) {
+            console.error('[Echolocation] WebGL / 3D initialization failed:', err);
+            setWebglError(true);
+            cave3dEngineRef.current = null;
+            return;
+          }
           eng.renderer.setSize(container.clientWidth, container.clientHeight);
           eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
@@ -1538,11 +1549,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('p', { className: 'text-xs mt-2' }, 'Three.js loads automatically when you open any 3D tool.')
           ),
           // 3D Canvas container
-          threeReady && h('div', {
-            ref: cave3dRef,
-            id: 'echo-cave3d-fs-wrap',
-            style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#1e3a3a' : '#a7f3d0'), position: 'relative', background: '#020208', cursor: 'crosshair' }
-          },
+          threeReady && (webglError
+            ? h('div', { style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#ef4444' : '#fca5a5'), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', background: '#020208', color: '#cbd5e1', padding: '20px', textAlign: 'center' } },
+                h('span', { style: { fontSize: '32px' } }, '⚠️'),
+                h('div', { style: { fontWeight: 'bold', color: '#fca5a5' } }, '3D Echolocation Cave failed to initialize'),
+                h('p', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '360px' } }, 'WebGL is required to render the 3D cave environment. Please check your browser settings or hardware acceleration and try again.'),
+                h('button', {
+                  onClick: function() {
+                    setWebglError(false);
+                  },
+                  style: { padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+                }, 'Retry')
+              )
+            : h('div', {
+                ref: cave3dRef,
+                id: 'echo-cave3d-fs-wrap',
+                style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#1e3a3a' : '#a7f3d0'), position: 'relative', background: '#020208', cursor: 'crosshair' }
+              },
             // Fullscreen toggle (top-right corner)
             h('button', {
               'aria-label': 'Toggle fullscreen for the 3D cave',
@@ -1576,7 +1599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             // HUD overlay
             h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80', maxWidth: '200px' } },
               h('div', { style: { fontWeight: 700 } }, '\uD83E\uDD87 3D Echolocation Cave'),
-              h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
+              h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
               // Energy bar
               cave3dEngineRef.current && h('div', { style: { marginTop: '4px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
@@ -1593,18 +1616,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               cave3dEngineRef.current && h('div', { style: { marginTop: '4px', fontSize: '10px' } },
                 h('div', { style: { color: '#fbbf24', fontWeight: 700 } }, '\uD83E\uDD8B Caught: ' + (cave3dEngineRef.current.mothsCaught || 0)),
                 h('div', { style: { color: '#4ade80' } }, '\uD83C\uDFAF Score: ' + (cave3dEngineRef.current.score || 0)),
-                h('div', { style: { color: '#94a3b8' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
                 cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
                 cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
-                cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: '#94a3b8', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
+                cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
                 // Echolocation distance calculation (educational)
                 cave3dEngineRef.current._lastEchoDistance && h('div', { style: { marginTop: '4px', background: 'rgba(0,40,30,0.8)', borderRadius: '6px', padding: '4px 6px', border: '1px solid rgba(0,255,170,0.2)' } },
                   h('div', { style: { color: '#4ade80', fontSize: '9px', fontWeight: 700 } }, '\uD83D\uDCCF Echo Return:'),
-                  h('div', { style: { color: '#94a3b8', fontSize: '8px', fontFamily: 'monospace' } },
+                  h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '8px', fontFamily: 'monospace' } },
                     'd = ' + cave3dEngineRef.current._lastEchoDistance.toFixed(1) + 'm'),
-                  h('div', { style: { color: '#94a3b8', fontSize: '7px', fontFamily: 'monospace' } },
+                  h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '7px', fontFamily: 'monospace' } },
                     't = ' + cave3dEngineRef.current._lastEchoTime + 's'),
-                  h('div', { style: { color: '#475569', fontSize: '7px', fontFamily: 'monospace' } },
+                  h('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '7px', fontFamily: 'monospace' } },
                     'd = v\u00d7t/2 = 343\u00d7' + cave3dEngineRef.current._lastEchoTime + '/2')
                 )
               ),
@@ -1614,7 +1637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   background: 'rgba(0,40,30,0.85)', borderRadius: '12px', padding: '10px 20px', border: '1px solid rgba(0,255,170,0.3)', maxWidth: '280px' }
               },
                 h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '4px' } }, '\uD83E\uDD87 How to Echolocate:'),
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 } },
+                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                   cave3dEngineRef.current.survivalTime < 3
                     ? 'Press E to send a sonar pulse. It reveals hidden cave walls and insects!'
                     : cave3dEngineRef.current.survivalTime < 5
@@ -1629,12 +1652,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               },
                 h('div', { style: { fontSize: '24px' } }, '\uD83E\uDD87\uD83D\uDCA4'),
                 h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#ef4444', marginBottom: '4px' } }, 'Out of Energy!'),
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } },
+                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '8px' } },
                   'Caught ' + (cave3dEngineRef.current.mothsCaught || 0) + ' insects \u2022 Score: ' + (cave3dEngineRef.current.score || 0) + ' \u2022 Survived: ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
                 h('div', { style: { fontSize: '12px', color: '#fbbf24', fontWeight: 700 } }, 'Press R to restart')
               )
             )
-          ),
+          )),
           // Mobile action buttons (touch devices only)
           ('ontouchstart' in window) && h('div', { className: 'flex gap-2 justify-center' },
             h('button', {
@@ -2026,7 +2049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 { material: 'Water', reflectivity: '30-40%', color: '#60a5fa', desc: 'Dim, rippling echoes' },
                 { material: 'Moth/Insect', reflectivity: '20-30%', color: '#fbbf24', desc: 'Faint flickering echoes' },
                 { material: 'Fruit/Organic', reflectivity: '40-50%', color: '#fbbf24', desc: 'Moderate soft echoes, warm glow for fruit bats' },
-                { material: 'Spider Web', reflectivity: '5-10%', color: '#94a3b8', desc: 'Nearly invisible! Very faint thin lines' },
+                { material: 'Spider Web', reflectivity: '5-10%', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Nearly invisible! Very faint thin lines' },
                 { material: 'Open Air', reflectivity: '1-5%', color: '#334155', desc: 'Almost invisible (no echo)' }
               ].map(function(m, mi) {
                 return h('div', { key: mi, className: 'flex items-center gap-2' },
@@ -3287,7 +3310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               [
                 { icon: '\u27A1\uFE0F\uD83E\uDD97', label: 'Approaching',  color: '#60a5fa', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
                 { icon: '\uD83E\uDD97\u27A1\uFE0F', label: 'Receding',     color: '#f87171', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
-                { icon: '\uD83E\uDD97\u23F8',  label: 'Stationary',   color: '#94a3b8', explain: 'No relative motion. Frequency unchanged. The reference case.' }
+                { icon: '\uD83E\uDD97\u23F8',  label: 'Stationary',   color: 'var(--allo-stem-text-soft, #94a3b8)', explain: 'No relative motion. Frequency unchanged. The reference case.' }
               ].map(function(c, i) {
                 return h('div', { key: i,
                   className: 'rounded-lg p-2 border-2',

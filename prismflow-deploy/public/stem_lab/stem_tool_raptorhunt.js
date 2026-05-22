@@ -6805,6 +6805,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var setToolData = ctx.setToolData, toolData = ctx.toolData;
 
       // ── State ──
+      var webglErrState = React.useState(false);
+      var webglError = webglErrState[0];
+      var setWebglError = webglErrState[1];
       var rh = (toolData && toolData.raptorHunt) || {};
       function setRH(patch) {
         ctx.setToolData(function(prev) {
@@ -7942,35 +7945,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }, '🚀 Load 3D Engine'),
             rh._threeLoadError && h('div', { className: 'text-xs text-red-300 mt-2' }, '⚠ Failed to load Three.js from CDN. Check your internet connection or try again.')
           ),
-          threeLoaded && h('div', { className: 'bg-gradient-to-b from-sky-900/40 to-slate-900/40 border border-amber-700/40 rounded-xl overflow-hidden' },
-            h('div', { className: 'relative', style: { height: '60vh', minHeight: '420px', maxHeight: '720px' } },
-              h('canvas', {
-                'data-raptor-canvas': 'true',
-                role: 'application',
-                'aria-label': '3D raptor hunt simulator. Press WASD to steer, Q E to change altitude, Shift to dive, Space to pull up, F to strike.',
-                tabIndex: 0,
-                style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
-                ref: function(canvasEl) {
-                  if (!canvasEl) return;
-                  // If species changed, reinit
-                  if (canvasEl._rhInit && canvasEl._rhSpecies === selectedSpecies) return;
-                  // Cleanup previous run
-                  if (canvasEl._rhCleanup) { try { canvasEl._rhCleanup(); } catch(e) {} canvasEl._rhCleanup = null; }
-                  canvasEl._rhInit = true;
-                  canvasEl._rhSpecies = selectedSpecies;
-                  initHuntSim(canvasEl, sp);
-                }
-              })
-            ),
-            h('div', { className: 'bg-slate-900/60 border-t border-slate-700/50 p-3 text-xs text-slate-300' },
-              h('div', { className: 'flex gap-4 flex-wrap' },
-                h('div', null, '⬆⬇⬅➡: ', h('span', { className: 'text-amber-300' }, 'WASD')),
-                h('div', null, 'Altitude: ', h('span', { className: 'text-amber-300' }, 'Q (down) / E (up)')),
-                h('div', null, 'Dive: ', h('span', { className: 'text-amber-300' }, 'Shift')),
-                h('div', null, 'Pull up: ', h('span', { className: 'text-amber-300' }, 'Space')),
-                h('div', null, 'Strike: ', h('span', { className: 'text-amber-300' }, 'F'))
-              )
-            )
+          threeLoaded && (
+            webglError
+              ? h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b), var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '32px', height: '60vh', minHeight: '420px' } },
+                  h('div', { style: { textAlign: 'center', maxWidth: '400px' } },
+                    h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '🦅'),
+                    h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, 'WebGL Not Available'),
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', lineHeight: '1.6', marginBottom: '16px' } },
+                      'Raptor Hunt requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
+                    ),
+                    h('button', {
+                      onClick: function() {
+                        setWebglError(false);
+                      },
+                      style: {
+                        padding: '8px 16px',
+                        background: '#7c3aed',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }
+                    }, 'Retry 3D Mode')
+                  )
+                )
+              : h('div', { className: 'bg-gradient-to-b from-sky-900/40 to-slate-900/40 border border-amber-700/40 rounded-xl overflow-hidden' },
+                  h('div', { className: 'relative', style: { height: '60vh', minHeight: '420px', maxHeight: '720px' } },
+                    h('canvas', {
+                      'data-raptor-canvas': 'true',
+                      role: 'application',
+                      'aria-label': '3D raptor hunt simulator. Press WASD to steer, Q E to change altitude, Shift to dive, Space to pull up, F to strike.',
+                      tabIndex: 0,
+                      style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
+                      ref: function(canvasEl) {
+                        if (!canvasEl) return;
+                        // If species changed, reinit
+                        if (canvasEl._rhInit && canvasEl._rhSpecies === selectedSpecies) return;
+                        // Cleanup previous run
+                        if (canvasEl._rhCleanup) { try { canvasEl._rhCleanup(); } catch(e) {} canvasEl._rhCleanup = null; }
+                        canvasEl._rhInit = true;
+                        canvasEl._rhSpecies = selectedSpecies;
+                        initHuntSim(canvasEl, sp);
+                      }
+                    })
+                  ),
+                  h('div', { className: 'bg-slate-900/60 border-t border-slate-700/50 p-3 text-xs text-slate-300' },
+                    h('div', { className: 'flex gap-4 flex-wrap' },
+                      h('div', null, '⬆⬇⬅➡: ', h('span', { className: 'text-amber-300' }, 'WASD')),
+                      h('div', null, 'Altitude: ', h('span', { className: 'text-amber-300' }, 'Q (down) / E (up)')),
+                      h('div', null, 'Dive: ', h('span', { className: 'text-amber-300' }, 'Shift')),
+                      h('div', null, 'Pull up: ', h('span', { className: 'text-amber-300' }, 'Space')),
+                      h('div', null, 'Strike: ', h('span', { className: 'text-amber-300' }, 'F'))
+                    )
+                  )
+                )
           ),
 
           // ── NEW v0.14: Achievement Panel ──
@@ -8086,7 +8115,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(70, W / H, 0.5, 2000);
-        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+        var renderer;
+        try {
+          renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+        } catch (e) {
+          console.error('[RaptorHunt] WebGL init failed:', e);
+          setWebglError(true);
+          return;
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(W, H);
 
@@ -11895,7 +11931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { sp: 'Rough-legged Hawk',     emoji: '🦅', fall: [9, 10, 11], peak: 10, spring: [2, 3], color: '#0ea5e9' },
               { sp: "Swainson's Hawk",       emoji: '🦅', fall: [8, 9], peak: 9, spring: [2, 3, 4], color: '#10b981' },
               { sp: 'Northern Harrier',      emoji: '🦅', fall: [8, 9, 10], peak: 9, spring: [2, 3], color: '#8b5cf6' },
-              { sp: 'Snowy Owl (irruption)', emoji: '🦉', fall: [10, 11, 0], peak: 11, spring: [2, 3], color: '#e2e8f0' }
+              { sp: 'Snowy Owl (irruption)', emoji: '🦉', fall: [10, 11, 0], peak: 11, spring: [2, 3], color: 'var(--allo-stem-text, #e2e8f0)' }
             ];
             var months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
             var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

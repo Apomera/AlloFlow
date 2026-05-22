@@ -60,7 +60,11 @@ window.StemLab = window.StemLab || {
   function initScene(cnv) {
     var THREE = window.THREE;
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color('#0f172a');
+    var themeBg = '#0f172a';
+    try {
+      themeBg = window.getComputedStyle(document.body).getPropertyValue('--allo-stem-canvas').trim() || '#0f172a';
+    } catch(e) {}
+    scene.background = new THREE.Color(themeBg);
     var camera = new THREE.PerspectiveCamera(50, cnv.clientWidth / cnv.clientHeight, 0.1, 1000);
     camera.position.set(6, 5, 8);
     camera.lookAt(0, 0, 0);
@@ -483,6 +487,11 @@ window.StemLab = window.StemLab || {
       // ── State ──
       var gd = (labToolData && labToolData.geoSandbox) || {};
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox || {}, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
+      var webglErrState = React.useState(false);
+      var webglError = webglErrState[0];
+      var setWebglError = webglErrState[1];
+      var themeCtx = React.useContext(window.AlloThemeContext || React.createContext(null));
+      var theme = themeCtx ? themeCtx.theme : 'dark';
 
           // Canvas narration removed — was firing on every render causing repeated TTS
       var updDim = function(key, val) {
@@ -681,9 +690,29 @@ window.StemLab = window.StemLab || {
         if (!window.THREE) return;
         var cnv = document.getElementById('geo-sandbox-canvas');
         if (!cnv) return;
-        if (!window._geoScene) {
-          window._geoScene = initScene(cnv);
+        try {
+          if (!window._geoScene) {
+            window._geoScene = initScene(cnv);
+          }
+          setWebglError(false);
+        } catch (err) {
+          console.error('[GeoSandbox] WebGL initialization failed', err);
+          setWebglError(true);
+          return;
         }
+
+        var themeBg = '#0f172a';
+        try {
+          themeBg = window.getComputedStyle(document.body).getPropertyValue('--allo-stem-canvas').trim() || '#0f172a';
+        } catch(e) {}
+        if (window._geoScene && window._geoScene.scene) {
+          if (window._geoScene.scene.background && window._geoScene.scene.background.isColor) {
+            window._geoScene.scene.background.setStyle(themeBg);
+          } else {
+            window._geoScene.scene.background = new window.THREE.Color(themeBg);
+          }
+        }
+
         updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
         // Resize handler
         var handleResize = function() {
@@ -694,7 +723,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -941,12 +970,22 @@ window.StemLab = window.StemLab || {
 
           // === THREE.JS VIEWPORT ===
           h('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
-            h('canvas', { 
-              id: 'geo-sandbox-canvas',
-              'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
-              className: 'w-full h-full',
-              style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
-            }),
+            webglError
+              ? h('div', { className: 'flex flex-col items-center justify-center p-6 text-center gap-4 w-full h-full absolute inset-0 bg-slate-950/90 text-slate-200' },
+                  h('span', { className: 'text-4xl' }, '⚠️'),
+                  h('span', { className: 'text-base font-bold text-red-400' }, 'WebGL is disabled or unsupported'),
+                  h('span', { className: 'text-sm text-slate-400 max-w-md' }, 'AlloFlow requires hardware acceleration to display 3D graphics. Please enable WebGL in your browser settings to interact with this lab.'),
+                  h('button', {
+                    onClick: function() { selectShape(shape); },
+                    className: 'px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all'
+                  }, 'Retry')
+                )
+              : h('canvas', { 
+                  id: 'geo-sandbox-canvas',
+                  'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
+                  className: 'w-full h-full',
+                  style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
+                }),
             // Controls hint overlay
             h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-600 bg-slate-900/80 px-2 py-1 rounded-md' },
               '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'

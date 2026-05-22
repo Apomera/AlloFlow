@@ -1440,7 +1440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               setTimeout(function() { game.mathChallenge = null; }, 5000);
               return;
             }
-            if (key === 's') { mc.answered = true; game.messages.unshift({ text: '⏭️ Skipped. ' + mc.explanation, time: game.time, color: '#94a3b8' }); setTimeout(function() { game.mathChallenge = null; }, 4000); return; }
+            if (key === 's') { mc.answered = true; game.messages.unshift({ text: '⏭️ Skipped. ' + mc.explanation, time: game.time, color: 'var(--allo-stem-text-soft, #94a3b8)' }); setTimeout(function() { game.mathChallenge = null; }, 4000); return; }
           }
 
           if (key === 'escape') {
@@ -1568,7 +1568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           h('div', { style: { textAlign: 'center', padding: '28px 24px 14px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🗼'),
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#4ade80', letterSpacing: '2px' } }, 'ATC TOWER'),
-            h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Guide aircraft safely. Solve rate problems. Master the math of aviation.')
+            h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '4px' } }, 'Guide aircraft safely. Solve rate problems. Master the math of aviation.')
           ),
           // Career stats
           (totalLanded > 0) ? h('div', { style: { padding: '0 24px 12px' } },
@@ -1576,14 +1576,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               [['🏆 ' + totalScore, 'Career Score'], ['✈️ ' + totalLanded, 'Total Landed'], ['🔥 ' + bestStreak, 'Best Streak']].map(function(s) {
                 return h('div', { key: s[1], style: { background: '#0a1a0a', padding: '6px 12px', borderRadius: '6px', textAlign: 'center', border: '1px solid #1a3a2a' } },
                   h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80' } }, s[0]),
-                  h('div', { style: { fontSize: '8px', color: '#94a3b8' } }, s[1])
+                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s[1])
                 );
               })
             )
           ) : null,
           // Airport selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏢 Select Airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏢 Select Airport'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               AIRPORTS.map(function(apt) {
                 return h('button', { key: apt.id, onClick: function() { startGame(apt.id); },
@@ -1595,8 +1595,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                       h('span', { style: { fontSize: '13px', fontWeight: 800 } }, apt.name + ' (' + apt.code + ')'),
                       h('span', { style: { fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, background: apt.difficulty === 'Beginner' ? '#0a2e1a' : apt.difficulty === 'Intermediate' ? '#1a2a0a' : apt.difficulty === 'Advanced' ? '#2a1a0a' : '#2a0a0a', color: apt.difficulty === 'Beginner' ? '#4ade80' : apt.difficulty === 'Intermediate' ? '#fbbf24' : apt.difficulty === 'Advanced' ? '#f97316' : '#ef4444' } }, apt.difficulty)
                     ),
-                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, apt.desc),
-                    h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, apt.runways.length + ' runway(s) · Max ' + apt.maxTraffic + ' aircraft')
+                    h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, apt.desc),
+                    h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, apt.runways.length + ' runway(s) · Max ' + apt.maxTraffic + ' aircraft')
                   )
                 );
               })
@@ -1604,7 +1604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Badges (' + Object.keys(earnedATCBadges).length + '/' + ATC_BADGES.length + ')'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Badges (' + Object.keys(earnedATCBadges).length + '/' + ATC_BADGES.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', marginBottom: '12px' } },
               ATC_BADGES.map(function(badge) {
                 var earned = !!earnedATCBadges[badge.id];
@@ -1613,7 +1613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 }, badge.icon + ' ' + (earned ? badge.name : '???'));
               })
             ),
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 ATC Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 ATC Lessons'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               Object.keys(ATC_LESSONS).map(function(key) {
                 var les = ATC_LESSONS[key];
@@ -1631,7 +1631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             [['Click/Tab', 'Select'], ['H', 'Heading'], ['S', 'Speed'], ['R', 'Runway'], ['C', 'Clear ILS'], ['G', 'Go Around'], ['P', 'Hold'], ['D/U', 'Alt'], ['T', 'Tutorial'], ['ESC', 'Exit']].map(function(item) {
               return h('div', { key: item[0], style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#4ade80', background: '#0a2e1a', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, item[0]),
-                h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '2px' } }, item[1])
+                h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, item[1])
               );
             })
           )
@@ -1680,9 +1680,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           h('div', { style: { background: 'linear-gradient(135deg, #021a0a, #0a2e1a)', borderRadius: '16px', padding: '24px', color: '#fff' } },
             h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' }, 'aria-hidden': true }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
-            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
+            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: '16px' } }, les.content),
             h('div', { style: { background: '#0a1a0a', borderRadius: '12px', padding: '16px', border: '1px solid #1a3a2a' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Key Formula'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '6px' } }, 'Key Formula'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#4ade80', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula)
             ),
 
@@ -1710,8 +1710,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 }, aiLoading ? '⏳ Thinking...' : (aiText ? '🔄 Re-explain' : '🧠 Explain'))
               ),
               aiError && h('p', { style: { fontSize: '11px', color: '#fca5a5', margin: 0 }, role: 'alert' }, aiError),
-              aiText && h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: '#94a3b8', margin: 0 } }, 'Click "Explain" for a plain-language breakdown of this ATC concept.')
+              aiText && h('p', { style: { fontSize: '12px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, 'Click "Explain" for a plain-language breakdown of this ATC concept.')
             ),
 
             h('button', { onClick: function() { startGame('simple'); },
@@ -1770,7 +1770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         );
       }
 
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, 'Loading ATC Tower...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Loading ATC Tower...');
     }
   });
 

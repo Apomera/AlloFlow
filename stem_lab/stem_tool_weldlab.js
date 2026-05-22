@@ -173,9 +173,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // conductivity = heat spreads sideways = wider HAZ but shallower penetration.
   // Numbers are normalized to mild-steel = 1.0.
   var MATERIAL = {
-    steel:     { name: 'Mild Steel A36', kFactor: 1.0,  meltK: 1798, density: 7850, color: '#94a3b8' },
-    aluminum:  { name: 'Aluminum 6061',  kFactor: 2.4,  meltK: 925,  density: 2700, color: '#cbd5e1' },
-    stainless: { name: 'Stainless 304',  kFactor: 0.65, meltK: 1700, density: 7980, color: '#e2e8f0' }
+    steel:     { name: 'Mild Steel A36', kFactor: 1.0,  meltK: 1798, density: 7850, color: 'var(--allo-stem-text-soft, #94a3b8)' },
+    aluminum:  { name: 'Aluminum 6061',  kFactor: 2.4,  meltK: 925,  density: 2700, color: 'var(--allo-stem-text, #cbd5e1)' },
+    stainless: { name: 'Stainless 304',  kFactor: 0.65, meltK: 1700, density: 7980, color: 'var(--allo-stem-text, #e2e8f0)' }
   };
 
   window.StemLab.registerTool('weldLab', {
@@ -1570,12 +1570,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var rafRef = useRef(null);
         var statusState = useState('loading'); // loading | ready | error
         var status = statusState[0], setStatus = statusState[1];
+        var retryState = useState(0);
+        var retryCount = retryState[0], setRetryCount = retryState[1];
         var liveRef = props.liveRef;
         // Defect color legend rendered alongside the 3D scene when
         // showDefects is on. Each entry: { key, label, color, swatch }.
         var defectLegend = [
           { key: 'burnthrough',  label: 'Burnthrough',   color: '#000000', desc: 'hole punched through' },
-          { key: 'lackOfFusion', label: 'Lack of fusion', color: '#475569', desc: 'cold weld, no bond' },
+          { key: 'lackOfFusion', label: 'Lack of fusion', color: 'var(--allo-stem-text-soft, #475569)', desc: 'cold weld, no bond' },
           { key: 'undercut',     label: 'Undercut',      color: '#7c2d12', desc: 'groove next to bead' },
           { key: 'overlap',      label: 'Overlap',       color: '#92400e', desc: 'bead overhangs edge' },
           { key: 'spatter',      label: 'Spatter',       color: '#f59e0b', desc: 'molten splatter' },
@@ -2592,7 +2594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             if (sceneRef.current && sceneRef.current.dispose) sceneRef.current.dispose();
             sceneRef.current = null;
           };
-        }, []);
+        }, [retryCount]);
 
         return h('div', {
           className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3 relative'
@@ -2621,8 +2623,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
             h('div', null,
               h('div', { className: 'text-rose-300 text-sm font-bold mb-2' }, '3D view unavailable'),
-              h('div', { className: 'text-slate-300 text-xs leading-relaxed max-w-xs' },
-                'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.')
+              h('div', { className: 'text-slate-300 text-xs leading-relaxed max-w-xs mb-3' },
+                'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.'),
+              h('button', {
+                onClick: function() {
+                  setStatus('loading');
+                  setRetryCount(function(c) { return c + 1; });
+                },
+                className: 'px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition focus:outline-none focus:ring-2 ring-orange-500/40'
+              }, 'Retry 3D Mode')
             )
           ),
           // Camera controls overlay (only when scene is ready)
@@ -2672,7 +2681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('span', {
                     'aria-hidden': true,
                     className: 'inline-block w-3 h-3 rounded-full',
-                    style: { backgroundColor: d.color, border: '1px solid #475569' }
+                    style: { backgroundColor: d.color, border: '1px solid var(--allo-stem-border, #475569)' }
                   }),
                   h('span', { className: 'font-bold' }, d.label),
                   h('span', { className: 'text-slate-400 text-[11px]' }, '— ' + d.desc)
@@ -3871,7 +3880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       ),
                       h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                         h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
-                        h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#64748b' } }, quizScore + ' / ' + quizPool.length)
+                        h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #64748b)' } }, quizScore + ' / ' + quizPool.length)
                       )
                     ),
                     h('div', { className: 'flex-1', style: { minWidth: 220 } },
@@ -3881,7 +3890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     )
                   ),
                   quizAnswers.length > 0 && h('div', { className: 'px-6 pb-3' },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#475569', marginBottom: 4 } }, 'Your answers'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #475569)', marginBottom: 4 } }, 'Your answers'),
                     h('div', { className: 'flex flex-wrap gap-1' },
                       quizAnswers.map(function(a, ai) {
                         var jointName = (JOINTS[a.key] && JOINTS[a.key].name) || a.key;
@@ -4611,7 +4620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                  h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -5652,7 +5661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, pr.icon),
                     h('span', { style: { color: psAns ? color : pr.color, fontSize: 13, fontWeight: 800 } }, pr.label)
                   ),
-                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: psAns ? color : '#475569' } }, pr.def)
+                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: psAns ? color: 'var(--allo-stem-text-soft, #475569)' } }, pr.def)
                 );
               })
             ),
@@ -5708,7 +5717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { id: 'travelSlow',  label: 'Travel too slow',    color: '#16a34a', icon: '🐢', def: 'Torch lingered; puddle sat too long. Overlap (weld sits ON TOP), excess buildup, burn-through on thin material.' },
           { id: 'travelFast',  label: 'Travel too fast',    color: '#f59e0b', icon: '🐇', def: 'Torch moved too quickly to develop full fusion. Undercut, narrow bead, lack of penetration.' },
           { id: 'contamination', label: 'Contamination',     color: '#a855f7', icon: '🦠', def: 'Base metal had paint, oil, rust, mill scale, or moisture. Or shielding gas was lost (wind, leak, no purge). Causes porosity, oxidation, brittleness.' },
-          { id: 'technique',   label: 'Technique error',    color: '#64748b', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
+          { id: 'technique',   label: 'Technique error',    color: 'var(--allo-stem-text-soft, #64748b)', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
         ];
         var V = [
           { id: 1, defect: 'Porosity — gas pockets trapped in the weld, visible as small round holes on the surface or revealed by radiography.', correct: 'contamination',
@@ -5846,7 +5855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, c.icon),
                     h('span', { style: { color: ddAns2 ? color : c.color, fontSize: 13, fontWeight: 800 } }, c.label)
                   ),
-                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns2 ? color : '#475569' } }, c.def)
+                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns2 ? color: 'var(--allo-stem-text-soft, #475569)' } }, c.def)
                 );
               })
             ),
@@ -6301,7 +6310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       style: {
                         width: 56, height: 56, borderRadius: '50%',
                         background: '#e2e8f0',
-                        border: '2px solid #cbd5e1',
+                        border: '2px solid var(--allo-stem-border, #cbd5e1)',
                         filter: 'grayscale(100%)'
                       }
                     }, info.icon),

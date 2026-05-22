@@ -1973,7 +1973,7 @@ window.StemLab = window.StemLab || {
           ? earnedBadges.map(function(b) { return '<span class="badge">' + b.emoji + ' ' + b.label + '</span>'; }).join('')
           : '<span class="badge-empty">No badges yet — keep running plays!</span>';
         var fieldColor = isSoccer ? '#10b981' : '#16a34a';
-        var matchupColor = matchup ? matchup.color : '#94a3b8';
+        var matchupColor = matchup ? matchup.color: 'var(--allo-stem-text-soft, #94a3b8)';
         var cardHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
           + '<title>PlayLab Trading Card — ' + name + '</title>'
           + '<style>'
@@ -3480,12 +3480,12 @@ window.StemLab = window.StemLab || {
             padding: opts.small ? '6px 10px' : '8px 14px', borderRadius: 999, cursor: 'pointer',
             border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
             background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-            color: '#f1f5f9', fontSize: opts.small ? 11 : 13, fontWeight: 600
+            color: 'var(--allo-stem-text, #f1f5f9)', fontSize: opts.small ? 11 : 13, fontWeight: 600
           }
         }, label);
       }
 
-      return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
+      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the play runs (previously hover-only on the chip).
@@ -3500,19 +3500,19 @@ window.StemLab = window.StemLab || {
                    padding: 16 }
         },
           h('div', {
-            style: { background: '#0f172a', border: '2px solid #334155', borderRadius: 14,
+            style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '2px solid var(--allo-stem-border, #334155)', borderRadius: 14,
                      maxWidth: 560, width: '100%', maxHeight: '85vh', overflow: 'auto',
                      padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 36 } }, scenarioIntro.icon || '🎬'),
               h('h2', { id: 'pl-scenario-intro-title',
-                style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: '#f1f5f9' } },
+                style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--allo-stem-text, #f1f5f9)' } },
                 scenarioIntro.label),
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
                 'aria-label': 'Close scenario intro',
-                style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1',
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)',
                          width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
                          fontSize: 16, lineHeight: 1, fontWeight: 700 }
               }, '×')
@@ -3521,7 +3521,7 @@ window.StemLab = window.StemLab || {
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 '📜 The story'),
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } },
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
                 scenarioIntro.teach)
             ),
             scenarioIntro.questions && scenarioIntro.questions.length > 0 && h('div', {
@@ -3530,7 +3530,7 @@ window.StemLab = window.StemLab || {
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 '🤔 Try these before you run it'),
-              h('ul', { style: { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 13, lineHeight: 1.5 } },
+              h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } },
                 scenarioIntro.questions.map(function(q, i) {
                   return h('li', { key: 'pl-sq-' + i, style: { marginBottom: 6 } }, q);
                 })
@@ -3547,8 +3547,8 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
                 style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
-                         border: '1px solid #475569', background: '#1e293b',
-                         color: '#cbd5e1', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+                         border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)',
+                         color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
               }, '🔧 Explore the field first')
             )
           )
@@ -3581,11 +3581,11 @@ window.StemLab = window.StemLab || {
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
             'data-pl-focusable': 'true', 'aria-label': 'Back to STEM Lab',
-            style: { background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, '← Back'),
           h('h2', { style: { margin: 0, fontSize: 20 } },
             (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
-          h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Every play is a coordinated math problem on a fixed grid.')
+          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Every play is a coordinated math problem on a fixed grid.')
         ),
         // ── Play Catalog summary band ──
         // Sticky band under the header. Shows count of unique plays/concepts
@@ -3615,8 +3615,8 @@ window.StemLab = window.StemLab || {
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
                 h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, 'Play Catalog'),
-                h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, got + ' / ' + sportTotal + (isSoccer ? ' concepts run with xG ≥ 0.20' : ' plays completed')),
-                h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, got + ' / ' + sportTotal + (isSoccer ? ' concepts run with xG ≥ 0.20' : ' plays completed')),
+                h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                   got === 0
                     ? (isSoccer ? 'Build a chance with xG ≥ 0.20 to lock in a concept.' : 'Complete a pass to lock in a play.')
                     : got === sportTotal ? '🏆 Full catalog — every play locked in.'
@@ -3650,7 +3650,7 @@ window.StemLab = window.StemLab || {
                 padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                 background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: '#f1f5f9', fontSize: 13, fontWeight: 600
+                color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontWeight: 600
               }
             }, sp.label);
           })
@@ -3677,7 +3677,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -3689,10 +3689,10 @@ window.StemLab = window.StemLab || {
         // discussion. Filtered to the active sport so students don't see
         // 5 football scenarios when they're in soccer mode.
         h('details', {
-          style: { marginBottom: 10, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' built-in' + ((d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length ? ' + ' + (d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length + ' custom' : '') + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
           h('div', {
             role: 'group', 'aria-label': 'Tactical scenarios',
@@ -3709,9 +3709,9 @@ window.StemLab = window.StemLab || {
                 title: sc.teach,
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #334155',
-                  background: '#1e293b',
-                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                  border: '1px solid var(--allo-stem-border, #334155)',
+                  background: 'var(--allo-stem-panel, #1e293b)',
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
                 }
               }, sc.icon + ' ' + sc.label);
             }).concat(
@@ -3834,12 +3834,12 @@ window.StemLab = window.StemLab || {
               display: 'block', width: '100%', marginBottom: 12,
               padding: '10px 14px', borderRadius: 8,
               border: '1px solid ' + border, background: bg,
-              color: '#f1f5f9', fontSize: 12, fontWeight: 600,
+              color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600,
               textAlign: 'left', cursor: done ? 'default' : 'pointer'
             }
           },
             h('div', { style: { fontSize: 11, color: border, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, fontWeight: 400 } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontWeight: 400 } },
               done ? 'Earned 15 XP. Try again tomorrow.' : daily.teach.slice(0, 110) + (daily.teach.length > 110 ? '…' : ''))
           );
         })(),
@@ -3849,10 +3849,10 @@ window.StemLab = window.StemLab || {
         // with their color; unearned are dimmed with the hint as tooltip
         // so students see how to unlock them.
         h('details', {
-          style: { marginBottom: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '🏅 Achievements (' + Object.keys(d.badgesEarned || {}).length + ' / ' + PLAYLAB_BADGES.length + ')'),
           h('div', {
             role: 'list', 'aria-label': 'Badge achievements',
@@ -3883,10 +3883,10 @@ window.StemLab = window.StemLab || {
         // aware: football shows coverages-beaten / plays completed / drill
         // flags; soccer shows xG / concepts run / set-piece types.
         h('details', {
-          style: { marginBottom: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '📊 Your Numbers — ' + (d.playerName || (isSoccer ? 'soccer session' : 'football session'))),
           h('div', {
             role: 'table', 'aria-label': 'Session stats',
@@ -3895,7 +3895,7 @@ window.StemLab = window.StemLab || {
             getPlayLabStatsRows(d).reduce(function(acc, row) {
               acc.push(h('span', {
                 key: 'plsl-' + row.label, role: 'rowheader',
-                style: { color: '#94a3b8' }
+                style: { color: 'var(--allo-stem-text-soft, #94a3b8)' }
               }, row.label));
               acc.push(h('span', {
                 key: 'plsv-' + row.label, role: 'cell',
@@ -3953,7 +3953,7 @@ window.StemLab = window.StemLab || {
               padding: 12, borderRadius: 10, marginBottom: 12,
               background: 'rgba(167,139,250,0.10)',
               border: '1px solid rgba(167,139,250,0.45)',
-              color: '#f1f5f9', fontSize: 13, lineHeight: 1.5
+              color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 } },
@@ -3969,8 +3969,8 @@ window.StemLab = window.StemLab || {
                 'data-pl-focusable': 'true',
                 style: {
                   padding: '2px 8px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #475569', background: 'transparent',
-                  color: '#cbd5e1', fontSize: 11
+                  border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent',
+                  color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
                 }
               }, '✕ Dismiss')
             ),
@@ -3979,7 +3979,7 @@ window.StemLab = window.StemLab || {
             },
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                 '💭 Discussion'),
-              h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
+              h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } },
                 active.questions.map(function(q, i) {
                   return h('li', { key: 'q-' + i, style: { marginBottom: 4 } }, q);
                 })
@@ -3991,7 +3991,7 @@ window.StemLab = window.StemLab || {
         // Play / Formation picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Formation library' : 'Play library',
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
-          h('span', { style: { color: '#cbd5e1' } }, isSoccer ? 'Formation:' : 'Play:'),
+          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, isSoccer ? 'Formation:' : 'Play:'),
           (isSoccer ? SOCCER_FORMATIONS : PLAYS).map(function(p) {
             var sel = isSoccer ? d.formationId === p.id : d.playId === p.id;
             return pillBtn(p.icon + ' ' + p.label, sel, function() {
@@ -4008,7 +4008,7 @@ window.StemLab = window.StemLab || {
         // Concept picker — soccer only
         isSoccer ? h('div', { role: 'group', 'aria-label': 'Tactical concept',
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
-          h('span', { style: { color: '#cbd5e1' } }, 'Concept:'),
+          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Concept:'),
           SOCCER_CONCEPTS.map(function(c) {
             return pillBtn(c.icon + ' ' + c.label, d.conceptId === c.id, function() {
               upd('conceptId', c.id);
@@ -4023,25 +4023,25 @@ window.StemLab = window.StemLab || {
         // value of the same play changes by situation.
         !isSoccer ? h('div', { role: 'group', 'aria-label': 'Down and field position',
           style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
-          h('span', { style: { color: '#cbd5e1' } }, 'Situation:'),
-          h('label', { htmlFor: 'pl-down', style: { color: '#cbd5e1' } }, 'Down:'),
+          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Situation:'),
+          h('label', { htmlFor: 'pl-down', style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Down:'),
           h('select', {
             id: 'pl-down', value: String(d.down || 1),
             onChange: function(e) { upd('down', parseInt(e.target.value, 10) || 1); },
             'data-pl-focusable': 'true',
-            style: { padding: '4px 6px', borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 12 }
+            style: { padding: '4px 6px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
           },
             [1, 2, 3, 4].map(function(n) { return h('option', { key: n, value: String(n) }, n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th')); })
           ),
-          h('label', { htmlFor: 'pl-ytg', style: { color: '#cbd5e1' } }, 'Yards to goal:'),
+          h('label', { htmlFor: 'pl-ytg', style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Yards to goal:'),
           h('input', {
             id: 'pl-ytg', type: 'number', min: 1, max: 99,
             value: d.yardsToGoal || 75,
             onChange: function(e) { upd('yardsToGoal', Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 75))); },
             'data-pl-focusable': 'true',
-            style: { width: 60, padding: '4px 6px', borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 12 }
+            style: { width: 60, padding: '4px 6px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
           }),
-          h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+          h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
             'EP at this state: ', h('span', { style: { color: '#fbbf24', fontWeight: 700 } },
               expectedPoints(d.yardsToGoal || 75, d.down || 1).toFixed(1)))
         ) : null,
@@ -4054,10 +4054,10 @@ window.StemLab = window.StemLab || {
         // tactical landscape. Collapsed by default to keep the layout
         // tight for free-explore.
         h('details', {
-          style: { marginBottom: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '📊 Matchup matrix — see every ' + (isSoccer ? 'concept × shape' : 'play × coverage') + ' at a glance'),
           h('div', {
             role: 'table',
@@ -4124,7 +4124,7 @@ window.StemLab = window.StemLab || {
                           border: isActive ? '2px solid #fbbf24' : '1px solid rgba(15,23,42,0.5)',
                           background: m ? m.bg.replace('0.12', '0.45') : 'rgba(100,116,139,0.20)',
                           cursor: 'pointer', padding: 0, fontSize: 12,
-                          color: m ? m.color : '#94a3b8'
+                          color: m ? m.color: 'var(--allo-stem-text-soft, #94a3b8)'
                         }
                       }, m ? m.emoji : '·');
                     }))
@@ -4133,14 +4133,14 @@ window.StemLab = window.StemLab || {
               );
             })()
           ),
-          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 8 } },
+          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8 } },
             '✅ Great match · 👍 Workable · ⚠️ Tough match' + (isSoccer ? ' · ⚐ 🎯 Set-piece / penalty' : '') + ' · Click any cell to load that combination.')
         ),
 
         // Coverage / Defensive shape picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Defensive shape' : 'Defensive coverage',
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap', fontSize: 12 } },
-          h('span', { style: { color: '#cbd5e1' } }, 'Defense:'),
+          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Defense:'),
           (isSoccer ? SOCCER_SHAPES : COVERAGES).map(function(c) {
             var sel = isSoccer ? d.shapeId === c.id : d.coverageId === c.id;
             return pillBtn(c.label, sel, function() {
@@ -4176,7 +4176,7 @@ window.StemLab = window.StemLab || {
             style: {
               padding: '8px 14px', borderRadius: 8, marginBottom: 12,
               border: '1px solid ' + matchup.color, background: matchup.bg,
-              fontSize: 13, lineHeight: 1.4, color: '#f1f5f9'
+              fontSize: 13, lineHeight: 1.4, color: 'var(--allo-stem-text, #f1f5f9)'
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -4191,7 +4191,7 @@ window.StemLab = window.StemLab || {
               style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(241,245,249,0.18)',
                        display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }
             },
-              h('span', { style: { fontSize: 12, color: '#cbd5e1', marginRight: 4 } }, '💡 Try instead:'),
+              h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 4 } }, '💡 Try instead:'),
               suggestions.map(function(s) {
                 return h('button', {
                   key: 'sug-' + s.id,
@@ -4207,7 +4207,7 @@ window.StemLab = window.StemLab || {
                   style: {
                     padding: '4px 10px', borderRadius: 999, cursor: 'pointer',
                     border: '1px solid ' + matchup.color, background: 'rgba(15,23,42,0.55)',
-                    color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                    color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                   }
                 }, (s.icon || '') + ' ' + s.label);
               })
@@ -4251,10 +4251,10 @@ window.StemLab = window.StemLab || {
                 style: {
                   padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
                   border: '1px solid #10b981', background: 'rgba(16,185,129,0.18)',
-                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                 }
               }, '🎯 Start ' + DRILL_SET.label),
-              h('span', { style: { fontSize: 11, color: '#94a3b8' } },
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 DRILL_SET.tasks.length + ' tasks · sandbox stays open while a drill runs'));
           }
           return h('section', {
@@ -4278,17 +4278,17 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Stop the current drill',
                 'data-pl-focusable': 'true',
                 style: { padding: '4px 8px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11 }
+                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
               }, allDone ? 'Close' : 'Stop')),
             allDone
-              ? h('div', { style: { fontSize: 13, color: '#cbd5e1' } },
+              ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   'You finished all ' + DRILL_SET.tasks.length + ' tasks. Mix concepts and shapes to keep practicing, or hit Stop to close the drill.')
               : h('div', null,
-                  h('div', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4 } }, task.goal),
-                  h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } },
+                  h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #f1f5f9)', fontWeight: 600, marginBottom: 4 } }, task.goal),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
                     h('span', { style: { color: '#10b981', fontWeight: 700, marginRight: 6 } }, 'Progress:'),
                     task.progress(stats)),
-                  task.tip ? h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                  task.tip ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                     h('span', { style: { color: '#fbbf24' } }, '💡 '), task.tip) : null)
           );
         })(),
@@ -4312,7 +4312,7 @@ window.StemLab = window.StemLab || {
               onMouseMove: handleMouseMove,
               onMouseUp: handleMouseUp,
               onMouseLeave: handleMouseUp,
-              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a', cursor: 'pointer', touchAction: 'none' }
+              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', cursor: 'pointer', touchAction: 'none' }
             }),
             // ── Run Play button — the headline action ──
             // A green pill below the canvas that animates the play.
@@ -4336,7 +4336,7 @@ window.StemLab = window.StemLab || {
                 }
               }, d.runActive ? '⏱ Running…' : '▶ Run Play'),
               d.runOutcome ? h('span', {
-                style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' }
+                style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' }
               },
                 d.runOutcome.location === 'caught' ? 'Last result: ✅ Complete to ' + d.runOutcome.receiverId
                   : d.runOutcome.location === 'brokenup' ? 'Last result: ✋ Broken up'
@@ -4345,7 +4345,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Toggle row + reset positions
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 12, fontSize: 12, color: '#cbd5e1', flexWrap: 'wrap', alignItems: 'center' } },
+            h('div', { style: { marginTop: 8, display: 'flex', gap: 12, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', flexWrap: 'wrap', alignItems: 'center' } },
               h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
                 h('input', { type: 'checkbox', checked: !!d.showZones, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showZones', e.target.checked); } }),
@@ -4376,7 +4376,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Reset all custom player positions to the play preset',
                 style: {
                   padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11
+                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
                 }
               }, 'Reset positions') : null,
               // Save play — only renders when there's something custom to save
@@ -4387,16 +4387,16 @@ window.StemLab = window.StemLab || {
                 style: {
                   padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
                   border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)',
-                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
                 }
               }, '💾 Save play') : null
             ),
             // Save prompt — inline form below the toggle row
             d.savePromptOpen ? h('div', {
               role: 'dialog', 'aria-label': 'Save play',
-              style: { marginTop: 8, padding: 12, background: '#0f172a', border: '1px solid #d946ef', borderRadius: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
+              style: { marginTop: 8, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #d946ef', borderRadius: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
             },
-              h('label', { htmlFor: 'pl-save-name', style: { fontSize: 12, color: '#cbd5e1' } }, 'Play name:'),
+              h('label', { htmlFor: 'pl-save-name', style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Play name:'),
               h('input', {
                 id: 'pl-save-name', type: 'text',
                 value: d.savePromptName || '',
@@ -4406,21 +4406,21 @@ window.StemLab = window.StemLab || {
                   else if (e.key === 'Escape') cancelSavePrompt();
                 },
                 'data-pl-focusable': 'true', autoFocus: true,
-                style: { flex: 1, minWidth: 200, padding: '6px 8px', borderRadius: 4, border: '1px solid #475569', background: '#1e293b', color: '#f1f5f9', fontSize: 12 }
+                style: { flex: 1, minWidth: 200, padding: '6px 8px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
               }),
               h('button', {
                 onClick: commitSavePlay, 'data-pl-focusable': 'true',
-                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)', color: '#f1f5f9', fontSize: 11, fontWeight: 600 }
+                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600 }
               }, 'Save'),
               h('button', {
                 onClick: cancelSavePrompt, 'data-pl-focusable': 'true',
-                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11 }
+                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
               }, 'Cancel')
             ) : null,
             // Drag hint — only on first load (no custom edits yet) so it
             // doesn't nag returning students
             !Object.keys(d.customPositions || {}).length ? h('div', {
-              style: { marginTop: 6, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }
+              style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }
             }, '💡 Tip: click and drag any player on the field to reposition them. The route stays attached so you can design your own play.') : null,
             // ── Coach Mode bubble ──
             // Renders only when there's a reply, error, or in-flight request.
@@ -4435,21 +4435,21 @@ window.StemLab = window.StemLab || {
                 style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#d946ef', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, '🤖 Coach analysis'),
               d.coachLoading
-                ? h('div', { style: { color: '#cbd5e1', fontSize: 12, fontStyle: 'italic' } }, 'Analyzing the play vs the coverage…')
+                ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontStyle: 'italic' } }, 'Analyzing the play vs the coverage…')
                 : d.coachError
                 ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, d.coachError)
-                : h('div', { style: { color: '#f1f5f9', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
+                : h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
             ) : null,
 
             // Analysis panel
             h('section', {
               'aria-labelledby': 'pl-analysis-heading',
-              style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+              style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
             },
-              h('h3', { id: 'pl-analysis-heading', style: { fontSize: 12, margin: 0, marginBottom: 8, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
+              h('h3', { id: 'pl-analysis-heading', style: { fontSize: 12, margin: 0, marginBottom: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
                 'Open-receiver analysis'),
               analysis.length === 0
-                ? h('div', { style: { color: '#94a3b8', fontSize: 13, fontStyle: 'italic' } }, 'No eligible receivers running routes.')
+                ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontStyle: 'italic' } }, 'No eligible receivers running routes.')
                 : h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, fontSize: 12 } },
                     analysis.slice(0, 3).map(function(r, idx) {
                       var winner = idx === 0;
@@ -4463,10 +4463,10 @@ window.StemLab = window.StemLab || {
                       },
                         h('div', { style: { fontWeight: 700, color: winner ? '#10b981' : '#fbbf24', marginBottom: 2 } },
                           winner ? '🟢 Most open' : (idx === 1 ? 'Second' : 'Third')),
-                        h('div', { style: { color: '#f1f5f9', fontSize: 13 } }, r.id),
-                        h('div', { style: { color: '#cbd5e1', fontSize: 11 } },
+                        h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13 } }, r.id),
+                        h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 } },
                           r.opennessYd === Infinity ? 'No defender' : r.opennessYd.toFixed(1) + ' yd from nearest defender'),
-                        h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, r.nearestZone || '—')
+                        h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, r.nearestZone || '—')
                       );
                     })
                   )
@@ -4477,29 +4477,29 @@ window.StemLab = window.StemLab || {
           h('div', null,
             h('section', {
               'aria-labelledby': 'pl-play-heading',
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 10 }
             },
-              h('h3', { id: 'pl-play-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
+              h('h3', { id: 'pl-play-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
                 isSoccer ? (formationDef.icon + ' ' + formationDef.label) : (play.icon + ' ' + play.label)),
-              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                 isSoccer ? formationDef.teach : play.teach)
             ),
             // Soccer-only: concept teach blurb (the passing-network pattern)
             isSoccer ? h('section', {
               'aria-labelledby': 'pl-concept-heading',
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 10 }
             },
-              h('h3', { id: 'pl-concept-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
+              h('h3', { id: 'pl-concept-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
                 concept.icon + ' ' + concept.label),
-              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, concept.teach)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, concept.teach)
             ) : null,
             h('section', {
               'aria-labelledby': 'pl-cov-heading',
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 10 }
             },
-              h('h3', { id: 'pl-cov-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
+              h('h3', { id: 'pl-cov-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
                 '🛡️ ' + (isSoccer ? soccerShape.label : coverage.label)),
-              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                 isSoccer ? soccerShape.teach : coverage.teach)
             ),
             // Coach button — only renders if Gemini is available. The
@@ -4525,7 +4525,7 @@ window.StemLab = window.StemLab || {
                       padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
                       background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
-                      color: '#f1f5f9', fontSize: 11, fontWeight: sel ? 700 : 500
+                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: sel ? 700 : 500
                     }
                   }, p.icon + ' ' + p.label);
                 })
@@ -4542,7 +4542,7 @@ window.StemLab = window.StemLab || {
                   cursor: d.coachLoading ? 'wait' : 'pointer',
                   border: '1px solid #d946ef',
                   background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
-                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                 }
               }, d.coachLoading ? '🤖 Coach is analyzing…' : '🤖 Ask the coach')
             ) : null,
@@ -4552,16 +4552,16 @@ window.StemLab = window.StemLab || {
             // row label loads the play; clicking the X deletes it.
             (d.savedPlays && d.savedPlays.length) ? h('section', {
               'aria-labelledby': 'pl-saved-heading',
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 10 }
             },
               h('h3', { id: 'pl-saved-heading',
-                style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+                style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, '💾 My Plays (' + d.savedPlays.length + ')'),
               h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
                 d.savedPlays.slice().reverse().map(function(entry) {
                   return h('li', {
                     key: entry.id,
-                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: '#1e293b', border: '1px solid #334155' }
+                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' }
                   },
                     h('span', { style: { fontSize: 14 } }, entry.sport === 'soccer' ? '⚽' : '🏈'),
                     h('button', {
@@ -4570,20 +4570,20 @@ window.StemLab = window.StemLab || {
                       'data-pl-focusable': 'true',
                       style: { flex: 1, padding: '4px 6px', borderRadius: 4, cursor: 'pointer',
                         border: '1px solid transparent', background: 'transparent',
-                        color: '#f1f5f9', fontSize: 12, textAlign: 'left' }
+                        color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, textAlign: 'left' }
                     }, entry.name),
                     h('button', {
                       onClick: function() { if (confirm('Delete saved play "' + entry.name + '"?')) deleteSavedPlay(entry.id); },
                       'aria-label': 'Delete saved play ' + entry.name,
                       'data-pl-focusable': 'true',
                       style: { padding: '4px 8px', minHeight: 24, minWidth: 24, borderRadius: 4, cursor: 'pointer',
-                        border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 12 }
+                        border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 }
                     }, '✕')
                   );
                 })
               )
             ) : null,
-            h('div', { style: { fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', justifyContent: 'space-between' } },
               h('span', null, 'Plays seen: ' + Object.keys(d.playsViewed || {}).length + ' / ' + PLAYS.length),
               h('span', null, 'Coverages seen: ' + Object.keys(d.coveragesViewed || {}).length + ' / ' + COVERAGES.length)
             )

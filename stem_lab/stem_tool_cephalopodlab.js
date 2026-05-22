@@ -191,7 +191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     { id: 'reef', name: 'Coral Reef', emoji: '🪸', color: '#fb923c',
       description: 'Warm, colorful, complex 3D environment. Crevices for ambush, abundant prey, but lots of predators (sharks, eels) and other competing hunters.',
       substrate: { red: 220, green: 140, blue: 80, texture: 'bumpy', pattern: 'mottled' } },
-    { id: 'rocky', name: 'Rocky Shore', emoji: '🪨', color: '#94a3b8',
+    { id: 'rocky', name: 'Rocky Shore', emoji: '🪨', color: 'var(--allo-stem-text-soft, #94a3b8)',
       description: 'Cold, dim, kelp + boulders. Hiding places everywhere; prey is mostly crustaceans and small fish.',
       substrate: { red: 120, green: 110, blue: 100, texture: 'rough', pattern: 'mottled' } },
     { id: 'sandy', name: 'Sandy Bottom', emoji: '🏖️', color: '#fcd34d',
@@ -212,7 +212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     { id: 'estuary', name: 'Estuary / Muck', emoji: '🪨', color: '#a16207',
       description: 'Brackish, muddy, low-visibility. Mimic + coconut octopus territory — prey lives in soft substrate.',
       substrate: { red: 110, green: 90, blue: 70, texture: 'smooth', pattern: 'mottled' } },
-    { id: 'deep-reef', name: 'Deep Reef (200-600m)', emoji: '🪸', color: '#475569',
+    { id: 'deep-reef', name: 'Deep Reef (200-600m)', emoji: '🪸', color: 'var(--allo-stem-text-soft, #475569)',
       description: 'Mesophotic zone — beyond recreational diving depth. Where nautilus live + slowly scavenge.',
       substrate: { red: 60, green: 70, blue: 90, texture: 'rough', pattern: 'mottled' } },
     { id: 'cold-deep', name: 'Cold Deep (Pacific Northwest)', emoji: '❄️', color: '#0c4a6e',
@@ -540,7 +540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         backgroundRepeat: 'no-repeat, repeat, no-repeat',
         backgroundAttachment: 'fixed, scroll, fixed',
         minHeight: '100vh',
-        color: '#f1f5f9'
+        color: 'var(--allo-stem-text, #f1f5f9)'
       };
 
       // ─── Reusable shells ───
@@ -549,7 +549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function panelHeader(title, subtitle) {
         return h('div', { style: { marginBottom: 18 } },
           h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em', marginBottom: 4 } }, title),
-          subtitle ? h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
+          subtitle ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
       }
 
       // ─── Hero header (matches Kitchen Lab / Printing Press pattern) ───
@@ -586,7 +586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   '17 sections')),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
       function renderTabs() {
@@ -726,12 +726,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a78bfa', padding: '12px 14px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 20, marginBottom: 4 } }, c.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, c.title),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, c.body));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, c.body));
               }))),
 
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎯 What you can do here'),
-            h('ul', { style: { color: '#e2e8f0', fontSize: 13, lineHeight: 1.8, margin: 0, padding: '0 0 0 20px' } },
+            h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8, margin: 0, padding: '0 0 0 20px' } },
               h('li', null, h('b', { style: { color: '#c7d2fe' } }, 'Field Guide: '), 'Compare 10 species across intelligence + camouflage + hunting style. Each has a "weird thing" — the trait that makes biologists stop everything.'),
               h('li', null, h('b', { style: { color: '#c7d2fe' } }, 'Hunter Sim: '), 'Play a cephalopod hunter. Pick species, habitat, prey, tactic. Match your skin to the substrate. Time the strike. Get judged on whether your tactic was species-appropriate.'),
               h('li', null, h('b', { style: { color: '#c7d2fe' } }, 'Resources: '), 'Glossary, sources, conservation status, the science behind chromatophore biology.'))),
@@ -779,7 +779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, s.emoji),
                     h('span', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, s.name)),
-                  h('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#94a3b8' } }, s.scientific));
+                  h('div', { style: { fontSize: 9, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.scientific));
               }))),
 
           // Selected species detail
@@ -789,7 +789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { flex: 1, minWidth: 240 } },
                 h('div', { style: { fontSize: 20, fontWeight: 900, color: '#c7d2fe', letterSpacing: '-0.01em' } }, selected.name),
                 h('div', { style: { fontSize: 12, color: '#a78bfa', fontStyle: 'italic', marginTop: 2 } }, selected.scientific),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } },
                   h('b', null, 'Group: '), selected.group, ' • ',
                   h('b', null, 'Size: '), selected.size, ' • ',
                   h('b', null, 'Lifespan: '), selected.lifespan))),
@@ -801,7 +801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { lbl: '🚀 Jet Speed', val: selected.jetSpeed, max: 10, color: '#38bdf8' }
               ].map(function(stat, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
                     h('span', null, stat.lbl),
                     h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: stat.color } }, stat.val + ' / ' + stat.max)),
                   h('div', { style: { height: 8, background: 'rgba(100,116,139,0.2)', borderRadius: 4, overflow: 'hidden' } },
@@ -816,7 +816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               ].map(function(b, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, b.val));
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, b.val));
               })),
             // The weird thing
             h('div', { style: { background: 'rgba(167,139,250,0.1)', borderLeft: '4px solid #a78bfa', padding: '12px 14px', borderRadius: 8, marginBottom: 12 } },
@@ -824,10 +824,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 '🤯 The thing biologists love about this one'),
               h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + selected.weird + '"')),
             // Notes paragraph
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 10 } }, selected.notes),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, marginBottom: 10 } }, selected.notes),
             // Conservation
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
-              h('b', { style: { color: '#cbd5e1' } }, 'Conservation: '), selected.conservation))
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+              h('b', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Conservation: '), selected.conservation))
         );
       }
 
@@ -9703,17 +9703,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
                 h('div', null,
                   h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsSuccessful || 0)),
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crabs caught')),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crabs caught')),
                 h('div', null,
                   h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsAttempted || 0)),
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Dives'),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Dives'),
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 28, fontWeight: 900, color: '#a78bfa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntBestRun || 0)),
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Best run')),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Best run')),
                 h('div', null,
                   h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fff0aa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (pearlSt.total || 0) + '/3'),
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Pearls'))));
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Pearls'))));
           })(),
 
           // Controls card
@@ -9729,18 +9729,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { k: 'G', d: 'Grab / drop shelter (coconut, bottle, conch)', color: '#a07840' },
                 { k: 'M / H / B', d: 'Species ability — mimic (M) / hypnotic (H) / burglar alarm (B)', color: '#fbbf24' },
                 { k: 'Q / Z', d: 'Ascend / descend through depth zones', color: '#60a5fa' },
-                { k: 'ESC', d: 'Pause / resume the dive', color: '#cbd5e1' },
+                { k: 'ESC', d: 'Pause / resume the dive', color: 'var(--allo-stem-text, #cbd5e1)' },
                 { k: '(passive)', d: 'Camouflage — settle on a substrate to blend', color: '#22d3ee' }
               ].map(function(c, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + c.color } },
                   h('div', { style: { fontSize: 13, fontWeight: 900, color: c.color, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, c.k),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, c.d));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } }, c.d));
               }))) : null,
 
           // Real biology note
           !active ? h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, 'What you\'re feeling — all integrated, no minigames'),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 8px' } },
                 h('b', { style: { color: '#22d3ee' } }, 'Camouflage is passive.'),
                 ' Your skin continuously lerps toward whatever substrate you\'re resting on — sand, rock, coral, sea grass. The longer you stay still, the better the match. Predator detection radius shrinks with your camo effectiveness. There\'s no "press F to blend" — it just happens.'),
@@ -9759,7 +9759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('p', { style: { margin: '0 0 8px' } },
                 h('b', { style: { color: '#a07840' } }, 'Four shelter types — real biology, real tradeoffs.'),
                 ' Press G near any shelter to pick it up; press G again to drop it as a temporary den. Each type has a different camo / speed / duration profile:',
-                h('ul', { style: { margin: '6px 0 0 16px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                h('ul', { style: { margin: '6px 0 0 16px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                   h('li', null, h('b', { style: { color: '#a07840' } }, '🥥 Coconut half'), ' — +30% camo, 10% slower, 90s shelter. ', h('i', null, 'Amphioctopus marginatus, Finn et al. 2009.')),
                   h('li', null, h('b', { style: { color: '#4a7a4a' } }, '🍾 Glass bottle'), ' — +20% camo, 5% slower, 120s shelter. ', h('i', null, 'Anthropogenic shelter, ubiquitous on modern reefs.')),
                   h('li', null, h('b', { style: { color: '#e8a890' } }, '🐚 Conch shell'), ' — +40% camo, 15% slower, 60s shelter. ', h('i', null, 'Commandeered gastropod shells, best concealment.')),
@@ -9770,7 +9770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('b', { style: { color: '#fb923c' } }, 'Three crab species, each its own hunt.'),
                 ' Rock crabs are the default. Red crabs flee 1.5× faster but pay +2 score / +30 hunger when caught. Hermit crabs are slow but drop a usable conch shell when you eat them — closes the tool-cycle loop. Spawn ratio: 60% rock, 25% red, 15% hermit.'),
               h('p', { style: { margin: '0 0 8px' } },
-                h('b', { style: { color: '#cbd5e1' } }, 'Three sunken landmarks.'),
+                h('b', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Three sunken landmarks.'),
                 ' A shipwreck (W on the mini-map), an anchor (A), and a submerged stone statue (S). All at fixed coords — they don\'t recycle. Use them as navigation references in the endless ocean.'),
               h('p', { style: { margin: 0 } },
                 h('b', { style: { color: '#22c55e' } }, 'The ocean is endless.'),
@@ -9814,7 +9814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   style: { textAlign: 'left', cursor: 'pointer',
                     padding: '14px 16px',
                     background: 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.55))',
-                    color: '#e2e8f0',
+                    color: 'var(--allo-stem-text, #e2e8f0)',
                     borderTop: '1px solid rgba(100,116,139,0.35)',
                     borderRight: '1px solid rgba(100,116,139,0.35)',
                     borderBottom: '1px solid rgba(100,116,139,0.35)',
@@ -9824,10 +9824,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 28, lineHeight: 1 } }, sp.emoji),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 14, fontWeight: 900, color: sp.accent } }, sp.name),
-                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } }, sp.scientific))),
+                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, sp.scientific))),
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fde68a', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, sp.tagline),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, sp.description),
-                  h('div', { style: { display: 'flex', gap: 8, fontSize: 10, color: '#94a3b8', flexWrap: 'wrap' } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, sp.description),
+                  h('div', { style: { display: 'flex', gap: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', flexWrap: 'wrap' } },
                     h('span', null, '❤️ ' + sp.maxHealth),
                     h('span', null, '🍽 ' + sp.maxHunger),
                     h('span', null, '🎨 ' + (sp.camoQualityMul * 100).toFixed(0) + '%'),
@@ -9841,12 +9841,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     sp.specialAbility === 'shellDefense' ? h('span', { style: { color: '#e8c4a8' } }, '🛡 shell -70% damage') : null
                   ),
                   // Per-species personal best (only if any dives recorded)
-                  rec && rec.totalDives > 0 ? h('div', { style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.25)', display: 'flex', gap: 10, fontSize: 10, color: '#cbd5e1', flexWrap: 'wrap' } },
+                  rec && rec.totalDives > 0 ? h('div', { style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.25)', display: 'flex', gap: 10, fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', flexWrap: 'wrap' } },
                     h('span', null, h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '🏆 ' + rec.bestScore), ' best score'),
                     h('span', null, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, (rec.bestSurvivalMs / 1000).toFixed(0) + 's'), ' best survival'),
                     h('span', null, h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, (rec.bestCamoEff * 100).toFixed(0) + '%'), ' best camo'),
-                    h('span', null, h('span', { style: { color: '#94a3b8', fontWeight: 700 } }, rec.totalDives), ' dives')
-                  ) : h('div', { style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.25)', fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'No dives yet — be the first.'));
+                    h('span', null, h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, rec.totalDives), ' dives')
+                  ) : h('div', { style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.25)', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'No dives yet — be the first.'));
               })));
           })() : null,
 
@@ -9854,8 +9854,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           !active && threeLoaded ? (function() {
             var as = loadAudioSettings();
             return h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }) },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', minWidth: 60 } }, '🔊 Audio'),
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#94a3b8', cursor: 'pointer' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', minWidth: 60 } }, '🔊 Audio'),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer' } },
                 h('input', {
                   type: 'checkbox',
                   checked: as.muted,
@@ -9876,7 +9876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 style: { flex: 1, maxWidth: 240, opacity: as.muted ? 0.4 : 1 },
                 'aria-label': 'Audio volume',
               }),
-              h('span', { style: { fontSize: 10, color: '#94a3b8', minWidth: 32 } }, (as.volume * 100).toFixed(0) + '%')
+              h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 32 } }, (as.volume * 100).toFixed(0) + '%')
             );
           })() : null,
 
@@ -9904,8 +9904,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
             return h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', flexDirection: 'column', gap: 10 }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', minWidth: 70 } }, '♿ Access'),
-                h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#94a3b8' } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', minWidth: 70 } }, '♿ Access'),
+                h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                   'Palette ',
                   h('select', {
                     value: ax.colorPalette,
@@ -9922,7 +9922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   paletteSwatch(ax.colorPalette)
                 )
               ),
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', fontSize: 11, color: '#94a3b8' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 h('label', { style: { display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' } },
                   h('input', { type: 'checkbox', checked: !!ax.captionMode,
                     onChange: function(e) { applyA11y({ captionMode: e.target.checked }); },
@@ -9944,7 +9944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     'aria-label': 'Reduced motion' }),
                   '〰 Reduced motion')
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.4 } },
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', lineHeight: 1.4 } },
                 'WCAG 2.1 AA. Changes apply on next Dive. Captions mirror every audio cue (predator alerts, hunt success, ink, achievements). Reduced motion dims animation amplitudes. All settings persist on this device only — no cloud, no FERPA surface.')
             );
           })() : null,
@@ -9952,7 +9952,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // Error state
           !active && threeError ? h('div', { style: { textAlign: 'center', marginBottom: 16 } },
             h('div', { style: { color: '#fca5a5', fontSize: 12, padding: '12px 18px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.3)', display: 'inline-block' } },
-              '⚠ Couldn\'t load Three.js. Check your network and try again.')) : null,
+              h('div', null, '⚠ 3D engine / WebGL failed to load or initialize. WebGL might be disabled or unsupported.'),
+              h('button', {
+                onClick: function() { setCL({ _threeError: false, _threeLoaded: false, _threeLoading: false }); },
+                style: { marginTop: '8px', padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+              }, 'Retry')
+            )) : null,
 
           // 3D canvas
           active && threeLoaded ? h('div', null,
@@ -9973,7 +9978,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   if (canvasEl._clInit) return;
                   if (canvasEl._clCleanup) { try { canvasEl._clCleanup(); } catch(e) {} canvasEl._clCleanup = null; }
                   canvasEl._clInit = true;
-                  initHuntSim3D(canvasEl);
+                  try {
+                    initHuntSim3D(canvasEl);
+                  } catch (err) {
+                    console.error('[CephalopodLab] WebGL / 3D initialization failed:', err);
+                    setCL({ hunt3DActive: false, _threeError: true, _threeLoaded: false });
+                  }
                 }
               })),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' } },
@@ -9981,7 +9991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 style: { padding: '10px 20px', background: 'transparent', color: '#c7d2fe',
                   border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                 '◀ End run + surface')),
-            h('div', { style: { textAlign: 'center', fontSize: 11, color: '#94a3b8', marginTop: 8, fontStyle: 'italic' } },
+            h('div', { style: { textAlign: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontStyle: 'italic' } },
               'Tip: click the canvas first so keyboard input is captured.')
           ) : null
         );
@@ -14042,15 +14052,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.evasionEscapes || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Escapes')),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Escapes')),
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.evasionEncountersAttempted || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Predator encounters')))),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Predator encounters')))),
 
           // Food web context callout
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
             h('div', { style: subheaderStyle() }, '🌐 Every cephalopod is somewhere in a food web'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 10px 0' } },
                 'There\'s no "apex cephalopod" — even the largest face predators. Giant Pacific octopuses are eaten by harbor seals, sea otters, lingcod, and sometimes by other (larger) giant Pacific octopuses. Giant squid + colossal squid are sperm whale prey — and the whale carries the scars to prove it.'),
               h('p', { style: { margin: 0 } },
@@ -14073,10 +14083,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, s.emoji),
                     h('div', null,
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, s.name),
-                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } }, s.scientific))),
+                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, s.scientific))),
                   h('div', { style: { fontSize: 10, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4 } },
                     'Threatened by ' + predatorList.length + ' predator' + (predatorList.length === 1 ? '' : 's')),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                     predatorList.slice(0, 3).map(function(p) { return p.name; }).join(', ') + (predatorList.length > 3 ? ', + others' : '')));
               })))
         );
@@ -14111,7 +14121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, p.name)),
                   h('div', { style: { fontSize: 10, color: '#fb923c', marginBottom: 4 } },
                     'Senses: ' + p.sensory.join(' · ')),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, p.description));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, p.description));
               }))),
 
           // Tactic picker (filtered to what species can do)
@@ -14131,7 +14141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, t.emoji),
                     h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, t.name)),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, t.description),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, t.description),
                   h('div', { style: { fontSize: 10, color: '#fca5a5', fontStyle: 'italic' } },
                     '⚠️ Cost: ' + t.cost));
               }))),
@@ -14146,7 +14156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 cursor: canProceed ? 'pointer' : 'not-allowed' } },
               '→ Execute escape'),
             h('button', { onClick: function() { setCL({ evasionPhase: 'lobby' }); },
-              style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
+              style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                 border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
               '← Pick different species'))
         );
@@ -14163,10 +14173,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40 }) },
             hasReacted ?
               h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Your reaction time'),
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Your reaction time'),
                 h('div', { style: { fontSize: 48, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, marginBottom: 8 } },
                   d.evasionReactionMs + ' ms'),
-                h('div', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 20 } },
+                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 20 } },
                   d.evasionReactionMs < 200 ? 'Lightning fast — cephalopod-grade reflexes.' :
                   d.evasionReactionMs < 400 ? 'Quick. Above-average human reaction.' :
                   d.evasionReactionMs < 700 ? 'Average reaction time.' :
@@ -14275,7 +14285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               escaped ? (costly ? '🦑' : '🌫️') : '💀'),
             h('div', { style: { fontSize: 24, fontWeight: 900, color: escaped ? '#86efac' : '#fca5a5', letterSpacing: '-0.01em', marginBottom: 8 } },
               escaped ? (costly ? 'Survived (but lost an arm)' : 'Survived') : 'Predation event'),
-            h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
               escaped ?
                 (costly ? 'You escaped, but autotomy is a real cost — 2-3 months of regrowth + temporary cognitive reduction.'
                        : 'You escaped cleanly. In the real ocean, ~80% of cephalopod predator encounters end with the cephalopod escaping (most predators miss).') :
@@ -14291,7 +14301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     borderLeft: '4px solid ' + (n.neg ? '#dc2626' : '#22c55e'),
                     padding: '10px 14px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: n.neg ? '#fca5a5' : '#86efac', marginBottom: 4 } }, n.label),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, n.detail));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, n.detail));
               }))),
 
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
@@ -14551,7 +14561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
             h('div', { style: subheaderStyle() }, '🎯 Why this mode exists'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
               'The Hunter Sim and Evasion Sim are pedagogically useful but artificial — in reality, a common octopus might hunt 3 crabs, evade a moray eel, lose an arm to a lingcod, and find a den before nightfall. ALL IN ONE DAY. This mode recovers the integrated lived rhythm. Some species (vampire squid, dumbo, nautilus) don\'t face significant predator pressure in reality + are excluded from this mode — but every species shown here lives the genuine double life.')),
 
           h('div', { style: cardStyle() },
@@ -14559,10 +14569,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, Object.values(bests).reduce(function(a, b) { return a + (b.daysSurvived || 0); }, 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Days fully survived')),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Days fully survived')),
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, d.dayTotalDaysPlayed || 0),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Total days attempted'))),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Total days attempted'))),
             Object.keys(bests).length > 0 ?
               h('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(100,116,139,0.2)' } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } },
@@ -14597,7 +14607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, s.emoji),
                     h('div', null,
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, s.name),
-                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } },
+                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
                         'Intelligence: ' + s.intelligence + '/10 · Camo: ' + s.camouflageRank + '/10'))),
                   b ? h('div', { style: { fontSize: 10, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } },
                     'Best: ' + b.bestEncountersSurvived + '/10 · Days survived: ' + b.daysSurvived) : null);
@@ -14638,7 +14648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               ].map(function(stat, i) {
                 var pct = stat.isLoss ? ((stat.max - stat.val) / stat.max * 100) : (stat.val / stat.max * 100);
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.6)', padding: '10px 12px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
                   h('div', { style: { fontSize: 18, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
                     stat.val + ' / ' + stat.max),
                   h('div', { style: { height: 4, background: 'rgba(100,116,139,0.3)', borderRadius: 2 } },
@@ -14653,10 +14663,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, enc.emoji),
               h('div', null,
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' } },
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em' } },
                   enc.type === 'hunt' ? 'Hunting Opportunity' : enc.type === 'predator' ? '⚠️ Predator Encounter' : enc.type === 'environment' ? 'Environmental' : 'Social'),
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#fde68a', marginTop: 2 } }, enc.title))),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } }, enc.detail),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } }, enc.detail),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               availOptions.map(function(opt) {
                 return h('button', { key: opt.id,
@@ -14680,7 +14690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                     h('span', { 'aria-hidden': 'true' }, entry.emoji),
                     h('span', { style: { fontWeight: 700, color: '#fde68a' } }, entry.title)),
-                  h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } }, entry.outcome));
+                  h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, entry.outcome));
               }))) : null,
 
           h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
@@ -14715,7 +14725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             borderLeft: '4px solid ' + (survived ? '#22c55e' : '#dc2626') }) },
             h('div', { 'aria-hidden': 'true', style: { fontSize: 80, lineHeight: 1, marginBottom: 8 } }, heroEmoji),
             h('div', { style: { fontSize: 28, fontWeight: 900, color: heroColor, letterSpacing: '-0.01em', marginBottom: 8 } }, heroLabel),
-            h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, maxWidth: 540, marginLeft: 'auto', marginRight: 'auto' } }, heroDetail)),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, maxWidth: 540, marginLeft: 'auto', marginRight: 'auto' } }, heroDetail)),
 
           // Final stats
           h('div', { style: cardStyle() },
@@ -14728,7 +14738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { lbl: 'Arms lost', val: d.dayArmsLost || 0, color: '#fb923c' }
               ].map(function(stat, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8, borderLeft: '3px solid ' + stat.color } },
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
                   h('div', { style: { fontSize: 22, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.val));
               }))),
 
@@ -14743,8 +14753,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                     h('span', { 'aria-hidden': 'true' }, entry.emoji),
                     h('span', { style: { fontWeight: 700, color: '#fde68a' } }, '#' + (i + 1) + ' — ' + entry.title)),
-                  h('div', { style: { color: '#cbd5e1', lineHeight: 1.5, marginBottom: 2 } }, entry.outcome),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 2 } }, entry.outcome),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                     'Chose: ' + entry.choice));
               }))) : null,
 
@@ -14862,8 +14872,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                     h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, layer.emoji),
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: layer.color } }, layer.name)),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 4 } }, layer.function),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 4 } }, layer.function),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, fontStyle: 'italic' } },
                     h('b', null, '⏱️ '), layer.speed));
               }))),
 
@@ -14892,13 +14902,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🎯 Target — ' + current.name),
                 renderSkinPatch(target.chro, target.irid, target.leuc, target.pattern, current.bg),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   'C:' + target.chro + ' I:' + target.irid + ' L:' + target.leuc + ' · ' + target.pattern),
-                h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, lineHeight: 1.55, fontStyle: 'italic' } }, current.desc)),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, lineHeight: 1.55, fontStyle: 'italic' } }, current.desc)),
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🐙 Your skin'),
                 renderSkinPatch(chro, irid, leuc, pattern, current.bg),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   'C:' + chro + ' I:' + irid + ' L:' + leuc + ' · ' + pattern),
                 h('div', { style: { fontSize: 10, color: verdict.color, marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } },
                   'Match score: ' + matchScore + '%'))),
@@ -14911,7 +14921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var key = ['camoChromatophore', 'camoIridophore', 'camoLeucophore'][idx];
               var sliderColor = ['#dc2626', '#a78bfa', '#f3f4f6'][idx];
               return h('div', { key: idx, style: { marginBottom: 10 } },
-                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, fontWeight: 700 } },
                   h('span', null, lbl),
                   h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: sliderColor } }, val + ' / 100')),
                 h('input', { type: 'range', min: 0, max: 100, step: 1, value: val,
@@ -14922,7 +14932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
             // Pattern picker
             h('div', { style: { marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } }, 'Pattern type'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } }, 'Pattern type'),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 ['uniform', 'mottled', 'disruptive', 'deimatic'].map(function(p) {
                   var active = pattern === p;
@@ -14943,14 +14953,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               borderLeft: '4px solid ' + verdict.color, padding: '10px 14px', borderRadius: 8 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: verdict.color, marginBottom: 3 } },
                 matchScore + '% match'),
-              h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, verdict.label),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, verdict.label),
               !patternMatch ? h('div', { style: { fontSize: 11, color: '#fb923c', marginTop: 6, lineHeight: 1.55 } },
                 '💡 Pattern mismatch — target wants "' + target.pattern + '", you\'re showing "' + pattern + '". Pattern matters as much as color.') : null)),
 
           // Pattern reference card
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📐 The 4 standard cephalopod display patterns (Hanlon, 2007)'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'Roger Hanlon\'s 2007 paper classified all cephalopod skin displays into ~12 categories that collapse into 3 broad camouflage strategies + 1 startle category. Each works in different scenes.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               [
@@ -14966,7 +14976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     p.emoji + ' ' + p.name),
                   h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } },
                     h('b', null, 'Use: '), p.use),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, p.science));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, p.science));
               })))
         );
       }
@@ -14983,7 +14993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'counter', label: 'Counter-Illumination Sim', icon: '🌗' }
         ];
         var PHOTOPHORES = [
-          { id: 'simple', name: 'Simple Diffuse', emoji: '⚪', color: '#cbd5e1',
+          { id: 'simple', name: 'Simple Diffuse', emoji: '⚪', color: 'var(--allo-stem-text, #cbd5e1)',
             description: 'A sac of bioluminescent tissue (or bacteria) with no optical structures. Glows in all directions equally. Cheapest photophore design.',
             location: 'Often on body or arms in deep-sea species',
             example: 'Common in vampire squid + many deep-sea octopuses' },
@@ -15043,7 +15053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'overview' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '⚗️ The reaction'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Bioluminescence is enzyme catalysis. A small molecule called ',
                   h('b', { style: { color: '#fbbf24' } }, 'luciferin'),
@@ -15061,7 +15071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🔬 Why it\'s "cold light"'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
                 h('p', { style: { margin: '0 0 10px 0' } },
                   'Quantum yield is the fraction of reaction energy that becomes light. For an incandescent bulb, ~5% of the energy is light and ~95% is heat. For bioluminescence, ',
                   h('b', { style: { color: '#fbbf24' } }, 'quantum yield can reach ~90%'),
@@ -15085,14 +15095,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   return h('div', { key: i,
                     style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: b.color, marginBottom: 4 } }, b.name),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, b.detail));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, b.detail));
                 })))
           ) : null,
 
           view === 'photophores' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '💡 Photophore architectures'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'A photophore is the structural unit that produces or houses bioluminescence. Different designs serve different functions — direction, color, intensity control.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
                 PHOTOPHORES.map(function(p) {
@@ -15117,7 +15127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 32 } }, sel.emoji),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: 18, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name))),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 12 } }, sel.description),
+                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 12 } }, sel.description),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
                   [
                     { lbl: '📍 Typical location', val: sel.location, color: '#fbbf24' },
@@ -15126,7 +15136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     return h('div', { key: i,
                       style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                      h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, b.val));
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, b.val));
                   })));
             })(),
             h('div', { style: cardStyle() },
@@ -15146,14 +15156,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, fn.emoji),
                       h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, fn.fn)),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, fn.detail));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, fn.detail));
                 })))
           ) : null,
 
           view === 'symbiosis' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🦠 Vibrio fischeri + Hawaiian Bobtail Squid'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 h('p', { style: { margin: '0 0 10px 0' } },
                   'The Hawaiian bobtail squid (',
                   h('em', { style: { color: '#fde68a' } }, 'Euprymna scolopes'),
@@ -15167,9 +15177,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🕐 The 24-hour cycle'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 12 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 12 } },
                 'Drag the slider to advance through one full day. The bacterial population cycles dramatically — expelled at dawn, repopulated by dusk.'),
-              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, 'Time of day'),
                 h('span', { style: { color: phase.color, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   String(Math.floor(hour)).padStart(2, '0') + ':00')),
@@ -15177,7 +15187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 onChange: function(e) { setCL({ bioluxSymbiosisHour: parseInt(e.target.value, 10) }); },
                 'aria-label': 'Time of day in hours',
                 style: { width: '100%', accentColor: phase.color, marginBottom: 12 } }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 14 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 14 } },
                 h('span', null, '🌅 dawn'),
                 h('span', null, 'midday'),
                 h('span', null, '🌇 dusk'),
@@ -15185,14 +15195,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { background: phase.color + '15', border: '1px solid ' + phase.color + '55',
                 borderLeft: '4px solid ' + phase.color, padding: '12px 14px', borderRadius: 10 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: phase.color, marginBottom: 6 } }, phase.name),
-                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, phase.detail))),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, phase.detail))),
 
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
               h('div', { style: subheaderStyle() }, '🔬 Why this symbiosis is foundational research'),
               h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Margaret McFall-Ngai\'s lab at University of Hawaiʻi has built decades of foundational microbiome science around this one symbiosis. The questions it answered:'),
-                h('ul', { style: { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 12, lineHeight: 1.75 } },
+                h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.75 } },
                   h('li', null, 'How does an animal recruit ONE specific microbial species from millions in its environment?'),
                   h('li', null, 'How does the immune system learn to TOLERATE beneficial microbes while rejecting harmful ones?'),
                   h('li', null, 'How do host genes co-evolve with microbial partners?'),
@@ -15204,7 +15214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'counter' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🌗 Counter-Illumination Simulator'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 h('p', { style: { margin: '0 0 10px 0' } },
                   'A predator looking up sees a dark silhouette against the lit water above. Counter-illumination defeats this by glowing on the underside to match the brightness of the downwelling light. Mismatch = silhouette visible.'),
                 h('p', { style: { margin: 0 } },
@@ -15241,7 +15251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('text', { x: 18, y: 46, fontSize: 9, fill: '#cbd5e1', fontFamily: 'system-ui' }, matchVerdict.label.length > 28 ? matchVerdict.label.substring(0, 28) + '…' : matchVerdict.label))),
 
               h('div', { style: { marginTop: 14 } },
-                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, fontWeight: 700 } },
                   h('span', null, '☀️ Downwelling light (depends on time + depth)'),
                   h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#fbbf24' } }, depth + ' / 100')),
                 h('input', { type: 'range', min: 0, max: 100, step: 1, value: depth,
@@ -15249,7 +15259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   'aria-label': 'Downwelling light intensity',
                   style: { width: '100%', accentColor: '#fbbf24' } })),
               h('div', { style: { marginTop: 10 } },
-                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, fontWeight: 700 } },
                   h('span', null, '💡 Ventral photophore intensity'),
                   h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#86efac' } }, belly + ' / 100')),
                 h('input', { type: 'range', min: 0, max: 100, step: 1, value: belly,
@@ -15261,7 +15271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 borderLeft: '4px solid ' + matchVerdict.color, borderRadius: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: matchVerdict.color, marginBottom: 4 } },
                   matchScore + '% — ' + matchVerdict.label),
-                h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } },
                   matchScore >= 85 ?
                     'In nature, real cephalopods (firefly squid, Hawaiian bobtail) actively tune their photophores in real time to track changing surface conditions.' :
                   matchScore >= 60 ?
@@ -15383,7 +15393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', null, highlighted.name)),
                   h('div', { style: { fontSize: 12, color: '#fde68a', lineHeight: 1.55, marginBottom: 10, fontStyle: 'italic' } },
                     '"' + highlighted.short + '"'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, highlighted.detail))))),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, highlighted.detail))))),
 
           // Region quick-pick list
           h('div', { style: cardStyle() },
@@ -15410,11 +15420,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 } },
               h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24', padding: '12px 14px', borderRadius: 8 } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '🧑 Vertebrate (us)'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                   'Brain is centralized in the skull. Spinal cord carries signals to + from peripheral body. Limbs follow commands; they don\'t generate behavior independently. Vertebrate body plan: brain decides, body obeys.')),
               h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', padding: '12px 14px', borderRadius: 8 } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 6 } }, '🐙 Cephalopod'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                   'Brain is distributed: ~1/3 in head, ~2/3 in 8 arm ganglia. Each arm has working memory + sensory autonomy + can decide-act locally. Central brain takes summaries + handles big picture. Cephalopod body plan: parallel processing, embodied cognition.'))),
             h('div', { style: { marginTop: 12, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
@@ -15594,7 +15604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             // Visual timeline bar
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '⏳ 500 million years of cephalopod history'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
                 'Click an era to explore. Width of each band is proportional to its duration in millions of years.'),
               h('svg', { width: '100%', height: 110, viewBox: '0 0 1000 110',
                 preserveAspectRatio: 'none',
@@ -15631,14 +15641,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   era.startMya + '–' + era.endMya + ' million years ago')),
               h('div', { style: { fontSize: 16, fontWeight: 700, color: '#fde68a', marginBottom: 12 } },
                 era.headline),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } },
                 era.event,
                 h('em', { style: { color: '#a78bfa', fontWeight: 700 } }, era.highlight),
                 era.after),
               h('div', { style: { padding: '12px 14px', background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', borderRadius: 6 } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
                   '🌍 Ecosystem context'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } }, era.ecosystem))),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, era.ecosystem))),
 
             // Quick era jump
             h('div', { style: cardStyle() },
@@ -15656,7 +15666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       borderLeft: '3px solid ' + eraE.color,
                       borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
                     h('div', { style: { fontWeight: 800, color: active ? '#fde68a' : '#e2e8f0' } }, eraE.name),
-                    h('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                    h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
                       eraE.startMya + '–' + eraE.endMya + ' MYA'));
                 })))
           ) : null,
@@ -15665,7 +15675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'fossils' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🦴 Key fossil specimens'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'Nine fossils that anchor the cephalopod story. Click each for details.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
                 FOSSILS.map(function(f) {
@@ -15681,7 +15691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, f.emoji),
                       h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, f.name)),
-                    h('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                       f.age));
                 }))),
 
@@ -15691,10 +15701,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { flex: 1, minWidth: 240 } },
                   h('div', { style: { fontSize: 20, fontWeight: 900, color: '#c7d2fe' } }, fossil.name),
                   h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, fossil.era + ' · ' + fossil.age),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } },
                     h('b', null, 'Size: '), fossil.size, ' · ',
                     h('b', null, 'Diet: '), fossil.diet))),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } }, fossil.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } }, fossil.description),
               h('div', { style: { padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6 } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
                   '🎯 Why this fossil matters'),
@@ -15705,7 +15715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'extinctions' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '☄️ The 5 mass extinctions cephalopods lived through'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
                 'Cephalopods are one of the only animal groups to survive ALL FIVE major mass extinctions in Earth history. Each one reshaped which lineages dominated next. The end-Cretaceous (K-Pg) is the one that killed ammonites + belemnites and left us with the modern cephalopod world.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 EXTINCTIONS.map(function(ext) {
@@ -15714,9 +15724,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       borderLeft: '4px solid ' + ext.color, padding: '14px 16px', borderRadius: 10 } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 16, fontWeight: 900, color: ext.color } }, ext.name),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                         '~' + ext.mya + ' MYA')),
-                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                       h('div', null,
                         h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🔥 Cause'),
                         ext.cause),
@@ -15736,7 +15746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'body-evolution' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🐚 How the cephalopod body plan evolved'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
                 'The cephalopod body plan went through several radical reorganizations. Each represents a different solution to the same problem: how to be a fast, sensing, predatory mollusk in different ocean conditions.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
                 [
@@ -15780,8 +15790,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('div', { style: { fontSize: 14, fontWeight: 900, color: stage.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stage.stage)),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 3 } }, stage.name),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 8 } }, stage.era),
-                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } }, stage.description),
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 8 } }, stage.era),
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } }, stage.description),
                       h('div', { style: { fontSize: 11, color: '#e9d5ff', lineHeight: 1.55, fontStyle: 'italic', marginBottom: 6 } },
                         h('b', { style: { color: '#a78bfa' } }, 'Why this works: '), stage.why),
                       h('div', { style: { fontSize: 10, color: '#86efac', lineHeight: 1.5 } },
@@ -15852,7 +15862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var verdict = ratio > 1.4 ? { color: '#fca5a5', label: 'Above realistic top speed', note: 'These settings would exceed ' + sp.name + '\'s documented top speed. Cephalopod muscle limits + body drag cap real performance well below the theoretical Bernoulli velocity.' } :
                       ratio > 0.8 ? { color: '#86efac', label: 'Realistic peak performance', note: 'These settings approach ' + sp.name + '\'s documented top sprint speed (' + sp.topSpeed + ' m/s).' } :
                       ratio > 0.4 ? { color: '#fbbf24', label: 'Sustained-swim range', note: 'Typical of relaxed cruising speeds. Most cephalopod swimming happens here.' } :
-                                    { color: '#cbd5e1', label: 'Hovering / fine maneuver', note: 'Gentle steering jet. Octopuses spend most of their time at speeds in this range.' };
+                                    { color: 'var(--allo-stem-text, #cbd5e1)', label: 'Hovering / fine maneuver', note: 'Gentle steering jet. Octopuses spend most of their time at speeds in this range.' };
         return h('div', null,
           panelHeader('🚀 Jet Propulsion Lab',
             'Cephalopod jet propulsion uses Newton\'s 3rd law directly: water gets pushed out, cephalopod gets pushed forward. Mantle = reservoir, siphon = nozzle. The physics is computable — set the variables and see what comes out.'),
@@ -15860,7 +15870,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // Science primer
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '⚗️ The physics'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
               'Bernoulli\'s principle gives the exit velocity of water from the siphon: ',
               h('code', { style: { background: 'rgba(167,139,250,0.15)', color: '#e9d5ff', padding: '2px 6px', borderRadius: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
                 'v_jet = √(2·P/ρ)'),
@@ -15904,14 +15914,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   hint: 'Nozzle size. Bigger = more thrust but slower jet velocity. Tradeoff is real.' }
               ].map(function(slider, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8, borderLeft: '3px solid ' + slider.color } },
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, fontWeight: 700 } },
                     h('span', null, slider.label),
                     h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: slider.color } }, slider.val)),
                   h('input', { type: 'range', min: slider.min, max: slider.max, step: slider.step, value: slider.val,
                     onChange: function(e) { var p = {}; p[slider.key] = parseFloat(e.target.value); setCL(p); },
                     'aria-label': slider.label,
                     style: { width: '100%', accentColor: slider.color } }),
-                  h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } }, slider.hint));
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } }, slider.hint));
               }))),
 
           // Results panel — physics outputs
@@ -15927,24 +15937,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + stat.color + '40',
                     borderLeft: '3px solid ' + stat.color, padding: '10px 12px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, stat.label),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, stat.label),
                   h('div', { style: { fontSize: 22, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.val),
-                  h('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.unit),
-                  h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.formula));
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.unit),
+                  h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.formula));
               })),
             // Verdict
             h('div', { style: { background: verdict.color + '15', border: '1px solid ' + verdict.color + '55',
               borderLeft: '4px solid ' + verdict.color, padding: '10px 14px', borderRadius: 8 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: verdict.color, marginBottom: 4 } },
                 'Reality check: ' + verdict.label),
-              h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, verdict.note),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, verdict.note),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
                 'Documented top speed for ' + sp.name + ': ' + sp.topSpeed + ' m/s'))),
 
           // The systemic-heart-stops biology callout
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
             h('div', { style: subheaderStyle() }, '❤️ The strange biology of jet swimming'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 10px 0' } },
                 'Cephalopods have ',
                 h('b', { style: { color: '#dc2626' } }, 'three hearts'),
@@ -16028,7 +16038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 20, fontWeight: 900, color: c.color, letterSpacing: '-0.01em' } }, c.name),
                 h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, c.species + ' · ' + c.where))),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75, marginBottom: 14 } }, c.story),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75, marginBottom: 14 } }, c.story),
             h('div', { style: { background: c.color + '15', borderLeft: '3px solid ' + c.color,
               padding: '12px 14px', borderRadius: 6 } },
               h('div', { style: { fontSize: 10, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
@@ -16144,7 +16154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('span', { 'aria-hidden': 'true', style: { fontSize: 30, lineHeight: 1 } }, sel.icon),
               h('div', { style: { flex: 1, minWidth: 240 } },
                 h('div', { style: { fontSize: 20, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, sel.era))),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, sel.era))),
 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 14 } },
               [
@@ -16156,7 +16166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + box.color, padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: box.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, box.lbl),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, box.val));
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, box.val));
               }))),
 
           // Methodological framing
@@ -16322,14 +16332,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'matrix' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📊 The big comparison'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'Six cognitive dimensions × five animals. Stars: ☆ minimal, ★ documented, ★★ strong, ★★★ exceptional. Click any cell for the specific evidence.'),
               // The matrix table
               h('div', { style: { overflowX: 'auto' } },
-                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: '#e2e8f0' } },
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
                   h('thead', null,
                     h('tr', null,
-                      h('th', { style: { padding: '10px 8px', textAlign: 'left', color: '#94a3b8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', borderBottom: '1px solid rgba(100,116,139,0.3)' } }, 'Ability'),
+                      h('th', { style: { padding: '10px 8px', textAlign: 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', borderBottom: '1px solid rgba(100,116,139,0.3)' } }, 'Ability'),
                       ANIMALS.map(function(a) {
                         return h('th', { key: a.id, style: { padding: '10px 8px', textAlign: 'center',
                           color: a.color, fontSize: 11, fontWeight: 800, borderBottom: '1px solid rgba(100,116,139,0.3)' } },
@@ -16343,7 +16353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                           h('div', { style: { fontSize: 13, color: '#fde68a', marginBottom: 2 } },
                             h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, dim.emoji),
                             dim.name),
-                          h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, dim.description)),
+                          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, dim.description)),
                         ANIMALS.map(function(a) {
                           var rating = dim.ratings[a.id];
                           var starColor = rating === 3 ? '#fbbf24' : rating === 2 ? '#86efac' : rating === 1 ? '#94a3b8' : '#475569';
@@ -16352,11 +16362,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                             style: { padding: '12px 8px', textAlign: 'center', verticalAlign: 'top', cursor: 'help' } },
                             h('div', { style: { fontSize: 14, color: starColor, letterSpacing: '0.05em', fontFamily: 'ui-monospace, Menlo, monospace' } },
                               stars(rating)),
-                            h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } },
+                            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } },
                               dim.notes[a.id]));
                         }));
                     }))))),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 8, textAlign: 'center' } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 8, textAlign: 'center' } },
               'Ratings reflect documented evidence in peer-reviewed research. Absence of stars = absence of evidence, not always absence of ability.')
           ) : null,
 
@@ -16380,7 +16390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, a.emoji),
                     h('div', null,
                       h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, a.name),
-                      h('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, a.taxon)));
+                      h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, a.taxon)));
                 }))),
             // Selected animal detail
             (function() {
@@ -16402,13 +16412,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     return h('div', { key: i,
                       style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                      h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, b.val));
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, b.val));
                   })),
                 h('div', { style: { padding: '12px 14px', background: sel.color + '15', borderLeft: '3px solid ' + sel.color, borderRadius: 6, marginBottom: 10 } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: sel.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
                     '✨ Cognitive signature'),
                   h('div', { style: { fontSize: 13, color: '#fde68a', lineHeight: 1.7, fontStyle: 'italic' } }, sel.signature)),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center' } },
                   sel.crossRef));
             })()
           ) : null,
@@ -16442,7 +16452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 28, lineHeight: 1 } }, sel.emoji),
                   h('div', { style: { fontSize: 18, fontWeight: 900, color: '#c7d2fe', letterSpacing: '-0.01em' } }, sel.name)),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 14, fontStyle: 'italic' } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 14, fontStyle: 'italic' } },
                   sel.description),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   sorted.map(function(a) {
@@ -16455,7 +16465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                         h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, a.emoji),
                         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', flex: 1 } }, a.name),
                         h('div', { style: { fontSize: 14, color: ratingColor, fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.05em' } }, stars(r))),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, sel.notes[a.id]));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, sel.notes[a.id]));
                   })));
             })()
           ) : null,
@@ -16531,7 +16541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           sub === 'overview' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📈 The big picture'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Most marine populations are declining. ',
                   h('b', { style: { color: '#86efac' } }, 'Cephalopods are not'),
@@ -16575,7 +16585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           sub === 'fisheries' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🎣 The global cephalopod fishery'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75, marginBottom: 14 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   '~4 million tons of cephalopods are caught globally each year. Squid dominate the catch (~3M tons), followed by octopus (~400k tons) and cuttlefish (~300k tons). The fishery has tripled in the last 60 years.'),
                 h('p', { style: { margin: 0 } },
@@ -16595,14 +16605,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, f.name),
                     h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
                       f.region + ' · ' + f.tons),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, f.notes));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, f.notes));
                 })))) : null,
 
           // ─── FARMING ───
           sub === 'farming' ? h('div', null,
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
               h('div', { style: subheaderStyle() }, '🏭 The octopus farming debate'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'In 2021, Spanish multinational ',
                   h('b', { style: { color: '#fde68a' } }, 'Nueva Pescanova'),
@@ -16613,7 +16623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   'The announcement triggered international scientific + ethical pushback. ',
                   h('b', null, 'The 2021 London School of Economics review'),
                   ' (Birch, Burn, Schnell et al., commissioned by the UK government) concluded that "high-welfare octopus farming is impossible" because octopuses are:'),
-                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   h('li', null, '*Solitary by nature* — high-density confinement causes chronic stress, fighting, cannibalism'),
                   h('li', null, '*Carnivorous + protein-demanding* — requires ~3kg of wild-caught fish per 1kg of octopus produced (net food deficit)'),
                   h('li', null, '*Sentient* (per UK 2021 recognition) — capable of suffering, with no humane large-scale slaughter method established'),
@@ -16625,10 +16635,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           sub === 'shell-trade' ? h('div', null,
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fca5a5' }) },
               h('div', { style: subheaderStyle() }, '🐚 The nautilus shell trade'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'The chambered nautilus is the only living cephalopod with an external shell. The shell\'s logarithmic spiral has been featured on jewelry, decor, and curio collections for over a century. The pressure is real:'),
-                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: '#e2e8f0', lineHeight: 1.75 } },
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, 'Filipino + Indonesian fisheries harvest ~100,000+ nautilus per year for the shell trade'),
                   h('li', null, 'Nautilus is ',
                     h('b', { style: { color: '#fca5a5' } }, 'CITES Appendix II'),
@@ -16661,14 +16671,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { minWidth: 60, fontSize: 16, fontWeight: 900, color: ev.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, ev.year),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, ev.title),
-                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, ev.detail)));
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, ev.detail)));
                 }))),
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
               h('div', { style: subheaderStyle() }, '🧭 The practical question'),
               h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'If cephalopods are sentient and have a "second evolutionary instance of consciousness" — what does that mean for:'),
-                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: '#cbd5e1', lineHeight: 1.8 } },
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.8 } },
                   h('li', null, 'Wild capture for food + research? Currently unregulated for invertebrates in most countries.'),
                   h('li', null, 'Aquaculture? Welfare standards for animals with distributed nervous systems aren\'t established.'),
                   h('li', null, 'Public aquariums? Many octopuses self-mutilate in confinement. Most aquariums now rotate cephalopod displays every 6-12 months.'),
@@ -16798,7 +16808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'myth' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🐉 Pre-scientific cephalopod mythology'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 'Before science gave us "Octopus vulgaris" + "Architeuthis dux," cultures around the world built mythologies to explain the alien intelligences in their waters. Many of these myths got the biology surprisingly right + the size dramatically wrong.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
                 MYTHS.map(function(m) {
@@ -16809,8 +16819,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, m.emoji),
                       h('div', { style: { flex: 1, minWidth: 200 } },
                         h('div', { style: { fontSize: 16, fontWeight: 800, color: m.color } }, m.name),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, m.culture))),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, m.story),
+                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, m.culture))),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, m.story),
                     h('div', { style: { padding: '8px 12px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '🔬 The real biology behind it'),
                       h('div', { style: { fontSize: 11, color: '#e9d5ff', lineHeight: 1.6 } }, m.realBasis)));
@@ -16820,7 +16830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'art' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🎨 Cephalopods in art + literature'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 'Visual + literary representations of cephalopods span 3500 years — from Bronze Age Minoan pottery to 2020 Netflix documentary. The way each era depicts these animals reflects what that era believed about minds + monsters + the ocean.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
                 ART.map(function(a) {
@@ -16831,11 +16841,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 26, lineHeight: 1 } }, a.emoji),
                       h('div', { style: { flex: 1, minWidth: 220 } },
                         h('div', { style: { fontSize: 15, fontWeight: 800, color: a.color } }, a.name),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
                           h('span', { style: { color: '#fde68a' } }, a.creator),
                           ' · ',
                           h('span', { style: { fontStyle: 'italic' } }, a.period)))),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, a.description),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, a.description),
                     h('div', { style: { padding: '8px 12px', background: 'rgba(251,191,36,0.1)', borderLeft: '3px solid #fbbf24', borderRadius: 6 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✨ Why this matters'),
                       h('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.6, fontStyle: 'italic' } }, a.significance)));
@@ -16845,7 +16855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'food' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🍱 Cephalopods as food'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 'Cephalopods are food in most coastal cultures. The dishes are old + varied; the ethics are recent + evolving. As public awareness of cephalopod sentience has grown, traditional preparation practices are being re-examined.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
                 FOODS.map(function(f) {
@@ -16856,8 +16866,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, f.emoji),
                       h('div', { style: { flex: 1, minWidth: 200 } },
                         h('div', { style: { fontSize: 16, fontWeight: 800, color: f.color } }, f.dish),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, f.region))),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, f.description),
+                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, f.region))),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, f.description),
                     h('div', { style: { padding: '8px 12px', background: 'rgba(252,165,165,0.08)', borderLeft: '3px solid #fca5a5', borderRadius: 6 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '⚖️ Welfare consideration'),
                       h('div', { style: { fontSize: 11, color: '#fecaca', lineHeight: 1.6 } }, f.ethics)));
@@ -16877,7 +16887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'modern' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🎬 Modern cephalopod consciousness'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 'In the last 15 years, cephalopods have moved from "obscure invertebrates" to "central figures in the philosophy of mind + the animal-welfare movement." A few books, a few films, a few legal documents, and a handful of celebrity individual octopuses changed how mainstream culture thinks about non-human minds.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
                 MODERN.map(function(m) {
@@ -16888,11 +16898,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 26, lineHeight: 1 } }, m.emoji),
                       h('div', { style: { flex: 1, minWidth: 220 } },
                         h('div', { style: { fontSize: 15, fontWeight: 800, color: m.color } }, m.name),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
                           h('span', { style: { color: '#fde68a' } }, m.creator),
                           ' · ',
                           h('span', { style: { fontStyle: 'italic' } }, m.year)))),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, m.description),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, m.description),
                     h('div', { style: { padding: '8px 12px', background: 'rgba(134,239,172,0.08)', borderLeft: '3px solid #86efac', borderRadius: 6 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '🌊 Cultural impact'),
                       h('div', { style: { fontSize: 11, color: '#dcfce7', lineHeight: 1.6 } }, m.impact)));
@@ -16952,7 +16962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             bestTimes: 'Indonesia: April-November; Philippines: November-May; year-round in most of the region (water 78-86°F)',
             specialNote: 'Critical safety note: small octopuses in Indo-Pacific tidepools may be blue-ringed (Hapalochlaena spp.) — DO NOT TOUCH ANY OCTOPUS. Tetrodotoxin venom is potentially lethal + has no antivenom. Identify visually only.',
             access: 'Major dive destinations (Bali, Anilao Philippines, Lembeh Strait). Many resorts offer "critter dives" specifically for cephalopod-rich muck sites.' },
-          { id: 'antarctic', name: 'Antarctic + Sub-Antarctic', emoji: '❄️', color: '#cbd5e1',
+          { id: 'antarctic', name: 'Antarctic + Sub-Antarctic', emoji: '❄️', color: 'var(--allo-stem-text, #cbd5e1)',
             range: 'Southern Ocean below ~50°S',
             commonSpecies: 'Colossal squid (Mesonychoteuthis hamiltoni — known from sperm whale stomachs + fishery bycatch), Antarctic neosquid, Pareledone octopus',
             bestHabitats: 'Deep water (200m+) — not directly accessible to most students. Beachings + fishery bycatch are the only realistic encounter routes.',
@@ -16999,7 +17009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, r.emoji),
                       h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, r.name)),
-                    h('div', { style: { fontSize: 9, color: '#94a3b8' } }, r.range));
+                    h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.range));
                 }))),
 
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + sel.color }) },
@@ -17007,7 +17017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 36 } }, sel.emoji),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 20, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, sel.range))),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, sel.range))),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 12 } },
                 [
                   { lbl: '🐙 Common species you might see', val: sel.commonSpecies, color: '#fbbf24' },
@@ -17018,7 +17028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   return h('div', { key: i,
                     style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, b.val));
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, b.val));
                 })),
               h('div', { style: { padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 8 } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '💡 Special note'),
@@ -17038,7 +17048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                       borderLeft: '3px solid #fbbf24', padding: '10px 12px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, b.lbl),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, b.detail));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, b.detail));
                 })))
           ) : null,
 
@@ -17046,7 +17056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'signs' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🔎 Signs a cephalopod is nearby'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
                 'Cephalopods are masters at not being seen. But they leave clues. Learn to read these and your sighting rate will go up dramatically.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
                 [
@@ -17065,7 +17075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, s.emoji),
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac' } }, s.sign)),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } }, s.detail));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, s.detail));
                 }))),
 
             h('div', { style: cardStyle() },
@@ -17083,7 +17093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                       borderLeft: '3px solid #fca5a5', padding: '10px 12px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 4 } }, m.mistake),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, m.why));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, m.why));
                 })))
           ) : null,
 
@@ -17091,7 +17101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'ethics' ? h('div', null,
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
               h('div', { style: subheaderStyle() }, '🛡️ Observation ethics — the Hippocratic version'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Cephalopods are sentient (UK + EU formally recognize this in law). Your presence stresses them. Stress raises metabolic load, raises predation risk, can disrupt feeding cycles. The goal: be a non-event from the animal\'s perspective.'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 12 } },
@@ -17107,7 +17117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                         borderLeft: '3px solid #fbbf24', padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, r.rule),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, r.detail));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, r.detail));
                   })),
                 h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(251,191,36,0.1)', borderLeft: '3px solid #fbbf24', borderRadius: 6, fontStyle: 'italic' } },
                   'The right principle: leave the animal in a state where it doesn\'t know you were there. You can take photos + memories. Take nothing physical.'))),
@@ -17138,7 +17148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           view === 'document' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📷 What to record + how'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
                 h('p', { style: { margin: '0 0 10px 0' } },
                   'Every cephalopod observation is potentially data. Researchers track range shifts, behavioral changes, new species. A clear photo + accurate metadata = a citizen-science contribution.')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
@@ -17154,12 +17164,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                       borderLeft: '3px solid #38bdf8', padding: '10px 12px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: '#38bdf8', marginBottom: 4 } }, d.what),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, d.why));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, d.why));
                 }))),
 
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📸 Photo + video tips'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75 } },
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
                   [
                     { tip: '🚫 No flash at close range', detail: 'Direct flash on cephalopod eyes is stressful + may temporarily blind them. Use ambient light at distance; flash only at distance + diffused if needed.' },
@@ -17173,12 +17183,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                         borderLeft: '3px solid #a78bfa', padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', marginBottom: 4 } }, t.tip),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, t.detail));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.detail));
                   })))),
 
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #86efac' }) },
               h('div', { style: subheaderStyle() }, '🌐 Where to share your observations'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Three tiers of citizen-science contribution, depending on your level of involvement:'),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -17191,7 +17201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 } }, t.level),
                       h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, t.platform),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, t.detail));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.detail));
                   })),
                 h('p', { style: { margin: '12px 0 0 0', padding: '12px 14px', background: 'rgba(134,239,172,0.08)', borderLeft: '3px solid #86efac', borderRadius: 6, fontStyle: 'italic' } },
                   'Your observation matters. New cephalopod species are still being discovered. Range shifts due to climate change are documented largely by amateur observation. Behavior records for most species are sparse. You can contribute to real science with a phone + a snorkel.')))
@@ -17220,7 +17230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           panelHeader('📑 Glossary',
             'Every term used in this simulator, with a teacher-grade definition, etymology, related terms, and a peer-reviewed citation. Search to filter.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }) },
-            h('label', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 700 } }, '🔍 Search'),
+            h('label', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '🔍 Search'),
             h('input', {
               type: 'text', value: d.glossarySearch || '',
               onChange: function(e) { setCL({ glossarySearch: e.target.value }); },
@@ -17228,9 +17238,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               style: { flex: 1, minWidth: 240, padding: '8px 10px', background: '#1c1410', color: '#fff', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, fontSize: 12 },
               'aria-label': 'Filter glossary entries',
             }),
-            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, entries.length + ' of ' + Object.keys(GLOSSARY).length + ' shown')
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, entries.length + ' of ' + Object.keys(GLOSSARY).length + ' shown')
           ),
-          entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }) },
+          entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }) },
             'No matching glossary entry. Try a broader term.'
           ) : null,
           entries.map(function(entry) {
@@ -17239,9 +17249,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe' } }, entry.term),
                 entry.ngss ? h('span', { style: { fontSize: 9, fontWeight: 800, color: '#86efac', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', padding: '2px 7px', borderRadius: 9999 } }, entry.ngss) : null
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, entry.def),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, entry.def),
               entry.etymology ? h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 6 } }, '🏛 ' + entry.etymology) : null,
-              entry.related && entry.related.length ? h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } },
+              entry.related && entry.related.length ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } },
                 'Related: ',
                 entry.related.map(function(r, i) {
                   return h('span', { key: r },
@@ -17254,8 +17264,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   );
                 })
               ) : null,
-              entry.sources && entry.sources.length ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' } },
-                h('div', { style: { fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Sources:'),
+              entry.sources && entry.sources.length ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Sources:'),
                 entry.sources.map(function(s, i) {
                   return h('div', { key: i, style: { marginBottom: 2 } },
                     '• ' + (s.authors ? s.authors + ' ' : '') + '(' + s.year + ') "' + s.title + '"' + (s.journal ? ' — ' + s.journal : '')
@@ -17288,33 +17298,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             panelHeader('👩‍🏫 ' + lesson.title, lesson.driver_question),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🎯 Grade & Standards'),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8 } }, lesson.grade),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, lesson.grade),
               lesson.standards.map(function(s, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '6px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' } },
                   h('span', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '2px 7px', borderRadius: 4, minWidth: 80, textAlign: 'center', flexShrink: 0 } }, s.code),
-                  h('span', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, s.text)
+                  h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, s.text)
                 );
               })
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '☀ Warm-up (5 min)'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.warmup)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, lesson.warmup)
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🔬 Exploration (20 min)'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.exploration)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, lesson.exploration)
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🧠 Sense-making (10-15 min)'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.sensemaking)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, lesson.sensemaking)
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '✓ Formative Check (5 min)'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.formative_check)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, lesson.formative_check)
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '💭 Reflection Prompts'),
-              h('ol', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+              h('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.7 } },
                 lesson.reflection_prompts.map(function(p, i) {
                   return h('li', { key: i, style: { marginBottom: 6 } }, p);
                 })
@@ -17322,11 +17332,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📦 Materials'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.materials)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, lesson.materials)
             ),
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '♿ Accommodations (UDL)'),
-              h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+              h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.7 } },
                 lesson.accommodations.map(function(a, i) {
                   return h('li', { key: i, style: { marginBottom: 4 } }, a);
                 })
@@ -17339,13 +17349,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 var color = lvl === 'exceeds' ? '#86efac' : lvl === 'meets' ? '#a78bfa' : lvl === 'approaching' ? '#fbbf24' : '#fca5a5';
                 return h('div', { key: lvl, style: { borderLeft: '3px solid ' + color, paddingLeft: 12, marginBottom: 10 } },
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: '0.08em' } }, lvl),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginTop: 2 } }, lesson.assessment_rubric[lvl])
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginTop: 2 } }, lesson.assessment_rubric[lvl])
                 );
               })
             ) : null,
             lesson.extensions ? h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🚀 Extensions'),
-              h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+              h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.7 } },
                 lesson.extensions.map(function(x, i) { return h('li', { key: i, style: { marginBottom: 4 } }, x); })
               )
             ) : null
@@ -17357,7 +17367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Classroom-ready lesson plans aligned to NGSS, AP Biology, and AP Environmental Science. Each lesson is a 45-minute activity built around this simulator as the engagement and sense-making surface. Print, project, or adapt for your students.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎓 What\'s included'),
-            h('ul', { style: { color: '#e2e8f0', fontSize: 13, lineHeight: 1.8, margin: 0, paddingLeft: 22 } },
+            h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8, margin: 0, paddingLeft: 22 } },
               h('li', null, lessonIds.length + ' full lessons across MS, HS, AP Bio, AP ES, and Elementary'),
               h('li', null, 'NGSS-aligned with codes (MS-LS, HS-LS, MS-PS, HS-ESS) and Science + Engineering Practices (SEPs)'),
               h('li', null, 'UDL accommodations + assessment rubrics included with each lesson'),
@@ -17373,12 +17383,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 return h('button', {
                   key: id,
                   onClick: function() { setCL({ educatorLesson: id }); },
-                  style: { textAlign: 'left', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: 14, color: '#e2e8f0', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 },
+                  style: { textAlign: 'left', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 },
                   'aria-label': 'Open lesson plan: ' + l.title,
                 },
                   h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' } }, l.grade.split('(')[0].trim()),
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', lineHeight: 1.3 } }, l.title),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginTop: 4 } }, l.driver_question.substring(0, 140) + (l.driver_question.length > 140 ? '…' : '')),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, marginTop: 4 } }, l.driver_question.substring(0, 140) + (l.driver_question.length > 140 ? '…' : '')),
                   h('div', { style: { fontSize: 10, color: '#a78bfa', marginTop: 6 } }, l.standards.length + ' standards • ' + (l.accommodations ? l.accommodations.length : 0) + ' UDL options')
                 );
               })
@@ -17386,7 +17396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           ),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🏫 Teaching philosophy'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'This simulator was built with EL Education classroom rhythms in mind (crew → workshop → reflection). Every lesson here follows that ',
               h('b', { style: { color: '#c7d2fe' } }, 'engage → explore → explain → reflect'),
               ' arc and is designed for ',
@@ -17412,7 +17422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Every fact in this simulator comes from a real researcher. Meet some of the people whose work shapes our understanding of cephalopods today — including women + researchers of color who are major figures in the field.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '👥 The community'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Cephalopod biology is a small, collaborative field. Most active researchers number in the hundreds globally. The community spans university labs, marine stations (Woods Hole MBL, MBARI, AZTI in Spain), aquariums, and museum curators. Many of these scientists have explicitly written about animal welfare, citizen science, and increasing field accessibility — the kind of values that aligned with this tool\'s UDL design.'
             )
           ),
@@ -17426,12 +17436,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 700, marginTop: 2 } }, sci.field)
                 )
               ),
-              sci.quote ? h('blockquote', { style: { fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', borderLeft: '3px solid #a78bfa', paddingLeft: 12, margin: '12px 0' } },
+              sci.quote ? h('blockquote', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', borderLeft: '3px solid #a78bfa', paddingLeft: 12, margin: '12px 0' } },
                 sci.quote
               ) : null,
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, marginTop: 8 } }, sci.why_important),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' } },
-                h('div', { style: { fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Key works:'),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginTop: 8 } }, sci.why_important),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Key works:'),
                 sci.key_works.map(function(w, i) {
                   return h('div', { key: i, style: { marginBottom: 2 } }, '• ' + w);
                 })
@@ -17460,7 +17470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           panelHeader('📚 Bibliography',
             'Every peer-reviewed citation referenced in this simulator. Built for you to verify our claims, dig deeper, or extend a class research project. Filter by author, title, journal, or year.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }) },
-            h('label', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 700 } }, '🔍 Search'),
+            h('label', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '🔍 Search'),
             h('input', {
               type: 'text', value: d.biblioSearch || '',
               onChange: function(e) { setCL({ biblioSearch: e.target.value }); },
@@ -17468,29 +17478,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               style: { flex: 1, minWidth: 240, padding: '8px 10px', background: '#1c1410', color: '#fff', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, fontSize: 12 },
               'aria-label': 'Filter bibliography entries',
             }),
-            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, entries.length + ' of ' + BIBLIOGRAPHY.length + ' shown')
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, entries.length + ' of ' + BIBLIOGRAPHY.length + ' shown')
           ),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📖 Citation format'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.7 } },
               'Simplified APA: Authors (Year). Title. Journal, volume, pages. — Every claim in the sim links to one of these.'
             )
           ),
-          entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }) },
+          entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }) },
             'No matching entry. Try a broader search term.'
           ) : null,
           entries.map(function(b, idx) {
             return h('div', { key: b.key || idx, style: Object.assign({}, cardStyle(), { padding: '12px 16px' }) },
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                 h('span', { style: { fontWeight: 700, color: '#c7d2fe' } }, b.authors),
-                h('span', { style: { color: '#94a3b8' } }, ' (' + b.year + '). '),
-                h('span', { style: { fontStyle: 'italic', color: '#e2e8f0' } }, b.title),
+                h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' (' + b.year + '). '),
+                h('span', { style: { fontStyle: 'italic', color: 'var(--allo-stem-text, #e2e8f0)' } }, b.title),
                 b.journal ? h('span', null, '. ', h('span', { style: { color: '#a78bfa' } }, b.journal)) : null,
-                b.vol ? h('span', { style: { color: '#94a3b8' } }, ', ' + b.vol) : null,
-                b.pages ? h('span', { style: { color: '#94a3b8' } }, ', ' + b.pages) : null,
+                b.vol ? h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ', ' + b.vol) : null,
+                b.pages ? h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ', ' + b.pages) : null,
                 '.'
               ),
-              b.key ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'key: ' + b.key) : null
+              b.key ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'key: ' + b.key) : null
             );
           })
         );
@@ -17524,7 +17534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             panelHeader('📊 Quiz Recap', 'Your answers + the full explanation for each question. Use this for reflection or share with your teacher.'),
             h('div', { style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, 'Score: ' + correctCount + ' / ' + QUIZ_QUESTIONS.length),
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, ((correctCount / QUIZ_QUESTIONS.length) * 100).toFixed(0) + '%'),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, ((correctCount / QUIZ_QUESTIONS.length) * 100).toFixed(0) + '%'),
               h('button', {
                 onClick: function() { setCL({ quizAnswers: {}, quizIdx: 0, quizShowAll: false }); },
                 style: { marginTop: 12, padding: '8px 16px', background: '#a78bfa', color: '#1c1410', border: 'none', borderRadius: 6, fontWeight: 800, cursor: 'pointer', fontSize: 12 },
@@ -17538,19 +17548,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Q' + (idx + 1) + ' • ' + qq.domain),
                   was ? h('span', { style: { fontSize: 14, color: was.correct ? '#86efac' : '#fca5a5', fontWeight: 800 } }, was.correct ? '✓' : '✗') : null
                 ),
-                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, qq.question),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, qq.question),
                 qq.options.map(function(opt, oi) {
                   var picked = oi === aIdx;
                   return h('div', { key: oi, style: {
                     padding: '8px 12px', marginBottom: 6, borderRadius: 6,
                     background: opt.correct ? 'rgba(34,197,94,0.10)' : picked ? 'rgba(239,68,68,0.10)' : 'rgba(15,23,42,0.3)',
                     border: '1px solid ' + (opt.correct ? 'rgba(34,197,94,0.4)' : picked ? 'rgba(239,68,68,0.4)' : 'rgba(167,139,250,0.18)'),
-                    fontSize: 12, color: '#e2e8f0', lineHeight: 1.6,
+                    fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6,
                   } },
                     h('span', { style: { fontWeight: 700, marginRight: 8, color: opt.correct ? '#86efac' : picked ? '#fca5a5' : '#94a3b8' } },
                       opt.correct ? '✓ ' : picked ? '✗ ' : '   '),
                     opt.text,
-                    h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 4 } }, opt.explanation)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, opt.explanation)
                   );
                 })
               );
@@ -17562,11 +17572,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Self-paced NGSS-aligned multiple-choice — each question has an explanation for every answer, not just the right one. ' + QUIZ_QUESTIONS.length + ' questions across anatomy, ecology, evolution, ethics.'),
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700 } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ_QUESTIONS.length),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ_QUESTIONS.length),
               h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' } }, q.domain + ' • ' + q.difficulty)
             ),
             h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 8 } }, 'Standard: ' + q.standard),
-            h('div', { style: { fontSize: 17, fontWeight: 700, color: '#e2e8f0', marginBottom: 16, lineHeight: 1.5 } }, q.question),
+            h('div', { style: { fontSize: 17, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 16, lineHeight: 1.5 } }, q.question),
             q.options.map(function(opt, oi) {
               var picked = oi === selectedIdx;
               var bg = selectedIdx === undefined ? 'rgba(15,23,42,0.4)'
@@ -17582,10 +17592,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   nx[q.id] = oi;
                   setCL({ quizAnswers: nx });
                 },
-                style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: bg, border: border, color: '#e2e8f0', fontSize: 13, cursor: selectedIdx === undefined ? 'pointer' : 'default', lineHeight: 1.5, fontFamily: 'inherit' },
+                style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: bg, border: border, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, cursor: selectedIdx === undefined ? 'pointer' : 'default', lineHeight: 1.5, fontFamily: 'inherit' },
               },
                 h('div', { style: { fontWeight: 600 } }, opt.text),
-                selectedIdx !== undefined ? h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 6, lineHeight: 1.6 } },
+                selectedIdx !== undefined ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 6, lineHeight: 1.6 } },
                   opt.correct ? '✓ ' : '✗ ', opt.explanation) : null
               );
             }),
@@ -17618,7 +17628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'From egg to senescence — the full life history of an octopus, with real biology + future sim mechanics for each stage. Most cephalopods are semelparous: one reproductive event, then death.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '⏳ Why this matters'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Octopus lifespans are SHORT — 1-2 years for most species, with the FINAL phase being a dramatic genetically programmed self-destruct after reproduction. Understanding this cycle is the key to ',
               h('b', { style: { color: '#c7d2fe' } }, 'why octopuses can\'t be domesticated like dogs'),
               ' (they die too fast to transmit culture across generations), ',
@@ -17635,25 +17645,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, s.stage),
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, '⏱ ' + s.duration)
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, s.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, s.description),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 10 } },
                 h('span', { style: { fontWeight: 700 } }, '🎮 Sim mechanic: '), s.simMechanics
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.6, marginBottom: 8 } }, '💡 ' + s.fact),
-              s.citations && s.citations.length ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.6, marginBottom: 8 } }, '💡 ' + s.fact),
+              s.citations && s.citations.length ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' } },
                 'Sources: ' + s.citations.join(' | ')
               ) : null
             );
           }),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '💃 Courtship displays (by species)'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12, lineHeight: 1.5 } }, 'Cephalopod courtship is famously visual — chromatophore-driven body displays that vary dramatically across species. Some species have male "sneaker" tactics (small males mimicking female coloration to infiltrate guarded harems).'),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, lineHeight: 1.5 } }, 'Cephalopod courtship is famously visual — chromatophore-driven body displays that vary dramatically across species. Some species have male "sneaker" tactics (small males mimicking female coloration to infiltrate guarded harems).'),
             Object.keys(COURTSHIP_DISPLAYS).map(function(spk) {
               var c = COURTSHIP_DISPLAYS[spk];
               return h('div', { key: spk, style: { padding: '10px 12px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(167,139,250,0.2)', marginBottom: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: '#c7d2fe', marginBottom: 4 } }, c.species),
-                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 4 } }, c.display),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, '⏱ ' + c.duration + ' • ' + c.citation),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 4 } }, c.display),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '⏱ ' + c.duration + ' • ' + c.citation),
                 c.notes ? h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginTop: 4 } }, c.notes) : null
               );
             })
@@ -17674,19 +17684,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, b.name),
                 h('span', { style: { fontSize: 10, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', padding: '2px 8px', borderRadius: 9999, fontWeight: 700 } }, '#' + (idx + 1))
               ),
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Inspired by: '), b.inspiredBy
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 10 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Principle: '), b.principle
               ),
               h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Applications:'),
-                h('ul', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Applications:'),
+                h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   b.applications.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 2 } }, a); })
                 )
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + b.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + b.citation)
             );
           })
         );
@@ -17701,7 +17711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Cephalopod biology has directly produced drugs, materials, and research tools used in modern medicine. From tetrodotoxin pain therapy to the squid-axon neuroscience foundation, here are the real translations.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🏆 Nobel-tier importance'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'The Hodgkin & Huxley 1952 series of papers on the squid giant axon ',
               h('b', { style: { color: '#c7d2fe' } }, 'won the 1963 Nobel Prize in Physiology or Medicine'),
               ' and established the entire framework of modern neurophysiology. Every textbook diagram of an action potential, every sodium-channel-acting drug, every cardiology rhythm-control therapy, traces back to that squid.'
@@ -17711,19 +17721,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: m.id, style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, m.compound),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, 'Source: ' + m.source),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Mechanism: '), m.mechanism
               ),
               h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Medical applications:'),
-                h('ul', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Medical applications:'),
+                h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   m.medicalUse.map(function(u, i) { return h('li', { key: i, style: { marginBottom: 2 } }, u); })
                 )
               ),
               h('div', { style: { fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, 'Status: '), m.status
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + m.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + m.citation)
             );
           })
         );
@@ -17740,7 +17750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, c.era),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 10 } }, '🗺 ' + c.regions.join(' • ')),
-              h('ul', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+              h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.7 } },
                 c.items.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
               )
             );
@@ -17757,7 +17767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             '~500 million years of cephalopod evolution. Every entry has a real citation, a real date range, and a significance note explaining what this milestone means.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🌍 The big picture'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Cephalopods are among the oldest animal lineages on Earth — they appeared ',
               h('b', { style: { color: '#c7d2fe' } }, 'before fish became dominant'),
               ' and ',
@@ -17769,14 +17779,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,191,36,0.12)', padding: '4px 10px', borderRadius: 6 } }, e.date),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, e.period)
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, e.period)
               ),
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, e.event),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, e.detail),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, e.detail),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } },
                 h('span', { style: { fontWeight: 700 } }, 'Significance: '), e.significance
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + e.source)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + e.source)
             );
           })
         );
@@ -17795,16 +17805,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { marginBottom: 10 } },
                 h('span', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa', marginRight: 6 } }, 'SPECIES:'),
                 loc.species.map(function(sp, i) {
-                  return h('span', { key: i, style: { fontSize: 11, color: '#e2e8f0', background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.3)', padding: '3px 8px', borderRadius: 4, marginRight: 4, display: 'inline-block', marginBottom: 4 } }, sp);
+                  return h('span', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.3)', padding: '3px 8px', borderRadius: 4, marginRight: 4, display: 'inline-block', marginBottom: 4 } }, sp);
                 })
               ),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '📅 Season: '), loc.season
               ),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🎫 Access: '), loc.access
               ),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '💡 Tips: '), loc.tips
               ),
               h('div', { style: { fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', padding: '6px 10px', borderRadius: 6, marginTop: 8 } },
@@ -17827,14 +17837,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, p.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, 'Target: ' + p.targetSpecies + ' • Grade: ' + p.minimumAge),
               p.equipment ? h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, '🎒 Equipment:'),
-                h('ul', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, '🎒 Equipment:'),
+                h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   p.equipment.map(function(eq, i) { return h('li', { key: i }, eq); })
                 )
               ) : null,
               p.steps ? h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, '🚶 Steps:'),
-                h('ol', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, '🚶 Steps:'),
+                h('ol', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   p.steps.map(function(st, i) { return h('li', { key: i, style: { marginBottom: 4 } }, st); })
                 )
               ) : null,
@@ -17847,7 +17857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 12, color: '#86efac', lineHeight: 1.6, marginTop: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '📨 Submit: '), p.submission
               ),
-              p.impact ? h('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginTop: 6 } }, '💪 ' + p.impact) : null
+              p.impact ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', marginTop: 6 } }, '💪 ' + p.impact) : null
             );
           })
         );
@@ -17862,7 +17872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Real field-journal excerpts from cephalopod biologists. Each entry shows the GENRE of scientific observation: dated, located, methodologically transparent, and self-aware about what the observation does and doesn\'t establish.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '✏ What good field notes do'),
-            h('ul', { style: { color: '#e2e8f0', fontSize: 13, lineHeight: 1.8, margin: 0, paddingLeft: 22 } },
+            h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8, margin: 0, paddingLeft: 22 } },
               h('li', null, h('b', null, 'Anchor in time + space: '), 'Date + GPS coordinates (or descriptive location) + water depth.'),
               h('li', null, h('b', null, 'Describe weather + conditions: '), 'Sunlight, sea state, visibility, temperature — all influence behavior.'),
               h('li', null, h('b', null, 'Record observations, not interpretations: '), '"The octopus spread its arms" — not "the octopus was angry."'),
@@ -17874,16 +17884,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap', gap: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, n.date),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, '👁 ' + n.observer)
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '👁 ' + n.observer)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 4 } }, '🗺 ' + n.location + ' • ☁ ' + n.weather),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10, background: 'rgba(15,23,42,0.5)', padding: '12px 14px', borderRadius: 8, borderLeft: '3px solid #a78bfa' } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10, background: 'rgba(15,23,42,0.5)', padding: '12px 14px', borderRadius: 8, borderLeft: '3px solid #a78bfa' } },
                 '"' + n.observation + '"'
               ),
               h('div', { style: { fontSize: 11, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🔬 Method note: '), n.method_note
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + n.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + n.citation)
             );
           })
         );
@@ -17903,17 +17913,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', padding: '2px 8px', borderRadius: 4, fontWeight: 700 } }, l.year)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '🌍 ' + l.jurisdiction),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Scope: '), l.scope
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8, background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8, background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Cephalopod provisions: '), l.cephalopodProvisions
               ),
-              l.enforcement ? h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } },
+              l.enforcement ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Enforced by: '), l.enforcement
               ) : null,
               l.studentNote ? h('div', { style: { fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', padding: '6px 10px', borderRadius: 6, fontStyle: 'italic' } }, '💡 ' + l.studentNote) : null,
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + l.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' } }, '📜 ' + l.citation)
             );
           })
         );
@@ -17934,14 +17944,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe' } }, s.name),
                 h('span', { style: { fontSize: 10, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', padding: '3px 9px', borderRadius: 4, fontWeight: 700 } }, '🌿 ' + s.biome)
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, s.description),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, s.description),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Inhabitants: '), s.inhabitants
               ),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🎨 Cephalopod camo strategy: '), s.camoStrategy
               ),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.5 } }, '💡 ' + s.fact)
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5 } }, '💡 ' + s.fact)
             );
           })
         );
@@ -17957,7 +17967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Per-species conservation assessment. IUCN Red List statuses, population trends, threats, and recommended actions for each playable species. Notice how many are "Not Evaluated" — that\'s a data gap, not a clean bill of health.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📋 IUCN Categories'),
-            h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'LC '), 'Least Concern — abundant + secure',
               h('br', null),
               h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'NT '), 'Near Threatened — close to qualifying for threatened',
@@ -17968,7 +17978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('br', null),
               h('span', { style: { color: '#ef4444', fontWeight: 700 } }, 'CR '), 'Critically Endangered — extremely high risk',
               h('br', null),
-              h('span', { style: { color: '#94a3b8', fontWeight: 700 } }, 'NE '), 'Not Evaluated — assessment never done (often = data deficient)'
+              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'NE '), 'Not Evaluated — assessment never done (often = data deficient)'
             )
           ),
           keys.map(function(k) {
@@ -17982,27 +17992,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 6 } },
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe' } }, c.species),
                 h('span', { style: { fontSize: 11, color: statusColor, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + statusColor, padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, c.iucn),
-                c.assessmentYear ? h('span', { style: { fontSize: 10, color: '#94a3b8' } }, '(assessed ' + c.assessmentYear + ')') : null
+                c.assessmentYear ? h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '(assessed ' + c.assessmentYear + ')') : null
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Trend: '), c.populationTrend
               ),
               h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, '⚠ Main threats'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   c.mainThreats.map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ),
               c.conservationActions ? h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', marginBottom: 4 } }, '✓ Conservation actions'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   c.conservationActions.map(function(a, i) { return h('li', { key: i }, a); })
                 )
               ) : null,
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🎓 Student takeaway: '), c.studentTakeaway
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + c.source)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + c.source)
             );
           })
         );
@@ -18019,7 +18029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           panelHeader('💡 Cephalopod Facts Pool',
             BIOLOGY_FACTS_POOL.length + ' peer-reviewed facts — drawn from primary scientific literature — that the simulator pulls from for in-canvas pop-ups. Browse, share, or use as discussion starters in class.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700 } }, 'Category:'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Category:'),
             categories.map(function(c) {
               var active = filterCat === c;
               return h('button', { key: c,
@@ -18032,8 +18042,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             entries.map(function(f, idx) {
               return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, f.cat),
-                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, f.fact),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + f.cite)
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 6 } }, f.fact),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + f.cite)
               );
             })
           )
@@ -18050,7 +18060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           DEFENSE_MECHANISMS.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, d.name),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 10 } }, d.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10 } }, d.description),
               h('div', { style: { fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '💰 Cost: '), d.cost
               ),
@@ -18063,7 +18073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 11, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '🦑 Species: '), d.species
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + d.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + d.citation)
             );
           })
         );
@@ -18078,7 +18088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Science is ongoing. Here are major cephalopod-research breakthroughs from the past 15 years — each with peer-reviewed citation + plain-language description + significance.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🧠 Why this matters'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'These discoveries demonstrate that cephalopod biology is NOT a closed book. Each year, new findings reshape our understanding of cephalopod cognition, sensory systems, evolution, and welfare implications. Citizen science contributions + AI-assisted analysis + new imaging technologies are expanding what\'s possible.'
             )
           ),
@@ -18088,12 +18098,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,191,36,0.12)', padding: '4px 10px', borderRadius: 6 } }, disc.year),
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: '#c7d2fe', flex: 1, minWidth: 200 } }, disc.discovery)
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, '📖 ' + disc.plainLanguage),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, '📖 ' + disc.plainLanguage),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '🌟 Significance: '), disc.significance
               ),
               disc.followups ? h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 6 } }, '🔄 Follow-ups: ' + disc.followups) : null,
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + disc.source)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + disc.source)
             );
           })
         );
@@ -18110,12 +18120,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, o.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 4 } }, o.species + ' • ' + o.location),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, o.claim),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6 } }, '⏳ ' + o.life),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, o.claim),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, '⏳ ' + o.life),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '🌟 Impact: '), o.impact
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + o.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + o.citation)
             );
           })
         );
@@ -18133,44 +18143,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             var s = SKIN_ANATOMY[skey];
             return h('div', { key: skey, style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, s.name),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, s.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, s.description),
               s.structure ? h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🧬 Structure: '), s.structure
               ) : null,
-              s.colors ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.colors ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🎨 Colors: '), s.colors
               ) : null,
-              s.control ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.control ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '⚡ Control: '), s.control
               ) : null,
-              s.density ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.density ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '📊 Density: '), s.density
               ) : null,
-              s.evolution ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.evolution ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fb923c', fontWeight: 700 } }, '🌱 Evolution: '), s.evolution
               ) : null,
-              s.mechanism ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.mechanism ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '⚙ Mechanism: '), s.mechanism
               ) : null,
-              s.functions ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.functions ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🎯 Functions: '), s.functions
               ) : null,
-              s.shapes ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.shapes ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '📐 Shapes: '), s.shapes
               ) : null,
-              s.speed ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.speed ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '⏱ Speed: '), s.speed
               ) : null,
-              s.combined ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.combined ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fb923c', fontWeight: 700 } }, '🔗 Combined effect: '), s.combined
               ) : null,
-              s.discovery ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.discovery ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '🔍 Discovery: '), s.discovery
               ) : null,
-              s.where ? h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              s.where ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '📍 Where found: '), s.where
               ) : null,
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' } }, '📜 ' + s.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' } }, '📜 ' + s.citation)
             );
           })
         );
@@ -18188,7 +18198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             var b = SPECIAL_BIOMES[bk];
             return h('div', { key: bk, style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, b.biome),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, b.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, b.description),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🦑 Inhabitants: '), b.inhabitants
               ),
@@ -18199,7 +18209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontWeight: 700 } }, '⚠ Threats: '), b.threats
               ),
               b.inSim ? h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic', marginBottom: 8 } }, '🎮 In sim: ' + b.inSim) : null,
-              b.citations ? h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + b.citations.join(' | ')) : null
+              b.citations ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + b.citations.join(' | ')) : null
             );
           })
         );
@@ -18215,27 +18225,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           ETHICAL_DILEMMAS.map(function(d, idx) {
             return h('div', { key: d.id, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, d.title),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 12 } }, d.situation),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 12 } }, d.situation),
               h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 4 } }, '👥 Stakeholders'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   d.stakeholders.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ),
               h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, '⚖ Competing values'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   d.competingValues.map(function(v, i) { return h('li', { key: i }, v); })
                 )
               ),
               h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', marginBottom: 4 } }, '❓ Framing questions'),
-                h('ol', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   d.framingQuestions.map(function(q, i) { return h('li', { key: i, style: { marginBottom: 4 } }, q); })
                 )
               ),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' } },
-                h('span', { style: { fontWeight: 700, color: '#cbd5e1' } }, '📚 Relevant evidence: '),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' } },
+                h('span', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)' } }, '📚 Relevant evidence: '),
                 d.relevantEvidence.join(' • ')
               )
             );
@@ -18254,7 +18264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: t.id, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 12 } }, t.title),
               h('div', { style: { overflowX: 'auto', marginBottom: 10 } },
-                h('table', { style: { borderCollapse: 'collapse', fontSize: 12, color: '#e2e8f0', width: '100%' } },
+                h('table', { style: { borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', width: '100%' } },
                   h('thead', null,
                     h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
                       Object.keys(t.rows[0]).map(function(k, i) {
@@ -18276,7 +18286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🌟 Significance: '), t.significance
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + t.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + t.citation)
             );
           })
         );
@@ -18295,27 +18305,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               style: { background: 'transparent', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, marginBottom: 12 },
             }, '◀ Back to species list'),
             panelHeader('🔍 ' + sp.species, sp.intro),
-            sp.size ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '📏 Size'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.size)) : null,
-            sp.range ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🌍 Range'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.range)) : null,
-            sp.habitat ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🏠 Habitat'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.habitat)) : null,
-            sp.diet ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🍽 Diet'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.diet)) : null,
-            sp.predators ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '⚠ Predators'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.predators)) : null,
-            sp.behavior ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎬 Behavior'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.behavior)) : null,
-            sp.camouflage ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎨 Camouflage'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.camouflage)) : null,
+            sp.size ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '📏 Size'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.size)) : null,
+            sp.range ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🌍 Range'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.range)) : null,
+            sp.habitat ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🏠 Habitat'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.habitat)) : null,
+            sp.diet ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🍽 Diet'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.diet)) : null,
+            sp.predators ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '⚠ Predators'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.predators)) : null,
+            sp.behavior ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎬 Behavior'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.behavior)) : null,
+            sp.camouflage ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎨 Camouflage'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.camouflage)) : null,
             sp.venom ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '☠ Venom'), h('div', { style: { fontSize: 13, color: '#fca5a5', lineHeight: 1.6, background: 'rgba(239,68,68,0.08)', padding: '8px 12px', borderRadius: 6 } }, sp.venom)) : null,
-            sp.intelligence ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🧠 Intelligence'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.intelligence)) : null,
-            sp.display ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🌈 Display'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.display)) : null,
-            sp.adaptations ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🦴 Adaptations'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.adaptations)) : null,
-            sp.symbiosis ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🤝 Symbiosis'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.symbiosis)) : null,
-            sp.tool_use ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🔧 Tool use'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.tool_use)) : null,
-            sp.eyes ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '👁 Eyes'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.eyes)) : null,
-            sp.reproduction ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🥚 Reproduction'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.reproduction)) : null,
-            sp.lifespan ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '⏳ Lifespan'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.lifespan)) : null,
-            sp.conservation ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🌿 Conservation'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.conservation)) : null,
-            sp.fisheries ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎣 Fisheries'), h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, sp.fisheries)) : null,
+            sp.intelligence ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🧠 Intelligence'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.intelligence)) : null,
+            sp.display ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🌈 Display'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.display)) : null,
+            sp.adaptations ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🦴 Adaptations'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.adaptations)) : null,
+            sp.symbiosis ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🤝 Symbiosis'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.symbiosis)) : null,
+            sp.tool_use ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🔧 Tool use'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.tool_use)) : null,
+            sp.eyes ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '👁 Eyes'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.eyes)) : null,
+            sp.reproduction ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🥚 Reproduction'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.reproduction)) : null,
+            sp.lifespan ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '⏳ Lifespan'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.lifespan)) : null,
+            sp.conservation ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🌿 Conservation'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.conservation)) : null,
+            sp.fisheries ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎣 Fisheries'), h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sp.fisheries)) : null,
             sp.inSim ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '🎮 In sim'), h('div', { style: { fontSize: 13, color: '#a78bfa', lineHeight: 1.6, fontStyle: 'italic' } }, sp.inSim)) : null,
             sp.citations ? h('div', { style: cardStyle() }, h('div', { style: subheaderStyle() }, '📜 Citations'),
-              h('ul', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.7 } },
+              h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.7 } },
                 sp.citations.map(function(c, i) { return h('li', { key: i }, c); })
               )
             ) : null
@@ -18330,10 +18340,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var sp = SPECIES_DEEP_DIVES[id];
               return h('button', { key: id,
                 onClick: function() { setCL({ deepDiveId: id }); },
-                style: { textAlign: 'left', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: 14, color: '#e2e8f0', cursor: 'pointer' },
+                style: { textAlign: 'left', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' },
               },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, sp.species),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 } }, sp.intro.substring(0, 160) + '…')
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, lineHeight: 1.5 } }, sp.intro.substring(0, 160) + '…')
               );
             })
           )
@@ -18349,7 +18359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Common cephalopod claims you\'ll see online — and what the actual evidence-based correction is. A great resource for NGSS Practice 8 (evaluating information).'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎯 How to use this'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Show one of these myths to students BEFORE introducing the science. Have them rate confidence (1-5) on the claim. Reveal the correction. Discuss: how could you have detected the myth? What kind of source would you trust?'
             )
           ),
@@ -18363,11 +18373,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: '#fca5a5', fontStyle: 'italic' } }, '"' + m.claim + '"'),
                 h('span', { style: { fontSize: 10, color: sevColor, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + sevColor, padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, m.severity)
               ),
-              m.source ? h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, 'Source: ' + m.source) : null,
+              m.source ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, 'Source: ' + m.source) : null,
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '✓ Evidence-based correction: '), m.evidenceCorrection
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + m.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + m.citation)
             );
           })
         );
@@ -18382,7 +18392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'A structured list of observable cephalopod behaviors with codes and context. Use this for direct classroom observations or to interpret what you see in the sim.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📝 How to use'),
-            h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
               'Watch a cephalopod (sim, aquarium, or wild). Every 30 seconds, record the most prominent behavior from the list. Sum across a 20-min observation = a behavioral budget. Compare across individuals or contexts.'
             )
           ),
@@ -18392,7 +18402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 11, color: '#a78bfa', background: 'rgba(167,139,250,0.15)', padding: '2px 8px', borderRadius: 4, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, b.code),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, b.name)
               ),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 4 } }, b.description),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 4 } }, b.description),
               h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, '🎬 ' + b.context)
             );
           })
@@ -18408,7 +18418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Marine soundscape reference — what students might hear if they were submerged in different cephalopod habitats. Each entry includes the frequency range + range + biological context.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎧 Why this matters'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
               'The ocean is NOT silent. Sounds are critical for many marine species — from whale communication to dolphin echolocation to fish spawning calls. Notably, cephalopods themselves are LARGELY DEAF in the vertebrate sense; they detect particle motion in water rather than pressure waves. This means SOUND is mostly a vertebrate-marine channel.'
             )
           ),
@@ -18416,7 +18426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: s.id, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, s.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '🎙 ' + s.source + ' • 📊 ' + s.frequency + ' • 🌍 ' + s.range),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, s.notes)
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, s.notes)
             );
           })
         );
@@ -18431,7 +18441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Real programs students can contribute to today. Each entry includes accessibility level, what to do, and measurable impact.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🌟 Why this matters'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Citizen science is REAL science. Heberling et al. 2021 (Front. Ecol. Environ.) found that citizen-science contributions have fueled 47+ cephalopod range-shift papers since 2020 alone. Your observations matter — and you don\'t need a degree to contribute.'
             )
           ),
@@ -18439,7 +18449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, p.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '🌐 ' + p.url + ' • 👥 ' + p.who),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, p.what),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, p.what),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🦑 Cephalopod relevance: '), p.cephalopodRelevance
               ),
@@ -18449,7 +18459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '💪 Impact: '), p.impact
               ),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', background: 'rgba(15,23,42,0.5)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(15,23,42,0.5)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
                 h('span', { style: { fontWeight: 700, color: '#86efac' } }, '🚀 Get started: '), p.getStarted
               )
             );
@@ -18467,11 +18477,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           RESEARCH_INSTRUMENTS.map(function(inst, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, inst.name),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 10 } }, inst.description),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10 } }, inst.description),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🌊 Range: '), inst.rangeOfUse
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '⚙ Examples: '), inst.examples
               ),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
@@ -18480,7 +18490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 11, color: '#fca5a5', background: 'rgba(239,68,68,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '⚠ Limitations: '), inst.limitations
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + inst.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + inst.citation)
             );
           })
         );
@@ -18495,7 +18505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Real careers for students interested in cephalopod biology or related marine science. Each includes training, settings, daily work, typical pay, and how to enter.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🚀 You don\'t need a PhD for all of these'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Marine biology offers paths at every education level. Aquarist positions, science communication, conservation NGO roles, fisheries science, and aquaculture work all welcome bachelor\'s-degree holders. PhDs are typical for independent research; not required for many fulfilling careers.'
             )
           ),
@@ -18508,13 +18518,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 12, color: '#a78bfa', marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🏢 Settings: '), c.settings
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '🕒 Daily work: '), c.dailyWork
               ),
               h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '💵 Pay range: '), c.medianPay
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', background: 'rgba(15,23,42,0.5)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', background: 'rgba(15,23,42,0.5)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
                 h('span', { style: { fontWeight: 700, color: '#86efac' } }, '🚀 Path in: '), c.path_in
               )
             );
@@ -18536,25 +18546,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, p.gradeLevel)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 8 } }, '⏱ ' + p.timeNeeded),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 10, background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10, background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '❓ Research question: '), p.question
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🔬 Method: '), p.method
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '📊 Data collection: '), p.dataCollection
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '📈 Analysis: '), p.analysis
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
                 h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '🧪 Variables: '), p.variables
               ),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '🎯 Potential finding: '), p.potentialFinding
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📚 ' + p.relatedReading)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📚 ' + p.relatedReading)
             );
           })
         );
@@ -18569,14 +18579,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'The questions cephalopod biologists are currently chasing. Each entry shows the question, the context, current gaps in knowledge, possible paths to answers, and what\'s at stake.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🌟 Science is ongoing'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'These are real research priorities identified by the cephalopod biology community for the coming decade. Some of them may be the questions your students will help answer — directly or by laying the groundwork.'
             )
           ),
           OPEN_QUESTIONS.map(function(q, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '❓ ' + q.question),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '📋 Context: '), q.context
               ),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 8 } },
@@ -18606,7 +18616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.06em' } }, d.domain),
                 h('span', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic' } }, '🎓 ' + d.gradeLevel + ' • ' + d.ngss)
               ),
-              h('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, d.prompt)
+              h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, d.prompt)
             );
           })
         );
@@ -18626,7 +18636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, b.age)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, 'by ' + b.author + ' • ' + b.year + ' • ' + b.format),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, b.summary),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, b.summary),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.08)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } },
                 h('span', { style: { fontWeight: 700 } }, '💡 Recommendation: '), b.recommendation
               )
@@ -18654,8 +18664,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: qualityColor, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + qualityColor, padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, e.quality)
               ),
               h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fbbf24', marginBottom: 8, fontStyle: 'italic' } }, '"' + e.prompt + '"'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, background: 'rgba(15,23,42,0.5)', padding: '12px 14px', borderRadius: 8, borderLeft: '3px solid ' + qualityColor, marginBottom: 10, whiteSpace: 'pre-wrap' } }, e.response),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, background: 'rgba(15,23,42,0.5)', padding: '12px 14px', borderRadius: 8, borderLeft: '3px solid ' + qualityColor, marginBottom: 10, whiteSpace: 'pre-wrap' } }, e.response),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '👨‍🏫 Teacher feedback: '), e.feedback
               )
             );
@@ -18678,7 +18688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, '⏱ ' + a.time)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 8 } }, '📦 Materials: ' + a.materials),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, a.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, a.description),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } },
                 h('span', { style: { fontWeight: 700 } }, '🎓 Biology: '), a.biology
               )
@@ -18701,7 +18711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic' } }, '📰 ' + n.source)
               ),
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', lineHeight: 1.4, marginBottom: 8 } }, n.headline),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, n.summary),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, n.summary),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, '🌟 Significance: '), n.significance
               ),
@@ -18727,23 +18737,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           panelHeader('🐙 Cephalopod Species Database (50+)',
             'Brief profiles of additional cephalopod species beyond the 12 playable ones. Includes deep-sea, pelagic, polar, and rare species. Filter by name, family, range, or feature.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }) },
-            h('label', { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 700 } }, '🔍 Search'),
+            h('label', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '🔍 Search'),
             h('input', { type: 'text', value: d.speciesDBFilter || '',
               onChange: function(e) { setCL({ speciesDBFilter: e.target.value }); },
               placeholder: 'Try: deep-sea, Sepia, Indo-Pacific, fishery…',
               style: { flex: 1, minWidth: 240, padding: '8px 10px', background: '#1c1410', color: '#fff', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, fontSize: 12 },
               'aria-label': 'Filter species database',
             }),
-            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, entries.length + ' of ' + CEPHALOPOD_SPECIES_DB.length + ' shown')
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, entries.length + ' of ' + CEPHALOPOD_SPECIES_DB.length + ' shown')
           ),
-          entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }) }, 'No matching species.') : null,
+          entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }) }, 'No matching species.') : null,
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10, marginTop: 12 } },
             entries.map(function(s, idx) {
               return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', fontStyle: 'italic' } }, s.sci),
                 h('div', { style: { fontSize: 12, color: '#a78bfa', marginBottom: 4 } }, s.common),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 6 } }, '👨‍👩‍👧 ' + s.family + ' • 🗺 ' + s.range),
-                h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 6 } }, s.note),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, '👨‍👩‍👧 ' + s.family + ' • 🗺 ' + s.range),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, s.note),
                 h('div', { style: { fontSize: 10, color: '#86efac' } }, '🌿 ' + s.status)
               );
             })
@@ -18762,16 +18772,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, a.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '📍 ' + a.location + ' • 🌐 ' + a.url),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '⭐ Notable: '), a.notable
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '🔬 Research: '), a.research
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '🎫 Access: '), a.publicAccess
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                 h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '👩‍🏫 Education: '), a.education
               )
             );
@@ -18790,13 +18800,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, p.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '🔬 ' + p.type + ' • 🦑 Host: ' + p.host),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { color: '#fca5a5', fontWeight: 700 } }, '⚠ Impact: '), p.impact
               ),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '📚 Research: '), p.research
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + p.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + p.citation)
             );
           })
         );
@@ -18815,10 +18825,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe' } }, n.node),
                 h('span', { style: { fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', padding: '3px 9px', borderRadius: 4, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700 } }, n.age)
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🧬 Characteristics: '), n.characteristics
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '🦑 Modern representatives: '), n.modernRepresentatives
               ),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.06)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } },
@@ -18842,10 +18852,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe' } }, o.name),
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 4, fontWeight: 700 } }, o.country)
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } }, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Focus: '), o.focus),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6 } }, h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'Funding: '), o.funding),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, '🌐 ' + o.url),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', fontStyle: 'italic' } }, '💡 ' + o.notes)
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Focus: '), o.focus),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'Funding: '), o.funding),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, '🌐 ' + o.url),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, '💡 ' + o.notes)
             );
           })
         );
@@ -18864,8 +18874,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe' } }, n.name),
                 h('span', { style: { fontSize: 10, color: '#a78bfa', background: 'rgba(167,139,250,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, n.type)
               ),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, 'by ' + n.author + ' • ' + n.frequency + ' • 🌐 ' + n.url),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Topic: '), n.topic),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, 'by ' + n.author + ' • ' + n.frequency + ' • 🌐 ' + n.url),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 6 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, 'Topic: '), n.topic),
               h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, '💡 ' + n.recommendation)
             );
           })
@@ -18883,9 +18893,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, ds.name),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 6 } }, '📜 ' + ds.source + ' • 🎓 ' + ds.ngss),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8 } }, 'Variables: ' + ds.variables),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Variables: ' + ds.variables),
               h('div', { style: { overflowX: 'auto', marginBottom: 10 } },
-                h('table', { style: { borderCollapse: 'collapse', fontSize: 11, color: '#e2e8f0', width: '100%' } },
+                h('table', { style: { borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', width: '100%' } },
                   h('thead', null,
                     h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
                       Object.keys(ds.data[0]).map(function(k, i) {
@@ -18906,7 +18916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               ),
               h('div', { style: { marginTop: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', marginBottom: 4 } }, '❓ Analysis questions'),
-                h('ol', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   ds.questions.map(function(q, i) { return h('li', { key: i, style: { marginBottom: 4 } }, q); })
                 )
               )
@@ -18926,7 +18936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           panelHeader('📝 Vocabulary List',
             'Grade-leveled cephalopod biology vocabulary. Use for ESL support, emerging readers, or as the basis for vocabulary games.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700 } }, 'Grade level:'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Grade level:'),
             ['All'].concat(grades).map(function(g) {
               var active = filterGrade === g;
               return h('button', { key: g,
@@ -18940,7 +18950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, v.term),
                 h('div', { style: { fontSize: 10, color: '#86efac', marginBottom: 6 } }, '🎓 Grade ' + v.grade),
-                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, v.definition)
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, v.definition)
               );
             })
           )
@@ -18966,7 +18976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, '🎓 ' + t.grade)
               ),
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, t.title),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, background: 'rgba(167,139,250,0.08)', padding: '10px 14px', borderRadius: 6, marginBottom: 10, fontStyle: 'italic' } }, '"' + t.taskText + '"'),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, background: 'rgba(167,139,250,0.08)', padding: '10px 14px', borderRadius: 6, marginBottom: 10, fontStyle: 'italic' } }, '"' + t.taskText + '"'),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
                 h('span', { style: { fontWeight: 700 } }, '📊 Rubric: '), t.scoringRubric
               )
@@ -18984,7 +18994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'The full hierarchical taxonomy of cephalopods from Kingdom to Family. Each row shows rank, name, and a brief note on what the group contains.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🌳 How taxonomy works'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Taxonomy is the science of naming and grouping organisms. Carl Linnaeus created the modern hierarchical system (Kingdom → Phylum → Class → Order → Family → Genus → Species) in the 1700s. Cephalopod taxonomy is still being revised — new species are described every year, and DNA evidence sometimes redraws family boundaries.'
             )
           ),
@@ -19009,7 +19019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   return h('tr', { key: idx, style: { borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                     h('td', { style: { padding: '6px 12px', color: '#a78bfa', fontWeight: 700, paddingLeft: (indent * 12 + 8) + 'px' } }, r.rank),
                     h('td', { style: { padding: '6px 12px', color: '#c7d2fe', fontWeight: 700, fontStyle: 'italic' } }, r.name),
-                    h('td', { style: { padding: '6px 12px', color: '#e2e8f0', lineHeight: 1.5 } }, r.notes)
+                    h('td', { style: { padding: '6px 12px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, r.notes)
                   );
                 })
               )
@@ -19034,7 +19044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
                 entries.map(function(c, idx) {
                   return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid ' + tierColor + '40', borderRadius: 8, padding: 12 } },
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 6 } }, c.challenge),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, c.challenge),
                     h('div', { style: { fontSize: 11, color: tierColor, fontStyle: 'italic' } }, '🎖 ' + c.reward)
                   );
                 })
@@ -19055,7 +19065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           panelHeader('❓ Frequently Asked Questions',
             'Common questions about cephalopods — from students, teachers, and curious adults. Each answer cites real science.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700 } }, 'Category:'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Category:'),
             ['All'].concat(cats).map(function(c) {
               var active = filter === c;
               return h('button', { key: c, onClick: function() { setCL({ faqCat: c }); },
@@ -19067,7 +19077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             entries.map(function(f, idx) {
               return h('div', { key: idx, style: cardStyle() },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '❓ ' + f.q),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, f.a),
+                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, f.a),
                 h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 6, fontStyle: 'italic' } }, '📂 ' + f.category)
               );
             })
@@ -19085,7 +19095,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           CROSS_DISC.map(function(c, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '📚 ' + c.subject),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } },
                 h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Connection: '), c.connection
               ),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6 } },
@@ -19109,7 +19119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, r.record),
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: '#c7d2fe', marginBottom: 4 } }, r.holder),
                 h('div', { style: { fontSize: 13, color: '#86efac', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } }, r.value),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + r.citation)
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + r.citation)
               );
             })
           )
@@ -19127,11 +19137,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '🌍 ' + e.environment),
               h('div', { style: { fontSize: 12, color: '#a78bfa', marginBottom: 8 } }, h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '🦑 Species: '), e.species),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🧬 Adaptations: '), e.adaptations),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🧬 Adaptations: '), e.adaptations),
               h('div', { style: { fontSize: 12, color: '#fca5a5', background: 'rgba(239,68,68,0.06)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 700 } }, '🌟 Significance: '), e.significance
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + e.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + e.citation)
             );
           })
         );
@@ -19151,7 +19161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 style: { background: 'transparent', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, marginBottom: 12 },
               }, '◀ Back to topics'),
               panelHeader('📔 ' + t.title, t.domain),
-              h('div', { style: Object.assign({}, cardStyle(), { lineHeight: 1.8, fontSize: 14, color: '#e2e8f0', whiteSpace: 'pre-wrap' }) }, t.content)
+              h('div', { style: Object.assign({}, cardStyle(), { lineHeight: 1.8, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'pre-wrap' }) }, t.content)
             );
           }
         }
@@ -19162,7 +19172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             DEEP_DIVE_TOPICS.map(function(t) {
               return h('button', { key: t.id,
                 onClick: function() { setCL({ deepDiveTopicId: t.id }); },
-                style: { textAlign: 'left', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: 14, color: '#e2e8f0', cursor: 'pointer' },
+                style: { textAlign: 'left', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 10, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' },
               },
                 h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, t.domain),
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', lineHeight: 1.4 } }, t.title)
@@ -19186,11 +19196,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', flex: 1 } }, h0.title)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '👥 ' + h0.investigators),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, '📋 ' + h0.summary),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, '📋 ' + h0.summary),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '8px 12px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🔬 Methods: '), h0.methods),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '📊 Findings: '), h0.findings),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.06)', padding: '8px 12px', borderRadius: 6, marginBottom: 8, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🌟 Impact: '), h0.impact),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📜 ' + h0.citation)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + h0.citation)
             );
           })
         );
@@ -19222,7 +19232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'A complete 10-day classroom curriculum: daily plans, essential questions, objectives, activities, homework, assessments, and UDL accommodations. Print + use as-is.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎯 Unit Goals'),
-            h('ol', { style: { color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, margin: 0, paddingLeft: 22 } },
+            h('ol', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.7, margin: 0, paddingLeft: 22 } },
               h('li', null, 'Students understand cephalopod biology + ecology'),
               h('li', null, 'Students articulate evidence-based scientific arguments'),
               h('li', null, 'Students engage with ethical + policy implications'),
@@ -19239,14 +19249,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 13, fontStyle: 'italic', color: '#c7d2fe', marginBottom: 8 } }, '❓ ' + day.essentialQuestion),
               h('div', { style: { marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 4 } }, '🎯 Objectives'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },
                   day.objectives.map(function(o, i) { return h('li', { key: i }, o); })
                 )
               ),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🎬 Activities: '), day.activities),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '📚 Homework: '), day.homework),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '✓ Assessment: '), day.assessment),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '♿ Accommodations: '), day.accommodations)
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, '🎬 Activities: '), day.activities),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '📚 Homework: '), day.homework),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, '✓ Assessment: '), day.assessment),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '♿ Accommodations: '), day.accommodations)
             );
           })
         );
@@ -19264,19 +19274,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '📋 ' + d.domain),
               h('div', { style: { marginBottom: 12 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, '✓ Key concepts to master'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   d.keyConceptsToMaster.map(function(c, i) { return h('li', { key: i, style: { marginBottom: 2 } }, c); })
                 )
               ),
               h('div', { style: { marginBottom: 12 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 6 } }, '✗ Common misconceptions to avoid'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   d.commonMisconceptions.map(function(m, i) { return h('li', { key: i, style: { marginBottom: 2 } }, m); })
                 )
               ),
               h('div', null,
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '💡 Study tips'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   d.studyTips.map(function(t, i) { return h('li', { key: i, style: { marginBottom: 2 } }, t); })
                 )
               )
@@ -19296,7 +19306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, '📋 Purpose: ' + letter.purpose),
               h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fbbf24', marginBottom: 10 } }, '✉ Subject: ' + letter.subject),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, background: 'rgba(15,23,42,0.5)', padding: '14px 18px', borderRadius: 8, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, letter.body)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, background: 'rgba(15,23,42,0.5)', padding: '14px 18px', borderRadius: 8, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, letter.body)
             );
           })
         );
@@ -19311,7 +19321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Real cases where cephalopod-biology consensus changed when new evidence emerged. Use these to teach NGSS Practice 8 (evaluating + communicating information) — science is NOT a fixed set of facts.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎓 Why this matters'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'A common student misconception is that "science = facts to memorize." Real science is a PROCESS of updating beliefs based on evidence. These cases show that.'
             )
           ),
@@ -19341,7 +19351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 f.oscar.indexOf('Yes') === 0 ? h('span', { style: { fontSize: 10, color: '#fbbf24', background: 'rgba(251,191,36,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 800 } }, '🏆 Oscar') : null
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 6 } }, f.year + ' • ' + f.director + ' • ' + f.duration + ' • ' + f.access),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, '📋 ' + f.summary),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, '📋 ' + f.summary),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🔬 Scientific accuracy: '), f.scientificAccuracy),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '💭 Discussion: '), f.discussion),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, '🎟 Age: ' + f.ageAppropriate),
@@ -19384,7 +19394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 if (!t[qkey]) return null;
                 return h('div', { key: qkey, style: { marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                   h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '❓ ' + t[qkey]),
-                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, paddingLeft: 16, borderLeft: '3px solid #a78bfa' } }, '💬 ' + t[akey])
+                  h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, paddingLeft: 16, borderLeft: '3px solid #a78bfa' } }, '💬 ' + t[akey])
                 );
               })
             );
@@ -19405,7 +19415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 10 } }, 'Length: ' + e.length),
               h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, '📐 Structure'),
-                h('ol', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   e.structure.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 4 } }, s); })
                 )
               ),
@@ -19428,7 +19438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 14, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', padding: '4px 10px', borderRadius: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, p.year),
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', flex: 1 } }, p.policy)
               ),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Context: '), p.context),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 6 } }, h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, 'Context: '), p.context),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '6px 10px', borderRadius: 6 } }, h('span', { style: { fontWeight: 700 } }, '📋 Current status: '), p.currentStatus)
             );
           })
@@ -19445,9 +19455,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           SCIENTIFIC_DEBATES.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '❓ ' + d.debate),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, '📋 ' + d.context),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, '📋 ' + d.context),
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', marginBottom: 4 } }, '👥 Positions'),
-              h('ul', { style: { margin: '0 0 10px 0', paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+              h('ul', { style: { margin: '0 0 10px 0', paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                 d.positions.map(function(p, i) { return h('li', { key: i, style: { marginBottom: 6 } }, p); })
               ),
               h('div', { style: { fontSize: 12, color: '#fca5a5', background: 'rgba(239,68,68,0.06)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '⚡ Stakes: '), d.stakes)
@@ -19468,19 +19478,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '⚖ ' + p.motion),
               h('div', { style: { marginBottom: 12 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, '✓ FOR arguments'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   p.forArguments.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 4 } }, a); })
                 )
               ),
               h('div', { style: { marginBottom: 12 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 6 } }, '✗ AGAINST arguments'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   p.againstArguments.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 4 } }, a); })
                 )
               ),
               h('div', { style: { marginBottom: 8 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#a78bfa', marginBottom: 6 } }, '↔ COUNTERARGUMENTS'),
-                h('ul', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                   p.counterArguments.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 4 } }, a); })
                 )
               )
@@ -19500,7 +19510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             EDUCATOR_GLOSSARY.map(function(e, idx) {
               return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe' } }, e.term),
-                h('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 4, lineHeight: 1.5 } }, e.def)
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 4, lineHeight: 1.5 } }, e.def)
               );
             })
           )
@@ -19519,7 +19529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, '👥 ' + d.studentType),
               h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic', marginBottom: 10 } }, '⚠ ' + d.challenges),
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', marginBottom: 4 } }, '✓ Modifications'),
-              h('ul', { style: { margin: '0 0 10px 0', paddingLeft: 22, color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+              h('ul', { style: { margin: '0 0 10px 0', paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                 d.modifications.map(function(m, i) { return h('li', { key: i, style: { marginBottom: 4 } }, m); })
               ),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '📋 Example: '), d.example)
@@ -19561,7 +19571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, '⏱ ' + t.duration)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '🎙 ' + t.speaker + ' • ' + t.year),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, t.summary),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, t.summary),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.06)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '💡 Recommendation: '), t.recommendation)
             );
           })
@@ -19578,7 +19588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           EDUCATOR_REFLECTIONS.map(function(r, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '🎓 ' + r.topic),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, r.content)
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, r.content)
             );
           })
         );
@@ -19630,7 +19640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           MEMORABLE_MOMENTS.map(function(m, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '✨ ' + m.moment),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, m.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, m.description),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🎓 Lesson: '), m.lessonLearned),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🧬 Biology: '), m.biology)
             );
@@ -19670,7 +19680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, '👶 ' + p.ages)
               ),
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontStyle: 'italic', marginBottom: 8 } }, '🎨 ' + p.medium + ' • ⏱ ' + p.time),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 8 } }, p.description),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, p.description),
               h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🧬 Biology: '), p.biology),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.06)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🛠 Materials: '), p.materials)
             );
@@ -19684,10 +19694,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function renderFinal() {
         return h('div', null,
           panelHeader('🌅 ' + AFTERWORD.title, 'Closing thoughts + 15 final reflection prompts for student journaling at the end of the unit.'),
-          h('div', { style: Object.assign({}, cardStyle(), { lineHeight: 1.8, fontSize: 14, color: '#e2e8f0', whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' }) }, AFTERWORD.body),
+          h('div', { style: Object.assign({}, cardStyle(), { lineHeight: 1.8, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' }) }, AFTERWORD.body),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📝 Final reflection prompts'),
-            h('ol', { style: { margin: 0, paddingLeft: 22, color: '#e2e8f0', fontSize: 13, lineHeight: 1.8 } },
+            h('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8 } },
               REFLECTION_PROMPTS_FINAL.map(function(p, i) { return h('li', { key: i, style: { marginBottom: 8 } }, p); })
             )
           )
@@ -19708,7 +19718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, '⏱ ' + m.duration)
               ),
               h('div', { style: { fontSize: 12, color: '#fbbf24', background: 'rgba(251,191,36,0.06)', padding: '6px 10px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🎬 Hook: '), m.hook),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, '💡 Main point: '), m.mainPoint),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 6 } }, h('span', { style: { color: '#86efac', fontWeight: 700 } }, '💡 Main point: '), m.mainPoint),
               h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🧬 Biology: '), m.biology),
               h('div', { style: { fontSize: 12, color: '#22d3ee', background: 'rgba(34,211,238,0.08)', padding: '6px 10px', borderRadius: 6, lineHeight: 1.5 } }, h('span', { style: { fontWeight: 700 } }, '🎯 Closure: '), m.closure)
             );
@@ -19726,7 +19736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           WISDOM.map(function(w, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '🦉 ' + w.wisdom),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, w.context)
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, w.context)
             );
           })
         );
@@ -19777,14 +19787,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   'aria-label': 'Filter glossary terms',
                   style: { width: '100%', padding: '10px 14px',
                     background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.4)',
-                    borderRadius: 8, color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit', boxSizing: 'border-box' } })),
+                    borderRadius: 8, color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontFamily: 'inherit', boxSizing: 'border-box' } })),
               (function() {
                 var matches = GLOSSARY.filter(function(g) {
                   if (!filter) return true;
                   return g.term.toLowerCase().includes(filter) || g.defn.toLowerCase().includes(filter);
                 }).sort(function(a, b) { return a.term.localeCompare(b.term); });
                 if (matches.length === 0) {
-                  return h('div', { style: { color: '#94a3b8', fontSize: 12, padding: '16px 0', textAlign: 'center', fontStyle: 'italic' } },
+                  return h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, padding: '16px 0', textAlign: 'center', fontStyle: 'italic' } },
                     'No matches for "' + filter + '". Try a partial word.');
                 }
                 return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
@@ -19800,7 +19810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, g.term),
                         h('span', { style: { fontSize: 9, fontWeight: 700, color: tagColor, background: tagColor + '15', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, g.tag)),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, g.defn));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, g.defn));
                   }));
               })())) : null,
 
@@ -19808,7 +19818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           sub === 'sources' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📜 Sources + bibliography'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
                 h('p', { style: { margin: '0 0 12px 0' } }, 'Cephalopod Lab content is anchored in peer-reviewed marine biology + behavioral science. Primary sources:')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
                 [
@@ -19830,7 +19840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                       borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c7d2fe', marginBottom: 4 } }, s.name),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
                     h('div', { style: { fontSize: 9, fontWeight: 700, color: tagColor, textTransform: 'uppercase', letterSpacing: '0.06em' } }, s.tag));
                 })))) : null,
 
@@ -19838,7 +19848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           sub === 'citizen' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🔬 Be a cephalopod scientist'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75, marginBottom: 16 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.75, marginBottom: 16 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Cephalopod biology is one of the few scientific fields where amateur observations regularly contribute to peer-reviewed papers. New species are still being discovered. Behavior is poorly documented for most species. ',
                   h('b', { style: { color: '#fde68a' } }, 'If you see a cephalopod doing something interesting, report it.'))),
@@ -19855,14 +19865,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                       borderLeft: '3px solid #86efac', padding: '12px 14px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 } }, c.name),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, c.what),
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 6 } }, c.what),
                     h('div', { style: { fontSize: 11, color: '#fde68a', fontStyle: 'italic' } },
                       h('b', null, '🔗 How: '), c.how));
                 })),
               h('div', { style: { marginTop: 14, padding: '12px 14px', background: 'rgba(134,239,172,0.08)', borderLeft: '3px solid #86efac', borderRadius: 8 } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
                   '💡 Pro tip for students'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                   'If you live near tidepools, a snorkel + a phone in a waterproof case is enough to start. Cephalopods are notoriously hard to find — most sightings come from patient observation, not lucky encounters. The Pacific Northwest has Giant Pacific octopuses; the Mediterranean has common octopuses; the Indo-Pacific has the highest cephalopod diversity on Earth.')))) : null,
 
           // ─── FIELD NOTES ───
@@ -19870,7 +19880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             (d.huntFieldNotesUnlocked || []).length > 0 ?
               h('div', { style: cardStyle() },
                 h('div', { style: subheaderStyle() }, '📔 Field notes you\'ve unlocked'),
-                h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+                h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
                   'Real biology trivia unlocked through Hunter Sim attempts. Each note maps to documented research.'),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   (d.huntFieldNotesUnlocked || []).map(function(noteId, i) {
@@ -19882,10 +19892,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('div', { style: { fontSize: 12, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
                         '"' + note.text + '"'));
                   })),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 14, fontStyle: 'italic' } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 14, fontStyle: 'italic' } },
                   (d.huntFieldNotesUnlocked || []).length + ' of ' + FIELD_NOTES.length + ' unlocked. Keep hunting to discover more.')) :
               h('div', { style: cardStyle() },
-                h('div', { style: { color: '#94a3b8', fontSize: 13, padding: '24px', textAlign: 'center', fontStyle: 'italic', lineHeight: 1.7 } },
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, padding: '24px', textAlign: 'center', fontStyle: 'italic', lineHeight: 1.7 } },
                   'You haven\'t unlocked any field notes yet. Head to the ',
                   h('b', { style: { color: '#c7d2fe' } }, 'Hunter Sim'),
                   ' tab and attempt a hunt — every attempt unlocks a real biology fact.'))

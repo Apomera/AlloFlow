@@ -769,7 +769,7 @@ const d = labToolData.solarSystem;
 
           var PLANETS = [
 
-            { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.', gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
+            { name: t('stem.periodic.mercury'), emoji: '\u2638', color: 'var(--allo-stem-text-soft, #94a3b8)', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.', gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
 
             { name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
 
@@ -861,8 +861,16 @@ const d = labToolData.solarSystem;
 
               camera.lookAt(0, 0, 0);
 
-              const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-
+              let renderer;
+              try {
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+              } catch (e) {
+                console.error('[SolarSystem] WebGLRenderer creation failed:', e);
+                setTimeout(function() {
+                  upd('webglError', true);
+                }, 0);
+                return;
+              }
               renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
               renderer.setSize(W, H);
@@ -5233,7 +5241,20 @@ const d = labToolData.solarSystem;
             // 3D Canvas container (hidden in orrery mode)
             !d.orreryMode && React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-800/40", style: { background: '#0a0e27', boxShadow: '0 0 30px rgba(79,70,229,0.1), 0 8px 32px rgba(0,0,0,0.4)' } },
 
-              React.createElement("canvas", {
+              d.webglError ? React.createElement("div", {
+                className: "flex flex-col items-center justify-center p-6 text-center text-white",
+                style: { height: '520px', background: 'rgba(15, 23, 42, 0.8)' }
+              },
+                React.createElement("span", { style: { fontSize: '48px', marginBottom: '16px' } }, "⚠"),
+                React.createElement("h4", { className: "text-lg font-bold text-red-400 mb-2" }, "3D Mode Unresolved"),
+                React.createElement("p", { className: "text-xs text-slate-300 max-w-sm mb-6" }, "WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration. You can still use the Orrery Lab mode or try again."),
+                React.createElement("button", {
+                  onClick: function() {
+                    upd('webglError', false);
+                  },
+                  className: "px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-md transition-colors"
+                }, "Retry 3D Mode")
+              ) : React.createElement("canvas", {
 
                 ref: canvasRef,
 
@@ -5645,7 +5666,7 @@ const d = labToolData.solarSystem;
 
                     React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + sel.color + "88" } }, "\uD83C\uDF0D"),
 
-                    React.createElement("h5", { className: "font-bold text-sm", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Surface Conditions")
+                    React.createElement("h5", { className: "font-bold text-sm", style: { color: 'var(--allo-stem-text, #ffffff)', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Surface Conditions")
 
                   ),
 
@@ -7167,7 +7188,7 @@ const d = labToolData.solarSystem;
                     }),
                     React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
                       React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + palette.accent + "88" } }, palette.icon),
-                      React.createElement("h5", { className: "font-bold text-sm", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Interior Structure")
+                      React.createElement("h5", { className: "font-bold text-sm", style: { color: 'var(--allo-stem-text, #ffffff)', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Interior Structure")
                     ),
                     React.createElement("p", { className: "text-xs leading-relaxed", style: { position: "relative", zIndex: 1, color: palette.textTint } }, copy)
                   );
@@ -7435,7 +7456,7 @@ const d = labToolData.solarSystem;
                           }, layer.icon),
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
-                              React.createElement("span", { className: "text-xs font-bold", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
+                              React.createElement("span", { className: "text-xs font-bold", style: { color: 'var(--allo-stem-text, #ffffff)', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
                               React.createElement("span", {
                                 className: "text-[10px] px-1.5 py-0.5 rounded font-mono",
                                 style: {
@@ -7445,7 +7466,7 @@ const d = labToolData.solarSystem;
                                 }
                               }, layer.thick)
                             ),
-                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#e2e8f0' } }, layer.desc)
+                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, layer.desc)
                           )
                         )
                       );
@@ -7674,7 +7695,20 @@ const d = labToolData.solarSystem;
 
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '70vh', minHeight: '400px', maxHeight: '800px' } },
 
-                  React.createElement("canvas", {
+                  d.droneWebglError ? React.createElement("div", {
+                    className: "flex flex-col items-center justify-center p-6 text-center text-white",
+                    style: { height: '100%', background: 'rgba(15, 23, 42, 0.8)' }
+                  },
+                    React.createElement("span", { style: { fontSize: '48px', marginBottom: '16px' } }, "⚠"),
+                    React.createElement("h4", { className: "text-lg font-bold text-red-400 mb-2" }, "Drone 3D Mode Unresolved"),
+                    React.createElement("p", { className: "text-xs text-slate-300 max-w-sm mb-6" }, "WebGL failed to initialize for the surface simulator. Your device might lack 3D hardware acceleration."),
+                    React.createElement("button", {
+                      onClick: function() {
+                        upd('droneWebglError', false);
+                      },
+                      className: "px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg shadow-md transition-colors"
+                    }, "Retry 3D Mode")
+                  ) : React.createElement("canvas", {
 
                     "data-drone-canvas": "true",
 
@@ -7702,7 +7736,16 @@ const d = labToolData.solarSystem;
 
                         camera.position.set(0, isFluid ? 5 : 1.6, 0);
 
-                        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+                        var renderer;
+                        try {
+                          renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+                        } catch (err) {
+                          console.error('[SolarSystem Drone] WebGL error:', err);
+                          setTimeout(function() {
+                            upd('droneWebglError', true);
+                          }, 0);
+                          return;
+                        }
 
                         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(W, H);
 
@@ -14334,7 +14377,7 @@ const d = labToolData.solarSystem;
                   (function() {
                                       var t = d.raceTime != null ? d.raceTime : 0;
                                       var planets = [
-                                        { name: 'Mercury', radius: 25, period: 0.24, color: '#94a3b8', size: 2.5 },
+                                        { name: 'Mercury', radius: 25, period: 0.24, color: 'var(--allo-stem-text-soft, #94a3b8)', size: 2.5 },
                                         { name: 'Venus', radius: 45, period: 0.62, color: '#fbbf24', size: 4 },
                                         { name: 'Earth', radius: 70, period: 1.0, color: '#3b82f6', size: 4 },
                                         { name: 'Mars', radius: 95, period: 1.88, color: '#ef4444', size: 3 },
@@ -15007,7 +15050,7 @@ const d = labToolData.solarSystem;
                   (function() {
                                       var dest = d.trajDest || 'mars';
                                       var DESTS = {
-                                        moon: { name: 'Moon', dv: 4, time: '3 days', color: '#cbd5e1', x: 320 },
+                                        moon: { name: 'Moon', dv: 4, time: '3 days', color: 'var(--allo-stem-text, #cbd5e1)', x: 320 },
                                         mars: { name: 'Mars', dv: 12.5, time: '7-9 months', color: '#dc2626', x: 360 },
                                         jupiter: { name: 'Jupiter', dv: 25, time: '5-7 years', color: '#f97316', x: 400 },
                                         pluto: { name: 'Pluto', dv: 35, time: '9-10 years', color: '#a78bfa', x: 440 },
@@ -15897,7 +15940,7 @@ const d = labToolData.solarSystem;
                                       var mode = d.scaleMode || 'size';
                                       var planets = [
                                         { name: 'Sun', sizeKm: 1392700, color: '#facc15', distAU: 0 },
-                                        { name: 'Mercury', sizeKm: 4879, color: '#94a3b8', distAU: 0.39 },
+                                        { name: 'Mercury', sizeKm: 4879, color: 'var(--allo-stem-text-soft, #94a3b8)', distAU: 0.39 },
                                         { name: 'Venus', sizeKm: 12104, color: '#fbbf24', distAU: 0.72 },
                                         { name: 'Earth', sizeKm: 12742, color: '#3b82f6', distAU: 1.0 },
                                         { name: 'Mars', sizeKm: 6779, color: '#ef4444', distAU: 1.52 },
@@ -16170,8 +16213,8 @@ const d = labToolData.solarSystem;
                                         europa: { name: 'Europa (Jupiter)', icyShell: true, ocean: true, life: 'High plausibility', desc: 'Subsurface ocean has 2× water of Earth oceans. Hydrothermal vents possible at sea floor. JUICE + Europa Clipper missions ongoing.', color: '#bfdbfe' },
                                         enceladus: { name: 'Enceladus (Saturn)', icyShell: true, ocean: true, life: 'Highly plausible', desc: 'Cassini discovered geysers spraying water + organics + hydrogen + silica. Habitable conditions confirmed by chemistry of plumes.', color: '#f0f9ff' },
                                         titan: { name: 'Titan (Saturn)', icyShell: false, ocean: true, life: 'Maybe (exotic)', desc: 'Thick atmosphere of N2 + CH4. Lakes of liquid methane on surface. Water-ammonia ocean below. Life possible but very different.', color: '#fde047' },
-                                        ganymede: { name: 'Ganymede (Jupiter)', icyShell: true, ocean: true, life: 'Possible', desc: 'Largest moon. Subsurface ocean confirmed by Hubble. JUICE mission will study it.', color: '#cbd5e1' },
-                                        callisto: { name: 'Callisto (Jupiter)', icyShell: true, ocean: 'maybe', life: 'Less likely', desc: 'Oldest visible surface in solar system. Possible subsurface ocean. Lower radiation than other Jovian moons.', color: '#94a3b8' },
+                                        ganymede: { name: 'Ganymede (Jupiter)', icyShell: true, ocean: true, life: 'Possible', desc: 'Largest moon. Subsurface ocean confirmed by Hubble. JUICE mission will study it.', color: 'var(--allo-stem-text, #cbd5e1)' },
+                                        callisto: { name: 'Callisto (Jupiter)', icyShell: true, ocean: 'maybe', life: 'Less likely', desc: 'Oldest visible surface in solar system. Possible subsurface ocean. Lower radiation than other Jovian moons.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
                                         io: { name: 'Io (Jupiter)', icyShell: false, ocean: false, life: 'No', desc: 'Most volcanically active body in solar system. 400+ active volcanoes. Sulfur dioxide atmosphere. Not habitable.', color: '#fde047' }
                                       };
                                       var sel = MOONS[moon];
@@ -17345,10 +17388,10 @@ const d = labToolData.solarSystem;
                                         { name: 'Triangulum (M33)', x: 280, y: 80, r: 8, color: '#7dd3fc', desc: '2.7 Mly away' },
                                         { name: 'Large Magellanic Cloud', x: 230, y: 200, r: 6, color: '#fbbf24', desc: '160k ly — satellite of Milky Way' },
                                         { name: 'Small Magellanic Cloud', x: 240, y: 215, r: 4, color: '#fbbf24', desc: '200k ly — satellite' },
-                                        { name: 'Canis Major Dwarf', x: 175, y: 175, r: 3, color: '#94a3b8', desc: '25k ly — closest to MW' },
-                                        { name: 'Sagittarius Dwarf', x: 220, y: 175, r: 4, color: '#94a3b8', desc: '70k ly — being torn apart' },
-                                        { name: 'Ursa Minor Dwarf', x: 180, y: 100, r: 3, color: '#94a3b8', desc: '200k ly' },
-                                        { name: 'Sculptor Dwarf', x: 230, y: 120, r: 3, color: '#94a3b8', desc: '290k ly' },
+                                        { name: 'Canis Major Dwarf', x: 175, y: 175, r: 3, color: 'var(--allo-stem-text-soft, #94a3b8)', desc: '25k ly — closest to MW' },
+                                        { name: 'Sagittarius Dwarf', x: 220, y: 175, r: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', desc: '70k ly — being torn apart' },
+                                        { name: 'Ursa Minor Dwarf', x: 180, y: 100, r: 3, color: 'var(--allo-stem-text-soft, #94a3b8)', desc: '200k ly' },
+                                        { name: 'Sculptor Dwarf', x: 230, y: 120, r: 3, color: 'var(--allo-stem-text-soft, #94a3b8)', desc: '290k ly' },
                                         { name: 'IC 10', x: 310, y: 110, r: 4, color: '#7dd3fc', desc: '2.2 Mly — small spiral' }
                                       ];
                                       return React.createElement('div', null,
@@ -17850,7 +17893,7 @@ const d = labToolData.solarSystem;
                                         { name: 'Jupiter', hr: 9.9, color: '#f97316' }, { name: 'Saturn', hr: 10.7, color: '#eab308' },
                                         { name: 'Neptune', hr: 16.1, color: '#3b82f6' }, { name: 'Uranus', hr: 17.2, color: '#67e8f9' },
                                         { name: 'Earth', hr: 24, color: '#22c55e' }, { name: 'Mars', hr: 24.6, color: '#dc2626' },
-                                        { name: 'Mercury', hr: 1408, color: '#94a3b8' }, { name: 'Venus', hr: 5832, color: '#fbbf24' }
+                                        { name: 'Mercury', hr: 1408, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { name: 'Venus', hr: 5832, color: '#fbbf24' }
                                       ];
                                       var maxHr = 80;
                                       return React.createElement('div', null,
@@ -18041,9 +18084,9 @@ const d = labToolData.solarSystem;
                                       var TELS = [
                                         { name: 'Hubble Space Telescope', aper: 240, launch: 1990, color: '#7dd3fc', desc: 'Optical/UV/IR space telescope. 30+ year service.' },
                                         { name: 'James Webb (JWST)', aper: 650, launch: 2021, color: '#fbbf24', desc: 'Infrared space telescope. At L2 Lagrange point.' },
-                                        { name: 'Keck I + II', aper: 1000, launch: 1993, color: '#94a3b8', desc: 'Twin 10m telescopes on Mauna Kea, Hawaii.' },
-                                        { name: 'Very Large Telescope (VLT)', aper: 820, launch: 1998, color: '#cbd5e1', desc: 'ESO Chile, four 8.2m telescopes.' },
-                                        { name: 'Gemini North + South', aper: 810, launch: 2000, color: '#a3a3a3', desc: 'Twin 8m: Mauna Kea + Cerro Pachón.' },
+                                        { name: 'Keck I + II', aper: 1000, launch: 1993, color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Twin 10m telescopes on Mauna Kea, Hawaii.' },
+                                        { name: 'Very Large Telescope (VLT)', aper: 820, launch: 1998, color: 'var(--allo-stem-text, #cbd5e1)', desc: 'ESO Chile, four 8.2m telescopes.' },
+                                        { name: 'Gemini North + South', aper: 810, launch: 2000, color: 'var(--allo-stem-text-soft, #a3a3a3)', desc: 'Twin 8m: Mauna Kea + Cerro Pachón.' },
                                         { name: 'Atacama Large Millimeter Array', aper: 1200, launch: 2013, color: '#fde047', desc: '66-antenna radio array, Chilean desert.' },
                                         { name: 'Hubble (in space)', aper: 240, launch: 1990, color: '#7dd3fc', desc: 'Optical/UV/IR space telescope. Still operating.' },
                                         { name: 'Chandra X-ray Observatory', aper: 120, launch: 1999, color: '#a78bfa', desc: 'NASA X-ray space telescope.' },
@@ -18428,7 +18471,7 @@ const d = labToolData.solarSystem;
                   (function() {
                                       var STARS = [
                                         { name: 'Sun', mag: -26.7, color: '#fde047' },
-                                        { name: 'Moon (full)', mag: -12.6, color: '#e2e8f0' },
+                                        { name: 'Moon (full)', mag: -12.6, color: 'var(--allo-stem-text, #e2e8f0)' },
                                         { name: 'Venus (max)', mag: -4.6, color: '#fbbf24' },
                                         { name: 'Jupiter', mag: -2.5, color: '#f97316' },
                                         { name: 'Sirius', mag: -1.46, color: '#fff' },
@@ -18436,8 +18479,8 @@ const d = labToolData.solarSystem;
                                         { name: 'Arcturus', mag: -0.05, color: '#f97316' },
                                         { name: 'Vega', mag: 0.03, color: '#bfdbfe' },
                                         { name: 'Polaris (North Star)', mag: 1.98, color: '#fff' },
-                                        { name: 'Faintest naked-eye', mag: 6.0, color: '#94a3b8' },
-                                        { name: 'Backyard scope limit', mag: 13, color: '#475569' },
+                                        { name: 'Faintest naked-eye', mag: 6.0, color: 'var(--allo-stem-text-soft, #94a3b8)' },
+                                        { name: 'Backyard scope limit', mag: 13, color: 'var(--allo-stem-text-soft, #475569)' },
                                         { name: 'JWST limit', mag: 34, color: '#1f2937' }
                                       ];
                                       return React.createElement('div', null,
@@ -18743,9 +18786,9 @@ const d = labToolData.solarSystem;
                                         { name: 'Barred Spiral (SBb)', desc: 'Bar through center', ex: 'Milky Way', color: '#fbbf24' },
                                         { name: 'Elliptical (E0)', desc: 'Nearly spherical, old', ex: 'M87', color: '#dc2626' },
                                         { name: 'Elliptical (E7)', desc: 'Very flattened', ex: 'NGC 4621', color: '#7c2d12' },
-                                        { name: 'Lenticular (S0)', desc: 'Disk but no arms', ex: 'M84', color: '#94a3b8' },
+                                        { name: 'Lenticular (S0)', desc: 'Disk but no arms', ex: 'M84', color: 'var(--allo-stem-text-soft, #94a3b8)' },
                                         { name: 'Irregular', desc: 'No defined shape', ex: 'Large Magellanic Cloud', color: '#22c55e' },
-                                        { name: 'Dwarf', desc: 'Small + faint', ex: 'Sagittarius Dwarf', color: '#cbd5e1' },
+                                        { name: 'Dwarf', desc: 'Small + faint', ex: 'Sagittarius Dwarf', color: 'var(--allo-stem-text, #cbd5e1)' },
                                         { name: 'Starburst', desc: 'Forming stars rapidly', ex: 'M82', color: '#fde047' }
                                       ];
                                       return React.createElement('div', null,
@@ -19975,7 +20018,7 @@ const d = labToolData.solarSystem;
                     { label: 'Planets', value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#94a3b8' },
                     { label: 'Quiz', value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#94a3b8' },
                     { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#94a3b8' },
-                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#94a3b8' }
+                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: 'var(--allo-stem-text-soft, #94a3b8)' }
                   ].map(function(stat) {
                     return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100') },
                       React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color, fontFamily: 'monospace' } }, stat.value),

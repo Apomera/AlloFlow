@@ -4554,7 +4554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           position: 'relative',
           borderRadius: 14,
           overflow: 'hidden',
-          background: '#0f172a',
+          background: 'var(--allo-stem-canvas, #0f172a)',
           border: '1px solid ' + T.border,
           boxShadow: '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
           marginBottom: 12
@@ -4680,7 +4680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   background: done
                     ? 'rgba(132,204,22,0.30)'
                     : 'rgba(15,23,42,0.55)',
-                  color: '#ffffff',
+                  color: 'var(--allo-stem-text, #ffffff)',
                   fontSize: 18,
                   cursor: done ? 'default' : 'pointer',
                   pointerEvents: 'auto',

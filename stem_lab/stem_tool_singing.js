@@ -1916,7 +1916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     labels.forEach(function(lbl) {
       var a = regionAlpha(lbl.id);
       var region = ANATOMY_REGIONS.find(function(r) { return r.id === lbl.id; });
-      var color = region ? region.color : '#94a3b8';
+      var color = region ? region.color: 'var(--allo-stem-text-soft, #94a3b8)';
 
       // Leader line
       ctx.beginPath();
@@ -3104,7 +3104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           var depth = vibratoResult.depth;
 
           // Quality assessment
-          var quality = { label: 'No Signal', color: '#94a3b8', desc: 'Start singing a sustained note.' };
+          var quality = { label: 'No Signal', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Start singing a sustained note.' };
           if (vibratoHistory.length >= 20 && currentNote.midi > 0) {
             if (depth < 10) {
               quality = { label: 'Straight Tone', color: '#6366f1', desc: 'Very little pitch variation. Good for choral blend!' };

@@ -1454,7 +1454,7 @@ const d = labToolData.artStudio || {};
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -1713,7 +1713,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': 'Symmetry drawing canvas', key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: '#0f172a' } })
+              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': 'Symmetry drawing canvas', key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } })
 
               ), // end symmetryCanvasContainer
 
@@ -1883,7 +1883,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'Spirograph canvas', className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
+                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'Spirograph canvas', className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -2566,7 +2566,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'String art canvas', className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
+                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'String art canvas', className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -3198,7 +3198,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Tessellation canvas', className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: '#0f172a' },
+                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Tessellation canvas', className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow'),
 

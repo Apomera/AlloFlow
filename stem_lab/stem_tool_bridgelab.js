@@ -476,7 +476,7 @@
             designName: '', designNotes: ''
           }});
         });
-        return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } }, '🌉 Initializing Bridge Lab...');
+        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, '🌉 Initializing Bridge Lab...');
       }
       var d = labToolData.bridgeLab;
 
@@ -503,7 +503,7 @@
 
       var tabBar = h('div', {
         role: 'tablist', 'aria-label': 'Bridge Engineering sections',
-        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid #1e293b', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
+        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
       },
         TABS.map(function(t) {
           var active = d.tab === t.id;
@@ -518,8 +518,8 @@
 
       function sectionCard(title, children, accent) {
         accent = accent || AMBER;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
-          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
+        return h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, title) : null,
           children
         );
       }
@@ -795,7 +795,7 @@
         }
 
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Warren truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
             h('strong', { style: { color: '#fbbf24' } }, 'Red = tension'), ', ',
             h('strong', { style: { color: '#7dd3fc' } }, 'blue = compression'),
@@ -803,7 +803,7 @@
           ),
 
           // SVG
-          h('div', { style: { padding: 12, borderRadius: 12, background: '#0a0e1a', border: '1px solid #334155', marginBottom: 14, overflowX: 'auto' } },
+          h('div', { style: { padding: 12, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 14, overflowX: 'auto' } },
             trussSvg()
           ),
 
@@ -830,7 +830,7 @@
                     h('strong', null, 'Moving-load analysis: '),
                     'real bridges are designed by sliding the worst possible vehicle across every point on the span and recording the maximum force in each member. The "influence line" of a member is how its force varies with the load\'s position. Each member has its own worst case — usually NOT in the same place as the worst case for any other member.'
                   )
-                : h('div', { style: { fontSize: 11.5, color: '#94a3b8', lineHeight: 1.5, padding: 8 } }, 'Uniform mode treats the load as equally distributed across all top joints — useful for studying the bridge under its own weight + typical dead loads.')
+                : h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, padding: 8 } }, 'Uniform mode treats the load as equally distributed across all top joints — useful for studying the bridge under its own weight + typical dead loads.')
             )
           ),
 
@@ -870,7 +870,7 @@
                   );
                 })
               ),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6, fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, fontStyle: 'italic' } },
                 (function() {
                   var s = d.trussStyle || 'warren';
                   if (s === 'warren') return 'Warren trusses (1848, James Warren) use equilateral triangles with no verticals. Alternating diagonals carry shear in alternating tension/compression. Efficient and elegant; common in shorter spans.';
@@ -903,20 +903,20 @@
               '✗ FAILED — at least one failure mode reached'
             ),
             // Yield row
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, fontSize: 12.5, color: '#e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
               h('strong', { style: { color: yieldStatus === 'safe' ? '#86efac' : yieldStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 110 } },
                 yieldStatus === 'safe' ? '✓ Yield' : yieldStatus === 'marginal' ? '⚠ Yield' : '✗ Yield'
               ),
               h('span', null, 'Safety factor ' + safetyFactor.toFixed(2) + ' (max stress ' + maxStress.toFixed(0) + ' MPa vs yield ' + mat.yieldMPa + ' MPa)')
             ),
             // Buckling row
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, fontSize: 12.5, color: '#e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
               h('strong', { style: { color: bucklingStatus === 'safe' ? '#86efac' : bucklingStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 110 } },
                 bucklingStatus === 'safe' ? '✓ Buckling' : bucklingStatus === 'marginal' ? '⚠ Buckling' : '✗ Buckling'
               ),
               h('span', null, 'P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs chord ' + analysis.maxChord.toFixed(0) + ' kN · slenderness ratio ' + slenderness.toFixed(0))
             ),
-            h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               buckles ? 'BUCKLING FAILURE: the top chord (longest compression member) will buckle before reaching yield. Long, thin compression members buckle at loads much lower than their crushing strength. Either thicken the cross-section (raises I quadratically), shorten the bay (more bays), or use bracing.' :
               bucklingMarginal ? 'Buckling margin is thin. A real engineer would add lateral bracing or thicken the chord. Buckling sneaks up on long slender members and is the failure mode that brought down the Quebec Bridge in 1907.' :
               yieldStatus !== 'safe' ? 'The top chord buckles fine, but stress exceeds yield. Increase cross-section, decrease load, increase truss height, or pick a stronger material.' :
@@ -944,13 +944,13 @@
               h('input', { type: 'text', value: d.designName || '',
                 onChange: function(e) { upd({ designName: e.target.value }); },
                 placeholder: 'Design name (e.g., "Marie\'s pedestrian bridge over Back Cove")',
-                style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 8, fontFamily: 'inherit' }
+                style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, marginBottom: 8, fontFamily: 'inherit' }
               }),
               h('textarea', { value: d.designNotes || '',
                 onChange: function(e) { upd({ designNotes: e.target.value }); },
                 placeholder: 'Why this material? What are the constraints? What would you improve?',
                 rows: 3,
-                style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit' }
+                style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, resize: 'vertical', fontFamily: 'inherit' }
               })
             )
           ),
@@ -996,12 +996,12 @@
               var top5 = results.slice(0, 5);
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Real engineering is not just "does it work?" — it is "what\'s the cheapest design that works?" This optimizer sweeps every combination of material + cross-section, keeps only those that pass your target safety factor for BOTH yield AND buckling, and ranks them by material cost. Span, height, number of bays, and load remain at your current settings.'
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155', marginBottom: 12 } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                    h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, 'Target safety factor'),
+                    h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Target safety factor'),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, targetSF.toFixed(1))
                   ),
                   h('input', { type: 'range', min: 1.5, max: 6, step: 0.5, value: targetSF,
@@ -1009,7 +1009,7 @@
                     'aria-label': 'Target safety factor',
                     style: { width: '100%', accentColor: AMBER }
                   }),
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', marginTop: 2 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
                     h('span', null, '1.5 (very thin margin)'),
                     h('span', null, '2.0 (code minimum)'),
                     h('span', null, '4.0+ (conservative)'),
@@ -1034,11 +1034,11 @@
                               var isWinner = i === 0;
                               return h('tr', { key: i, style: { background: isWinner ? 'rgba(34,197,94,0.10)' : (i % 2 === 0 ? '#0f172a' : '#1e293b') } },
                                 h('td', { style: { padding: 6, fontWeight: 800, color: isWinner ? '#86efac' : '#cbd5e1' } }, isWinner ? '🏆 1' : String(i + 1)),
-                                h('td', { style: { padding: 6, color: '#e2e8f0' } }, r.material.name),
-                                h('td', { style: { padding: 6, color: '#cbd5e1' } }, r.crossMm2.toLocaleString() + ' mm²'),
+                                h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.material.name),
+                                h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)' } }, r.crossMm2.toLocaleString() + ' mm²'),
                                 h('td', { style: { padding: 6, color: r.sfYield >= 2 ? '#86efac' : '#fbbf24' } }, r.sfYield.toFixed(2)),
                                 h('td', { style: { padding: 6, color: r.sfBuck >= 2 ? '#86efac' : '#fbbf24' } }, r.sfBuck.toFixed(2)),
-                                h('td', { style: { padding: 6, color: '#cbd5e1' } }, r.mass.toFixed(0) + ' kg'),
+                                h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)' } }, r.mass.toFixed(0) + ' kg'),
                                 h('td', { style: { padding: 6, fontWeight: 800, color: isWinner ? '#86efac' : '#fbbf24' } }, '$' + r.cost.toFixed(0))
                               );
                             })
@@ -1065,7 +1065,7 @@
           (function() {
             var useExact = moj && moj.ok && spec;
             return sectionCard('A note on this analysis',
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 useExact
                   ? h('span', null,
                       h('strong', { style: { color: '#86efac' } }, '✓ Exact analysis (Method of Joints). '),
@@ -1082,9 +1082,9 @@
         );
 
         function sliderControl(label, value, min, max, step, onChange, accent) {
-          return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155' } },
+          return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-              h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, label),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, label),
               h('span', { style: { fontSize: 13, color: accent, fontWeight: 800 } }, value)
             ),
             h('input', { type: 'range', min: min, max: max, step: step, value: value,
@@ -1095,8 +1095,8 @@
           );
         }
         function statBox(label, value, color) {
-          return h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-            h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
+          return h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
             h('div', { style: { fontSize: 13, fontWeight: 800, color: color, marginTop: 2 } }, value)
           );
         }
@@ -1186,7 +1186,7 @@
           }
 
           return h('div', null,
-            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Suspension bridges work differently from trusses. The deck hangs from cables; cables hang in a curve between towers; towers transfer the load down. The cables are in PURE TENSION, the towers in PURE COMPRESSION. Anchorages resist the horizontal pull of the cables — they\'re typically massive concrete blocks buried in bedrock at each end of the bridge.'
             ),
 
@@ -1198,9 +1198,9 @@
                 { label: 'Sag (m)', value: cSag, min: 10, max: 300, step: 5, key: 'suspSag' },
                 { label: 'Deck load (kN/m)', value: cLoad, min: 1, max: 50, step: 1, key: 'suspLoad' }
               ].map(function(s, i) {
-                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                    h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                    h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                   ),
                   h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -1221,10 +1221,10 @@
                 { label: 'Angle at support', value: angleAtSupport.toFixed(1) + '°', color: '#c7d2fe', sub: 'From horizontal' },
                 { label: 'Sag/span ratio', value: '1:' + (1 / sagRatio).toFixed(1), color: sagRatioGood ? '#86efac' : '#fca5a5', sub: sagRatioGood ? 'real-bridge sweet spot' : 'outside typical 1/14-1/6 range' }
               ].map(function(s, i) {
-                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: s.color, marginTop: 2 } }, s.value),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub)
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, s.sub)
                 );
               })
             ),
@@ -1242,7 +1242,7 @@
         }
 
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Bridge type depends on span, environment, material, and budget. Engineers pick the right form for the constraints — not a favorite.'
           ),
           (function() {
@@ -1330,7 +1330,7 @@
               }
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Arches do the opposite of suspension bridges: a load on top pushes the curve OUTWARD into the abutments rather than pulling them inward. The entire arch is in compression — there is no tension in a true arch under design loads. This is why stone arches work (stone is excellent in compression). The horizontal thrust at the supports is the design challenge — abutments must resist it without sliding or tipping.'
                 ),
                 archSvg(),
@@ -1340,9 +1340,9 @@
                     { label: 'Rise (m)', value: aRise, min: 3, max: 100, step: 1, key: 'archRise' },
                     { label: 'Deck load (kN/m)', value: aLoad, min: 5, max: 100, step: 5, key: 'archLoad' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                        h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
                       h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -1361,10 +1361,10 @@
                     { label: 'Min compression', value: Cmin.toFixed(0) + ' kN/m', color: '#86efac', sub: 'at the crown (top of arch)' },
                     { label: 'Rise/span ratio', value: '1:' + (1 / riseRatio).toFixed(1), color: goodRatio ? '#86efac' : '#fca5a5', sub: goodRatio ? 'within typical 1/2 to 1/8 range' : 'outside typical range' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: s.color, marginTop: 2 } }, s.value),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub)
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, s.sub)
                     );
                   })
                 ),
@@ -1484,7 +1484,7 @@
               }
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Most modern bridges over short spans (< 80 m) are simply beams sitting on two supports. The internal forces are very different from trusses: members carry BENDING + SHEAR (not just tension/compression along their axis). The bottom of a loaded beam stretches; the top compresses. This is the simplest structural analysis, the foundation of every other one.'
                 ),
                 beamSvg(),
@@ -1496,9 +1496,9 @@
                     { label: 'Point load (kN)', value: bLoad, min: 10, max: 500, step: 10, key: 'beamLoad' },
                     { label: 'Load position (0..1)', value: bLoadPos, min: 0.05, max: 0.95, step: 0.05, key: 'beamLoadPos' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                        h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, typeof s.value === 'number' && s.step < 1 ? s.value.toFixed(2) : s.value)
                       ),
                       h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -1511,7 +1511,7 @@
                 ),
                 // Material selector
                 h('div', { style: { marginBottom: 12 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 6 } }, 'Material'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, marginBottom: 6 } }, 'Material'),
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                     MATERIALS.map(function(m) {
                       var active = bMatId === m.id;
@@ -1530,13 +1530,13 @@
                     { label: 'Max shear V', value: V_max.toFixed(1) + ' kN', color: '#fbbf24', sub: 'at support' },
                     { label: 'Bending stress σ', value: sigmaMax_MPa.toFixed(0) + ' MPa', color: sf_yield >= 2 ? '#86efac' : sf_yield >= 1 ? '#fbbf24' : '#fca5a5', sub: 'yield ' + bMat.yieldMPa + ' MPa' },
                     { label: 'Shear stress τ', value: tauMax_MPa.toFixed(1) + ' MPa', color: '#c7d2fe', sub: '1.5V/A for rectangle' },
-                    { label: 'Section mod. S', value: (S_mm3 / 1000).toFixed(0) + ' ×10³ mm³', color: '#94a3b8', sub: 'I/c, larger = stiffer' },
+                    { label: 'Section mod. S', value: (S_mm3 / 1000).toFixed(0) + ' ×10³ mm³', color: 'var(--allo-stem-text-soft, #94a3b8)', sub: 'I/c, larger = stiffer' },
                     { label: 'Deflection δ', value: delta_mm.toFixed(1) + ' mm', color: deflectionOK ? '#86efac' : '#fbbf24', sub: 'L/' + (deflectionRatio).toFixed(0) }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: s.color, marginTop: 2 } }, s.value),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub)
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, s.sub)
                     );
                   })
                 ),
@@ -1546,7 +1546,7 @@
                     status === 'concern' ? '⚠ Marginal: yield SF ' + sf_yield.toFixed(2) + (deflectionOK ? '' : ', deflection L/' + deflectionRatio.toFixed(0) + ' is excessive') :
                     '✗ FAILS bending stress (SF ' + sf_yield.toFixed(2) + ' < 1)'
                   ),
-                  h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                     status === 'good' ? 'Real bridge codes typically require L/240 to L/800 for deflection. SF 2+ for bending is standard.' :
                     'Increase depth (which scales I as d³ — most effective lever). Or use a stronger material. Or reduce span. Doubling depth = 8× the bending stiffness.'
                   )
@@ -1638,7 +1638,7 @@
               }
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'A cable-stayed bridge uses cables running directly from a tower (or pylons) to the deck — unlike a suspension bridge, which has a main draped cable + vertical hangers. Each stay is in tension; the tower is in compression. Faster + cheaper to build than a suspension bridge of comparable span, and noticeably stiffer in wind. The Millau Viaduct, Russky Bridge, + Sundial Bridge are all cable-stayed.'
                 ),
                 csSvg(),
@@ -1649,9 +1649,9 @@
                     { label: 'Stays per side', value: csNStays, min: 4, max: 30, step: 1, key: 'csNStays' },
                     { label: 'Deck load (kN/m)', value: csLoad, min: 5, max: 80, step: 5, key: 'csLoad' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                        h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
                       h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -1668,12 +1668,12 @@
                     { label: 'Min stay force (steepest)', value: fMin.toFixed(0) + ' kN', color: '#86efac', sub: 'closest to tower' },
                     { label: 'Tributary per stay', value: tribLen.toFixed(1) + ' m', color: '#c7d2fe', sub: 'deck length per stay' },
                     { label: 'Tower compression', value: towerComp.toFixed(0) + ' kN', color: '#fca5a5', sub: 'sum of all stay verticals' },
-                    { label: 'Avg stay angle (to horiz.)', value: (stays.reduce(function(a, s) { return a + s.angle; }, 0) / stays.length).toFixed(0) + '°', color: '#94a3b8', sub: 'steeper = lower force' }
+                    { label: 'Avg stay angle (to horiz.)', value: (stays.reduce(function(a, s) { return a + s.angle; }, 0) / stays.length).toFixed(0) + '°', color: 'var(--allo-stem-text-soft, #94a3b8)', sub: 'steeper = lower force' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: s.color, marginTop: 2 } }, s.value),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub)
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, s.sub)
                     );
                   })
                 ),
@@ -1693,13 +1693,13 @@
             var includeArchAnalyzer = t.id === 'arch';
             var includeBeamAnalyzer = t.id === 'beam';
             var includeCableStayedAnalyzer = t.id === 'cable_stayed';
-            return h('div', { key: t.id, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
+            return h('div', { key: t.id, style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6 } },
                 h('span', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, t.icon),
                 h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 18 } }, t.name),
-                h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Typical span: ' + t.span)
+                h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Typical span: ' + t.span)
               ),
-              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, t.desc),
+              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, t.desc),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Strength'),
@@ -1710,22 +1710,22 @@
                   h('div', { style: { fontSize: 12, color: '#fee2e2', lineHeight: 1.55 } }, t.weakness)
                 )
               ),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: includeSuspensionAnalyzer ? 12 : 0 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: includeSuspensionAnalyzer ? 12 : 0 } },
                 h('strong', null, 'Examples: '), t.examples
               ),
-              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⌣ Interactive catenary cable analyzer'),
                 suspensionAnalyzer()
               ) : null,
-              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '∩ Interactive arch thrust analyzer'),
                 archAnalyzer()
               ) : null,
-              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '═ Interactive beam bending analyzer'),
                 beamAnalyzer()
               ) : null,
-              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '✦ Interactive cable-stayed analyzer'),
                 cableStayedAnalyzer()
               ) : null
@@ -1780,7 +1780,7 @@
           var topic = RAIL.find(function(t) { return t.id === sel; }) || RAIL[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚂 Railway bridges + freight engineering'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Railway bridges are a distinct discipline from highway bridges. Loads are heavier, concentrated, and repeated. Fatigue dominates design. Speeds for modern high-speed rail require dynamic considerations highway engineers rarely see. Railway-bridge practice has a smaller academic footprint than highway practice but the engineering depth is at least equivalent. For passenger + freight rail revival, every region\'s railway bridges are infrastructure-renewal frontline.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -1793,19 +1793,19 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works in practice'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             )
           );
@@ -1858,7 +1858,7 @@
           var topic = TUN.find(function(t) { return t.id === sel; }) || TUN[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚇 Tunnels + underwater bridges'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Tunnels are the siblings of bridges in transportation engineering — used to cross when going OVER won\'t work. They share many fundamentals (forces, fatigue, foundations) + have their own demanding specifics (ventilation, fire safety, hydrostatic pressure, ground behavior). Understanding tunnels alongside bridges gives the full picture of how engineers move people + freight across geographical obstacles.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -1871,20 +1871,20 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Era: ' + topic.era),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Era: ' + topic.era),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Forces + design logic'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.forces)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.forces)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             )
           );
@@ -1932,7 +1932,7 @@
           var topic = MOV.find(function(t) { return t.id === sel; }) || MOV[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚧 Movable + unusual bridge types'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Most bridges are fixed structures. But where waterborne traffic must pass + a low fixed bridge would block tall ships, engineers have developed a whole family of movable + unusual bridge types. Each one is a specific solution to a specific geometric constraint, with its own forces, failure modes, and historical contexts.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -1945,19 +1945,19 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Forces + structural logic'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.forces)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.forces)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Failure modes + history'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.fail)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.fail)
               )
             )
           );
@@ -2010,7 +2010,7 @@
           var topic = ACC.find(function(t) { return t.id === sel; }) || ACC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '♿ Pedestrian + accessible bridge design'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'A bridge that excludes people is half-built. Modern pedestrian + accessible bridge design is governed by the ADA Accessibility Guidelines, PROWAG (Public Right-of-Way Accessibility Guidelines, 2023), AASHTO\'s Guide for the Development of Bicycle Facilities, and (in many states) more stringent local codes. The goal is not "minimum compliance." The goal is a bridge ANYONE can use, comfortably, in all weather.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -2023,19 +2023,19 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Spec'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.spec)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.spec)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.why)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.why)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Common gotcha'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.gotcha)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.gotcha)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -2055,40 +2055,40 @@
       // ──────────────────────────────────────────────────────────────
       function renderMaterials() {
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Every material has tradeoffs. Strength, weight, cost, durability, environmental impact. The right material depends on the structure and the context.'
           ),
           h('div', { style: { overflowX: 'auto', marginBottom: 14 } },
             h('table', { style: { width: '100%', minWidth: 600, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null, h('tr', null,
                 ['Material', 'Yield (MPa)', 'Density (kg/m³)', 'Modulus E (GPa)', 'Cost (rel.)'].map(function(c, i) {
-                  return h('th', { key: i, style: { padding: 8, textAlign: 'left', background: '#1e293b', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontSize: 11, fontWeight: 800 } }, c);
+                  return h('th', { key: i, style: { padding: 8, textAlign: 'left', background: 'var(--allo-stem-panel, #1e293b)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontSize: 11, fontWeight: 800 } }, c);
                 })
               )),
               h('tbody', null,
                 MATERIALS.map(function(m, i) {
                   return h('tr', { key: m.id, style: { background: i % 2 === 0 ? '#0f172a' : '#1e293b' } },
-                    h('td', { style: { padding: 8, color: '#e2e8f0', fontWeight: 700 } }, m.name),
-                    h('td', { style: { padding: 8, color: '#cbd5e1' } }, m.yieldMPa),
-                    h('td', { style: { padding: 8, color: '#cbd5e1' } }, m.densityKgM3),
-                    h('td', { style: { padding: 8, color: '#cbd5e1' } }, m.modulusGPa),
-                    h('td', { style: { padding: 8, color: '#cbd5e1' } }, '$'.repeat(m.costRel))
+                    h('td', { style: { padding: 8, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, m.name),
+                    h('td', { style: { padding: 8, color: 'var(--allo-stem-text, #cbd5e1)' } }, m.yieldMPa),
+                    h('td', { style: { padding: 8, color: 'var(--allo-stem-text, #cbd5e1)' } }, m.densityKgM3),
+                    h('td', { style: { padding: 8, color: 'var(--allo-stem-text, #cbd5e1)' } }, m.modulusGPa),
+                    h('td', { style: { padding: 8, color: 'var(--allo-stem-text, #cbd5e1)' } }, '$'.repeat(m.costRel))
                   );
                 })
               )
             )
           ),
           MATERIALS.map(function(m) {
-            return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
+            return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, m.name),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65, marginBottom: 6 } }, m.desc),
-              h('div', { style: { fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 6 } }, m.desc),
+              h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 h('strong', null, 'Use: '), m.use
               )
             );
           }),
           sectionCard('Key terms',
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('li', null, h('strong', null, 'Yield strength: '), 'Force per unit area at which a material starts to deform permanently. Above this, the material is damaged even after the load is removed. In MPa (megapascals = N/mm²).'),
               h('li', null, h('strong', null, 'Modulus of elasticity (E): '), 'How stiff the material is. Higher E = less deformation under the same force. Stress = E * strain. In GPa (gigapascals = 1000 MPa).'),
               h('li', null, h('strong', null, 'Density: '), 'Mass per unit volume. Determines self-weight of the structure. A heavy material requires bigger members to support its own weight before any external load.'),
@@ -2135,7 +2135,7 @@
                   limits: 'Riprap can wash out in extreme floods. Sheet piles + deeper foundations are expensive. Some bridges with chronic scour eventually need replacement.',
                   cost: 'Medium'
                 },
-                { id: 'replace', name: 'Full replacement', color: '#94a3b8',
+                { id: 'replace', name: 'Full replacement', color: 'var(--allo-stem-text-soft, #94a3b8)',
                   what: 'When repair + retrofit are uneconomic or technically inadequate, the bridge is replaced. Often built alongside the existing structure (so traffic is maintained), then traffic is shifted + old bridge demolished.',
                   when: 'Severe structural deterioration; obsolete capacity (modern trucks much heavier than 1950s); functionally obsolete (lanes too narrow); damaged beyond repair (collision, flood, earthquake).',
                   limits: '5-10× the cost of major repair. Long construction time. Environmental + community impact.',
@@ -2144,7 +2144,7 @@
               ];
               var sel = TECHNIQUES.find(function(t) { return t.id === d.selectedRepair; }) || TECHNIQUES[0];
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'About 90% of bridge engineering work is on EXISTING bridges, not new ones. Repair + retrofit extend life at a fraction of replacement cost. The right intervention depends on what\'s deteriorating + how badly.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2156,22 +2156,22 @@
                     }, t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap' } },
                     h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color } }, sel.name),
-                    h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Cost: ' + sel.cost)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Cost: ' + sel.cost)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.what)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'When to use it'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.when)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.when)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.08)', borderLeft: '3px solid #dc2626' } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Limits + honest caveats'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.limits)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.limits)
                   )
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
@@ -2195,7 +2195,7 @@
               var netStress = loadStress - compStress;
               var cracking = netStress > 3;  // concrete cracks at ~3 MPa tension
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Concrete is great in COMPRESSION but useless in TENSION — it cracks at about 3 MPa. Reinforced concrete adds steel rebar to handle tension, but the concrete still cracks (tiny cracks at "service" loads that don\'t affect strength but let water + chlorides reach the rebar over decades). PRESTRESSED concrete is different: high-strength steel tendons are tensioned + permanently compress the concrete BEFORE any external load. The concrete never sees tension under service loads → no cracks → much longer life.'
                 ),
 
@@ -2246,9 +2246,9 @@
                     { label: 'Precompression from tendons (MPa)', value: compStress, min: 0, max: 25, step: 1, key: 'preCompStress' },
                     { label: 'Bending stress from external load (MPa)', value: loadStress, min: 0, max: 30, step: 1, key: 'preLoadStress' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                        h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
                       h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -2290,7 +2290,7 @@
           sectionCard('🏗️ Foundations + soil mechanics — what the bridge stands on',
             (function() {
               var SOILS = [
-                { id: 'rock', name: 'Solid rock (bedrock)', bearingMPa: 10, color: '#475569',
+                { id: 'rock', name: 'Solid rock (bedrock)', bearingMPa: 10, color: 'var(--allo-stem-text-soft, #475569)',
                   desc: 'Granite, basalt, sound limestone. The strongest natural foundation. Allowable bearing 5-15 MPa (and much higher with engineered anchors).',
                   good: 'Tower bridges + heavy load points anchored into rock are the gold standard. Akashi-Kaikyō tower foundations are anchored 60 m into bedrock.',
                   watch: 'Weathered or fractured rock can be much weaker than fresh. Karst limestone has hidden voids. Always borehole-test, never assume.'
@@ -2300,7 +2300,7 @@
                   good: 'Good drainage, doesn\'t expand or shrink. Predictable behavior. Easy to compact.',
                   watch: 'Liquefies in earthquakes if saturated. The 1964 Niigata earthquake liquefied saturated sand under apartment buildings, tipping them over without collapse.'
                 },
-                { id: 'clay', name: 'Stiff clay', bearingMPa: 0.2, color: '#a3a3a3',
+                { id: 'clay', name: 'Stiff clay', bearingMPa: 0.2, color: 'var(--allo-stem-text-soft, #a3a3a3)',
                   desc: 'Cohesive, fine-grained. Allowable bearing typically 100-300 kPa for stiff clay; much lower for soft clay.',
                   good: 'Low permeability — good for retaining walls. Cohesive (sticks together).',
                   watch: 'Settles for DECADES under load (consolidation). The Tower of Pisa\'s famous lean comes from differential consolidation in soft clay.'
@@ -2339,7 +2339,7 @@
                 { name: 'Spread caisson', use: 'A large hollow box sunk into the soil + filled with concrete. Brooklyn Bridge caissons (1869-72) were among the first. Workers inside got "caisson disease" (decompression sickness) — the bridge cost many lives.', cost: 'Very high' }
               ];
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Every bridge stands on something. The strongest member designed by the best engineer fails if the FOUNDATION does. The 1907 Quebec Bridge, 1967 Silver Bridge, 1987 Schoharie Creek, and many others are partly foundation/anchorage failures. Soil mechanics + foundation engineering are as important as the superstructure design.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2351,12 +2351,12 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '4px solid ' + sel.color, marginBottom: 12 } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '4px solid ' + sel.color, marginBottom: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap' } },
-                    h('div', { style: { fontSize: 15, fontWeight: 800, color: '#e2e8f0' } }, sel.name),
+                    h('div', { style: { fontSize: 15, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, sel.name),
                     h('div', { style: { fontSize: 12, color: '#fbbf24', fontWeight: 700 } }, 'Allowable bearing: ~' + (sel.bearingMPa < 1 ? (sel.bearingMPa * 1000).toFixed(0) + ' kPa' : sel.bearingMPa + ' MPa'))
                   ),
-                  h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } }, sel.desc),
+                  h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.desc),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 } },
                     h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', borderLeft: '3px solid #22c55e' } },
                       h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Good for'),
@@ -2368,9 +2368,9 @@
                     )
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 12 } },
-                  h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Your current bridge\'s required footing'),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 12 } },
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Your current bridge\'s required footing'),
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                     'Reaction at each support: ', h('strong', { style: { color: '#93c5fd' } }, reaction.toFixed(0) + ' kN'),
                     ' · On ', h('strong', { style: { color: '#fbbf24' } }, sel.name.toLowerCase()),
                     ' (bearing ' + (sel.bearingMPa < 1 ? (sel.bearingMPa * 1000).toFixed(0) + ' kPa' : sel.bearingMPa + ' MPa') + ') requires footing area ≈ ',
@@ -2382,10 +2382,10 @@
                 sectionCard('Foundation types',
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
                     FOUNDATION_TYPES.map(function(f, i) {
-                      return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155' } },
+                      return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
                         h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, f.name),
-                        h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 4 } }, f.use),
-                        h('div', { style: { fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic' } }, 'Cost: ' + f.cost)
+                        h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 4 } }, f.use),
+                        h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Cost: ' + f.cost)
                       );
                     })
                   )
@@ -2424,30 +2424,30 @@
               // Compare to "average American annual emissions" of ~14 metric tons CO₂
               var equivPersonYears = embCO2 / 14000;
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Modern bridge design considers ENVIRONMENTAL cost alongside dollar cost. Cement is ~8% of global CO₂ emissions; steel ~7%. A typical bridge uses thousands of tons of these materials. Sustainable design = lower embodied carbon + longer life + end-of-life recyclability.'
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Your current design: ' + mat.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 8 } },
                     [
-                      { label: 'Mass', value: (massKg / 1000).toFixed(1) + ' metric tons', color: '#cbd5e1' },
+                      { label: 'Mass', value: (massKg / 1000).toFixed(1) + ' metric tons', color: 'var(--allo-stem-text, #cbd5e1)' },
                       { label: 'Embodied CO₂', value: (embCO2 / 1000).toFixed(2) + ' metric tons CO₂e', color: '#fca5a5' },
                       { label: '= person-years of emissions', value: equivPersonYears.toFixed(1) + ' US person-years', color: '#fbbf24' },
-                      { label: 'EC factor', value: data.kgCO2perKg + ' kg CO₂e/kg', color: '#94a3b8' }
+                      { label: 'EC factor', value: data.kgCO2perKg + ' kg CO₂e/kg', color: 'var(--allo-stem-text-soft, #94a3b8)' }
                     ].map(function(s, i) {
-                      return h('div', { key: i, style: { padding: 6, borderRadius: 6, background: '#1e293b' } },
-                        h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase' } }, s.label),
+                      return h('div', { key: i, style: { padding: 6, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)' } },
+                        h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label),
                         h('div', { style: { fontSize: 13, fontWeight: 800, color: s.color } }, s.value)
                       );
                     })
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, fontWeight: 700 } }, 'End-of-life'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', marginBottom: 4 } }, h('strong', null, 'Recyclability: '), data.recycle),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', marginBottom: 4 } }, h('strong', null, 'Typical durability: '), data.durability),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.55, marginTop: 6 } }, data.note)
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, fontWeight: 700 } }, 'End-of-life'),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('strong', null, 'Recyclability: '), data.recycle),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('strong', null, 'Typical durability: '), data.durability),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.55, marginTop: 6 } }, data.note)
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
                   h('strong', null, 'Sustainable design strategies: '),
@@ -2546,7 +2546,7 @@
               }
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'A bridge that handles its design load just fine on day one can still fail decades later from FATIGUE: tiny cracks that grow microscopically with every load cycle, until one final cycle propagates a crack to failure. Every truck crossing, every wind gust, every temperature swing is a cycle. A heavily-trafficked highway bridge sees 5,000-50,000 cycles per day; over 50 years that\'s ~10⁸-10⁹ cycles.'
                 ),
                 snCurveSvg(),
@@ -2555,9 +2555,9 @@
                     { label: 'Stress amplitude (MPa)', value: stress, min: 50, max: 250, step: 10, key: 'fatigueStressMPa' },
                     { label: 'Cycles per day', value: cycles, min: 100, max: 100000, step: 100, key: 'fatigueCyclesPerDay' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                        h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value.toLocaleString())
                       ),
                       h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -2576,7 +2576,7 @@
                     status === 'concern' ? '⚠ Lifetime: ' + yearsToFail.toFixed(0) + ' years — within typical bridge lifespan' :
                     '✗ Lifetime: ' + yearsToFail.toFixed(0) + ' years — well short of typical bridge lifespan'
                   ),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                     'Cycles to failure: ' + (Ncrit === Infinity ? '∞' : Ncrit.toExponential(2))
                   )
                 ),
@@ -2644,7 +2644,7 @@
           var topic = DEMO.find(function(t) { return t.id === sel; }) || DEMO[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '💣 Bridge demolition + decommissioning'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Every bridge eventually retires. The how + why is its own engineering discipline — explosive demolition for unconstrained sites, mechanical saw-cut work in dense urban settings, piece-by-piece retirement of bridges that must stay in service during their own replacement. Environmental recycling, community impact, historical significance, + research opportunities all factor in. A bridge\'s last project is rarely simpler than its first.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -2657,19 +2657,19 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What happens'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             )
           );
@@ -2714,7 +2714,7 @@
           var topic = SHM.find(function(t) { return t.id === sel; }) || SHM[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🔍 Bridge inspection + Structural Health Monitoring (SHM)'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'A bridge is not designed once + left alone. It is inspected on a defined cycle, and increasingly, it is monitored continuously through sensors, drones, and AI-assisted analysis. The shift from "inspect every 2 years" to "monitor in real time" is one of the major operational changes in infrastructure engineering of the past 30 years. The technology is genuinely powerful + has clear limits.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -2727,15 +2727,15 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Technique + how it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.tech)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.tech)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
@@ -2787,7 +2787,7 @@
           var topic = EXT.find(function(t) { return t.id === sel; }) || EXT[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌡️ Bridges in extreme environments'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Most bridge-engineering education assumes a temperate climate, stable soil, modest wind, and a willing nearby supplier. Real bridges get built in conditions that violate all of those assumptions. Permafrost. Sea ice. Sustained high winds. Earthquake faults. Salt spray. Wildfire-prone forests. Remote sites a thousand kilometers from the nearest steel mill. Each one demands specific design responses + an honest reckoning with the limits.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -2800,20 +2800,20 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Examples: ' + topic.where),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Examples: ' + topic.where),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The challenge'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.challenge)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.challenge)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Engineering responses'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.solutions)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.solutions)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a78bfa' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.caveat)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.caveat)
               )
             )
           );
@@ -2849,7 +2849,7 @@
         var sel = CONNECTIONS.find(function(c) { return c.id === conn; }) || CONNECTIONS[1];
 
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Five types of force matter for structural engineering. Every part of every bridge experiences some combination of these.'
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
@@ -2857,13 +2857,13 @@
               var active = d.selectedForce === f.id;
               return h('button', { key: f.id,
                 onClick: function() { upd({ selectedForce: f.id }); },
-                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#334155'), color: active ? f.color : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#334155'), color: active ? f.color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, f.icon + ' ' + f.name);
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selected.color, marginBottom: 16 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selected.color, marginBottom: 16 } },
             h('h3', { style: { margin: '0 0 8px', color: selected.color, fontSize: 18 } }, selected.icon + ' ' + selected.name),
-            h('p', { style: { margin: '0 0 10px', fontSize: 13.5, color: '#e2e8f0', lineHeight: 1.7 } }, selected.desc),
+            h('p', { style: { margin: '0 0 10px', fontSize: 13.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
               h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Materials that handle it well'),
@@ -2900,7 +2900,7 @@
               else mmi = 'X+ (extreme)';
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'In seismic regions (Pacific Rim, much of the western US, Japan, Chile, New Zealand), bridges must survive earthquakes. The ground SHAKES horizontally and vertically; the bridge\'s mass becomes a hammer driven against itself by inertia. Modern seismic design uses three main strategies: STRENGTH (don\'t break), DUCTILITY (deform plastically without breaking), and ISOLATION (decouple the bridge from the ground motion).'
                 ),
 
@@ -2910,9 +2910,9 @@
                     { label: 'Distance from epicenter (km)', value: distance, min: 5, max: 300, step: 5, key: 'seismicDist' },
                     { label: 'Bridge weight (kN)', value: weight, min: 200, max: 10000, step: 100, key: 'seismicWeight' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
+                        h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
                       h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
@@ -2931,10 +2931,10 @@
                     { label: 'Lateral force on bridge', value: lateralForce.toFixed(0) + ' kN', color: '#fca5a5', sub: 'F = m·a (inertia)' },
                     { label: 'Energy release', value: '×' + Math.pow(10, 1.5 * (magnitude - 6)).toFixed(1), color: '#a78bfa', sub: 'vs M6 reference (each magnitude = 32× energy)' }
                   ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: s.color, marginTop: 2 } }, s.value),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub)
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, s.sub)
                     );
                   })
                 ),
@@ -3004,7 +3004,7 @@
               ];
               var sel = SENSORS.find(function(s) { return s.id === d.selectedSensor; }) || SENSORS[0];
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Modern bridges are increasingly INSTRUMENTED — equipped with hundreds or thousands of sensors that report condition continuously. "Structural Health Monitoring" (SHM) catches early signs of trouble that human inspection would miss. Sensors don\'t replace inspectors; they augment them with 24/7 measurements of forces, motions, temperatures, corrosion that visible inspection can\'t reach.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3016,23 +3016,23 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What it measures'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.measures)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.measures)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.how)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.how)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Real-world examples'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.examples)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.examples)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Why it matters'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.benefit)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.benefit)
                   )
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
@@ -3051,7 +3051,7 @@
           // Connection design — where most failures actually happen
           sectionCard('🔩 Connections — where most failures actually happen',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'The members are usually not what fails — the connections between them are. Hyatt Regency (1981), Silver Bridge (1967), Tay Bridge (1879) were all connection failures, not material failures. Modern bridge engineering pays as much attention to joints as to members.'
               ),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
@@ -3063,23 +3063,23 @@
                   }, c.name);
                 })
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER } },
                 h('h4', { style: { margin: '0 0 8px', color: '#fbbf24', fontSize: 15 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'History'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, sel.history)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.history)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', borderLeft: '3px solid ' + AMBER, marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, sel.mechanism)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.mechanism)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.10)', borderLeft: '3px solid #dc2626', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it fails'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, sel.failure)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.failure)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Still used'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, sel.still)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.still)
                 )
               ),
               h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.6 } },
@@ -3137,7 +3137,7 @@
           var topic = SEIS.find(function(t) { return t.id === sel; }) || SEIS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌎 Seismic engineering for bridges'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Bridges in seismic zones are designed to survive earthquakes that would destroy ordinary buildings. The discipline developed mostly after the 1971 San Fernando earthquake + matured after Loma Prieta 1989 + Kobe 1995 made the problem unmissable. Modern seismic bridge engineering combines base isolation, energy dissipation, capacity design, and foundation engineering — all calibrated to specific seismic-hazard predictions for the site.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3150,15 +3150,15 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
@@ -3207,7 +3207,7 @@
           var topic = WT.find(function(t) { return t.id === sel; }) || WT[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌪️ Wind tunnel testing of long-span bridges'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'A long-span bridge that has never been in a wind tunnel is a long-span bridge that has skipped a fundamental design check. The discipline was forged in the wake of the 1940 Tacoma Narrows collapse + has matured into one of the most distinctive specialties in civil engineering. Every major suspension + cable-stayed bridge built since the 1970s has been wind-tunnel tested before construction.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3220,15 +3220,15 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is + how it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -3277,7 +3277,7 @@
           var topic = STEPS.find(function(t) { return t.id === sel; }) || STEPS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏗️ How a long-span suspension bridge is actually built'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'You can hold a piece of cable in your hand: it is a few millimeters of high-tensile steel wire. A long-span suspension bridge\'s main cable contains tens of thousands of such wires, bundled, compressed, wrapped, and tensioned to carry 50,000+ tons. The CONSTRUCTION SEQUENCE is one of the most remarkable choreographies in modern engineering — each step depending on the previous + impossible without it.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3290,16 +3290,16 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Timeline: ' + topic.when),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Timeline: ' + topic.when),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What happens'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Physics + structural logic'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.physics)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.physics)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -3335,9 +3335,9 @@
           '@media (prefers-reduced-motion: reduce) { .tacoma-deck { animation: none !important; transform: rotate(' + (amplitude * 0.3) + 'deg); } }'
         );
 
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid #334155', marginTop: 10, borderLeft: '3px solid #ef4444' } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginTop: 10, borderLeft: '3px solid #ef4444' } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '💨 Aerodynamic flutter demo'),
-          h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+          h('p', { style: { margin: '0 0 10px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             'Move the wind speed slider. Watch how the deck behaves. The open H-shaped cross-section of the original Tacoma deck caused alternating lift forces, and the bridge tore itself apart at moderate wind speeds. Modern bridges use closed or aerodynamic cross-sections that don\'t flutter.'
           ),
           styleBlock,
@@ -3388,7 +3388,7 @@
           // Wind speed slider
           h('div', { style: { marginTop: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, 'Wind speed'),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Wind speed'),
               h('span', { style: { fontSize: 13, color: failing ? '#fca5a5' : resonance ? '#fbbf24' : '#86efac', fontWeight: 800 } }, windSpeed + ' mph')
             ),
             h('input', { type: 'range', min: 0, max: 80, step: 1, value: windSpeed,
@@ -3396,14 +3396,14 @@
               'aria-label': 'Wind speed in miles per hour',
               style: { width: '100%', accentColor: '#ef4444' }
             }),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', marginTop: 2 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
               h('span', null, '0 mph'),
               h('span', null, 'Critical: ~' + critical + ' mph'),
               h('span', null, '80 mph')
             )
           ),
 
-          h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: failing ? 'rgba(239,68,68,0.10)' : resonance ? 'rgba(245,158,11,0.10)' : 'rgba(34,197,94,0.10)', border: '1px solid ' + (failing ? '#7f1d1d' : resonance ? '#92400e' : '#14532d'), fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } },
+          h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: failing ? 'rgba(239,68,68,0.10)' : resonance ? 'rgba(245,158,11,0.10)' : 'rgba(34,197,94,0.10)', border: '1px solid ' + (failing ? '#7f1d1d' : resonance ? '#92400e' : '#14532d'), fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
             failing ? h('span', null, h('strong', null, 'Failing: '), 'At ' + windSpeed + ' mph the historical Tacoma deck would have torn itself apart. The actual collapse happened at ~42 mph wind. The bridge had been oscillating in lower winds for months — locals called it "Galloping Gertie" and tourists drove across for the thrill.') :
             resonance ? h('span', null, h('strong', null, 'Resonant flutter: '), 'The deck has entered an aeroelastic flutter mode. Each oscillation creates lift forces that amplify the next oscillation — a positive feedback loop. Unrestrained, it grows until structural failure. The historical Tacoma Narrows collapsed at ~42 mph in 1940.') :
             h('span', null, h('strong', null, 'Stable: '), 'Below the critical flutter speed. Modern bridges have streamlined or trussed cross-sections that prevent flutter at any wind speed they\'re likely to encounter. Wind tunnel testing is now mandatory for major bridges.')
@@ -3436,9 +3436,9 @@
           '@media (prefers-reduced-motion: reduce) { .millennium-deck { animation: none !important; transform: translateX(' + (amplitude * 0.3) + 'px); } }'
         );
 
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid #334155', marginTop: 10, borderLeft: '3px solid #ef4444' } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginTop: 10, borderLeft: '3px solid #ef4444' } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '🚶 Pedestrian synchronization demo'),
-          h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+          h('p', { style: { margin: '0 0 10px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             'Move the pedestrian-count slider. Each walker on the bridge applies a small lateral push at ~1 Hz (half their step rate). At low density, the pushes are randomly phased + cancel out. Above the critical density (~160 on the London north span), walkers UNCONSCIOUSLY synchronize their steps with the swaying bridge, amplifying the motion.'
           ),
           styleBlock,
@@ -3480,7 +3480,7 @@
           // Pedestrian slider
           h('div', { style: { marginTop: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, 'Pedestrians on the bridge'),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Pedestrians on the bridge'),
               h('span', { style: { fontSize: 13, color: status === 'locked' ? '#fca5a5' : status === 'synchronizing' ? '#fbbf24' : '#86efac', fontWeight: 800 } }, nPeds + ' people · ' + amplMm.toFixed(0) + ' mm amplitude · ' + (syncFrac * 100).toFixed(0) + '% synchronized')
             ),
             h('input', { type: 'range', min: 0, max: 600, step: 10, value: nPeds,
@@ -3488,14 +3488,14 @@
               'aria-label': 'Number of pedestrians',
               style: { width: '100%', accentColor: '#ef4444' }
             }),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', marginTop: 2 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
               h('span', null, '0 people'),
               h('span', null, 'Critical: ~' + critical + ' people'),
               h('span', null, '600 people')
             )
           ),
 
-          h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: status === 'locked' ? 'rgba(239,68,68,0.10)' : status === 'synchronizing' ? 'rgba(245,158,11,0.10)' : 'rgba(34,197,94,0.10)', border: '1px solid ' + (status === 'locked' ? '#7f1d1d' : status === 'synchronizing' ? '#92400e' : '#14532d'), fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } },
+          h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: status === 'locked' ? 'rgba(239,68,68,0.10)' : status === 'synchronizing' ? 'rgba(245,158,11,0.10)' : 'rgba(34,197,94,0.10)', border: '1px solid ' + (status === 'locked' ? '#7f1d1d' : status === 'synchronizing' ? '#92400e' : '#14532d'), fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
             status === 'locked' ? h('span', null, h('strong', null, 'Locked synchronization: '), 'Pedestrians are now unconsciously phase-locked with the bridge\'s natural lateral mode. Each step adds to the swaying. The bridge wobbles violently. At 8-10 mm visible amplitude, panicked pedestrians grip the railing + slow down — actually making it worse by sustaining synchronization. London opening day reached ~70 mm amplitude.') :
             status === 'synchronizing' ? h('span', null, h('strong', null, 'Synchronization beginning: '), 'Bridge motion is becoming perceptible. Some pedestrians are unconsciously adjusting their gait. If more people arrive or stay, locked synchronization will develop.') :
             h('span', null, h('strong', null, 'Stable: '), 'Below the critical pedestrian density. Random gait phasing cancels out laterally. Modern pedestrian bridges include tuned mass dampers + lateral viscous dampers to suppress this even at high density — the Millennium retrofit added ~87 dampers total.')
@@ -3506,7 +3506,7 @@
       function renderCases() {
         var selected = CASES.find(function(c) { return c.id === d.selectedCase; }) || CASES[0];
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Engineering is learned at least as much from failures as from successes. The collapse of Tacoma Narrows changed how every bridge in the world is designed; the success of Brooklyn proved suspension bridges could last centuries.'
           ),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
@@ -3521,9 +3521,9 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (selected.kind === 'failure' ? '#dc2626' : '#22c55e') } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (selected.kind === 'failure' ? '#dc2626' : '#22c55e') } },
             h('h3', { style: { margin: '0 0 4px', color: selected.kind === 'failure' ? '#fca5a5' : '#86efac', fontSize: 18 } }, selected.icon + ' ' + selected.name + ' (' + selected.year + ')'),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 } }, selected.kind),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 } }, selected.kind),
             sectionInfo('What happened', selected.what),
             sectionInfo(selected.kind === 'failure' ? 'Why it failed' : 'Why it succeeded', selected.why, selected.kind === 'failure' ? '#dc2626' : '#22c55e'),
             sectionInfo('Engineering lesson', selected.lesson, '#f59e0b'),
@@ -3585,7 +3585,7 @@
           var topic = ANC.find(function(t) { return t.id === sel; }) || ANC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏛️ Ancient + traditional bridge engineering'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Modern bridge engineering is the inheritor of at least 4000 years of trial-and-error + cultural transmission. Several pre-modern bridge traditions produced structures that still carry traffic, span rivers, + serve communities today — sometimes outperforming their 20th-century successors. Honoring these traditions is intellectual honesty AND practical: ancient engineering has lessons modern engineering is rediscovering.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3598,20 +3598,20 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Period: ' + topic.when),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Period: ' + topic.when),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What was built'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it worked'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a78bfa' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Legacy + lessons'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.legacy)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.legacy)
               )
             )
           );
@@ -3666,7 +3666,7 @@
           var topic = MIL.find(function(t) { return t.id === sel; }) || MIL[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '⚒️ Military + emergency bridges'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Most of the world\'s bridge engineering research between 1900 + 1990 happened in military contexts. The Bailey, Medium Girder, and ribbon-pontoon systems were designed to keep armies supplied across destroyed rivers — and now keep civilian communities connected after floods, earthquakes, hurricanes, and infrastructure failures. The modular + accelerated-construction techniques that dominate modern civilian bridge work descend directly from this lineage.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3679,20 +3679,20 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Origin: ' + topic.who + ' · ' + topic.year),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Origin: ' + topic.who + ' · ' + topic.year),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Technical design'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.tech)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.tech)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Operational use'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.use)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.use)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits + ethics'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.caveat)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.caveat)
               )
             )
           );
@@ -3740,7 +3740,7 @@
           var topic = ICONIC.find(function(t) { return t.id === sel; }) || ICONIC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌉 Bridge aesthetics — iconic designs through history'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'A bridge can be ugly and still work. A bridge can be beautiful and still fail. The most-loved bridges in history tend to do BOTH: they earn their beauty by making their structural logic legible, by serving for generations, and by carrying meaning beyond their crossing function.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3753,9 +3753,9 @@
                 }, t.name + ' (' + t.year + ')');
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, topic.where + ' · ' + topic.year + ' · ' + topic.engineer),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, topic.where + ' · ' + topic.year + ' · ' + topic.engineer),
               sectionInfo('What it is', topic.what),
               sectionInfo('Why it matters', topic.why, '#22c55e'),
               sectionInfo('Aesthetic lesson', topic.lesson, '#a78bfa')
@@ -3772,9 +3772,9 @@
         }
         function sectionInfo(title, body, color) {
           color = color || '#94a3b8';
-          return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid ' + color, marginBottom: 8 } },
+          return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + color, marginBottom: 8 } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, title),
-            h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, body)
+            h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, body)
           );
         }
       }
@@ -3785,7 +3785,7 @@
       function renderCycle() {
         var selected = DESIGN_STEPS.find(function(s) { return s.id === d.selectedStep; }) || DESIGN_STEPS[0];
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Engineering is iterative. You design, test, fail, learn, redesign. Failure is information, not defeat. Every working bridge in the world is the descendant of many failures.'
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
@@ -3797,12 +3797,12 @@
               }, s.icon + ' ' + (i + 1) + '. ' + s.name);
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER } },
             h('h3', { style: { margin: '0 0 8px', color: '#fbbf24', fontSize: 20 } }, selected.icon + ' ' + selected.name),
-            h('p', { style: { margin: 0, fontSize: 14, color: '#e2e8f0', lineHeight: 1.75 } }, selected.desc)
+            h('p', { style: { margin: 0, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } }, selected.desc)
           ),
           sectionCard('Apply this to your bridge design',
-            h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.7 } },
+            h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, lineHeight: 1.7 } },
               h('li', null, h('strong', null, 'Define: '), 'What span do you need to cross? What load (pedestrians? cars? trains?)? What materials are available locally? What\'s your budget?'),
               h('li', null, h('strong', null, 'Imagine: '), 'Sketch 3 different bridge types you could use. Don\'t commit yet.'),
               h('li', null, h('strong', null, 'Plan: '), 'Pick the most promising. Use the Stress Test tab to size it. Calculate cost. Identify what could go wrong (wind, ice, overload, fatigue, foundation problems).'),
@@ -3855,7 +3855,7 @@
           var topic = FIN.find(function(t) { return t.id === sel; }) || FIN[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '💰 Bridge financing, politics, + procurement'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Every bridge has an engineering story + a money story. Where the dollars come from, who decides what gets built, how contracts are awarded, who benefits from the project, who pays the maintenance — these questions shape what bridges actually exist + which communities get to use them. Engineering does not happen in a political vacuum + students who understand only the technical side will struggle to advocate for the bridges their communities need.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3868,15 +3868,15 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -3925,7 +3925,7 @@
           var topic = ABC.find(function(t) { return t.id === sel; }) || ABC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏭 Accelerated Bridge Construction (ABC) + prefab'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Modern bridges do not have to take years to build. Accelerated Bridge Construction — using prefabricated factory-made elements installed during short on-site closures — has matured into a mainstream practice in the past 20 years. A bridge that would have closed a road for 6 months can now be replaced in a single weekend. The cost premium is real; the user-cost savings are typically larger.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -3938,10 +3938,10 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                 h('strong', null, 'Honest limit: '), topic.caveat
               )
             )
@@ -3987,7 +3987,7 @@
           var topic = FEA_TOPICS.find(function(t) { return t.id === sel; }) || FEA_TOPICS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🧠 Finite Element Analysis — how modern bridges actually get analyzed'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Every bridge built today is analyzed with FEA somewhere in its design. It is the workhorse method, the reason engineers can design structures the hand-calculation generation could not. It is also the easiest tool in engineering to use badly. Both are worth understanding.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -4000,10 +4000,10 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                 h('strong', null, 'What we should not overstate: '), topic.caveat
               )
             ),
@@ -4038,19 +4038,19 @@
           var correct = d.quizCorrect || 0;
           var pct = Math.round(correct / QUIZ_QUESTIONS.length * 100);
           return h('div', { style: { padding: 16 } },
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center', marginBottom: 16 } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', textAlign: 'center', marginBottom: 16 } },
               h('div', { style: { fontSize: 36, marginBottom: 4 } }, pct >= 80 ? '🏆' : pct >= 60 ? '🌉' : '🔧'),
               h('h2', { style: { margin: '0 0 4px', color: '#fbbf24', fontSize: 22 } }, correct + ' / ' + QUIZ_QUESTIONS.length),
-              h('div', { style: { fontSize: 14, color: '#94a3b8' } }, pct + '%')
+              h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, pct + '%')
             ),
             QUIZ_QUESTIONS.map(function(q, i) {
               var got = answers[i] === q.answer;
-              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid ' + (got ? 'rgba(34,197,94,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '3px solid ' + (got ? '#22c55e' : '#dc2626'), marginBottom: 10 } },
+              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid ' + (got ? 'rgba(34,197,94,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '3px solid ' + (got ? '#22c55e' : '#dc2626'), marginBottom: 10 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: got ? '#86efac' : '#fca5a5', marginBottom: 4 } }, (got ? '✓ ' : '✗ ') + 'Q' + (i + 1)),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 6 } }, q.q),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
-                !got ? h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Your answer: ', q.choices[answers[i] != null ? answers[i] : 0]) : null,
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
+                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, q.q),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
+                !got ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Your answer: ', q.choices[answers[i] != null ? answers[i] : 0]) : null,
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
               );
             }),
             h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#fff', fontWeight: 700, cursor: 'pointer' } }, 'Retake quiz')
@@ -4059,15 +4059,15 @@
 
         var allAnswered = QUIZ_QUESTIONS.every(function(_, i) { return answers[i] != null; });
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions covering bridge engineering and structural mechanics.'),
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions covering bridge engineering and structural mechanics.'),
           QUIZ_QUESTIONS.map(function(q, i) {
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#fbbf24' } }, 'Q' + (i + 1) + '. '), q.q),
+            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#fbbf24' } }, 'Q' + (i + 1) + '. '), q.q),
               q.choices.map(function(c, ci) {
                 var picked = answers[i] === ci;
                 return h('button', { key: ci,
                   onClick: function() { select(i, ci); },
-                  style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (picked ? AMBER : '#334155'), color: '#e2e8f0', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
+                  style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (picked ? AMBER : '#334155'), color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
                 }, c);
               })
             );
@@ -4111,7 +4111,7 @@
           h('div', { id: 'bridge-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, d.designName || 'My Bridge Design'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2')
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2')
             ),
 
             h('div', { style: { padding: 10, background: status === 'safe' ? '#ecfdf5' : status === 'marginal' ? '#fffbeb' : '#fef2f2', border: '1px solid ' + (status === 'safe' ? '#6ee7b7' : status === 'marginal' ? '#fcd34d' : '#fecaca'), borderRadius: 8, marginBottom: 14, fontSize: 12, color: status === 'safe' ? '#065f46' : status === 'marginal' ? '#78350f' : '#7f1d1d' } },
@@ -4171,15 +4171,15 @@
               'A deep-beam approximation. Real bridge design uses method of joints, method of sections, or matrix structural analysis to get exact member forces, then checks every individual member for yield, buckling, fatigue, and connection limits. This tool is for learning, not for actually building a bridge.'
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.5 } },
               'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEM Lab.'
             )
           )
         );
         function printRow(label, value) {
           return h('tr', null,
-            h('td', { style: { padding: 4, borderBottom: '1px dashed #cbd5e1', fontWeight: 700, width: '40%' } }, label),
-            h('td', { style: { padding: 4, borderBottom: '1px dashed #cbd5e1' } }, value)
+            h('td', { style: { padding: 4, borderBottom: '1px dashed var(--allo-stem-border, #cbd5e1)', fontWeight: 700, width: '40%' } }, label),
+            h('td', { style: { padding: 4, borderBottom: '1px dashed var(--allo-stem-border, #cbd5e1)' } }, value)
           );
         }
       }
@@ -4199,12 +4199,12 @@
         default:          body = renderBuild();
       }
 
-      return h('div', { className: 'selh-bridgelab', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: '#e2e8f0' } },
-        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', background: 'linear-gradient(135deg, #78350f, #0f172a)', display: 'flex', alignItems: 'center', gap: 12 } },
+      return h('div', { className: 'selh-bridgelab', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
+        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, #0f172a))', display: 'flex', alignItems: 'center', gap: 12 } },
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🌉'),
           h('div', null,
             h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900 } }, 'Bridge Engineering Lab'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 2 } }, 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2')
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2')
           )
         ),
         tabBar,

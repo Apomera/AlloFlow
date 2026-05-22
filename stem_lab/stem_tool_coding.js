@@ -299,7 +299,7 @@
             { type: 'backward', label: '🔙 Move Backward', param: 'distance', defaultVal: 50, unit: 'px', color: '#818cf8' },
             { type: 'right', label: '↩️ Turn Right', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
             { type: 'left', label: '↪️ Turn Left', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
-            { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: '#94a3b8' },
+            { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { type: 'pendown', label: '✏️ Pen Down', param: null, defaultVal: null, unit: null, color: '#22c55e' },
             { type: 'color', label: '🎨 Set Color', param: 'color', defaultVal: '#6366f1', unit: null, color: '#ec4899' },
             { type: 'width', label: '📏 Set Width', param: 'width', defaultVal: 2, unit: 'px', color: '#14b8a6' },
@@ -1706,7 +1706,7 @@
             return React.createElement("div", {
               key: (isElse ? 'e' : 'i') + ci,
               className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
-              style: { backgroundColor: cdef ? cdef.color : '#94a3b8', opacity: 0.85 }
+              style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #94a3b8)', opacity: 0.85 }
             },
               React.createElement("span", { className: "flex-1 truncate" },
                 cdef ? cdef.label : child.type,
@@ -1994,7 +1994,7 @@
                 React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -2141,7 +2141,7 @@
                       robotBlocks.map(function(b, bi) {
                         var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
                         return React.createElement("div", { key: bi },
-                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#94a3b8' } },
+                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                             React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
                             b.type === 'repeatR' && React.createElement("input", {
                               type: "number", min: 1, max: 20, value: b.times || 3,
@@ -2158,7 +2158,7 @@
                             React.createElement("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + '60' : '#475569' } },
                               (b.children || []).map(function(child, ci) {
                                 var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
                                   React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
                                   React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
                                     var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
@@ -2180,7 +2180,7 @@
                                 React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-1" }, "ELSE:"),
                                 (b.elseChildren || []).map(function(child, ci) {
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
                                     React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
                                     React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
                                       var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
@@ -2294,7 +2294,7 @@
                       React.createElement("div", {
                         className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
                           (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
-                        style: { backgroundColor: def ? def.color : '#94a3b8' }
+                        style: { backgroundColor: def ? def.color: 'var(--allo-stem-text-soft, #94a3b8)' }
                       },
                         // Drag handle
                         React.createElement("span", {
@@ -2423,18 +2423,18 @@
               // Code editor (text mode)
               codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                 React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
-                React.createElement("div", { style: { display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid #334155' } },
+                React.createElement("div", { style: { display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' } },
                   // Line numbers
                   React.createElement("div", {
                     'aria-hidden': 'true',
-                    style: { background: '#0f172a', color: '#475569', fontFamily: 'monospace', fontSize: '11px', padding: '12px 8px 12px 6px', textAlign: 'right', lineHeight: '1.5', userSelect: 'none', borderRight: '1px solid #1e293b', minWidth: '28px' }
+                    style: { background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text-soft, #475569)', fontFamily: 'monospace', fontSize: '11px', padding: '12px 8px 12px 6px', textAlign: 'right', lineHeight: '1.5', userSelect: 'none', borderRight: '1px solid var(--allo-stem-border, #1e293b)', minWidth: '28px' }
                   }, (textCode || '').split('\n').map(function(_, i) { return React.createElement('div', { key: i }, i + 1); })),
                   React.createElement("textarea", {
                     'aria-label': 'Code editor',
                     value: textCode,
                     onChange: function (e) { handleTextChange(e.target.value); },
                     placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
-                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
+                    style: { flex: 1, minHeight: '240px', padding: '12px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
                     spellCheck: false,
                     onKeyDown: function(e) {
                       // Tab inserts 2 spaces instead of changing focus

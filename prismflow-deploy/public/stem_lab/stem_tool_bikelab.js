@@ -1424,7 +1424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     width: 32, height: 32, borderRadius: 8,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
-                    border: '1px solid rgba(148,163,184,0.45)', color: '#cbd5e1',
+                    border: '1px solid rgba(148,163,184,0.45)', color: 'var(--allo-stem-text, #cbd5e1)',
                     fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                   }
                 }, '⛶')
@@ -2724,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   width: 32, height: 32, borderRadius: 8,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
-                  border: '1px solid rgba(148,163,184,0.45)', color: '#cbd5e1',
+                  border: '1px solid rgba(148,163,184,0.45)', color: 'var(--allo-stem-text, #cbd5e1)',
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                 }
               }, '⛶')

@@ -440,7 +440,7 @@ var d = (labToolData.companionPlanting) || {};
             { name: 'Loam', icon: '\u2B50', texture: 'Perfect mix of sand, silt, clay', drainage: 'Ideal balance', nutrients: 'Excellent retention and availability', bestFor: 'Almost everything! The gardener\'s dream soil', improve: 'Maintain with regular compost additions', color: '#22c55e' },
             { name: 'Silt', icon: '\uD83C\uDF0A', texture: 'Fine particles, smooth/silky', drainage: 'Moderate', nutrients: 'Good retention, fertile', bestFor: 'Most vegetables, especially moisture-lovers', improve: 'Add organic matter to prevent compaction', color: '#3b82f6' },
             { name: 'Peat', icon: '\uD83E\uDEB5', texture: 'Dark, spongy organic matter', drainage: 'Retains too much water', nutrients: 'Very acidic (pH 3.5-4.5), low in minerals', bestFor: 'Blueberries, azaleas, acid-loving plants', improve: 'Add lime to raise pH, sand for drainage', color: '#854d0e' },
-            { name: 'Chalky', icon: '\u26AA', texture: 'Rocky, alkaline, white fragments', drainage: 'Very free-draining', nutrients: 'Alkaline (pH 7.5-8.5), can lock out iron and manganese', bestFor: 'Lavender, spinach, beets, cabbage', improve: 'Add sulfur to lower pH, lots of organic matter', color: '#94a3b8' }
+            { name: 'Chalky', icon: '\u26AA', texture: 'Rocky, alkaline, white fragments', drainage: 'Very free-draining', nutrients: 'Alkaline (pH 7.5-8.5), can lock out iron and manganese', bestFor: 'Lavender, spinach, beets, cabbage', improve: 'Add sulfur to lower pH, lots of organic matter', color: 'var(--allo-stem-text-soft, #94a3b8)' }
           ];
 
           // === Wave 1: GARDEN_PESTS ===
@@ -471,7 +471,7 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 2: NITROGEN_CYCLE ===
           var NITROGEN_CYCLE = [
-            { step: 1, name: 'Atmospheric N\u2082', icon: '\u2601\uFE0F', desc: '78% of air is nitrogen gas (N\u2082), but plants can\'t use it directly.', color: '#94a3b8' },
+            { step: 1, name: 'Atmospheric N\u2082', icon: '\u2601\uFE0F', desc: '78% of air is nitrogen gas (N\u2082), but plants can\'t use it directly.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { step: 2, name: 'Nitrogen Fixation', icon: '\uD83E\uDDA0', desc: 'Rhizobium bacteria in bean root nodules convert N\u2082 \u2192 NH\u2083 (ammonia).', color: '#22c55e' },
             { step: 3, name: 'Nitrification', icon: '\u2699\uFE0F', desc: 'Soil bacteria convert NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B (nitrate) \u2014 the form plants absorb.', color: '#3b82f6' },
             { step: 4, name: 'Plant Uptake', icon: '\uD83C\uDF31', desc: 'Roots absorb NO\u2083\u207B from soil water. Used to build amino acids and proteins.', color: '#10b981' },
@@ -5750,7 +5750,7 @@ var d = (labToolData.companionPlanting) || {};
                   style: {
                     position: 'absolute', top: cgMaximized ? 24 : 12, right: cgMaximized ? 24 : 12,
                     zIndex: 10, padding: '6px 12px',
-                    background: 'rgba(15,23,42,0.85)', color: '#f1f5f9',
+                    background: 'rgba(15,23,42,0.85)', color: 'var(--allo-stem-text, #f1f5f9)',
                     border: '1px solid rgba(148,163,184,0.45)', borderRadius: 8,
                     fontSize: 12, fontWeight: 700, cursor: 'pointer',
                     backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)'

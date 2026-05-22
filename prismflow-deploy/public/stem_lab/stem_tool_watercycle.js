@@ -476,20 +476,20 @@ const d = labToolData.waterCycle;
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', { onClick: closeStewardDeepDive,
-                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '💧 Hydrology'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
               applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.4)', borderRight: '1px solid rgba(14,165,233,0.4)', borderBottom: '1px solid rgba(14,165,233,0.4)', borderLeft: '3px solid #0ea5e9', borderRadius: 10 } },
@@ -520,8 +520,8 @@ const d = labToolData.waterCycle;
               });
             }
             function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
-            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
+            return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
               h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Year-by-year quality trend chart by watershed component' },
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
@@ -622,11 +622,11 @@ const d = labToolData.waterCycle;
                   h('button', { onClick: readWatershed,
                     style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
                   h('button', { onClick: dismissStewardAIRead,
-                    style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                    style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
                 )
               ),
-              h('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, steward.aiReadResponse),
-              h('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+              h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, steward.aiReadResponse),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
                 'AI watershed-science educator. ',
                 h('strong', null, 'It is not a Wabanaki person, not a real watershed coordinator or hydrologist, and does not speak for any Wabanaki nation, agency, or organization.'),
                 ' For authoritative voices on Maine watershed work, consult Penobscot Nation Cultural and Historic Preservation Department, Wabanaki Public Health and Wellness, Atlantic Salmon Federation, Maine Coast Heritage Trust, Maine Audubon, Maine Soil and Water Conservation Districts, and the Maine Department of Environmental Protection.'
@@ -652,10 +652,10 @@ const d = labToolData.waterCycle;
                     h('span', { style: { fontSize: 36 } }, '💧'),
                     h('div', null,
                       h('h3', { style: { margin: 0, color: T_BLUE_HI, fontSize: 22 } }, 'Watershed Steward: 10-year Maine campaign'),
-                      h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
+                      h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
                     )
                   ),
-                  h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                  h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                     'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. ',
                     h('strong', null, 'Hydrological feedback rules tie them together.'),
                     ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs.'
@@ -665,13 +665,13 @@ const d = labToolData.waterCycle;
                 // Component preview cards
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
                   MAINE_WATERSHED_COMPONENTS.map(function(c) {
-                    return h('div', { key: c.id, style: { background: '#0f172a', borderLeft: '3px solid ' + c.color, borderRadius: 10, padding: 12 } },
+                    return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + c.color, borderRadius: 10, padding: 12 } },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                         h('span', { style: { fontSize: 22 } }, c.icon),
                         h('strong', { style: { color: c.color } }, c.name)
                       ),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, c.role),
-                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, c.role),
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
                       c.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Open deep-dive for ' + c.name,
                         style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + c.color + '88', background: c.color + '22', color: c.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
@@ -681,8 +681,8 @@ const d = labToolData.waterCycle;
                 ),
 
                 // Difficulty
-                h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, border: '1px solid #1e293b' } },
-                  h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                     Object.keys(STEWARD_DIFFICULTIES).map(function(dkey) {
                       var df = STEWARD_DIFFICULTIES[dkey];
@@ -719,7 +719,7 @@ const d = labToolData.waterCycle;
                 h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                   h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                   h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
-                  h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                  h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
                 ),
 
                 // Year-by-year trend chart
@@ -730,20 +730,20 @@ const d = labToolData.waterCycle;
                     var def = getWatershedComponent(c.id);
                     var targetsHit = c.quality >= def.targets.quality && c.connectivity >= def.targets.connectivity && c.support >= def.targets.support;
                     var art = watershedArtifact(c);
-                    return h('div', { key: c.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                    return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
                       h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                         h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
                         def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive',
                           style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
                       ),
-                      h('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                         'Quality: ' + Math.round(c.quality) + '/' + def.targets.quality,
                         h('br'),
                         'Connectivity: ' + Math.round(c.connectivity) + '/' + def.targets.connectivity,
                         h('br'),
                         'Community support: ' + Math.round(c.support) + '/' + def.targets.support
                       ),
-                      art.text ? h('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                      art.text ? h('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
                         h('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
                       ) : null
                     );
@@ -754,13 +754,13 @@ const d = labToolData.waterCycle;
                 h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
                   h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-                    h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                    h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your campaign'),
-                      h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
                     ),
-                    h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
-                      h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
                     )
                   ),
                   h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
@@ -771,18 +771,18 @@ const d = labToolData.waterCycle;
                           : 'Active stewardship cost more than it returned this run. Look at WHICH techniques you used and whether the community had the trust to make them stick.')
                   )
                 ),
-                h('div', { style: { padding: 10, background: '#0f172a', borderRadius: 8, fontSize: 12, color: '#cbd5e1' } },
+                h('div', { style: { padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   h('strong', { style: { color: '#7dd3fc' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
                   h('strong', { style: { color: '#7dd3fc' } }, 'Connectivity boosts: '), (steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                  h('button', { onClick: resetSteward, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
+                  h('button', { onClick: resetSteward, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ New campaign'),
                   h('button', { onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
                     style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
                 ),
-                h('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
-                  h('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
-                  h('strong', { style: { color: '#cbd5e1' } }, steward.seed)
+                h('div', { style: { padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
+                  h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'Campaign seed: '),
+                  h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, steward.seed)
                 )
               );
             }
@@ -798,10 +798,10 @@ const d = labToolData.waterCycle;
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
                   h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Year ' + steward.year + ' review')
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
                   h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
                   h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + steward.year + ' event: ' + (ev.name || 'quiet year')),
-                  h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                  h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
                 ),
                 (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd' } },
                   h('strong', { style: { color: '#38bdf8' } }, '🔄 Hydrological feedback rules this year'),
@@ -809,8 +809,8 @@ const d = labToolData.waterCycle;
                 ) : null,
 
                 // Per-component deltas
-                h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10 } },
-                  h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10 } },
+                  h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
                   (lastSnap.pre || []).map(function(preC) {
                     var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
                     var def = getWatershedComponent(preC.id);
@@ -820,7 +820,7 @@ const d = labToolData.waterCycle;
                       if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '▲' : '▼'; }
                       return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
-                    return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                    return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
                       h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
                       delta('Q', preC.quality, postC.quality),
                       delta('Conn', preC.connectivity, postC.connectivity),
@@ -859,15 +859,15 @@ const d = labToolData.waterCycle;
               // HUD
               h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Year'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Year'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: T_BLUE_HI } }, steward.year + ' / ' + steward.maxYears)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours left'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours left'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Connectivity boosts'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Connectivity boosts'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
@@ -889,12 +889,12 @@ const d = labToolData.waterCycle;
                   var applicable = STEWARD_TECHNIQUES.filter(function(t) {
                     return t.appliesTo === 'any' || t.appliesTo.indexOf(c.id) >= 0;
                   });
-                  return h('div', { key: c.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                  return h('div', { key: c.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                       h('span', { style: { fontSize: 22 } }, def.icon),
                       h('div', { style: { flex: 1 } },
                         h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                        h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                       ),
                       def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Watershed deep-dive',
                         style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
@@ -904,10 +904,10 @@ const d = labToolData.waterCycle;
                        ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? '#ef4444' : c.connectivity < 65 ? '#f59e0b' : '#22c55e', def.targets.connectivity],
                        ['Sup', Math.round(c.support), c.support < 40 ? '#ef4444' : c.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
                       ].map(function(st, si) {
-                        return h('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
-                          h('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                        return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
                           h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          h('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                          h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)' } }, 'goal ' + st[3])
                         );
                       })
                     ),
@@ -924,7 +924,7 @@ const d = labToolData.waterCycle;
               ),
 
               // Watershed-wide interventions row
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '🛠 Watershed-wide actions'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
@@ -937,12 +937,12 @@ const d = labToolData.waterCycle;
               ),
 
               // Action log
-              steward.yearActions.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
-                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Year ' + steward.year + ' actions'),
+              steward.yearActions.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Year ' + steward.year + ' actions'),
                 steward.yearActions.map(function(a, ai) {
                   return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.target + ' (' + a.hours + 'h)');
                 })
-              ) : h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
+              ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
             );
           }
 
@@ -977,7 +977,7 @@ const d = labToolData.waterCycle;
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
                          '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time — but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
-            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: '#94a3b8',
+            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: 'var(--allo-stem-text-soft, #94a3b8)',
               desc: { 'K-2': 'When the warm, wet air goes high up where it is cold, the water vapor turns back into tiny water drops. These tiny drops stick together and make clouds!',
                       '3-5': 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.',
                       '6-8': 'As air rises, it cools at ~6.5\u00B0C/km (environmental lapse rate). When temperature reaches the dew point, vapor condenses onto cloud condensation nuclei (CCN) — aerosol particles 0.1\u20131 \u00B5m wide. Cloud droplets are typically 5\u201315 \u00B5m.',
@@ -2082,7 +2082,7 @@ const d = labToolData.waterCycle;
 
                 { id: 'evaporation', text: '\u2191 Evaporation', x: 8, y: cH * 0.54, color: '#fbbf24' },
 
-                { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28, y: cH * 0.06, color: '#94a3b8' },
+                { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28, y: cH * 0.06, color: 'var(--allo-stem-text-soft, #94a3b8)' },
 
                 { id: 'precipitation', text: '\u2193 Precipitation', x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
 

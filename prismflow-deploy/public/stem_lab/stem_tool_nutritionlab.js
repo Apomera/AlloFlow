@@ -1101,7 +1101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var palette = {
       primary:   { bg: '#059669', color: '#fff',   border: '#047857' },
       secondary: { bg: '#fff',     color: '#0f766e', border: '#0d9488' },
-      ghost:     { bg: '#f1f5f9',  color: '#334155', border: '#cbd5e1' },
+      ghost:     { bg: '#f1f5f9',  color: '#334155', border: 'var(--allo-stem-border, #cbd5e1)' },
       danger:    { bg: '#fee2e2',  color: '#991b1b', border: '#fecaca' },
       success:   { bg: '#dcfce7',  color: '#166534', border: '#86efac' },
       warning:   { bg: '#fef3c7',  color: '#78350f', border: '#fcd34d' }
@@ -1127,7 +1127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       'aria-label': p['aria-label'] || p.placeholder,
       style: Object.assign({
         width: '100%', padding: '8px 10px', borderRadius: 8,
-        border: '1px solid #cbd5e1', fontSize: 13, color: '#0f172a',
+        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: '#0f172a',
         background: '#fff'
       }, p.style || {})
     }, p));
@@ -1142,7 +1142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       'aria-label': p['aria-label'] || p.placeholder,
       style: Object.assign({
         width: '100%', padding: '8px 10px', borderRadius: 8,
-        border: '1px solid #cbd5e1', fontSize: 13, color: '#0f172a',
+        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: '#0f172a',
         background: '#fff', resize: 'vertical', fontFamily: 'inherit'
       }, p.style || {})
     });
@@ -1154,7 +1154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       onChange: p.onChange,
       'aria-label': p['aria-label'] || 'Select',
       style: Object.assign({
-        padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1',
+        padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)',
         fontSize: 13, color: '#0f172a', background: '#fff', cursor: 'pointer'
       }, p.style || {})
     }, (options || []).map(function(o) {
@@ -1169,15 +1169,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       } }),
       nlH('div', { style: { flex: 1 } },
         nlH('div', { style: { fontSize: 15, fontWeight: 900, color: c } }, title),
-        subtitle ? nlH('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, subtitle) : null
+        subtitle ? nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } }, subtitle) : null
       )
     );
   }
   function nlEmpty(message) {
     return nlH('div', { style: {
       padding: 18, borderRadius: 10, background: '#f8fafc',
-      border: '1px dashed #cbd5e1', textAlign: 'center',
-      color: '#64748b', fontSize: 12, fontStyle: 'italic'
+      border: '1px dashed var(--allo-stem-border, #cbd5e1)', textAlign: 'center',
+      color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, fontStyle: 'italic'
     } }, message);
   }
   function nlEvidenceFooter(text) {
@@ -1384,7 +1384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           ),
           nlTextarea({ value: form.items, onChange: function(e) { setForm(Object.assign({}, form, { items: e.target.value })); }, placeholder: 'What did you eat? (just list — no judgment)', rows: 2 }),
           nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-            nlH('span', { style: { fontSize: 12, color: '#475569', fontWeight: 700 } }, 'Energy after: '),
+            nlH('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 700 } }, 'Energy after: '),
             nlH('input', { type: 'range', min: 1, max: 10, value: form.energy, onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value) })); }, style: { flex: 1 } }),
             nlH('strong', { style: { color: '#059669', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.energy + '/10')
           ),
@@ -1401,17 +1401,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a' } }, m.name),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 8 } }, nl_relDate(m.date)),
-                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 8 } }, nl_relDate(m.date)),
+                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
-                nlH('div', { style: { fontSize: 11, color: '#475569', marginBottom: 2 } }, (when_opts.find(function(o) { return o.value === m.when; }) || { label: m.when }).label),
+                nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', marginBottom: 2 } }, (when_opts.find(function(o) { return o.value === m.when; }) || { label: m.when }).label),
                 m.items ? nlH('div', { style: { fontSize: 11, color: '#334155', marginBottom: 4 } }, m.items) : null,
                 nlH('div', { style: { display: 'flex', gap: 12, fontSize: 10 } },
                   nlH('span', { style: { color: moodColor, fontWeight: 700 } }, 'Mood: ' + m.mood),
-                  nlH('span', { style: { color: '#475569', fontWeight: 700 } }, 'Energy: ' + m.energy + '/10')
+                  nlH('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 700 } }, 'Energy: ' + m.energy + '/10')
                 ),
-                m.notes ? nlH('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic', marginTop: 4 } }, '💭 ' + m.notes) : null
+                m.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', marginTop: 4 } }, '💭 ' + m.notes) : null
               );
             })
           ),
@@ -1467,12 +1467,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', value: form.ml, onChange: function(e) { setForm(Object.assign({}, form, { ml: parseInt(e.target.value) || 0 })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.ml, onChange: function(e) { setForm(Object.assign({}, form, { ml: parseInt(e.target.value) || 0 })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); } }, source_opts)
           ),
           nlH('div', { style: { display: 'flex', gap: 4 } },
             [250, 500, 750, 1000].map(function(q) {
-              return nlH('button', { key: q, onClick: function() { setForm(Object.assign({}, form, { ml: q })); }, style: { flex: 1, padding: '6px', borderRadius: 6, border: '1px solid #cbd5e1', background: form.ml === q ? '#dbeafe' : '#fff', color: '#0c4a6e', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, q + 'mL');
+              return nlH('button', { key: q, onClick: function() { setForm(Object.assign({}, form, { ml: q })); }, style: { flex: 1, padding: '6px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: form.ml === q ? '#dbeafe' : '#fff', color: '#0c4a6e', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, q + 'mL');
             })
           ),
           nlBtn({ onClick: add, variant: 'primary' }, '+ Log ' + form.ml + ' mL')
@@ -1480,11 +1480,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       ),
       todayEntries.length > 0
         ? nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-            nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 8, marginBottom: 4 } }, "Today's entries"),
+            nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 8, marginBottom: 4 } }, "Today's entries"),
             todayEntries.map(function(e) {
               return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#f0f9ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                 nlH('span', { style: { fontSize: 12, color: '#0c4a6e' } }, (source_opts.find(function(o) { return o.value === e.source; }) || { label: e.source }).label + ' · ' + e.ml + ' mL'),
-                nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           )
@@ -1526,7 +1526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.name, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); }, placeholder: 'What was the snack? (no judgment)' }),
           nlSelect({ value: form.why, onChange: function(e) { setForm(Object.assign({}, form, { why: e.target.value })); } }, why_opts),
-          nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569' } },
+          nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)' } },
             nlH('input', { type: 'checkbox', checked: form.satisfied, onChange: function(e) { setForm(Object.assign({}, form, { satisfied: e.target.checked })); } }),
             nlH('span', null, 'Did it satisfy what I needed?')
           ),
@@ -1542,12 +1542,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a' } }, s.name + (s.satisfied ? ' ✓' : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#15803d' } }, (why_opts.find(function(o) { return o.value === s.why; }) || { label: s.why }).label),
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + s.notes) : null
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + s.notes) : null
               );
             })
           ),
@@ -1606,13 +1606,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#0f172a' } }, (source_opts.find(function(o) { return o.value === l.source; }) || { label: l.source }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.menu ? nlH('div', { style: { fontSize: 11, color: '#334155', marginTop: 2 } }, l.menu) : null,
                 l.source !== 'skipped' ? nlH('div', { style: { fontSize: 10, color: '#0c4a6e', marginTop: 2 } }, 'Ate: ' + (ate_opts.find(function(o) { return o.value === l.ate; }) || { label: l.ate }).label) : null,
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.notes) : null
               );
             })
           ),
@@ -1670,7 +1670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Protein source' }),
-            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseInt(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseInt(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             quick.map(function(q) {
@@ -1681,11 +1681,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       entries.filter(function(x) { return x.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
         entries.filter(function(x) { return x.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#fef2f2', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#9f1239' } }, e.source + ' — ' + e.grams + 'g'),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -1740,7 +1740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Fiber source' }),
-            nlH('input', { type: 'number', step: '0.1', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseFloat(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', step: '0.1', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseFloat(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             quick.map(function(q) {
@@ -1751,11 +1751,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       entries.filter(function(x) { return x.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
         entries.filter(function(x) { return x.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#fef3c7', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#78350f' } }, e.source + ' — ' + e.grams + 'g'),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -1828,10 +1828,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: l.id, style: { padding: 8, borderRadius: 8, background: '#f7fee7', borderLeft: '3px solid #84cc16', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                 nlH('div', null,
                   nlH('strong', { style: { fontSize: 12, color: '#0f172a' } }, l.name),
-                  nlH('span', { style: { fontSize: 10, color: '#475569', marginLeft: 8 } }, (color_opts.find(function(o) { return o.value === l.color; }) || { label: l.color }).label),
-                  nlH('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 8 } }, nl_relDate(l.date))
+                  nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginLeft: 8 } }, (color_opts.find(function(o) { return o.value === l.color; }) || { label: l.color }).label),
+                  nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginLeft: 8 } }, nl_relDate(l.date))
                 ),
-                nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -1866,36 +1866,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Calcium Tracker', 'Adolescence = peak bone-building. Now matters for life.', '#94a3b8'),
       nlBodyNote(),
-      nlCard({ style: { background: '#f8fafc', border: '1px solid #cbd5e1' } },
+      nlCard({ style: { background: '#f8fafc', border: '1px solid var(--allo-stem-border, #cbd5e1)' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 } },
           nlH('strong', { style: { fontSize: 16, color: '#334155' } }, 'Today: ' + todayMg + ' / ' + dailyTarget + ' mg'),
-          nlH('span', { style: { fontSize: 12, color: '#475569', fontWeight: 700 } }, pct + '%')
+          nlH('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 700 } }, pct + '%')
         ),
-        nlH('div', { style: { width: '100%', height: 12, borderRadius: 6, background: '#fff', border: '1px solid #cbd5e1', overflow: 'hidden' } },
+        nlH('div', { style: { width: '100%', height: 12, borderRadius: 6, background: '#fff', border: '1px solid var(--allo-stem-border, #cbd5e1)', overflow: 'hidden' } },
           nlH('div', { style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #94a3b8, #475569)' } })
         ),
-        nlH('div', { style: { fontSize: 11, color: '#475569', marginTop: 8 } }, 'NIH ODS RDA for ages 9-18: 1300 mg/day (the highest of any age group)')
+        nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 8 } }, 'NIH ODS RDA for ages 9-18: 1300 mg/day (the highest of any age group)')
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Calcium source' }),
-            nlH('input', { type: 'number', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseInt(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseInt(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             quick.map(function(q) {
-              return nlH('button', { key: q.name, onClick: function() { setForm({ source: q.name, mg: q.mg }); }, style: { padding: '5px 8px', borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, q.name + ' (' + q.mg + ')');
+              return nlH('button', { key: q.name, onClick: function() { setForm({ source: q.name, mg: q.mg }); }, style: { padding: '5px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: '#334155', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, q.name + ' (' + q.mg + ')');
             })
           ),
           nlBtn({ onClick: add }, '+ Log calcium')
         )
       ),
       entries.filter(function(x) { return x.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
         entries.filter(function(x) { return x.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#f1f5f9', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#334155' } }, e.source + ' — ' + e.mg + 'mg'),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -1950,9 +1950,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Iron source' }),
-            nlH('input', { type: 'number', step: '0.1', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseFloat(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', step: '0.1', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseFloat(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
-          nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#475569' } },
+          nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } },
             nlH('input', { type: 'checkbox', checked: form.withVitC, onChange: function(e) { setForm(Object.assign({}, form, { withVitC: e.target.checked })); } }),
             nlH('span', null, 'Eaten with vitamin C (citrus, peppers, etc.)? Boosts absorption.')
           ),
@@ -1965,11 +1965,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       entries.filter(function(x) { return x.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
         entries.filter(function(x) { return x.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#fef2f2', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#7c2d12' } }, e.source + ' — ' + e.mg + 'mg' + (e.withVitC ? ' (with vit C ✓)' : '')),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -2029,12 +2029,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#155e75' } }, e.source),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#155e75' } }, (serv_opts.find(function(o) { return o.value === e.servingType; }) || { label: e.servingType }).label),
-                e.amount ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, e.amount) : null
+                e.amount ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, e.amount) : null
               );
             })
           ),
@@ -2088,13 +2088,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a', textDecoration: g.status === 'done' ? 'line-through' : 'none' } }, g.goal),
                   nlH('div', null,
                     nlH('button', { onClick: function() { toggle(g.id); }, style: { background: 'transparent', border: 'none', color: '#059669', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginRight: 4 } }, g.status === 'done' ? '↺ Reopen' : '✓ Done'),
-                    nlH('button', { onClick: function() { remove(g.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(g.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
-                g.why ? nlH('div', { style: { fontSize: 11, color: '#475569', fontStyle: 'italic', marginBottom: 2 } }, '💚 Why: ' + g.why) : null,
+                g.why ? nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', marginBottom: 2 } }, '💚 Why: ' + g.why) : null,
                 g.specific ? nlH('div', { style: { fontSize: 11, color: '#0f172a' } }, '🎯 What: ' + g.specific) : null,
                 g.measurable ? nlH('div', { style: { fontSize: 11, color: '#0f172a' } }, '📏 Measure: ' + g.measurable) : null,
-                g.deadline ? nlH('div', { style: { fontSize: 10, color: '#64748b', marginTop: 2 } }, '📅 By: ' + g.deadline) : null
+                g.deadline ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } }, '📅 By: ' + g.deadline) : null
               );
             })
           ),
@@ -2160,9 +2160,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     nlH('strong', { style: { color: '#0369a1' } }, 'IF '), p.trigger,
                     nlH('strong', { style: { color: '#0369a1' } }, ' THEN '), p.action
                   ),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
-                p.context ? nlH('div', { style: { fontSize: 10, color: '#475569', fontStyle: 'italic', marginTop: 4 } }, p.context) : null
+                p.context ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', marginTop: 4 } }, p.context) : null
               );
             })
           ),
@@ -2236,7 +2236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a' } }, h.habit),
                   nlH('div', null,
                     nlH('span', { style: { fontSize: 11, color: '#7c3aed', fontWeight: 700, marginRight: 6 } }, s > 0 ? '🔥 ' + s : '—'),
-                    nlH('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { display: 'flex', gap: 4, justifyContent: 'space-between' } },
@@ -2296,7 +2296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#fdf2f8', borderLeft: '3px solid #ec4899' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a' } }, '🌱 Tiny habit recipe'),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#0f172a', marginBottom: 2 } }, nlH('strong', { style: { color: '#9f1239' } }, '1. AFTER '), m.anchor),
                 nlH('div', { style: { fontSize: 11, color: '#0f172a', marginBottom: 2 } }, nlH('strong', { style: { color: '#9f1239' } }, '2. I WILL '), m.behavior),
@@ -2358,7 +2358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a' } }, '🪜 ' + l.bigGoal),
                   nlH('div', null,
                     nlH('span', { style: { fontSize: 11, color: '#0d9488', fontWeight: 700, marginRight: 6 } }, done + '/' + (l.steps || []).length),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
@@ -2411,8 +2411,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#065f46' } }, '✨ ' + w.intention),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, 'wk of ' + w.weekOf),
-                    nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, 'wk of ' + w.weekOf),
+                    nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 w.actions ? nlH('div', { style: { fontSize: 11, color: '#065f46', marginBottom: 2 } }, '🎯 ' + w.actions) : null,
@@ -2474,7 +2474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: '#fef3c7', borderLeft: '4px solid #f59e0b' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#78350f' } }, '🎯 ' + c.goal),
-                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 c.need ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '⚙ Body needs: ' + c.need) : null,
                 c.foods ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '🍴 Foods: ' + c.foods) : null
@@ -2513,13 +2513,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlBodyNote(),
       nlH('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
         ['weekday','weekend'].map(function(t) {
-          return nlH('button', { key: t, onClick: function() { setTab(t); }, style: { flex: 1, padding: '6px', borderRadius: 6, border: '1px solid #cbd5e1', background: tab === t ? '#84cc16' : '#fff', color: tab === t ? '#fff' : '#475569', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, t === 'weekday' ? '📚 Weekday' : '🌳 Weekend');
+          return nlH('button', { key: t, onClick: function() { setTab(t); }, style: { flex: 1, padding: '6px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: tab === t ? '#84cc16' : '#fff', color: tab === t ? '#fff' : '#475569', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, t === 'weekday' ? '📚 Weekday' : '🌳 Weekend');
         })
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'time', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'time', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlInput({ value: form.meal, onChange: function(e) { setForm(Object.assign({}, form, { meal: e.target.value })); }, placeholder: 'Meal/snack name' })
           ),
           nlInput({ value: form.plan, onChange: function(e) { setForm(Object.assign({}, form, { plan: e.target.value })); }, placeholder: 'What I usually eat (rough — not rigid)' }),
@@ -2533,7 +2533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: r.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '3px solid #84cc16' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🕒 ' + r.time + ' — ' + r.meal),
-                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 r.plan ? nlH('div', { style: { fontSize: 11, color: '#3f6212' } }, '🍴 ' + r.plan) : null
               );
@@ -2581,7 +2581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.challenge, onChange: function(e) { setForm(Object.assign({}, form, { challenge: e.target.value })); }, placeholder: 'Challenge name' }),
-          nlH('input', { type: 'date', value: form.startDate, onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+          nlH('input', { type: 'date', value: form.startDate, onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
           nlBtn({ onClick: add }, '+ Start challenge')
         )
       ),
@@ -2612,7 +2612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 13, color: '#0e7490' } }, '⚡ ' + c.challenge),
                   nlH('div', null,
                     nlH('span', { style: { fontSize: 11, color: '#0e7490', fontWeight: 700, marginRight: 6 } }, daysCompleted + '/30 (' + pct + '%)'),
-                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(15, 1fr)', gap: 3 } },
@@ -2677,13 +2677,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               var colors = { yes: '#dcfce7', mostly: '#fef9c3', partial: '#fed7aa', no: '#f3f4f6' };
               return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 8, background: colors[e.followed] || '#f8fafc' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                  nlH('div', { style: { fontSize: 12, color: '#0f172a' } }, nlH('strong', null, e.aim), nlH('span', { style: { marginLeft: 8, fontSize: 11, color: '#475569' } }, (followed_opts.find(function(o) { return o.value === e.followed; }) || { label: '' }).label)),
+                  nlH('div', { style: { fontSize: 12, color: '#0f172a' } }, nlH('strong', null, e.aim), nlH('span', { style: { marginLeft: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, (followed_opts.find(function(o) { return o.value === e.followed; }) || { label: '' }).label)),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
-                e.context ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, e.context) : null
+                e.context ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, e.context) : null
               );
             })
           ),
@@ -2756,7 +2756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlSelect({ value: form.when, onChange: function(e) { setForm(Object.assign({}, form, { when: e.target.value })); } }, when_opts),
           nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-            nlH('span', { style: { fontSize: 12, color: '#475569', fontWeight: 700 } }, 'Hunger:'),
+            nlH('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 700 } }, 'Hunger:'),
             nlH('input', { type: 'range', min: 1, max: 10, value: form.hunger, onChange: function(e) { setForm(Object.assign({}, form, { hunger: parseInt(e.target.value) })); }, style: { flex: 1 } }),
             nlH('strong', { style: { color: color } }, form.hunger + '/10')
           ),
@@ -2778,13 +2778,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     ' · ', (when_opts.find(function(o) { return o.value === l.when; }) || { label: l.when }).label
                   ),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#9f1239', marginTop: 2 } }, 'Cue: ' + (cue_opts.find(function(o) { return o.value === l.cue; }) || { label: l.cue }).label),
-                l.location ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, '📍 ' + l.location) : null,
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.notes) : null
+                l.location ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '📍 ' + l.location) : null,
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.notes) : null
               );
             })
           ),
@@ -2853,15 +2853,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#6b21a8' } }, l.meal),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { display: 'flex', gap: 12, fontSize: 10, color: '#6b21a8', marginTop: 4 } },
                   nlH('span', null, 'Full: ' + l.fullness + '/10 (' + fullnessLabel(l.fullness) + ')'),
                   nlH('span', null, 'Satisfied: ' + l.satisfaction + '/10')
                 ),
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.notes) : null
               );
             })
           ),
@@ -2930,13 +2930,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7c2d12' } }, '🌟 ' + e.craving + ' (' + e.intensity + '/10)'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 e.emotion ? nlH('div', { style: { fontSize: 10, color: '#7c2d12', marginTop: 2 } }, '💭 ' + e.emotion + (e.time ? ' · ' + e.time : '')) : null,
                 nlH('div', { style: { fontSize: 10, color: '#9a3412', marginTop: 2 } }, 'Action: ' + (acted_opts.find(function(o) { return o.value === e.acted; }) || { label: e.acted }).label + ' · Satisfied: ' + (sat_opts.find(function(o) { return o.value === e.satisfied; }) || { label: e.satisfied }).label),
-                e.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '📝 ' + e.notes) : null
+                e.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '📝 ' + e.notes) : null
               );
             })
           ),
@@ -3009,12 +3009,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '💭 ' + e.emotion),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#7f1d1d', marginTop: 2 } }, 'Helped: ' + (helped_opts.find(function(o) { return o.value === e.whatHelped; }) || { label: e.whatHelped }).label + (e.food ? ' (' + e.food + ')' : '')),
-                e.alternative ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, '💡 Alt: ' + e.alternative) : null,
+                e.alternative ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '💡 Alt: ' + e.alternative) : null,
                 nlH('div', { style: { fontSize: 10, color: '#9a3412', marginTop: 2 } }, 'Felt-after: ' + e.regret + '/10')
               );
             })
@@ -3068,7 +3068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             nlInput({ value: reflect.noticed, onChange: function(e) { setReflect(Object.assign({}, reflect, { noticed: e.target.value })); }, placeholder: 'What I noticed about my body' }),
             nlInput({ value: reflect.taste, onChange: function(e) { setReflect(Object.assign({}, reflect, { taste: e.target.value })); }, placeholder: 'Flavors that stood out' }),
-            nlH('div', { style: { fontSize: 11, color: '#475569' } }, 'How much did I enjoy this practice? ' + reflect.enjoyed + '/10'),
+            nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, 'How much did I enjoy this practice? ' + reflect.enjoyed + '/10'),
             nlH('input', { type: 'range', min: 1, max: 10, value: reflect.enjoyed, onChange: function(e) { setReflect(Object.assign({}, reflect, { enjoyed: parseInt(e.target.value) })); } })
           )
         ) : null,
@@ -3089,17 +3089,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       sessions.length > 0 && nlH('div', { style: { marginTop: 12 } },
-        nlH('strong', { style: { fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Past sessions'),
+        nlH('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Past sessions'),
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 } },
           sessions.slice(0, 10).map(function(s) {
             return nlH('div', { key: s.id, style: { padding: 8, borderRadius: 8, background: '#f0fdfa', borderLeft: '3px solid #14b8a6' } },
               nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 nlH('strong', { style: { fontSize: 12, color: '#0f766e' } }, '🌿 ' + (s.food || 'mindful practice')),
-                nlH('span', { style: { fontSize: 10, color: '#64748b' } }, nl_relDate(s.date))
+                nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)' } }, nl_relDate(s.date))
               ),
               s.noticed ? nlH('div', { style: { fontSize: 10, color: '#0f172a', marginTop: 2 } }, '🧘 ' + s.noticed) : null,
               s.taste ? nlH('div', { style: { fontSize: 10, color: '#0f766e', marginTop: 2 } }, '👅 ' + s.taste) : null,
-              nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, 'Enjoyed: ' + s.enjoyed + '/10')
+              nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, 'Enjoyed: ' + s.enjoyed + '/10')
             );
           })
         )
@@ -3164,8 +3164,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '⭐ ' + r.meal + ' — avg ' + avg + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 10, color: '#3f6212' } },
@@ -3173,7 +3173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     return nlH('span', { key: d.key }, d.label.split(' ')[0] + ' ' + r[d.key]);
                   })
                 ),
-                r.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
+                r.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
               );
             })
           ),
@@ -3243,12 +3243,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     nlH('strong', null, 'E ' + c.energy + ' · M ' + c.mood + ' · H ' + c.hunger + ' · F ' + c.focus + ' · A ' + c.anxiety)
                   ),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(c.date)),
-                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(c.date)),
+                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#0e7490', marginTop: 2 } }, 'GI: ' + (gi_opts.find(function(o) { return o.value === c.gi; }) || { label: c.gi }).label),
-                c.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, c.notes) : null
+                c.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, c.notes) : null
               );
             })
           ),
@@ -3313,13 +3313,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🦠 ' + e.symptom + ' (' + e.severity + '/10)'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, 'Timing: ' + (timing_opts.find(function(o) { return o.value === e.timing; }) || { label: e.timing }).label),
                 e.possibleTrigger ? nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, '⚠ Trigger: ' + e.possibleTrigger) : null,
-                e.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, e.notes) : null
+                e.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, e.notes) : null
               );
             })
           ),
@@ -3375,12 +3375,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#78350f' } }, '⚡ ' + l.meal),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, l.preEnergy + ' → ' + l.postEnergy + ' (' + (delta >= 0 ? '+' : '') + delta + ') at ' + l.hoursLater + 'hr'),
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
               );
             })
           ),
@@ -3438,12 +3438,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#6b21a8' } }, '💭 ' + l.meal),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, 'Mood ' + l.preMood + ' → ' + l.postMood + (delta !== 0 ? ' (' + (delta > 0 ? '+' : '') + delta + ')' : '') + (l.dominantEmotion ? ' · ' + l.dominantEmotion : '')),
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
               );
             })
           ),
@@ -3478,7 +3478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       return nlH('div', { style: { padding: 14 } },
         nlBtn({ onClick: function() { setView(null); }, variant: 'ghost' }, '← Back to recipe box'),
         nlH('h2', { style: { fontSize: 22, fontWeight: 900, color: '#0f766e', marginTop: 12 } }, '🍳 ' + r.name),
-        nlH('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 14 } }, (r.cuisine ? r.cuisine + ' · ' : '') + r.time + ' min · serves ' + r.servings),
+        nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 14 } }, (r.cuisine ? r.cuisine + ' · ' : '') + r.time + ' min · serves ' + r.servings),
         nlCard(null,
           nlH('strong', { style: { fontSize: 13, color: '#0f766e' } }, '🛒 Ingredients'),
           nlH('div', { style: { fontSize: 12, color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: 6 } }, r.ingredients || '—')
@@ -3501,8 +3501,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlInput({ value: form.name, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); }, placeholder: 'Recipe name' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 100px 100px', gap: 8 } },
             nlInput({ value: form.cuisine, onChange: function(e) { setForm(Object.assign({}, form, { cuisine: e.target.value })); }, placeholder: 'Cuisine' }),
-            nlH('input', { type: 'number', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, placeholder: 'min', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'number', value: form.servings, onChange: function(e) { setForm(Object.assign({}, form, { servings: parseInt(e.target.value) || 1 })); }, placeholder: 'serves', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, placeholder: 'min', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.servings, onChange: function(e) { setForm(Object.assign({}, form, { servings: parseInt(e.target.value) || 1 })); }, placeholder: 'serves', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlTextarea({ value: form.ingredients, onChange: function(e) { setForm(Object.assign({}, form, { ingredients: e.target.value })); }, placeholder: 'Ingredients (one per line)', rows: 4 }),
           nlTextarea({ value: form.steps, onChange: function(e) { setForm(Object.assign({}, form, { steps: e.target.value })); }, placeholder: 'Steps (one per line)', rows: 4 }),
@@ -3518,7 +3518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: r.id, style: { padding: 10, borderRadius: 8, background: '#f0fdfa', borderLeft: '4px solid #0d9488', cursor: 'pointer' }, onClick: function() { setView(r.id); } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f766e' } }, '🍳 ' + r.name),
-                  nlH('button', { onClick: function(e) { e.stopPropagation(); remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function(e) { e.stopPropagation(); remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#0d9488', marginTop: 2 } }, (r.cuisine ? r.cuisine + ' · ' : '') + r.time + ' min · serves ' + r.servings + (r.tags ? ' · ' + r.tags : ''))
               );
@@ -3585,14 +3585,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🔪 ' + s.skill),
                   nlH('div', null,
-                    nlH('button', { onClick: function() { bumpConfidence(s.id, -1); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 2 } }, '−'),
+                    nlH('button', { onClick: function() { bumpConfidence(s.id, -1); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 2 } }, '−'),
                     nlH('span', { style: { fontSize: 11, color: '#3f6212', fontWeight: 700, margin: '0 6px' } }, s.confidence + '/10'),
-                    nlH('button', { onClick: function() { bumpConfidence(s.id, 1); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 6 } }, '+'),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { bumpConfidence(s.id, 1); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 6 } }, '+'),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 s.learnedFrom ? nlH('div', { style: { fontSize: 11, color: '#3f6212' } }, '👨‍🏫 ' + s.learnedFrom) : null,
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
               );
             })
           ),
@@ -3640,7 +3640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: l.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '🛒 ' + l.name + ' (' + done + '/' + l.items.length + ')'),
-                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
                   l.items.map(function(it, idx) {
@@ -3679,7 +3679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-            nlH('input', { type: 'date', value: form.weekOf, onChange: function(e) { setForm(Object.assign({}, form, { weekOf: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'date', value: form.weekOf, onChange: function(e) { setForm(Object.assign({}, form, { weekOf: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.prepDay, onChange: function(e) { setForm(Object.assign({}, form, { prepDay: e.target.value })); } }, day_opts)
           ),
           nlH('div', null,
@@ -3700,7 +3700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '📅 Week of ' + p.weekOf),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#15803d', marginBottom: 6 } }, 'Prep ' + p.prepDay + ' (' + p.prepTime + ' min)'),
                 p.monThu ? nlH('div', { style: { fontSize: 11, color: '#0f172a' } }, '🍴 Mon/Thu: ' + p.monThu) : null,
@@ -3776,10 +3776,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#fff7ed', borderLeft: '3px solid #ea580c' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7c2d12' } }, s.ingredient + ' → ' + s.substitute),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#9a3412', marginTop: 2 } }, (reason_opts.find(function(o) { return o.value === s.reason; }) || { label: s.reason }).label),
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
               );
             })
           ),
@@ -3818,7 +3818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlInput({ value: form.name, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); }, placeholder: 'Item name' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             nlSelect({ value: form.location, onChange: function(e) { setForm(Object.assign({}, form, { location: e.target.value })); } }, loc_opts),
-            nlH('input', { type: 'date', value: form.expiry, onChange: function(e) { setForm(Object.assign({}, form, { expiry: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'date', value: form.expiry, onChange: function(e) { setForm(Object.assign({}, form, { expiry: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlBtn({ onClick: add }, '+ Add item')
         )
@@ -3833,7 +3833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   var expSoon = it.expiry && (new Date(it.expiry).getTime() - Date.now()) < 86400000 * 5;
                   return nlH('div', { key: it.id, style: { padding: '5px 8px', borderRadius: 6, background: expSoon ? '#fef3c7' : '#fff', border: '1px solid ' + (expSoon ? '#fcd34d' : '#cbd5e1'), fontSize: 11, color: '#3f6212', display: 'flex', alignItems: 'center', gap: 6 } },
                     nlH('span', null, it.name + (it.expiry ? ' (' + it.expiry + (expSoon ? ' ⚠' : '') + ')' : '')),
-                    nlH('button', { onClick: function() { remove(it.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 10, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(it.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, cursor: 'pointer' } }, '✕')
                   );
                 })
               )
@@ -3886,7 +3886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', step: '0.01', value: form.amount, onChange: function(e) { setForm(Object.assign({}, form, { amount: parseFloat(e.target.value) || 0 })); }, placeholder: '$', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'number', step: '0.01', value: form.amount, onChange: function(e) { setForm(Object.assign({}, form, { amount: parseFloat(e.target.value) || 0 })); }, placeholder: '$', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.category, onChange: function(e) { setForm(Object.assign({}, form, { category: e.target.value })); } }, cat_opts)
           ),
           nlInput({ value: form.notes, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'Notes' }),
@@ -3902,9 +3902,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', null, '$' + e.amount.toFixed(2)),
                   ' · ', (cat_opts.find(function(o) { return o.value === e.category; }) || { label: e.category }).label,
                   e.notes ? ' · ' + e.notes : '',
-                  nlH('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 8 } }, nl_relDate(e.date))
+                  nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginLeft: 8 } }, nl_relDate(e.date))
                 ),
-                nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -3950,7 +3950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '3px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '⭐ ' + f.name + ' · ' + (cost_opts.find(function(o) { return o.value === f.cost; }) || { label: '' }).label),
-                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 f.why ? nlH('div', { style: { fontSize: 11, color: '#15803d', fontStyle: 'italic', marginTop: 2 } }, '💚 ' + f.why) : null
               );
@@ -3996,7 +3996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#fff7ed', borderLeft: '4px solid #ea580c' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   nlH('strong', { style: { fontSize: 13, color: '#7c2d12' } }, '⏱ ' + s.recipe),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('ol', { style: { paddingLeft: 18, margin: 0, fontSize: 11, color: '#7c2d12' } },
                   s.steps.map(function(st, i) { return nlH('li', { key: i }, st); })
@@ -4048,13 +4048,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#6b21a8' } }, '🔬 ' + m.original),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(m.date)),
-                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(m.date)),
+                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 4 } }, '⚙ ' + m.changes),
                 nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, (verdict_opts.find(function(o) { return o.value === m.verdict; }) || { label: m.verdict }).label),
-                m.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, m.notes) : null
+                m.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, m.notes) : null
               );
             })
           ),
@@ -4101,7 +4101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: f.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, #fdf4ff, #fae8ff)', borderLeft: '4px solid #c026d3' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#86198f' } }, '🌍 ' + f.food + (f.culture ? ' · ' + f.culture : '')),
-                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 f.occasion ? nlH('div', { style: { fontSize: 11, color: '#86198f', marginTop: 4 } }, '📅 ' + f.occasion) : null,
                 f.whoMakes ? nlH('div', { style: { fontSize: 11, color: '#86198f', marginTop: 2 } }, '👨‍👩‍👧 ' + f.whoMakes) : null,
@@ -4152,7 +4152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: r.id, style: { padding: 12, borderRadius: 10, background: '#fef3c7', borderLeft: '5px solid #a16207' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 14, color: '#78350f' } }, '📜 ' + r.name + (r.source ? ' (' + r.source + ')' : '')),
-                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 r.ingredients ? nlH('div', { style: { fontSize: 11, color: '#78350f', whiteSpace: 'pre-wrap', marginTop: 4 } }, nlH('strong', null, '🛒 Ingredients: '), r.ingredients) : null,
                 r.method ? nlH('div', { style: { fontSize: 11, color: '#78350f', whiteSpace: 'pre-wrap', marginTop: 4 } }, nlH('strong', null, '👩‍🍳 Method: '), r.method) : null,
@@ -4224,9 +4224,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { fontSize: 12, color: '#0f172a' } },
                   nlH('strong', null, e.food), ' · ',
                   (verdict_opts.find(function(o) { return o.value === e.verdict; }) || { label: e.verdict }).label,
-                  e.sensoryNote ? nlH('span', { style: { color: '#475569', fontStyle: 'italic', marginLeft: 6 } }, ' — ' + e.sensoryNote) : null
+                  e.sensoryNote ? nlH('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', marginLeft: 6 } }, ' — ' + e.sensoryNote) : null
                 ),
-                nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -4278,7 +4278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: v.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '4px solid #84cc16' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🧭 ' + v.value),
-                  nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 v.why ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 4 } }, '💚 ' + v.why) : null,
                 v.actions ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '🎯 ' + v.actions) : null
@@ -4323,7 +4323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: '#fdf2f8', borderLeft: '4px solid #ec4899' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#9f1239' } }, '💖 ' + t.tradition),
-                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 t.when ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 4 } }, '📅 ' + t.when) : null,
                 t.who ? nlH('div', { style: { fontSize: 11, color: '#9f1239' } }, '👨‍👩‍👧 ' + t.who) : null,
@@ -4380,7 +4380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: '#ecfdf5', borderLeft: '3px solid #10b981' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#065f46' } }, '💚 ' + f.food),
-                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2 } }, (ctx_opts.find(function(o) { return o.value === f.context; }) || { label: f.context }).label),
                 f.notes ? nlH('div', { style: { fontSize: 10, color: '#065f46', marginTop: 2, fontStyle: 'italic' } }, f.notes) : null
@@ -4444,12 +4444,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#6b21a8' } }, '🌱 ' + t.food),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(t.date)),
-                    nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(t.date)),
+                    nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#6b21a8', marginTop: 2 } }, (tasted_opts.find(function(o) { return o.value === t.tasted; }) || { label: t.tasted }).label + ' · ' + (verdict_opts.find(function(o) { return o.value === t.verdict; }) || { label: t.verdict }).label),
-                t.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, t.notes) : null
+                t.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, t.notes) : null
               );
             })
           ),
@@ -4495,7 +4495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: e.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🌎 ' + e.food + (e.culture ? ' (' + e.culture + ')' : '')),
-                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 e.context ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4 } }, '📍 ' + e.context) : null,
                 e.verdict ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + e.verdict) : null
@@ -4537,7 +4537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlBodyNote(),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          nlH('input', { type: 'date', value: form.weekOf, onChange: function(e) { setForm(Object.assign({}, form, { weekOf: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+          nlH('input', { type: 'date', value: form.weekOf, onChange: function(e) { setForm(Object.assign({}, form, { weekOf: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
           days.map(function(d) {
             return nlH('div', { key: d, style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
               nlH('label', { style: { fontSize: 12, color: '#075985', fontWeight: 700, alignSelf: 'center' } }, d.charAt(0).toUpperCase() + d.slice(1)),
@@ -4558,7 +4558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: w.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '📅 Week of ' + w.weekOf),
-                  nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, fontSize: 10, textAlign: 'center' } },
                   days.map(function(d) {
@@ -4568,7 +4568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     );
                   })
                 ),
-                w.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 6, fontStyle: 'italic' } }, w.notes) : null
+                w.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 6, fontStyle: 'italic' } }, w.notes) : null
               );
             })
           ),
@@ -4612,8 +4612,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#7c2d12' } }, '🔄 with ' + s.friend),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#7c2d12', marginTop: 4 } }, '🍱 They: ' + s.whatTheyHad + ' · I: ' + s.whatIHad),
@@ -4661,13 +4661,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#155e75' } }, '🏫 ' + s.chose),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2, whiteSpace: 'pre-wrap' } }, '📋 Menu: ' + s.items),
-                s.missedOpportunity ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, '👀 Skipped: ' + s.missedOpportunity) : null,
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
+                s.missedOpportunity ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '👀 Skipped: ' + s.missedOpportunity) : null,
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
               );
             })
           ),
@@ -4730,8 +4730,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: l.ate === 'yes' ? '#854d0e' : '#7f1d1d' } }, l.ate === 'yes' ? '☀ ' + l.what : '⏭ Skipped'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.ate === 'yes' ? nlH('div', { style: { fontSize: 10, color: '#854d0e', marginTop: 2 } }, (source_opts.find(function(o) { return o.value === l.source; }) || { label: l.source }).label) : (l.whyNot ? nlH('div', { style: { fontSize: 10, color: '#7f1d1d', marginTop: 2, fontStyle: 'italic' } }, l.whyNot) : null)
@@ -4781,7 +4781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.snack, onChange: function(e) { setForm(Object.assign({}, form, { snack: e.target.value })); }, placeholder: 'Snack' }),
           nlSelect({ value: form.purpose, onChange: function(e) { setForm(Object.assign({}, form, { purpose: e.target.value })); } }, purpose_opts),
-          nlH('input', { type: 'date', value: form.expiry, onChange: function(e) { setForm(Object.assign({}, form, { expiry: e.target.value })); }, placeholder: 'Expiry', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+          nlH('input', { type: 'date', value: form.expiry, onChange: function(e) { setForm(Object.assign({}, form, { expiry: e.target.value })); }, placeholder: 'Expiry', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
           nlBtn({ onClick: add }, '+ Add stash item')
         )
       ),
@@ -4806,7 +4806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   (purpose_opts.find(function(o) { return o.value === s.purpose; }) || { label: s.purpose }).label,
                   s.expiry ? nlH('span', { style: { marginLeft: 6, fontSize: 10 } }, '(exp ' + s.expiry + (expSoon ? ' ⚠' : '') + ')') : null
                 ),
-                nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -4853,12 +4853,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#faf5ff', borderLeft: '4px solid #8b5cf6' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#6b21a8' } }, '🏃 ' + p.activity),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.preFuel ? nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, '⏰ ' + p.timing + ' min before: ' + p.preFuel) : null,
                 p.duringFuel ? nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, '⚡ During: ' + p.duringFuel) : null,
                 p.postFuel ? nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, '🔧 Recovery: ' + p.postFuel) : null,
-                p.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, p.notes) : null
+                p.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, p.notes) : null
               );
             })
           ),
@@ -4915,13 +4915,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#fef2f2', borderLeft: '4px solid #dc2626' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 13, color: '#7f1d1d' } }, '📝 ' + p.testName),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.breakfast ? nlH('div', { style: { fontSize: 11, color: '#7f1d1d' } }, '☀ Breakfast: ' + p.breakfast) : null,
                 p.duringSnack ? nlH('div', { style: { fontSize: 11, color: '#7f1d1d' } }, '🍫 Mid-test: ' + p.duringSnack) : null,
                 p.postReward ? nlH('div', { style: { fontSize: 11, color: '#7f1d1d' } }, '🎉 After: ' + p.postReward) : null,
                 nlH('div', { style: { fontSize: 11, color: '#7f1d1d' } }, '💤 Sleep goal: ' + p.sleepGoal + 'hrs'),
-                p.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, p.notes) : null
+                p.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, p.notes) : null
               );
             })
           ),
@@ -4953,11 +4953,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#155e75', fontWeight: 700 } }, 'Breakfast time'),
-              nlH('input', { type: 'time', value: form.breakfastTime, onChange: function(e) { setForm(Object.assign({}, form, { breakfastTime: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'time', value: form.breakfastTime, onChange: function(e) { setForm(Object.assign({}, form, { breakfastTime: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#155e75', fontWeight: 700 } }, 'Last meal'),
-              nlH('input', { type: 'time', value: form.lastMealTime, onChange: function(e) { setForm(Object.assign({}, form, { lastMealTime: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'time', value: form.lastMealTime, onChange: function(e) { setForm(Object.assign({}, form, { lastMealTime: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             )
           ),
           nlTextarea({ value: form.items, onChange: function(e) { setForm(Object.assign({}, form, { items: e.target.value })); }, placeholder: 'Items I\'m packing (1 per line)', rows: 5 }),
@@ -4971,7 +4971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🎒 ' + p.event),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '🕒 ' + p.breakfastTime + ' → ' + p.lastMealTime),
                 nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🥡 ' + p.items)
@@ -5014,7 +5014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.activity, onChange: function(e) { setForm(Object.assign({}, form, { activity: e.target.value })); }, placeholder: 'Activity / sport' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', value: form.duration, onChange: function(e) { setForm(Object.assign({}, form, { duration: parseInt(e.target.value) || 0 })); }, placeholder: 'min', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.duration, onChange: function(e) { setForm(Object.assign({}, form, { duration: parseInt(e.target.value) || 0 })); }, placeholder: 'min', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.intensity, onChange: function(e) { setForm(Object.assign({}, form, { intensity: e.target.value })); } }, int_opts)
           ),
           nlInput({ value: form.pre, onChange: function(e) { setForm(Object.assign({}, form, { pre: e.target.value })); }, placeholder: 'Pre-fuel' }),
@@ -5035,8 +5035,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '🏃 ' + s.activity + ' · ' + s.duration + ' min · ' + (int_opts.find(function(o) { return o.value === s.intensity; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 s.pre ? nlH('div', { style: { fontSize: 10, color: '#7f1d1d', marginTop: 2 } }, '⏰ Pre: ' + s.pre) : null,
@@ -5081,21 +5081,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#1e40af', fontWeight: 700 } }, 'Pre-mass (kg)'),
-              nlH('input', { type: 'number', step: '0.1', value: form.preMassKg, onChange: function(e) { setForm(Object.assign({}, form, { preMassKg: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', step: '0.1', value: form.preMassKg, onChange: function(e) { setForm(Object.assign({}, form, { preMassKg: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#1e40af', fontWeight: 700 } }, 'Post-mass (kg)'),
-              nlH('input', { type: 'number', step: '0.1', value: form.postMassKg, onChange: function(e) { setForm(Object.assign({}, form, { postMassKg: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', step: '0.1', value: form.postMassKg, onChange: function(e) { setForm(Object.assign({}, form, { postMassKg: e.target.value })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             )
           ),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#1e40af', fontWeight: 700 } }, 'Fluid drunk (mL)'),
-              nlH('input', { type: 'number', value: form.fluidIntakeMl, onChange: function(e) { setForm(Object.assign({}, form, { fluidIntakeMl: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.fluidIntakeMl, onChange: function(e) { setForm(Object.assign({}, form, { fluidIntakeMl: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#1e40af', fontWeight: 700 } }, 'Duration (min)'),
-              nlH('input', { type: 'number', value: form.durationMin, onChange: function(e) { setForm(Object.assign({}, form, { durationMin: parseInt(e.target.value) || 60 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.durationMin, onChange: function(e) { setForm(Object.assign({}, form, { durationMin: parseInt(e.target.value) || 60 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             )
           ),
           nlBtn({ onClick: add }, '+ Calculate + save')
@@ -5108,7 +5108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: '#dbeafe', borderLeft: '4px solid #0284c7' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#1e40af' } }, '💧 ' + t.activity + ' — ' + t.rateMlHr + ' mL/hr'),
-                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 2 } }, 'Loss: ' + t.lossKg + ' kg over ' + t.durationMin + ' min · drank ' + t.fluidIntakeMl + ' mL'),
                 t.conditions ? nlH('div', { style: { fontSize: 10, color: '#1e40af' } }, '🌡 ' + t.conditions) : null,
@@ -5172,13 +5172,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🔧 ' + m.workout),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(m.date)),
-                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(m.date)),
+                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '🍽 ' + m.meal + ' (' + m.minutesAfter + ' min after)'),
                 nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, 'Next-day feel: ' + m.felt + '/10'),
-                m.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, m.notes) : null
+                m.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, m.notes) : null
               );
             })
           ),
@@ -5207,7 +5207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.event, onChange: function(e) { setForm(Object.assign({}, form, { event: e.target.value })); }, placeholder: 'Event / opponent' }),
-          nlH('input', { type: 'time', value: form.gameTime, onChange: function(e) { setForm(Object.assign({}, form, { gameTime: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+          nlH('input', { type: 'time', value: form.gameTime, onChange: function(e) { setForm(Object.assign({}, form, { gameTime: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
           nlInput({ value: form.breakfast, onChange: function(e) { setForm(Object.assign({}, form, { breakfast: e.target.value })); }, placeholder: 'Day-of breakfast (familiar foods only)' }),
           nlInput({ value: form.preGame, onChange: function(e) { setForm(Object.assign({}, form, { preGame: e.target.value })); }, placeholder: 'Pre-game (2-3 hrs before)' }),
           nlInput({ value: form.bench, onChange: function(e) { setForm(Object.assign({}, form, { bench: e.target.value })); }, placeholder: 'Bench/sideline (water + small carbs)' }),
@@ -5224,7 +5224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: '#fff7ed', borderLeft: '5px solid #ea580c' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   nlH('strong', { style: { fontSize: 14, color: '#7c2d12' } }, '🏆 ' + p.event + ' · ' + p.gameTime),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.breakfast ? nlH('div', { style: { fontSize: 11, color: '#7c2d12' } }, '☀ Breakfast: ' + p.breakfast) : null,
                 p.preGame ? nlH('div', { style: { fontSize: 11, color: '#7c2d12' } }, '⏰ Pre-game: ' + p.preGame) : null,
@@ -5292,14 +5292,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#6b21a8' } }, '🏃 ' + r.distance),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 r.preFuel ? nlH('div', { style: { fontSize: 10, color: '#6b21a8', marginTop: 2 } }, 'Pre: ' + r.preFuel) : null,
                 r.duringFuel ? nlH('div', { style: { fontSize: 10, color: '#6b21a8' } }, 'During: ' + r.duringFuel) : null,
                 (r.cramping || r.glycogenWall) ? nlH('div', { style: { fontSize: 10, color: '#dc2626', marginTop: 2 } }, (r.cramping ? '⚠ Cramps ' : '') + (r.glycogenWall ? '⚠ Wall' : '')) : null,
-                r.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, r.notes) : null
+                r.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, r.notes) : null
               );
             })
           ),
@@ -5340,11 +5340,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#065f46', fontWeight: 700 } }, 'Sodium (mg)'),
-              nlH('input', { type: 'number', value: form.sodium, onChange: function(e) { setForm(Object.assign({}, form, { sodium: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.sodium, onChange: function(e) { setForm(Object.assign({}, form, { sodium: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#065f46', fontWeight: 700 } }, 'Potassium (mg)'),
-              nlH('input', { type: 'number', value: form.potassium, onChange: function(e) { setForm(Object.assign({}, form, { potassium: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.potassium, onChange: function(e) { setForm(Object.assign({}, form, { potassium: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             )
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
@@ -5361,7 +5361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             logs.slice(0, 30).map(function(l) {
               return nlH('div', { key: l.id, style: { padding: 8, borderRadius: 6, background: '#ecfdf5', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
                 nlH('span', { style: { color: '#065f46' } }, l.source + ' · Na ' + l.sodium + 'mg · K ' + l.potassium + 'mg'),
-                nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -5411,11 +5411,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: e.id, style: { padding: 10, borderRadius: 8, background: '#fffbeb', borderLeft: '4px solid #f59e0b' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#78350f' } }, '🏆 ' + e.event + ' (' + e.daysOut + ' days out)'),
-                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, 'Target: ' + e.carbsPerKg + ' g/kg body weight'),
                 e.plan ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 4, whiteSpace: 'pre-wrap' } }, '📋 ' + e.plan) : null,
-                e.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, e.notes) : null
+                e.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, e.notes) : null
               );
             })
           ),
@@ -5464,8 +5464,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#0f766e' } }, '🛌 Rest day · felt ' + l.felt + '/10 next session'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.ate ? nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 2, whiteSpace: 'pre-wrap' } }, '🍴 ' + l.ate) : null,
@@ -5519,11 +5519,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#dbeafe', borderLeft: '4px solid #3b82f6' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#1e40af' } }, '📅 ' + s.sport + ' — ' + (season_opts.find(function(o) { return o.value === s.season; }) || { label: '' }).label),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 s.focus ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 2 } }, '🎯 ' + s.focus) : null,
                 s.meals ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🍴 ' + s.meals) : null,
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, s.notes) : null
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, s.notes) : null
               );
             })
           ),
@@ -5590,7 +5590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: q.id, style: { padding: 10, borderRadius: 8, background: q.status === 'asked' ? '#dcfce7' : '#fef2f2', borderLeft: '4px solid ' + pcolor } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   nlH('strong', { style: { fontSize: 12, color: q.status === 'asked' ? '#166534' : '#7f1d1d' } }, (q.status === 'asked' ? '✓ ' : '⌛ ') + (q.topic ? '[' + q.topic + '] ' : '') + q.question),
-                  nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 q.status === 'asked' && q.answer ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4, fontStyle: 'italic' } }, '💬 ' + q.answer) : nlBtn({ onClick: function() { var ans = prompt('Coach said:'); if (ans) markAsked(q.id, ans); }, variant: 'secondary' }, 'Mark asked + record answer')
               );
@@ -5660,12 +5660,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: a.id, style: { padding: 12, borderRadius: 10, background: '#fff', borderLeft: '5px solid ' + (sevc[a.severity] || '#94a3b8') } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#0f172a' } }, '⚠ ' + a.allergen + (a.epipen ? ' 💉' : '')),
-                  nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 12, color: sevc[a.severity], fontWeight: 700, marginTop: 2 } }, (sev_opts.find(function(o) { return o.value === a.severity; }) || { label: '' }).label),
-                a.reactionType ? nlH('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, '🤒 Reaction: ' + a.reactionType) : null,
-                a.doctor ? nlH('div', { style: { fontSize: 11, color: '#475569', marginTop: 2 } }, '🩺 Allergist: ' + a.doctor) : null,
-                a.notes ? nlH('div', { style: { fontSize: 11, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, '📝 ' + a.notes) : null
+                a.reactionType ? nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4 } }, '🤒 Reaction: ' + a.reactionType) : null,
+                a.doctor ? nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '🩺 Allergist: ' + a.doctor) : null,
+                a.notes ? nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, '📝 ' + a.notes) : null
               );
             })
           ),
@@ -5723,8 +5723,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7c2d12' } }, '⚠ ' + r.food + ' · sev ' + r.severity + '/10' + (r.erVisit ? ' 🚑' : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#7c2d12', marginTop: 2 } }, '⏱ ' + r.minutes + ' min after eating'),
@@ -5794,11 +5794,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#ede9fe', borderLeft: '4px solid #7c3aed' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '💊 ' + m.medication),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.interaction ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 4 } }, m.interaction) : null,
                 m.timing ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '⏰ ' + m.timing) : null,
-                m.source ? nlH('div', { style: { fontSize: 10, color: '#64748b', marginTop: 2, fontStyle: 'italic' } }, 'Source: ' + m.source) : null
+                m.source ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontStyle: 'italic' } }, 'Source: ' + m.source) : null
               );
             })
           ),
@@ -5862,8 +5862,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#713f12' } }, '🌾 ' + l.food),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#713f12', marginTop: 2 } }, (sit_opts.find(function(o) { return o.value === l.situation; }) || { label: '' }).label + ' · ' + (gluten_opts.find(function(o) { return o.value === l.glutenStatus; }) || { label: '' }).label),
@@ -5920,8 +5920,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#075985' } }, '🥛 ' + l.food + (l.lactaid ? ' 💊' : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.symptoms ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '🤒 ' + l.symptoms + ' (sev ' + l.severity + ')') : null
@@ -5993,8 +5993,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🦠 ' + l.meal),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, (fod_opts.find(function(o) { return o.value === l.fodmap; }) || { label: '' }).label + ' · stress ' + l.stress + ' · sleep ' + l.sleep + 'hr'),
@@ -6034,20 +6034,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#5b21b6', fontWeight: 700 } }, 'Carbs (g)'),
-              nlH('input', { type: 'number', value: form.carbs, onChange: function(e) { setForm(Object.assign({}, form, { carbs: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.carbs, onChange: function(e) { setForm(Object.assign({}, form, { carbs: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#5b21b6', fontWeight: 700 } }, 'Pre BG'),
-              nlH('input', { type: 'number', value: form.preBG, onChange: function(e) { setForm(Object.assign({}, form, { preBG: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.preBG, onChange: function(e) { setForm(Object.assign({}, form, { preBG: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#5b21b6', fontWeight: 700 } }, 'Post BG'),
-              nlH('input', { type: 'number', value: form.postBG, onChange: function(e) { setForm(Object.assign({}, form, { postBG: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', value: form.postBG, onChange: function(e) { setForm(Object.assign({}, form, { postBG: parseInt(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             )
           ),
           nlH('div', null,
             nlH('label', { style: { fontSize: 11, color: '#5b21b6', fontWeight: 700 } }, 'Insulin (units)'),
-            nlH('input', { type: 'number', step: '0.5', value: form.insulinUnits, onChange: function(e) { setForm(Object.assign({}, form, { insulinUnits: parseFloat(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', step: '0.5', value: form.insulinUnits, onChange: function(e) { setForm(Object.assign({}, form, { insulinUnits: parseFloat(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#5b21b6' } },
             nlH('input', { type: 'checkbox', checked: form.exercise, onChange: function(e) { setForm(Object.assign({}, form, { exercise: e.target.checked })); } }),
@@ -6065,12 +6065,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '🩸 ' + l.meal + ' · ' + l.carbs + 'g carbs · ' + l.insulinUnits + 'u'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, 'BG: ' + l.preBG + ' → ' + l.postBG + (l.exercise ? ' 🏃' : '')),
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
               );
             })
           ),
@@ -6137,12 +6137,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: l.migraine ? '#7f1d1d' : '#166534' } }, l.migraine ? '🤕 Migraine day' : '✓ No migraine'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
-                nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, 'Sleep ' + l.sleep + 'hr · Stress ' + l.stress + (l.hormones !== 'na' ? ' · ' + l.hormones : '') + (l.weather ? ' · ' + l.weather : '')),
-                l.foods24h ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '🍴 ' + l.foods24h) : null
+                nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, 'Sleep ' + l.sleep + 'hr · Stress ' + l.stress + (l.hormones !== 'na' ? ' · ' + l.hormones : '') + (l.weather ? ' · ' + l.weather : '')),
+                l.foods24h ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '🍴 ' + l.foods24h) : null
               );
             })
           ),
@@ -6214,12 +6214,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#9f1239' } }, '🌸 ' + l.meal + ' · ' + (gl_opts.find(function(o) { return o.value === l.glycemicLoad; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#9f1239', marginTop: 2 } }, 'P ' + l.protein + 'g · Fib ' + l.fiber + 'g · ' + (mv_opts.find(function(o) { return o.value === l.movement; }) || { label: '' }).label + ' · E ' + l.energy + '/10'),
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
               );
             })
           ),
@@ -6248,7 +6248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.provider, onChange: function(e) { setForm(Object.assign({}, form, { provider: e.target.value })); }, placeholder: 'Provider (Dr/RD/RN name + role)' }),
-          nlH('input', { type: 'date', value: form.date, onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+          nlH('input', { type: 'date', value: form.date, onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
           nlInput({ value: form.topic, onChange: function(e) { setForm(Object.assign({}, form, { topic: e.target.value })); }, placeholder: 'Topic' }),
           nlTextarea({ value: form.instructions, onChange: function(e) { setForm(Object.assign({}, form, { instructions: e.target.value })); }, placeholder: 'Instructions (in their words)', rows: 5 }),
           nlInput({ value: form.followup, onChange: function(e) { setForm(Object.assign({}, form, { followup: e.target.value })); }, placeholder: 'Follow-up (next visit, labs, etc.)' }),
@@ -6262,9 +6262,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: n.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🩺 ' + n.topic + ' — ' + n.provider),
-                  nlH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
-                nlH('div', { style: { fontSize: 10, color: '#64748b', marginTop: 2 } }, '📅 ' + n.date),
+                nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } }, '📅 ' + n.date),
                 n.instructions ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 6, whiteSpace: 'pre-wrap' } }, n.instructions) : null,
                 n.followup ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 6, fontStyle: 'italic' } }, '⏭ ' + n.followup) : null
               );
@@ -6327,8 +6327,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#0f766e' } }, e.choice + ' · ' + (lean_opts.find(function(o) { return o.value === e.leaningTo; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 e.why ? nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 2 } }, '💭 ' + e.why) : null,
@@ -6381,8 +6381,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '😰 ' + l.situation + ' (' + l.anxiety + '/10)'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.thoughts ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + l.thoughts) : null,
@@ -6439,8 +6439,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#065f46' } }, '🌱 Recovery meal logged'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2 } }, '💭 ' + l.momentDescription),
@@ -6493,8 +6493,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#9f1239' } }, '🌷 ' + p.trigger),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(p.date)),
-                    nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(p.date)),
+                    nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 p.selfCritical ? nlH('div', { style: { fontSize: 11, color: '#dc2626', marginTop: 2, fontStyle: 'italic' } }, '😤 Critic: ' + p.selfCritical) : null,
@@ -6556,8 +6556,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '⚠ ' + e.source + ' · impact ' + e.impact + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 e.message ? nlH('div', { style: { fontSize: 11, color: '#7f1d1d', marginTop: 2, fontStyle: 'italic' } }, '"' + e.message + '"') : null,
@@ -6620,7 +6620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: a.id, style: { padding: 10, borderRadius: 8, background: bg } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f172a' } }, '📱 ' + a.platform + ' · ' + (vibe_opts.find(function(o) { return o.value === a.vibe; }) || { label: '' }).label),
-                  nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 a.topAccounts ? nlH('div', { style: { fontSize: 11, color: '#0f172a', marginTop: 4, whiteSpace: 'pre-wrap' } }, '👀 ' + a.topAccounts) : null,
                 a.actions ? nlH('div', { style: { fontSize: 11, color: '#0f172a', marginTop: 4 } }, '⚡ ' + a.actions) : null
@@ -6691,7 +6691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#ecfdf5', borderLeft: '4px solid #10b981' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#065f46' } }, '💚 ' + s.resource),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2 } }, (kind_opts.find(function(o) { return o.value === s.kind; }) || { label: s.kind }).label),
                 s.why ? nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2, fontStyle: 'italic' } }, '💡 ' + s.why) : null
@@ -6738,11 +6738,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: '#fef2f2', borderLeft: '4px solid #dc2626' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#7f1d1d' } }, '☎ ' + c.name + (c.relation ? ' (' + c.relation + ')' : '')),
-                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 c.when ? nlH('div', { style: { fontSize: 11, color: '#7f1d1d', marginTop: 4 } }, '⏰ ' + c.when) : null,
                 c.how ? nlH('div', { style: { fontSize: 11, color: '#7f1d1d', marginTop: 2 } }, '📞 ' + c.how) : null,
-                c.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, c.notes) : null
+                c.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, c.notes) : null
               );
             })
           ),
@@ -6789,8 +6789,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#9f1239' } }, '🌷 ' + (e.trigger || 'Body thought entry')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 e.thought ? nlH('div', { style: { fontSize: 11, color: '#dc2626', marginTop: 2 } }, '😤 ' + e.thought) : null,
@@ -6855,11 +6855,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#faf5ff', borderLeft: '4px solid #7c3aed' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '🗣 ' + (s.situation || 'Script')),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 s.personSays ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 4 } }, '👤 They: ' + s.personSays) : null,
                 s.myScript ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '💪 Me: ' + s.myScript) : null,
-                s.context ? nlH('div', { style: { fontSize: 10, color: '#64748b', marginTop: 2, fontStyle: 'italic' } }, s.context) : null
+                s.context ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontStyle: 'italic' } }, s.context) : null
               );
             })
           ),
@@ -6905,8 +6905,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#065f46' } }, '💚 Reflection'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 r.today ? nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🌱 ' + r.today) : null,
@@ -6955,8 +6955,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🙏 ' + e.food),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 e.whoMade ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '👨‍🍳 ' + e.whoMade) : null,
@@ -7002,7 +7002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 12, borderRadius: 10, background: '#f0fdfa', borderLeft: '5px solid #0d9488' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#0f766e' } }, '📖 ' + c.ageOrPeriod),
-                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 4, whiteSpace: 'pre-wrap' } }, c.story),
                 c.insight ? nlH('div', { style: { fontSize: 11, color: '#0d9488', marginTop: 8, fontStyle: 'italic', borderTop: '1px solid #5eead4', paddingTop: 8 } }, '💡 ' + c.insight) : null
@@ -7052,7 +7052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: v.id, style: { padding: 12, borderRadius: 10, background: '#eff6ff', borderLeft: '5px solid #3b82f6' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#1e40af' } }, '🔮 Me in ' + v.years + ' years'),
-                  nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 v.vision ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 4, whiteSpace: 'pre-wrap' } }, v.vision) : null,
                 v.habits ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 4 } }, '🔁 Habits: ' + v.habits) : null,
@@ -7099,7 +7099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '4px solid #84cc16' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '⭐ ' + m.name),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.whoAreThey ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '👤 ' + m.whoAreThey) : null,
                 m.whatTheyDo ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '🍽 ' + m.whatTheyDo) : null,
@@ -7161,7 +7161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: q.id, style: { padding: 10, borderRadius: 8, background: '#fef3c7', borderLeft: '4px solid #a16207' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('div', { style: { fontSize: 12, color: '#78350f', fontStyle: 'italic' } }, q.quote),
-                  nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 q.who ? nlH('div', { style: { fontSize: 10, color: '#a16207', marginTop: 2 } }, '— ' + q.who) : null,
                 q.why ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 4 } }, '💭 ' + q.why) : null
@@ -7207,7 +7207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: d.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🧭 ' + d.decision),
-                  nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 d.chose ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4 } }, '✓ ' + d.chose) : null,
                 d.reasoning ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + d.reasoning) : null,
@@ -7252,7 +7252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: f.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, #fdf2f8, #fae8ff)', borderLeft: '5px solid #ec4899' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#9f1239' } }, '🎉 ' + f.food + (f.occasion ? ' (' + f.occasion + ')' : '')),
-                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 f.memory ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 4, fontStyle: 'italic' } }, '💖 ' + f.memory) : null
               );
@@ -7291,7 +7291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlSection('My Sunday Prep Ritual', 'A repeating ritual makes weekly self-care invisible', '#16a34a'),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          nlH('input', { type: 'date', value: form.weekOf, onChange: function(e) { setForm(Object.assign({}, form, { weekOf: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+          nlH('input', { type: 'date', value: form.weekOf, onChange: function(e) { setForm(Object.assign({}, form, { weekOf: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 } },
             items.map(function(i) {
               var checked = !!form.checked[i.key];
@@ -7313,10 +7313,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: r.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '☀ Week of ' + r.weekOf + ' (' + doneCount + '/4 done)'),
-                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 r.week ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4, whiteSpace: 'pre-wrap' } }, '📋 ' + r.week) : null,
-                r.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
+                r.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
               );
             })
           ),
@@ -7364,7 +7364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '🤝 ' + f.friend + ' · ' + f.activity),
-                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 f.what ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '🍴 ' + f.what + ' · ' + f.frequency) : null,
                 f.why ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2, fontStyle: 'italic' } }, '💚 ' + f.why) : null
@@ -7434,12 +7434,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🌽 ' + e.produce + (e.farm ? ' (' + e.farm + ')' : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, (src_opts.find(function(o) { return o.value === e.source; }) || { label: e.source }).label + ' · ' + (when_opts.find(function(o) { return o.value === e.when; }) || { label: e.when }).label),
-                e.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, e.notes) : null
+                e.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, e.notes) : null
               );
             })
           ),
@@ -7489,8 +7489,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🛍 ' + v.market),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(v.date)),
-                    nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(v.date)),
+                    nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 v.purchases ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2, whiteSpace: 'pre-wrap' } }, '🛒 ' + v.purchases) : null,
@@ -7558,8 +7558,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#155e75' } }, '🐟 ' + l.seafood),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#155e75', marginTop: 2 } }, (src_opts.find(function(o) { return o.value === l.source; }) || { label: l.source }).label + ' · ' + (sust_opts.find(function(o) { return o.value === l.sustainability; }) || { label: '' }).label),
@@ -7613,12 +7613,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#3f6212' } }, '🌱 ' + h.crop + ' · ' + h.amount + ' · ' + (q_opts.find(function(o) { return o.value === h.quality; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(h.date)),
-                    nlH('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(h.date)),
+                    nlH('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 h.usedFor ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '🍽 ' + h.usedFor) : null,
-                h.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, h.notes) : null
+                h.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, h.notes) : null
               );
             })
           ),
@@ -7675,8 +7675,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#3f6212' } }, '🍄 ' + e.found + (e.verified ? ' ✓' : ' ⚠')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 e.location ? nlH('div', { style: { fontSize: 10, color: '#3f6212', marginTop: 2 } }, '📍 ' + e.location + ' · ' + e.amount) : null,
@@ -7737,7 +7737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, (s_opts.find(function(o) { return o.value === p.season; }) || { label: p.season }).label),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.proteins ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '🥩 ' + p.proteins) : null,
                 p.vegetables ? nlH('div', { style: { fontSize: 11, color: '#166534' } }, '🥬 ' + p.vegetables) : null,
@@ -7797,7 +7797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: '#e0f2fe', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, (f.delivered ? '✓ ' : '✏ ') + (k_opts.find(function(o) { return o.value === f.kind; }) || { label: f.kind }).label + ': ' + f.menuItem),
-                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 f.specific ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 4, whiteSpace: 'pre-wrap' } }, f.specific) : null
               );
@@ -7851,12 +7851,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '🦞 ' + r.place + ' · ' + r.rating + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#7f1d1d', marginTop: 2 } }, (style_opts.find(function(o) { return o.value === r.style; }) || { label: '' }).label + (r.price ? ' · ' + r.price : '')),
-                r.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, r.notes) : null
+                r.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, r.notes) : null
               );
             })
           ),
@@ -7908,12 +7908,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#78350f' } }, '🍁 ' + (act_opts.find(function(o) { return o.value === l.activity; }) || { label: '' }).label + (l.producer ? ' · ' + l.producer : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#78350f', marginTop: 2 } }, 'Grade ' + l.grade + (l.amount ? ' · ' + l.amount : '')),
-                l.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
+                l.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, l.notes) : null
               );
             })
           ),
@@ -7960,12 +7960,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '🍴 ' + v.restaurant + (v.town ? ' · ' + v.town : '') + ' · ' + v.rating + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(v.date)),
-                    nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(v.date)),
+                    nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 v.ordered ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '🍽 ' + v.ordered) : null,
-                v.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, v.notes) : null
+                v.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, v.notes) : null
               );
             })
           ),
@@ -8048,11 +8048,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '💊 ' + s.supplement + (s.prescribed ? ' 🩺' : '')),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, s.dose + ' · ' + s.frequency),
                 s.reason ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '💡 ' + s.reason) : null,
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
               );
             })
           ),
@@ -8109,8 +8109,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px 100px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Source' }),
-            nlH('input', { type: 'number', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseInt(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'time', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseInt(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'time', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             sources.map(function(s) {
@@ -8122,11 +8122,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       logs.filter(function(l) { return l.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
         logs.filter(function(l) { return l.date === today; }).map(function(l) {
           return nlH('div', { key: l.id, style: { padding: 8, borderRadius: 6, background: '#fee2e2', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#7f1d1d' } }, l.source + ' · ' + l.mg + 'mg · ' + l.time),
-            nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -8167,7 +8167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'time', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'time', value: form.time, onChange: function(e) { setForm(Object.assign({}, form, { time: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlInput({ value: form.what, onChange: function(e) { setForm(Object.assign({}, form, { what: e.target.value })); }, placeholder: 'What I ate' })
           ),
           nlSelect({ value: form.why, onChange: function(e) { setForm(Object.assign({}, form, { why: e.target.value })); } }, why_opts),
@@ -8184,8 +8184,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '🌙 ' + l.time + ' · ' + l.what),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#5b21b6', marginTop: 2 } }, (why_opts.find(function(o) { return o.value === l.why; }) || { label: l.why }).label + (l.priorMeal ? ' · Last full meal: ' + l.priorMeal : ''))
@@ -8231,7 +8231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#faf5ff', borderLeft: '4px solid #a855f7' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#6b21a8' } }, '👨‍🍳 ' + s.class + (s.teacher ? ' · ' + s.teacher : '')),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 s.dishes ? nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, '🍽 ' + s.dishes) : null,
                 s.skills ? nlH('div', { style: { fontSize: 11, color: '#6b21a8', marginTop: 2 } }, '✨ ' + s.skills) : null,
@@ -8278,12 +8278,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🔬 ' + p.topic),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.class ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '🏫 ' + p.class) : null,
                 p.sources ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4, whiteSpace: 'pre-wrap' } }, '📚 Sources: ' + p.sources) : null,
                 p.myConclusion ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4 } }, '💡 ' + p.myConclusion) : null,
-                p.citations ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, Menlo, monospace' } }, p.citations) : null
+                p.citations ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4, whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, Menlo, monospace' } }, p.citations) : null
               );
             })
           ),
@@ -8329,7 +8329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               var labels = { totalC: 'Total carbs (g)', totalP: 'Total protein (g)', totalF: 'Total fat (g)', totalFib: 'Total fiber (g)', totalKcal: 'Total kcal' };
               return nlH('div', { key: key },
                 nlH('label', { style: { fontSize: 11, color: '#3f6212', fontWeight: 700 } }, labels[key]),
-                nlH('input', { type: 'number', value: form[key], onChange: function(e) { var nf = Object.assign({}, form); nf[key] = parseFloat(e.target.value) || 0; setForm(nf); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+                nlH('input', { type: 'number', value: form[key], onChange: function(e) { var nf = Object.assign({}, form); nf[key] = parseFloat(e.target.value) || 0; setForm(nf); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
               );
             })
           ),
@@ -8347,7 +8347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: r.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '4px solid #84cc16' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🧮 ' + r.name + ' (' + r.servings + ' servings)'),
-                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 4 } }, 'Per serving: C ' + r.perServing.c + 'g · P ' + r.perServing.p + 'g · F ' + r.perServing.f + 'g · Fib ' + r.perServing.fib + 'g · ' + r.perServing.kcal + ' kcal')
               );
@@ -8403,8 +8403,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '🥗 ' + s.rdName + ' · ' + (k_opts.find(function(o) { return o.value === s.kind; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 s.goals ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4 } }, '🎯 ' + s.goals) : null,
@@ -8461,7 +8461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: '#f0fdfa', borderLeft: '4px solid #0d9488' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f766e' } }, '⚖ ' + c.change),
-                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 2, fontWeight: 700 } }, 'Imp ' + c.importance + ' · Conf ' + c.confidence + ' · Ready ' + c.readiness),
                 c.barriers ? nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 2 } }, '⚠ ' + c.barriers) : null,
@@ -8514,8 +8514,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#78350f' } }, '🏆 ' + w.win),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(w.date)),
-                    nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(w.date)),
+                    nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, (s_opts.find(function(o) { return o.value === w.sizedAs; }) || { label: '' }).label),
@@ -8554,7 +8554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlBtn({ onClick: copy, variant: 'primary' }, '📋 Copy all data to clipboard (JSON)'),
           nlBtn({ onClick: downloadCsv, variant: 'secondary' }, '⬇ Download CSV summary'),
           nlBtn({ onClick: function() { setShowJson(!showJson); }, variant: 'ghost' }, showJson ? 'Hide preview' : 'Show JSON preview'),
-          showJson ? nlH('pre', { style: { maxHeight: 300, overflow: 'auto', padding: 10, background: '#1e293b', color: '#e2e8f0', borderRadius: 8, fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, jsonStr) : null
+          showJson ? nlH('pre', { style: { maxHeight: 300, overflow: 'auto', padding: 10, background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, jsonStr) : null
         )
       ),
       nlEvidenceFooter('All data lives in your browser — never sent anywhere. Export is for YOU: bring to RD/MD visits, share with parent, save off-device.')
@@ -8619,8 +8619,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#1e40af' } }, '🛌 ' + l.sleepHrs + 'hr · Q ' + l.sleepQuality + '/10 → Energy ' + l.energyNextDay + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.latestMeal ? nlH('div', { style: { fontSize: 10, color: '#1e40af', marginTop: 2 } }, '🍴 ' + l.latestMeal) : null,
@@ -8667,7 +8667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', value: form.movementMin, onChange: function(e) { setForm(Object.assign({}, form, { movementMin: parseInt(e.target.value) || 0 })); }, placeholder: 'min', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.movementMin, onChange: function(e) { setForm(Object.assign({}, form, { movementMin: parseInt(e.target.value) || 0 })); }, placeholder: 'min', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.kind, onChange: function(e) { setForm(Object.assign({}, form, { kind: e.target.value })); } }, k_opts)
           ),
           nlInput({ value: form.preFood, onChange: function(e) { setForm(Object.assign({}, form, { preFood: e.target.value })); }, placeholder: 'Pre-movement food' }),
@@ -8693,8 +8693,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🏃 ' + l.movementMin + ' min · ' + (k_opts.find(function(o) { return o.value === l.kind; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.preFood ? nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, '⏰ Pre: ' + l.preFood) : null,
@@ -8764,12 +8764,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#faf5ff', borderLeft: '4px solid #7c3aed' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '💬 ' + m.topic),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.whatToSay ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 4, whiteSpace: 'pre-wrap', fontStyle: 'italic' } }, '"' + m.whatToSay + '"') : null,
                 nlH('div', { style: { fontSize: 10, color: '#5b21b6', marginTop: 4 } }, '🎭 ' + (t_opts.find(function(o) { return o.value === m.tone; }) || { label: '' }).label),
                 m.boundary ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '🛡 ' + m.boundary) : null,
-                m.context ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, '📍 ' + m.context) : null
+                m.context ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '📍 ' + m.context) : null
               );
             })
           ),
@@ -8829,7 +8829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: e.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, (e.sent ? '✓ ' : '✏ ') + e.subject + ' (to ' + e.teacher + ')'),
-                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 e.body ? nlH('pre', { style: { fontSize: 11, color: '#075985', marginTop: 4, whiteSpace: 'pre-wrap', fontFamily: 'inherit' } }, e.body) : null
               );
@@ -8881,7 +8881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlInput({ value: form.accommodation, onChange: function(e) { setForm(Object.assign({}, form, { accommodation: e.target.value })); }, placeholder: 'Accommodation' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             nlInput({ value: form.who, onChange: function(e) { setForm(Object.assign({}, form, { who: e.target.value })); }, placeholder: 'Who I asked' }),
-            nlH('input', { type: 'date', value: form.dateRequested, onChange: function(e) { setForm(Object.assign({}, form, { dateRequested: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'date', value: form.dateRequested, onChange: function(e) { setForm(Object.assign({}, form, { dateRequested: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7f1d1d', fontWeight: 700 } },
             nlH('input', { type: 'checkbox', checked: form.granted, onChange: function(e) { setForm(Object.assign({}, form, { granted: e.target.checked })); } }),
@@ -8907,12 +8907,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: i.granted ? '#166534' : '#7f1d1d' } }, (i.granted ? '✓ ' : '⌛ ') + i.accommodation),
                   nlH('div', null,
-                    nlH('button', { onClick: function() { toggleGranted(i.id); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 4 } }, i.granted ? 'Mark pending' : 'Mark granted'),
-                    nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { toggleGranted(i.id); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 4 } }, i.granted ? 'Mark pending' : 'Mark granted'),
+                    nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
-                i.who ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, '👤 ' + i.who + ' · 📅 ' + i.dateRequested) : null,
-                i.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, i.notes) : null
+                i.who ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '👤 ' + i.who + ' · 📅 ' + i.dateRequested) : null,
+                i.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, i.notes) : null
               );
             })
           ),
@@ -8997,7 +8997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: i.id, style: { padding: 12, borderRadius: 10, background: c + '15', borderLeft: '4px solid ' + c } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 11, color: c } }, (k_opts.find(function(o) { return o.value === i.kind; }) || { label: '' }).label),
-                  nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 13, color: '#0f172a', marginTop: 4, lineHeight: 1.5 } }, i.description)
               );
@@ -9030,7 +9030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlTextarea({ value: form.pledge, onChange: function(e) { setForm(Object.assign({}, form, { pledge: e.target.value })); }, placeholder: 'I pledge to...', rows: 3 }),
           nlInput({ value: form.why, onChange: function(e) { setForm(Object.assign({}, form, { why: e.target.value })); }, placeholder: 'Because' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-            nlH('input', { type: 'date', value: form.startDate, onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'date', value: form.startDate, onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlInput({ value: form.through, onChange: function(e) { setForm(Object.assign({}, form, { through: e.target.value })); }, placeholder: 'Through (date or "ongoing")' })
           ),
           nlBtn({ onClick: add, variant: 'success' }, '✍ Make pledge')
@@ -9043,7 +9043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, #f7fee7, #ecfdf5)', borderLeft: '5px solid #84cc16', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '✍ My Pledge'),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic', whiteSpace: 'pre-wrap' } }, '"' + p.pledge + '"'),
                 p.why ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 6 } }, '💚 Because: ' + p.why) : null,
@@ -9120,7 +9120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       activeCount > 0 ? nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('strong', { style: { fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Your active tools'),
+        nlH('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Your active tools'),
         Object.keys(counts).filter(function(k) { return counts[k] > 0; }).sort(function(a, b) { return counts[b] - counts[a]; }).map(function(k) {
           return nlH('div', { key: k, style: { padding: 8, borderRadius: 6, background: '#f8fafc', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#0e7490' } }, k),
@@ -9179,13 +9179,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: bc } }, '🥄 ' + d.spoons + '/20 spoons'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(d.date)),
-                    nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(d.date)),
+                    nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 d.prediction ? nlH('div', { style: { fontSize: 11, color: '#0f172a', marginTop: 2 } }, '🎯 Plan: ' + d.prediction) : null,
                 d.actualMeals ? nlH('div', { style: { fontSize: 11, color: '#0f172a', marginTop: 2 } }, '🍴 Ate: ' + d.actualMeals) : null,
-                d.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, d.notes) : null
+                d.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, d.notes) : null
               );
             })
           ),
@@ -9218,8 +9218,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.name, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); }, placeholder: 'Meal name' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', value: form.portions, onChange: function(e) { setForm(Object.assign({}, form, { portions: parseInt(e.target.value) || 1 })); }, placeholder: 'portions', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'date', value: form.dateFrozen, onChange: function(e) { setForm(Object.assign({}, form, { dateFrozen: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.portions, onChange: function(e) { setForm(Object.assign({}, form, { portions: parseInt(e.target.value) || 1 })); }, placeholder: 'portions', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'date', value: form.dateFrozen, onChange: function(e) { setForm(Object.assign({}, form, { dateFrozen: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlInput({ value: form.reheatTime, onChange: function(e) { setForm(Object.assign({}, form, { reheatTime: e.target.value })); }, placeholder: 'Reheat instructions' }),
           nlInput({ value: form.notes, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'Notes (ingredients, allergens)' }),
@@ -9237,11 +9237,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 13, color: aged ? '#78350f' : '#075985' } }, '🧊 ' + i.name + ' · ' + i.portions + ' portion' + (i.portions === 1 ? '' : 's') + (aged ? ' ⚠' : '')),
                   nlH('div', null,
                     nlH('button', { onClick: function() { takeOne(i.id); }, style: { background: '#fff', border: '1px solid #0ea5e9', borderRadius: 4, padding: '2px 6px', fontSize: 10, color: '#0ea5e9', cursor: 'pointer', marginRight: 4 } }, 'Take 1'),
-                    nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: aged ? '#78350f' : '#075985', marginTop: 2 } }, '📅 Frozen ' + i.dateFrozen + ' (' + weeksOld + ' wks)' + (i.reheatTime ? ' · 🔥 ' + i.reheatTime : '')),
-                i.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, i.notes) : null
+                i.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, i.notes) : null
               );
             })
           ),
@@ -9285,13 +9285,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🌱 ' + s.garden + (s.activity ? ' · ' + s.activity : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 s.whoElse ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '🤝 ' + s.whoElse) : null,
                 s.tookHome ? nlH('div', { style: { fontSize: 11, color: '#166534' } }, '🥬 Took home: ' + s.tookHome) : null,
-                s.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
+                s.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, s.notes) : null
               );
             })
           ),
@@ -9341,8 +9341,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🤲 ' + s.pantry + ' · ' + s.hours + 'h'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 s.role ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '👤 ' + s.role) : null,
@@ -9391,7 +9391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: n.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '📋 ' + n.topic),
-                  nlH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 n.source ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '📞 ' + n.source) : null,
                 n.what ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4, whiteSpace: 'pre-wrap' } }, n.what) : null
@@ -9441,8 +9441,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🍳 ' + m.meal + ' · ' + m.minutes + 'min' + (m.whoFor ? ' · for ' + m.whoFor : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(m.date)),
-                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(m.date)),
+                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 m.win ? nlH('div', { style: { fontSize: 10, color: '#16a34a', marginTop: 2 } }, '✓ ' + m.win) : null,
@@ -9498,8 +9498,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#78350f' } }, (r.again ? '⭐ ' : '🤷 ') + r.food + ' · avg ' + avg + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#78350f', marginTop: 2 } }, 'T ' + r.taste + ' · N ' + r.novelty + ' · C ' + r.comfort + ' · E ' + r.energy)
@@ -9559,8 +9559,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#78350f' } }, (m_opts.find(function(o) { return o.value === s.method; }) || { label: '' }).label + ' · ' + s.produce + (s.amount ? ' (' + s.amount + ')' : '')),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 s.source ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '📍 ' + s.source) : null,
@@ -9594,8 +9594,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.event, onChange: function(e) { setForm(Object.assign({}, form, { event: e.target.value })); }, placeholder: 'Event' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 100px', gap: 8 } },
-            nlH('input', { type: 'date', value: form.date, onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'number', value: form.guests, onChange: function(e) { setForm(Object.assign({}, form, { guests: parseInt(e.target.value) || 1 })); }, placeholder: 'guests', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'date', value: form.date, onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.guests, onChange: function(e) { setForm(Object.assign({}, form, { guests: parseInt(e.target.value) || 1 })); }, placeholder: 'guests', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlTextarea({ value: form.menu, onChange: function(e) { setForm(Object.assign({}, form, { menu: e.target.value })); }, placeholder: 'Menu', rows: 4 }),
           nlInput({ value: form.allergies, onChange: function(e) { setForm(Object.assign({}, form, { allergies: e.target.value })); }, placeholder: 'Guest allergies / restrictions' }),
@@ -9610,7 +9610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: e.id, style: { padding: 10, borderRadius: 8, background: '#fff7ed', borderLeft: '4px solid #f97316' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#7c2d12' } }, '🎉 ' + e.event + ' · ' + e.guests + ' guests'),
-                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#7c2d12', marginTop: 2 } }, '📅 ' + e.date),
                 e.menu ? nlH('div', { style: { fontSize: 11, color: '#7c2d12', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🍴 ' + e.menu) : null,
@@ -9663,7 +9663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#dbeafe', borderLeft: '4px solid #3b82f6' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#1e40af' } }, '🎓 ' + p.topic),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.strategy ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🎯 ' + p.strategy) : null,
                 p.equipment ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 2 } }, '🔧 ' + p.equipment) : null
@@ -9697,8 +9697,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.meal, onChange: function(e) { setForm(Object.assign({}, form, { meal: e.target.value })); }, placeholder: 'Meal' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 100px 1fr', gap: 8, alignItems: 'center' } },
-            nlH('input', { type: 'number', step: '0.01', value: form.cost, onChange: function(e) { setForm(Object.assign({}, form, { cost: parseFloat(e.target.value) || 0 })); }, placeholder: '$', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'number', value: form.servings, onChange: function(e) { setForm(Object.assign({}, form, { servings: parseInt(e.target.value) || 1 })); }, placeholder: 'servings', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'number', step: '0.01', value: form.cost, onChange: function(e) { setForm(Object.assign({}, form, { cost: parseFloat(e.target.value) || 0 })); }, placeholder: '$', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.servings, onChange: function(e) { setForm(Object.assign({}, form, { servings: parseInt(e.target.value) || 1 })); }, placeholder: 'servings', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             form.cost > 0 ? nlH('div', { style: { fontSize: 12, color: '#3f6212', fontWeight: 700 } }, '$' + (form.cost / form.servings).toFixed(2) + '/serving') : null
           ),
           nlTextarea({ value: form.ingredients, onChange: function(e) { setForm(Object.assign({}, form, { ingredients: e.target.value })); }, placeholder: 'Ingredients (with cost breakdown if helpful)', rows: 4 }),
@@ -9714,7 +9714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '4px solid ' + color } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '💰 ' + m.meal + ' · $' + m.costPerServing + '/serving'),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.ingredients ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🛒 ' + m.ingredients) : null
               );
@@ -9753,7 +9753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             nlH('div', null,
               nlH('label', { style: { fontSize: 11, color: '#075985', fontWeight: 700 } }, 'Savings $'),
-              nlH('input', { type: 'number', step: '0.01', value: form.savings, onChange: function(e) { setForm(Object.assign({}, form, { savings: parseFloat(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+              nlH('input', { type: 'number', step: '0.01', value: form.savings, onChange: function(e) { setForm(Object.assign({}, form, { savings: parseFloat(e.target.value) || 0 })); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
             )
           ),
           nlTextarea({ value: form.notes, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'Notes (recipe, tweaks)', rows: 3 }),
@@ -9767,7 +9767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '🥡 ' + s.takeout + ' → 🍳 ' + s.alt),
-                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, 'Taste: ' + s.taste + '/10 · Saved $' + s.savings.toFixed(2)),
                 s.notes ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 4, fontStyle: 'italic' } }, s.notes) : null
@@ -9806,7 +9806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })
           ),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', step: '0.01', value: form.total, onChange: function(e) { setForm(Object.assign({}, form, { total: parseFloat(e.target.value) || 0 })); }, placeholder: 'Total $', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
+            nlH('input', { type: 'number', step: '0.01', value: form.total, onChange: function(e) { setForm(Object.assign({}, form, { total: parseFloat(e.target.value) || 0 })); }, placeholder: 'Total $', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlInput({ value: form.whoFor, onChange: function(e) { setForm(Object.assign({}, form, { whoFor: e.target.value })); }, placeholder: 'For how many people / how long' })
           ),
           nlTextarea({ value: form.items, onChange: function(e) { setForm(Object.assign({}, form, { items: e.target.value })); }, placeholder: 'Key items bought', rows: 4 }),
@@ -9822,13 +9822,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🛒 ' + h.store + ' · $' + h.total.toFixed(2)),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(h.date)),
-                    nlH('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(h.date)),
+                    nlH('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 h.whoFor ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '👥 ' + h.whoFor) : null,
                 h.items ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🛒 ' + h.items) : null,
-                h.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, h.notes) : null
+                h.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, h.notes) : null
               );
             })
           ),
@@ -9877,8 +9877,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '🏆 ' + m.milestone + ' · ' + (k_opts.find(function(o) { return o.value === m.kind; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(m.date)),
-                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(m.date)),
+                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 m.reflection ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4, fontStyle: 'italic' } }, '💭 ' + m.reflection) : null
@@ -9941,8 +9941,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: color } }, '⭐ ' + c.score + '/5'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(c.date)),
-                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(c.date)),
+                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -9971,7 +9971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('Food Nutrient Database', 'USDA-sourced — search 60+ common foods', '#059669'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search foods...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' food' + (visible.length === 1 ? '' : 's') + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' food' + (visible.length === 1 ? '' : 's') + ' shown'),
       picked ? nlCard({ style: { background: '#dcfce7', border: '2px solid #16a34a' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#166534' } }, picked.name),
@@ -9994,9 +9994,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(f) {
-          return nlH('button', { key: f.id, onClick: function() { setPicked(f); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', fontSize: 12, color: '#0f172a', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' } },
+          return nlH('button', { key: f.id, onClick: function() { setPicked(f); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', fontSize: 12, color: '#0f172a', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' } },
             nlH('span', null, f.name),
-            nlH('span', { style: { color: '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, f.kcal + ' kcal · P' + f.p + ' C' + f.c + ' F' + f.f)
+            nlH('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'ui-monospace, Menlo, monospace' } }, f.kcal + ' kcal · P' + f.p + ' C' + f.c + ' F' + f.f)
           );
         })
       ),
@@ -10020,7 +10020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       return nlH('div', { style: { padding: 14 } },
         nlBtn({ onClick: function() { setPicked(null); }, variant: 'ghost' }, '← Back to library'),
         nlH('h2', { style: { fontSize: 22, fontWeight: 900, color: '#0f766e', marginTop: 12 } }, '🍳 ' + picked.name),
-        nlH('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 14 } }, picked.cuisine + ' · ' + picked.time + ' min · serves ' + picked.servings + ' · ' + picked.tags),
+        nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 14 } }, picked.cuisine + ' · ' + picked.time + ' min · serves ' + picked.servings + ' · ' + picked.tags),
         nlCard(null,
           nlH('strong', { style: { fontSize: 13, color: '#0f766e' } }, '🛒 Ingredients'),
           nlH('div', { style: { fontSize: 12, color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: 6 } }, picked.ingredients)
@@ -10043,13 +10043,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           return nlH('button', { key: t, onClick: function() { setTag(t); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #0d9488', background: tag === t ? '#0d9488' : '#fff', color: tag === t ? '#fff' : '#0f766e', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, t);
         })
       ),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' recipe' + (visible.length === 1 ? '' : 's') + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' recipe' + (visible.length === 1 ? '' : 's') + ' shown'),
       nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 8 } },
         visible.map(function(r) {
           return nlH('button', { key: r.id, onClick: function() { setPicked(r); }, style: { textAlign: 'left', padding: 12, borderRadius: 10, background: '#f0fdfa', border: '1px solid #5eead4', borderLeft: '4px solid #0d9488', cursor: 'pointer' } },
             nlH('strong', { style: { fontSize: 13, color: '#0f766e' } }, '🍳 ' + r.name),
             nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 4 } }, r.cuisine + ' · ' + r.time + ' min · serves ' + r.servings),
-            nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 4 } }, r.tags)
+            nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4 } }, r.tags)
           );
         })
       ),
@@ -10108,7 +10108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         'This reference is educational, not medical advice. Drug interactions are real.'
       ),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search supplements...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#ecfeff', border: '2px solid #0891b2' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#155e75' } }, '💊 ' + picked.name),
@@ -10178,7 +10178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('Cooking Technique Reference', '30 fundamental techniques — what + why + mistakes', '#0d9488'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search techniques...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#f0fdfa', border: '2px solid #0d9488' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#0f766e' } }, '🔪 ' + picked.name),
@@ -10216,7 +10216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         'This is a screening tool, not a diagnosis. Many of these symptoms have non-nutrition causes too. Always work with a doctor for persistent symptoms.'
       ),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search symptoms...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#faf5ff', border: '2px solid #a855f7' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#5b21b6' } }, '🔬 ' + picked.symptom),
@@ -10247,7 +10247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('Global Cuisine Reference', '20 cultural cuisines — staples, signatures, traditions, health angles', '#c026d3'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search regions...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#fdf4ff', border: '2px solid #c026d3' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#86198f' } }, '🌍 ' + picked.region),
@@ -10280,7 +10280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('Food Safety Reference', 'USDA + CDC + FDA — essential safety knowledge', '#dc2626'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search topics...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#fef2f2', border: '2px solid #dc2626' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#7f1d1d' } }, '🛡 ' + picked.topic),
@@ -10312,7 +10312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           return nlH('button', { key: f, onClick: function() { setFilter(f); }, style: { padding: '6px 12px', borderRadius: 6, border: '1px solid #67e8f9', background: filter === f ? '#67e8f9' : '#fff', color: '#155e75', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, f);
         })
       ),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 8 } }, visible.length + ' shown'),
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
         visible.map(function(t) {
           var pcolor = t.priority === 'Essential' ? '#dc2626' : t.priority === 'Helpful' ? '#f59e0b' : '#10b981';
@@ -10342,7 +10342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       nlSection('NEDA + Crisis Resource Directory', 'Curated mental-health-around-food resources', '#10b981'),
       nlNEDABanner(),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search resources...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
         visible.map(function(r) {
           return nlH('div', { key: r.name, style: { padding: 10, borderRadius: 8, background: '#ecfdf5', borderLeft: '4px solid #10b981' } },
@@ -10365,7 +10365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('Maine Food + Nutrition Resources', 'Local Maine-specific food, education, advocacy', '#16a34a'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search Maine resources...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
         visible.map(function(r) {
           return nlH('div', { key: r.name, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
@@ -10389,7 +10389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', { style: { padding: 14 } },
       nlSection('Sports Fueling Reference', '18 sports — pre/during/post fuel + hydration', '#dc2626'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search sports...' }),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', margin: '8px 0' } }, visible.length + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#fef2f2', border: '2px solid #dc2626' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#7f1d1d' } }, '🏃 ' + picked.sport),
@@ -10450,8 +10450,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '📚 ' + e.topic),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(e.date)),
-                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(e.date)),
+                    nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 4, whiteSpace: 'pre-wrap' } }, e.whatLearned),
@@ -10542,11 +10542,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#faf5ff', borderLeft: '4px solid #a855f7' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '⚠ Myth: ' + m.myth),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.truth ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 4, whiteSpace: 'pre-wrap' } }, '✓ Truth: ' + m.truth) : null,
                 m.source ? nlH('div', { style: { fontSize: 10, color: '#5b21b6', marginTop: 4, fontStyle: 'italic' } }, '📖 ' + m.source) : null,
-                m.whoBelievesIt ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, '👤 ' + m.whoBelievesIt) : null
+                m.whoBelievesIt ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2 } }, '👤 ' + m.whoBelievesIt) : null
               );
             })
           ),
@@ -10594,7 +10594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: e.id, style: { padding: 10, borderRadius: 8, background: '#eff6ff', borderLeft: '4px solid #3b82f6' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#1e40af' } }, '👤 ' + e.relative + (e.relation ? ' (' + e.relation + ')' : '')),
-                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 e.condition ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 2 } }, '🏥 ' + e.condition + (e.ageOnset ? ' (age ' + e.ageOnset + ')' : '')) : null,
                 e.myRisk ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 2 } }, '⚠ My risk: ' + e.myRisk) : null,
@@ -10648,10 +10648,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '📚 ' + t.topic),
                   nlH('div', null,
-                    nlH('button', { onClick: function() { bumpLevel(t.id, -1); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 2 } }, '−'),
+                    nlH('button', { onClick: function() { bumpLevel(t.id, -1); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 2 } }, '−'),
                     nlH('strong', { style: { color: color, marginRight: 6 } }, t.currentLevel + '/10'),
-                    nlH('button', { onClick: function() { bumpLevel(t.id, 1); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 6 } }, '+'),
-                    nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { bumpLevel(t.id, 1); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 6 } }, '+'),
+                    nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 t.whyMatters ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '💡 ' + t.whyMatters) : null,
@@ -10713,7 +10713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: r.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '⚖ ' + r.right),
-                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 r.source ? nlH('div', { style: { fontSize: 10, color: '#155e75', marginTop: 2, fontStyle: 'italic' } }, '📖 ' + r.source) : null,
                 r.appliesTo ? nlH('div', { style: { fontSize: 10, color: '#155e75', marginTop: 2 } }, '👥 ' + r.appliesTo) : null,
@@ -10759,8 +10759,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#9f1239' } }, '💖 ' + a.act),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(a.date)),
-                    nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(a.date)),
+                    nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 a.forWhom ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2 } }, '👤 ' + a.forWhom) : null,
@@ -10806,7 +10806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: '#fef3c7', borderLeft: '5px solid #a16207' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#78350f' } }, '🎀 ' + m.meal + (m.when ? ' · ' + m.when : '')),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.whoWasThere ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '👥 ' + m.whoWasThere) : null,
                 m.story ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 6, whiteSpace: 'pre-wrap', fontStyle: 'italic' } }, '📖 ' + m.story) : null
@@ -10855,12 +10855,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: q.answered ? '#166534' : '#075985' } }, (q.answered ? '✓ ' : '❓ ') + q.question),
                   nlH('div', null,
-                    !q.answered ? nlH('button', { onClick: function() { markAnswered(q.id); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 4 } }, 'Mark answered') : null,
-                    nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    !q.answered ? nlH('button', { onClick: function() { markAnswered(q.id); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 4 } }, 'Mark answered') : null,
+                    nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 q.whoWillAnswer ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '👤 ' + q.whoWillAnswer) : null,
-                q.myGuess ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, '💭 Guess: ' + q.myGuess) : null,
+                q.myGuess ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, '💭 Guess: ' + q.myGuess) : null,
                 q.answer ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4 } }, '💬 ' + q.answer) : null
               );
             })
@@ -10911,7 +10911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Added sugar source' }),
-            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseInt(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseInt(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             common.map(function(c) {
@@ -10922,11 +10922,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       entries.filter(function(e) { return e.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)' } }, 'Today'),
         entries.filter(function(e) { return e.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#fef3c7', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#78350f' } }, e.source + ' — ' + e.grams + 'g'),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -10975,7 +10975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Sodium source' }),
-            nlH('input', { type: 'number', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseInt(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.mg, onChange: function(e) { setForm(Object.assign({}, form, { mg: parseInt(e.target.value) || 0 })); }, placeholder: 'mg', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             common.map(function(c) {
@@ -10986,11 +10986,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         )
       ),
       entries.filter(function(e) { return e.date === today; }).length > 0 && nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 } },
-        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569' } }, 'Today'),
+        nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)' } }, 'Today'),
         entries.filter(function(e) { return e.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#ecfeff', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#155e75' } }, e.source + ' — ' + e.mg + 'mg'),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -11056,7 +11056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlSelect({ value: form.meal, onChange: function(e) { setForm(Object.assign({}, form, { meal: e.target.value })); } }, m_opts),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Fiber source' }),
-            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseFloat(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseFloat(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlBtn({ onClick: add }, '+ Add to strategy')
         )
@@ -11067,7 +11067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             strategies.map(function(s) {
               return nlH('div', { key: s.id, style: { padding: 8, borderRadius: 8, background: '#fef3c7', borderLeft: '3px solid #a16207', display: 'flex', justifyContent: 'space-between' } },
                 nlH('span', { style: { fontSize: 12, color: '#78350f' } }, (m_opts.find(function(o) { return o.value === s.meal; }) || { label: '' }).label + ' · ' + s.source + ' (' + s.grams + 'g)'),
-                nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -11115,7 +11115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlSelect({ value: form.meal, onChange: function(e) { setForm(Object.assign({}, form, { meal: e.target.value })); } }, m_opts),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 80px', gap: 8 } },
             nlInput({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); }, placeholder: 'Protein source' }),
-            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseInt(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'number', value: form.grams, onChange: function(e) { setForm(Object.assign({}, form, { grams: parseInt(e.target.value) || 0 })); }, placeholder: 'g', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlBtn({ onClick: add }, '+ Add to strategy')
         )
@@ -11124,7 +11124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         strategies.map(function(s) {
           return nlH('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: '#fef2f2', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#9f1239' } }, (m_opts.find(function(o) { return o.value === s.meal; }) || { label: '' }).label + ' · ' + s.source + ' (' + s.grams + 'g)'),
-            nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -11166,10 +11166,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '👤 ' + p.name + (p.role ? ' (' + p.role + ')' : '')),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.why ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '💚 ' + p.why) : null,
-                p.contact ? nlH('div', { style: { fontSize: 10, color: '#64748b', marginTop: 2 } }, '📞 ' + p.contact) : null
+                p.contact ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } }, '📞 ' + p.contact) : null
               );
             })
           ),
@@ -11215,7 +11215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: l.id, style: { padding: 12, borderRadius: 10, background: '#faf5ff', borderLeft: '4px solid #a855f7' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '💜 ' + l.topic + (l.toldThem ? ' ✓' : '')),
-                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('pre', { style: { fontSize: 11, color: '#5b21b6', marginTop: 4, whiteSpace: 'pre-wrap', fontFamily: 'inherit' } }, l.greeting + '\n\n' + l.body + '\n\n' + l.closing)
               );
@@ -11275,7 +11275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 8, background: '#f0fdf4', borderLeft: '3px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🦠 ' + nl_relDate(e.date) + ' · Stress ' + e.stress + ' · Sleep ' + e.sleep + ' · Water ' + e.water),
-                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 e.fermentedFoods ? nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, '🍶 ' + e.fermentedFoods) : null,
                 e.fiberSources ? nlH('div', { style: { fontSize: 10, color: '#166534' } }, '🌾 ' + e.fiberSources) : null,
@@ -11384,7 +11384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#fdf2f8', borderLeft: '4px solid #ec4899' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#9f1239' } }, '🌷 ' + p.practice + ' · ' + p.frequency + ' · ' + p.impact + '/10'),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.notes ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2 } }, p.notes) : null
               );
@@ -11447,8 +11447,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '🌷 Shed ' + c.shedding + '/10 · Sleep ' + c.sleep + 'h · Period: ' + c.periodPattern),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(c.date)),
-                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(c.date)),
+                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 c.recentStress ? nlH('div', { style: { fontSize: 10, color: '#5b21b6', marginTop: 2 } }, '😰 ' + c.recentStress) : null,
@@ -11507,7 +11507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#eff6ff', borderLeft: '4px solid #3b82f6' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#1e40af' } }, '🤝 ' + p.name + ' · ' + p.cadence + ' ' + p.method),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.goal ? nlH('div', { style: { fontSize: 11, color: '#1e40af', marginTop: 2 } }, '🎯 ' + p.goal) : null
               );
@@ -11568,10 +11568,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#78350f' } }, '⚡ ' + c.challenge),
                   nlH('div', null,
-                    nlH('button', { onClick: function() { progress(c.id, -1); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 2 } }, '−'),
+                    nlH('button', { onClick: function() { progress(c.id, -1); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 2 } }, '−'),
                     nlH('strong', { style: { color: '#78350f', marginRight: 6 } }, c.completed + '/' + c.daysCommitted + ' (' + pct + '%)'),
-                    nlH('button', { onClick: function() { progress(c.id, 1); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 6 } }, '+'),
-                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { progress(c.id, 1); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 6 } }, '+'),
+                    nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 c.why ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '💡 ' + c.why) : null
@@ -11616,7 +11616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { fontSize: 13, color: '#3f6212', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + w.insight + '"'),
                 w.whoSaid ? nlH('div', { style: { fontSize: 11, color: '#65a30d', marginTop: 6 } }, '— ' + w.whoSaid) : null,
                 w.context ? nlH('div', { style: { fontSize: 11, color: '#65a30d', marginTop: 2 } }, '💡 ' + w.context) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -11658,7 +11658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: l.id, style: { padding: 12, borderRadius: 10, background: '#faf5ff', borderLeft: '5px solid #a855f7' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '💌 ' + (l.openWhen || 'Letter to future me')),
-                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('pre', { style: { fontSize: 11, color: '#5b21b6', marginTop: 6, whiteSpace: 'pre-wrap', fontFamily: 'inherit' } }, l.salutation + ',\n\n' + l.body + '\n\n— ' + l.signature)
               );
@@ -11702,7 +11702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '📅 ' + t.when + ' · ' + t.tradition),
-                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 t.who ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '👥 ' + t.who) : null,
                 t.notes ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2, fontStyle: 'italic' } }, t.notes) : null
@@ -11776,8 +11776,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#0f766e' } }, (k_opts.find(function(o) { return o.value === i.kind; }) || { label: '' }).label + ' ' + i.title + (i.author ? ' · ' + i.author : '')),
                   nlH('div', null,
-                    nlH('button', { onClick: function() { toggleStatus(i.id); }, style: { background: 'transparent', border: '1px solid #cbd5e1', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 4 } }, (st_opts.find(function(o) { return o.value === i.status; }) || { label: '' }).label),
-                    nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { toggleStatus(i.id); }, style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #cbd5e1)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', marginRight: 4 } }, (st_opts.find(function(o) { return o.value === i.status; }) || { label: '' }).label),
+                    nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 i.notes ? nlH('div', { style: { fontSize: 11, color: '#0f766e', marginTop: 2 } }, i.notes) : null
@@ -11831,8 +11831,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#9f1239' } }, '🤝 ' + l.event + ' · ' + (v_opts.find(function(o) { return o.value === l.vibe; }) || { label: '' }).label),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(l.date)),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(l.date)),
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2 } }, '👥 ' + l.who + (l.food ? ' · 🍴 ' + l.food : '')),
@@ -11878,7 +11878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#faf5ff', borderLeft: '4px solid #7c3aed' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, '📍 ' + (m.when ? '[' + m.when + '] ' : '') + m.what),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 m.whyShift ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '⚡ ' + m.whyShift) : null,
                 m.impact ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + m.impact) : null
@@ -11938,7 +11938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             snacks.map(function(s) {
               return nlH('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: '#ecfdf5', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
                 nlH('span', { style: { color: '#065f46' } }, '🍎 ' + s.name + ' · ' + s.when + ' · ' + s.portability + ' · ' + s.cost),
-                nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -12030,7 +12030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: d.id, style: { padding: 8, borderRadius: 8, background: '#f7fee7', borderLeft: '3px solid #65a30d' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#3f6212' } }, '🍽 ' + nl_relDate(d.date)),
-                  nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#3f6212', marginTop: 2 } }, 'F' + d.fruits + ' · V' + d.vegetables + ' · G' + d.grains + ' · P' + d.protein + ' · D' + d.dairy + ' · Ft' + d.fats + ' · W' + d.water)
               );
@@ -12094,7 +12094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: '#f0f9ff', borderLeft: '4px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#075985' } }, '📖 ' + t.term),
-                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 t.definition ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, t.definition) : null,
                 t.whyMatters ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2, fontStyle: 'italic' } }, '💡 ' + t.whyMatters) : null
@@ -12191,7 +12191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     nlH('br', null),
                     nlH('strong', { style: { color: '#65a30d' } }, '→ ' + p.newPhrase)
                   ),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 p.context ? nlH('div', { style: { fontSize: 10, color: '#3f6212', marginTop: 2, fontStyle: 'italic' } }, p.context) : null
               );
@@ -12246,8 +12246,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#78350f' } }, (m.noGuilt ? '🎉 ' : '😐 ') + m.meal + ' · ' + m.satisfaction + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(m.date)),
-                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(m.date)),
+                    nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 m.why ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2, fontStyle: 'italic' } }, '💚 ' + m.why) : null
@@ -12298,8 +12298,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 14, color: '#065f46' } }, '🌳 ' + r.period + ' reflection'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(r.date)),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(r.date)),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 r.biggestShift ? nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 4 } }, '🔄 Biggest shift: ' + r.biggestShift) : null,
@@ -12364,8 +12364,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '👨‍🍳 ' + s.dish + ' · ' + s.timeMin + 'min · sat ' + s.satisfaction + '/10'),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, nl_relDate(s.date)),
-                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, nl_relDate(s.date)),
+                    nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 nlH('div', { style: { fontSize: 10, color: '#166534', marginTop: 2 } }, 'Complexity: ' + s.complexity + '/10'),
@@ -12436,7 +12436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '🎙 ' + e.podcast + ' · ' + e.episode),
                 nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, e.topic + ' · ' + (v_opts.find(function(o) { return o.value === e.verdict; }) || { label: '' }).label),
                 e.notes ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2, fontStyle: 'italic' } }, e.notes) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -12486,7 +12486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: d.id, style: { padding: 8, borderRadius: 8, background: '#f0fdf4', borderLeft: '3px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#166534' } }, '🍽 ' + nl_relDate(d.date) + ' · V' + d.vegetables + ' F' + d.fruits + ' G' + d.grains + ' P' + d.protein),
-                  nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               );
             })
@@ -12545,7 +12545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               var color = d.ringScore >= 80 ? '#10b981' : d.ringScore >= 60 ? '#f59e0b' : '#dc2626';
               return nlH('div', { key: d.id, style: { padding: 8, borderRadius: 6, background: '#ecfdf5', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
                 nlH('span', { style: { color: color, fontWeight: 700 } }, '⭕ ' + nl_relDate(d.date) + ' · ' + d.ringScore + '%'),
-                nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -12589,7 +12589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 s.whatTheyGave ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2 } }, '↩ From them: ' + s.whatTheyGave) : null,
                 s.whatIGave ? nlH('div', { style: { fontSize: 11, color: '#9f1239' } }, '↪ To them: ' + s.whatIGave) : null,
                 s.myExperience ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2, fontStyle: 'italic' } }, '💭 ' + s.myExperience) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -12633,8 +12633,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '🛒 ' + t.store + ' · ' + t.section),
                 t.discovered ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '✨ Discovered: ' + t.discovered) : null,
                 t.cost ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '💰 ' + t.cost) : null,
-                t.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, t.notes) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                t.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, t.notes) : null,
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -12669,8 +12669,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.what, onChange: function(e) { setForm(Object.assign({}, form, { what: e.target.value })); }, placeholder: 'What I\'m fermenting' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-            nlH('input', { type: 'date', value: form.dayStarted, onChange: function(e) { setForm(Object.assign({}, form, { dayStarted: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'number', value: form.targetDays, onChange: function(e) { setForm(Object.assign({}, form, { targetDays: parseInt(e.target.value) || 7 })); }, placeholder: 'target days', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'date', value: form.dayStarted, onChange: function(e) { setForm(Object.assign({}, form, { dayStarted: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.targetDays, onChange: function(e) { setForm(Object.assign({}, form, { targetDays: parseInt(e.target.value) || 7 })); }, placeholder: 'target days', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlTextarea({ value: form.ingredients, onChange: function(e) { setForm(Object.assign({}, form, { ingredients: e.target.value })); }, placeholder: 'Ingredients + ratios', rows: 3 }),
           nlSelect({ value: form.currentStatus, onChange: function(e) { setForm(Object.assign({}, form, { currentStatus: e.target.value })); } }, st_opts),
@@ -12684,7 +12684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '🍶 ' + p.what + ' · ' + (st_opts.find(function(o) { return o.value === p.currentStatus; }) || { label: '' }).label),
-                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '📅 Started ' + p.dayStarted + ' · target ' + p.targetDays + ' days'),
                 p.ingredients ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '🛒 ' + p.ingredients) : null
@@ -12736,7 +12736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 8, borderRadius: 8, background: '#faf5ff', borderLeft: '3px solid #a855f7' } },
                 nlH('strong', { style: { fontSize: 12, color: '#5b21b6' } }, '📵 ' + m.meal + ' · ' + m.felt + '/10'),
                 m.noticed ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2, fontStyle: 'italic' } }, '👀 ' + m.noticed) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -12779,7 +12779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '✊ ' + a.issue + ' · ' + a.action),
                 a.who ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2 } }, '🤝 ' + a.who) : null,
                 a.impact ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2, fontStyle: 'italic' } }, '🌱 ' + a.impact) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -12834,7 +12834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: '#ecfdf5', borderLeft: '4px solid #10b981' } },
                 nlH('strong', { style: { fontSize: 13, color: '#065f46' } }, '🎓 ' + t.taught + ' · to ' + t.toWhom),
                 nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2 } }, (f_opts.find(function(o) { return o.value === t.format; }) || { label: '' }).label + ' · Felt ' + t.felt + '/10'),
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13033,8 +13033,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: l.id, style: { padding: 10, borderRadius: 8, background: '#fdf2f8', borderLeft: '4px solid #ec4899' } },
                 nlH('div', { style: { fontSize: 13, color: '#9f1239', fontStyle: 'italic' } }, '💖 "' + l.affirmation + '" · ' + l.felt + '/10'),
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 2 } },
-                  nlH('span', { style: { fontSize: 10, color: '#64748b' } }, nl_relDate(l.date)),
-                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)' } }, nl_relDate(l.date)),
+                  nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               );
             })
@@ -13073,7 +13073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               var labels = { groceries: '🛒 Groceries', takeout: '🥡 Takeout', school: '🏫 School', snacks: '🍫 Snacks' };
               return nlH('div', { key: cat },
                 nlH('label', { style: { fontSize: 11, color: '#155e75', fontWeight: 700 } }, labels[cat] + ' $'),
-                nlH('input', { type: 'number', step: '0.01', value: form[cat], onChange: function(e) { var nf = Object.assign({}, form); nf[cat] = parseFloat(e.target.value) || 0; setForm(nf); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+                nlH('input', { type: 'number', step: '0.01', value: form[cat], onChange: function(e) { var nf = Object.assign({}, form); nf[cat] = parseFloat(e.target.value) || 0; setForm(nf); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
               );
             })
           ),
@@ -13089,10 +13089,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: m.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#155e75' } }, '📅 ' + m.month + ' · $' + m.total.toFixed(2)),
-                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '🛒 $' + m.groceries.toFixed(2) + ' · 🥡 $' + m.takeout.toFixed(2) + ' · 🏫 $' + m.school.toFixed(2) + ' · 🍫 $' + m.snacks.toFixed(2)),
-                m.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, m.notes) : null
+                m.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, m.notes) : null
               );
             })
           ),
@@ -13140,7 +13140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 e.source ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '📱 ' + e.source) : null,
                 e.whyConcerned ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '⚠ ' + e.whyConcerned) : null,
                 e.planToConfirm ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '✓ ' + e.planToConfirm) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13191,7 +13191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: '#fefce8', borderLeft: '4px solid #facc15' } },
                 nlH('strong', { style: { fontSize: 13, color: '#854d0e' } }, '☀ ' + c.name + ' · ' + c.prepTime + ' min'),
                 nlH('div', { style: { fontSize: 11, color: '#854d0e', marginTop: 2 } }, '🥚 ' + c.protein + ' + 🌾 ' + c.carb + ' + 🥑 ' + c.fat + (c.extras ? ' + ' + c.extras : '')),
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13239,8 +13239,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
                 nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '🌞 ' + c.name + ' · ' + (k_opts.find(function(o) { return o.value === c.kind; }) || { label: '' }).label),
                 nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '🍴 ' + c.mainComp + (c.sides ? ' + ' + c.sides : '')),
-                c.notes ? nlH('div', { style: { fontSize: 10, color: '#475569', marginTop: 2, fontStyle: 'italic' } }, c.notes) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                c.notes ? nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 2, fontStyle: 'italic' } }, c.notes) : null,
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13290,7 +13290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             dinners.map(function(d) {
               return nlH('div', { key: d.id, style: { padding: 8, borderRadius: 8, background: '#faf5ff', borderLeft: '3px solid #a855f7', display: 'flex', justifyContent: 'space-between' } },
                 nlH('span', { style: { fontSize: 12, color: '#5b21b6' } }, '🍽 ' + d.name + (d.cuisine ? ' (' + d.cuisine + ')' : '') + ' · complexity ' + d.complexity + '/10'),
-                nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -13337,7 +13337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             meals.slice(0, 30).map(function(m) {
               return nlH('div', { key: m.id, style: { padding: 8, borderRadius: 8, background: '#fef2f2', borderLeft: '3px solid #dc2626' } },
                 nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '🏃 ' + m.practice + ' → 🍴 ' + m.meal + ' (' + m.timing + ' min) · ' + m.felt + '/10'),
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13381,7 +13381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 a.proposal ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '💡 ' + a.proposal) : null,
                 a.whoAsked ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '👤 ' + a.whoAsked) : null,
                 a.response ? nlH('div', { style: { fontSize: 11, color: '#075985', marginTop: 2 } }, '💬 ' + a.response) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13435,7 +13435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 e.exploration ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '🔍 ' + e.exploration) : null,
                 e.mentor ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2 } }, '👤 ' + e.mentor) : null,
                 e.notes ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2, fontStyle: 'italic' } }, e.notes) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13479,7 +13479,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '4px solid #84cc16' } },
                 nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🙏 ' + p.meal + ' · ' + p.felt + '/10'),
                 p.threeThanks ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 2, whiteSpace: 'pre-wrap', fontStyle: 'italic' } }, '💚 ' + p.threeThanks) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13533,7 +13533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 s.dietShift ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '🍴 ' + s.dietShift) : null,
                 s.moodNote ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '💭 ' + s.moodNote) : null,
                 s.sleepShift ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, '💤 ' + s.sleepShift) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13580,7 +13580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('strong', { style: { fontSize: 13, color: '#5b21b6' } }, (c_opts.find(function(o) { return o.value === r.context; }) || { label: '' }).label),
                 r.whatShifted ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '🔄 ' + r.whatShifted) : null,
                 r.whatStayedSame ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '⚓ ' + r.whatStayedSame) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13647,7 +13647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             checks.slice(0, 20).map(function(c) {
               return nlH('div', { key: c.id, style: { padding: 8, borderRadius: 8, background: '#fef2f2', borderLeft: '3px solid #dc2626' } },
                 nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '⚖ ' + nl_relDate(c.date) + ' · Thoughts ' + c.thoughts + ' · Cravings ' + c.cravings + ' · Energy ' + c.energy + ' · Mood ' + c.mood + ' · Sleep ' + c.sleep + 'h · Period: ' + c.period),
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13824,7 +13824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fruits.map(function(f) {
               return nlH('div', { key: f.id, style: { padding: '6px 10px', borderRadius: 8, background: '#dcfce7', border: '1px solid #16a34a', fontSize: 12, color: '#065f46', display: 'flex', alignItems: 'center', gap: 6 } },
                 nlH('span', null, '🍎 ' + f.fruit),
-                nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 10, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -13876,7 +13876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             vegetables.map(function(v) {
               return nlH('div', { key: v.id, style: { padding: '6px 10px', borderRadius: 8, background: '#f7fee7', border: '1px solid #65a30d', fontSize: 12, color: '#3f6212' } },
                 '🥬 ' + v.vegetable + ' (' + v.cooked + ', ' + v.verdict + ')',
-                nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 10, cursor: 'pointer', marginLeft: 4 } }, '✕')
+                nlH('button', { onClick: function() { remove(v.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, cursor: 'pointer', marginLeft: 4 } }, '✕')
               );
             })
           ),
@@ -13930,7 +13930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('strong', { style: { fontSize: 13, color: '#166534' } }, '🌱 ' + s.plant + (s.from ? ' from ' + s.from : '')),
                 nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, (s.planted ? '✓ Planted' : '○ Not planted') + ' · ' + (s.harvested ? '✓ Harvested' : '○ Not harvested')),
                 s.notes ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 2 } }, s.notes) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -13978,7 +13978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 s.occasion ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2 } }, '📅 ' + s.occasion) : null,
                 nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2 } }, '💚 Joy: ' + s.joy + '/10'),
                 s.learned ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2, fontStyle: 'italic' } }, '💡 ' + s.learned) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14040,7 +14040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { fontSize: 14, color: '#5b21b6', fontWeight: 700, fontStyle: 'italic' } }, '🌀 "' + m.mantra + '"'),
                 m.when ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '🕐 ' + m.when) : null,
                 nlH('div', { style: { fontSize: 10, color: '#5b21b6', marginTop: 2 } }, 'Resonance: ' + m.felt + '/10'),
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14082,7 +14082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 2, whiteSpace: 'pre-wrap' } }, n.body),
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: '#155e75' } },
                   nlH('span', null, nl_relDate(n.date)),
-                  nlH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               );
             })
@@ -14131,7 +14131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 s.why ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '⚠ Why almost skipped: ' + s.why) : null,
                 s.whatHappened ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2 } }, '🍴 What I ate: ' + s.whatHappened) : null,
                 s.lesson ? nlH('div', { style: { fontSize: 11, color: '#78350f', marginTop: 2, fontStyle: 'italic' } }, '💡 ' + s.lesson) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14219,7 +14219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: c.id, style: { padding: 8, borderRadius: 8, background: '#f0f9ff', borderLeft: '3px solid #0ea5e9' } },
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 12, color: '#075985' } }, '📊 ' + nl_relDate(c.date) + ' · M ' + c.mood + ' B ' + c.body + ' F ' + c.foodSatisfaction + ' S ' + c.stress),
-                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  nlH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
                 c.oneGoodThing ? nlH('div', { style: { fontSize: 10, color: '#075985', marginTop: 2 } }, '💚 ' + c.oneGoodThing) : null,
                 c.supportNeeded ? nlH('div', { style: { fontSize: 10, color: '#dc2626', marginTop: 2 } }, '🆘 ' + c.supportNeeded) : null
@@ -14316,7 +14316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 r.whoTaught ? nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2 } }, '👤 From: ' + r.whoTaught) : null,
                 r.whatNoticed ? nlH('div', { style: { fontSize: 11, color: '#065f46', marginTop: 2 } }, '👀 ' + r.whatNoticed) : null,
                 r.newApproach ? nlH('div', { style: { fontSize: 11, color: '#10b981', marginTop: 4, fontWeight: 700 } }, '✨ ' + r.newApproach) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14365,7 +14365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ingredients.slice(0, 100).map(function(i) {
               return nlH('div', { key: i.id, style: { padding: '4px 8px', borderRadius: 6, background: '#dcfce7', border: '1px solid #16a34a', fontSize: 11, color: '#065f46', display: 'flex', alignItems: 'center', gap: 4 } },
                 nlH('span', null, '🌱 ' + i.name),
-                nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 9, cursor: 'pointer' } }, '✕')
+                nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 9, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -14414,7 +14414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 d.whatTold ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4 } }, '🗣 I said: ' + d.whatTold) : null,
                 d.whatLearned ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4, whiteSpace: 'pre-wrap' } }, '📚 Learned: ' + d.whatLearned) : null,
                 d.nextSteps ? nlH('div', { style: { fontSize: 11, color: '#155e75', marginTop: 4, fontWeight: 700 } }, '⏭ Next: ' + d.nextSteps) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14460,7 +14460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 r.changed ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '🔄 Changed: ' + r.changed) : null,
                 r.samed ? nlH('div', { style: { fontSize: 11, color: '#5b21b6', marginTop: 2 } }, '⚓ Stayed: ' + r.samed) : null,
                 r.wishGood ? nlH('div', { style: { fontSize: 11, color: '#a855f7', marginTop: 2, fontStyle: 'italic' } }, '💬 To past me: ' + r.wishGood) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14529,7 +14529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, #fdf2f8, #fce7f3)', borderLeft: '4px solid #ec4899' } },
                 nlH('strong', { style: { fontSize: 13, color: '#9f1239' } }, '💖 ' + t.who),
                 t.what ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 4, fontStyle: 'italic' } }, '💚 ' + t.what) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14577,7 +14577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: l.id, style: { padding: 12, borderRadius: 10, background: '#f7fee7', borderLeft: '5px solid #84cc16' } },
                 nlH('strong', { style: { fontSize: 14, color: '#3f6212' } }, '🌱 ' + l.topic),
                 nlH('div', { style: { fontSize: 12, color: '#3f6212', marginTop: 4, lineHeight: 1.7, fontStyle: 'italic' } }, l.toFuture),
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14619,7 +14619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: w.id, style: { padding: 10, borderRadius: 8, background: '#fdf4ff', borderLeft: '4px solid #c026d3' } },
                 nlH('strong', { style: { fontSize: 13, color: '#86198f' } }, '🌍 ' + w.word + ' (' + w.language + ') = ' + w.english),
                 w.context ? nlH('div', { style: { fontSize: 11, color: '#86198f', marginTop: 2, fontStyle: 'italic' } }, '🎀 ' + w.context) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14670,7 +14670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               return nlH('div', { key: s.id, style: { padding: '6px 10px', borderRadius: 8, background: '#fef3c7', border: '1px solid #fcd34d', fontSize: 11, color: '#78350f' } },
                 nlH('strong', null, '🌶 ' + s.spice + ' (' + s.love + '/10)'),
                 s.cuisine ? nlH('div', { style: { fontSize: 9 } }, s.cuisine) : null,
-                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 10, cursor: 'pointer' } }, '✕'))
+                nlH('div', { style: { textAlign: 'right' } }, nlH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, cursor: 'pointer' } }, '✕'))
               );
             })
           ),
@@ -14787,8 +14787,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.store, onChange: function(e) { setForm(Object.assign({}, form, { store: e.target.value })); }, placeholder: 'Store' }),
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-            nlH('input', { type: 'date', value: form.date, onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } }),
-            nlH('input', { type: 'number', step: '0.01', value: form.totalSpent, onChange: function(e) { setForm(Object.assign({}, form, { totalSpent: parseFloat(e.target.value) || 0 })); }, placeholder: 'Total $', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 } })
+            nlH('input', { type: 'date', value: form.date, onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', step: '0.01', value: form.totalSpent, onChange: function(e) { setForm(Object.assign({}, form, { totalSpent: parseFloat(e.target.value) || 0 })); }, placeholder: 'Total $', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } })
           ),
           nlTextarea({ value: form.itemsBought, onChange: function(e) { setForm(Object.assign({}, form, { itemsBought: e.target.value })); }, placeholder: 'Items bought (or just the important ones)', rows: 4 }),
           nlInput({ value: form.categoryBreakdown, onChange: function(e) { setForm(Object.assign({}, form, { categoryBreakdown: e.target.value })); }, placeholder: 'Category note (e.g., "mostly produce" or "snacks heavy")' }),
@@ -14803,8 +14803,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: '#3f6212' } }, '🧾 ' + r.store + ' · $' + r.totalSpent.toFixed(2)),
                   nlH('div', null,
-                    nlH('span', { style: { fontSize: 10, color: '#64748b', marginRight: 6 } }, r.date),
-                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginRight: 6 } }, r.date),
+                    nlH('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 r.itemsBought ? nlH('div', { style: { fontSize: 11, color: '#3f6212', marginTop: 4, whiteSpace: 'pre-wrap' } }, '🛒 ' + r.itemsBought) : null,
@@ -14891,12 +14891,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 14, color: '#9f1239' } }, '💖 To: ' + l.recipient + (l.sent ? ' ✓' : '')),
                   nlH('div', null,
                     nlH('button', { onClick: function() { toggleSent(l.id); }, style: { background: 'transparent', border: '1px solid #f9a8d4', borderRadius: 4, padding: '2px 6px', fontSize: 10, color: '#9f1239', cursor: 'pointer', marginRight: 4 } }, l.sent ? 'Mark unsent' : 'Mark sent'),
-                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    nlH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
                 l.occasion ? nlH('div', { style: { fontSize: 11, color: '#9f1239', marginTop: 2, fontStyle: 'italic' } }, '📅 ' + l.occasion) : null,
                 nlH('div', { style: { fontSize: 12, color: '#9f1239', marginTop: 8, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, l.body),
-                nlH('div', { style: { fontSize: 10, color: '#64748b', marginTop: 6 } }, '📅 Written ' + l.date)
+                nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 6 } }, '📅 Written ' + l.date)
               );
             })
           ),
@@ -15418,7 +15418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           })
         )
       ),
-      nlH('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, visible.length + ' tool' + (visible.length === 1 ? '' : 's') + ' shown'),
+      nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 8 } }, visible.length + ' tool' + (visible.length === 1 ? '' : 's') + ' shown'),
       nlH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
         visible.map(function(t) {
           var cobj = categories.find(function(c) { return c.id === t.cat; }) || categories[0];
@@ -15431,7 +15431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               nlH('div', { style: { fontSize: 22 } }, t.icon),
               nlH('div', { style: { flex: 1 } },
                 nlH('div', { style: { fontSize: 12, fontWeight: 800, color: cobj.color, marginBottom: 2 } }, t.label),
-                nlH('div', { style: { fontSize: 10, color: '#475569', lineHeight: 1.4 } }, t.desc)
+                nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.4 } }, t.desc)
               )
             )
           );
@@ -15450,7 +15450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     }
     if (view === 'hub') return nlH(MyNutritionKitHub, { d: d, navigate: function(v) { setView(v); } });
     var backBar = nlH('button', { onClick: function() { setView('hub'); },
-      style: { padding: '6px 12px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8, marginLeft: 14 }
+      style: { padding: '6px 12px', borderRadius: 8, background: '#f1f5f9', color: 'var(--allo-stem-text-soft, #475569)', border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8, marginLeft: 14 }
     }, '← My Nutrition Kit');
     var Comp, p;
     // Mapping each view id to its component
@@ -17047,7 +17047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 relative ' +
                     (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : (done ? 'bg-emerald-50 text-emerald-900 border-emerald-400' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500'))
                 },
-                  done && !sel && h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: -6, right: -6, background: '#16a34a', color: '#ffffff', fontSize: 10, fontWeight: 900, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.18)' } }, '✓'),
+                  done && !sel && h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: -6, right: -6, background: '#16a34a', color: 'var(--allo-stem-text, #ffffff)', fontSize: 10, fontWeight: 900, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.18)' } }, '✓'),
                   'Challenge ' + (i + 1) + ' · ' + L.difficulty
                 );
               })
@@ -17210,7 +17210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   ),
                   // Badge medallion
                   h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 hidden md:flex',
-                    style: { width: 84, height: 84, borderRadius: '50%', background: tierColor, color: '#ffffff', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: '0 4px 14px ' + tierColor + '44, inset 0 1px 0 rgba(255,255,255,0.25)', border: '4px solid #ffffff' }
+                    style: { width: 84, height: 84, borderRadius: '50%', background: tierColor, color: 'var(--allo-stem-text, #ffffff)', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: '0 4px 14px ' + tierColor + '44, inset 0 1px 0 rgba(255,255,255,0.25)', border: '4px solid #ffffff' }
                   },
                     h('div', { style: { fontSize: 26, lineHeight: 1 } }, '🏷'),
                     h('div', { style: { fontSize: 9, fontWeight: 900, letterSpacing: '0.04em', textAlign: 'center', textTransform: 'uppercase', marginTop: 4 } }, 'Decoder')
@@ -17334,7 +17334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                  h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -18673,7 +18673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                  h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -19494,7 +19494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, n.icon),
                     h('span', { style: { color: ddAns ? color : n.color, fontSize: 13, fontWeight: 800 } }, n.label)
                   ),
-                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns ? color : '#475569' } }, n.def)
+                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns ? color: 'var(--allo-stem-text-soft, #475569)' } }, n.def)
                 );
               })
             ),
@@ -19804,7 +19804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       className: 'rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-2 ring-sky-500 ' +
                         (sel ? 'border-sky-600 ring-2 ring-sky-300 shadow-lg' : 'border-slate-300 hover:border-sky-400')
                     },
-                      h('div', { style: { width: '100%', height: 36, background: c.hex, borderRadius: 6, border: '1px solid #cbd5e1' }, 'aria-hidden': 'true' }),
+                      h('div', { style: { width: '100%', height: 36, background: c.hex, borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)' }, 'aria-hidden': 'true' }),
                       h('div', { className: 'text-[11px] font-bold mt-1 text-slate-800' }, c.n + '. ' + c.label),
                       h('div', { className: 'text-[10px] text-slate-700' }, c.status)
                     );

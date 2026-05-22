@@ -3831,7 +3831,7 @@ window.StemLab = window.StemLab || {
         return h('div', { style: { marginBottom: 10 } },
           h('label', {
             htmlFor: inputId,
-            style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1', marginBottom: 4, cursor: 'pointer' }
+            style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, cursor: 'pointer' }
           },
             h('span', null, label),
             h('span', { style: { color: '#fbbf24', fontWeight: 600 } }, value + (suffix || ''))
@@ -4055,16 +4055,16 @@ window.StemLab = window.StemLab || {
         var actualRange = lr && lr.samples && lr.samples.length
           ? lr.samples[lr.samples.length - 1].z
           : null;
-        var rowStyle = { fontSize: 11, color: '#cbd5e1', marginBottom: 4, fontFamily: 'system-ui' };
+        var rowStyle = { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, fontFamily: 'system-ui' };
         var eqStyle = { fontSize: 11, color: '#fafafa', fontFamily: 'monospace' };
-        var headStyle = { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8, marginBottom: 4, fontWeight: 600 };
+        var headStyle = { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8, marginBottom: 4, fontWeight: 600 };
         return h('section', {
           'aria-labelledby': 'tl-formulas-heading',
-          style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+          style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
         },
           h('h3', {
             id: 'tl-formulas-heading',
-            style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+            style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
           }, 'Math behind the throw'),
           // Gravity + ball params
           h('div', { style: rowStyle },
@@ -4096,7 +4096,7 @@ window.StemLab = window.StemLab || {
             actualRange !== null ? h('span', null, ' · actual: ',
               h('span', { style: { color: '#fbbf24' } }, actualRange.toFixed(1)), ' m') : null,
             actualRange !== null && idealRange > 0
-              ? h('span', { style: { color: '#94a3b8', fontStyle: 'italic' } },
+              ? h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                   ' (' + (((actualRange - idealRange) / idealRange) * 100).toFixed(0) + '% drag/Magnus delta)')
               : null
           ),
@@ -4106,7 +4106,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: rowStyle },
             'e = ', h('span', { style: { color: '#fbbf24' } }, (ball.cor || 0).toFixed(2)),
             ' for a ', ball.label, ' on a regulation surface. ',
-            h('span', { style: { color: '#94a3b8', fontStyle: 'italic' } },
+            h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
               'A 1m drop bounces back ', ((ball.cor || 0) * (ball.cor || 0)).toFixed(2), ' m of height (energy retained).'))
         );
       }
@@ -4120,22 +4120,22 @@ window.StemLab = window.StemLab || {
         var ball = BALLS[modeMeta.ball] || BALLS.baseball;
         var regs = ball.regs;
         if (!regs) return null;
-        var rowStyle = { fontSize: 11, color: '#cbd5e1', marginBottom: 6 };
-        var labelStyle = { color: '#94a3b8', fontWeight: 600, marginRight: 6 };
+        var rowStyle = { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 };
+        var labelStyle = { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, marginRight: 6 };
         return h('section', {
           'aria-labelledby': 'tl-regs-heading',
-          style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+          style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
         },
           h('h3', {
             id: 'tl-regs-heading',
-            style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+            style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
           }, ball.icon + ' ' + ball.label + ' regulations & materials'),
-          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic' } }, regs.league),
+          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, fontStyle: 'italic' } }, regs.league),
           h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Mass:'), regs.massSpec),
           h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Diameter:'), regs.diameterSpec),
           h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Pressure:'), regs.pressureSpec),
           h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Material:'), regs.material),
-          h('div', { style: { marginTop: 8, padding: 8, background: '#1e293b', borderRadius: 6, fontSize: 11, color: '#cbd5e1' } },
+          h('div', { style: { marginTop: 8, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
             h('span', { style: { color: '#fbbf24', fontWeight: 700, marginRight: 6 } }, 'Why it matters:'),
             regs.physics)
         );
@@ -4163,7 +4163,7 @@ window.StemLab = window.StemLab || {
              : '#ef4444';
       }
 
-      return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
+      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the simulation runs (previously hover-only on the chip).
@@ -4178,7 +4178,7 @@ window.StemLab = window.StemLab || {
                    padding: 16 }
         },
           h('div', {
-            style: { background: '#0f172a', border: '2px solid #334155', borderRadius: 14,
+            style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '2px solid var(--allo-stem-border, #334155)', borderRadius: 14,
                      maxWidth: 560, width: '100%', maxHeight: '85vh', overflow: 'auto',
                      padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }
           },
@@ -4186,12 +4186,12 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 36 } }, scenarioIntro.icon || '🎬'),
               h('h2', { id: 'tl-scenario-intro-title',
-                style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: '#f1f5f9' } },
+                style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--allo-stem-text, #f1f5f9)' } },
                 scenarioIntro.label),
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
                 'aria-label': 'Close scenario intro',
-                style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1',
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)',
                          width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
                          fontSize: 16, lineHeight: 1, fontWeight: 700 }
               }, '×')
@@ -4201,7 +4201,7 @@ window.StemLab = window.StemLab || {
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 '📜 The story'),
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } },
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
                 scenarioIntro.teach)
             ),
             // Discussion questions (only if present)
@@ -4211,7 +4211,7 @@ window.StemLab = window.StemLab || {
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 '🤔 Try these before you run it'),
-              h('ul', { style: { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 13, lineHeight: 1.5 } },
+              h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } },
                 scenarioIntro.questions.map(function(q, i) {
                   return h('li', { key: 'tl-sq-' + i, style: { marginBottom: 6 } }, q);
                 })
@@ -4231,8 +4231,8 @@ window.StemLab = window.StemLab || {
                 onClick: function() { setScenarioIntro(null); },
                 'data-tl-focusable': 'true',
                 style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
-                         border: '1px solid #475569', background: '#1e293b',
-                         color: '#cbd5e1', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+                         border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)',
+                         color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
               }, '🔧 Explore controls first')
             )
           )
@@ -4264,10 +4264,10 @@ window.StemLab = window.StemLab || {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
             'data-tl-focusable': 'true',
             'aria-label': 'Back to STEM Lab',
-            style: { background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, '← Back'),
           h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
-          h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Same arm, different ball, different game.')
+          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Same arm, different ball, different game.')
         ),
         // ── Pitch Locker compact summary (only shown in pitching mode) ──
         // Sticky band under the header showing how many pitch types you have
@@ -4291,8 +4291,8 @@ window.StemLab = window.StemLab || {
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
                 h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, 'Pitch Locker'),
-                h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, got + ' / ' + total + ' types thrown for strikes'),
-                h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, got + ' / ' + total + ' types thrown for strikes'),
+                h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                   got === 0 ? 'Hit the strike zone with a new pitch type to lock it in.'
                   : got === total ? '🏆 Full repertoire — every pitch type strike-tested.'
                   : 'Hit a strike with a new type to add it.')
@@ -4337,7 +4337,7 @@ window.StemLab = window.StemLab || {
                 padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                 background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: '#f1f5f9', fontSize: 13, fontWeight: 600
+                color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontWeight: 600
               }
             }, mm.icon + ' ' + mm.label);
           })
@@ -4369,7 +4369,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -4381,10 +4381,10 @@ window.StemLab = window.StemLab || {
         // the physics. Hidden behind a collapsed details so it doesn't
         // dominate the UI for students who want to free-explore.
         h('details', {
-          style: { marginBottom: 14, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 14, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '🎬 Scenarios — one-click teaching demos (' + SCENARIOS.length + ' built-in' + ((d.customScenarios || []).length ? ' + ' + (d.customScenarios || []).length + ' custom' : '') + ')'),
           h('div', {
             role: 'group', 'aria-label': 'Scenarios',
@@ -4399,9 +4399,9 @@ window.StemLab = window.StemLab || {
                 title: sc.teach,
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #334155',
-                  background: '#1e293b',
-                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                  border: '1px solid var(--allo-stem-border, #334155)',
+                  background: 'var(--allo-stem-panel, #1e293b)',
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
                 }
               }, sc.icon + ' ' + sc.label);
             }).concat(
@@ -4521,12 +4521,12 @@ window.StemLab = window.StemLab || {
               display: 'block', width: '100%', marginBottom: 14,
               padding: '10px 14px', borderRadius: 8,
               border: '1px solid ' + border, background: bg,
-              color: '#f1f5f9', fontSize: 12, fontWeight: 600,
+              color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600,
               textAlign: 'left', cursor: done ? 'default' : 'pointer'
             }
           },
             h('div', { style: { fontSize: 11, color: border, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, fontWeight: 400 } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontWeight: 400 } },
               done ? 'Earned 15 XP. Try again tomorrow.' : daily.teach.slice(0, 110) + (daily.teach.length > 110 ? '…' : ''))
           );
         })(),
@@ -4537,10 +4537,10 @@ window.StemLab = window.StemLab || {
         // hint so students can see how to unlock unearned ones — turns
         // it into a checklist rather than a mystery box.
         h('details', {
-          style: { marginBottom: 14, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 14, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '🏅 Achievements (' + Object.keys(d.badgesEarned || {}).length + ' / ' + BADGES.length + ')'),
           h('div', {
             role: 'list', 'aria-label': 'Badge achievements',
@@ -4572,10 +4572,10 @@ window.StemLab = window.StemLab || {
         // and trading card already use; formats them as a 2-column
         // grid the way fantasy sports apps display stat lines.
         h('details', {
-          style: { marginBottom: 14, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+          style: { marginBottom: 14, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
-            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+            style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '📊 Your Numbers — ' + (d.playerName || 'session stats')),
           h('div', {
             role: 'table', 'aria-label': 'Session stats',
@@ -4584,7 +4584,7 @@ window.StemLab = window.StemLab || {
             getStatsRows(d).reduce(function(acc, row) {
               acc.push(h('span', {
                 key: 'sl-' + row.label, role: 'rowheader',
-                style: { color: '#94a3b8' }
+                style: { color: 'var(--allo-stem-text-soft, #94a3b8)' }
               }, row.label));
               acc.push(h('span', {
                 key: 'sv-' + row.label, role: 'cell',
@@ -4616,7 +4616,7 @@ window.StemLab = window.StemLab || {
               padding: 12, borderRadius: 10, marginBottom: 14,
               background: 'rgba(167,139,250,0.10)',
               border: '1px solid rgba(167,139,250,0.45)',
-              color: '#f1f5f9', fontSize: 13, lineHeight: 1.5
+              color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 } },
@@ -4632,8 +4632,8 @@ window.StemLab = window.StemLab || {
                 'data-tl-focusable': 'true',
                 style: {
                   padding: '2px 8px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #475569', background: 'transparent',
-                  color: '#cbd5e1', fontSize: 11
+                  border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent',
+                  color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
                 }
               }, '✕ Dismiss')
             ),
@@ -4642,7 +4642,7 @@ window.StemLab = window.StemLab || {
             },
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                 '💭 Discussion'),
-              h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
+              h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } },
                 active.questions.map(function(q, i) {
                   return h('li', { key: 'q-' + i, style: { marginBottom: 4 } }, q);
                 })
@@ -4665,7 +4665,7 @@ window.StemLab = window.StemLab || {
         h('div', { role: 'group', 'aria-label': 'Skill level',
           style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap', fontSize: 12 }
         },
-          h('span', { style: { color: '#cbd5e1' } }, 'Skill:'),
+          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Skill:'),
           [
             { tier: 1, label: '🏆 Rookie',     sub: 'Speed only' },
             { tier: 2, label: '🏆 Pro',        sub: '+ Angle' },
@@ -4692,7 +4692,7 @@ window.StemLab = window.StemLab || {
                 padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                 background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: '#f1f5f9', fontSize: 12, fontWeight: sel ? 700 : 500
+                color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: sel ? 700 : 500
               }
             }, opt.label);
           })
@@ -4705,7 +4705,7 @@ window.StemLab = window.StemLab || {
         h('div', { role: 'group', 'aria-label': 'Gravity preset',
           style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap', fontSize: 12 }
         },
-          h('span', { style: { color: '#cbd5e1' } }, 'Gravity:'),
+          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Gravity:'),
           GRAVITY_PRESETS.map(function(gp) {
             var sel = (d.gravityId || 'earth') === gp.id;
             return h('button', {
@@ -4721,7 +4721,7 @@ window.StemLab = window.StemLab || {
                 padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                 background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: '#f1f5f9', fontSize: 12
+                color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12
               }
             }, gp.icon + ' ' + gp.label + ' (' + gp.g.toFixed(1) + ')');
           })
@@ -4760,10 +4760,10 @@ window.StemLab = window.StemLab || {
                 style: {
                   padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
                   border: '1px solid #10b981', background: 'rgba(16,185,129,0.18)',
-                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                 }
               }, '🎯 Start ' + modeDrills.label),
-              h('span', { style: { fontSize: 11, color: '#94a3b8' } },
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 modeDrills.tasks.length + ' tasks · sandbox stays open while a drill runs'));
           }
           // Active drill panel
@@ -4788,17 +4788,17 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Stop the current drill',
                 'data-tl-focusable': 'true',
                 style: { padding: '4px 8px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11 }
+                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
               }, allDone ? 'Close' : 'Stop')),
             allDone
-              ? h('div', { style: { fontSize: 13, color: '#cbd5e1' } },
+              ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   'You finished all ' + modeDrills.tasks.length + ' tasks. Try another sport mode\'s drills, or hit Stop to return to sandbox.')
               : h('div', null,
-                  h('div', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4 } }, task.goal),
-                  h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } },
+                  h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #f1f5f9)', fontWeight: 600, marginBottom: 4 } }, task.goal),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
                     h('span', { style: { color: '#10b981', fontWeight: 700, marginRight: 6 } }, 'Progress:'),
                     task.progress(stats)),
-                  task.tip ? h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                  task.tip ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                     h('span', { style: { color: '#fbbf24' } }, '💡 '), task.tip) : null)
           );
         })(),
@@ -4822,7 +4822,7 @@ window.StemLab = window.StemLab || {
                     ? 'Football field side view with hash-mark distance labels, yellow tee on the left, and yellow goalposts at ' + d.fgDistanceYd + ' yards.'
                     : 'Basketball court side view. Free-throw line on the left, hoop with backboard on the right. Orange bar is the rim at 10 feet.')
                 + (lr ? ' Last throw outcome: ' + outcomeLabel(lr.location).replace(/^[^A-Za-z]+/, '') + '.' : ''),
-              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
+              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)' }
             }),
             // Fullscreen toggle (top-right of canvas wrapper)
             h('button', {
@@ -4850,19 +4850,19 @@ window.StemLab = window.StemLab || {
             // its label when entered.
             h('section', {
               'aria-labelledby': 'tl-result-heading',
-              style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+              style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
             },
               h('h3', {
                 id: 'tl-result-heading',
-                style: { fontSize: 12, margin: 0, marginBottom: 8, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+                style: { fontSize: 12, margin: 0, marginBottom: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, lr ? 'Last throw' : 'Ready to throw'),
               lr ? (
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 700, color: outcomeColor(lr.location), marginBottom: 6 } }, outcomeLabel(lr.location)),
-                  h('div', { style: { fontSize: 12, color: '#cbd5e1', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 } },
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Speed'), h('div', { style: { fontWeight: 700 } }, d.speedMph + ' mph')),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 } },
+                    h('div', null, h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, 'Speed'), h('div', { style: { fontWeight: 700 } }, d.speedMph + ' mph')),
                     h('div', null,
-                      h('div', { style: { color: '#94a3b8', fontSize: 11 } },
+                      h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                         isPitching ? 'Time to plate'
                         : isFreeKick ? 'Time to goal'
                         : isFieldGoal ? 'Hang time'
@@ -4870,14 +4870,14 @@ window.StemLab = window.StemLab || {
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.outcome.plateT ? lr.outcome.plateT.toFixed(2) + ' s' : '—')
                         : (lr.samples && lr.samples.length ? lr.samples[lr.samples.length - 1].t.toFixed(2) + ' s' : '—'))),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } },
+                    h('div', null, h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                         isPitching ? 'Vert. break' : isFreeKick ? 'Curl' : isFieldGoal ? 'Peak height' : 'Apex'),
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.vBreakIn !== null ? lr.vBreakIn.toFixed(1) + ' in' : '—')
                         : isFreeKick
                           ? (lr.samples ? (Math.max.apply(null, lr.samples.map(function(s) { return s.x; })) - Math.min.apply(null, lr.samples.map(function(s) { return s.x; }))).toFixed(2) + ' m' : '—')
                           : (lr.samples ? Math.max.apply(null, lr.samples.map(function(s) { return s.y; })).toFixed(2) + ' m' : '—'))),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } },
+                    h('div', null, h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                         isPitching ? 'Horiz. break' : isFreeKick ? 'Spin axis' : isFieldGoal ? 'Launch ∠' : 'Release ∠'),
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.hBreakIn !== null ? lr.hBreakIn.toFixed(1) + ' in' : '—')
@@ -4888,10 +4888,10 @@ window.StemLab = window.StemLab || {
                   // Dynamic explainer — outcome-specific feedback after a throw,
                   // generated from the actual physics result. Falls through to
                   // the active preset's static teach blurb if there's no result.
-                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
+                  h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } },
                     explainResult(lr) || activePreset.teach)
                 )
-              ) : h('div', { style: { color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 16 } },
+              ) : h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, textAlign: 'center', padding: 16 } },
                 isPitching
                   ? 'Pick a pitch type, set your release, and click THROW to see the path.'
                   : isFreeKick
@@ -4902,7 +4902,7 @@ window.StemLab = window.StemLab || {
             ),
             // "Show physics" + "Show formulas" toggles + keyboard shortcuts hint.
             // Bumped to slate-300 (#cbd5e1) for AA contrast on dark panel.
-            h('div', { style: { marginTop: 10, fontSize: 12, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
+            h('div', { style: { marginTop: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                 h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
                   h('input', {
@@ -4921,9 +4921,9 @@ window.StemLab = window.StemLab || {
                   }),
                   'Show formulas (math behind the throw)')
               ),
-              h('span', { style: { fontSize: 11, color: '#94a3b8' } },
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 'Hotkey: ',
-                h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontFamily: 'monospace' } }, 'Space'),
+                h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'monospace' } }, 'Space'),
                 ' to throw')
             ),
             // ── Coach Mode bubble ──
@@ -4940,10 +4940,10 @@ window.StemLab = window.StemLab || {
                 style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#d946ef', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, '🤖 Coach'),
               d.coachLoading
-                ? h('div', { style: { color: '#cbd5e1', fontSize: 12, fontStyle: 'italic' } }, 'Thinking…')
+                ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontStyle: 'italic' } }, 'Thinking…')
                 : d.coachError
                 ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, d.coachError)
-                : h('div', { style: { color: '#f1f5f9', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
+                : h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
             ) : null,
             // Math view + ball regulations appear below the toggles when enabled
             formulasPanel(lr),
@@ -4953,8 +4953,8 @@ window.StemLab = window.StemLab || {
           // RIGHT: preset picker + sliders + throw button
           h('div', null,
             // Preset picker (pitches OR shots, mode-driven)
-            h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
                 isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : isVolleyball ? 'Serve type' : 'Shot type'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                 modeMeta.presets.map(function(pt) {
@@ -4982,10 +4982,10 @@ window.StemLab = window.StemLab || {
                       padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                       background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                      color: '#f1f5f9', fontSize: 12, textAlign: 'left'
+                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, textAlign: 'left'
                     }
                   }, h('div', { style: { fontSize: 14 } }, pt.icon + ' ' + pt.label),
-                     h('div', { style: { fontSize: 10, color: '#94a3b8' } },
+                     h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                        pt.speedMph + ' mph' + (isPitching ? ' · ' + pt.spinRpm + ' rpm'
                                               : isFreeKick ? ' · spin ' + pt.spinAxisDeg + '°'
                                               : isFieldGoal ? ' · ' + pt.aimDegV + '° launch'
@@ -4995,7 +4995,7 @@ window.StemLab = window.StemLab || {
                                               : ' · ' + pt.aimDegV + '° arc')));
                 })
               ),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8, padding: 8, background: '#1e293b', borderRadius: 6 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6 } },
                 h('div', { style: { fontWeight: 700, marginBottom: 2 } }, 'Grip:'),
                 activePreset.grip)
             ),
@@ -5007,18 +5007,18 @@ window.StemLab = window.StemLab || {
             // without flipping back and forth. Click any row to load
             // that preset. Collapsed by default to keep the layout tight.
             h('details', {
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px', marginBottom: 12 }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px', marginBottom: 12 }
             },
               h('summary', {
-                style: { cursor: 'pointer', fontSize: 11, color: '#cbd5e1', fontWeight: 600 }
+                style: { cursor: 'pointer', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
               }, '📋 Preset compendium — compare every ' + (isPitching ? 'pitch' : isFreeKick ? 'kick' : isFieldGoal ? 'distance' : isBowling ? 'delivery' : isGolf ? 'club' : isVolleyball ? 'serve' : 'shot') + ' in this sport'),
               h('div', {
                 role: 'table',
                 'aria-label': 'Preset comparison — ' + modeMeta.label,
-                style: { marginTop: 8, fontSize: 11, color: '#cbd5e1' }
+                style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' }
               },
                 // Header row
-                h('div', { role: 'row', style: { display: 'flex', borderBottom: '1px solid #334155', paddingBottom: 4, marginBottom: 4, fontWeight: 700, color: '#94a3b8' } },
+                h('div', { role: 'row', style: { display: 'flex', borderBottom: '1px solid var(--allo-stem-border, #334155)', paddingBottom: 4, marginBottom: 4, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                   h('div', { style: { flex: '0 0 110px' } }, 'Preset'),
                   h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, 'Speed'),
                   h('div', { style: { flex: '0 0 60px', textAlign: 'right' } }, 'Spin'),
@@ -5076,8 +5076,8 @@ window.StemLab = window.StemLab || {
             ),
 
             // Sliders — ranges scale with mode
-            h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Release controls'),
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Release controls'),
               slider('Speed', d.speedMph, modeMeta.speedRange[0], modeMeta.speedRange[1], 1, function(v) { upd('speedMph', v); }, ' mph'),
               // Tier 2+: release height + angles. Tier 1 hides them so the
               // student can focus on the speed-distance relationship alone.
@@ -5099,9 +5099,9 @@ window.StemLab = window.StemLab || {
             // Tier 1 students stick to "more speed = more distance"; wind
             // joins at Tier 2 once they've grasped the basic relationship.
             ((isFreeKick || isFieldGoal || isBowling || isGolf) && (d.scaffoldTier || 3) >= 2) ? h('div', {
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 }
             },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
                 'Wind (relative to throw)'),
               // Quick-pick wind presets — calm / tailwind / headwind / cross / tornado
               h('div', { role: 'group', 'aria-label': 'Wind presets',
@@ -5124,7 +5124,7 @@ window.StemLab = window.StemLab || {
                       padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                       background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                      color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
                     }
                   }, wp.icon + ' ' + wp.label);
                 })
@@ -5132,7 +5132,7 @@ window.StemLab = window.StemLab || {
               slider('Wind speed', d.windMph || 0, 0, 40, 1, function(v) { upd('windMph', v); }, ' mph'),
               // Wind direction: 0° head, 90° R, 180° tail, 270° L
               slider('Wind direction', d.windDirDeg || 0, 0, 359, 5, function(v) { upd('windDirDeg', v); }, '°'),
-              h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4 } },
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } },
                 (function() {
                   var deg = d.windDirDeg || 0;
                   if (deg < 22 || deg >= 338) return '↓ Headwind (slows the ball)';
@@ -5207,7 +5207,7 @@ window.StemLab = window.StemLab || {
                 'data-tl-focusable': 'true',
                 style: {
                   flex: 1, padding: '8px 10px', borderRadius: 6, cursor: d.replayActive ? 'wait' : 'pointer',
-                  border: '1px solid #475569',
+                  border: '1px solid var(--allo-stem-border, #475569)',
                   background: d.replayActive ? '#1e293b' : 'rgba(34,197,94,0.10)',
                   color: '#86efac', fontSize: 11, fontWeight: 600
                 }
@@ -5251,7 +5251,7 @@ window.StemLab = window.StemLab || {
                       flex: 1, padding: '10px 12px', minHeight: 32, borderRadius: 6, cursor: 'pointer',
                       border: '1px solid #d946ef',
                       background: refList.length ? 'rgba(217,70,239,0.18)' : '#1e293b',
-                      color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
                     }
                   }, refList.length === 0 ? '📌 Save as reference'
                      : atCap ? '📌 Replace oldest (' + refList.length + '/' + MAX_REFERENCES + ')'
@@ -5263,7 +5263,7 @@ window.StemLab = window.StemLab || {
                     style: {
                       minWidth: 32, minHeight: 32, padding: '10px 12px',
                       borderRadius: 6, cursor: 'pointer',
-                      border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 12
+                      border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12
                     }
                   }, 'Clear') : null
                 ),
@@ -5282,14 +5282,14 @@ window.StemLab = window.StemLab || {
                         }
                       }),
                       h('span', { style: { color: ref.color || '#d946ef', fontWeight: 700, flexShrink: 0 } }, 'REF' + (idx + 1)),
-                      h('span', { style: { color: '#cbd5e1', fontStyle: 'italic', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ref.label || 'reference'),
+                      h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ref.label || 'reference'),
                       h('button', {
                         onClick: (function(i) { return function() { removeReferenceAt(i); }; })(idx),
                         'aria-label': 'Remove reference ' + (idx + 1) + ': ' + (ref.label || ''),
                         'data-tl-focusable': 'true',
                         style: {
                           minWidth: 24, minHeight: 24, padding: '2px 6px', borderRadius: 4, cursor: 'pointer',
-                          border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: 11
+                          border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
                         }
                       }, '✕')
                     );
@@ -5320,7 +5320,7 @@ window.StemLab = window.StemLab || {
                       padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
                       background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
-                      color: '#f1f5f9', fontSize: 11, fontWeight: sel ? 700 : 500
+                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: sel ? 700 : 500
                     }
                   }, p.icon + ' ' + p.label);
                 })
@@ -5336,13 +5336,13 @@ window.StemLab = window.StemLab || {
                   borderRadius: 6, cursor: d.coachLoading ? 'wait' : 'pointer',
                   border: '1px solid #d946ef',
                   background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
-                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                 }
               }, d.coachLoading ? '🤖 Coach is thinking…' : '🤖 Ask the coach')
             ) : null,
             // Stats line — mode-aware. Bumped slate-400 → slate-300 (#cbd5e1)
             // for AA contrast on the dark panel background.
-            h('div', { style: { marginTop: 12, fontSize: 11, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between' } },
+            h('div', { style: { marginTop: 12, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', justifyContent: 'space-between' } },
               h('span', null, (isPitching ? 'Pitches: ' : isFreeKick ? 'Kicks: ' : isFieldGoal ? 'FGs: ' : 'Shots: ') + (d.throwCount || 0)),
               h('span', null, isPitching ? 'Strikes: ' + (d.strikeCount || 0)
                             : isFreeKick ? 'Goals: ' + (d.goalCount || 0)

@@ -1905,7 +1905,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),
@@ -1934,7 +1934,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),
@@ -2662,7 +2662,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', {
                   id: 'calc-viz-wrap',
                   className: 'relative rounded-xl overflow-hidden border-2 border-indigo-300',
-                  style: { height: '380px', width: '100%', background: '#0f172a' }
+                  style: { height: '380px', width: '100%', background: 'var(--allo-stem-canvas, #0f172a)' }
                 },
                   h('canvas', {
                     ref: _vizCvRef,

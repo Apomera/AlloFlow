@@ -260,7 +260,7 @@ var d = labToolData.universe || {};
             { name: 'Main Sequence', icon: '\u2600\uFE0F', color: '#fbbf24', desc: 'Hydrogen fusion ignites! The star enters a stable equilibrium between gravity (pulling in) and radiation pressure (pushing out). Our Sun is here.', temp: '3,000-50,000 K', size: '0.1-10x Sun', duration: 'Millions to trillions of years' },
             { name: 'Red Giant', icon: '\uD83D\uDD34', color: '#ef4444', desc: 'Hydrogen fuel runs out in the core. The star swells enormously as it fuses helium. Could engulf inner planets.', temp: '3,000-5,000 K', size: '10-100x Sun', duration: 'Millions of years' },
             { name: 'Planetary Nebula', icon: '\uD83C\uDF00', color: '#a78bfa', desc: 'Low-mass stars gently shed their outer layers into beautiful expanding gas shells, enriching space with heavier elements.', temp: '10,000-200,000 K (central star)', size: '~1 light-year', duration: '~10,000 years' },
-            { name: 'White Dwarf', icon: '\u26AA', color: '#e2e8f0', desc: 'The Earth-sized remnant core. No fusion. Slowly cools over billions of years. Will eventually become a black dwarf (none exist yet).', temp: '8,000-40,000 K (cooling)', size: 'Earth-sized', duration: 'Trillions of years to cool' },
+            { name: 'White Dwarf', icon: '\u26AA', color: 'var(--allo-stem-text, #e2e8f0)', desc: 'The Earth-sized remnant core. No fusion. Slowly cools over billions of years. Will eventually become a black dwarf (none exist yet).', temp: '8,000-40,000 K (cooling)', size: 'Earth-sized', duration: 'Trillions of years to cool' },
             { name: 'Supernova', icon: '\uD83D\uDCA5', color: '#f97316', desc: 'Massive stars (8+ solar masses) die in spectacular explosions brighter than entire galaxies! Creates elements heavier than iron (gold, platinum, uranium).', temp: '10 billion K (briefly)', size: 'Visible across galaxies', duration: 'Weeks to months' },
             { name: 'Neutron Star', icon: '\uD83D\uDCAB', color: '#67e8f9', desc: 'A city-sized ball of neutrons spinning at 700 rotations/second. A teaspoon weighs 6 billion tons. Pulsars are spinning neutron stars.', temp: '~1 million K', size: '~20 km diameter', duration: 'Effectively forever' },
             { name: 'Black Hole', icon: '\uD83D\uDD73', color: '#1a1a2a', desc: 'If the star is massive enough (25+ solar masses), the core collapses past neutron star density into a singularity. Nothing escapes the event horizon.', temp: 'N/A (Hawking radiation: ~nanokelvin)', size: 'Event horizon: ~60 km for 10 solar masses', duration: '10\u00B9\u2070\u2070 years (Hawking evaporation)' }
@@ -296,7 +296,7 @@ var d = labToolData.universe || {};
             { name: 'Super-Earth', icon: '\uD83C\uDF0D', size: '1.2-2x Earth', orbit: 'Varies', temp: 'Varies', desc: 'Rocky planets larger than Earth but smaller than Neptune. No equivalent in our Solar System. Some may be habitable with thick atmospheres.', example: 'LHS 1140 b, 55 Cancri e', habitable: 'Possible', color: '#22c55e' },
             { name: 'Mini-Neptune', icon: '\uD83D\uDD35', size: '2-4x Earth', orbit: 'Varies', temp: '200-600 K', desc: 'Small gas/ice planets with thick hydrogen-helium atmospheres. The most common type of exoplanet discovered! No equivalent in our Solar System.', example: 'Kepler-11f, GJ 1214 b', habitable: false, color: '#3b82f6' },
             { name: 'Earth Analog', icon: '\u2B50', size: '0.8-1.5x Earth', orbit: 'Habitable zone', temp: '200-320 K', desc: 'Rocky planets in the habitable zone where liquid water could exist. The holy grail of exoplanet research. Very hard to detect.', example: 'Kepler-442b, TRAPPIST-1e', habitable: 'Best candidate', color: '#fbbf24' },
-            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: '#94a3b8' },
+            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { name: 'Lava World', icon: '\uD83C\uDF0B', size: '0.5-2x Earth', orbit: 'Ultra-short', temp: '2,000+ K', desc: 'Rocky worlds so close to their star that the surface is molten rock. May have magma oceans and silicate vapor atmospheres. Rock literally rains from the sky.', example: 'CoRoT-7b, Kepler-78b', habitable: false, color: '#f97316' }
           ];
 
@@ -376,7 +376,7 @@ var d = labToolData.universe || {};
             { name: 'Carina Nebula', dist: '8,500 ly', size: '300+ ly across', desc: 'One of the largest nebulae in the sky. Contains Eta Carinae, a massive unstable star 100x the Sun\'s mass that could explode as a supernova any time.', features: 'Eta Carinae, Keyhole Nebula, Mystic Mountain, young massive stars', icon: '\uD83C\uDF1F', color: '#f472b6' },
             { name: 'Tarantula Nebula (30 Doradus)', dist: '160,000 ly (LMC)', size: '600 ly across', desc: 'The most active star-forming region in the Local Group. If it were as close as the Orion Nebula, it would cast shadows on Earth. Contains the most massive known stars.', features: 'R136 cluster with stars 200+ solar masses, extreme UV radiation', icon: '\uD83D\uDD25', color: '#fb923c' },
             { name: 'Rosette Nebula', dist: '5,000 ly', size: '130 ly across', desc: 'A beautiful flower-shaped emission nebula. Stellar winds from the central star cluster have carved a cavity in the gas, creating the rose pattern.', features: 'Central cavity, elephant trunk structures, NGC 2244 cluster', icon: '\uD83C\uDF39', color: '#f87171' },
-            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: '#94a3b8' }
+            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: 'var(--allo-stem-text-soft, #94a3b8)' }
           ];
 
           // Planetary nebulae gallery
@@ -595,9 +595,9 @@ var d = labToolData.universe || {};
           var ELEMENT_ORIGINS = [
             { name: 'Hydrogen (H)', origin: 'Big Bang', pct: '73%', note: 'Created in the first 3 minutes. Most abundant element.', color: '#fbbf24' },
             { name: 'Helium (He)', origin: 'Big Bang + Stars', pct: '25%', note: 'Mostly from Big Bang nucleosynthesis. Also made in stellar fusion.', color: '#fde68a' },
-            { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: '#94a3b8' },
+            { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { name: 'Oxygen (O)', origin: 'Massive star fusion', pct: 'Trace', note: 'Made in massive star cores. Third most abundant element in universe.', color: '#3b82f6' },
-            { name: 'Iron (Fe)', origin: 'Stellar core collapse', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: '#94a3b8' },
+            { name: 'Iron (Fe)', origin: 'Stellar core collapse', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { name: 'Gold (Au)', origin: 'Neutron star mergers', pct: 'Ultra-trace', note: 'Created when two neutron stars collide! That\'s why gold is so rare.', color: '#f59e0b' },
             { name: 'Uranium (U)', origin: 'Supernovae + mergers', pct: 'Ultra-trace', note: 'Heaviest natural element. Powers nuclear reactors and heats Earth\'s core.', color: '#10b981' },
             { name: 'Lithium (Li)', origin: 'Big Bang + cosmic rays', pct: 'Trace', note: 'Tiny amount from Big Bang. Also made when cosmic rays hit atoms in space.', color: '#ef4444' }
@@ -1919,7 +1919,7 @@ var d = labToolData.universe || {};
                       { name: 'Sun', x: 0.55, y: 0.6, color: '#fbbf24', r: 4 },
                       { name: 'Betelgeuse', x: 0.8, y: 0.05, color: '#ef4444', r: 6 },
                       { name: 'Proxima Centauri', x: 0.85, y: 0.85, color: '#f87171', r: 2 },
-                      { name: 'White Dwarfs', x: 0.2, y: 0.82, color: '#e2e8f0', r: 2 },
+                      { name: 'White Dwarfs', x: 0.2, y: 0.82, color: 'var(--allo-stem-text, #e2e8f0)', r: 2 },
                       { name: 'Aldebaran', x: 0.7, y: 0.2, color: '#fb923c', r: 5 }
                     ];
                     stars.forEach(function(s) {

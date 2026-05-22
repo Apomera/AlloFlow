@@ -110,11 +110,12 @@ window.StemLab = window.StemLab || {
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (molecule) â”€â”€
-      return (function() {
-const d = labToolData.molecule;
+      var useRef = React.useRef;
+      var useState = React.useState;
+      var useEffect = React.useEffect;
 
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, [key]: val } }));
+      // ── Tool body (molecule) ──
+      return (function() {
 
           const W = 400, H = 300;
 
@@ -158,6 +159,339 @@ const d = labToolData.molecule;
           const aiQuestion = d.aiQuestion || '';
           const aiAnswer = d.aiAnswer || '';
           const aiLoading = d.aiLoading || false;
+
+          // ── Three.js Sequenced Loader ──
+          useEffect(function() {
+            if (window.THREE && window.THREE.OrbitControls) {
+              setThreeLoaded(true);
+              return;
+            }
+            
+            function loadOrbitControls() {
+              if (window.THREE && window.THREE.OrbitControls) {
+                setThreeLoaded(true);
+                return;
+              }
+              var script = document.createElement('script');
+              script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+              script.async = true;
+              script.onload = function() {
+                setThreeLoaded(true);
+              };
+              script.onerror = function(err) {
+                console.error("Failed to load OrbitControls", err);
+              };
+              document.head.appendChild(script);
+            }
+
+            if (window.THREE) {
+              loadOrbitControls();
+              return;
+            }
+
+            var script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            script.async = true;
+            script.onload = function() {
+              loadOrbitControls();
+            };
+            script.onerror = function(err) {
+              console.error("Failed to load Three.js", err);
+            };
+            document.head.appendChild(script);
+          }, []);
+
+          // ── Three.js Lifecycle Hooks ──
+          useEffect(function() {
+            if (mode === 'viewer') {
+              if (threeLoaded && webglCanvasRef.current) {
+                if (!threeSceneRef.current) {
+                  initThree(webglCanvasRef.current);
+                }
+                update3DModel();
+              }
+            } else {
+              disposeThree();
+            }
+          }, [mode, threeLoaded, d.atoms, d.bonds]);
+
+          useEffect(function() {
+            return function() {
+              disposeThree();
+            };
+          }, []);
+
+          const initThree = function(canvas) {
+            if (!window.THREE || !window.THREE.OrbitControls) return;
+            try {
+              var THREE = window.THREE;
+              var W = canvas.clientWidth || 400;
+              var H = canvas.clientHeight || 300;
+
+              var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+              renderer.setSize(W, H, false);
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              threeRendererRef.current = renderer;
+
+              var scene = new THREE.Scene();
+              threeSceneRef.current = scene;
+
+              var camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 1000);
+              camera.position.set(0, 0, 15);
+              threeCameraRef.current = camera;
+
+              var ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+              scene.add(ambientLight);
+
+              var dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+              dirLight.position.set(5, 10, 7);
+              scene.add(dirLight);
+              
+              var fillLight = new THREE.DirectionalLight(0x90b0ff, 0.45);
+              fillLight.position.set(-5, -5, -2);
+              scene.add(fillLight);
+
+              var controls = new THREE.OrbitControls(camera, renderer.domElement);
+              controls.enableDamping = true;
+              controls.dampingFactor = 0.05;
+              controls.maxDistance = 50;
+              controls.minDistance = 2;
+              threeControlsRef.current = controls;
+
+              threeResourcesRef.current = {
+                ambientLight: ambientLight,
+                dirLight: dirLight,
+                fillLight: fillLight,
+                atomGroup: new THREE.Group()
+              };
+              scene.add(threeResourcesRef.current.atomGroup);
+
+              startLoop();
+            } catch(e) {
+              console.error("Error in initThree", e);
+            }
+          };
+
+          const startLoop = function() {
+            var THREE = window.THREE;
+            var animate = function() {
+              animationFrameIdRef.current = requestAnimationFrame(animate);
+              
+              var controls = threeControlsRef.current;
+              var resources = threeResourcesRef.current;
+              if (resources && resources.atomGroup) {
+                if (controls && controls.state === -1) {
+                  resources.atomGroup.rotation.y += 0.005;
+                }
+              }
+              
+              if (controls) {
+                controls.update();
+              }
+              
+              if (threeRendererRef.current && threeSceneRef.current && threeCameraRef.current) {
+                var canvas = webglCanvasRef.current;
+                if (canvas) {
+                  var W = canvas.clientWidth || 400;
+                  var H = canvas.clientHeight || 300;
+                  if (canvas.width !== W || canvas.height !== H) {
+                    threeRendererRef.current.setSize(W, H, false);
+                    threeCameraRef.current.aspect = W / H;
+                    threeCameraRef.current.updateProjectionMatrix();
+                  }
+                }
+                threeRendererRef.current.render(threeSceneRef.current, threeCameraRef.current);
+              }
+            };
+            
+            if (animationFrameIdRef.current) {
+              cancelAnimationFrame(animationFrameIdRef.current);
+            }
+            animate();
+          };
+
+          const update3DModel = function() {
+            var THREE = window.THREE;
+            var scene = threeSceneRef.current;
+            var resources = threeResourcesRef.current;
+            if (!THREE || !scene || !resources || !resources.atomGroup) return;
+
+            var atomGroup = resources.atomGroup;
+            while(atomGroup.children.length > 0) {
+              var child = atomGroup.children[0];
+              atomGroup.remove(child);
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                if (Array.isArray(child.material)) {
+                  child.material.forEach(function(m) { m.dispose(); });
+                } else {
+                  child.material.dispose();
+                }
+              }
+            }
+            
+            atomGroup.rotation.set(0, 0, 0);
+
+            var atoms = d.atoms || [];
+            var bonds = d.bonds || [];
+            if (atoms.length === 0) return;
+
+            var sumX = 0, sumY = 0;
+            atoms.forEach(function(a) {
+              sumX += a.x;
+              sumY += a.y;
+            });
+            var avgX = sumX / atoms.length;
+            var avgY = sumY / atoms.length;
+            var scale = 0.045;
+
+            var getRadius = function(el) {
+              switch(el) {
+                case 'H': return 0.55;
+                case 'C': return 0.95;
+                case 'N': return 0.9;
+                case 'O': return 0.85;
+                case 'F': return 0.8;
+                case 'Cl': return 1.0;
+                case 'Br': return 1.15;
+                case 'I': return 1.3;
+                case 'S': return 1.0;
+                case 'P': return 1.05;
+                case 'Na': return 1.1;
+                case 'K': return 1.35;
+                case 'Ca': return 1.25;
+                case 'Fe': return 1.2;
+                case 'Cu': return 1.15;
+                case 'Zn': return 1.15;
+                case 'Ag': return 1.25;
+                case 'Au': return 1.3;
+                default: return 0.9;
+              }
+            };
+
+            var getColor = function(a) {
+              if (a.color) {
+                if (a.color.indexOf('var(') === 0) {
+                  return 0x94a3b8;
+                }
+                return new THREE.Color(a.color);
+              }
+              return 0x94a3b8;
+            };
+
+            var positions = atoms.map(function(a, idx) {
+              var pz = 0;
+              if (a.el === 'H') {
+                pz = Math.sin(idx * 2.0) * 1.2;
+              } else if (a.el === 'O' && atoms.length > 3) {
+                pz = Math.cos(idx * 2.0) * 0.6;
+              }
+              return new THREE.Vector3((a.x - avgX) * scale, -(a.y - avgY) * scale, pz);
+            });
+
+            var createTextSprite = function(text) {
+              var canvas = document.createElement('canvas');
+              canvas.width = 64;
+              canvas.height = 64;
+              var ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, 64, 64);
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 36px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.shadowColor = 'rgba(0,0,0,0.8)';
+              ctx.shadowBlur = 4;
+              ctx.fillText(text, 32, 32);
+              
+              var texture = new THREE.CanvasTexture(canvas);
+              var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+              var sprite = new THREE.Sprite(spriteMat);
+              sprite.scale.set(0.9, 0.9, 1);
+              return sprite;
+            };
+
+            // Render Atom Spheres and Labels
+            atoms.forEach(function(a, i) {
+              var pos = positions[i];
+              var r = getRadius(a.el);
+              var color = getColor(a);
+
+              var sphereGeo = new THREE.SphereGeometry(r, 32, 32);
+              var atomMat = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.15,
+                metalness: 0.1
+              });
+              var sphereMesh = new THREE.Mesh(sphereGeo, atomMat);
+              sphereMesh.position.copy(pos);
+              atomGroup.add(sphereMesh);
+
+              var sprite = createTextSprite(a.el);
+              sprite.position.copy(pos);
+              atomGroup.add(sprite);
+            });
+
+            // Render Covalent Bonds
+            bonds.forEach(function(b) {
+              var posA = positions[b[0]];
+              var posB = positions[b[1]];
+              if (!posA || !posB) return;
+              var dist = posA.distanceTo(posB);
+              if (dist < 0.01) return;
+
+              var midpoint = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5);
+              var direction = new THREE.Vector3().subVectors(posB, posA).normalize();
+              var alignAxis = new THREE.Vector3(0, 1, 0);
+              var quaternion = new THREE.Quaternion().setFromUnitVectors(alignAxis, direction);
+
+              var cylinderGeo = new THREE.CylinderGeometry(0.12, 0.12, dist, 12);
+              var bondMat = new THREE.MeshStandardMaterial({
+                color: 0x94a3b8,
+                roughness: 0.35,
+                metalness: 0.2
+              });
+              var cylinderMesh = new THREE.Mesh(cylinderGeo, bondMat);
+              cylinderMesh.position.copy(midpoint);
+              cylinderMesh.quaternion.copy(quaternion);
+              atomGroup.add(cylinderMesh);
+            });
+          };
+
+          const disposeThree = function() {
+            try {
+              if (animationFrameIdRef.current) {
+                cancelAnimationFrame(animationFrameIdRef.current);
+                animationFrameIdRef.current = null;
+              }
+              if (threeControlsRef.current) {
+                threeControlsRef.current.dispose();
+                threeControlsRef.current = null;
+              }
+              if (threeRendererRef.current) {
+                var renderer = threeRendererRef.current;
+                renderer.dispose();
+                threeRendererRef.current = null;
+              }
+              if (threeSceneRef.current) {
+                var scene = threeSceneRef.current;
+                scene.traverse(function(obj) {
+                  if (obj.geometry) obj.geometry.dispose();
+                  if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                      obj.material.forEach(function(m) { m.dispose(); });
+                    } else {
+                      obj.material.dispose();
+                    }
+                  }
+                });
+                threeSceneRef.current = null;
+              }
+              threeCameraRef.current = null;
+              threeResourcesRef.current = null;
+            } catch(e) {
+              console.error("Error in disposeThree", e);
+            }
+          };
 
           // â”€â”€ Periodic Table Data (118 elements) â”€â”€
 
@@ -741,7 +1075,7 @@ const d = labToolData.molecule;
 
             { name: 'NaCl (Table Salt)', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
 
-            { name: 'NH₃ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
+            { name: 'NH₃ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 200, y: 210, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 260, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
 
             { name: 'O₂ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
 
@@ -856,7 +1190,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -867,19 +1201,30 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
 
-              React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
-
-                (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
-
-                (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
-
-                  React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
-
-                  React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
-
-                ))
-
-              ),
+              threeLoaded
+                ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border border-stone-200", style: { height: "300px" } },
+                    React.createElement("canvas", {
+                      ref: webglCanvasRef,
+                      className: "w-full h-full bg-gradient-to-b from-slate-900 to-slate-950",
+                      style: { display: 'block', outline: 'none' }
+                    }),
+                    React.createElement("button", {
+                      onClick: function() {
+                        if (threeControlsRef.current) {
+                          threeControlsRef.current.reset();
+                        }
+                      },
+                      className: "absolute bottom-3 right-3 px-2 py-1 bg-white/80 hover:bg-white text-stone-700 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors",
+                      'aria-label': 'Reset View'
+                    }, '🔄 Reset Camera')
+                  )
+                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+                    (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
+                    (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
+                      React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
+                      React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
+                    ))
+                  ),
 
               React.createElement("div", { className: "mt-2 text-center" },
 

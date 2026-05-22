@@ -981,7 +981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { id: 'industry',    emoji: '🏭', name: 'Industry',              pct: 21, color: '#a855f7', lever: 'Green steel (hydrogen), cement chemistry reform, circular manufacturing.' },
         { id: 'transport',   emoji: '🚗', name: 'Transport',             pct: 16, color: '#3b82f6', lever: 'EVs + rail + transit-friendly cities. Aviation is the hardest.' },
         { id: 'buildings',   emoji: '🏢', name: 'Buildings',             pct: 6,  color: '#22c55e', lever: 'Insulation + heat pumps + fossil-fuel-free construction.' },
-        { id: 'other',       emoji: '🌐', name: 'Other (waste, fugitive, aviation bunkers)', pct: 8, color: '#94a3b8', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
+        { id: 'other',       emoji: '🌐', name: 'Other (waste, fugitive, aviation bunkers)', pct: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
       ];
 
       // ══════════════════════════════════════
@@ -1209,7 +1209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         } },
           el('span', { style: { fontSize: 20 } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: isActive ? '#4ade80' : '#94a3b8' } }, label),
-          sub && el('span', { style: { fontSize: 11, color: '#94a3b8' } }, sub)
+          sub && el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, sub)
         );
       }
 
@@ -1217,7 +1217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       function slider(label, emoji, value, color, onChange) {
         return el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
           el('span', { style: { fontSize: 16, width: 24, textAlign: 'center' } }, emoji),
-          el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, label),
+          el('span', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 60 } }, label),
           el('input', { type: 'range', min: 0, max: 100, value: value, onChange: onChange,
             'aria-label': label + ' slider',
             style: { flex: 1, accentColor: color, height: 6 } }),
@@ -1290,11 +1290,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
         // ── Header ──
         el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
+          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
           el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
           el('div', null,
             el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Climate Explorer'),
-            el('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
+            el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
           ),
           el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' } },
             el('button', { onClick: exportClimateReport, title: 'Export your climate report to clipboard',
@@ -1309,8 +1309,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         el('div', { style: { padding: '0 24px 0', margin: '8px 0 0' } },
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
             el('span', { style: { fontSize: hopePct >= 80 ? 16 : 13, filter: hopePct >= 80 ? 'drop-shadow(0 0 4px #fbbf24)' : 'none', transition: 'all 0.3s' } }, hopePct >= 100 ? '\uD83C\uDF1F' : hopePct >= 60 ? '\u2600\uFE0F' : '\uD83C\uDF31'),
-            el('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'Hope Meter'),
-            el('span', { style: { color: '#94a3b8', fontSize: 11, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, 'Hope Meter'),
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
           ),
           el('div', { style: { width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
             el('div', { style: { width: hopePct + '%', height: '100%', borderRadius: 2, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', transition: 'width 0.8s ease-out', boxShadow: hopePct >= 50 ? '0 0 8px rgba(34,197,94,0.4)' : 'none' } })
@@ -1326,7 +1326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('span', { style: { fontSize: 18, filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 el('div', null,
                   el('div', { style: { fontSize: 10, fontWeight: 800, color: earned ? '#fbbf24' : '#475569' } }, b.label),
-                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, b.desc)
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, b.desc)
                 )
               );
             })
@@ -1378,7 +1378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             el('div', { style: { flex: 1, minWidth: 220 } },
               el('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              el('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+              el('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -1390,12 +1390,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           quizOpen && el('div', { style: { maxWidth: 600, margin: '0 auto 20px', padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(99,102,241,0.1))', border: '1px solid rgba(168,85,247,0.25)' } },
             el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
               el('div', { style: { color: '#c084fc', fontSize: 14, fontWeight: 900 } }, '\uD83E\uDDE0 Climate Quiz'),
-              el('div', { style: { color: '#94a3b8', fontSize: 11 } }, quizCorrect + '/' + quizTotal + ' correct')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, quizCorrect + '/' + quizTotal + ' correct')
             ),
             (function() {
               var q = QUIZ[quizIdx % QUIZ.length];
               return el('div', null,
-                el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 700, marginBottom: 12 } }, q.q),
+                el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 700, marginBottom: 12 } }, q.q),
                 q.opts.map(function(opt, oi) {
                   var isAnswer = quizAnswer != null;
                   var isCorrect = oi === q.a;
@@ -1426,7 +1426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'carbon' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 16 } },
               el('div', { style: { color: '#4ade80', fontSize: 16, fontWeight: 900 } }, '\uD83E\uDDEE Your Carbon Footprint'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'See how your daily choices add up \u2014 and how small changes make a big difference')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'See how your daily choices add up \u2014 and how small changes make a big difference')
             ),
 
             // ── Global Emissions by Sector (context panel) ──
@@ -1435,11 +1435,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               return el('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(30,41,59,0.4)', border: '1px solid rgba(148,163,184,0.15)' } },
                 el('button', { onClick: function() { upd('sectorsExpanded', !sectorsExpanded); playSound('tab'); },
                   'aria-expanded': !!sectorsExpanded,
-                  style: { width: '100%', padding: 0, border: 'none', background: 'transparent', color: '#cbd5e1', textAlign: 'left', cursor: 'pointer' } },
+                  style: { width: '100%', padding: 0, border: 'none', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', textAlign: 'left', cursor: 'pointer' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: sectorsExpanded ? 10 : 0 } },
                     el('div', null,
-                      el('span', { style: { color: '#cbd5e1', fontSize: 13, fontWeight: 900 } }, (sectorsExpanded ? '▼ ' : '▶ ') + '🌐 Global Emissions by Sector'),
-                      el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, 'Personal action matters. Structural change matters more. Here\'s where global emissions actually come from.')
+                      el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, fontWeight: 900 } }, (sectorsExpanded ? '▼ ' : '▶ ') + '🌐 Global Emissions by Sector'),
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, 'Personal action matters. Structural change matters more. Here\'s where global emissions actually come from.')
                     ),
                     el('span', { style: { color: '#60a5fa', fontSize: 11, fontWeight: 700 } }, '~54 Gt CO\u2082e/yr')
                   )
@@ -1449,16 +1449,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     return el('div', { key: sec.id, style: { marginBottom: 8 } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                         el('span', { style: { fontSize: 14, width: 20 } }, sec.emoji),
-                        el('span', { style: { flex: 1, color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, sec.name),
+                        el('span', { style: { flex: 1, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, fontWeight: 700 } }, sec.name),
                         el('span', { style: { color: sec.color, fontSize: 12, fontWeight: 900, fontFamily: 'monospace' } }, sec.pct + '%')
                       ),
                       el('div', { style: { height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden', marginBottom: 3 } },
                         el('div', { style: { width: (sec.pct * 3.5) + '%', height: '100%', background: sec.color } })
                       ),
-                      el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.5, paddingLeft: 26, fontStyle: 'italic' } }, sec.lever)
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5, paddingLeft: 26, fontStyle: 'italic' } }, sec.lever)
                     );
                   }),
-                  el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.18)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.6 } },
+                  el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.18)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
                     el('strong', { style: { color: '#60a5fa' } }, '🔑 Why this matters:'),
                     ' Personal footprint lives mostly inside transport + buildings + food choices (~28% of total emissions). The other ~72% — electricity, industry, agriculture at scale — requires policy, infrastructure, and corporate change. Both matter. The biggest personal leverage is voting + advocacy + demanding structural change.')
                 )
@@ -1471,7 +1471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var stateKey = catKey === 'transport' ? 'ccTransport' : catKey === 'food' ? 'ccFood' : catKey === 'energy' ? 'ccEnergy' : 'ccWaste';
               var val = catKey === 'transport' ? ccTransport : catKey === 'food' ? ccFood : catKey === 'energy' ? ccEnergy : ccWaste;
               return el('div', { key: catKey, style: { marginBottom: 16 } },
-                el('div', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, cat.emoji + ' ' + cat.label),
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, cat.emoji + ' ' + cat.label),
                 el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   cat.opts.map(function(opt, oi) {
                     return React.cloneElement(optBtn(val === oi, function() {
@@ -1484,7 +1484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }, opt.emoji, opt.label, opt.kg + ' kg/yr'), { key: oi });
                   })
                 ),
-                el('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } },
+                el('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic' } },
                   cat.opts[val].desc)
               );
             }),
@@ -1505,7 +1505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ].map(function(b) {
                   return el('div', { key: b.label, style: { display: 'flex', alignItems: 'center', gap: 4 } },
                     el('div', { style: { width: 10, height: 10, borderRadius: 3, background: b.color } }),
-                    el('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8' } }, b.label + ': ' + b.kg.toLocaleString() + ' kg')
+                    el('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, b.label + ': ' + b.kg.toLocaleString() + ' kg')
                   );
                 })
               ),
@@ -1514,7 +1514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)', textAlign: 'center' } },
                 el('div', { style: { fontSize: 24 } }, '\uD83C\uDF33'),
                 el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, 'That\'s like ' + Math.round(ct.total / TREES_PER_YEAR) + ' trees working for a whole year'),
-                el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, 'Each tree absorbs about 22 kg CO\u2082 per year')
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, 'Each tree absorbs about 22 kg CO\u2082 per year')
               )
             ),
 
@@ -1530,8 +1530,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 })
               ),
               el('div', { style: { textAlign: 'center' } },
-                el('div', { style: { color: '#e2e8f0', fontSize: 20, fontWeight: 900 } }, (ct.total * scaleMult / 1000000).toFixed(1) + ' million tons CO\u2082/yr'),
-                el('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'If all ' + scaleLabel + ' made these choices'),
+                el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 20, fontWeight: 900 } }, (ct.total * scaleMult / 1000000).toFixed(1) + ' million tons CO\u2082/yr'),
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, 'If all ' + scaleLabel + ' made these choices'),
                 ct.total < 2000 && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 12, fontWeight: 700 } }, '\u2728 Great job! Your footprint is below average. Imagine if everyone did this!')
               )
             ),
@@ -1540,14 +1540,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(34,197,94,0.15)' } },
               el('div', { style: { textAlign: 'center', marginBottom: 14 } },
                 el('div', { style: { color: '#60a5fa', fontSize: 15, fontWeight: 900 } }, '🔬 Detailed Habit Tracker'),
-                el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, 'Quantify ' + Object.keys(GRANULAR_ITEMS).reduce(function(n, c) { return n + GRANULAR_ITEMS[c].length; }, 0) + ' specific habits across ' + Object.keys(GRANULAR_ITEMS).length + ' categories. Move sliders to match your life.')
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 2 } }, 'Quantify ' + Object.keys(GRANULAR_ITEMS).reduce(function(n, c) { return n + GRANULAR_ITEMS[c].length; }, 0) + ' specific habits across ' + Object.keys(GRANULAR_ITEMS).length + ' categories. Move sliders to match your life.')
               ),
               // Running total banner
               el('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: granular.total > 12000 ? 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(245,158,11,0.1))' : granular.total > 5000 ? 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1))' : 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(59,130,246,0.08))', border: '1px solid ' + (granular.total > 12000 ? 'rgba(239,68,68,0.3)' : granular.total > 5000 ? 'rgba(245,158,11,0.3)' : 'rgba(34,197,94,0.25)'), textAlign: 'center' } },
-                el('div', { style: { color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 4 } }, 'Your detailed footprint'),
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 4 } }, 'Your detailed footprint'),
                 el('div', { style: { color: granular.total > 12000 ? '#fca5a5' : granular.total > 5000 ? '#fbbf24' : '#4ade80', fontSize: 28, fontWeight: 900 } },
                   (granular.total / 1000).toFixed(2) + ' t CO\u2082e/yr'),
-                el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 4 } },
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 4 } },
                   Math.round(granular.total).toLocaleString() + ' kg \u00B7 ' +
                   Math.round(granular.total / TREES_PER_YEAR) + ' trees/yr worth \u00B7 ' +
                   (granular.total / 2300 * 100).toFixed(0) + '% of Paris-aligned target (2.3 t)')
@@ -1568,9 +1568,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('span', { style: { fontSize: 14, width: 22 } }, catMeta.emoji),
                     el('div', { style: { flex: 1, height: 18, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden', position: 'relative' } },
                       el('div', { style: { width: pct + '%', height: '100%', background: catMeta.color, transition: 'width 0.3s' } }),
-                      el('div', { style: { position: 'absolute', left: 6, top: 2, color: '#e2e8f0', fontSize: 10, fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,0.6)' } }, catMeta.cat)
+                      el('div', { style: { position: 'absolute', left: 6, top: 2, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10, fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,0.6)' } }, catMeta.cat)
                     ),
-                    el('span', { style: { width: 80, textAlign: 'right', color: '#cbd5e1', fontSize: 11, fontWeight: 700, fontFamily: 'monospace' } }, Math.round(catKg).toLocaleString() + ' kg')
+                    el('span', { style: { width: 80, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, fontFamily: 'monospace' } }, Math.round(catKg).toLocaleString() + ' kg')
                   );
                 })
               ),
@@ -1582,9 +1582,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 return el('div', { key: cat, style: { marginBottom: 8, borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(30,41,59,0.3)', overflow: 'hidden' } },
                   el('button', { onClick: function() { var ne = Object.assign({}, granularExpanded); ne[cat] = !isOpen; upd('granularExpanded', ne); playSound('tab'); },
                     'aria-expanded': isOpen,
-                    style: { width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', color: '#e2e8f0', fontSize: 13, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                    style: { width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
                     el('span', null, (isOpen ? '▼ ' : '▶ ') + (catLabels[cat] || cat)),
-                    el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 600 } }, Math.round(granular.byCat[cat] || 0).toLocaleString() + ' kg/yr')
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 600 } }, Math.round(granular.byCat[cat] || 0).toLocaleString() + ' kg/yr')
                   ),
                   isOpen && el('div', { style: { padding: '4px 14px 14px', borderTop: '1px solid rgba(255,255,255,0.05)' } },
                     items.map(function(item) {
@@ -1597,8 +1597,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                           el('span', { style: { fontSize: 16, width: 22 } }, item.emoji),
                           el('div', { style: { flex: 1 } },
-                            el('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 700 } }, item.label),
-                            el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 1 } }, item.note)
+                            el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700 } }, item.label),
+                            el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic', marginTop: 1 } }, item.note)
                           ),
                           el('div', { style: { minWidth: 90, textAlign: 'right' } },
                             el('div', { style: { color: thisAnnual > 500 ? '#fca5a5' : thisAnnual > 50 ? '#fbbf24' : thisAnnual > 0 ? '#cbd5e1' : '#94a3b8', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } }, Math.round(thisAnnual).toLocaleString() + ' kg/yr'),
@@ -1610,7 +1610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                             onChange: function(e) { setItemFreq(item.id, parseInt(e.target.value, 10)); },
                             'aria-label': item.label + ' frequency',
                             style: { flex: 1, accentColor: '#60a5fa' } }),
-                          el('span', { style: { minWidth: 95, textAlign: 'right', color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } },
+                          el('span', { style: { minWidth: 95, textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontFamily: 'monospace' } },
                             freq + ' ' + item.unit),
                           // Pledge toggle (only makes sense when user has a current freq)
                           freq > 0 && (function() {
@@ -1646,12 +1646,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         // User position indicator
                         granular.total > 0 && el('div', { style: { position: 'absolute', left: 'calc(' + youPct + '% - 1px)', top: -2, width: 2, height: 16, background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.8)' }, title: 'Your footprint: ' + Math.round(granular.total) + ' kg' })
                       ),
-                      el('span', { style: { width: 72, textAlign: 'right', color: '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' } }, (nat.kg / 1000).toFixed(1) + ' t')
+                      el('span', { style: { width: 72, textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' } }, (nat.kg / 1000).toFixed(1) + ' t')
                     );
                   }),
                   el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' } },
                     el('div', { style: { color: '#4ade80', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🎯 Paris Agreement target'),
-                    el('div', { style: { color: '#cbd5e1', fontSize: 10, lineHeight: 1.6 } },
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
                       'To stay below 1.5°C warming, every person on Earth needs to reach ~2.3 t CO\u2082e/yr by 2030. ' +
                       (granular.total > 0 ? (granular.total <= 2300 ? 'You\'re already there — incredible!' : granular.total <= 4500 ? 'You\'re below global average. Next step: Paris-aligned target.' : granular.total <= 8000 ? 'About global average. Focus on top categories above.' : 'Above average — biggest impact comes from cutting flights, beef, and driving.') : 'Start the sliders above to see where you land.')
                     )
@@ -1678,7 +1678,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   suggestions.map(function(s, si) {
                     return el('div', { key: si, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', marginBottom: 4 } },
                       el('span', { style: { fontSize: 16 } }, s.item.emoji),
-                      el('div', { style: { flex: 1, color: '#cbd5e1', fontSize: 11 } },
+                      el('div', { style: { flex: 1, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 } },
                         'Cut ', el('strong', null, s.item.label.toLowerCase()), ' by one ',
                         el('strong', null, s.item.unit.replace(/s$/, '').split('/')[0]), ' per week:'),
                       el('div', { style: { color: '#4ade80', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } }, '−' + Math.round(s.savings) + ' kg/yr')
@@ -1694,7 +1694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 return el('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.06))', border: '1px solid rgba(34,197,94,0.25)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                     el('div', { style: { color: '#4ade80', fontSize: 13, fontWeight: 900 } }, '🎯 My Climate Pledges (' + pledgeIds.length + ')'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'Check in weekly to build the habit')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'Check in weekly to build the habit')
                   ),
                   pledgeIds.map(function(pid) {
                     var pledge = pledges[pid];
@@ -1709,15 +1709,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                         el('span', { style: { fontSize: 18 } }, item.emoji),
                         el('div', { style: { flex: 1 } },
-                          el('div', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 700 } }, item.label),
-                          el('div', { style: { color: '#94a3b8', fontSize: 10 } },
+                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 700 } }, item.label),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } },
                             'Target: ≤ ' + pledge.targetFreq + ' ' + item.unit + ' · Currently: ' + currentFreq + ' ' + item.unit)
                         ),
                         el('span', { style: { padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 800, background: onTrack ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.2)', color: onTrack ? '#4ade80' : '#fbbf24' } },
                           onTrack ? '✓ On track' : '⚠ Off target')
                       ),
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                        el('div', { style: { flex: 1, color: '#94a3b8', fontSize: 10 } },
+                        el('div', { style: { flex: 1, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } },
                           '🔥 ' + (pledge.checkins || 0) + ' check-ins' + (pledge.checkins >= 7 ? ' · streak!' : '')),
                         el('button', { onClick: function() { pledgeCheckin(pid); },
                           style: { padding: '4px 10px', borderRadius: 6, border: 'none', background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
@@ -1734,10 +1734,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               d.exportedReport && el('div', { style: { marginTop: 16, padding: 12, borderRadius: 12, background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(96,165,250,0.3)' } },
                 el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
                   el('div', { style: { color: '#60a5fa', fontSize: 12, fontWeight: 800 } }, '📄 Climate Report — Copy Manually'),
-                  el('button', { onClick: function() { upd('exportedReport', null); }, style: { padding: '2px 8px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '✕ Close')
+                  el('button', { onClick: function() { upd('exportedReport', null); }, style: { padding: '2px 8px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.05)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '✕ Close')
                 ),
-                el('p', { style: { color: '#94a3b8', fontSize: 10, marginBottom: 6 } }, 'Select all (Ctrl/Cmd+A), then copy:'),
-                el('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: 220, fontFamily: 'monospace', fontSize: 10, padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(96,165,250,0.15)', color: '#cbd5e1' } })
+                el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginBottom: 6 } }, 'Select all (Ctrl/Cmd+A), then copy:'),
+                el('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: 220, fontFamily: 'monospace', fontSize: 10, padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text, #cbd5e1)' } })
               )
             )
           ),
@@ -1746,7 +1746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'renewables' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 12 } },
               el('div', { style: { color: '#fbbf24', fontSize: 16, fontWeight: 900 } }, '\u26A1 Renewables Impact Simulator'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Design an energy mix and see how it changes our future')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Design an energy mix and see how it changes our future')
             ),
 
             // \u2500\u2500 Goal banner: makes the implicit win condition explicit \u2500\u2500
@@ -1779,14 +1779,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
             // Energy mix sliders
             el('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16 } },
-              el('div', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 800, marginBottom: 10, textTransform: 'uppercase' } }, 'Design Your Energy Mix'),
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, marginBottom: 10, textTransform: 'uppercase' } }, 'Design Your Energy Mix'),
               slider('Solar', '\u2600\uFE0F', rsSolar, '#f59e0b', function(e) { upd('rsSolar', parseInt(e.target.value)); playSound('slider'); }),
               slider('Wind', '\uD83C\uDF2C\uFE0F', rsWind, '#60a5fa', function(e) { upd('rsWind', parseInt(e.target.value)); playSound('slider'); }),
               slider('Hydro', '\uD83D\uDCA7', rsHydro, '#22d3ee', function(e) { upd('rsHydro', parseInt(e.target.value)); playSound('slider'); }),
               slider('Nuclear', '\u2622\uFE0F', rsNuclear, '#a78bfa', function(e) { upd('rsNuclear', parseInt(e.target.value)); playSound('slider'); }),
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, padding: '8px 12px', borderRadius: 8, background: rsFossil > 50 ? 'rgba(239,68,68,0.1)' : rsFossil > 20 ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)' } },
                 el('span', { style: { fontSize: 16 } }, '\uD83C\uDFED'),
-                el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, 'Fossil'),
+                el('span', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 60 } }, 'Fossil'),
                 el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                   el('div', { style: { width: rsFossil + '%', height: '100%', borderRadius: 4, background: rsFossil > 50 ? '#ef4444' : rsFossil > 20 ? '#f59e0b' : '#22c55e', transition: 'all 0.5s' } })
                 ),
@@ -1809,15 +1809,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { display: 'flex', justifyContent: 'space-around', textAlign: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 } },
                 el('div', null,
                   el('div', { style: { color: rsReductionPct > 50 ? '#4ade80' : rsReductionPct > 20 ? '#fbbf24' : '#f87171', fontSize: 28, fontWeight: 900 } }, rsReductionPct + '%'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 600 } }, 'Emissions Reduction')
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 600 } }, 'Emissions Reduction')
                 ),
                 el('div', null,
                   el('div', { style: { color: '#60a5fa', fontSize: 28, fontWeight: 900 } }, cumulativeAvoided.toFixed(0)),
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 600 } }, 'Gt CO\u2082 Avoided')
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 600 } }, 'Gt CO\u2082 Avoided')
                 ),
                 el('div', null,
                   el('div', { style: { color: '#a78bfa', fontSize: 28, fontWeight: 900 } }, timeline[timeline.length - 1].gt.toFixed(1)),
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 600 } }, 'Gt/yr by ' + (2025 + rsTimespan))
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 600 } }, 'Gt/yr by ' + (2025 + rsTimespan))
                 )
               ),
               // Canvas emissions timeline
@@ -1848,7 +1848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 }, disabled: aiLoading,
                 style: { padding: '8px 20px', borderRadius: 10, border: '1px solid rgba(34,197,94,0.3)', background: aiLoading ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.08)', color: '#4ade80', fontSize: 12, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } },
                 aiLoading ? '\u23F3 Analyzing...' : '\uD83E\uDD16 AI Analysis of Your Mix'),
-              aiResponse && el('div', { style: { marginTop: 10, padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)', color: '#94a3b8', fontSize: 12, lineHeight: 1.7, textAlign: 'left' } }, aiResponse)
+              aiResponse && el('div', { style: { marginTop: 10, padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.7, textAlign: 'left' } }, aiResponse)
             )
           ),
 
@@ -1856,7 +1856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'keeling' && el('div', { style: { maxWidth: 720, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 16 } },
               el('div', { style: { color: '#60a5fa', fontSize: 16, fontWeight: 900 } }, '\uD83D\uDCC8 The Keeling Curve'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'The most important graph in climate science \u2014 60+ years of atmospheric CO\u2082 from Mauna Loa, Hawaii')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'The most important graph in climate science \u2014 60+ years of atmospheric CO\u2082 from Mauna Loa, Hawaii')
             ),
             // Chart
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(96,165,250,0.2)', marginBottom: 16 } },
@@ -1975,7 +1975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Causation note
             el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 12 } },
               el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔥 CO₂ drives warming — the two lines track together'),
-              el('div', { style: { color: '#cbd5e1', fontSize: 10, lineHeight: 1.6 } },
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
                 'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm today. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
             ),
             // Milestones list
@@ -1984,15 +1984,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var isCurrent = Math.abs(m.ppm - KEELING_DATA[KEELING_DATA.length - 1].ppm) < 5;
                 return el('div', { key: m.ppm, style: { padding: 12, borderRadius: 10, background: isCurrent ? 'rgba(251,191,36,0.08)' : 'rgba(96,165,250,0.04)', border: '1px solid ' + (isCurrent ? 'rgba(251,191,36,0.25)' : 'rgba(96,165,250,0.15)') } },
                   el('div', { style: { color: isCurrent ? '#fbbf24' : '#60a5fa', fontSize: 12, fontWeight: 800, marginBottom: 2 } }, m.ppm + ' ppm'),
-                  el('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 700, marginBottom: 4 } }, m.label),
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } }, m.note)
+                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, marginBottom: 4 } }, m.label),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } }, m.note)
                 );
               })
             ),
             // Why it matters
             el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(168,85,247,0.06))', border: '1px solid rgba(96,165,250,0.2)' } },
               el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, '\uD83D\uDD2C Why the Keeling Curve matters'),
-              el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.7 } },
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
                 'Charles David Keeling\'s Mauna Loa measurements (starting 1958) are the single most important dataset in climate science. They proved two things the fossil-fuel industry long denied: (1) atmospheric CO\u2082 is rising, and (2) the rise is human-caused \u2014 the isotopic signature of the CO\u2082 matches burned fossil carbon, not volcanic or ocean sources. Ice cores push the record back 800,000 years: CO\u2082 has never been this high during that entire span.')
             )
           ),
@@ -2001,7 +2001,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'tipping' && el('div', { style: { maxWidth: 720, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 16 } },
               el('div', { style: { color: '#f87171', fontSize: 16, fontWeight: 900 } }, '\u26A0\uFE0F Climate Tipping Points'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Thresholds beyond which Earth-system changes become self-reinforcing and irreversible on human timescales')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Thresholds beyond which Earth-system changes become self-reinforcing and irreversible on human timescales')
             ),
 
             // ═══ CARBON BUDGET CLOCK ═══
@@ -2012,7 +2012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 20 } }, '🕐'),
                   el('div', null,
                     el('div', { style: { color: '#fca5a5', fontSize: 14, fontWeight: 900 } }, 'The Carbon Budget Clock'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'How much CO\u2082 can we still emit before warming passes key thresholds?')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'How much CO\u2082 can we still emit before warming passes key thresholds?')
                   )
                 ),
                 // Budget rows
@@ -2023,8 +2023,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                       el('div', { style: { minWidth: 80, color: b.color, fontSize: 13, fontWeight: 900 } }, '+' + b.limit + '°C'),
                       el('div', { style: { flex: 1 } },
-                        el('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 700 } }, b.gtRemaining + ' Gt CO\u2082 remaining'),
-                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, '→ ' + yearsLeft.toFixed(1) + ' years at ' + userBurnRate + ' Gt/yr pace')
+                        el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } }, b.gtRemaining + ' Gt CO\u2082 remaining'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '→ ' + yearsLeft.toFixed(1) + ' years at ' + userBurnRate + ' Gt/yr pace')
                       ),
                       el('div', { style: { padding: '3px 8px', borderRadius: 10, background: b.color + '20', color: b.color, fontSize: 10, fontWeight: 800 } },
                         yearsLeft < 10 ? '🔥 urgent' : yearsLeft < 20 ? '⚠️ close' : '✅ feasible')
@@ -2037,20 +2037,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 // Interactive burn rate slider
                 el('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.04)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
-                    el('span', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 700 } }, '🎛️ Annual emission rate (slide to simulate action)'),
+                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } }, '🎛️ Annual emission rate (slide to simulate action)'),
                     el('span', { style: { color: '#fbbf24', fontSize: 13, fontWeight: 900, fontFamily: 'monospace' } }, userBurnRate + ' Gt/yr')
                   ),
                   el('input', { type: 'range', min: 0, max: 50, step: 1, value: userBurnRate,
                     onChange: function(e) { upd('budgetBurnRate', parseInt(e.target.value, 10)); playSound('slider'); },
                     'aria-label': 'Annual global CO2 emission rate',
                     style: { width: '100%', accentColor: '#ef4444' } }),
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: 9, marginTop: 2 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } },
                     el('span', null, '0 (net-zero)'),
                     el('span', null, '20 (halved)'),
                     el('span', null, '40 (today ▼)'),
                     el('span', null, '50 (growth)')
                   ),
-                  el('div', { style: { marginTop: 8, color: '#94a3b8', fontSize: 10, lineHeight: 1.6 } },
+                  el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
                     userBurnRate === 0 ? '🌟 Net-zero: budgets stop shrinking. Warming stabilizes.' :
                     userBurnRate <= 10 ? '✨ Aggressive decline. Warming slowdown becomes possible.' :
                     userBurnRate <= 20 ? '👍 Halved from today. 1.5°C budget lasts 25 years instead of 6.' :
@@ -2058,7 +2058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     userBurnRate <= 40 ? '🔥 Business-as-usual. 1.5°C budget exhausted by ~2030.' :
                     '🚨 Growth trajectory. Paris targets impossible. 2°C likely breached.')
                 ),
-                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
                   '📚 Budgets are from IPCC AR6 WG1 (50% probability of staying below limit). Every Gt emitted permanently reduces the remaining budget — unlike a bank, there\'s no way to "earn it back." Negative emissions (direct air capture) are still early and expensive. Emission reduction is far cheaper per ton.')
               );
             })(),
@@ -2071,8 +2071,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                   el('span', { style: { fontSize: 20 } }, '🔮'),
                   el('div', null,
-                    el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 900 } }, 'IPCC Future Scenarios Explorer'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'Five pathways the IPCC uses to project climate futures. Your choices + policy choices decide which one we live in.')
+                    el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 900 } }, 'IPCC Future Scenarios Explorer'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'Five pathways the IPCC uses to project climate futures. Your choices + policy choices decide which one we live in.')
                   )
                 ),
                 // Scenario buttons
@@ -2083,8 +2083,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       'aria-pressed': isActive,
                       style: { padding: '10px 6px', borderRadius: 8, border: '2px solid ' + (isActive ? s.color : 'rgba(255,255,255,0.1)'), background: isActive ? s.color + '20' : 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.15s' } },
                       el('div', { style: { color: s.color, fontSize: 11, fontWeight: 900, marginBottom: 2 } }, s.label),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 16, fontWeight: 900, fontFamily: 'monospace' } }, '+' + s.temp2100.toFixed(1) + '°C'),
-                      el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2 } }, 'by 2100')
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 16, fontWeight: 900, fontFamily: 'monospace' } }, '+' + s.temp2100.toFixed(1) + '°C'),
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } }, 'by 2100')
                     );
                   })
                 ),
@@ -2092,36 +2092,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { padding: 14, borderRadius: 10, background: picked.color + '12', border: '1px solid ' + picked.color + '35' } },
                   el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 } },
                     el('div', { style: { color: picked.color, fontSize: 13, fontWeight: 900 } }, picked.label),
-                    el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 700 } }, picked.name)
+                    el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 700 } }, picked.name)
                   ),
-                  el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.5, marginBottom: 10 } },
-                    el('strong', { style: { color: '#94a3b8' } }, 'Temperature by 2100: '),
+                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5, marginBottom: 10 } },
+                    el('strong', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Temperature by 2100: '),
                     '+' + picked.temp2100.toFixed(1) + '°C (likely range ' + picked.tempRange[0] + '–' + picked.tempRange[1] + '°C)'),
                   el('div', { style: { marginBottom: 8 } },
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '📉 Emissions required by 2050'),
-                    el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '📉 Emissions required by 2050'),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
                       picked.emissions2050 + ' Gt CO\u2082/year (today: ~' + GLOBAL_EMISSIONS_RATE + ' Gt)' +
                       (picked.emissions2050 === 0 ? ' — net-zero!' : picked.emissions2050 < 20 ? ' — major cuts.' : picked.emissions2050 > 40 ? ' — increased from today.' : ''))
                   ),
                   el('div', { style: { marginBottom: 8 } },
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🛠️ What it requires'),
-                    el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6 } }, picked.requires)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🛠️ What it requires'),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6 } }, picked.requires)
                   ),
                   el('div', { style: { marginBottom: 8 } },
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🌊 Impacts at this level'),
-                    el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6 } }, picked.impacts)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🌊 Impacts at this level'),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6 } }, picked.impacts)
                   ),
                   el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: picked.color, fontSize: 11, fontWeight: 700, fontStyle: 'italic' } },
                     '📌 Current likelihood: ' + picked.likelihood)
                 ),
-                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
                   '📚 Scenarios from IPCC AR6 Working Group I. SSP = "Shared Socioeconomic Pathway". The number pair (e.g., 1-2.6) combines societal storyline (1–5) with radiative forcing in W/m² by 2100. Current policies put us on track for roughly SSP2-4.5. Each incremental action steers toward the lower-warming lanes.')
               );
             })(),
 
             // Warming-level scale visual
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(248,113,113,0.2)', marginBottom: 16 } },
-              el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (°C) \u2014 we are here: ~1.2°C (2024)'),
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (°C) \u2014 we are here: ~1.2°C (2024)'),
               el('div', { style: { position: 'relative', height: 40, borderRadius: 6, background: 'linear-gradient(to right, #22c55e 0%, #fbbf24 30%, #f97316 55%, #ef4444 80%, #991b1b 100%)', marginBottom: 8 } },
                 // Tick markers at 1, 1.5, 2, 3, 4°C
                 [1.0, 1.5, 2.0, 3.0, 4.0].map(function(temp) {
@@ -2145,17 +2145,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', { style: { display: 'flex', alignItems: 'start', gap: 10, marginBottom: 8 } },
                     el('span', { style: { fontSize: 28 } }, tp.emoji),
                     el('div', { style: { flex: 1 } },
-                      el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800, marginBottom: 2 } }, tp.name),
+                      el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 800, marginBottom: 2 } }, tp.name),
                       el('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                         el('span', { style: { padding: '2px 8px', borderRadius: 10, background: sc + '20', color: sc, fontSize: 9, fontWeight: 800 } }, statusLabels[tp.status] || tp.status),
-                        el('span', { style: { padding: '2px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', fontSize: 9, fontWeight: 700 } }, 'Threshold: ~' + tp.threshold + '°C')
+                        el('span', { style: { padding: '2px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } }, 'Threshold: ~' + tp.threshold + '°C')
                       )
                     )
                   ),
-                  el('p', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6, marginBottom: 8 } }, tp.desc),
+                  el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6, marginBottom: 8 } }, tp.desc),
                   el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.06)', borderLeft: '3px solid ' + sc } },
                     el('div', { style: { color: sc, fontSize: 10, fontWeight: 800, marginBottom: 2 } }, '💥 Cascade effect'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } }, tp.cascade)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } }, tp.cascade)
                   )
                 );
               })
@@ -2182,7 +2182,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 20 } }, '🌊'),
                   el('div', null,
                     el('div', { style: { color: '#60a5fa', fontSize: 13, fontWeight: 900 } }, 'Sea Level Rise Explorer'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'What happens to coastlines at different levels of warming?')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'What happens to coastlines at different levels of warming?')
                   )
                 ),
                 // Slider with labeled steps
@@ -2198,7 +2198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     },
                     'aria-label': 'Sea level rise in meters',
                     style: { width: '100%', accentColor: '#3b82f6' } }),
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: 9, fontWeight: 700 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } },
                     [0, 1, 2, 3, 5, 10].map(function(m) {
                       return el('span', { key: m, style: { color: slr === m ? '#60a5fa' : '#94a3b8' } }, m + ' m');
                     })
@@ -2210,13 +2210,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { color: '#93c5fd', fontSize: 20, fontWeight: 900, fontFamily: 'monospace' } }, '+' + slr + ' m'),
                     el('div', { style: { color: '#60a5fa', fontSize: 14, fontWeight: 800 } }, impact.displaced > 0 ? impact.displaced + 'M people displaced' : 'No displacement')
                   ),
-                  el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6, marginBottom: impact.cities.length > 0 ? 8 : 0 } }, impact.desc),
-                  impact.cities.length > 0 && el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } },
+                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6, marginBottom: impact.cities.length > 0 ? 8 : 0 } }, impact.desc),
+                  impact.cities.length > 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
                     el('strong', { style: { color: '#fbbf24' } }, 'Impacted: '),
                     impact.cities.join(' · ')
                   )
                 ),
-                el('div', { style: { marginTop: 8, color: '#94a3b8', fontSize: 9, fontStyle: 'italic' } },
+                el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontStyle: 'italic' } },
                   '📚 Sources: IPCC AR6 SROCC; Kopp et al. 2023 probabilistic projections; Climate Central coastal models. The ocean has ~90% of the excess heat and will keep expanding/melting ice for centuries even if emissions stop today.')
               );
             })(),
@@ -2224,13 +2224,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Phenology cross-link (connects to Beehive tool)
             el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(34,197,94,0.06))', border: '1px solid rgba(251,191,36,0.2)', marginBottom: 12 } },
               el('div', { style: { color: '#fbbf24', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, '🐝 Phenological Mismatch — the silent tipping point'),
-              el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.7 } },
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
                 'Climate change is decoupling the timing of flowers and pollinators. Apple trees in New England now bloom 11 days earlier than in 1970, but bee emergence has shifted less. When flowers open before bees wake, or after they\'ve already died for the season, whole food webs unravel. Try the Beehive Simulator\'s Bloom Calendar to see which plants depend on which months \u2014 then imagine shifting it all forward.')
             ),
             // Hope note
             el('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' } },
               el('div', { style: { color: '#4ade80', fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '🌱 What this means for action'),
-              el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.7 } },
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
                 'Tipping points aren\'t destiny. Every tenth of a degree matters: 1.5°C is far better than 1.6°C, and 2.0°C is far better than 2.5°C. The climate system doesn\'t "round up". Every ton of CO\u2082 not emitted reduces the odds of triggering these cascades.')
             )
           ),
@@ -2239,13 +2239,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'justice' && el('div', { style: { maxWidth: 700, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 20 } },
               el('div', { style: { color: '#fbbf24', fontSize: 16, fontWeight: 900 } }, '\u2696\uFE0F Climate Justice'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Who is most affected by climate change \u2014 and is it fair?')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Who is most affected by climate change \u2014 and is it fair?')
             ),
 
             // Key insight
             el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.06))', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 16, textAlign: 'center' } },
               el('div', { style: { color: '#fbbf24', fontSize: 13, fontWeight: 800 } }, '\uD83D\uDCA1 Key Insight'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12, lineHeight: 1.6, marginTop: 4 } },
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.6, marginTop: 4 } },
                 'The communities that contribute the LEAST to climate change often face the GREATEST risks. This is what scientists and advocates call climate injustice.')
             ),
 
@@ -2284,14 +2284,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 }
               },
                 el('div', { style: { textAlign: 'center', marginBottom: 6 } },
-                  el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 900 } }, '\u2696\uFE0F The Inversion \u2014 who caused it vs who pays for it'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                  el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 900 } }, '\u2696\uFE0F The Inversion \u2014 who caused it vs who pays for it'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
                     'Left bars: per-capita CO\u2082 emitted since 1850 (responsibility). Right bars: climate vulnerability score 0\u201310 (exposure). Sorted by emissions. The pattern runs the opposite way down the page \u2014 that is the injustice.')
                 ),
                 // Header row \u2014 column labels
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 130px 1fr', alignItems: 'center', gap: 8, padding: '8px 0', marginTop: 10, marginBottom: 4, borderBottom: '1px solid rgba(148,163,184,0.15)' } },
                   el('div', { style: { textAlign: 'right', color: '#fca5a5', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Caused (tons CO\u2082 / person, cumulative)'),
-                  el('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'Country'),
+                  el('div', { style: { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, 'Country'),
                   el('div', { style: { textAlign: 'left', color: '#c4b5fd', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Exposed (vulnerability 0\u201310)')
                 ),
                 // Inversion rows
@@ -2325,7 +2325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       })
                     ),
                     // Center: country label
-                    el('div', { style: { textAlign: 'center', color: '#e2e8f0', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 } },
+                    el('div', { style: { textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 } },
                       el('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, row.emoji),
                       el('span', null, row.country)
                     ),
@@ -2349,7 +2349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(250,204,21,0.06)', border: '1px solid rgba(250,204,21,0.15)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6
                   }
                 },
                   '\uD83D\uDCDA Per-capita cumulative emissions from Our World in Data (1850\u20132022) and Carbon Brief 2023. Vulnerability scores rescaled from the ND-GAIN Country Index (University of Notre Dame). Highlighted rows are the clearest inversion cases: rich countries with the deepest historical responsibility but the most adaptive capacity, paired against countries with negligible per-capita emissions and the highest exposure.')
@@ -2371,7 +2371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 }
               },
                 el('span', { style: { fontSize: 14 } }, regionsViewed >= 5 ? '\uD83C\uDFC5' : '\uD83D\uDD0D'),
-                el('span', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 600, flex: 1, minWidth: 200 } },
+                el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, flex: 1, minWidth: 200 } },
                   regionsViewed >= 5
                     ? 'Justice Witness badge earned. Keep exploring; every region has a different story.'
                     : 'Click a card to expand its data. Explore at least 5 regions to earn the Justice Witness badge.'
@@ -2409,28 +2409,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                     el('span', { style: { fontSize: 20 } }, r.emoji),
                     el('div', { style: { flex: 1 } },
-                      el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800 } }, r.name),
-                      el('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Pop: ' + r.pop)
+                      el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 800 } }, r.name),
+                      el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Pop: ' + r.pop)
                     ),
                     el('span', { style: { padding: '2px 8px', borderRadius: 12, background: riskColors[r.risk] + '20', color: riskColors[r.risk], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, r.risk + ' risk')
                   ),
 
                   // Risk vs emissions bar
                   cjView === 'emissions' && el('div', { style: { marginTop: 6 } },
-                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 2 } },
+                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } },
                       el('span', null, 'Share of global emissions'), el('span', null, r.emPct + '%')),
                     el('div', { style: { height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                       el('div', { style: { width: Math.min(100, r.emPct * 5) + '%', height: '100%', borderRadius: 3, background: '#ef4444' } })
                     )
                   ),
 
-                  cjView === 'risk' && el('div', { style: { marginTop: 6, color: '#94a3b8', fontSize: 10 } }, '\u26A0\uFE0F ' + r.type),
+                  cjView === 'risk' && el('div', { style: { marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '\u26A0\uFE0F ' + r.type),
 
                   cjView === 'resilience' && el('div', { style: { marginTop: 6, color: '#6ee7b7', fontSize: 10 } }, '\uD83D\uDCAA ' + r.resilience),
 
                   // Expanded detail
                   isOpen && el('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.7, marginBottom: 8 } }, r.story),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7, marginBottom: 8 } }, r.story),
                     // Front-line voice \u2014 a documented quote from a named
                     // advocate/leader from this community. Renders only when
                     // the region has a `voice` field. Pulled from on-record
@@ -2444,18 +2444,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       }
                     },
                       el('div', { style: { color: '#60a5fa', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '\uD83C\uDF99\uFE0F Voice from the front line'),
-                      el('div', { style: { color: '#e2e8f0', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55, marginBottom: 4 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55, marginBottom: 4 } },
                         '\u201C', r.voice.quote, '\u201D'),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 10, fontWeight: 700 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700 } },
                         '\u2014 ', r.voice.name),
-                      el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } },
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } },
                         r.voice.role),
-                      el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
                         '\uD83D\uDCDA ', r.voice.source)
                     ),
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' } },
                       el('div', { style: { color: '#4ade80', fontSize: 10, fontWeight: 800 } }, '\uD83D\uDCAA Community Resilience'),
-                      el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.5, marginTop: 2 } }, r.resilience)
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5, marginTop: 2 } }, r.resilience)
                     ),
                     r.emPct < 1 && el('div', { style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(239,68,68,0.08)', color: '#fca5a5', fontSize: 10, textAlign: 'center' } },
                       '\u26A0\uFE0F This community produces just ' + r.emPct + '% of global emissions but faces ' + r.risk + ' risk \u2014 that\'s climate injustice.')
@@ -2467,7 +2467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // ═══ HISTORICAL RESPONSIBILITY ═══
             el('div', { style: { marginTop: 24, padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.4)', border: '1px solid rgba(251,146,60,0.25)' } },
               el('div', { style: { color: '#fdba74', fontSize: 14, fontWeight: 900, marginBottom: 4 } }, '📊 Historical Responsibility — who put it there?'),
-              el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 12, lineHeight: 1.5 } },
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 12, lineHeight: 1.5 } },
                 'Cumulative CO\u2082 emissions since 1850. Most CO\u2082 already in the atmosphere was emitted by a handful of countries — yet the countries that emitted least face the worst impacts. This is climate injustice in one chart.'),
               HISTORICAL_EMISSIONS.map(function(h, hi) {
                 var maxGt = HISTORICAL_EMISSIONS[0].gt;
@@ -2475,17 +2475,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var barColor = hi === 0 ? '#ef4444' : hi < 3 ? '#f97316' : hi < 7 ? '#fbbf24' : '#60a5fa';
                 return el('div', { key: h.country, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                   el('span', { style: { width: 22, fontSize: 14 } }, h.emoji),
-                  el('span', { style: { width: 120, color: '#cbd5e1', fontSize: 11, fontWeight: 700 } }, h.country),
+                  el('span', { style: { width: 120, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } }, h.country),
                   el('div', { style: { flex: 1, height: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 3, overflow: 'hidden', position: 'relative' } },
                     el('div', { style: { width: pct + '%', height: '100%', background: barColor } })
                   ),
-                  el('span', { style: { width: 80, textAlign: 'right', color: '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' } }, h.gt + ' Gt'),
+                  el('span', { style: { width: 80, textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' } }, h.gt + ' Gt'),
                   el('span', { style: { width: 48, textAlign: 'right', color: barColor, fontSize: 10, fontWeight: 800, fontFamily: 'monospace' } }, h.pctGlobal.toFixed(1) + '%')
                 );
               }),
               el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' } },
                 el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔑 The climate injustice in numbers'),
-                el('div', { style: { color: '#cbd5e1', fontSize: 10, lineHeight: 1.6 } },
+                el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
                   '• The USA alone (4% of world population) is responsible for ~25% of all historical CO\u2082.',
                   el('br'),
                   '• Europe + USA combined: ~40% of historical emissions from <15% of current population.',
@@ -2538,13 +2538,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '💰'),
                   el('div', null,
                     el('div', { style: { color: '#7dd3fc', fontSize: 14, fontWeight: 900 } }, 'Loss & Damage Fund — what the world is doing about it'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
                       'Proposed by small island states at COP1 (1995). Created at COP27 (2022). Capitalized at COP28 (2023). First disbursements 2024 — 27 years from proposal to first dollar paid.')
                   )
                 ),
                 // Pledged-vs-needed visual
                 el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: '#cbd5e1', fontSize: 11, fontWeight: 700 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } },
                     el('span', null, 'Pledged so far: ~$' + pledgedTotalM.toFixed(0) + 'M (' + pledgedB.toFixed(2) + 'B)'),
                     el('span', { style: { color: '#fca5a5' } }, 'Needed: ~$' + neededBPerYr + 'B / year (by 2030, SEI estimate)')
                   ),
@@ -2557,7 +2557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 // Top contributors
                 el('div', { style: { marginTop: 12 } },
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top contributors so far'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top contributors so far'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6 } },
                     LD_CONTRIB.map(function(c) {
                       return el('div', { key: c.country,
@@ -2570,8 +2570,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       },
                         el('span', { style: { fontSize: 16 } }, c.emoji),
                         el('div', { style: { flex: 1, minWidth: 0 } },
-                          el('div', { style: { color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, c.country),
-                          el('div', { style: { color: '#94a3b8', fontSize: 9, lineHeight: 1.3 } }, c.note)
+                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.3 } }, c.note)
                         ),
                         el('div', { style: { color: '#86efac', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
                           '$' + c.amountUSD + 'M')
@@ -2584,7 +2584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6
                   }
                 },
                   '🎙️ ',
@@ -2592,7 +2592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. The fund is sometimes called "the Saleemul Huq fund" by negotiators who worked with him.'),
                 el('div', {
                   style: {
-                    marginTop: 6, color: '#94a3b8', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                    marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
                   }
                 },
                   '📚 Pledges from official COP28 communiqués (Nov–Dec 2023). Need estimate from Stockholm Environment Institute 2023 ($400B/yr lower bound). Contributions converted to USD at end-2023 rates; some pledges remain unfulfilled or extend over multiple years. Updated reporting: UNFCCC Loss and Damage Fund Board minutes.')
@@ -2641,13 +2641,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '🧳'),
                   el('div', null,
                     el('div', { style: { color: '#fdba74', fontSize: 14, fontWeight: 900 } }, 'Climate Displacement — the people already moving'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
                       'New people forced to flee their homes by weather disasters each year — within their own country. Counted by the Internal Displacement Monitoring Centre since 2008.')
                   )
                 ),
                 // Year-over-year bar chart
                 el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'New weather-driven displacements per year (millions)'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'New weather-driven displacements per year (millions)'),
                   el('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 8, height: 110, paddingBottom: 18 } },
                     DISP_BY_YEAR.map(function(y) {
                       var pct = (y.millions / maxYear) * 100;
@@ -2662,14 +2662,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                             boxShadow: '0 0 6px rgba(251,146,60,0.3)'
                           }
                         }),
-                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', marginTop: 2 } }, y.year)
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', marginTop: 2 } }, y.year)
                       );
                     })
                   )
                 ),
                 // Top countries strip
                 el('div', { style: { marginTop: 12 } },
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top countries displaced, 2022–2023'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top countries displaced, 2022–2023'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6 } },
                     DISP_BY_COUNTRY_2022_23.map(function(c) {
                       return el('div', { key: c.country,
@@ -2681,8 +2681,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       },
                         el('span', { style: { fontSize: 16 } }, c.emoji),
                         el('div', { style: { flex: 1, minWidth: 0 } },
-                          el('div', { style: { color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, c.country),
-                          el('div', { style: { color: '#94a3b8', fontSize: 9, lineHeight: 1.3 } }, c.cause)
+                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.3 } }, c.cause)
                         ),
                         el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
                           c.millions + 'M')
@@ -2701,12 +2701,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', { style: { textAlign: 'center' } },
                     el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, '~' + cumulative2008to23 + 'M'),
                     el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Cumulative since 2008'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'IDMC tracked total')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'IDMC tracked total')
                   ),
                   el('div', { style: { textAlign: 'center' } },
                     el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, 'up to ' + projected2050 + 'M'),
                     el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Projected by 2050'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'World Bank Groundswell — internal only, 6 regions')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'World Bank Groundswell — internal only, 6 regions')
                   )
                 ),
                 // Legal-gap note
@@ -2714,7 +2714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6
                   }
                 },
                   '⚖️ ',
@@ -2722,7 +2722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee ruled in Teitiota v. New Zealand that countries cannot deport people back to climate-existential danger — a landmark non-binding step. The legal category of "climate refugee" is still being built.'),
                 el('div', {
                   style: {
-                    marginTop: 6, color: '#94a3b8', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                    marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
                   }
                 },
                   '📚 IDMC Global Report on Internal Displacement 2024 (annual data); World Bank Groundswell Part II report (2021, 216M internal climate displaced by 2050 across 6 world regions on current trajectory). Figures exclude international migration, slow-onset displacement, and most drought-related movement, so they are conservative lower bounds.')
@@ -2735,7 +2735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('span', { style: { fontSize: 20 } }, '✊'),
                 el('div', null,
                   el('div', { style: { color: '#c084fc', fontSize: 14, fontWeight: 900 } }, 'Youth Climate Leaders'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'Real young people leading on climate — you are next.')
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'Real young people leading on climate — you are next.')
                 )
               ),
               el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginTop: 12 } },
@@ -2744,16 +2744,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       el('span', { style: { fontSize: 22 } }, leader.emoji),
                       el('div', null,
-                        el('div', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 900 } }, leader.name),
-                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, leader.country + ' · ' + leader.age)
+                        el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 900 } }, leader.name),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, leader.country + ' · ' + leader.age)
                       )
                     ),
-                    el('p', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.5, marginBottom: 6 } }, leader.what),
+                    el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5, marginBottom: 6 } }, leader.what),
                     el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', color: '#c084fc', fontSize: 10, fontStyle: 'italic', lineHeight: 1.4 } }, leader.quote)
                   );
                 })
               ),
-              el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: '#94a3b8', fontSize: 10, lineHeight: 1.6 } },
+              el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
                 '💡 Every movement needs voices across generations. These are just six — Fridays for Future alone has mobilized students in 170+ countries. You don\'t need to be famous to matter. Local action is where almost every one of these leaders started.')
             ),
 
@@ -2825,7 +2825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '🪜'),
                   el('div', null,
                     el('div', { style: { color: '#86efac', fontSize: 14, fontWeight: 900 } }, 'Your move — climate justice action ladder'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
                       'Awareness without action is the privilege of the unaffected. Each rung connects to a panel above so this is one arc, not five. Some rungs you can do today; some you grow into. Maine-specific channels listed where they exist.')
                   )
                 ),
@@ -2849,7 +2849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                             flexShrink: 0
                           }
                         }, a.rung),
-                        el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800, flex: 1, minWidth: 200 } }, a.title),
+                        el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 800, flex: 1, minWidth: 200 } }, a.title),
                         el('div', {
                           style: {
                             padding: '2px 8px', borderRadius: 12,
@@ -2859,12 +2859,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           }
                         }, a.difficulty)
                       ),
-                      el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2, marginBottom: 6 } },
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2, marginBottom: 6 } },
                         '↑ connects to: ', a.connects),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55, marginBottom: 6 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.55, marginBottom: 6 } },
                         el('strong', { style: { color: '#7dd3fc' } }, 'Why: '),
                         a.why),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.55 } },
                         el('strong', { style: { color: '#86efac' } }, 'How: '),
                         a.how)
                     );
@@ -2874,7 +2874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 12, padding: 10, borderRadius: 8,
                     background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic', textAlign: 'center'
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic', textAlign: 'center'
                   }
                 },
                   'You don\'t need to climb every rung. You need to climb the next one.')
@@ -2916,7 +2916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '⏳'),
                   el('div', null,
                     el('div', { style: { color: '#c4b5fd', fontSize: 14, fontWeight: 900 } }, 'Climate justice timeline — how long it actually takes'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
                       'From the first scientific consensus (1990) to the first dollar of Loss & Damage payment (2024) is 34 years. The big wins on this list are inside your lifetime — most are within the last 10 years. Slow does not mean impossible.')
                   )
                 ),
@@ -2940,7 +2940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       }),
                       el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 2, flexWrap: 'wrap' } },
                         el('span', { style: { color: t.color, fontSize: 13, fontWeight: 900, fontFamily: 'monospace', minWidth: 44 } }, t.year),
-                        el('span', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, t.label),
+                        el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 800 } }, t.label),
                         el('span', {
                           style: {
                             padding: '1px 7px', borderRadius: 10,
@@ -2949,7 +2949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           }
                         }, t.tag)
                       ),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } }, t.what)
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.55 } }, t.what)
                     );
                   })
                 ),
@@ -2957,7 +2957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 6, padding: 10, borderRadius: 8,
                     background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, textAlign: 'center', fontStyle: 'italic'
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, textAlign: 'center', fontStyle: 'italic'
                   }
                 },
                   'The first proposal to the first payment was 29 years. The next 29 are yours.')
@@ -2975,7 +2975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               // Foundational bank
               el('div', { style: { marginBottom: 12 } },
                 el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Warm-up'),
-                el('ol', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.7 } },
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.7 } },
                   el('li', null, 'Is it fair that the communities least responsible for climate change are most affected?'),
                   el('li', null, 'What responsibilities do high-emitting countries have?'),
                   el('li', null, 'How can we support communities building resilience?'),
@@ -2985,30 +2985,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               // Deep-dive bank
               el('div', { style: { paddingTop: 10, borderTop: '1px dashed rgba(99,102,241,0.3)' } },
                 el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Deep-dive — connects to specific panels above'),
-                el('ol', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.8 } },
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.8 } },
                   el('li', null,
-                    el('strong', { style: { color: '#cbd5e1' } }, 'Inversion chart: '),
+                    el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Inversion chart: '),
                     'Looking at "Caused vs Exposed", what is the single thing that surprises you most? What story does the chart tell that the historical-totals chart does NOT?'
                   ),
                   el('li', null,
-                    el('strong', { style: { color: '#cbd5e1' } }, 'Loss & Damage Fund: '),
+                    el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Loss & Damage Fund: '),
                     'Total pledges are about 0.16% of one year of estimated need. Is that "the system is working slowly" or "the system is failing"? Take a side and defend it with one piece of evidence from this tab.'
                   ),
                   el('li', null,
-                    el('strong', { style: { color: '#cbd5e1' } }, 'Climate displacement: '),
+                    el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Climate displacement: '),
                     '~376 million people have been internally displaced since 2008 — almost all within their own country. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
                   ),
                   el('li', null,
-                    el('strong', { style: { color: '#cbd5e1' } }, 'Front-line voices: '),
+                    el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Front-line voices: '),
                     'Sherri Mitchell teaches the principle of considering "the next seven generations." If you make a climate decision now that helps people 200 years from now but costs you something today, is that fair to ask of you? Of your parents? Of your community?'
                   ),
                   el('li', null,
-                    el('strong', { style: { color: '#cbd5e1' } }, 'Action ladder: '),
+                    el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Action ladder: '),
                     'Pick one rung of the action ladder. What actually stops most people from climbing it — knowledge, money, time, fear, social cost, or something else? What would it take to remove that block for one specific person you know?'
                   )
                 )
               ),
-              el('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } },
+              el('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } },
                 '\uD83D\uDC69\u200D\uD83C\uDFEB Teacher note: the deep-dive bank is designed for classroom Socratic seminar — every question has multiple defensible answers. The point is the reasoning students show, not the conclusion they reach.')
             )
           ),
@@ -3017,7 +3017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'solutions' && el('div', { style: { maxWidth: 720, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 20 } },
               el('div', { style: { color: '#22c55e', fontSize: 16, fontWeight: 900 } }, '\uD83D\uDCA1 Solutions Spotlight'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Real innovations making a real difference \u2014 and what YOU can do')
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Real innovations making a real difference \u2014 and what YOU can do')
             ),
 
             // ═══ DRAWDOWN SLEUTH (net-new mini-game) ═══
@@ -3087,7 +3087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '\uD83D\uDD75\uFE0F'),
                     el('div', null,
                       el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, 'Drawdown Sleuth'),
-                      el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic' } }, 'Pick the biggest-impact climate solution. The "obvious" answer is often wrong.')
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic' } }, 'Pick the biggest-impact climate solution. The "obvious" answer is often wrong.')
                     )
                   ),
                   el('button', {
@@ -3097,7 +3097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 dsOpen && (dsIdx < 0
                   ? el('div', { style: { textAlign: 'center', padding: '16px 8px' } },
-                      el('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 12 } },
+                      el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 12 } },
                         '8 rounds. Each shows 4 climate solutions; pick the one with the biggest CO\u2082 reduction (per Project Drawdown\'s Plausible Scenario, gigatons over 2020\u20132050). After picking, a coaching block names what makes the answer surprising.'),
                       el('button', {
                         onClick: startDs,
@@ -3111,7 +3111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       var pct = dsRounds > 0 ? Math.round((dsScore / dsRounds) * 100) : 0;
                       var allDone = dsShown.length >= DS_ROUNDS.length && dsAnswered;
                       return el('div', null,
-                        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: '#94a3b8', marginBottom: 8 } },
+                        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } },
                           el('span', null, 'Round ', el('strong', { style: { color: '#fff' } }, dsShown.length)),
                           el('span', null, 'Score ', el('strong', { style: { color: '#4ade80' } }, dsScore + ' / ' + dsRounds)),
                           dsRounds > 0 && el('span', null, 'Accuracy ', el('strong', { style: { color: '#0ea5e9' } }, pct + '%')),
@@ -3159,11 +3159,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                               ? '\u2705 Correct \u2014 ' + getSol(r.correct).label + ' (' + getSol(r.correct).gt + ' GT)'
                               : '\u274C The biggest is ' + getSol(r.correct).label + ' (' + getSol(r.correct).gt + ' GT)' + (dsPick ? ' (you picked ' + getSol(dsPick).label + ' at ' + getSol(dsPick).gt + ' GT)' : '')
                           ),
-                          el('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 10px' } }, r.why),
+                          el('p', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.55, margin: '0 0 10px' } }, r.why),
                           allDone
                             ? el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.45)' } },
                                 el('div', { style: { fontSize: 13, fontWeight: 800, color: '#4ade80', marginBottom: 4 } }, '\uD83C\uDFC6 All 8 rounds complete'),
-                                el('div', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } },
+                                el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.5 } },
                                   'Final: ', el('strong', null, dsScore + ' / ' + DS_ROUNDS.length + ' (' + Math.round((dsScore / DS_ROUNDS.length) * 100) + '%)'),
                                   dsScore === DS_ROUNDS.length ? ' \u2014 you can spot the boring-but-massive solutions over the sexy-but-small ones. Project Drawdown\'s mission is exactly that.' :
                                   dsScore >= 6 ? ' \u2014 strong intuition for scale. The most-confused pair is usually onshore wind vs reduced food waste \u2014 both are top-3 globally; the Plausible Scenario number depends on assumed deployment rate.' :
@@ -3214,23 +3214,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                   el('div', null,
                     el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, '🎯 Solution Stack Builder'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, '🏅 Goal: stack to 200 Gt to earn the Gigaton badge. Select solutions — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '🏅 Goal: stack to 200 Gt to earn the Gigaton badge. Select solutions — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
                   ),
                   el('div', { style: { textAlign: 'right' } },
                     el('div', { style: { color: totalGt >= 200 ? '#fbbf24' : '#4ade80', fontSize: 24, fontWeight: 900, fontFamily: 'monospace' } }, Math.round(totalGt) + ' Gt'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 9 } }, pickedIds.length + ' solution' + (pickedIds.length === 1 ? '' : 's') + ' selected')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9 } }, pickedIds.length + ' solution' + (pickedIds.length === 1 ? '' : 's') + ' selected')
                   )
                 ),
                 // Budget progress bar
                 el('div', { style: { marginBottom: 6 } },
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, marginBottom: 2 } },
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginBottom: 2 } },
                     'Your stack = ' + pctOf15.toFixed(0) + '% of the remaining 1.5°C budget (' + budget15 + ' Gt)'),
                   el('div', { style: { height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.04)', overflow: 'hidden', position: 'relative' } },
                     el('div', { style: { width: pctOf15 + '%', height: '100%', background: pctOf15 >= 100 ? 'linear-gradient(90deg, #4ade80, #22c55e)' : pctOf15 >= 50 ? 'linear-gradient(90deg, #60a5fa, #4ade80)' : '#60a5fa', transition: 'width 0.4s' } })
                   )
                 ),
                 // Status message
-                totalGt > 0 && el('div', { style: { marginBottom: 8, padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
+                totalGt > 0 && el('div', { style: { marginBottom: 8, padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
                   totalGt >= budget15 ? '🎉 Your stack alone would close the 1.5°C gap. In reality, we need all of these PLUS rapid fossil-fuel phase-out.' :
                   totalGt >= 100 ? '✨ Strong stack. With all solutions combined we can still keep warming below 2°C.' :
                   '🌱 Good start. Stack more solutions to cross 100 Gt.'),
@@ -3248,12 +3248,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('span', { style: { flex: 1, fontWeight: 700 } }, sol.label),
                         el('span', { style: { padding: '2px 6px', borderRadius: 8, background: isPicked ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.06)', color: isPicked ? '#4ade80' : '#94a3b8', fontSize: 10, fontWeight: 800, fontFamily: 'monospace' } }, sol.gt + ' Gt')
                       ),
-                      el('div', { style: { color: '#94a3b8', fontSize: 10, lineHeight: 1.4 } }, sol.note)
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.4 } }, sol.note)
                     );
                   })
                 ),
                 // Educational footnote
-                el('div', { style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
                   '📚 Project Drawdown (drawdown.org) is a nonprofit research group that ranks climate solutions by their gigaton-scale CO\u2082 avoidance potential from 2020-2050. Gt = gigatons (1 billion tons). Current global emissions: ~40 Gt/year. Remaining budget for 1.5°C: ~250 Gt.')
               );
             })(),
@@ -3276,18 +3276,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: isExp ? 10 : 0 } },
                     el('span', { style: { fontSize: 28 } }, s.emoji),
                     el('div', null,
-                      el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 800 } }, s.title),
-                      !isExp && el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, s.what.substring(0, 60) + '...')
+                      el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 800 } }, s.title),
+                      !isExp && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, s.what.substring(0, 60) + '...')
                     )
                   ),
                   isExp && el('div', null,
                     el('div', { style: { marginBottom: 8 } },
-                      el('div', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 2 } }, 'What'),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6 } }, s.what)
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 2 } }, 'What'),
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6 } }, s.what)
                     ),
                     el('div', { style: { marginBottom: 8 } },
-                      el('div', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 2 } }, 'Where'),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6 } }, s.where)
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 2 } }, 'Where'),
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6 } }, s.where)
                     ),
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.12)' } },
                       el('div', { style: { color: '#4ade80', fontSize: 11, fontWeight: 800 } }, '\uD83D\uDCC8 Impact'),
@@ -3305,22 +3305,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 (ssShowActions ? '\u25BC' : '\u25B6') + ' What Can I Do?'),
 
               ssShowActions && el('div', { style: { marginTop: 12 } },
-                el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 12, textAlign: 'center' } },
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 12, textAlign: 'center' } },
                   'Your choices matter AND systemic changes matter even more. Here\'s how to do both:'),
                 ACTIONS.map(function(a, ai) {
                   var diffColors = { easy: '#22c55e', medium: '#f59e0b', hard: '#a855f7' };
                   return el('div', { key: ai, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 6 } },
                     el('span', { style: { fontSize: 20 } }, a.emoji),
                     el('div', { style: { flex: 1 } },
-                      el('div', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 700 } }, a.text),
-                      el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, a.impact)
+                      el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 700 } }, a.text),
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, a.impact)
                     ),
                     el('span', { style: { padding: '2px 8px', borderRadius: 10, background: diffColors[a.diff] + '20', color: diffColors[a.diff], fontSize: 11, fontWeight: 700 } }, a.diff)
                   );
                 }),
                 el('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', textAlign: 'center' } },
                   el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCA1 Remember'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.6 } },
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.6 } },
                     'Individual action is powerful AND we need systemic change. Talk to adults, support clean energy, vote for the planet when you\'re old enough. The most impactful thing you can do is inspire others to act.')
                 )
               )
@@ -3330,7 +3330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { marginTop: 20, padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.06))', border: '1px solid rgba(34,197,94,0.15)', textAlign: 'center' } },
               el('div', { style: { fontSize: 28, marginBottom: 6 } }, '\uD83C\uDF1F'),
               el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900, marginBottom: 6 } }, 'The Future Is Being Written Right Now'),
-              el('div', { style: { color: '#94a3b8', fontSize: 12, lineHeight: 1.7, maxWidth: 500, margin: '0 auto' } },
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.7, maxWidth: 500, margin: '0 auto' } },
                 'Solar is the cheapest energy in history. Electric vehicles outsell gas cars in many countries. Young people are leading the charge. The solutions exist \u2014 we just need to choose them. Every action, every conversation, every vote counts.')
             )
           ),
@@ -3529,20 +3529,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                   ),
                   el('button', { onClick: closePathDeepDive,
-                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
+                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
                   el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udd2c Policy mechanics'),
-                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                    el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                   ),
                   el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
-                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                    el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                   ),
                   el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83c\udf0d Maine context'),
-                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                    el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                   )
                 ),
                 applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
@@ -3571,8 +3571,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 });
               }
               function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
-              return el('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
-                el('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '\ud83d\udcc8 Sector decarbonization across the campaign'),
+              return el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                el('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '\ud83d\udcc8 Sector decarbonization across the campaign'),
                 el('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' } },
                   [0, 25, 50, 75, 100].map(function(g, gi) {
                     var y = padT + iy - (g / 100) * iy;
@@ -3671,11 +3671,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('button', { onClick: readPathway,
                       style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u21bb Re-read'),
                     el('button', { onClick: dismissPathAIRead,
-                      style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u2715')
+                      style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u2715')
                   )
                 ),
-                el('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, path.aiReadResponse),
-                el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                el('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, path.aiReadResponse),
+                el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
                   'AI climate-policy educator. ',
                   el('strong', null, 'It is not a Wabanaki person, not a real climate strategist or policy maker, and does not speak for any Wabanaki nation, agency, or organization.'),
                   ' For authoritative voice on Maine climate policy: Penobscot Nation CHPD, Wabanaki Public Health and Wellness, Maine Climate Council, Maine Department of Environmental Protection, Sunrise Movement Maine, Maine Climate Action Now.'
@@ -3694,10 +3694,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('span', { style: { fontSize: 36 } }, '\ud83d\uddfa\ufe0f'),
                     el('div', null,
                       el('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Climate Policy Pathways: 2025 to 2065'),
-                      el('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are Maine\'s lead climate strategist.')
+                      el('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'You are Maine\'s lead climate strategist.')
                     )
                   ),
-                  el('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                  el('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                     'Eight 5-year periods. Six policy sectors. ',
                     el('strong', null, 'Inter-sector feedback rules'),
                     ' tie the whole system together: clean grid unlocks decarbonization in transport and buildings; low climate justice drags support down everywhere; healthy working forests boost adaptation; adaptation deficit erodes public trust during disaster years.'
@@ -3705,21 +3705,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
                   POLICY_SECTORS.map(function(s) {
-                    return el('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + s.color, borderRadius: 10, padding: 12 } },
+                    return el('div', { key: s.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + s.color, borderRadius: 10, padding: 12 } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                         el('span', { style: { fontSize: 22 } }, s.icon),
                         el('strong', { style: { color: s.color } }, s.name)
                       ),
-                      el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, s.role),
-                      el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
+                      el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
+                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
                       s.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + s.name,
                         style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
                       }, '\ud83d\udcda Sector deep-dive \u2192') : null
                     );
                   })
                 ),
-                el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
-                  el('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                  el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                     Object.keys(PATHWAY_DIFFICULTIES).map(function(dkey) {
                       var df = PATHWAY_DIFFICULTIES[dkey];
@@ -3748,27 +3748,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                   el('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                   el('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
-                  el('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                  el('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
                 ),
                 renderPathTrendChart(path.yearLog),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8, marginBottom: 14 } },
                   path.sectors.map(function(s) {
                     var def = getPolicySector(s.id);
                     var art = sectorArtifact(s);
-                    return el('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                    return el('div', { key: s.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
                       el('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                         el('span', null, def.icon + ' ' + def.name),
                         def.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); },
                           style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '\ud83d\udcda') : null
                       ),
-                      el('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                         'Decarb: ' + Math.round(s.decarb) + '/' + def.targets.decarb,
                         el('br'),
                         'Resilience: ' + Math.round(s.resilience) + '/' + def.targets.resilience,
                         el('br'),
                         'Support: ' + Math.round(s.support) + '/' + def.targets.support
                       ),
-                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
                         el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
                       ) : null
                     );
@@ -3777,13 +3777,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
                   el('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '\u2194 What if you had done nothing for 40 years?'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-                    el('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                    el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
                       el('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your pathway'),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg decarb ' + actualAvgDecarb)
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg decarb ' + actualAvgDecarb)
                     ),
-                    el('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                    el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
                       el('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
-                      el('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg decarb ' + baselineAvgDecarb)
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg decarb ' + baselineAvgDecarb)
                     )
                   ),
                   el('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
@@ -3795,13 +3795,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   )
                 ),
                 el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
-                  el('button', { onClick: resetPathway, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '\u21bb New campaign'),
+                  el('button', { onClick: resetPathway, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '\u21bb New campaign'),
                   el('button', { onClick: function() { startPathway({ seed: path.seed, difficulty: path.difficulty }); },
                     style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '\ud83d\udd01 Replay same conditions')
                 ),
-                el('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
-                  el('span', { style: { color: '#94a3b8' } }, 'Campaign seed: '),
-                  el('strong', { style: { color: '#cbd5e1' } }, path.seed)
+                el('div', { style: { padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Campaign seed: '),
+                  el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, path.seed)
                 )
               );
             }
@@ -3812,17 +3812,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var ev = path.lastEvent || {};
               return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
                 pathDeepDive,
-                el('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24', marginBottom: 12 } },
+                el('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24', marginBottom: 12 } },
                   el('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '\ud83c\udf3f'),
                   el('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Period ' + pathwayYearLabel(path.year) + ' event: ' + (ev.name || 'quiet')),
-                  el('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                  el('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
                 ),
                 (lastSnap.cascades && lastSnap.cascades.length > 0) ? el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd', marginBottom: 12 } },
                   el('strong', { style: { color: '#38bdf8' } }, '\ud83d\udd04 Inter-sector feedback rules this period'),
                   lastSnap.cascades.map(function(c, ci) { return el('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '\u00b7 ' + c.msg); })
                 ) : null,
-                el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, marginBottom: 12 } },
-                  el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this period'),
+                el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+                  el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this period'),
                   (lastSnap.pre || []).map(function(preS) {
                     var postS = (lastSnap.post || []).find(function(p) { return p.id === preS.id; }) || preS;
                     var def = getPolicySector(preS.id);
@@ -3832,7 +3832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '\u25b2' : '\u25bc'; }
                       return el('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
-                    return el('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                    return el('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
                       el('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
                       delta('Dec', preS.decarb, postS.decarb),
                       delta('Res', preS.resilience, postS.resilience),
@@ -3864,11 +3864,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               // HUD
               el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
                 el('div', null,
-                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Period'),
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Period'),
                   el('div', { style: { fontSize: 18, fontWeight: 800, color: T_GREEN_HI } }, pathwayYearLabel(path.year))
                 ),
                 el('div', null,
-                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours'),
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours'),
                   el('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, path.hoursLeft + ' / ' + path.hoursPerYear)
                 ),
                 el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
@@ -3885,12 +3885,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   var def = getPolicySector(s.id);
                   if (!def) return null;
                   var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(s.id) >= 0; });
-                  return el('div', { key: s.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                  return el('div', { key: s.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                       el('span', { style: { fontSize: 22 } }, def.icon),
                       el('div', { style: { flex: 1 } },
                         el('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
-                        el('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                        el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                       ),
                       def.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); },
                         style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '\ud83d\udcda') : null
@@ -3900,10 +3900,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                        ['Res', Math.round(s.resilience), s.resilience < 40 ? '#ef4444' : s.resilience < 65 ? '#f59e0b' : '#22c55e', def.targets.resilience],
                        ['Sup', Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
                       ].map(function(st, si) {
-                        return el('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
-                          el('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                        return el('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                          el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
                           el('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          el('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'goal ' + st[3])
+                          el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'goal ' + st[3])
                         );
                       })
                     ),
@@ -3918,7 +3918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   );
                 })
               ),
-              el('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 12, borderLeft: '3px solid #38bdf8' } },
+              el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 12, borderLeft: '3px solid #38bdf8' } },
                 el('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '\ud83d\udee0 Cross-sector actions'),
                 el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
@@ -3929,10 +3929,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   })
                 )
               ),
-              path.yearActions.length > 0 ? el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
-                el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Period actions'),
+              path.yearActions.length > 0 ? el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Period actions'),
                 path.yearActions.map(function(a, ai) { return el('div', { key: ai }, '\u00b7 ' + a.tech + ' \u2192 ' + a.target + ' (' + a.hours + 'h)'); })
-              ) : el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
+              ) : el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
             );
           })()
         )

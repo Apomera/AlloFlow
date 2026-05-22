@@ -457,7 +457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
       // Theme tokens — match RoadReady palette so the tool feels native.
       var T = {
-        bg: '#0f172a', card: '#1e293b', cardAlt: '#0b1426', border: '#334155',
+        bg: '#0f172a', card: '#1e293b', cardAlt: '#0b1426', border: 'var(--allo-stem-border, #334155)',
         text: '#f1f5f9', muted: '#cbd5e1', dim: '#94a3b8',
         accent: '#dc2626', accentHi: '#fca5a5',
         ok: '#22c55e', warn: '#f59e0b', danger: '#ef4444',
@@ -2283,7 +2283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function contentWarningDialog() {
           var cw = sc.contentWarning;
           return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Content warning before mental health scenario',
-            style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '2px solid ' + T.warn } },
+            style: { padding: 16, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid ' + T.warn } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.warn } }, '⚠️ Content warning'),
             h('p', { style: { margin: '0 0 12px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, cw),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },

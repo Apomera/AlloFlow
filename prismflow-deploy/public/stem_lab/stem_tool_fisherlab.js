@@ -7538,7 +7538,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     camera.position.set(0, 4, 12);
     camera.lookAt(0, 1.5, 0);
 
-    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    } catch (e) {
+      console.error('[FisherLab] WebGLRenderer creation failed:', e);
+      return null;
+    }
     var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
@@ -7987,12 +7993,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var c = canvasRef.current;
         if (!c) return;
         if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
-        harborRef.current = initHarborSim(c, {
-          onHudUpdate: setHud,
-          onStatus: pushStatus
-        });
-        setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
-        flAnnounce('FisherLab 3D sim launched. Use WASD or arrow keys to steer, Space for throttle boost, F to fish at Halfway Rock.');
+        try {
+          harborRef.current = initHarborSim(c, {
+            onHudUpdate: setHud,
+            onStatus: pushStatus
+          });
+          if (!harborRef.current) {
+            throw new Error('WebGLRenderer could not be initialized.');
+          }
+          setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
+          flAnnounce('FisherLab 3D sim launched. Use WASD or arrow keys to steer, Space for throttle boost, F to fish at Halfway Rock.');
+        } catch (err) {
+          console.error('[FisherLab] Error starting 3D simulation:', err);
+          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+          flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
+        }
       }
       if (window.THREE) {
         actuallyStart();
@@ -8016,7 +8031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }, []);
 
     // ─── Shared style helpers
-    var cardStyle = { background: 'linear-gradient(135deg, rgba(14,30,48,0.92), rgba(8,18,32,0.92))', border: '1px solid rgba(56,189,248,0.22)', borderRadius: 12, padding: 14, color: '#e2e8f0', marginBottom: 12 };
+    var cardStyle = { background: 'linear-gradient(135deg, rgba(14,30,48,0.92), rgba(8,18,32,0.92))', border: '1px solid rgba(56,189,248,0.22)', borderRadius: 12, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12 };
     var headerStyle = { fontSize: 13, fontWeight: 900, color: '#bae6fd', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 };
 
     // ─── Tab bar
@@ -8146,15 +8161,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Region toggle
     function regionBar() {
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(15,23,42,0.55)', borderRadius: 10, marginBottom: 12, flexWrap: 'wrap' } },
-        h('label', { htmlFor: 'fl-region-select', style: { fontSize: 11, fontWeight: 700, color: '#94a3b8' } }, 'Region:'),
+        h('label', { htmlFor: 'fl-region-select', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Region:'),
         h('select', { id: 'fl-region-select', value: region,
           onChange: function(e) { setRegion(e.target.value); flAnnounce('Region set to ' + REGIONS[e.target.value].label); },
-          style: { background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(56,189,248,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12 } },
+          style: { background: '#0f1c2f', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12 } },
           Object.keys(REGIONS).map(function(rk) {
             return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)'));
           })),
         !REGIONS[region].complete ? h('span', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Preview region — full data coming in v1.1. Maine data still shown.') : null,
-        h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8' } },
+        h('span', { style: { marginLeft: 'auto', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           'Port: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].portName || REGIONS.maine.portName),
           ' · Buoyage: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].buoyage)));
     }
@@ -8168,18 +8183,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '🎣 FisherLab — Boating & Fishing Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
             'Pilot a Maine skiff from Custom House Wharf out to the fishing grounds. Learn buoyage (red-right-returning), COLREGS rules of the road, chart reading, tides, and weather while fishing for cod, haddock, pollock, striper, and mackerel — and pulling lobster traps once you\'ve earned your apprenticeship.'),
-          h('p', { style: { fontSize: 12, color: '#94a3b8', margin: '0 0 10px', fontStyle: 'italic' } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
             'Built for King Middle School EL Education place-based learning expeditions. Maine DMR rules are the default; a region toggle lets you preview other waters. Click any tab above to explore the curriculum modules, or jump straight into the 3D Sim.'),
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(56,189,248,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions complete')),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions complete')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, caughtCount + '/' + MAINE_SPECIES.length),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Species in life log')),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Species in life log')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#a78bfa' } }, (lifeLog || []).length),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Total keepers'))
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Total keepers'))
           )),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Missions (v1)'),
@@ -8188,13 +8203,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             return h('div', { key: m.id, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid ' + (done ? '#86efac' : '#38bdf8') } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: done ? '#86efac' : '#bae6fd', marginBottom: 4 } },
                 (done ? '✓ ' : (i + 1) + '. ') + m.title),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
-              h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
+              h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })));
           })),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'How to play'),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             h('p', null, h('b', null, 'Steering: '), 'WASD or arrow keys. W/Up = throttle forward. S/Down = reverse. A/Left + D/Right = turn. Space = throttle boost.'),
             h('p', null, h('b', null, 'Fishing: '), 'When you reach Halfway Rock (marked with a yellow cone), press F to drop a jig. Random fish — check the species, length, and slot rules in the Regs Lookup tab.'),
             h('p', null, h('b', null, 'Buoyage: '), 'Red right returning — when heading INTO harbor, keep red nuns on your starboard (right). The sim checks whether you pass the first nun correctly.'),
@@ -8209,15 +8224,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '3D Simulator'),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
-            h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
+            h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
             h('button', { className: 'fl-btn',
               onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               '▶ Load 3D engine + launch sim')) : null,
-          sim.loading ? h('div', { style: { textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 } }, '⏳ Loading three.js…') : null,
+          sim.loading ? h('div', { style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '⏳ Loading three.js…') : null,
           sim.threeError ? h('div', { style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
-            h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine failed to load'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, 'You can still use Chart Mode (2D fallback) — switch to the "Chart Room" tab. The full curriculum (Buoyage, COLREGS, Species ID, Regs, Glossary, Quiz) is unaffected.')) : null,
+            h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine failed to load or initialize'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'You can still use Chart Mode (2D fallback) — switch to the "Chart Room" tab. The full curriculum (Buoyage, COLREGS, Species ID, Regs, Glossary, Quiz) is unaffected.'),
+            h('button', {
+              className: 'fl-btn',
+              onClick: function() {
+                setSim({ active: false, threeLoaded: false, threeError: false, loading: false });
+                setTimeout(startSim, 50);
+              },
+              style: { padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+            }, 'Retry 3D Mode')) : null,
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
             h('button', { className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
@@ -8226,13 +8249,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('canvas', { ref: canvasRef, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: '#9bc4d8' },
               'aria-label': '3D harbor scene. Use WASD or arrow keys to steer the boat. Press F at Halfway Rock to fish.' }),
             // HUD overlay
-            h('div', { style: { position: 'absolute', top: 10, left: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: '#e2e8f0', fontFamily: 'ui-monospace, Menlo, monospace' } },
+            h('div', { style: { position: 'absolute', top: 10, left: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
               h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
               h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
               h('div', null, 'Fuel: ', h('b', { style: { color: (hud.fuel || 100) < 30 ? '#fb923c' : '#86efac' } }, Math.max(0, hud.fuel || 0).toFixed(0) + '%')),
               h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0))),
             // Mission progress
-            h('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: '#e2e8f0', maxWidth: 220 } },
+            h('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220 } },
               h('div', { style: { fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, 'Mission 1'),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Passed red nun' : '• Pass red nun on starboard'),
               h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reached Halfway Rock' : '• Reach Halfway Rock'),
@@ -8262,7 +8285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             ].map(function(c, i) {
               return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),
-                h('div', { style: { color: '#cbd5e1' } }, c.d));
+                h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, c.d));
             }))));
     }
 
@@ -8283,7 +8306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         regionBar(),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🗺 Chart Room (' + (REGIONS[region].portName || 'Portland Harbor') + ')'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Stylized chart approximating Casco Bay. In a real sim you\'d use NOAA Chart 13290 (Casco Bay). Buoy symbols mirror IALA-B convention. Useful as a 2D fallback if WebGL is unavailable, or as a study aid while playing.'),
           h('svg', { viewBox: '0 0 600 400', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(56,189,248,0.3)' },
             'aria-label': 'Stylized nautical chart of Portland Harbor approach showing buoys, Halfway Rock, and Portland Head Light.' },
@@ -8331,7 +8354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('text', { x: 15, y: 5, fill: '#3b4d2b', fontSize: 9, textAnchor: 'middle' }, 'E'),
               h('line', { x1: 0, y1: 14, x2: 0, y2: -14, stroke: '#3b4d2b', strokeWidth: 1 }))
           ),
-          h('div', { style: { marginTop: 10, fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+          h('div', { style: { marginTop: 10, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
             h('p', null, h('b', null, 'Plot a fix: '), 'Take bearings off two known landmarks (Portland Head Light + Custom House Wharf). Where the bearing lines cross is your fix.'),
             h('p', null, h('b', null, 'Buoyage check: '), 'Red marks (nuns, even-numbered) line the east side of the channel as drawn — keep them on your starboard when heading INTO the harbor (red right returning). Green cans (odd-numbered) on your port.'))));
     }
@@ -8341,27 +8364,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🟢 IALA Region B Buoyage'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 10 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 10 } },
             'North America uses IALA Region B. The mnemonic everyone learns: ', h('b', { style: { color: '#fbbf24' } }, '"Red Right Returning"'), ' — when heading INTO harbor from the sea, keep red marks on your starboard (right) side. Reverse when leaving.'),
           h('h4', { style: { fontSize: 12, color: '#bae6fd', marginTop: 12, marginBottom: 6 } }, 'Lateral marks (channel)'),
           BUOYAGE.lateral.map(function(b, i) {
             return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6, borderLeft: '3px solid ' + (b.color.indexOf('red') === 0 ? '#c8302a' : (b.color.indexOf('green') === 0 ? '#2a7c44' : '#94a3b8')) } },
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0' } }, b.type + ' (' + b.shape + ', ' + b.color + ')'),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, b.meaning),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'Numbering: ' + b.numbering + ' · Light: ' + b.light));
+              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type + ' (' + b.shape + ', ' + b.color + ')'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, b.meaning),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Numbering: ' + b.numbering + ' · Light: ' + b.light));
           }),
           h('h4', { style: { fontSize: 12, color: '#bae6fd', marginTop: 12, marginBottom: 6 } }, 'Cardinal marks (passable side)'),
           BUOYAGE.cardinal.map(function(b, i) {
             return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6 } },
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0' } }, b.type.toUpperCase() + ' cardinal — ' + b.color),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, b.meaning),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'Topmark: ' + b.topmark + ' · Light: ' + b.light));
+              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type.toUpperCase() + ' cardinal — ' + b.color),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, b.meaning),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Topmark: ' + b.topmark + ' · Light: ' + b.light));
           }),
           h('h4', { style: { fontSize: 12, color: '#bae6fd', marginTop: 12, marginBottom: 6 } }, 'Special marks'),
           BUOYAGE.special.map(function(b, i) {
             return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6 } },
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0' } }, b.type + ' (' + b.shape + ', ' + b.color + ')'),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, b.meaning));
+              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type + ' (' + b.shape + ', ' + b.color + ')'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, b.meaning));
           }),
           h('p', { style: { marginTop: 12, fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } },
             'Accessibility note: shape + color always pair. Red is always conical (nun). Green is always cylindrical (can). A colorblind boater can still navigate by shape alone — that\'s why the convention exists.')));
@@ -8372,12 +8395,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '⚓ COLREGS — Rules of the Road (plain-language)'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 10 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 10 } },
             'Full text: ', h('span', { style: { color: '#bae6fd' } }, 'USCG COLREGS (33 CFR 83)'), '. The rules below are plain-language summaries for instruction only. For licensing exams, study the actual rules.'),
           COLREGS.map(function(r, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#bae6fd', marginBottom: 4 } }, r.rule + ' · ' + r.title),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, r.plain));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, r.plain));
           })));
     }
 
@@ -8387,7 +8410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         regionBar(),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🐟 Maine Species ID'),
-          h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12, fontStyle: 'italic' } },
+          h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, fontStyle: 'italic' } },
             'Gulf of Maine fishes + American lobster. Size limits + slots in this guide reflect typical DMR rules — verify current limits at maine.gov/dmr before fishing.'),
           MAINE_SPECIES.map(function(s, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
@@ -8395,11 +8418,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, s.emoji),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd' } }, s.name),
-                  h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#94a3b8' } }, s.sci),
+                  h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.sci),
                   h('span', { className: 'fl-pill' }, s.group))),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'ID: '), s.idMarks),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'Habitat: '), s.habitat),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'Gear: '), (s.gear || []).join(', ')),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'ID: '), s.idMarks),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'Habitat: '), s.habitat),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'Gear: '), (s.gear || []).join(', ')),
               h('div', { style: { fontSize: 11, color: '#fbbf24', lineHeight: 1.5, marginBottom: 4 } },
                 h('b', null, 'Min size: '), String(s.minSize) + (typeof s.minSize === 'number' ? '"' : ''),
                 s.slot ? ' · Slot: ' + s.slot : '',
@@ -8407,7 +8430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 s.season ? ' · Season: ' + s.season : ''),
               h('div', { style: { fontSize: 11, color: '#86efac', lineHeight: 1.5, marginTop: 4, paddingTop: 6, borderTop: '1px solid rgba(100,116,139,0.25)' } },
                 h('b', null, 'Stewardship: '), s.stewardship,
-                h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 6, fontStyle: 'italic' } }, '(' + s.cite + ')')));
+                h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6, fontStyle: 'italic' } }, '(' + s.cite + ')')));
           })));
     }
 
@@ -8416,11 +8439,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🪝 Gear & Methods'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Every gear has tradeoffs in selectivity, efficiency, and bycatch. The most "efficient" gear is often the most damaging — sustainability requires gear choices that match the target while protecting non-targets.'),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Every gear has tradeoffs in selectivity, efficiency, and bycatch. The most "efficient" gear is often the most damaging — sustainability requires gear choices that match the target while protecting non-targets.'),
           GEAR.map(function(g, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, g.emoji + ' ' + g.name),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Use: '), g.use),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), g.use),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Tradeoff: '), g.tradeoff),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Tip: '), g.tips));
           })));
@@ -8434,7 +8457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '📜 DMR Regulations Lookup (Maine)'),
           h('p', { style: { fontSize: 11, color: '#fb923c', marginBottom: 12, fontStyle: 'italic' } },
             '⚠ Live DMR rules change. Treat in-tool numbers as instructional. Always confirm at maine.gov/dmr or current state\'s authority before fishing.'),
-          h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#cbd5e1' } },
+          h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
             h('thead', null,
               h('tr', { style: { background: 'rgba(56,189,248,0.15)' } },
                 ['Species', 'Min size', 'Slot', 'Daily bag', 'Season'].map(function(c, ci) {
@@ -8451,7 +8474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               })))),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Conservation tools you\'ll see in the sim'),
-          h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+          h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Slot limits — '), 'Striper 28-31". Protects both juveniles AND big breeders. Smaller fish = future biomass; bigger fish = disproportionate reproductive output.'),
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'V-notch (lobster) — '), 'Any female caught with eggs gets a v-notch on her tail flipper. She\'s protected for life from harvest, even years later when no longer carrying. Maine\'s most distinctive sustainability lever.'),
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Maximum size (lobster) — '), 'Lobsters >5" carapace must also be released. The largest breeders produce vastly more eggs per spawn than smaller ones.'),
@@ -8464,18 +8487,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🦞 Maine Lobster License Ladder'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.5 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.5 } },
             'Maine\'s commercial lobster fishery is limited-entry. You can\'t walk in off the street + buy a license. Even kids growing up around the industry follow a structured tier system. Below is the ladder:'),
           LOBSTER_LICENSE.map(function(l, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (l.tier === 'Apprentice' ? '#fbbf24' : (l.tier === 'Non-commercial' ? '#86efac' : '#38bdf8')) } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 4 } },
                 h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd' } }, l.tier),
                 h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700 } }, 'Trap limit: ' + l.traps)),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, h('b', null, 'Age: '), l.age),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, h('b', null, 'Requires: '), l.requires),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, h('b', null, 'Age: '), l.age),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Requires: '), l.requires),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Role: '), l.role));
           }),
-          h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 12 } },
+          h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 12 } },
             'Sources: Maine DMR commercial fishing licenses + Maine Lobstermen\'s Association apprentice program. Confirm at maine.gov/dmr.')));
     }
 
@@ -8484,15 +8507,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🧰 Career Pathways'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.5 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.5 } },
             'Marine trades are not one job — they\'re a whole ecosystem of roles from stern-person to research scientist. Many of these are accessible without a 4-year degree.'),
           CAREERS.map(function(c, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, c.title),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c.desc),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Training: '), c.training),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', { style: { color: '#86efac' } }, 'Pay: '), c.pay),
-              h('div', { style: { fontSize: 11, color: '#94a3b8' } }, h('b', { style: { color: '#a78bfa' } }, 'Future: '), c.future));
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.desc),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Training: '), c.training),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', { style: { color: '#86efac' } }, 'Pay: '), c.pay),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, h('b', { style: { color: '#a78bfa' } }, 'Future: '), c.future));
           })));
     }
 
@@ -8504,7 +8527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           GLOSSARY.map(function(g, i) {
             return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6 } },
               h('div', { style: { fontSize: 12, fontWeight: 800, color: '#bae6fd', marginBottom: 2 } }, g.term),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, g.def));
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } }, g.def));
           })));
     }
 
@@ -8518,7 +8541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '✅ Quiz Results'),
           h('div', { style: { fontSize: 28, fontWeight: 900, color: '#bae6fd', marginBottom: 8 } },
             quizState.score + ' / ' + QUIZ_QUESTIONS.length),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1' } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
             quizState.score >= QUIZ_QUESTIONS.length * 0.85 ? '🏆 Mastery — you\'re ready for open water.' :
             quizState.score >= QUIZ_QUESTIONS.length * 0.7 ? '✓ Solid — review missed items + retry.' :
             '⚠ Keep studying — review Buoyage, COLREGS, Regs tabs.'),
@@ -8529,9 +8552,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               return h('div', { key: qi, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + (correct ? '#86efac' : '#fb923c') } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: correct ? '#86efac' : '#fb923c', marginBottom: 4 } },
                   (correct ? '✓ ' : '✕ ') + 'Q' + (qi + 1) + ': ' + q.q),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Your answer: ' + (typeof picked === 'number' ? q.a[picked] : 'skipped')),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Your answer: ' + (typeof picked === 'number' ? q.a[picked] : 'skipped')),
                 !correct ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 2 } }, 'Correct: ' + q.a[q.correct]) : null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, q.explain));
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, q.explain));
             })),
           h('button', { className: 'fl-btn',
             onClick: function() { setQuizState({ idx: 0, answers: {}, finished: false, score: 0 }); },
@@ -8541,7 +8564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '✅ FisherLab Quiz — Q' + (quizState.idx + 1) + ' of ' + QUIZ_QUESTIONS.length),
-          h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 12 } }, q.q),
+          h('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 12 } }, q.q),
           q.a.map(function(opt, oi) {
             return h('button', { key: oi, className: 'fl-btn',
               onClick: function() {
@@ -8560,7 +8583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 }
               },
               style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6,
-                background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', border: '1px solid rgba(56,189,248,0.3)',
+                background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.3)',
                 borderRadius: 8, fontSize: 12, cursor: 'pointer' } },
               String.fromCharCode(65 + oi) + '. ' + opt);
           })));
@@ -8571,21 +8594,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🌦 Marine Weather Scenarios'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Maine weather changes fast. NOAA marine forecasts use Beaufort wind scale + sea state + visibility. The most-used categories below:'),
           WEATHER_SCENARIOS.map(function(w, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (w.risk === 'Extreme' ? '#dc2626' : (w.risk === 'Very High' ? '#fb923c' : (w.risk === 'High' ? '#fbbf24' : '#86efac'))) } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: 4 } },
                 h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd' } }, w.name),
                 h('div', { style: { fontSize: 10, color: w.risk === 'Extreme' ? '#fca5a5' : (w.risk === 'Very High' ? '#fdba74' : (w.risk === 'High' ? '#fde047' : '#86efac')), fontWeight: 700 } }, 'Risk: ' + w.risk)),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Trigger: '), w.trigger),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Visibility: '), w.visibility),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Trigger: '), w.trigger),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Visibility: '), w.visibility),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Action: '), w.action),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Duration: '), w.duration));
           })),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Decision Framework'),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
             h('p', null, h('b', { style: { color: '#fbbf24' } }, '1. Get the forecast BEFORE casting off. '), 'NOAA Marine Forecast (weather.gov/marine) or NOAA Weather Radio.'),
             h('p', null, h('b', { style: { color: '#fbbf24' } }, '2. Check the wind direction. '), 'Most Maine harbors are protected from one direction. If wind builds and that\'s your weather side, head for a different harbor.'),
             h('p', null, h('b', { style: { color: '#fbbf24' } }, '3. Watch the sky + barometer. '), 'Falling barometer + thickening clouds = system arriving. Calm before storm.'),
@@ -8598,20 +8621,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '📻 VHF Radio — The Mariner\'s Phone'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Marine VHF Channel 16 is the international distress + hailing channel. ALWAYS monitored when underway. Below are the standard call types every boater must know.'),
           VHF_SCRIPTS.map(function(v, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (v.id === 'mayday' ? '#dc2626' : (v.id === 'panpan' ? '#fbbf24' : '#38bdf8')) } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: v.id === 'mayday' ? '#fca5a5' : (v.id === 'panpan' ? '#fde047' : '#bae6fd'), marginBottom: 4 } }, v.type),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } }, h('b', null, 'Channel: '), v.channel, ' · ', h('b', null, 'When: '), v.when),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Channel: '), v.channel, ' · ', h('b', null, 'When: '), v.when),
               h('div', { style: { padding: 8, background: 'rgba(0,0,0,0.4)', borderRadius: 6, fontSize: 11, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.7, marginBottom: 6 } },
                 v.script.map(function(line, li) { return h('div', { key: li }, line); })),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, h('b', null, 'Follow-up: '), v.followUp),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Follow-up: '), v.followUp),
               v.legal ? h('div', { style: { fontSize: 11, color: '#fb923c', fontStyle: 'italic' } }, h('b', null, '⚠ Legal: '), v.legal) : null);
           })),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Memorize: the four "P"s'),
-          h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+          h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
             h('li', null, h('b', null, 'Position '), '(lat/lon OR bearing-and-distance from known landmark)'),
             h('li', null, h('b', null, 'Problem '), '(nature of emergency)'),
             h('li', null, h('b', null, 'People '), '(number aboard)'),
@@ -8623,13 +8646,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🪢 Mariner Knots — The 12 You Must Know'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Every knot reduces line strength (most by 30-40%). Knowing which knot for which job is part of seamanship literacy.'),
           KNOTS.map(function(k, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, k.emoji + ' ' + k.name),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Use: '), k.use),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Where: '), k.where),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), k.use),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Where: '), k.where),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3, fontStyle: 'italic' } }, h('b', null, 'Mnemonic: '), k.mnemonic),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Strength: '), k.strength));
           })));
@@ -8640,12 +8663,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🪱 Bait Guide'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'The right bait matches the species + the season + the technique. Maine bait shops sell most of these; many you can collect yourself.'),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'The right bait matches the species + the season + the technique. Maine bait shops sell most of these; many you can collect yourself.'),
           BAIT.map(function(b, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, b.name),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'For: '), b.use),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'How to get: '), b.acquisition),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'For: '), b.use),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'How to get: '), b.acquisition),
               h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Effective: '), b.effective),
               h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Cost: '), b.cost));
           })));
@@ -8656,12 +8679,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🚤 Maine Boat Types'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Maine\'s working fleet is unusually diverse — from open skiffs to 90-ft draggers. Each has different physics, capabilities, and economics.'),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Maine\'s working fleet is unusually diverse — from open skiffs to 90-ft draggers. Each has different physics, capabilities, and economics.'),
           BOAT_TYPES.map(function(bt, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, bt.emoji + ' ' + bt.name),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Use: '), bt.use),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Power: '), bt.power, ' · ', h('b', null, 'Crew: '), bt.crew),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), bt.use),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Power: '), bt.power, ' · ', h('b', null, 'Crew: '), bt.crew),
               h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, '✓ Pros: '), bt.pros),
               h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, '✗ Cons: '), bt.cons),
               h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Cost: '), bt.typical));
@@ -8673,18 +8696,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '⚓ Maine Working Ports'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Eight major Maine ports — each with its own character, primary fishery, and navigation challenges.'),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Eight major Maine ports — each with its own character, primary fishery, and navigation challenges.'),
           MAINE_PORTS.map(function(p, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 } },
                 h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd' } }, p.emoji + ' ' + p.name),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, p.coords + ' · pop ' + p.population)),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, h('b', null, 'Primary: '), p.primary),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4, fontStyle: 'italic' } }, p.character),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, h('b', null, 'Notable: '), (p.notable || []).join(' · ')),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, p.coords + ' · pop ' + p.population)),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Primary: '), p.primary),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, fontStyle: 'italic' } }, p.character),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, h('b', null, 'Notable: '), (p.notable || []).join(' · ')),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Navigation: '), p.navigation),
               h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 4, paddingTop: 6, borderTop: '1px solid rgba(100,116,139,0.25)' } }, h('b', null, 'Culture: '), p.culture,
-                h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 6, fontStyle: 'italic' } }, '(' + p.cite + ')')));
+                h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6, fontStyle: 'italic' } }, '(' + p.cite + ')')));
           })));
     }
 
@@ -8693,13 +8716,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🗺 Maine Lobster Zones (DMR-managed)'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Maine\'s commercial lobster fishery is divided into 7 zones, each governed by a Zone Council that sets entry/exit rules + local rules.'),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Maine\'s commercial lobster fishery is divided into 7 zones, each governed by a Zone Council that sets entry/exit rules + local rules.'),
           LOBSTER_ZONES.map(function(z, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, z.name),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Area: '), z.area),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Trap limit: '), z.traps),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3, fontStyle: 'italic' } }, z.character),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Area: '), z.area),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Trap limit: '), z.traps),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, fontStyle: 'italic' } }, z.character),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Entry: '), z.entry),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Towns: '), (z.towns || []).join(' · ')));
           })));
@@ -8710,13 +8733,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🪶 Wabanaki Fishing Heritage'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.6 } },
             'Maine\'s coast has been managed by Wabanaki peoples for 12,000+ years. Their relationship with these waters is ongoing, not historical — the four nations of the Wabanaki Confederacy (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq) continue to assert sovereignty + treaty rights.'),
           WABANAKI.map(function(w, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, w.title),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, w.body),
-              w.cite ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, '(' + w.cite + ')') : null);
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, w.body),
+              w.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + w.cite + ')') : null);
           }),
           h('div', { style: { padding: 10, background: 'rgba(167,139,250,0.1)', borderRadius: 6, marginTop: 12, fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } },
             'For curriculum partnerships: Wabanaki REACH (wabanakireach.org), Maine Indian Education, Maine-Wabanaki Truth & Reconciliation Commission report.')));
@@ -8727,13 +8750,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🌡 Climate Impacts on Gulf of Maine Fisheries'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.6 } },
             'The Gulf of Maine warmed ~4× faster than the global ocean during 2004-2013. Climate change is the dominant force reshaping fisheries today. Every Maine fisherman is now a climate observer.'),
           CLIMATE_IMPACTS.map(function(c, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, c.title),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, c.body),
-              c.cite ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, c.body),
+              c.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
           })));
     }
 
@@ -8742,11 +8765,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🌱 Conservation Case Studies'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Real stories from Maine + the Atlantic fisheries world. Some are collapse stories. Some are recovery stories. All have lessons.'),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Real stories from Maine + the Atlantic fisheries world. Some are collapse stories. Some are recovery stories. All have lessons.'),
           CONSERVATION_CASES.map(function(cc, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, cc.title),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, cc.summary),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, cc.summary),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Lessons: '), cc.lessons),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Action: '), cc.action));
           })));
@@ -8759,19 +8782,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '🆘 Cold-Water Survival — The 1-10-1 Rule'),
           h('p', { style: { fontSize: 12, color: '#fb923c', marginBottom: 12, fontWeight: 700 } },
             'Maine waters can kill in minutes. PFD ON THE BODY before you fall in. After that, time is the enemy.'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Memorize ', h('b', { style: { color: '#fbbf24' } }, '1 minute / 10 minutes / 1 hour: '),
             ' 1 minute to control your breathing after the cold-shock gasp; 10 minutes of meaningful muscle function; 1 hour before hypothermia takes you. Below: the 4 phases in detail.'),
           COLD_WATER.map(function(p, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, p.phase),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'What: '), p.what),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'What: '), p.what),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Survival: '), p.survival),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, h('b', null, 'Timing: '), p.time));
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Timing: '), p.time));
           }),
           h('div', { style: { padding: 12, background: 'rgba(251,146,60,0.1)', borderRadius: 8, marginTop: 8 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fdba74', marginBottom: 6 } }, 'HELP / HUDDLE positions'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               h('p', null, h('b', null, 'HELP (Heat Escape Lessening Posture): '), 'Alone in water? Knees to chest, arms across chest, PFD on. Reduces heat loss ~50%.'),
               h('p', null, h('b', null, 'HUDDLE: '), 'Multiple people in water? Form a tight chest-to-chest cluster. Conserves heat. Place children + injured at center.')))));
     }
@@ -8783,7 +8806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', null,
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🏆 Achievements (' + Object.keys(unlocked).length + ' / ' + ACHIEVEMENTS.length + ')'),
-          h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Unlock by playing missions, completing the quiz, reading curriculum modules, and demonstrating stewardship.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
             ACHIEVEMENTS.map(function(a, i) {
@@ -8791,7 +8814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               return h('div', { key: a.id, style: { padding: 10, background: done ? 'rgba(134,239,172,0.12)' : 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (done ? '#86efac' : '#475569'), opacity: done ? 1 : 0.65 } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, a.icon),
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: done ? '#86efac' : '#cbd5e1', marginBottom: 2 } }, (done ? '✓ ' : '') + a.name),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, a.desc));
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, a.desc));
             }))));
     }
 
@@ -8799,14 +8822,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function safetyTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🦺 Safety Equipment — Federal + Best Practice'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'USCG-required minimums + best-practice additions. The legal minimum is not the safe minimum — Maine waters punish unprepared boaters.'),
         SAFETY_EQUIPMENT.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, s.emoji + ' ' + s.name),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Required: '), s.required),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Types: '), s.types),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Maintenance: '), s.maintenance),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Required: '), s.required),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Types: '), s.types),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Maintenance: '), s.maintenance),
             h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Reality: '), s.reality));
         })));
     }
@@ -8815,12 +8838,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function lawTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⚖️ Maritime Law Primer'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A working mariner doesn\'t need to be a lawyer, but should know the key federal + state frameworks that shape Maine fisheries.'),
         MARITIME_LAW.map(function(l, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, l.title),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, l.body),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, l.body),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Why it matters: '), l.relevance));
         })));
     }
@@ -8829,14 +8852,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function seabirdsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🐦 Maine Seabirds — Working with Avian Indicators'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seabirds are working partners on the water — they signal where baitfish are, where storms are coming, and what shape the ecosystem is in. Cross-reference with BirdLab for full Maine bird coverage.'),
         SEABIRDS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, b.emoji + ' ' + b.name),
-            h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#94a3b8', marginBottom: 6 } }, b.sci),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'ID: '), b.idMarks),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Behavior: '), b.behavior),
+            h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, b.sci),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'ID: '), b.idMarks),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Behavior: '), b.behavior),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Indicator: '), b.indicator),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Season: '), b.season));
         })));
@@ -8846,15 +8869,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function mammalsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🦭 Maine Marine Mammals'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Federally protected under MMPA. Minimum approach distances apply. Below are the species you\'ll encounter from Maine boats.'),
         MARINE_MAMMALS.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, m.emoji + ' ' + m.name),
-            h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#94a3b8', marginBottom: 6 } }, m.sci),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'ID: '), m.idMarks),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Behavior: '), m.behavior),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Population: '), m.population),
+            h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, m.sci),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'ID: '), m.idMarks),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Behavior: '), m.behavior),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Population: '), m.population),
             h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Regulation: '), m.regulation));
         })));
     }
@@ -8863,12 +8886,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function tidesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌊 Tide Primer — Maine\'s Daily Rhythm'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine tides drive everything: fishing windows, channel passage, shellfish access, weather + sea state. Mastering the tide is mastering the coast.'),
         TIDE_PRIMER.map(function(t, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, t.title),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, t.body),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, t.body),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), t.practical));
         })));
     }
@@ -8877,13 +8900,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function waterColumnTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🏛 Water Column Biology'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine waters are stratified vertically — light, temp, oxygen, prey distribution all change with depth. Fish position themselves along this gradient.'),
         WATER_COLUMN.map(function(z, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, z.zone),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Light: '), z.light),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Species: '), z.species),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Light: '), z.light),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Species: '), z.species),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Indicators: '), z.indicators));
         })));
     }
@@ -8892,18 +8915,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function lessonPlansTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📓 Lesson Plans (for teachers)'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ready-to-use templates aligned to Maine + EL Education + NGSS / Maine Indian Education (LD 291) standards. Build on these for your context.'),
         LESSON_PLANS.map(function(lp, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac' } }, lp.title),
-              h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Grade ' + lp.grade + ' · ' + lp.subject)),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Grade ' + lp.grade + ' · ' + lp.subject)),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Objectives:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               lp.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } }, h('b', null, 'Materials: '), lp.materials.join(' · ')),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6 } }, h('b', null, 'Flow: '), lp.flow),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Materials: '), lp.materials.join(' · ')),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Flow: '), lp.flow),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Assessment: '), lp.assessment),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Cross-cuts: '), lp.crosscuts.join(' · ')));
         })));
@@ -8913,16 +8936,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function bibliographyTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📚 Bibliography + Further Reading'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Curated reading list — books, papers, websites, and organizations. All claims in FisherLab trace to one of these sources.'),
         BIBLIOGRAPHY.map(function(b, i) {
-          return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+          return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
             h('div', null,
               h('b', { style: { color: '#bae6fd' } }, b.authors + ' (' + b.year + '). '),
               h('span', { style: { fontStyle: 'italic' } }, b.title),
               b.journal ? h('span', null, '. ' + b.journal) : null,
-              h('span', { style: { color: '#94a3b8' } }, ' [' + b.type + ']')),
-            b.notes ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, b.notes) : null,
+              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' [' + b.type + ']')),
+            b.notes ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, b.notes) : null,
             b.url ? h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 2 } }, b.url) : null);
         })));
     }
@@ -8931,14 +8954,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function historyTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📜 Maine Maritime History (deep timeline)'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           '12,000 years of Maine\'s relationship with the sea. From Wabanaki shell middens to modern climate-shifted fisheries.'),
         MARITIME_HISTORY.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, e.era),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               e.events.map(function(ev, ei) { return h('li', { key: ei, style: { marginBottom: 3 } }, ev); })),
-            e.cite ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, '(' + e.cite + ')') : null);
+            e.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + e.cite + ')') : null);
         })));
     }
 
@@ -8946,15 +8969,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function ecosystemTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌐 Ecosystem Case Studies'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Case studies illustrating how Maine\'s marine ecosystem responds to fishing + climate + management.'),
         ECOSYSTEM_CASES.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, c.name),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c.summary),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.summary),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Lessons: '), c.lessons),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Implications: '), c.implications),
-            c.cite ? h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
+            c.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
         })));
     }
 
@@ -8962,12 +8985,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function navMathTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📐 Navigation Math'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Compass, bearings, dead reckoning, current correction. The math behind safe + accurate navigation.'),
         NAV_MATH.map(function(n, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, n.title),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, n.body),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, n.body),
             h('div', { style: { fontSize: 11, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, h('b', null, 'Formula: '), n.formula));
         })));
     }
@@ -8976,13 +8999,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function familiesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '👨‍👩‍👧 Maine Fishing + Aquaculture Family Stories'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Multi-generational patterns across Maine\'s working waterfront. Composite profiles representing common arcs.'),
         FAMILY_PROFILES.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, f.generation || f.type),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, f.story),
-            f.tools ? h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Tools: '), f.tools) : null,
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, f.story),
+            f.tools ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Tools: '), f.tools) : null,
             f.catch ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Catch: '), f.catch) : null,
             f.product ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Product: '), f.product) : null,
             h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Lessons: '), f.lessons));
@@ -8993,12 +9016,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function ethicsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⚖️ Sportfishing + Stewardship Ethics'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Beyond the legal rules: how do we fish in ways that leave the resource better than we found it?'),
         ETHICS.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, e.title),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, e.body),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, e.body),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), e.practical));
         })));
     }
@@ -9007,16 +9030,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function spotsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📌 Famous Maine Fishing Spots'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Iconic Maine fishing waters — some inshore, some offshore. All with stories.'),
         FISHING_SPOTS.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 4 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd' } }, s.name),
-              s.coords ? h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.coords) : null),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Region: '), s.region),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Species: '), s.species),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3, fontStyle: 'italic' } }, s.character),
+              s.coords ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.coords) : null),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Region: '), s.region),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Species: '), s.species),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, fontStyle: 'italic' } }, s.character),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), s.practical));
         })));
     }
@@ -9025,12 +9048,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function knotStepsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎬 Knot Tying — Step by Step'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed step-by-step for the 5 essential knots. Practice with a 6-ft cord.'),
         KNOT_STEPS.map(function(k, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, k.name),
-            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               k.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 3 } }, s.substring(s.indexOf('.') + 2)); })),
             h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '✓ Check: '), k.check));
         })));
@@ -9040,19 +9063,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function deepDivesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🔬 Species Deep Dives'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Multi-paragraph essays on Maine\'s top-tier species. Covers taxonomy, life history, ecology, fisheries history, climate vulnerability, and stewardship.'),
         SPECIES_DEEP_DIVES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 8 } }, s.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } }, h('b', null, 'Taxonomy: '), s.taxonomy),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Life History: '), s.lifeHistory),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Ecology: '), s.ecology),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Fishery History: '), s.fisheryHistory),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Taxonomy: '), s.taxonomy),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Life History: '), s.lifeHistory),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Ecology: '), s.ecology),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Fishery History: '), s.fisheryHistory),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Current Status: '), s.currentStatus),
             h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Climate Vulnerability: '), s.climateVulnerability),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Stewardship: '), s.stewardship),
-            s.cite ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, '(' + s.cite + ')') : null);
+            s.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + s.cite + ')') : null);
         })));
     }
 
@@ -9060,12 +9083,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function safetyChkTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📋 Comprehensive Safety Checklists — Print + Laminate'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten checklists covering every phase of a boating day + every major emergency. Print, laminate, store in boat. The minutes you save building habit save lives in seconds when emergencies start.'),
         SAFETY_CHECKLISTS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fcd34d', marginBottom: 8 } }, '📋 ' + c.title),
-            h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               c.items.map(function(it, j) { return h('li', { key: j, style: { marginBottom: 3 } }, '☐ ' + it); })));
         })));
     }
@@ -9074,12 +9097,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function invasivesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🦀 Invasive + Range-Shifting Species — Gulf of Maine'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Non-native species that have arrived in Gulf of Maine waters + are reshaping ecosystems. Green crabs alone have devastated soft-shell clam fisheries. Climate warming + global shipping continue to introduce new species. Identification + management info for each.'),
         INVASIVES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #f43f5e' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 6 } }, '🦀 ' + s.name),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6 } }, h('b', null, 'Arrival: '), s.arrival),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Arrival: '), s.arrival),
             h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Impact: '), s.impact),
             s.identification ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Identification: '), s.identification) : null,
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Management: '), s.management));
@@ -9090,12 +9113,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function studentFaqTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '❓ Student FAQ — Common Questions Answered'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Real questions middle-schoolers ask about fishing + boating + the ocean economy. Plain-language answers that connect to the rest of the tool.'),
         STUDENT_FAQ.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #f97316' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, '❓ ' + f.q),
-            h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, f.a));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, f.a));
         })));
     }
 
@@ -9103,12 +9126,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function navProbTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📐 Navigation Problems — 15 Worked Examples'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical navigation problems with full solutions. Covers dead reckoning, bearings + fixes, currents, fuel, tides, COLREGS, fog protocols, anchor scope, AIS. Read problem → try to solve → check solution.'),
         NAV_PROBLEMS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #8b5cf6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, '#' + p.id + ': ' + p.title),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.5 } }, h('b', null, 'Problem: '), p.problem),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.5 } }, h('b', null, 'Problem: '), p.problem),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Knowns: '), p.knowns),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6, lineHeight: 1.5 } }, h('b', null, 'Solve: '), p.solve),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Answer: '), p.answer),
@@ -9120,18 +9143,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function voyagesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🛥 Composite Voyages — Full-Day Narrated Fishing Trips'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten composite voyages walking through a full Maine fishing day — preparation, decisions, fishing, return, log. Each voyage demonstrates regulations + safety + craft in action. Composite means assembled from realistic decisions, not a single trip.'),
         COMPOSITE_VOYAGES.map(function(v, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 14, background: 'rgba(15,23,42,0.6)', borderRadius: 10, borderLeft: '5px solid #38bdf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#7dd3fc', marginBottom: 6 } }, '🛥 ' + v.title),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Crew + boat: '), v.crew),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Crew + boat: '), v.crew),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Goal: '), v.goal),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8, fontStyle: 'italic' } }, h('b', { style: { fontStyle: 'normal' } }, 'Conditions: '), v.conditions),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8, fontStyle: 'italic' } }, h('b', { style: { fontStyle: 'normal' } }, 'Conditions: '), v.conditions),
             h('div', { style: { padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 6, marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, 'Narrative timeline:'),
               v.narrative.map(function(line, j) {
-                return h('div', { key: j, style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 4, paddingLeft: 6, borderLeft: '2px solid rgba(56,189,248,0.3)' } }, line);
+                return h('div', { key: j, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 4, paddingLeft: 6, borderLeft: '2px solid rgba(56,189,248,0.3)' } }, line);
               })),
             h('div', { style: { fontSize: 11, color: '#86efac', padding: 8, background: 'rgba(134,239,172,0.08)', borderRadius: 6 } }, h('b', null, 'Lessons: '), v.lessons));
         })));
@@ -9141,7 +9164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function engMaintTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⚙️ Engine + Boat Maintenance Reference'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maintenance schedules, daily checks, common failures, DIY vs shop, tools, and most-common mistakes for the major boat-engine systems Maine boaters encounter. The boat is only as reliable as the maintenance behind it.'),
         ENGINE_MAINT.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #fb923c' } },
@@ -9150,7 +9173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             e.daily ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Daily check: '), e.daily) : null,
             h('div', { style: { fontSize: 11, color: '#fca5a5', marginBottom: 6 } }, h('b', null, 'Common failures: '), e.common_failures),
             e.diy_or_shop ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'DIY vs shop: '), e.diy_or_shop) : null,
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6 } }, h('b', null, 'Tools needed: '), e.tools_needed),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Tools needed: '), e.tools_needed),
             h('div', { style: { fontSize: 11, color: '#fdba74' } }, h('b', null, 'Common mistakes: '), e.common_mistakes));
         })));
     }
@@ -9159,12 +9182,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function studCareerTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎓 Maine Fisheries Student Career Decision Guide'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Questions to help students decide if commercial fishing or marine sciences is their path.'),
         STUDENT_CAREER.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, '❓ ' + s.question),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, h('b', null, 'Consider: '), s.consider),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Consider: '), s.consider),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Pathways: '), s.pathways),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Key steps: '), s.key_steps),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Timeline: '), s.timeline));
@@ -9175,12 +9198,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function climateDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌡 Climate Change Deep Dive — Maine Fisheries'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Climate impacts on Maine fisheries; industry adaptation strategy.'),
         CLIMATE_DEEP.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, c.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), c.relevance));
         })));
     }
@@ -9189,12 +9212,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function waterfrontDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⚓ Maine Working Waterfront — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Industry-essential infrastructure + preservation effort.'),
         WATERFRONT_DEEP.map(function(w, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, w.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, w.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, w.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), w.relevance));
         })));
     }
@@ -9203,12 +9226,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function mpasTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌐 Marine Protected Areas + Conservation in Maine'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Federal + state + tribal marine conservation in Maine waters.'),
         MPAS_CONSERVATION.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 4 } }, m.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, m.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, m.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), m.relevance));
         })));
     }
@@ -9217,12 +9240,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function tunaDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🐟 Atlantic Bluefin Tuna + Offshore Species — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine offshore commercial + charter industry. International species; high-value fishery.'),
         TUNA_INDUSTRY.map(function(t, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, t.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, t.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, t.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), t.relevance));
         })));
     }
@@ -9231,12 +9254,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function alewifeDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🐟 Atlantic Alewife + Sea-Run Fish — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Sea-run fish restoration; Wabanaki + community + agency partnership.'),
         ALEWIFE_INDUSTRY.map(function(a, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, a.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, a.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, a.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), a.relevance));
         })));
     }
@@ -9245,12 +9268,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function striperDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🐟 Atlantic Striped Bass — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Multi-state migratory recovery + management challenges.'),
         STRIPER_INDUSTRY.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, s.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), s.relevance));
         })));
     }
@@ -9259,12 +9282,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function codDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🐟 Maine + Gulf of Maine Cod Industry — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Cod\'s rise + collapse + climate-driven challenges. Industry-defining case study.'),
         COD_INDUSTRY.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, c.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), c.relevance));
         })));
     }
@@ -9273,12 +9296,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function rightWhaleTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🐋 North Atlantic Right Whale — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Critical endangered species; industry transition; conservation case study.'),
         RIGHT_WHALE_DEEP.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, r.aspect),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, r.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, r.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Maine implications: '), r.maine_implications));
         })));
     }
@@ -9287,12 +9310,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function lobsterConserveTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🦞 Maine Lobster Conservation — Deep Case Study'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine lobster conservation tools + their effectiveness. Case study in successful management.'),
         LOBSTER_CONSERVATION.map(function(l, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, '🦞 ' + l.tool),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, l.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, l.content),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Science: '), l.science),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Result: '), l.result),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Lesson: '), l.lesson));
@@ -9303,13 +9326,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function notablePeopleTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '👤 Notable People in Maine Fisheries'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'People shaping Maine fisheries — captains, scientists, authors, advocates, tribal leaders.'),
         NOTABLE_PEOPLE.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, p.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Era: '), p.era, ' · ', h('b', null, 'Role: '), p.role),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Contribution: '), p.contribution),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Era: '), p.era, ' · ', h('b', null, 'Role: '), p.role),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Contribution: '), p.contribution),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Legacy: '), p.legacy));
         })));
     }
@@ -9318,12 +9341,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function globalContextTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌍 Maine Fisheries in Global Context'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How Maine fisheries fit into broader regional + national + international context.'),
         GLOBAL_CONTEXT.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, g.region),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, g.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, g.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Maine relevance: '), g.maine_relevance));
         })));
     }
@@ -9332,13 +9355,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function indGroupsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🤝 Maine Fisheries Industry Groups + Associations'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Trade groups, associations, agencies, NGOs supporting Maine fisheries.'),
         INDUSTRY_GROUPS.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, g.group),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Role: '), g.role),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Function: '), g.function),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), g.role),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Function: '), g.function),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Contact: '), g.contact),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Relevance: '), g.relevance));
         })));
@@ -9348,14 +9371,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function wabFiguresTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🪶 Notable Wabanaki Figures'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Wabanaki nation leaders, scholars, advocates — past + present. For Maine Indian Education LD 291 + cultural literacy.'),
         WABANAKI_FIGURES.map(function(w, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, w.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Era: '), w.era),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Role: '), w.role),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Contribution: '), w.contribution),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Era: '), w.era),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), w.role),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Contribution: '), w.contribution),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Legacy: '), w.legacy));
         })));
     }
@@ -9364,13 +9387,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function mgmtMileTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🏛 Maine Fisheries Management Milestones'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Key legal + policy milestones shaping Maine fisheries.'),
         MGMT_MILESTONES.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, m.milestone),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Year: '), m.year),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Summary: '), m.summary),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), m.year),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Summary: '), m.summary),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Impact: '), m.impact),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Current relevance: '), m.current_relevance));
         })));
@@ -9380,12 +9403,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function termEssaysTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📖 Common Boating + Fishing Terms — Essay-Style Explanations'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Expanded explanations + context for common terminology. Reference for deeper understanding.'),
         TERMINOLOGY_ESSAYS.map(function(t, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, t.term),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, t.essay));
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.essay));
         })));
     }
 
@@ -9393,12 +9416,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function gearMasterTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🧰 Comprehensive Gear + Equipment Master List'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Every piece of gear you need for Maine commercial + recreational fishing operations.'),
         GEAR_MASTER.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, g.category),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               g.items.map(function(it, ii) { return h('li', { key: ii, style: { marginBottom: 2 } }, it); })));
         })));
     }
@@ -9407,12 +9430,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function mentorshipTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎓 Mentorship + Apprenticeship Guide'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How apprenticeship + mentorship works in Maine fisheries. For both apprentices + mentors.'),
         MENTORSHIP_GUIDE.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, m.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, m.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, m.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), m.practical));
         })));
     }
@@ -9421,12 +9444,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function voicesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🗣️ Voices from Maine\'s Working Waterfront'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Composite quotes representing Maine fishermen, scientists, advocates, + Indigenous voices.'),
         VOICES.map(function(v, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, v.speaker)),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.5, marginBottom: 4 } }, '"' + v.quote + '"'),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, marginBottom: 4 } }, '"' + v.quote + '"'),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Context: '), v.context));
         })));
     }
@@ -9435,12 +9458,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function futureTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🔮 Maine Fisheries Future Outlook'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Where Maine fisheries are heading. Climate + management + sovereignty + technology.'),
         FUTURE_OUTLOOK.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, f.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, f.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, f.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Maine implications: '), f.maine_implications));
         })));
     }
@@ -9449,12 +9472,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function chartGuideTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🗺 Comprehensive Nautical Chart Reading Guide'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Master chart reading. Foundation of safe navigation.'),
         CHART_GUIDE.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, c.topic),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), c.practical));
         })));
     }
@@ -9463,12 +9486,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function safetyManTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🛟 Comprehensive Safety Manual'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed safety topics for Maine boaters. Master these before going out.'),
         SAFETY_MANUAL.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, '🛟 ' + s.topic),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3, lineHeight: 1.5 } }, h('b', null, 'Detail: '), s.detail),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, lineHeight: 1.5 } }, h('b', null, 'Detail: '), s.detail),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Training: '), s.training),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Best practice: '), s.best_practice));
         })));
@@ -9478,12 +9501,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function playbooksTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📕 Operational Playbooks'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed step-by-step walkthroughs of common Maine fisheries operations.'),
         PLAYBOOKS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 6 } }, '📕 ' + p.situation),
-            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               p.walkthrough.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s); })),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Learning: '), p.learning));
         })));
@@ -9493,15 +9516,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function bibExtTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📚 Extended Bibliography + References'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Comprehensive reading list — books, papers, websites, organizations. All claims trace to one of these.'),
         BIBLIOGRAPHY_EXT.map(function(b, i) {
-          return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+          return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
             h('div', null,
               h('b', { style: { color: '#bae6fd' } }, b.author + ' (' + b.year + '). '),
               h('span', { style: { fontStyle: 'italic' } }, b.title),
               h('span', null, ' '), h('span', null, b.publisher),
-              h('span', { style: { color: '#94a3b8' } }, ' [' + b.type + ']')),
+              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' [' + b.type + ']')),
             h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 2 } }, h('b', null, 'Relevance: '), b.relevance),
             h('div', { style: { fontSize: 10, color: '#fbbf24', marginTop: 2 } }, h('b', null, 'Use: '), b.use));
         })));
@@ -9511,13 +9534,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function refNumbersTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🔢 Key Maine Fisheries Reference Numbers'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Important quantitative facts. Memorize these for industry literacy.'),
         REFERENCE_NUMBERS.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, r.metric),
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, r.value),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Context: '), r.context),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), r.context),
             h('div', { style: { fontSize: 11, color: '#bae6fd' } }, h('b', null, 'Practical: '), r.practical));
         })));
     }
@@ -9526,14 +9549,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function eventsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📅 Notable Events in Maine Fisheries History'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Major events that shaped + reshaped Maine fisheries. Case studies for management + history.'),
         NOTABLE_EVENTS.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, '📅 ' + e.event),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Year: '), e.year),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Cause: '), e.cause),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Response: '), e.response),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), e.year),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Cause: '), e.cause),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Response: '), e.response),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Lessons: '), e.lessons),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Maine: '), e.maine_implications));
         })));
@@ -9543,14 +9566,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function culinaryTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🍽 Maine Culinary Traditions'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s seafood dishes — recipes, history, cultural significance. Where the fishery meets the kitchen.'),
         CULINARY.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, '🍽 ' + c.dish),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Species: '), c.species),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Ingredients: '), c.ingredients),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Preparation: '), c.preparation),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Species: '), c.species),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Ingredients: '), c.ingredients),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Preparation: '), c.preparation),
             h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 3 } }, h('b', null, 'History: '), c.history),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Significance: '), c.cultural_significance));
         })));
@@ -9560,12 +9583,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function workforceTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎓 Maine Fisheries Workforce Pipeline'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The educational + career pipeline supporting Maine fisheries + aquaculture industries.'),
         WORKFORCE_PIPELINE.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, s.stage),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Activities: '), s.activities),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Activities: '), s.activities),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Partnerships: '), s.partnerships),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Outcomes: '), s.outcomes));
         })));
@@ -9575,12 +9598,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function emergencyTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🚨 Emergency Response Procedures'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practiced emergency procedures save lives. Memorize + drill regularly.'),
         EMERGENCY_PROCEDURES.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #dc2626' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fca5a5', marginBottom: 6 } }, '🚨 ' + e.emergency),
-            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               e.response.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s.replace(/^\d+\.\s*/, '')); })),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Training: '), e.training));
         })));
@@ -9590,13 +9613,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function trainingTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📚 Training Checklist + Apprentice Pathway'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           '10-module training program covering Maine boating + fishing competencies.'),
         TRAINING_CHECKLIST.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, m.module),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Skills:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               m.skills.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s); })),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Duration: '), m.duration),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Certification: '), m.certification));
@@ -9607,13 +9630,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function regFrameworkTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⚖️ Regulatory Framework — Detail'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The federal + state + tribal laws shaping Maine fisheries. Every working mariner should understand at least at high level.'),
         REG_FRAMEWORK.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, r.law),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Year: '), r.year),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Scope: '), r.scope),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), r.year),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Scope: '), r.scope),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Maine relevance: '), r.maine_relevance),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Keys: '), r.keys));
         })));
@@ -9623,12 +9646,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function faqPubTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '❓ Public Frequently Asked Questions'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Common questions asked by visitors, students, + public about Maine fisheries. Memorize answers if you\'re a guide.'),
         FAQ_PUBLIC.map(function(f, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, 'Q: ' + f.q),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, h('b', null, 'A: '), f.a));
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, h('b', null, 'A: '), f.a));
         })));
     }
 
@@ -9636,16 +9659,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function activitiesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎯 Student Hands-On Activities'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical hands-on activities for grades 6-12 + community education.'),
         STUDENT_ACTIVITIES.map(function(a, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, a.activity),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, a.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, a.content),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Learning Objectives:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               a.learning_objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Materials: '), a.materials.join(' · ')),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Materials: '), a.materials.join(' · ')),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Time: '), a.time));
         })));
     }
@@ -9654,12 +9677,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function communityTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🤝 Maine Community Governance Models'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How Maine communities govern fisheries + working waterfront. Models of self-governance, cooperation, and partnership.'),
         COMMUNITY_MODELS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, c.model),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c.description),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.description),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Example: '), c.example),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Strengths: '), c.strengths),
             h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Limitations: '), c.limitations),
@@ -9671,12 +9694,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function successTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🏆 Conservation Success Stories'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine + Atlantic fisheries restoration stories — proof that conservation can succeed.'),
         SUCCESS_STORIES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, '🏆 ' + s.name),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.story),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.story),
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Keys: '), s.keys),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Result: '), s.result),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Lessons: '), s.lessons));
@@ -9687,13 +9710,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function regionalTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🗺 Maine Regional Fishing Traditions'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Each Maine region has distinct fishing traditions + working waterfront character.'),
         REGIONAL_TRADITIONS.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, r.region),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Tradition: '), r.tradition),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, r.tradition_continued),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Tradition: '), r.tradition),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, r.tradition_continued),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Changes: '), r.changes));
         })));
     }
@@ -9708,12 +9731,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       });
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📒 Extended Glossary (E-Z)'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Extended alphabetical glossary continuing main Glossary tab. See Glossary tab for A-D.'),
         allEntries.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, g.letter),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               g.entries.map(function(e, ei) { return h('li', { key: ei, style: { marginBottom: 2 } }, e); })));
         })));
     }
@@ -9722,13 +9745,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function studyGuideTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎓 Comprehensive Study Guide'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Unit-by-unit study guide with essential questions + key concepts + suggested assessments.'),
         STUDY_GUIDE.map(function(u, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 8 } }, u.unit),
             h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Essential Questions:')),
-            h('ul', { style: { margin: '0 0 10px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 10px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               u.essential_questions.map(function(q, qi) { return h('li', { key: qi, style: { marginBottom: 3 } }, q); })),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Key Concepts: '), u.key_concepts),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Assessments: '), u.assessments));
@@ -9739,12 +9762,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function fishFactsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '💡 Key Maine Fisheries Facts'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Surprising + important facts about Maine fisheries — for quick reference + classroom discussion.'),
         FISHERIES_FACTS.map(function(f, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fde047', marginBottom: 4 } }, '🔑 ' + f.fact),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Context: '), f.context),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), f.context),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Implication: '), f.implication));
         })));
     }
@@ -9753,13 +9776,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function textbookTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📘 Fisheries Textbook Chapters'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Comprehensive multi-section chapters covering the full Maine fisheries curriculum. Suitable for high school + community college courses.'),
         TEXTBOOK_CHAPTERS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 15, fontWeight: 900, color: '#bae6fd', marginBottom: 10 } }, c.chapter),
             c.sections.map(function(s, si) {
-              return h('div', { key: si, style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(56,189,248,0.3)' } },
+              return h('div', { key: si, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(56,189,248,0.3)' } },
                 h('p', { style: { margin: 0 } }, s));
             }));
         })));
@@ -9769,12 +9792,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function fishEssaysTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📰 Comprehensive Fisheries Essays'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Long-form essays on the science, culture, and management of Maine fisheries.'),
         FISHERIES_ESSAYS.map(function(e, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 8 } }, e.title),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } }, e.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } }, e.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), e.practical));
         })));
     }
@@ -9783,12 +9806,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function extSpeciesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📚 Extended Species Profiles'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Multi-paragraph essays on Maine species. Covering life history, ecology, fishery management, climate considerations.'),
         EXTENDED_SPECIES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 8 } }, s.name),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } }, s.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } }, s.content),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), s.practical));
         })));
     }
@@ -9797,12 +9820,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function boatSkillsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🚤 Boating Skills — Detailed'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical boating skills broken down step-by-step. Master these for safe + competent operation.'),
         BOATING_SKILLS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, b.skill),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, b.content),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, b.content),
             h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Common Mistake: '), b.mistake));
         })));
     }
@@ -9811,13 +9834,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function boatRegsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📋 Maine Boating Regulations'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'State + federal regulations every Maine boater must know.'),
         BOATING_REGS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde047', marginBottom: 4 } }, b.topic),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Summary: '), b.summary),
-            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, h('b', null, 'Details: '), b.details));
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Summary: '), b.summary),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, h('b', null, 'Details: '), b.details));
         })));
     }
 
@@ -9825,15 +9848,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function vesselsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⛴️ Maine Historical + Working Vessels'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Vessels that shaped Maine\'s maritime heritage + working fleet today.'),
         HISTORICAL_VESSELS.map(function(v, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, v.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Origin: '), v.origin),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Role: '), v.role),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Design: '), v.design),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Historical: '), v.historical),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Origin: '), v.origin),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), v.role),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Design: '), v.design),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Historical: '), v.historical),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Lessons: '), v.lessons));
         })));
     }
@@ -9842,12 +9865,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function habitatsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌊 Species by Habitat'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine waters stratify by depth + bottom type. Different species occupy different habitat types.'),
         SPECIES_BY_HABITAT.map(function(h_, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, h_.habitat),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Species: '), (h_.species || []).join(', ')),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Species: '), (h_.species || []).join(', ')),
             h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Ecology: '), h_.ecology));
         })));
     }
@@ -9856,13 +9879,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function regsDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📑 Fishing Regulations — Deep Dive'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How fisheries regulations work + why. Understanding the framework lets you advocate intelligently.'),
         REGS_DEEP.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, r.rule),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Purpose: '), r.purpose),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Example: '), r.example),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Purpose: '), r.purpose),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Example: '), r.example),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Science: '), r.science),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Enforcement: '), r.enforcement));
         })));
@@ -9872,12 +9895,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function idKeyTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🔍 Maine Fish + Lobster ID Key (Dichotomous)'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Step-by-step decision tree for identifying Maine\'s common species.'),
         ID_KEY.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, 'Step ' + s.step),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, h('b', null, 'Q: '), s.question),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Q: '), s.question),
             s.yes ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'YES → '), s.yes) : null,
             s.no ? h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'NO → '), s.no) : null);
         })));
@@ -9887,13 +9910,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function techGuidesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🎯 Fishing Technique Guides'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Method-by-method guides covering gear, technique, conditions, tips, and common mistakes.'),
         TECHNIQUE_GUIDES.map(function(t, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, t.method),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, h('b', null, 'Gear: '), t.gear),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4, lineHeight: 1.5 } }, h('b', null, 'Technique: '), t.technique),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Gear: '), t.gear),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, h('b', null, 'Technique: '), t.technique),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Best Conditions: '), t.best_conditions),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Tips: '), t.tips),
             h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Common Mistakes: '), t.common_mistakes));
@@ -9904,12 +9927,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function maintenanceTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🔧 Boat + Engine Maintenance Schedule'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A working boat is a maintenance-intensive vehicle. Below is the standard schedule that keeps you on the water safely.'),
         MAINTENANCE.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, m.interval),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               m.tasks.map(function(t, ti) { return h('li', { key: ti }, t); })));
         })));
     }
@@ -9918,13 +9941,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function booksTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '📚 Books, Magazines, + Maritime Writers'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Books + periodicals worth your shelf or your boat.'),
         BOOKS_WRITERS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 3 } }, '"' + b.title + '"'),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Author: '), b.author, ' · ', h('b', null, 'Year: '), b.year),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'About: '), b.summary),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Author: '), b.author, ' · ', h('b', null, 'Year: '), b.year),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'About: '), b.summary),
             h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Notes: '), b.notes));
         })));
     }
@@ -9933,13 +9956,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function womenTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '👩 Women in Maine Maritime History'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s commercial fisheries + aquaculture have always included women — sometimes in leadership, often without recognition. This sample documents key figures + roles.'),
         WOMEN_MARITIME.map(function(w, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, w.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Role: '), w.role, ' · ', h('b', null, 'Dates: '), w.dates),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Contribution: '), w.contribution),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Role: '), w.role, ' · ', h('b', null, 'Dates: '), w.dates),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Contribution: '), w.contribution),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Legacy: '), w.legacy));
         })));
     }
@@ -9948,15 +9971,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function yearPlanTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🗓 A Year in Maine Fishing'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Monthly game plan across saltwater + freshwater + lobster. What\'s in season + what to chase.'),
         YEAR_GAME_PLAN.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 6 } }, m.month),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Saltwater: '), m.saltwater),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Freshwater: '), m.freshwater),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Lobster: '), m.lobster),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Gear: '), m.gear),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Saltwater: '), m.saltwater),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Freshwater: '), m.freshwater),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Lobster: '), m.lobster),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Gear: '), m.gear),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Culinary: '), m.culinary));
         })));
     }
@@ -9965,12 +9988,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function chartSymbolsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🗺 NOAA Chart Symbology Reference'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'NOAA charts contain ~1000 distinct symbols + abbreviations defined in "Chart 1." Below are the most-important categories.'),
         CHART_SYMBOLS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, c.category),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               c.items.map(function(it, ii) { return h('li', { key: ii }, it); })));
         })));
     }
@@ -9979,14 +10002,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function lighthousesTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '💡 Maine Lighthouse Inventory'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine has 60+ lighthouses. Featured here are the most navigationally + historically significant. All active aids unless noted.'),
         LIGHTHOUSES.map(function(l, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, '💡 ' + l.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Location: '), l.location, ' · ', h('b', null, 'Built: '), l.year),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Height: '), l.height, ' · ', h('b', null, 'Range: '), l.range, ' · ', h('b', null, 'Character: '), l.character),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Historical: '), l.historical),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Location: '), l.location, ' · ', h('b', null, 'Built: '), l.year),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Height: '), l.height, ' · ', h('b', null, 'Range: '), l.range, ' · ', h('b', null, 'Character: '), l.character),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Historical: '), l.historical),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Access: '), l.access));
         })));
     }
@@ -9995,14 +10018,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function invertsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🦀 Maine Marine Invertebrates'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Beyond lobster + bivalves: Maine\'s diverse marine invertebrate community. Some commercial; some ecologically critical.'),
         INVERTEBRATES.map(function(iv, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, iv.name),
-            h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginBottom: 4 } }, iv.sci),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Habitat: '), iv.habitat),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Role: '), iv.role),
+            h('div', { style: { fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, iv.sci),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Habitat: '), iv.habitat),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), iv.role),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Market: '), iv.market),
             h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Climate: '), iv.climate));
         })));
@@ -10012,17 +10035,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function harborsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '⚓ Maine Harbor Details'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical chart + facility info for Maine\'s major working harbors.'),
         HARBOR_DETAILS.map(function(hh, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 4 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd' } }, hh.name),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, hh.chart)),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3 } }, h('b', null, 'Tidal range: '), hh.tidal_range, ' · ', h('b', null, 'Depths: '), hh.depths),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, hh.chart)),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Tidal range: '), hh.tidal_range, ' · ', h('b', null, 'Depths: '), hh.depths),
             h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, '⚠ Hazards: '), hh.hazards),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Buoyage: '), hh.buoyage),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Facilities: '), hh.facilities),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Buoyage: '), hh.buoyage),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Facilities: '), hh.facilities),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Best for: '), hh.best_for));
         })));
     }
@@ -10031,14 +10054,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function weatherTipsTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌥 Reading Weather Signs'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Traditional + modern weather-prediction signs every mariner should recognize.'),
         WEATHER_TIPS.map(function(w, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, '🌥 ' + w.sign),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 3 } }, h('b', null, 'Means: '), w.means),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Means: '), w.means),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Action: '), w.action),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, h('b', null, 'Timing: '), w.timing));
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Timing: '), w.timing));
         })));
     }
 
@@ -10046,12 +10069,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function seamanshipTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🧭 Seamanship Skills'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical skills every mariner should master. Practice in fair conditions before you need them in foul.'),
         SEAMANSHIP.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, s.skill),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4, lineHeight: 1.5 } }, h('b', null, 'How: '), s.details),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, h('b', null, 'How: '), s.details),
             h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 4 } }, h('b', null, 'Common Mistake: '), s.mistake),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Practice: '), s.practice));
         })));
@@ -10061,12 +10084,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function nightNavTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌙 Night + Restricted-Visibility Navigation'),
-        h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
+        h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Vessels have a whole vocabulary of lights + sounds for night + fog. Reading them is core seamanship.'),
         NIGHT_NAV.map(function(n, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, n.title),
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, n.body),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, n.body),
             h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), n.practical));
         })));
     }

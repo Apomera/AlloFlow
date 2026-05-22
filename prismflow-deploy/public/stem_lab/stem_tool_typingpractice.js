@@ -1288,16 +1288,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     ];
     return h('div', {
       style: {
-        padding: 24, color: '#e2e8f0', fontFamily: 'system-ui, -apple-system, sans-serif',
-        background: '#0f172a', minHeight: '100vh'
+        padding: 24, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'system-ui, -apple-system, sans-serif',
+        background: 'var(--allo-stem-canvas, #0f172a)', minHeight: '100vh'
       }
     },
       h('div', { style: { marginBottom: 18 } },
         h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-0.01em' } },
           'Mascot State Gallery'),
-        h('p', { style: { margin: '6px 0 0', fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
+        h('p', { style: { margin: '6px 0 0', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55 } },
           'Dev surface · 5 mascots × ', states.length, ' states. Remove ',
-          h('code', { style: { background: '#1e293b', padding: '1px 5px', borderRadius: 3 } }, '#mascot-gallery'),
+          h('code', { style: { background: 'var(--allo-stem-panel, #1e293b)', padding: '1px 5px', borderRadius: 3 } }, '#mascot-gallery'),
           ' from the URL to return to the tool.')
       ),
       // Header row — state names
@@ -1306,14 +1306,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           display: 'grid',
           gridTemplateColumns: '120px repeat(' + states.length + ', minmax(80px, 1fr))',
           gap: 6, marginBottom: 8, alignItems: 'end',
-          position: 'sticky', top: 0, background: '#0f172a', padding: '6px 0', zIndex: 2,
-          borderBottom: '1px solid #334155'
+          position: 'sticky', top: 0, background: 'var(--allo-stem-canvas, #0f172a)', padding: '6px 0', zIndex: 2,
+          borderBottom: '1px solid var(--allo-stem-border, #334155)'
         }
       },
-        h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'theme'),
+        h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'theme'),
         states.map(function(s) {
           return h('div', { key: 'h-' + s, style: {
-            fontSize: 9, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em',
+            fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, letterSpacing: '0.04em',
             textTransform: 'uppercase', textAlign: 'center'
           } }, s);
         })
@@ -1329,33 +1329,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
         },
           // Theme label cell
-          h('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } },
+          h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } },
             h('div', null, t.label),
-            h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 500 } }, t.sub)
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontWeight: 500 } }, t.sub)
           ),
           // One cell per state
           states.map(function(s) {
             return h('div', {
               key: 'cell-' + t.id + '-' + s,
               style: {
-                background: '#1e293b', borderRadius: 8, padding: 8,
+                background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 8,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 justifyContent: 'center', minHeight: 96,
-                border: '1px solid #334155'
+                border: '1px solid var(--allo-stem-border, #334155)'
               }
             },
               h('div', { style: { width: 56, height: 56 } },
                 renderBattleMascot(t.id, s, { size: 56, label: t.label + ' — ' + s })
               ),
-              h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4 } }, s)
+              h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4 } }, s)
             );
           })
         );
       }),
       // Bot-variant row — show oceanic + kawaii as bot to verify the
       // wrapper treatment renders cleanly across themes
-      h('div', { style: { marginTop: 24, paddingTop: 16, borderTop: '1px solid #334155' } },
-        h('h2', { style: { margin: 0, fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 10 } }, 'Bot-variant treatment'),
+      h('div', { style: { marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--allo-stem-border, #334155)' } },
+        h('h2', { style: { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10 } }, 'Bot-variant treatment'),
         h('div', { style: {
           display: 'grid',
           gridTemplateColumns: 'repeat(5, minmax(80px, 1fr))',
@@ -1365,15 +1365,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             return h('div', {
               key: 'bot-' + t.id,
               style: {
-                background: '#1e293b', borderRadius: 8, padding: 12,
+                background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 12,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                border: '1px solid #334155'
+                border: '1px solid var(--allo-stem-border, #334155)'
               }
             },
               h('div', { style: { width: 56, height: 56 } },
                 renderBattleMascot(t.id, 'idle', { size: 56, isBot: true, bodyColor: '#a78bfa', label: t.label + ' (bot)' })
               ),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6 } }, t.label + ' · bot')
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6 } }, t.label + ' · bot')
             );
           })
         )
@@ -2428,7 +2428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     bg:        '#0f172a',
     surface:   '#1e293b',
     surface2:  '#334155',
-    border:    '#334155',
+    border: 'var(--allo-stem-border, #334155)',
     text:      '#e2e8f0',
     textDim:   '#cbd5e1',
     textMute:  '#a3a3a3',

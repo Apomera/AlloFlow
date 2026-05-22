@@ -19144,7 +19144,7 @@ test('no a11y violations', async () => {
               ),
               active.subtitle && h('p', { style: { fontSize: '12px', color: '#6b7280', marginTop: '4px', marginBottom: 0 } }, active.subtitle)
             ),
-            active.render ? active.render() : h('p', { style: { color: '#94a3b8' } }, 'No content yet.')
+            active.render ? active.render() : h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No content yet.')
           )
         );
       };
@@ -19224,7 +19224,7 @@ test('no a11y violations', async () => {
 
       var renderQuizEngine = function() {
         var ALL_Q = [].concat(typeof QUIZ_QUESTIONS !== 'undefined' ? QUIZ_QUESTIONS : [], typeof QUIZ_QUESTIONS_EXTENDED !== 'undefined' ? QUIZ_QUESTIONS_EXTENDED : []);
-        if (ALL_Q.length === 0) return h('p', { style: { color: '#94a3b8' } }, 'No quiz questions loaded.');
+        if (ALL_Q.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No quiz questions loaded.');
         var safeIdx = ((quizIdx % ALL_Q.length) + ALL_Q.length) % ALL_Q.length;
         var q = ALL_Q[safeIdx];
         var questionText = q.question || q.q || '';
@@ -19328,7 +19328,7 @@ test('no a11y violations', async () => {
 
       var renderFlashcards = function() {
         var GLOSS = typeof COMPUTING_GLOSSARY !== 'undefined' ? COMPUTING_GLOSSARY : [];
-        if (GLOSS.length === 0) return h('p', { style: { color: '#94a3b8' } }, 'No glossary loaded.');
+        if (GLOSS.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No glossary loaded.');
         var order = flashOrder || GLOSS.map(function(_, i) { return i; });
         var safeIdx = ((flashIdx % order.length) + order.length) % order.length;
         var entry = GLOSS[order[safeIdx]];
@@ -19429,8 +19429,8 @@ test('no a11y violations', async () => {
                 },
                 spellCheck: false,
                 'aria-label': pgTab + ' editor',
-                style: { flex: 1, padding: '12px', background: '#0f172a', color: '#e2e8f0',
-                  fontFamily: 'ui-monospace, Menlo, monospace', fontSize: '12px', border: '1px solid #334155',
+                style: { flex: 1, padding: '12px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)',
+                  fontFamily: 'ui-monospace, Menlo, monospace', fontSize: '12px', border: '1px solid var(--allo-stem-border, #334155)',
                   borderRadius: '10px', resize: 'none', tabSize: 2, lineHeight: 1.5 }
               })
             ),
@@ -19499,7 +19499,7 @@ test('no a11y violations', async () => {
                 return h('div', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
                   h('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e293b', margin: '0 0 6px 0' } }, s.name || s.title),
                   s.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0' } }, s.description),
-                  s.code && h('pre', { style: { fontSize: '11px', background: '#0f172a', color: '#e2e8f0', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
+                  s.code && h('pre', { style: { fontSize: '11px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
                   s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); setHistory([s.code]); setHistoryIdx(0); goToTab('build'); if (addToast) addToast({ type: 'success', text: 'Loaded ' + (s.name || 'template') }); },
                     style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, '📥 Load in Build')
                 );
@@ -19654,7 +19654,7 @@ test('no a11y violations', async () => {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
           h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, '\uD83D\uDCA1 AppLab'),
-          h('span', { style: { fontSize: '11px', color: '#94a3b8' } }, 'AI Mini-App Generator + Coding Curriculum'),
+          h('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'AI Mini-App Generator + Coding Curriculum'),
           activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
             h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: 'Undo' }, '↩'),
             h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: 'Redo' }, '↪'),
@@ -19696,7 +19696,7 @@ test('no a11y violations', async () => {
         activeTab === 'build' && !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
 
           // ── Visual Pipeline Configurator ──
-          h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden' } },
+          h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a), #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #334155)', overflow: 'hidden' } },
             h('summary', { onClick: function(e) { e.preventDefault(); setShowPipelineConfig(!showPipelineConfig); },
               style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', listStyle: 'none' } },
               h('span', null, '\u2699\uFE0F AI Pipeline Configuration'),
@@ -19704,7 +19704,7 @@ test('no a11y violations', async () => {
                 pipelineConfig.filter(function(c) { return c.enabled; }).length + '/' + PIPELINE_AGENTS.length + ' agents active')
             ),
             showPipelineConfig && h('div', { style: { padding: '12px 14px', paddingTop: 0 } },
-              h('p', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '12px', lineHeight: 1.5 } },
+              h('p', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px', lineHeight: 1.5 } },
                 'Configure which AI agents run when generating an app. Toggle agents on/off and reorder them to see how it affects output quality. Each agent specializes in a different aspect of software development.'
               ),
 
@@ -19713,9 +19713,9 @@ test('no a11y violations', async () => {
                 role: 'list', 'aria-label': 'AI agent pipeline — drag to reorder, click to toggle' },
 
                 // Input node
-                h('div', { style: { background: '#1e293b', border: '2px solid #475569', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid var(--allo-stem-border, #475569)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
                   h('div', { style: { fontSize: '16px' } }, '\uD83D\uDCDD'),
-                  h('div', { style: { fontSize: '8px', color: '#94a3b8', fontWeight: 600 } }, 'Your Prompt')
+                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Your Prompt')
                 ),
 
                 // Arrow
@@ -19742,14 +19742,14 @@ test('no a11y violations', async () => {
                       h('div', { style: { display: 'flex', justifyContent: 'center', gap: '2px', marginBottom: '4px' } },
                         ci > 0 && h('button', { onClick: function() { moveAgent(cfg.id, -1); },
                           'aria-label': 'Move ' + agent.name + ' left',
-                          style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25C0'),
+                          style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25C0'),
                         ci < pipelineConfig.length - 1 && h('button', { onClick: function() { moveAgent(cfg.id, 1); },
                           'aria-label': 'Move ' + agent.name + ' right',
-                          style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25B6')
+                          style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25B6')
                       ),
 
                       h('div', { style: { fontSize: '18px', marginBottom: '2px' } }, agent.icon),
-                      h('div', { style: { fontSize: '9px', fontWeight: 700, color: isOn ? agent.color : '#94a3b8' } }, agent.name),
+                      h('div', { style: { fontSize: '9px', fontWeight: 700, color: isOn ? agent.color: 'var(--allo-stem-text-soft, #94a3b8)' } }, agent.name),
 
                       // Toggle
                       !agent.required && h('button', {
@@ -19759,7 +19759,7 @@ test('no a11y violations', async () => {
                           background: isOn ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.1)',
                           color: isOn ? '#22c55e' : '#dc2626', fontSize: '8px', fontWeight: 700, cursor: 'pointer' }
                       }, isOn ? 'ON' : 'OFF'),
-                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: '#94a3b8' } }, 'Required')
+                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Required')
                     ),
 
                     // Arrow between agents
@@ -19771,7 +19771,7 @@ test('no a11y violations', async () => {
                 h('div', { style: { color: '#4f46e5', fontSize: '14px', flexShrink: 0 } }, '\u2192'),
 
                 // Output node
-                h('div', { style: { background: '#1e293b', border: '2px solid #22c55e', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid #22c55e', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
                   h('div', { style: { fontSize: '16px' } }, '\u2705'),
                   h('div', { style: { fontSize: '8px', color: '#22c55e', fontWeight: 600 } }, 'Your App')
                 )
@@ -19784,7 +19784,7 @@ test('no a11y violations', async () => {
                   if (!agent) return null;
                   return h('details', { key: cfg.id, style: { marginBottom: '4px' } },
                     h('summary', { style: { fontSize: '10px', color: agent.color, cursor: 'pointer', fontWeight: 600 } }, agent.icon + ' ' + agent.name + ': ' + agent.desc),
-                    h('p', { style: { fontSize: '9px', color: '#94a3b8', padding: '4px 0 4px 16px', lineHeight: 1.5 } }, agent.learnMore)
+                    h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '4px 0 4px 16px', lineHeight: 1.5 } }, agent.learnMore)
                   );
                 })
               ),
@@ -19828,7 +19828,7 @@ test('no a11y violations', async () => {
                   style: { padding: '10px', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                 },
                   h('div', { style: { fontWeight: 700, color: '#1e293b', marginBottom: '2px' } }, s.title),
-                  h('div', { style: { color: '#94a3b8', fontSize: '10px', lineHeight: 1.4 } }, s.description),
+                  h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', lineHeight: 1.4 } }, s.description),
                   s.difficulty && h('span', { style: { fontSize: '9px', background: s.difficulty === 'Beginner' ? '#dcfce7' : s.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: s.difficulty === 'Beginner' ? '#166534' : s.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '1px 6px', borderRadius: '6px', marginTop: '4px', display: 'inline-block' } }, s.difficulty)
                 );
               })
@@ -19841,7 +19841,7 @@ test('no a11y violations', async () => {
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               TEMPLATES.map(function(cat) {
                 return h('div', { key: cat.cat },
-                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' } }, cat.cat),
+                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '4px' } }, cat.cat),
                   h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' } },
                     cat.items.map(function(t) {
                       return h('button', { key: t.title, onClick: function() { setPrompt(t.prompt); },
@@ -19897,7 +19897,7 @@ test('no a11y violations', async () => {
                   h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
                     h('span', { style: { fontSize: '16px' } }, step.icon),
                     h('span', { style: { fontSize: '11px', fontWeight: 700, color: agentColor } }, step.agent),
-                    h('span', { style: { fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace', marginLeft: 'auto' } }, step.result)
+                    h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace', marginLeft: 'auto' } }, step.result)
                   ),
                   // Render children (sub-agents for sections)
                   isSection && h('div', { style: { marginTop: '6px', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '3px' } },
@@ -19906,7 +19906,7 @@ test('no a11y violations', async () => {
                       return h('div', { key: ci, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '10px', padding: '3px 8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', borderLeft: '2px solid ' + childColor } },
                         h('span', null, child.icon),
                         h('span', { style: { color: childColor, fontWeight: 600 } }, child.agent),
-                        h('span', { style: { color: '#94a3b8', fontFamily: 'monospace', marginLeft: 'auto' } }, child.result)
+                        h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace', marginLeft: 'auto' } }, child.result)
                       );
                     })
                   )
@@ -19915,7 +19915,7 @@ test('no a11y violations', async () => {
             ),
             h('div', { style: { marginTop: '10px', padding: '8px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
               h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, '\uD83D\uDCA1 How does this relate to real software engineering?'),
-              h('p', { style: { fontSize: '9px', color: '#94a3b8', lineHeight: 1.5 } },
+              h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 'This app was built using a hierarchical multi-agent architecture. An Architect AI decomposed the app into independent sections, then EACH section was built, reviewed, and fixed by separate AI agents working in parallel \u2014 just like how professional software teams work. '
                 + 'This is called "component-based architecture" \u2014 the same pattern used by React, Vue, and Angular. Each component is small enough for an AI to build perfectly, and the Assembler combines them into a working whole. '
                 + 'The result is higher quality than a single AI trying to build everything at once, because each agent focuses on one thing and does it well.'
@@ -19930,7 +19930,7 @@ test('no a11y violations', async () => {
           // Code editor (left panel when visible)
           showCode && h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
-              h('span', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8' } }, '</> Source Code'),
+              h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '</> Source Code'),
               h('div', { style: { display: 'flex', gap: '4px' } },
                 h('button', { onClick: applyCodeEdit, disabled: editHtml === html,
                   style: btn(editHtml !== html ? '#22c55e' : '#e5e7eb', editHtml !== html ? '#fff' : '#9ca3af', editHtml === html) }, '▶ Apply Changes'),
@@ -19938,7 +19938,7 @@ test('no a11y violations', async () => {
               )
             ),
             h('textarea', { value: editHtml, onChange: function(ev) { setEditHtml(ev.target.value); },
-              style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: '1px solid #d1d5db', borderRadius: '8px', resize: 'none', background: '#1e293b', color: '#e2e8f0', outline: 'none', tabSize: 2, lineHeight: 1.5 },
+              style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: '1px solid #d1d5db', borderRadius: '8px', resize: 'none', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', outline: 'none', tabSize: 2, lineHeight: 1.5 },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(34,211,238,0.5)'; },
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               spellCheck: false, 'aria-label': 'HTML source code editor' })
@@ -19993,7 +19993,7 @@ test('no a11y violations', async () => {
         ),
 
         // Loading overlay
-        isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: '#94a3b8' } },
+        isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' } }, '\uD83D\uDCA1'),
           h('p', { style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
           h('p', { style: { fontSize: '11px', color: '#9ca3af' } }, 'This usually takes 5-15 seconds')

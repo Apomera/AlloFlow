@@ -1524,7 +1524,7 @@ window.StemLab = window.StemLab || {
                   analogy: 'Like rubbing your hands together fast \u2014 friction (resistance) creates heat and light.'
                 },
                 switch: {
-                  icon: '\uD83D\uDD18', name: 'Switch', color: '#94a3b8',
+                  icon: '\uD83D\uDD18', name: 'Switch', color: 'var(--allo-stem-text-soft, #94a3b8)',
                   how: 'A physical gap in the conductor. When closed, electrons flow freely. When open, the air gap has near-infinite resistance, stopping current completely.',
                   equation: 'R_open \u2248 \u221E, R_closed \u2248 0\u03A9',
                   analogy: 'Like a drawbridge \u2014 when up, nothing crosses. When down, traffic flows.'

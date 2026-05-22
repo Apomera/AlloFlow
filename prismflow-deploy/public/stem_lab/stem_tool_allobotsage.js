@@ -308,7 +308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       name: 'Road Ward',
       element: 'stone',
       icon: '\uD83D\uDEE1\uFE0F',
-      color: '#94a3b8',
+      color: 'var(--allo-stem-text-soft, #94a3b8)',
       sourceTool: 'roadReady',
       sourceLabel: 'RoadReady',
       unlock: function(d) {
@@ -1568,7 +1568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         },
           h('div', { className: 'flex items-center gap-2 mb-1' },
             h('span', { className: 'text-2xl', 'aria-hidden': 'true', style: { filter: unlocked ? '' : 'grayscale(1)' } }, unlocked ? s.icon : '\uD83D\uDD12'),
-            h('span', { className: 'font-bold text-sm', style: { color: unlocked ? s.color : '#94a3b8' } }, s.name),
+            h('span', { className: 'font-bold text-sm', style: { color: unlocked ? s.color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.name),
             tier && unlocked && h('span', {
               className: 'text-[9px] font-bold px-1.5 py-0.5 rounded-md',
               style: { background: tier.bg, border: '1px solid ' + tier.border, color: tier.text },
@@ -1819,10 +1819,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             var samples = [];
             if (failedSample) samples.push({ q: failedSample, tag: 'You backfired on this one', color: '#dc2626' });
             if (correctSample) samples.push({ q: correctSample, tag: 'You got this one right', color: '#16a34a' });
-            if (unseenSample) samples.push({ q: unseenSample, tag: 'New — you haven\'t tried this yet', color: '#64748b' });
+            if (unseenSample) samples.push({ q: unseenSample, tag: 'New — you haven\'t tried this yet', color: 'var(--allo-stem-text-soft, #64748b)' });
             if (samples.length === 0 && bank.length > 0) {
               // Fallback: just show first 2 from bank
-              samples = bank.slice(0, 2).map(function(qq) { return { q: qq, tag: 'Sample question', color: '#64748b' }; });
+              samples = bank.slice(0, 2).map(function(qq) { return { q: qq, tag: 'Sample question', color: 'var(--allo-stem-text-soft, #64748b)' }; });
             }
             // Cast count from castCounts
             var castN = (d.castCounts || {})[ps.id] || 0;
@@ -1925,7 +1925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // ── Phase B: wand-tier + robe-tier scale with mastery ──
           // wandTier:  0 (no spells) → 1 (1-3) → 2 (4-9) → 3 (10+)
           // robeTier:  0 (default) → 1 (5+ spells) → 2 (15+ spells)
-          h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, #0f172a 0%, #4c1d95 100%)', color: 'white' } },
+          h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a) 0%, #4c1d95 100%)', color: 'white' } },
             h('div', { className: 'flex items-center gap-4' },
               allobotAvatar(visitMood, {
                 wandTier: unlockedSpells.length === 0 ? 0
@@ -3271,7 +3271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, '🧠 Confidence check (optional)'),
                 h('div', { className: 'grid grid-cols-3 gap-1.5' },
                   [
-                    { level: 'low',  icon: '🤷', label: 'Guessing',    color: '#94a3b8' },
+                    { level: 'low',  icon: '🤷', label: 'Guessing',    color: 'var(--allo-stem-text-soft, #94a3b8)' },
                     { level: 'med',  icon: '🤔', label: 'Pretty sure', color: '#3b82f6' },
                     { level: 'high', icon: '🔥', label: 'Know it',     color: '#16a34a' }
                   ].map(function(opt) {
@@ -3283,7 +3283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         mutateExp({ pendingCast: Object.assign({}, pendingCast, { confidence: opt.level }) });
                       },
                       className: 'text-[11px] py-1.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'font-bold' : 'font-normal hover:bg-slate-50'),
-                      style: picked ? { borderColor: opt.color, background: opt.color + '14', color: opt.color } : { borderColor: '#e2e8f0', color: '#64748b' },
+                      style: picked ? { borderColor: opt.color, background: opt.color + '14', color: opt.color } : { borderColor: '#e2e8f0', color: 'var(--allo-stem-text-soft, #64748b)' },
                       'aria-label': opt.label + (picked ? ' (selected)' : ''),
                       'aria-pressed': picked
                     },

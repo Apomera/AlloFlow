@@ -9929,7 +9929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           linen:  { name: 'White linen (premium)', yieldPct: 65, qualityScore: 95, color: '#fef3c7', note: 'Pure white linen rags — bedsheets, shirts. Best fiber, highest yield, premium paper.' },
           mixed:  { name: 'Mixed linen + cotton',  yieldPct: 55, qualityScore: 80, color: '#fde68a', note: 'Standard mix — most paper of the era. Solid commercial grade.' },
           cotton: { name: 'Cotton-heavy mix',      yieldPct: 50, qualityScore: 65, color: '#fed7aa', note: 'More cotton, shorter fibers. Newspaper-grade if you had to compare to modern.' },
-          rough:  { name: 'Rough hemp + canvas',   yieldPct: 40, qualityScore: 45, color: '#cbd5e1', note: 'Coarse fibers, dark color. Wrapping paper, cheapest grades.' }
+          rough:  { name: 'Rough hemp + canvas',   yieldPct: 40, qualityScore: 45, color: 'var(--allo-stem-text, #cbd5e1)', note: 'Coarse fibers, dark color. Wrapping paper, cheapest grades.' }
         };
         // Sheet sizes (historical European)
         var sheetSizes = {

@@ -1121,7 +1121,7 @@ window.StemLab = window.StemLab || {
               { name: '\uD83D\uDCDA Education', pct: 10, color: '#8b5cf6' },
               { name: '\uD83C\uDFAE Entertainment', pct: 10, color: '#ec4899' },
               { name: '\uD83D\uDCB0 Savings', pct: 10, color: '#06b6d4' },
-              { name: '\u2764\uFE0F Other', pct: 5, color: '#94a3b8' }
+              { name: '\u2764\uFE0F Other', pct: 5, color: 'var(--allo-stem-text-soft, #94a3b8)' }
             ];
             var budgetUsed = budgetCats.reduce(function (s, c) { return s + c.pct; }, 0);
 
@@ -1453,7 +1453,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                   React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                     React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                    React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                    React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                   )
                 );
               })(),
@@ -1752,7 +1752,7 @@ window.StemLab = window.StemLab || {
                       // v3: Canvas scene — checkout counter with items + register + candle
                       crCanvasOn && React.createElement("div", {
                         className: "mb-4 rounded-lg overflow-hidden border border-zinc-700 relative z-0",
-                        style: { background: '#0f172a' }
+                        style: { background: 'var(--allo-stem-canvas, #0f172a)' }
                       },
                         React.createElement("canvas", {
                           ref: function (el) { drawCashierScene(el); },

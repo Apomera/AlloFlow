@@ -189,7 +189,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Digestive, respiratory, circulatory, and urogenital organs.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Endoskeleton adapted for jumping.' },
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', desc: 'Endoskeleton adapted for jumping.' },
 
                 { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'CNS and peripheral nerves.' }
 
@@ -410,7 +410,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Visceral Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Complete mammalian organs \u2014 closest lab animal to human.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Largely cartilaginous fetal skeleton.' },
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', desc: 'Largely cartilaginous fetal skeleton.' },
 
                 { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'Complex mammalian CNS with cerebral cortex.' }
 
@@ -522,7 +522,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Internal Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Swim bladder, gills, 2-chambered heart, pyloric ceca.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Ossified skeleton with fin rays and operculum.' }
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', desc: 'Ossified skeleton with fin rays and operculum.' }
 
               ],
 
@@ -6056,7 +6056,7 @@ var d = labToolData.dissection || {};
 
                   className: "w-full rounded-xl border border-slate-400 cursor-crosshair",
 
-                  style: { aspectRatio: '5/6', background: '#0f172a' }
+                  style: { aspectRatio: '5/6', background: 'var(--allo-stem-canvas, #0f172a)' }
 
                 }),
 

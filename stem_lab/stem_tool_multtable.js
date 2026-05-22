@@ -1199,7 +1199,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                   h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
-                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#64748b' } }, _mt.score + ' / ' + _mt.total)
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #64748b)' } }, _mt.score + ' / ' + _mt.total)
                 )
               ),
               h('div', { className: 'flex-1', style: { minWidth: 200 } },

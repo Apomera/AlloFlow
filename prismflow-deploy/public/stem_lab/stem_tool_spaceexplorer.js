@@ -228,7 +228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   var RESOURCES = {
     o2:     { label: 'O\u2082', emoji: '\uD83D\uDCA8', color: '#3b82f6', max: 100 },
     power:  { label: 'Power', emoji: '\u26A1', color: '#f59e0b', max: 100 },
-    hull:   { label: 'Hull', emoji: '\uD83D\uDEE1\uFE0F', color: '#94a3b8', max: 100 },
+    hull:   { label: 'Hull', emoji: '\uD83D\uDEE1\uFE0F', color: 'var(--allo-stem-text-soft, #94a3b8)', max: 100 },
     morale: { label: 'Morale', emoji: '\uD83D\uDE0A', color: '#22c55e', max: 100 },
     fuel:   { label: 'Fuel', emoji: '\u26FD', color: '#8b5cf6', max: 100 },
     science:{ label: 'Science', emoji: '\uD83D\uDD2C', color: '#06b6d4', max: 999 }

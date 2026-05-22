@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -16627,7 +16627,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </main>
         ${_submissionSaveButton}
         <footer role="contentinfo" style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
-            <p style="margin:0;">${t('output.generated_via')} • <a href="https://Ko-fi.com/aaronpomeranz207" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:underline;">${t('export.support_dev')}</a></p>
+            <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
@@ -17158,11 +17158,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

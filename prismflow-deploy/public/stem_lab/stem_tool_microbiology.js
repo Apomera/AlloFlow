@@ -437,12 +437,12 @@
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5' } }, 'Antibiotic resistance — petri-dish evolution sim'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Apply selection pressure. Watch resistant strains take over the population. Real evolution in 14 ticks.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Apply selection pressure. Watch resistant strains take over the population. Real evolution in 14 ticks.')
         )
       ),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) minmax(180px, 1fr)', gap: 12, marginBottom: 12 } },
         hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8 } },
-          hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Day ' + day + ' of ' + duration),
+          hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Day ' + day + ' of ' + duration),
           hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Petri dish showing bacterial population', style: { width: '100%', maxWidth: 240, display: 'block', margin: '0 auto' } },
             hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '50%', cy: '50%', r: '50%' }, hh('stop', { offset: '0%', stopColor: '#1e293b' }), hh('stop', { offset: '100%', stopColor: '#0f172a' }))),
             hh('circle', { cx: 100, cy: 100, r: 95, fill: 'url(#dishBg)', stroke: '#475569', strokeWidth: 1.5 }),
@@ -453,13 +453,13 @@
               return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 2.2 * b.jitter, fill: color, opacity: 0.85 });
             })
           ),
-          hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 9, color: '#94a3b8' } },
+          hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
             hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', marginRight: 4, verticalAlign: 'middle' } }), 'sensitive'),
             hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#ef4444', marginRight: 4, verticalAlign: 'middle' } }), 'resistant')
           )
         ),
         hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 10 } },
-          hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),
+          hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),
           hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', 'aria-hidden': 'true', style: { width: '100%', height: 100, display: 'block' } },
             hh('line', { x1: 4, y1: 56, x2: 96, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
             hh('line', { x1: 4, y1: 4, x2: 4, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
@@ -484,25 +484,25 @@
         )
       ),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
-        hh('label', { style: { fontSize: 10, color: '#cbd5e1' } },
+        hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Antibiotic dose: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '%')),
           hh('input', { type: 'range', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
         ),
-        hh('label', { style: { fontSize: 10, color: '#cbd5e1' } },
+        hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Treatment duration: ', hh('strong', { style: { color: '#22d3ee' } }, duration + ' days')),
           hh('input', { type: 'range', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
         ),
-        hh('label', { style: { fontSize: 10, color: '#cbd5e1' } },
+        hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: '#ef4444' } }, initRes + '%')),
           hh('input', { type: 'range', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
         )
       ),
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
         hh('button', { onClick: function() { if (day === 0) seed(); setPlaying(function(p) { return !p; }); }, disabled: day >= duration, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
-        hh('button', { onClick: function() { setPlaying(false); step(); }, disabled: day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, '⏭ Step day'),
-        hh('button', { onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
+        hh('button', { onClick: function() { setPlaying(false); step(); }, disabled: day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, '⏭ Step day'),
+        hh('button', { onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
       ),
-      day >= duration && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      day >= duration && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#22c55e' } }, '🎓 What you just saw: '),
         'You started with ' + initialPct + '% resistant bacteria. After ' + duration + ' days at ' + dose + '% dose, the population is ' + pctRes + '% resistant. The drug killed sensitive bacteria — but the resistant minority had no competition and took over the dish. ',
         (pctRes >= 80 ? 'This is selection at work. The next round of the same antibiotic would barely dent this population.' : pctRes >= 40 ? 'A meaningful resistance shift. In a hospital, this is the start of the failed-second-course pattern.' : 'Modest shift — likely because dose was too low to apply real selection pressure, OR initial resistance was very rare. Try increasing dose.'),
@@ -560,7 +560,7 @@
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(168,85,247,0.18)', border: '1.5px solid #a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🗺️'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe' } }, 'Snow\'s map · Soho cholera outbreak, 1854'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Walk through 6 weeks of the outbreak. Try removing the Broad Street pump handle. Watch the data move (or not).')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Walk through 6 weeks of the outbreak. Try removing the Broad Street pump handle. Watch the data move (or not).')
         )
       ),
       hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8, marginBottom: 10 } },
@@ -607,19 +607,19 @@
         )
       ),
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
-        hh('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, w.label),
+        hh('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, w.label),
         hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
       ),
       hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a855f7' } },
-        hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6 } }, w.note)
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, w.note)
       ),
       hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 } },
         hh('button', { onClick: function() { setHandleRemoved(function(h2) { return !h2; }); }, style: { padding: '10px 16px', borderRadius: 8, background: handleRemoved ? 'rgba(148,163,184,0.18)' : '#fbbf24', color: handleRemoved ? '#cbd5e1' : '#0f172a', border: '1.5px solid #fbbf24', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, handleRemoved ? '↺ Replace pump handle' : '🔧 Remove pump handle (Snow\'s intervention)'),
-        hh('button', { onClick: function() { setShowDeaths(function(s) { return !s; }); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, showDeaths ? '👁 Hide death dots' : '👁 Show death dots'),
-        hh('button', { onClick: function() { setWeek(0); setHandleRemoved(false); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Restart outbreak')
+        hh('button', { onClick: function() { setShowDeaths(function(s) { return !s; }); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, showDeaths ? '👁 Hide death dots' : '👁 Show death dots'),
+        hh('button', { onClick: function() { setWeek(0); setHandleRemoved(false); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Restart outbreak')
       ),
-      handleRemoved && week >= 4 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      handleRemoved && week >= 4 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#22c55e' } }, '🎓 What Snow proved: '),
         'The clustering of deaths around ONE pump, while other neighborhoods served by other pumps had few deaths, was inconsistent with airborne ("miasma") transmission. The dot map made the pattern visible. Removing the handle removed the source. Cholera fell. The case founded BOTH modern epidemiology AND data visualization. Tufte calls Snow\'s map "the most important data visualization ever made." (Honest footnote: case rate was already declining before removal because residents had fled — but the geographical pattern was the real evidence.)'
       ) : null
@@ -745,14 +745,14 @@
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(16,185,129,0.18)', border: '1.5px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🔬'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7' } }, 'Virtual microscope · swap slides'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Pick an organism. Crank the magnification. Watch structure emerge.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Pick an organism. Crank the magnification. Watch structure emerge.')
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.12)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Slides seen: ' + seen.size + '/5')
       ),
       hh('div', { role: 'tablist', 'aria-label': 'Organism slides', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
         ORGANISMS.map(function(o) {
           var active = o.id === organism;
-          return hh('button', { key: 'sl-' + o.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { setOrganism(o.id); }, style: { flex: '1 1 100px', minWidth: 80, padding: '8px 6px', borderRadius: 8, background: active ? o.color + '22' : 'rgba(15,23,42,0.5)', color: active ? o.color : '#94a3b8', border: '1.5px solid ' + (active ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: active ? 800 : 600, cursor: 'pointer', transition: 'all 180ms ease' } },
+          return hh('button', { key: 'sl-' + o.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { setOrganism(o.id); }, style: { flex: '1 1 100px', minWidth: 80, padding: '8px 6px', borderRadius: 8, background: active ? o.color + '22' : 'rgba(15,23,42,0.5)', color: active ? o.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1.5px solid ' + (active ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: active ? 800 : 600, cursor: 'pointer', transition: 'all 180ms ease' } },
             hh('div', { style: { fontSize: 16, marginBottom: 2 } }, o.icon),
             hh('div', null, o.name),
             hh('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, o.kingdom)
@@ -773,7 +773,7 @@
       ),
       hh('div', { style: { padding: '0 4px', marginBottom: 10 } },
         hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-label': 'Magnification', onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
           hh('span', null, '10× (eye)'), hh('span', null, '400× (light)'), hh('span', null, '2000× (oil)'), hh('span', null, '100,000× (EM)')
         )
       ),
@@ -784,7 +784,7 @@
       ),
       hh('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid ' + sel.color } },
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.icon + ' ' + sel.name + ' · ' + sel.kingdom),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, sel.info)
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, sel.info)
       )
     );
   }
@@ -820,7 +820,7 @@
             quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0
           }});
         });
-        return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } }, '🦠 Initializing Microbiology Lab...');
+        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, '🦠 Initializing Microbiology Lab...');
       }
       var d = labToolData.microbiology;
 
@@ -856,7 +856,7 @@
 
       var tabBar = h('div', {
         role: 'tablist', 'aria-label': 'Microbiology sections',
-        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid #1e293b', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
+        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
       },
         TABS.map(function(t) {
           var active = d.tab === t.id;
@@ -869,8 +869,8 @@
 
       function sectionCard(title, children, accent) {
         accent = accent || EMERALD;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
-          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
+        return h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, title) : null,
           children
         );
       }
@@ -880,10 +880,10 @@
         return h('div', { style: { padding: 16 } },
           sectionCard('🦠 The microbial world is the dominant life on Earth',
             h('div', null,
-              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'About 99% of all the cells on Earth are microbial. Bacteria, archaea, single-celled eukaryotes (protists), and fungi. They drive most of the planet\'s chemistry: carbon, nitrogen, sulfur, oxygen all cycle through microbial metabolism. Plants and animals exist within a microbial world, not the other way around.'
               ),
-              h('p', { style: { margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: 0, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'You are about as much microbial as human, by cell count. Your gut microbiome is its own organ, doing things your own cells cannot. Your immune system is trained by microbes from birth. Most of the time, the relationship is mutual — they get a home, you get vitamins, digestion, protection. Occasionally one becomes pathogenic.'
               )
             )
@@ -896,15 +896,15 @@
                 { name: 'Eukaryotes (incl. fungi + protists)', desc: 'Cells WITH a nucleus + organelles (mitochondria, chloroplasts). Includes single-celled fungi (yeast), filamentous fungi (mold), protists (amoeba, Plasmodium), and all plants + animals.', accent: '#a855f7' },
                 { name: 'Viruses (not cellular)', desc: 'Genetic material in a protein shell. Cannot reproduce without a host cell. Most biologists do not classify them as alive — but they certainly behave like life when inside cells.', accent: '#0ea5e9' }
               ].map(function(g, i) {
-                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + g.accent } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 4 } }, g.name),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55 } }, g.desc)
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + g.accent } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, g.name),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, g.desc)
                 );
               })
             )
           ),
           sectionCard('Where microbes live',
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.85 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Inside you. '), 'Gut, mouth, skin, every surface that meets the outside world. ~100 trillion cells.'),
               h('li', null, h('strong', null, 'In soil. '), '~50 billion cells per gram. The most diverse community on Earth.'),
               h('li', null, h('strong', null, 'In the ocean. '), '~10 million per mL. Half of all photosynthesis happens here.'),
@@ -913,22 +913,22 @@
             )
           ),
           sectionCard('Why understanding microbes matters',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
               'Antibiotic resistance is killing more people every year and rising. New viruses cross from animals into humans (COVID, HIV, Ebola). The microbiome is being reshaped by industrial agriculture, antibiotics, and processed food, with health consequences we are only beginning to understand. Microbial literacy is now a public health competency, not a specialist topic.'
             )
           ),
 
           sectionCard('🌍 The origins of life — 4.6 billion years in 12 steps',
             h('div', null,
-              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'For most of Earth\'s history, microbes were the ONLY life. Plants and animals are a relatively recent addition. Understanding microbial evolution is understanding the deep history of life on this planet.'
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 [
                   { age: '4.6 Gya', name: 'Earth forms', desc: 'From the disk around the young Sun. Molten surface; no atmosphere except primordial gases.', color: '#ef4444' },
-                  { age: '4.5 Gya', name: 'Moon-forming impact', desc: 'A Mars-sized body strikes the proto-Earth. Debris coalesces into the Moon. Stabilizes Earth\'s rotation axis, which becomes important for climate stability later.', color: '#94a3b8' },
+                  { age: '4.5 Gya', name: 'Moon-forming impact', desc: 'A Mars-sized body strikes the proto-Earth. Debris coalesces into the Moon. Stabilizes Earth\'s rotation axis, which becomes important for climate stability later.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
                   { age: '4.4 Gya', name: 'First oceans condense', desc: 'Surface cools enough for water vapor to liquefy. Continuous oceans by ~4.3 Gya. Atmosphere has no free oxygen.', color: '#0ea5e9' },
-                  { age: '4.0 Gya', name: 'Late Heavy Bombardment ends', desc: 'A long episode of intense asteroid impacts ends around now. Surface conditions stabilize enough that life can persist if it formed.', color: '#94a3b8' },
+                  { age: '4.0 Gya', name: 'Late Heavy Bombardment ends', desc: 'A long episode of intense asteroid impacts ends around now. Surface conditions stabilize enough that life can persist if it formed.', color: 'var(--allo-stem-text-soft, #94a3b8)' },
                   { age: '4.0-3.5 Gya', name: 'Origin of life', desc: 'Somewhere here. We don\'t know exactly where (hydrothermal vents? warm tide pools? clay surfaces?) or exactly how. The RNA world hypothesis: RNA, which can both store information AND catalyze reactions, came before DNA + protein. Self-replicating RNA molecules → enclosed in lipid vesicles → first cells.', color: '#a855f7' },
                   { age: '3.5 Gya', name: 'LUCA — Last Universal Common Ancestor', desc: 'A single-celled organism that is the ancestor of every living thing on Earth. We have its inferred genome (from comparing all life): it had a membrane, DNA, ribosomes, ATP, the genetic code. All life since is descended from this one cell.', color: '#fbbf24' },
                   { age: '3.5 Gya', name: 'First confirmed microbial fossils', desc: 'Stromatolites — layered structures built by mats of cyanobacteria-like microbes. Modern stromatolites still grow at Shark Bay, Australia. They are essentially unchanged in 3.5 billion years.', color: '#10b981' },
@@ -938,11 +938,11 @@
                   { age: '540 Mya', name: 'Cambrian explosion', desc: 'Suddenly, most major animal body plans appear in the fossil record within ~25 million years. The explanation is contested (genuine evolutionary rapid radiation? earlier soft-bodied ancestors that didn\'t fossilize? oxygen reaching critical levels?). Either way, the era of large multicellular animals begins.', color: '#f59e0b' },
                   { age: '~300 kya', name: 'Homo sapiens', desc: 'Our species appears in Africa about 300,000 years ago. We are recent newcomers; microbes have been here for ~14,000× longer.', color: '#a78bfa' }
                 ].map(function(e, i) {
-                  return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
+                  return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + e.color } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: e.color, paddingTop: 2 } }, e.age),
                     h('div', null,
-                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, e.name),
-                      h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55 } }, e.desc)
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, e.name),
+                      h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, e.desc)
                     )
                   );
                 })
@@ -961,7 +961,7 @@
 
           sectionCard('🌲 Microbes in Maine',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
                 'Place-based microbiology. The microbes here in Maine are particular: shaped by the Gulf of Maine, the boreal-northern temperate forests, the lakes and peatlands, and the climate. Several are clinically important; several are economically critical; one is reshaping the lobster industry.'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
@@ -985,13 +985,13 @@
                     desc: 'Maine\'s apple-growing tradition produces a robust cider industry; Maine breweries are among the highest density per capita in the US. Local yeasts adapted to Maine apples are still being domesticated by Maine fermentation labs. Each cidery + brewery cultivates particular yeast strains that survive cool Maine fermentation temperatures.',
                     prevention: '(not a pathogen — economically important.)' }
                 ].map(function(m, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + m.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + m.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 12.5, fontWeight: 800, color: m.color } }, m.name),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, m.kind)
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, m.kind)
                     ),
-                    h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, m.desc),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.5 } }, h('strong', null, 'Prevention / context: '), m.prevention)
+                    h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, m.desc),
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5 } }, h('strong', null, 'Prevention / context: '), m.prevention)
                   );
                 })
               ),
@@ -1061,7 +1061,7 @@
         }
 
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Bacteria are single-celled organisms without a nucleus. There are roughly a trillion species; we have characterized only a few thousand. They come in shapes (cocci=spheres, bacilli=rods, spirilla=spirals), with cell wall types (gram-positive thick / gram-negative thin), and metabolic strategies (aerobic, anaerobic, fermenters, chemoautotrophs).'
           ),
 
@@ -1078,21 +1078,21 @@
               ];
               var content = {
                 overview: h('div', null,
-                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                     'CRISPR (Clustered Regularly Interspaced Short Palindromic Repeats) is a bacterial immune system that scientists noticed in the 1990s, partially understood by 2007, and adapted as a programmable gene editor in 2012. It is the biggest revolution in molecular biology since PCR.'
                   ),
-                  h('p', { style: { margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('p', { style: { margin: 0, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                     h('strong', { style: { color: '#6ee7b7' } }, 'The 2020 Nobel Prize in Chemistry '),
                     'went to Jennifer Doudna (UC Berkeley) and Emmanuelle Charpentier (Max Planck Institute) for showing that CRISPR-Cas9 could be programmed to cut any DNA sequence. The first all-female Nobel science laureate pair. Their 2012 paper is one of the most-cited biology papers of all time.'
                   )
                 ),
                 immunity: h('div', null,
-                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                     'Bacteria have always been under attack from bacteriophages (viruses that infect bacteria) — there are about 10× as many phages as bacteria in any given habitat. CRISPR is a bacterial immune system that REMEMBERS past phage attacks and protects against future ones.'
                   ),
-                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 10 } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, 'The bacterial CRISPR-Cas system in 3 stages:'),
-                    h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.75 } },
+                    h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                       h('li', null, h('strong', null, 'Acquisition (the memory): '), 'When a phage injects DNA, Cas proteins clip a small piece of the invader\'s DNA and integrate it into the bacterium\'s own genome at a special locus called the CRISPR array. Each piece is a "spacer." The bacterium now carries a record of the attack.'),
                       h('li', null, h('strong', null, 'Expression (the surveillance): '), 'The CRISPR array gets transcribed into RNA, then processed into short "guide RNAs" (crRNAs). Each crRNA matches one past invader. The crRNAs combine with Cas proteins to make patrol complexes scanning every DNA molecule in the cell.'),
                       h('li', null, h('strong', null, 'Interference (the kill): '), 'If a guide RNA finds a matching sequence in invading DNA, the Cas protein cuts the DNA. The phage is destroyed before it can replicate. The bacterium survives the second attack.')
@@ -1104,12 +1104,12 @@
                   )
                 ),
                 mechanism: h('div', null,
-                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                     'Cas9 (CRISPR-associated protein 9) is the most famous bacterial CRISPR enzyme. It is a molecular machine that, when loaded with the right guide RNA, can find and cut any matching DNA sequence in the cell.'
                   ),
-                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 10 } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, 'How Cas9 works (4 steps):'),
-                    h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.75 } },
+                    h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                       h('li', null, h('strong', null, 'Loading: '), 'Cas9 binds a guide RNA. The guide RNA has a ~20-nucleotide section matching the target sequence.'),
                       h('li', null, h('strong', null, 'Scanning: '), 'The Cas9 + gRNA complex scans DNA. It first looks for a short PAM sequence (typically "NGG") next to a potential target.'),
                       h('li', null, h('strong', null, 'Pairing: '), 'When it finds a PAM, it tries to base-pair the guide RNA with the adjacent DNA. If 20 bases match (or close to it), Cas9 commits.'),
@@ -1118,7 +1118,7 @@
                   )
                 ),
                 tool: h('div', null,
-                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                     'Doudna + Charpentier showed in 2012 that you can swap the guide RNA for any sequence you want — turning a bacterial defense into a programmable gene editor. Order a synthetic guide RNA, mix with Cas9, deliver to cells. Cas9 will cut at your chosen location in the genome.'
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
@@ -1128,15 +1128,15 @@
                       { name: 'Diagnostics', desc: 'SHERLOCK + DETECTR: CRISPR-based diagnostic tests that detect specific DNA or RNA sequences from pathogens within an hour. Used for COVID, Zika, dengue, Lassa. Pocket-sized + low-cost.' },
                       { name: 'Basic research', desc: 'Knocking out a gene used to take a graduate student\'s entire PhD. With CRISPR it takes a week. Functional studies of every gene in the human genome are now feasible. Most biology labs in the world use CRISPR daily.' }
                     ].map(function(a, i) {
-                      return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + EMERALD } },
+                      return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + EMERALD } },
                         h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, a.name),
-                        h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, a.desc)
+                        h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, a.desc)
                       );
                     })
                   )
                 ),
                 ethics: h('div', null,
-                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                     'CRISPR makes things easy that used to be hard. That includes things we may not want to do.'
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', borderTop: '1px solid rgba(220,38,38,0.35)', borderRight: '1px solid rgba(220,38,38,0.35)', borderBottom: '1px solid rgba(220,38,38,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
@@ -1179,16 +1179,16 @@
           // Gram stain visualizer
           sectionCard('🟣 Gram stain — the foundational microbiology test',
             h('div', null,
-              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Developed by Hans Christian Gram in 1884. Still the first test run on most clinical bacterial samples — within hours of a culture growing. Splits bacteria into two groups by their cell-wall structure. The choice of antibiotic depends partly on whether the bacterium is Gram-positive or Gram-negative.'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 12 } },
                 gramSvg('positive'),
                 gramSvg('negative')
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 6 } }, 'The 4-step procedure (~3 minutes):'),
-                h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   h('li', null, h('strong', null, 'Crystal violet '), '(purple primary stain) — soaks all bacteria, all turn purple.'),
                   h('li', null, h('strong', null, 'Iodine '), '(mordant) — locks crystal violet onto the cell.'),
                   h('li', null, h('strong', null, 'Alcohol or acetone '), '(decolorizer, ~3 seconds) — the critical step. Gram-positive cells with thick peptidoglycan TRAP the dye. Gram-negative cells with thin peptidoglycan + outer membrane RELEASE the dye and become colorless.'),
@@ -1198,12 +1198,12 @@
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 10 } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(124,58,237,0.10)', borderLeft: '3px solid #7c3aed' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', marginBottom: 4 } }, 'Gram-positive examples'),
-                  h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } }, 'Staphylococcus aureus (incl. MRSA), Streptococcus pneumoniae, Streptococcus pyogenes (strep throat), Bacillus anthracis (anthrax), Clostridium difficile, C. tetani, C. botulinum, Listeria, Enterococcus.'),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, 'Staphylococcus aureus (incl. MRSA), Streptococcus pneumoniae, Streptococcus pyogenes (strep throat), Bacillus anthracis (anthrax), Clostridium difficile, C. tetani, C. botulinum, Listeria, Enterococcus.'),
                   h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 6, fontStyle: 'italic' } }, 'Generally susceptible to: penicillin, vancomycin (last-line), cephalosporins.')
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.10)', borderLeft: '3px solid #ec4899' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbcfe8', marginBottom: 4 } }, 'Gram-negative examples'),
-                  h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } }, 'E. coli, Salmonella, Klebsiella, Pseudomonas aeruginosa, Vibrio (cholera + Maine shellfish Vibrios), Helicobacter pylori (ulcers), Neisseria gonorrhoeae + meningitidis, Haemophilus influenzae.'),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, 'E. coli, Salmonella, Klebsiella, Pseudomonas aeruginosa, Vibrio (cholera + Maine shellfish Vibrios), Helicobacter pylori (ulcers), Neisseria gonorrhoeae + meningitidis, Haemophilus influenzae.'),
                   h('div', { style: { fontSize: 11, color: '#ec4899', marginTop: 6, fontStyle: 'italic' } }, 'Generally tougher to treat — outer membrane blocks many antibiotics. Often need fluoroquinolones, aminoglycosides, or specific β-lactams that penetrate the outer membrane.')
                 )
               ),
@@ -1211,7 +1211,7 @@
                 h('strong', null, 'Why this matters clinically: '),
                 'A sample of urine, blood, sputum, or CSF can be Gram-stained in 3 minutes. The result alone narrows the field of suspected pathogens dramatically. Empirical antibiotic therapy (started before full identification) is chosen partly based on the Gram result. Endotoxin (the LPS on Gram-negative cells) is a major driver of septic shock — a Gram-negative bloodstream infection is medically more dangerous in some ways than a Gram-positive one.'
               ),
-              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #475569', fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #475569)', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 h('strong', null, 'A few exceptions: '),
                 'Mycobacterium tuberculosis (TB) has a waxy mycolic-acid cell wall that resists Gram staining; it requires acid-fast staining (Ziehl-Neelsen). Mycoplasma have NO cell wall at all and stain neither way. Some bacteria are "Gram-variable" — they stain inconsistently because their cell walls are atypical.'
               )
@@ -1224,25 +1224,25 @@
               return h('button', { key: b.id,
                 onClick: function() { upd({ selectedBacterium: b.id }); },
                 'aria-label': b.name,
-                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
+                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 2 } }, b.name),
                 h('div', { style: { fontSize: 10, color: roleColor[b.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, roleLabel[b.role] || b.role)
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || EMERALD) } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (roleColor[selected.role] || EMERALD) } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, 'Shape: ' + selected.shape + ' · ', h('span', { style: { color: roleColor[selected.role], fontWeight: 700, textTransform: 'uppercase' } }, roleLabel[selected.role])),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Shape: ' + selected.shape + ' · ', h('span', { style: { color: roleColor[selected.role], fontWeight: 700, textTransform: 'uppercase' } }, roleLabel[selected.role])),
             infoBlock('Where', selected.where, '#94a3b8'),
             infoBlock('What it does', selected.what, EMERALD),
             infoBlock('Science note', selected.sciFact, '#38bdf8')
           )
         );
         function infoBlock(title, body, color) {
-          return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid ' + color, marginBottom: 8 } },
+          return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + color, marginBottom: 8 } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, title),
-            h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, body)
+            h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, body)
           );
         }
       }
@@ -1304,7 +1304,7 @@
 
         return h('div', { style: { padding: 16 } },
           sectionCard('What viruses are (and are not)',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
               'Viruses are NOT cells. They have no metabolism of their own. They are genetic material (DNA or RNA) wrapped in a protein coat (capsid), sometimes with a lipid envelope. They reproduce only by entering a host cell and hijacking its machinery to make copies of themselves. Most biologists do not classify them as alive — though they certainly behave like life when inside a cell.'
             )
           ),
@@ -1313,37 +1313,37 @@
               var active = d.selectedVirus === v.id;
               return h('button', { key: v.id,
                 onClick: function() { upd({ selectedVirus: v.id }); },
-                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
+                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { fontSize: 12, fontWeight: 800 } }, v.name)
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('h3', { style: { margin: '0 0 8px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 10 } },
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a' } },
-                h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase' } }, 'Genome'),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0' } }, selected.genome)
+              h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)' } },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, 'Genome'),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, selected.genome)
               ),
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a' } },
-                h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase' } }, 'Hosts'),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0' } }, selected.hosts)
+              h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)' } },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, 'Hosts'),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, selected.hosts)
               )
             ),
-            h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
               h('strong', { style: { color: '#6ee7b7' } }, 'Structure: '), selected.structure
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Story'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.story)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.story)
             )
           ),
 
           // Disease transmission modes — applies to viruses + bacteria + parasites
           sectionCard('🦠 How infectious diseases spread — 8 transmission modes',
             h('div', null,
-              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Public health is largely about interrupting transmission. Different pathogens spread through different routes; the same pathogen may use more than one. Knowing the route(s) for a given disease tells you the highest-yield prevention strategy.'
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -1355,19 +1355,19 @@
                   }, t.icon + ' ' + t.name);
                 })
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selT.color } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selT.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: selT.color, marginBottom: 8 } }, selT.icon + ' ' + selT.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it spreads'),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } }, selT.how)
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.how)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Examples'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, selT.examples)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.examples)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Prevention'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, selT.prevent)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.prevent)
                 )
               ),
               h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
@@ -1418,7 +1418,7 @@
               var sel = d.selectedPrion || 'what';
               var topic = PRION_TOPICS.find(function(t) { return t.id === sel; }) || PRION_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'Prions sit at a strange boundary. They are not alive. They have no genome. Yet they spread through tissue, cause progressive fatal disease, and can be transmitted by surgery, transfusion, or (rarely) dietary exposure. They also illuminate something larger: a whole class of "protein misfolding" diseases, including the most common neurodegenerative conditions, may share the same fundamental mechanism — proteins teaching other proteins to fold wrong.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -1433,8 +1433,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'What we should not overstate: '), topic.caveat
                   )
                 ),
@@ -1459,7 +1459,7 @@
         var roleColor = { beneficial: '#22c55e', 'mostly-beneficial': '#86efac', varies: '#f59e0b', pathogenic: '#ef4444', 'pathogenic (with medical descendants)': '#a855f7' };
         return h('div', { style: { padding: 16 } },
           sectionCard('🍄 Fungi are not plants',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
               h('p', { style: { margin: '0 0 8px' } }, 'Fungi are eukaryotes (cells with nuclei) — like us, but in their own kingdom. Genetically, fungi are closer to animals than to plants. They have cell walls made of chitin (the same stuff as insect exoskeletons), not cellulose like plants. They cannot photosynthesize. They digest their food externally, releasing enzymes into the environment and absorbing the dissolved nutrients.'),
               h('p', { style: { margin: 0 } }, 'Most fungi are filamentous (multicellular): a tangled mass of thread-like cells (hyphae) forming a network (mycelium). Mushrooms are just the reproductive parts — most of the fungus lives underground. Yeasts are the exception: single-celled fungi.')
             ),
@@ -1471,27 +1471,27 @@
               return h('button', { key: f.id,
                 onClick: function() { upd({ selectedFungus: f.id }); },
                 'aria-label': f.name,
-                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(168,85,247,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#a855f7' : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
+                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(168,85,247,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#a855f7' : '#334155'), cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 2 } }, f.name),
                 h('div', { style: { fontSize: 10, color: roleColor[f.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, f.role)
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || '#a855f7') } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (roleColor[selected.role] || '#a855f7') } },
             h('h3', { style: { margin: '0 0 4px', color: '#d8b4fe', fontSize: 18 } }, selected.name),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Where'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.where)
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Where'),
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.where)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it does'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.what)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.what)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Science note'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.sciFact)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.sciFact)
             )
           ),
           emergingFungalSection()
@@ -1536,7 +1536,7 @@
           var topic = FUNGI_TOPICS.find(function(t) { return t.id === sel; }) || FUNGI_TOPICS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#d8b4fe', fontSize: 16 } }, '🍄 Emerging fungal infections — the underrecognized threat'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'When people picture an emerging infectious disease, they picture a virus. But the past 20 years have seen fungi rise into a serious + underappreciated category of human + ecological pathogen. Climate change, agricultural fungicide overuse, expanding immunocompromised populations, and very thin antifungal pipelines have combined to create a problem we are only beginning to take seriously.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -1549,10 +1549,10 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                 h('strong', null, 'Honest framing: '), topic.caveat
               )
             ),
@@ -1570,7 +1570,7 @@
         var roleColor = { beneficial: '#22c55e', 'beneficial / educational': '#86efac', 'beneficial (massively)': '#22c55e', 'mostly-beneficial': '#86efac', 'mostly-beneficial (and rare-pathogenic relatives)': '#86efac', pathogenic: '#ef4444' };
         return h('div', { style: { padding: 16 } },
           sectionCard('🦠 Protists — the diverse leftovers',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
               h('p', { style: { margin: '0 0 8px' } }, '"Protist" is what biologists call all the single-celled eukaryotes that aren\'t plants, fungi, or animals. It is a wastebasket category — protists do not share a common ancestor that excludes other eukaryotes. The kingdom is being broken up as DNA sequencing reveals true relationships. But the term is still useful for talking about this incredibly diverse group: photosynthetic algae, mobile predators, parasites, mixotrophs that do both.'),
               h('p', { style: { margin: 0 } }, 'Protists include the most abundant photosynthesizers in the ocean (diatoms) and the most lethal infectious organisms on Earth (Plasmodium, the malaria parasite). They sit between bacteria and the multicellular life that descended from them.')
             ),
@@ -1582,27 +1582,27 @@
               return h('button', { key: p.id,
                 onClick: function() { upd({ selectedProtist: p.id }); },
                 'aria-label': p.name,
-                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(14,165,233,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#0ea5e9' : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
+                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(14,165,233,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#0ea5e9' : '#334155'), cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 2 } }, p.name),
                 h('div', { style: { fontSize: 10, color: roleColor[p.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, p.role.split(' (')[0])
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || '#0ea5e9') } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (roleColor[selected.role] || '#0ea5e9') } },
             h('h3', { style: { margin: '0 0 4px', color: '#7dd3fc', fontSize: 18 } }, selected.name),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Where'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.where)
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Where'),
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.where)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #0ea5e9', marginBottom: 8 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #0ea5e9', marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it does'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.what)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.what)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Science note'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.sciFact)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.sciFact)
             )
           )
         );
@@ -1613,7 +1613,7 @@
         var selected = (d.selectedArchaeon && ARCHAEA.find(function(a) { return a.id === d.selectedArchaeon; })) || ARCHAEA[0];
         return h('div', { style: { padding: 16 } },
           sectionCard('♨️ Archaea — the third domain of life',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
               h('p', { style: { margin: '0 0 8px' } }, 'For most of the 20th century, biology recognized two domains of cellular life: bacteria + everything else. In 1977, Carl Woese used ribosomal RNA sequencing to discover that "everything else" actually splits into TWO completely separate groups: archaea + eukaryotes. The two had been classified together because archaea look like bacteria under a microscope. They are not.'),
               h('p', { style: { margin: 0 } }, 'Archaea are as different from bacteria as bacteria are from us. Different membrane lipids, different cell wall chemistry, different gene transcription machinery. Archaea live in your gut and in the ocean. Many are extremophiles — surviving boiling temperatures, supersaline salt flats, or extreme acidity. The "three domains of life" framework is the foundation of modern biology, and we owe it to archaea.')
             ),
@@ -1625,27 +1625,27 @@
               return h('button', { key: a.id,
                 onClick: function() { upd({ selectedArchaeon: a.id }); },
                 'aria-label': a.name,
-                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(239,68,68,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#ef4444' : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
+                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(239,68,68,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#ef4444' : '#334155'), cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 2 } }, a.name),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, a.kind)
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, a.kind)
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #ef4444' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #ef4444' } },
             h('h3', { style: { margin: '0 0 4px', color: '#fca5a5', fontSize: 18 } }, selected.name),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, selected.kind),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Where it lives'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.where)
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, selected.kind),
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Where it lives'),
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.where)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #ef4444', marginBottom: 8 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #ef4444', marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it does'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.what)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.what)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it matters'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.sciFact)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.sciFact)
             )
           ),
           extremophilesAstrobiologySection()
@@ -1690,7 +1690,7 @@
           var topic = EXT.find(function(t) { return t.id === sel; }) || EXT[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#a5b4fc', fontSize: 16 } }, '🌌 Extremophiles + astrobiology'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'The discovery of extremophiles on Earth — life in boiling springs, frozen brine, deep crustal rock, salt-saturated lakes, acidic vents — has expanded our sense of where life CAN exist. Every new extremophile habitat we find on Earth opens a new candidate habitat in the solar system + beyond. This is microbiology meeting astronomy in the most literal way.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -1705,8 +1705,8 @@
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.35)' } },
               h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c7d2fe', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                 h('strong', null, 'Honest framing: '), topic.caveat
               )
             ),
@@ -1732,7 +1732,7 @@
           { name: 'Protein molecule', sizeUm: 0.01 }
         ];
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Microscopy. The history of microbiology IS the history of better microscopes. Each improvement opened a whole new biology.'
           ),
 
@@ -1741,7 +1741,7 @@
           // Magnification slider
           sectionCard('Scale: what can you see at different magnifications?',
             h('div', null,
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 6 } }, 'Magnification: ', h('strong', { style: { color: EMERALD, fontSize: 14 } }, mag + 'x')),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Magnification: ', h('strong', { style: { color: EMERALD, fontSize: 14 } }, mag + 'x')),
               h('input', { type: 'range', min: 1, max: 100000, step: 1, value: mag,
                 onChange: function(e) { upd({ magnification: parseInt(e.target.value, 10) }); },
                 'aria-label': 'Magnification',
@@ -1752,9 +1752,9 @@
                   // Apparent size when viewed at mag — pretend pixel-size = real-size * mag / 1000 µm per visible-width
                   var apparentMm = t.sizeUm * mag / 100; // mm at this magnification (assuming 100x makes 1µm = 1mm on screen)
                   var visible = apparentMm >= 0.1 && apparentMm <= 1000;
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid ' + (visible ? EMERALD : '#334155'), opacity: visible ? 1 : 0.5 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, t.name),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, t.sizeUm + ' µm actual'),
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid ' + (visible ? EMERALD : '#334155'), opacity: visible ? 1 : 0.5 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, t.name),
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t.sizeUm + ' µm actual'),
                     h('div', { style: { fontSize: 11, color: visible ? '#6ee7b7' : '#64748b', marginTop: 4 } }, visible ? '✓ visible' : (apparentMm < 0.1 ? 'too small' : 'too big to fit'))
                   );
                 })
@@ -1772,10 +1772,10 @@
               }, s.name);
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 17 } }, selected.name),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, 'Resolution range: ' + selected.range),
-            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, selected.what),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Resolution range: ' + selected.range),
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.what),
             h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.55 } },
               h('strong', null, 'Limit: '), selected.limit
             )
@@ -1838,7 +1838,7 @@
           var topic = DX.find(function(t) { return t.id === sel; }) || DX[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#6ee7b7', fontSize: 16 } }, '🔬 Diagnostic microbiology — how labs actually identify pathogens'),
-            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+            h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               'Every time someone is treated for a real infection, a clinical microbiology lab has gone through specific identification + susceptibility testing steps to determine WHICH organism is causing it + what will kill it. These methods range from a 19th-century Gram stain (cost: pennies) to whole-genome sequencing (cost: hundreds of dollars). Each has a place in the workflow; combining them is the art.'
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -1851,20 +1851,20 @@
                 }, t.emoji + ' ' + t.name);
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#6ee7b7', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Speed: ' + topic.speed + ' · Cost: ' + topic.cost),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Speed: ' + topic.speed + ' · Cost: ' + topic.cost),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'When to use it'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.when)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.when)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
-                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -1884,7 +1884,7 @@
           ),
           h(AntibioticResistanceSim, { awardXP: awardXP }),
           sectionCard('How resistance evolves (in 5 steps)',
-            h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.85 } },
+            h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#6ee7b7' } }, 'Random mutation. '), 'A bacterium\'s DNA copies with rare errors. Most are harmful or neutral. Occasionally, one happens to make the bacterium less sensitive to an antibiotic.'),
               h('li', null, h('strong', { style: { color: '#6ee7b7' } }, 'Antibiotic exposure. '), 'Patient takes the antibiotic. Susceptible bacteria die in massive numbers. The few that happen to be resistant survive.'),
               h('li', null, h('strong', { style: { color: '#6ee7b7' } }, 'Selection. '), 'The resistant survivors have all the food and space to themselves. They reproduce. Within hours to days, the surviving population is mostly resistant.'),
@@ -1916,7 +1916,7 @@
               ];
               var sel = MECHS.find(function(m) { return m.id === d.selectedHGT; }) || MECHS[0];
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'Bacteria don\'t just inherit genes from parents (VERTICAL transmission). They also SHARE genes with neighbors + sometimes with completely unrelated species (HORIZONTAL gene transfer). This is why antibiotic resistance spreads so fast: a resistance gene that evolves in one bacterium can be in a hundred different species within years. There are three main mechanisms.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -1928,23 +1928,23 @@
                     }, m.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What happens'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.what)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Discovery + science'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.how)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.how)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Examples / where it matters'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.examples)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.examples)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.08)', borderLeft: '3px solid #dc2626' } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Speed + reach'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.rate)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.rate)
                   )
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
@@ -1962,7 +1962,7 @@
 
           sectionCard('💊 How antibiotics actually work (and what resistance breaks)',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 'Antibiotics are NOT all the same. Each class attacks a different essential bacterial function. Bacteria can evolve resistance to one mechanism without losing susceptibility to others. Knowing which class is which is the foundation of antibiotic stewardship — and the reason we still have working drugs.'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
@@ -1996,10 +1996,10 @@
                     resists: 'VanA/VanB resistance changes the terminus to D-Ala-D-Lac, which vancomycin can\'t bind. VRE (vancomycin-resistant Enterococcus) and VRSA (vancomycin-resistant Staph) are growing problems.',
                     color: '#ef4444' }
                 ].map(function(c, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + c.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + c.color } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: c.color, marginBottom: 4 } }, c.name),
-                    h('div', { style: { fontSize: 10.5, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Target: ' + c.target),
-                    h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, h('strong', null, 'How it works: '), c.how),
+                    h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Target: ' + c.target),
+                    h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, h('strong', null, 'How it works: '), c.how),
                     h('div', { style: { fontSize: 11, color: '#fca5a5', lineHeight: 1.5, fontStyle: 'italic' } }, h('strong', null, 'How resistance breaks it: '), c.resists)
                   );
                 })
@@ -2012,7 +2012,7 @@
             '#fbbf24'
           ),
           sectionCard('What accelerates resistance',
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.8 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
               h('li', null, 'Antibiotics prescribed for viral infections (antibiotics don\'t work on viruses).'),
               h('li', null, 'Not finishing the full course (kills the susceptible, leaves the partially-resistant).'),
               h('li', null, 'Antibiotics in animal feed for growth promotion (now banned in EU; still common elsewhere).'),
@@ -2021,7 +2021,7 @@
             )
           ),
           sectionCard('What helps',
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.8 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
               h('li', null, h('strong', null, 'For you: '), 'Take antibiotics only when prescribed; finish the course exactly. Don\'t demand antibiotics for colds or flu. Don\'t take leftover antibiotics or someone else\'s.'),
               h('li', null, h('strong', null, 'For the world: '), 'Public investment in new antibiotic development. Restrictions on agricultural use. Phage therapy research. Better infection control in hospitals. Vaccines that prevent infection in the first place.'),
               h('li', null, h('strong', null, 'Big picture: '), 'Stop treating antibiotics as a renewable resource. Each one is a one-shot weapon; once resistance is widespread, that antibiotic is gone forever.')
@@ -2030,12 +2030,12 @@
 
           sectionCard('🎯 Phage therapy — the antibiotic alternative',
             h('div', null,
-              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Bacteriophages (or just "phages") are viruses that infect bacteria — and ONLY bacteria, never human cells. The most abundant biological entity on Earth (~10³¹ of them). They were discovered in 1915-17 + used as antibacterial therapy in the Soviet Union throughout the 20th century. Western medicine largely abandoned them after antibiotics took off in the 1940s — but the antibiotic resistance crisis is bringing phage therapy back.'
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #6ee7b7', marginBottom: 10 } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #6ee7b7', marginBottom: 10 } },
                 h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, 'Why phages are uniquely promising:'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.75 } },
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, 'Self-replicating: '), 'A single phage multiplies inside the bacterial host. One dose can grow into trillions, kill the infection, then disappear as targets run out.'),
                   h('li', null, h('strong', null, 'Highly specific: '), 'Each phage strain targets only one (or a few) bacterial species — no collateral damage to the gut microbiome. Antibiotics kill broadly; phages are surgical.'),
                   h('li', null, h('strong', null, 'Evolvable in real time: '), 'When bacteria evolve resistance to a phage, scientists can re-isolate phages from sewage or soil that have already evolved counter-resistance. The arms race never stops.'),
@@ -2120,7 +2120,7 @@
               var sel = d.selectedAbx || 'beta';
               var topic = ABX.find(function(t) { return t.id === sel; }) || ABX[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'Antibiotics are not a single drug; they are roughly a dozen chemical classes with completely different mechanisms, spectrums, toxicities, and resistance patterns. Understanding the classes helps make sense of why doctors prescribe what they do, why courses sometimes change, and why the world is facing a slow-motion crisis in antibiotic discovery + use.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2135,18 +2135,18 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(110,231,183,0.06)', border: '1px solid rgba(110,231,183,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'First introduced: ' + topic.year + ' · ' + topic.who),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'First introduced: ' + topic.year + ' · ' + topic.who),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Chemistry + mechanism'),
-                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.chem)
+                    h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.chem)
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Clinical use'),
-                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.use)
+                    h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.use)
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Resistance + limits'),
-                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.resist)
+                    h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.resist)
                   )
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -2198,7 +2198,7 @@
               var sel = d.selectedSurv || 'overview';
               var topic = SURV_TOPICS.find(function(t) { return t.id === sel; }) || SURV_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'You do not see public health surveillance until it fails. The systems that scan wastewater for polio, sequence E. coli outbreaks to find their source, trace contacts during an Ebola scare, and track excess mortality in real time during a pandemic are how a society defends itself against infectious disease. They are also chronically underfunded, institutionally fragmented, and politically vulnerable. School-based health workers + counselors are often the closest most students get to the system.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2213,8 +2213,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 )
@@ -2253,7 +2253,7 @@
             what: 'Maternal microbiome shifts dramatically — gut Bifidobacterium increases, vaginal Lactobacillus increases, oral microbiome shifts toward inflammation-promoting species (which is why dental care matters in pregnancy). These shifts likely tune the maternal immune system to tolerate the developing fetus.',
             shape: 'Maternal diet, weight gain, antibiotic exposure, pre-existing conditions. The microbiome the mother carries during pregnancy is what seeds the baby at birth.'
           },
-          { id: 'aging', name: 'Aging (65+)', age: '65+', color: '#94a3b8',
+          { id: 'aging', name: 'Aging (65+)', age: '65+', color: 'var(--allo-stem-text-soft, #94a3b8)',
             what: 'Microbiome diversity tends to DECLINE with age in industrialized populations. Specific bacteria associated with anti-inflammatory function (Faecalibacterium, Akkermansia) decrease. "Inflammaging" — chronic low-grade inflammation — is partly mediated by microbiome changes. Diet quality + activity level have outsized impact in older adults.',
             shape: 'Diet (especially fiber + plant variety, since older adults often reduce diversity unintentionally), polypharmacy (most drugs alter the gut microbiome), constipation, hospitalization, social isolation (less microbial exchange).'
           },
@@ -2264,7 +2264,7 @@
         ];
         var sel = STAGES.find(function(s) { return s.id === d.selectedLifeStage; }) || STAGES[0];
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'A microbiome is the community of microbes in a particular environment. The human microbiome is now recognized as an organ — collectively essential for health, with disruption linked to obesity, diabetes, autoimmune disease, allergies, and mood disorders. Different from any individual organ: it is many species cooperating + competing + co-evolving with the host.'
           ),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -2276,28 +2276,28 @@
               }, m.name);
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 12 } },
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a' } },
-                h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase' } }, 'Count'),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0' } }, selected.count)
+              h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)' } },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, 'Count'),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, selected.count)
               ),
-              h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a' } },
-                h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase' } }, 'Species'),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0' } }, selected.species)
+              h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)' } },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, 'Species'),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, selected.species)
               )
             ),
-            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, selected.what),
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.what),
             h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What shapes it'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.shaped)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.shaped)
             )
           ),
 
           sectionCard('🌱 The microbiome across a lifespan',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'The gut microbiome assembles in infancy, reaches adult-like complexity around age 3, remains relatively stable through adulthood, and tends to decline in diversity with age. Each life stage has characteristic microbial patterns + characteristic interventions that shape them.'
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2312,18 +2312,18 @@
                   );
                 })
               ),
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color } }, sel.name),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, sel.age)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, sel.age)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What\'s happening'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65 } }, sel.what)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, sel.what)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What shapes it'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65 } }, sel.shape)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, sel.shape)
                 )
               ),
               h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
@@ -2378,7 +2378,7 @@
               var sel = d.selectedVirome || 'overview';
               var topic = VIROME_TOPICS.find(function(t) { return t.id === sel; }) || VIROME_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'You are not just you. You are also a few hundred trillion virus particles, a few thousand viral species, the descendants of ancient retroviruses written permanently into your DNA, and a handful of latent infections kept quiet by your immune system. The virome is the OTHER half of microbiome biology — and one of the fastest-moving frontiers in medicine.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2393,8 +2393,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'What we should not overstate: '), topic.caveat
                   )
                 )
@@ -2443,7 +2443,7 @@
               var sel = d.selectedGBA || 'overview';
               var topic = GBA_TOPICS.find(function(t) { return t.id === sel; }) || GBA_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'The idea that our gut bacteria influence our mood + behavior was treated as fringe in the 1990s. It is now a mainstream + rapidly growing research area, with thousands of papers + multiple textbooks. The science is real, the magnitude of effects in humans is still being measured, and the area is also being heavily oversold by supplement marketing. The respectful position: take the science seriously, separate hype from evidence, do not abandon what already works.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2458,8 +2458,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'What we should not overstate: '), topic.caveat
                   )
                 ),
@@ -2517,7 +2517,7 @@
         var sel = APPS.find(function(a) { return a.id === d.selectedBiotechApp; }) || APPS[0];
         return h('div', { style: { padding: 16 } },
           sectionCard('🏭 Microbes as industrial workhorses',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Beyond medicine + food, microbes are doing real work — cleaning pollution, mining metals, making fuels, recycling plastics, producing pharmaceuticals. About $300 billion/year of the global economy is microbe-driven biotechnology, and growing. Many problems we previously addressed with brute force + chemistry (oil spills, mining waste, plastic landfill) now have biological solutions that are slower but cleaner.'
             ),
             '#22c55e'
@@ -2533,23 +2533,23 @@
                   }, a.name);
                 })
               ),
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Microbes used'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.microbe)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.microbe)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.how)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.how)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Real-world example'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.example)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.example)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.08)', borderLeft: '3px solid #dc2626' } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Limits + honest caveats'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.limits)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.limits)
                 )
               )
             ),
@@ -2557,7 +2557,7 @@
           ),
 
           sectionCard('🧪 Synthetic biology — engineering organisms from scratch',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 8px' } },
                 'Modern biotechnology no longer just FINDS useful microbes — it ENGINEERS them. Synthetic biology assembles genetic circuits + custom metabolic pathways from interchangeable parts. The Registry of Standard Biological Parts (BioBricks, 2003+) catalogs thousands of reusable DNA modules. Computer-designed organisms exist.'
               ),
@@ -2609,7 +2609,7 @@
               var sel = d.selectedCancer || 'overview';
               var topic = CANCER_TOPICS.find(function(t) { return t.id === sel; }) || CANCER_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'For most of the 20th century, cancer was understood almost entirely in terms of genetic mutation, radiation, chemistry, and inheritance. In the past 40 years, a different story has emerged: a significant fraction of cancers globally are caused, fully or partly, by chronic infection with specific microbes. Some of those infections are vaccine-preventable. Others are curable with antibiotics or antivirals. This is genuinely good news — and it changes how we think about cancer prevention.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2624,8 +2624,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fda4af', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'What we should not overstate: '), topic.caveat
                   )
                 ),
@@ -2682,7 +2682,7 @@
               var sel = d.selectedSynBio || 'whatis';
               var topic = SB_TOPICS.find(function(t) { return t.id === sel; }) || SB_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'Synthetic biology asks: can we engineer living things the way we engineer software? The answer so far is "partially, sometimes spectacularly, with surprising failures." Engineered microbes make insulin, malaria drugs, jet fuel, leather, cheese, fragrance compounds. Cell-cultured meat is now legal to sell in three countries. The field is real, commercially significant, and intellectually + ethically demanding in ways students entering biology in 2026 will need to engage with.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2697,8 +2697,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,243,208,0.08)', border: '1px solid rgba(167,243,208,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#a7f3d0', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -2751,7 +2751,7 @@
               var sel = d.selectedAI || 'problem';
               var topic = AI_TOPICS.find(function(t) { return t.id === sel; }) || AI_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'In November 2020, AlphaFold 2 solved a 50-year-old grand challenge in biology. The 2024 Nobel Prize in Chemistry recognized this + the parallel protein-design work at the Baker Lab. AI is now central to most areas of biological research — protein structure, drug discovery, genome interpretation, variant calling, metagenomic classification, microscopy image analysis. The field is moving so fast that the relationship between biology + computation is being reshaped year by year.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2766,8 +2766,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -2819,14 +2819,14 @@
         var sel = STEPS.find(function(s) { return s.id === d.selectedNStep; }) || STEPS[0];
         return h('div', { style: { padding: 16 } },
           sectionCard('🌱 Plants don\'t feed themselves — microbes do',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'Plants cannot fix nitrogen + most cannot effectively gather phosphorus + many other nutrients on their own. They depend on microbial partners. The roots of nearly every plant species are sites of intense microbial activity. Without these partnerships, terrestrial ecosystems as we know them would not exist.'
             ),
             '#22c55e'
           ),
           sectionCard('♻️ The nitrogen cycle — bacteria run the show',
             h('div', null,
-              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Nitrogen is 78% of the atmosphere — and almost completely unusable for life in that form (N₂ is held together by a very strong triple bond). The biological nitrogen cycle solves this through a sequence of microbial steps. About half of the biologically-fixed nitrogen feeding the world comes from microbes; the other half from industrial Haber-Bosch fixation (which itself uses ~1-2% of all energy on Earth).'
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2838,23 +2838,23 @@
                   }, s.name);
                 })
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Microbes responsible'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.actor)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.actor)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Process'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.process)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.process)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Where it happens'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.where)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.where)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Why it matters'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.note)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.note)
                 )
               )
             ),
@@ -2862,7 +2862,7 @@
           ),
 
           sectionCard('🍄 Mycorrhizae — the underground partnership',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 8px' } }, 'About 90% of plant species form a partnership called MYCORRHIZA: roots and fungal hyphae grow together. The fungus extends the effective root system 100-1,000×, accessing water + phosphorus + other minerals the plant cannot reach. The plant gives the fungus sugars from photosynthesis. Probably the oldest symbiosis on land — about 460 million years old, and may be the reason plants colonized land in the first place.'),
               h('p', { style: { margin: '0 0 8px' } },
                 h('strong', { style: { color: '#a7f3d0' } }, 'Two main types: '),
@@ -2880,20 +2880,20 @@
           ),
 
           sectionCard('🌽 Agricultural implications',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 8px' } }, 'Industrial agriculture depends on biological nitrogen fixation in three forms: leguminous crop rotations (alfalfa, clover, soybean) for organic nitrogen, Rhizobium-inoculated seed treatments, and supplementary Haber-Bosch synthetic fertilizers. Each option has trade-offs.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 8 } },
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #22c55e' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #22c55e' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 4 } }, 'Crop rotation'),
-                  h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, 'Plant legumes one season to "fix" nitrogen; plant nitrogen-hungry crops the next. Indigenous "three sisters" agriculture (corn + beans + squash) used this for millennia. Slow + reliable + low-input.')
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, 'Plant legumes one season to "fix" nitrogen; plant nitrogen-hungry crops the next. Indigenous "three sisters" agriculture (corn + beans + squash) used this for millennia. Slow + reliable + low-input.')
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #0ea5e9' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #0ea5e9' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, 'Rhizobium inoculants'),
-                  h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, 'Seed-coat soybeans, peanuts, peas with the right strain of Rhizobium before planting. Targeted, effective, used at industrial scale.')
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, 'Seed-coat soybeans, peanuts, peas with the right strain of Rhizobium before planting. Targeted, effective, used at industrial scale.')
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #f59e0b' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #f59e0b' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, 'Synthetic fertilizer (Haber-Bosch)'),
-                  h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, 'Industrial process (1909) converts N₂ + H₂ → NH₃ at high temperature + pressure. Currently feeds about half the world. Uses 1-2% of all global energy. Largest single contributor to anthropogenic reactive nitrogen on Earth.')
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, 'Industrial process (1909) converts N₂ + H₂ → NH₃ at high temperature + pressure. Currently feeds about half the world. Uses 1-2% of all global energy. Largest single contributor to anthropogenic reactive nitrogen on Earth.')
                 )
               ),
               h('p', { style: { margin: 0 } },
@@ -2940,7 +2940,7 @@
               var sel = d.selectedClimate || 'overview';
               var topic = CC_TOPICS.find(function(t) { return t.id === sel; }) || CC_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'When people picture climate change, they picture smokestacks + cars + coal plants. The microbial layer is invisible + far larger. Microorganisms produce + consume most of Earth\'s greenhouse gases; soil + ocean microbes set the carbon-cycle balance; permafrost microbes hold a billion-year-old carbon stockpile that is now waking up. Climate science + microbial ecology are inseparable.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -2955,8 +2955,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -3031,13 +3031,13 @@
         return h('div', { style: { padding: 16 } },
           sectionCard('🦠 Biofilms — when bacteria become a city',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Most bacteria in nature do NOT live as isolated single cells. They live in BIOFILMS — communities attached to surfaces, embedded in a shared protective matrix of polysaccharides + proteins + DNA. Dental plaque is a biofilm. Hospital catheter infections are biofilms. The pink slime in your shower drain is a biofilm. The slippery rocks in a stream are biofilms.'
               ),
               biofilmSvg(),
-              h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
+              h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                  h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, 'Cell density'),
+                  h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Cell density'),
                   h('span', { style: { fontSize: 13, color: active ? '#86efac' : '#fbbf24', fontWeight: 800 } }, density + ' cells/area · ' + pctOfThreshold.toFixed(0) + '% of quorum')
                 ),
                 h('input', { type: 'range', min: 5, max: 200, step: 5, value: density,
@@ -3052,12 +3052,12 @@
 
           sectionCard('📡 Quorum sensing — bacterial chemical communication',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Each bacterium constantly releases small "autoinducer" molecules into its surroundings. When the local concentration of these molecules crosses a threshold (= many bacteria nearby), gene expression changes. Behaviors that don\'t make sense at low density (biofilm formation, virulence, light production, sporulation) only activate when there are enough cells around to do them collectively.'
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 6 } }, '4 examples of quorum sensing in action:'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.75 } },
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, 'Vibrio fischeri (bioluminescence): '), 'Lives in the light organ of the Hawaiian bobtail squid. Below quorum, no light (wastes energy). At high density inside the squid, the bacteria glow — providing the squid with counter-illumination camouflage. Foundational discovery of quorum sensing (Nealson + Hastings 1970s).'),
                   h('li', null, h('strong', null, 'Pseudomonas aeruginosa (virulence): '), 'A bacterium that infects cystic fibrosis lungs + burn wounds + immunocompromised patients. Stays "stealthy" at low density; releases tissue-damaging toxins only after biofilm + quorum. Disrupting quorum signaling is an active drug-development strategy.'),
                   h('li', null, h('strong', null, 'Streptococcus mutans (dental plaque): '), 'Quorum sensing triggers biofilm formation + acid production. The acid demineralizes tooth enamel → cavities. Brushing disrupts the biofilm; fluoride raises remineralization threshold.'),
@@ -3073,7 +3073,7 @@
           ),
 
           sectionCard('💉 The medical reality of biofilms',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               'The CDC estimates that ',
               h('strong', { style: { color: '#fca5a5' } }, '65-80% of all human bacterial infections involve biofilms'),
               '. Common sites: catheters (urinary, central venous), prosthetic joints + heart valves, contact lenses, lungs of people with cystic fibrosis, periodontitis (gum disease). Successful treatment often means removing the infected device + a long antibiotic course. Research is active on enzymatic biofilm disruptors, quorum-sensing inhibitors, phage therapy, and engineered surface coatings that resist biofilm formation.'
@@ -3130,7 +3130,7 @@
           var content;
           if (topic === 'cells') {
             content = h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 'Every white blood cell does a specific job. About 1% of your blood by volume is white blood cells; you have ~30 billion of them at any moment, and bone marrow produces hundreds of billions per day.'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
@@ -3144,29 +3144,29 @@
                   { name: 'Cytotoxic / Killer T cells (CD8+)', arm: 'adaptive', role: 'Kill infected cells. Each recognizes one antigen + MHC class I combination. Critical for clearing viral + cancerous cells.', color: EMERALD },
                   { name: 'Regulatory T cells (Tregs)', arm: 'adaptive', role: 'Brakes on the immune response. Stop responses to self-antigens (preventing autoimmunity). Defective Tregs are implicated in many autoimmune diseases.', color: EMERALD }
                 ].map(function(c, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + c.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + c.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
-                      h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#e2e8f0' } }, c.name),
+                      h('div', { style: { fontSize: 12.5, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, c.name),
                       h('div', { style: { fontSize: 9.5, color: c.color, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 } }, c.arm)
                     ),
-                    h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55 } }, c.role)
+                    h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, c.role)
                   );
                 })
               )
             );
           } else if (topic === 'ab') {
             content = h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 'Antibodies (immunoglobulins) are Y-shaped proteins made by B cells. Each has two identical "arms" (Fab regions) that bind a specific antigen, joined to a "stem" (Fc region) that signals other immune cells. About 10¹¹ different antibody specificities can be generated by your B cells through random rearrangement of antibody gene segments (V, D, J recombination — 1987 Nobel to Tonegawa).'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: '280px 1fr', gap: 12, alignItems: 'start' } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0a0e1a', border: '1px solid #334155' } }, antibodySvg()),
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)' } }, antibodySvg()),
                 h('div', null,
                   h('div', { style: { fontSize: 12.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 8 } }, 'The five antibody classes:'),
                   h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
                     h('thead', null, h('tr', null,
                       ['Class', 'Where', 'Job'].map(function(c, i) {
-                        return h('th', { key: i, style: { padding: 5, textAlign: 'left', borderBottom: '1px solid #334155', color: '#94a3b8', fontWeight: 800 } }, c);
+                        return h('th', { key: i, style: { padding: 5, textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800 } }, c);
                       })
                     )),
                     h('tbody', null,
@@ -3179,8 +3179,8 @@
                       ].map(function(r, i) {
                         return h('tr', { key: i, style: { background: i % 2 === 0 ? '#0f172a' : '#1e293b' } },
                           h('td', { style: { padding: 5, fontWeight: 700, color: '#6ee7b7' } }, r.c),
-                          h('td', { style: { padding: 5, color: '#e2e8f0' } }, r.w),
-                          h('td', { style: { padding: 5, color: '#cbd5e1' } }, r.j)
+                          h('td', { style: { padding: 5, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.w),
+                          h('td', { style: { padding: 5, color: 'var(--allo-stem-text, #cbd5e1)' } }, r.j)
                         );
                       })
                     )
@@ -3199,21 +3199,21 @@
             );
           } else if (topic === 'tcells') {
             content = h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 'T cells don\'t see pathogens directly. They see fragments of pathogens presented on the surface of other cells. The presenting molecule is called MHC (Major Histocompatibility Complex; also called HLA in humans). Two classes; two T cell types.'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #38bdf8' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 6 } }, 'MHC class I'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                     h('strong', null, 'Where: '), 'On almost every nucleated cell.', h('br'),
                     h('strong', null, 'Shows: '), 'Fragments of proteins made INSIDE that cell (so if a virus is replicating inside, viral proteins get shown).', h('br'),
                     h('strong', null, 'Detected by: '), 'CD8+ killer T cells. If they see a foreign peptide on MHC-I, they kill the cell.'
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #ec4899' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #ec4899' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 6 } }, 'MHC class II'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                     h('strong', null, 'Where: '), 'Mainly on professional antigen-presenting cells (dendritic cells, macrophages, B cells).', h('br'),
                     h('strong', null, 'Shows: '), 'Fragments of proteins INGESTED from the environment (bacteria, dead cells, debris).', h('br'),
                     h('strong', null, 'Detected by: '), 'CD4+ helper T cells. If they see a foreign peptide on MHC-II, they activate B cells + other immune responses.'
@@ -3231,12 +3231,12 @@
             );
           } else { // memory
             content = h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 'How does the immune system remember? Through CLONAL SELECTION — the central insight of modern immunology, proposed by Burnet in 1957 and proved over the next two decades.'
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
                 h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, 'Clonal selection in 4 steps:'),
-                h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.75 } },
+                h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, 'Diversity: '), 'Before any infection, your body has B cells + T cells with ~10¹¹ different antigen receptors. Each lymphocyte makes ONE specificity, generated randomly through V(D)J recombination. Most of those random specificities will never encounter their target.'),
                   h('li', null, h('strong', null, 'Selection: '), 'When a pathogen enters, only the lymphocytes whose receptors happen to fit react. They get activated. The other 99.99...% sit out the infection.'),
                   h('li', null, h('strong', null, 'Expansion (clonal): '), 'The few activated lymphocytes divide rapidly — generating thousands or millions of identical "clones," all making the same pathogen-fitting receptor. Effector cells (plasma cells making antibodies, cytotoxic T cells killing infected cells) clear the infection.'),
@@ -3272,23 +3272,23 @@
           sectionCard('Two arms of the immune system',
             h('div', null,
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, 'Innate immunity'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'The fast, general defense. Skin, mucus, stomach acid, macrophages, neutrophils, natural killer cells. Acts within minutes to hours. Same response to any pathogen — no specific memory.')
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, 'The fast, general defense. Skin, mucus, stomach acid, macrophages, neutrophils, natural killer cells. Acts within minutes to hours. Same response to any pathogen — no specific memory.')
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid ' + EMERALD } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + EMERALD } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, 'Adaptive immunity'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'The slow, specific defense. B cells (make antibodies) and T cells (kill infected cells + coordinate). Takes days the first time, but creates MEMORY cells that respond in hours on re-exposure. The basis of vaccination.')
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, 'The slow, specific defense. B cells (make antibodies) and T cells (kill infected cells + coordinate). Takes days the first time, but creates MEMORY cells that respond in hours on re-exposure. The basis of vaccination.')
                 )
               )
             )
           ),
           sectionCard('How vaccines work',
             h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'A vaccine shows your immune system a safe preview of a pathogen so it can build memory cells WITHOUT you having to get sick from the real thing. When the real pathogen arrives, your immune system recognizes it instantly and responds in hours instead of days.'
               ),
-              h('p', { style: { margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+              h('p', { style: { margin: 0, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                 'Vaccines do NOT treat existing infection. They prevent infection (or prevent severe disease). The "safe preview" can be: a killed pathogen (flu shot), a weakened live pathogen (MMR), a protein fragment (hepatitis B), or instructions for your cells to make a viral protein themselves (mRNA vaccines).'
               )
             )
@@ -3328,7 +3328,7 @@
               ];
               var sel = STEPS.find(function(s) { return s.id === d.selectedCarTStep; }) || STEPS[0];
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'CAR-T therapy is a "living drug" — your own T cells genetically engineered to recognize + destroy cancer. The first approval (Kymriah, 2017, for acute lymphoblastic leukemia) brought ~80% remission rates in children who had relapsed after every other treatment failed. The technology was developed primarily at the University of Pennsylvania (Carl June + colleagues) starting in the early 2010s.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3340,15 +3340,15 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What happens'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.what)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b' } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Detail'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.detail)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.detail)
                   )
                 ),
 
@@ -3406,7 +3406,7 @@
               var selIdx = HSENS.findIndex(function(t, i) { return selT === t; });
 
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'The immune system is constantly making decisions: friend or foe, hurt or help. When it gets those decisions wrong, the result is autoimmunity (attacking self) or allergy (overreacting to harmless triggers). Coombs + Gell classified these errors into four types in 1963; the classification is still used today.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3419,23 +3419,23 @@
                     );
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selT.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selT.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: selT.color, marginBottom: 8 } }, selT.type),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How common'),
-                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } }, selT.who)
+                    h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.who)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Mechanism'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, selT.mech)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.mech)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Examples'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, selT.examples)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.examples)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Treatment approach'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, selT.treat)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.treat)
                   )
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
@@ -3452,12 +3452,12 @@
           ),
 
           sectionCard('Why some kids cannot be vaccinated, and why herd immunity matters',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
               'Some children cannot be vaccinated: too young, immunocompromised (from chemo, transplant, certain genetic conditions), severe allergic reactions to specific vaccines. They depend on the people around them being vaccinated — pathogens cannot spread through a vaccinated population. This is herd immunity. The threshold varies by pathogen: measles needs ~95% vaccination, polio ~80-85%. When vaccination rates drop, outbreaks return.'
             )
           ),
           sectionCard('Vaccine timeline (US)',
-            h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
               h('strong', null, '1796: '), 'Edward Jenner develops smallpox vaccination from cowpox.', h('br'),
               h('strong', null, '1885: '), 'Louis Pasteur develops rabies vaccine.', h('br'),
               h('strong', null, '1955: '), 'Salk\'s killed-virus polio vaccine licensed.', h('br'),
@@ -3470,7 +3470,7 @@
 
           sectionCard('💉 CDC childhood + adolescent vaccine schedule (US)',
             h('div', null,
-              h('p', { style: { margin: '0 0 12px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 'The standard schedule for children + teens in the US. Each row is one vaccine; each column is an age window. Dots mark when each dose is recommended. The schedule is updated annually by the CDC + AAP based on current evidence.'
               ),
               h('div', { style: { overflowX: 'auto' } },
@@ -3506,8 +3506,8 @@
                     h('tbody', null,
                       vaccines.map(function(v, i) {
                         return h('tr', { key: v.name, style: { background: i % 2 === 0 ? '#0f172a' : '#1e293b' } },
-                          h('td', { style: { padding: 6, fontWeight: 700, color: '#e2e8f0' } }, v.name),
-                          h('td', { style: { padding: 6, color: '#cbd5e1', fontSize: 10.5 } }, v.dis),
+                          h('td', { style: { padding: 6, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, v.name),
+                          h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10.5 } }, v.dis),
                           v.schedule.map(function(s, ai) {
                             var bg = s === 1 ? EMERALD : s === 2 ? '#a78bfa' : 'transparent';
                             var content = s === 1 ? '●' : s === 2 ? '○' : '';
@@ -3519,7 +3519,7 @@
                   );
                 })()
               ),
-              h('div', { style: { marginTop: 8, fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } },
+              h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6 } },
                 h('span', { style: { color: '#6ee7b7', fontWeight: 800 } }, '●'), ' = standard dose · ',
                 h('span', { style: { color: '#c4b5fd', fontWeight: 800 } }, '○'), ' = recommended by shared decision / risk-based'
               ),
@@ -3532,7 +3532,7 @@
                 h('strong', null, 'Disease coverage thresholds (herd immunity): '),
                 'Measles needs ~95% population vaccination. Pertussis, ~92%. Polio, ~80-85%. Varicella, ~85-90%. When coverage drops below the threshold, outbreaks return — as Maine + neighboring New Hampshire have seen with pertussis. The schedule reflects what protects both the individual + the community.'
               ),
-              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 'Schedule simplified for education. The full CDC immunization schedule includes catch-up provisions, conditions for delayed doses, accelerated schedules, and contraindications. Always reference the current CDC schedule (cdc.gov/vaccines/schedules) or consult a clinician. Updated annually.'
               )
             ),
@@ -3579,7 +3579,7 @@
               var sel = d.selectedMab || 'overview';
               var topic = MAB_TOPICS.find(function(t) { return t.id === sel; }) || MAB_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'Monoclonal antibodies are now the dominant drug class by sales + one of the most active areas of biomedical research. They use the immune system\'s own protein technology to treat cancer, autoimmune disease, asthma, COVID, organ rejection, + many other conditions. The technology connects directly to the immune-system biology in the rest of this tab — but turned into precision medicine that is among the most expensive in healthcare.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3594,8 +3594,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -3648,7 +3648,7 @@
               var sel = d.selectedMrna || 'overview';
               var topic = MRNA_TOPICS.find(function(t) { return t.id === sel; }) || MRNA_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'mRNA vaccines went from never-before-used-in-humans to billions of doses administered in under three years. The technology was decades in the making — and almost did not happen because the scientific establishment dismissed it for years. Understanding mRNA vaccines means understanding the biology, the engineering, the history of how it was developed, and the social context in which it was deployed.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3663,8 +3663,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#f9a8d4', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -3717,7 +3717,7 @@
               var sel = d.selectedHH || 'pattern';
               var topic = HH_TOPICS.find(function(t) { return t.id === sel; }) || HH_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'Asthma, eczema, peanut allergy, type 1 diabetes, inflammatory bowel disease — all have risen sharply in wealthy countries over the past 50-100 years. Genetics have not changed; something in our environment has. The "hygiene hypothesis" + its refinements suggest the answer involves disruption of early-life microbial exposure. School psychologists + nurses + counselors regularly meet children + families navigating these conditions; understanding the science supports better conversations.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3732,8 +3732,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -3752,7 +3752,7 @@
       function renderFerment() {
         var selected = FERMENTS.find(function(f) { return f.id === d.selectedFerment; }) || FERMENTS[0];
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Fermentation is microbiology you can taste. Every culture in the world has fermented food. The microbes are doing the cooking; you set the conditions.'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
@@ -3760,23 +3760,23 @@
               var active = d.selectedFerment === f.id;
               return h('button', { key: f.id,
                 onClick: function() { upd({ selectedFerment: f.id }); },
-                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
+                style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 2 } }, f.name),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, f.cultures)
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, f.cultures)
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 10, fontStyle: 'italic' } }, 'Cultures: ' + selected.cultures),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid ' + EMERALD, marginBottom: 8 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + EMERALD, marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.how)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.how)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The story'),
-              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.story)
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.story)
             )
           )
         );
@@ -3786,7 +3786,7 @@
       function renderCases() {
         var selected = CASES.find(function(c) { return c.id === d.selectedCase; }) || CASES[0];
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Microbiology has changed human history more than any technology. These five cases are turning points.'
           ),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
@@ -3801,7 +3801,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + EMERALD } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + EMERALD } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.icon + ' ' + selected.name + ' (' + selected.year + ')'),
             infoBlock('What happened', selected.what, '#94a3b8'),
             infoBlock('Why it mattered', selected.why, EMERALD),
@@ -3833,7 +3833,7 @@
               ];
               var sel = PILLARS.find(function(p) { return p.id === d.selectedOneHealth; }) || PILLARS[0];
               return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   'One Health is the WHO/FAO/WOAH framework recognizing that human health, animal health, and environmental health are inseparable. Most emerging infectious diseases (COVID, HIV, Ebola, Zika, MERS, SARS, Lyme, West Nile) come from animals + are amplified by environmental change. You cannot prepare for the next pandemic by focusing only on human medicine.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3845,15 +3845,15 @@
                     }, p.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What it covers'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.what)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b' } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Real-world example'),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sel.example)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.example)
                   )
                 ),
 
@@ -3917,7 +3917,7 @@
               var sel = d.selectedForensics || 'what';
               var topic = FOR_TOPICS.find(function(t) { return t.id === sel; }) || FOR_TOPICS[0];
               return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
                   'When a pathogen kills people, microbial forensics asks: where did it come from? The discipline traces foodborne-outbreak sources, hospital-acquired infections, environmental contamination, and (rarely + consequentially) deliberate attacks. The 2001 anthrax letters launched the field; foodborne-outbreak investigations + COVID origins debates have shaped its modern practice. The science is real, the political stakes are sometimes enormous, and the limits of attribution from genome data are real + worth understanding.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
@@ -3932,8 +3932,8 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.35)' } },
                   h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fca5a5', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                  h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
@@ -3947,9 +3947,9 @@
           )
         );
         function infoBlock(title, body, color) {
-          return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid ' + color, marginTop: 8 } },
+          return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + color, marginTop: 8 } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, title),
-            h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, body)
+            h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, body)
           );
         }
       }
@@ -3975,19 +3975,19 @@
           var correct = d.quizCorrect || 0;
           var pct = Math.round(correct / QUIZ_QUESTIONS.length * 100);
           return h('div', { style: { padding: 16 } },
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center', marginBottom: 16 } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', textAlign: 'center', marginBottom: 16 } },
               h('div', { style: { fontSize: 36, marginBottom: 4 } }, pct >= 80 ? '🧬' : pct >= 60 ? '🦠' : '🔬'),
               h('h2', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 22 } }, correct + ' / ' + QUIZ_QUESTIONS.length),
-              h('div', { style: { fontSize: 14, color: '#94a3b8' } }, pct + '%')
+              h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, pct + '%')
             ),
             QUIZ_QUESTIONS.map(function(q, i) {
               var got = answers[i] === q.answer;
-              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid ' + (got ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'), borderLeft: '3px solid ' + (got ? '#22c55e' : '#ef4444'), marginBottom: 10 } },
+              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid ' + (got ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'), borderLeft: '3px solid ' + (got ? '#22c55e' : '#ef4444'), marginBottom: 10 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: got ? '#86efac' : '#fca5a5', marginBottom: 4 } }, (got ? '✓ ' : '✗ ') + 'Q' + (i + 1)),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 6 } }, q.q),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
-                !got ? h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Your answer: ', q.choices[answers[i] != null ? answers[i] : 0]) : null,
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
+                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, q.q),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
+                !got ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Your answer: ', q.choices[answers[i] != null ? answers[i] : 0]) : null,
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
               );
             }),
             h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: EMERALD, color: '#fff', fontWeight: 700, cursor: 'pointer' } }, 'Retake quiz')
@@ -3995,15 +3995,15 @@
         }
         var allAnswered = QUIZ_QUESTIONS.every(function(_, i) { return answers[i] != null; });
         return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions on bacteria, viruses, vaccines, antibiotic resistance, microbiome, and history.'),
+          h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions on bacteria, viruses, vaccines, antibiotic resistance, microbiome, and history.'),
           QUIZ_QUESTIONS.map(function(q, i) {
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#6ee7b7' } }, 'Q' + (i + 1) + '. '), q.q),
+            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#6ee7b7' } }, 'Q' + (i + 1) + '. '), q.q),
               q.choices.map(function(c, ci) {
                 var picked = answers[i] === ci;
                 return h('button', { key: ci,
                   onClick: function() { select(i, ci); },
-                  style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(16,185,129,0.20)' : '#0f172a', border: '1px solid ' + (picked ? EMERALD : '#334155'), color: '#e2e8f0', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
+                  style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(16,185,129,0.20)' : '#0f172a', border: '1px solid ' + (picked ? EMERALD : '#334155'), color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
                 }, c);
               })
             );
@@ -4035,7 +4035,7 @@
           h('div', { id: 'micro-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Microbiology Reference'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4')
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4')
             ),
 
             h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },
@@ -4051,7 +4051,7 @@
                 h('li', null, h('strong', null, 'BSL-3: '), 'Serious airborne pathogens. M. tuberculosis, SARS-CoV-2 (in labs), West Nile. Negative pressure rooms, respirators.'),
                 h('li', null, h('strong', null, 'BSL-4: '), 'Lethal, no vaccine. Ebola, Marburg, Lassa. Full positive-pressure suits, air locks, only a few labs in the world.')
               ),
-              h('div', { style: { fontSize: 11, color: '#475569', fontStyle: 'italic', marginTop: 4 } }, 'School labs operate at BSL-1. Anything else is for trained professional labs.')
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', marginTop: 4 } }, 'School labs operate at BSL-1. Anything else is for trained professional labs.')
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
@@ -4059,16 +4059,16 @@
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
                 h('thead', null, h('tr', null,
                   ['Microbe', 'Type', 'Where', 'Role'].map(function(c, i) {
-                    return h('th', { key: i, style: { padding: 5, textAlign: 'left', background: '#f1f5f9', border: '1px solid #cbd5e1', fontWeight: 800 } }, c);
+                    return h('th', { key: i, style: { padding: 5, textAlign: 'left', background: '#f1f5f9', border: '1px solid var(--allo-stem-border, #cbd5e1)', fontWeight: 800 } }, c);
                   })
                 )),
                 h('tbody', null,
                   BACTERIA.concat(VIRUSES.map(function(v) { return { name: v.name, shape: '(virus)', where: v.hosts, role: 'pathogen' }; })).map(function(m, i) {
                     return h('tr', { key: i },
-                      h('td', { style: { padding: 5, border: '1px solid #cbd5e1', fontWeight: 700 } }, m.name),
-                      h('td', { style: { padding: 5, border: '1px solid #cbd5e1' } }, m.shape || '—'),
-                      h('td', { style: { padding: 5, border: '1px solid #cbd5e1' } }, (m.where || '').substring(0, 80)),
-                      h('td', { style: { padding: 5, border: '1px solid #cbd5e1' } }, m.role)
+                      h('td', { style: { padding: 5, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontWeight: 700 } }, m.name),
+                      h('td', { style: { padding: 5, border: '1px solid var(--allo-stem-border, #cbd5e1)' } }, m.shape || '—'),
+                      h('td', { style: { padding: 5, border: '1px solid var(--allo-stem-border, #cbd5e1)' } }, (m.where || '').substring(0, 80)),
+                      h('td', { style: { padding: 5, border: '1px solid var(--allo-stem-border, #cbd5e1)' } }, m.role)
                     );
                   })
                 )
@@ -4113,7 +4113,7 @@
               )
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.5 } },
               'Sources: CDC (cdc.gov/antibiotic-use) · NIH Human Microbiome Project (commonfund.nih.gov/hmp) · Madigan et al., Brock Biology of Microorganisms (15th ed.) · Mukherjee, S. (2022), The Song of the Cell · Yong, E. (2016), I Contain Multitudes. Printed from AlloFlow STEM Lab.'
             )
           )
@@ -4141,12 +4141,12 @@
         default:           body = renderHome();
       }
 
-      return h('div', { className: 'selh-microbiology', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: '#e2e8f0' } },
-        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', background: 'linear-gradient(135deg, #064e3b, #0f172a)', display: 'flex', alignItems: 'center', gap: 12 } },
+      return h('div', { className: 'selh-microbiology', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
+        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, #0f172a))', display: 'flex', alignItems: 'center', gap: 12 } },
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🦠'),
           h('div', null,
             h('h2', { style: { margin: 0, color: '#6ee7b7', fontSize: 20, fontWeight: 900 } }, 'Microbiology Lab'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 2 } }, 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4')
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4')
           )
         ),
         tabBar,

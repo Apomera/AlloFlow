@@ -2752,7 +2752,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.textAlign = 'right';
                 var stageLabels = [
-                  {name:'Awake',y:0.05,color:'#94a3b8'},
+                  {name:'Awake',y:0.05,color: 'var(--allo-stem-text-soft, #94a3b8)'},
                   {name:'REM',y:0.15,color:'#a855f7'},
                   {name:'N1',y:0.25,color:'#38bdf8'},
                   {name:'N2',y:0.50,color:'#3b82f6'},
@@ -3538,7 +3538,7 @@ var d = labToolData.brainAtlas || {};
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -3585,7 +3585,7 @@ var d = labToolData.brainAtlas || {};
                 { id: 'hippocampus', label: 'Hippocampus',     color: '#ec4899', icon: '📚', def: 'Memory formation + consolidation; spatial memory (London-taxi-driver studies). Bilateral damage = anterograde amnesia (HM / Henry Molaison case).' },
                 { id: 'amygdala',    label: 'Amygdala',        color: '#dc2626', icon: '⚡', def: 'Emotion processing, fear recognition + conditioning, threat detection. Damage = Klüver-Bucy / fear-blindness; hyperactivity = PTSD, anxiety disorders.' },
                 { id: 'cerebellum',  label: 'Cerebellum',      color: '#0891b2', icon: '🦴', def: 'Motor coordination, balance, motor learning, timing. Damage = ipsilateral ataxia, dysmetria, intention tremor, scanning speech (NOT contralateral like cerebrum).' },
-                { id: 'brainstem',   label: 'Brainstem',       color: '#64748b', icon: '🌳', def: 'Cranial nerve nuclei (III-XII), reticular activating system (consciousness), vital centers (cardiac, respiratory). Damage = coma, cranial palsies, vital instability.' }
+                { id: 'brainstem',   label: 'Brainstem',       color: 'var(--allo-stem-text-soft, #64748b)', icon: '🌳', def: 'Cranial nerve nuclei (III-XII), reticular activating system (consciousness), vital centers (cardiac, respiratory). Damage = coma, cranial palsies, vital instability.' }
               ];
               var FM_V = [
                 { id: 1, scenario: 'Patient produces telegraphic, non-fluent speech ("water... want...") with intact comprehension. Aware of the deficit and frustrated by it. Right hemiparesis on exam.', correct: 'frontal',
@@ -3655,7 +3655,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("span", { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
                     React.createElement("div", null,
                       React.createElement("div", { style: { color: '#6d28d9', fontSize: 14, fontWeight: 900 } }, 'Function Match'),
-                      React.createElement("div", { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic' } }, '12 function / clinical-syndrome vignettes — pick the brain region.')
+                      React.createElement("div", { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, fontStyle: 'italic' } }, '12 function / clinical-syndrome vignettes — pick the brain region.')
                     )
                   ),
                   React.createElement("button", {
@@ -3665,7 +3665,7 @@ var d = labToolData.brainAtlas || {};
                 ),
                 fmOpen && (fmIdx < 0
                   ? React.createElement("div", { style: { textAlign: 'center', padding: '12px 0' } },
-                      React.createElement("p", { style: { color: '#475569', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
+                      React.createElement("p", { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
                         'For each clinical vignette, pick the brain region most likely involved. Coaching cites the canonical case (HM, Phineas Gage, etc.) and what distinguishes the correct region from look-alikes.'),
                       React.createElement("button", {
                         onClick: startFm,
@@ -3680,7 +3680,7 @@ var d = labToolData.brainAtlas || {};
                       var correctReg = FM_REGIONS.filter(function(r) { return r.id === v.correct; })[0];
                       var pickedReg = fmPick ? FM_REGIONS.filter(function(r) { return r.id === fmPick; })[0] : null;
                       return React.createElement("div", { style: { marginTop: 10 } },
-                        React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: '#475569', marginBottom: 8 } },
+                        React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', marginBottom: 8 } },
                           React.createElement("span", null, 'Vignette ', React.createElement("strong", { style: { color: '#1e293b' } }, fmShown.length)),
                           React.createElement("span", null, 'Score ', React.createElement("strong", { style: { color: '#16a34a' } }, fmScore + ' / ' + fmRounds)),
                           fmRounds > 0 && React.createElement("span", null, 'Accuracy ', React.createElement("strong", { style: { color: '#0ea5e9' } }, pct + '%')),
@@ -3715,7 +3715,7 @@ var d = labToolData.brainAtlas || {};
                                 React.createElement('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, r.icon),
                                 React.createElement('span', { style: { color: fmAns ? color : r.color, fontSize: 12, fontWeight: 800 } }, r.label)
                               ),
-                              React.createElement('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: fmAns ? color : '#475569' } }, r.def)
+                              React.createElement('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: fmAns ? color: 'var(--allo-stem-text-soft, #475569)' } }, r.def)
                             );
                           })
                         ),

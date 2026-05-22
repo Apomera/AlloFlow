@@ -505,9 +505,6 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         }
         setPersistedLessonDNA(lessonDNA);
         addToast(t('process.pack_complete'), "success");
-        setTimeout(() => {
-             addToast(t('toasts.support_kofi'), "info");
-        }, 3500);
     } catch (e) {
         warnLog("Full pack generation interrupted", e);
         setError(t('errors.default_desc'));

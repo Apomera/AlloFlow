@@ -591,7 +591,7 @@ var d = labToolData || {};
             },
             {
               category: 'Mental health',
-              icon: '💭', color: '#94a3b8',
+              icon: '💭', color: 'var(--allo-stem-text-soft, #94a3b8)',
               examples: 'Anxiety flare · low mood episode · recent therapy session that opened something · trauma anniversary · sensory overload accumulating across days · burnout from masking',
               note: 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.'
             }
@@ -645,7 +645,7 @@ var d = labToolData || {};
             {
               name: 'Mel Baggs (1980–2020)',
               role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video "In My Language" was the first widely-shared first-person account of nonspeaking autistic experience — viewed millions of times, taught in disability-studies courses since.',
-              icon: '✊', color: '#94a3b8',
+              icon: '✊', color: 'var(--allo-stem-text-soft, #94a3b8)',
               quote: 'My language is not about designing words or even visual symbols for people to interpret. It is about being in a constant conversation with every aspect of my environment.',
               source: 'In My Language (2007, YouTube); Ballastexistenz blog; CNN interview 2007'
             }
@@ -692,7 +692,7 @@ var d = labToolData || {};
             },
             {
               name: 'What ABA cannot do alone',
-              icon: '🧩', color: '#94a3b8',
+              icon: '🧩', color: 'var(--allo-stem-text-soft, #94a3b8)',
               desc: 'Operant conditioning is one tool. It does not replace mental-health treatment for trauma or anxiety. It does not address the sensory environment a building creates. It does not substitute for autistic community and identity. Good practice integrates ABA with OT (sensory), SLP (communication), mental health (regulation), and — crucially — autistic adult mentorship that the child can grow into.',
               source: 'Autism Self Advocacy Network "Real Communities" framework; OT/SLP integrative-care literature'
             }
@@ -3151,9 +3151,9 @@ var d = labToolData || {};
                   'aria-label': 'Back to STEM Lab',
                   style: {
                     background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid #334155',
+                    border: '1px solid var(--allo-stem-border, #334155)',
                     borderRadius: 8, padding: '6px 10px',
-                    cursor: 'pointer', color: '#cbd5e1', fontSize: 14, flexShrink: 0
+                    cursor: 'pointer', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, flexShrink: 0
                   }
                 }, '\u2190'),
                 // Circular accent hero badge \u2014 56px hero size matches
@@ -3181,8 +3181,8 @@ var d = labToolData || {};
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
                   ),
-                  React.createElement("div", { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.5 } },
-                    currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: '#94a3b8', fontStyle: 'italic' } }, currentLevel.concept)
+                  React.createElement("div", { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, lineHeight: 1.5 } },
+                    currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, currentLevel.concept)
                   )
                 )
               ),
@@ -3585,7 +3585,7 @@ var d = labToolData || {};
 
               React.createElement("span", {
 
-                style: { position: 'absolute', right: 6, top: -1, fontSize: 8, fontWeight: 700, color: '#e2e8f0', lineHeight: '12px' }
+                style: { position: 'absolute', right: 6, top: -1, fontSize: 8, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: '12px' }
 
               }, blLevelScore + '/' + currentLevel.goal)
 
@@ -3873,7 +3873,7 @@ var d = labToolData || {};
                 }
               }),
               React.createElement("span", {
-                style: { position: 'absolute', right: 8, top: -1, fontSize: 9, color: '#94a3b8', lineHeight: '12px' }
+                style: { position: 'absolute', right: 8, top: -1, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: '12px' }
               }, '\uD83D\uDC2D \u2192 Lever proximity')
             ),
 
@@ -4133,7 +4133,7 @@ var d = labToolData || {};
 
                 React.createElement("span", {
 
-                  style: { position: 'absolute', left: '50%', top: 1, transform: 'translateX(-50%)', fontSize: 11, fontWeight: 700, color: '#e2e8f0' }
+                  style: { position: 'absolute', left: '50%', top: 1, transform: 'translateX(-50%)', fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' }
 
                 }, blDroTimer + ' / ' + blDroInterval + ' ticks')
 
@@ -4203,7 +4203,7 @@ var d = labToolData || {};
 
                 React.createElement("div", { className: "flex justify-between mb-1" },
 
-                  React.createElement("span", { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, 'Association Strength'),
+                  React.createElement("span", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Association Strength'),
 
                   React.createElement("span", { style: { fontSize: 11, color: blAssocStrength > 60 ? '#fda4af' : '#94a3b8', fontWeight: 700 } }, blAssocStrength + '%')
 
@@ -4800,14 +4800,14 @@ var d = labToolData || {};
                 }, '🏫'),
                 React.createElement("div", null,
                   React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', lineHeight: 1.2 } }, "Continue in: School Behavior Toolkit"),
-                  React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' } }, "Applied K-12 practice — what school psychs and educators DO with the science")
+                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, "Applied K-12 practice — what school psychs and educators DO with the science")
                 )
               ),
-              React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
                 "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. ",
                 React.createElement("b", null, "We deliberately built that content as a separate tool, not here."),
                 " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33."),
-              React.createElement("div", { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 "Open STEM Lab → Behavioral Science → ",
                 React.createElement("b", { style: { color: '#5eead4' } }, '"🏫 School Behavior Toolkit."'))
             ),
@@ -4854,8 +4854,8 @@ var d = labToolData || {};
                         }, b.icon),
                         React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: b.color } }, b.name)
                       ),
-                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, b.desc),
-                      React.createElement("div", { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic', letterSpacing: '0.02em' } },
+                      React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 6 } }, b.desc),
+                      React.createElement("div", { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', letterSpacing: '0.02em' } },
                         '📚 ', b.source)
                     );
                   })
@@ -4865,7 +4865,7 @@ var d = labToolData || {};
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(96,165,250,0.06)',
                     border: '1px solid rgba(96,165,250,0.18)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
                   }
                 },
                   "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want.")
@@ -4902,14 +4902,14 @@ var d = labToolData || {};
                 }, '🎙️'),
                 React.createElement("div", null,
                   React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4', lineHeight: 1.2 } }, "Continue in: Disability Voices (SEL Hub)"),
-                  React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' } }, "Named autistic and disabled advocates, not behavioral subjects")
+                  React.createElement("div", { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, fontStyle: 'italic' } }, "Named autistic and disabled advocates, not behavioral subjects")
                 )
               ),
-              React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
                 "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. ",
                 React.createElement("b", null, "We deliberately built that content in the SEL Hub, not here."),
                 " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list."),
-              React.createElement("div", { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+              React.createElement("div", { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 "Open SEL Hub → Identity & Care → ",
                 React.createElement("b", { style: { color: '#f9a8d4' } }, '"🎤 Disability Voices."'))
             ),
@@ -5192,7 +5192,7 @@ var d = labToolData || {};
                     )
                   ),
                   // SVG curve (the puzzle)
-                  React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
+                  React.createElement("div", { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
                     React.createElement("svg", {
                       viewBox: '0 0 ' + WIDTH + ' ' + HEIGHT,
                       width: '100%', height: HEIGHT,
@@ -5209,7 +5209,7 @@ var d = labToolData || {};
                       // The curve \u2014 color reveals only after answered
                       React.createElement('polyline', {
                         points: pointsScaled, fill: 'none',
-                        stroke: sleuthAnswered ? sch.color : '#cbd5e1',
+                        stroke: sleuthAnswered ? sch.color: 'var(--allo-stem-text, #cbd5e1)',
                         strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round'
                       })
                     )
@@ -5397,7 +5397,7 @@ var d = labToolData || {};
                     React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
                     fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
                   ),
-                  React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
+                  React.createElement("div", { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
                     React.createElement("div", { className: "text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1" }, 'Vignette ' + fnShown.length + ' of ' + FN_VIGNETTES.length),
                     React.createElement("p", { className: "text-[12px] text-slate-100 leading-relaxed", style: { margin: 0 } }, v.scenario)
                   ),

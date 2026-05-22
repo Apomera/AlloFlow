@@ -816,7 +816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ── Layer Transparency System ──
         var LAYER_DEFS = [
           { id: 'skin', icon: '\uD83E\uDDB4', name: 'Skin', color: '#f5e6d3', accent: '#c4aa94' },
-          { id: 'skeletal', icon: '\uD83E\uDDB4', name: 'Skeletal', color: '#e2e8f0', accent: '#94a3b8', systems: ['skeletal'] },
+          { id: 'skeletal', icon: '\uD83E\uDDB4', name: 'Skeletal', color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', systems: ['skeletal'] },
           { id: 'muscular', icon: '\uD83D\uDCAA', name: 'Muscular', color: '#fecaca', accent: '#dc2626', systems: ['muscular'] },
           { id: 'organs', icon: '\uD83E\uDEC1', name: 'Organs', color: '#d1fae5', accent: '#16a34a', systems: ['digestive', 'respiratory', 'endocrine', 'reproductive'] },
           { id: 'circulatory', icon: '\u2764\uFE0F', name: 'Circulatory', color: '#fee2e2', accent: '#ef4444', systems: ['circulatory'] },
@@ -4187,7 +4187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),

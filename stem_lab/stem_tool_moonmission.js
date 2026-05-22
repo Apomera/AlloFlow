@@ -2145,7 +2145,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           ),
           d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
-              h('canvas', {
+              d.webglError ? h('div', {
+                className: 'flex flex-col items-center justify-center p-6 text-center text-white',
+                style: { height: '100%', background: 'rgba(15, 23, 42, 0.8)' }
+              },
+                h('span', { style: { fontSize: '48px', marginBottom: '16px' } }, '⚠'),
+                h('h4', { className: 'text-lg font-bold text-red-400 mb-2' }, 'Moonwalk 3D Mode Unresolved'),
+                h('p', { className: 'text-xs text-slate-300 max-w-sm mb-6' }, 'WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.'),
+                h('button', {
+                  onClick: function() {
+                    upd('webglError', false);
+                  },
+                  className: 'px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg shadow-md transition-colors'
+                }, 'Retry 3D Mode')
+              ) : h('canvas', {
                 'data-eva-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.',
@@ -2159,7 +2172,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var scene = new THREE.Scene();
                     var camera = new THREE.PerspectiveCamera(70, W / H2, 0.1, 500);
                     camera.position.set(0, 1.8, 0); // astronaut eye height in 1/6 gravity suit
-                    var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+                    var renderer;
+                    try {
+                      renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+                    } catch (e) {
+                      console.error('[MoonMission EVA] WebGLRenderer creation failed:', e);
+                      setTimeout(function() {
+                        upd('webglError', true);
+                      }, 0);
+                      return;
+                    }
                     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                     renderer.setSize(W, H2);
                     renderer.setClearColor(0x000000);

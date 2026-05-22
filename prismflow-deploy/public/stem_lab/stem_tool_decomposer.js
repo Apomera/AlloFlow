@@ -501,7 +501,7 @@
             realUse: 'Costs about $7 billion/year in damage. Mars is red because of iron oxide on its surface!'
           },
           {
-            name: 'Carbon Dioxide', formula: 'CO\u2082', emoji: '\uD83D\uDCA8', color: '#94a3b8',
+            name: 'Carbon Dioxide', formula: 'CO\u2082', emoji: '\uD83D\uDCA8', color: 'var(--allo-stem-text-soft, #94a3b8)',
             desc: 'A greenhouse gas we exhale. Plants absorb it during photosynthesis.',
             elements: [
               { sym: 'C', name: 'Carbon', num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' },
@@ -1215,7 +1215,7 @@
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),
@@ -1541,7 +1541,7 @@
             // Scene selection (when no scene active)
             !activeScene ? h('div', null,
               // Scene selection hero banner
-              h('div', { className: 'relative rounded-2xl overflow-hidden mb-5', style: { background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, #0f172a 100%)', padding: '24px 20px' } },
+              h('div', { className: 'relative rounded-2xl overflow-hidden mb-5', style: { background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, var(--allo-stem-canvas, #0f172a) 100%)', padding: '24px 20px' } },
                 // Decorative floating molecule icons
                 h('div', { className: 'absolute inset-0 overflow-hidden pointer-events-none', style: { opacity: 0.08 } },
                   h('span', { style: { position: 'absolute', fontSize: 40, top: '10%', left: '5%' } }, '\u269B\uFE0F'),

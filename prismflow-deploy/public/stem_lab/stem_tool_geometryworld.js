@@ -1282,6 +1282,9 @@
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};
+      var webglErrState = React.useState(false);
+      var webglError = webglErrState[0];
+      var setWebglError = webglErrState[1];
       var upd = function (key, val) {
         if (typeof key === 'object') { ctx.updateMulti('geometryWorld', key); }
         else { ctx.update('geometryWorld', key, val); }
@@ -3986,6 +3989,7 @@
         } catch(e) {
           console.error('[GeometryWorld] WebGL init failed:', e.message);
           window[engineKey + '_failed'] = true;
+          setWebglError(true);
         }
       }
 
@@ -4060,12 +4064,12 @@
       // Mobile detection — friendly message for touch devices
       var isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || (window.innerWidth < 768 && 'ontouchstart' in window);
       if (isMobile && !d._mobileDismissed) {
-        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: '#94a3b8', background: 'linear-gradient(180deg, #0f172a 0%, #1e1b3a 100%)', padding: '24px', textAlign: 'center' } },
+        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'linear-gradient(180deg, var(--allo-stem-canvas, #0f172a) 0%, #1e1b3a 100%)', padding: '24px', textAlign: 'center' } },
           el('div', { style: { fontSize: '48px' } }, '\uD83D\uDCF1'),
-          el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#e2e8f0' } }, 'Desktop Recommended'),
-          el('div', { style: { fontSize: '13px', color: '#94a3b8', maxWidth: '320px', lineHeight: 1.6 } },
+          el('div', { style: { fontSize: '18px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Desktop Recommended'),
+          el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '320px', lineHeight: 1.6 } },
             'Geometry World uses a 3D engine with mouse + keyboard controls (WASD, pointer lock). For the best experience, open this on a laptop or desktop computer.'),
-          el('div', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '280px', lineHeight: 1.5 } },
+          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '280px', lineHeight: 1.5 } },
             'Touch controls are available! Swipe the right side to look, use the left joystick to move, and tap the action buttons to build, break, measure, and talk to NPCs.'),
           el('button', {
             onClick: function() { upd('_mobileDismissed', true); },
@@ -4073,7 +4077,7 @@
           }, 'Try Anyway \u2192'),
           el('button', {
             onClick: function() { upd('_mobileDismissed', true); },
-            style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', marginTop: '4px' }
+            style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', marginTop: '4px' }
           }, 'I\u2019m on a tablet with keyboard')
         );
       }
@@ -4090,21 +4094,21 @@
           '\uD83D\uDCA1 Tip: Try the Geometry Garden lesson for a relaxing exploration experience!'
         ];
         var tipIdx = Math.floor(Date.now() / 4000) % loadingTips.length;
-        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: '#94a3b8', background: 'linear-gradient(180deg, #0f172a 0%, #1e1b3a 100%)' } },
+        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'linear-gradient(180deg, var(--allo-stem-canvas, #0f172a) 0%, #1e1b3a 100%)' } },
           // Animated blocks
           el('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px' } },
             ['\uD83E\uDDF1', '\uD83D\uDC8E', '\uD83C\uDFC6', '\uD83E\uDDF1'].map(function(em, ei) {
               return el('span', { key: ei, style: { fontSize: '32px', animation: 'pulse 1.5s infinite', animationDelay: (ei * 0.2) + 's', opacity: 0.3 + (ei * 0.2) } }, em);
             })
           ),
-          el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.5px' } }, '\uD83C\uDF0D Geometry World'),
+          el('div', { style: { fontSize: '18px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', letterSpacing: '0.5px' } }, '\uD83C\uDF0D Geometry World'),
           el('div', { style: { fontSize: '13px', color: '#7c3aed', fontWeight: 600 } }, 'Loading 3D engine...'),
           // Progress bar animation
           el('div', { style: { width: '200px', height: '4px', background: 'rgba(100,116,139,0.2)', borderRadius: '4px', overflow: 'hidden' } },
             el('div', { style: { width: '60%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: '4px', animation: 'pulse 1.5s infinite' } })
           ),
           // Rotating tip
-          el('div', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '300px', textAlign: 'center', marginTop: '8px', lineHeight: 1.5 } }, loadingTips[tipIdx])
+          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '300px', textAlign: 'center', marginTop: '8px', lineHeight: 1.5 } }, loadingTips[tipIdx])
         );
       }
 
@@ -4364,10 +4368,10 @@
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
           el('span', { style: { fontWeight: 800, color: '#fff', fontSize: '14px' } }, 'Geometry World'),
-          el('span', { style: { fontSize: '11px', color: '#94a3b8', marginRight: 'auto' } }, currentLesson.title || ''),
+          el('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 'auto' } }, currentLesson.title || ''),
           // Score
           // Block counter
-          engine && el('span', { style: { fontSize: '11px', color: '#94a3b8', background: '#1e293b', padding: '2px 8px', borderRadius: '6px' } },
+          engine && el('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-panel, #1e293b)', padding: '2px 8px', borderRadius: '6px' } },
             '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
           ),
           // Score with completion indicator
@@ -4376,7 +4380,7 @@
           ),
           // Achievement badges earned
           Object.keys(earnedBadges).length > 0 && el('div', {
-            style: { display: 'flex', gap: '2px', alignItems: 'center', fontSize: '14px', background: '#1e293b', padding: '2px 6px', borderRadius: '6px', cursor: 'default' },
+            style: { display: 'flex', gap: '2px', alignItems: 'center', fontSize: '14px', background: 'var(--allo-stem-panel, #1e293b)', padding: '2px 6px', borderRadius: '6px', cursor: 'default' },
             title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ')
           },
             ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) {
@@ -4392,7 +4396,7 @@
           },
             el('span', { style: { fontSize: '28px' } }, lastBadgeNotification.icon),
             el('div', null,
-              el('div', { style: { fontSize: '12px', fontWeight: 800, color: '#e2e8f0' } }, '\uD83C\uDF89 Achievement Unlocked!'),
+              el('div', { style: { fontSize: '12px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, '\uD83C\uDF89 Achievement Unlocked!'),
               el('div', { style: { fontSize: '14px', fontWeight: 700, color: '#fbbf24' } }, lastBadgeNotification.name),
               el('div', { style: { fontSize: '11px', color: '#c4b5fd' } }, lastBadgeNotification.desc)
             )
@@ -4406,7 +4410,7 @@
                 ? 'Volume = ' + measureResult.formattedVolume + ' cubic units'
                 : 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.boundingVolume
             ),
-            el('div', { style: { fontSize: '10px', color: '#94a3b8' } },
+            el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               measureResult.count + ' blocks' + (measureResult.hasFractions
                 ? ' (' + Object.keys(measureResult.shapeCounts).map(function(s) {
                     var sd = BLOCK_SHAPES.find(function(bs) { return bs.id === s; });
@@ -4435,7 +4439,7 @@
               var lessonKey = ev.target.value;
               upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false });
             },
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
             el('optgroup', { label: 'Built-in Lessons' },
               el('option', { value: 'volumeExplorer' }, '\uD83D\uDCCF Volume Explorer'),
@@ -4462,7 +4466,7 @@
             value: homeLang,
             onChange: function(ev) { upd({ homeLang: ev.target.value, npcTranslations: {} }); },
             title: 'Student home language \u2014 NPCs will speak bilingually',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: homeLang !== 'en' ? '#fbbf24' : '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: homeLang !== 'en' ? '#fbbf24' : '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
             el('option', { value: 'en' }, '\uD83C\uDDFA\uD83C\uDDF8 English'),
             el('option', { value: 'es' }, '\uD83C\uDDEA\uD83C\uDDF8 Espa\u00f1ol'),
@@ -4477,7 +4481,7 @@
           // Help toggle
           el('button', {
             onClick: function() { upd('showHelp', !showHelp); },
-            style: { background: '#1e293b', border: 'none', color: '#94a3b8', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
           }, showHelp ? 'Hide Help' : '? Help'),
           // Sound mute toggle
           el('button', {
@@ -4493,7 +4497,7 @@
             },
             title: soundMuted ? 'Unmute sounds' : 'Mute all sounds',
             'aria-label': soundMuted ? 'Unmute sounds' : 'Mute all sounds',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: soundMuted ? '#ef4444' : '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: soundMuted ? '#ef4444' : '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, soundMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
           // Environment preset selector
           el('select', {
@@ -4506,7 +4510,7 @@
               if (eng) applyEnvPreset(eng, key);
             },
             title: 'Time of day / environment',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
             Object.keys(ENV_PRESETS).map(function(k) {
               return el('option', { key: k, value: k }, ENV_PRESETS[k].label);
@@ -4538,7 +4542,7 @@
               URL.revokeObjectURL(a.href);
               if (addToast) addToast('\uD83D\uDCBE World exported!', 'success');
             },
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCBE Save'),
           // 3D Print Export (STL)
           engine && el('button', {
@@ -4614,7 +4618,7 @@
               if (eng.logEvent) eng.logEvent('stl_export', { blocks: blockKeys.length, triangles: numTriangles });
             },
             title: 'Export structures as STL file for 3D printing',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83E\uDE78 3D Print'),
           // Screenshot capture
           engine && el('button', {
@@ -4640,7 +4644,7 @@
               }
             },
             title: 'Capture a screenshot of your world (saves to downloads)',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCF8 Photo'),
           // Print companion worksheet
           el('button', {
@@ -4653,7 +4657,7 @@
               if (eng && eng.logEvent) eng.logEvent('worksheet_print', { lesson: currentLesson.title });
             },
             title: 'Print companion worksheet for this lesson',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#f59e0b', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f59e0b', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDDA8\uFE0F Worksheet'),
           // Creator Mode toggle
           el('button', {
@@ -4695,7 +4699,7 @@
               input.click();
             },
             title: 'Import a world from JSON file',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCC2 Load'),
           // Research data export (session analytics as CSV)
           engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', {
@@ -4712,7 +4716,7 @@
               if (addToast) addToast('\uD83D\uDCCA Session data exported (' + eng.sessionLog.length + ' events)', 'success');
             },
             title: 'Export session analytics as CSV for research',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#22d3ee', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#22d3ee', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCCA Data'),
           // MTSS Progress Report export
           engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', {
@@ -4723,7 +4727,7 @@
               if (addToast) addToast('\uD83D\uDCCB MTSS Report: ' + report.accuracy + ' accuracy \u2192 ' + report.rtiTierSuggestion, 'success');
             },
             title: 'Export MTSS progress monitoring report (RTI tier classification, longitudinal data)',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCCB MTSS'),
           // ── Peer Worlds: Share button ──
           sessionCode && engine && el('button', {
@@ -4744,7 +4748,7 @@
               shareWorldToClass(worldData);
             },
             title: 'Share this world to the class library',
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83C\uDF10 Share'),
           // ── Peer Worlds: Browse class library ──
           sessionCode && el('button', {
@@ -4782,13 +4786,13 @@
               onChange: function(ev) { upd('aiPrompt', ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter') generateWorld(); },
               placeholder: 'Describe a lesson topic...',
-              style: { width: '150px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' }
+              style: { width: '150px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
             }),
             // Grade level selector
             el('select', {
               'aria-label': 'Target grade level', value: aiGradeLevel,
               onChange: function(ev) { upd('aiGradeLevel', ev.target.value); },
-              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 4px', color: '#94a3b8', fontSize: '10px' }
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
             },
               el('option', { value: '3' }, 'Gr 3'), el('option', { value: '4' }, 'Gr 4'),
               el('option', { value: '5' }, 'Gr 5'), el('option', { value: '6' }, 'Gr 6'),
@@ -4799,7 +4803,7 @@
               'aria-label': 'Generation depth: number of AI passes', value: String(aiPassCount),
               onChange: function(ev) { upd('aiPassCount', parseInt(ev.target.value)); },
               title: '1=Quick (1 call), 2=Refined (2 calls), 3=Full scaffolding (3 calls)',
-              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 4px', color: '#94a3b8', fontSize: '10px' }
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
             },
               el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
             ),
@@ -4832,7 +4836,7 @@
                 upd('aiPrompt', pool[Math.floor(Math.random() * pool.length)]);
               },
               disabled: aiGenerating, title: 'Random topic',
-              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
             }, '\uD83C\uDFB2'),
             // My Lessons library button
             el('button', {
@@ -4848,7 +4852,7 @@
               onChange: function(ev) { upd('aiRefinePrompt', ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter') refineLesson(); },
               placeholder: 'Refine: "Make it harder" / "Add more NPCs" / "Change theme to ocean"...',
-              style: { flex: 1, minWidth: '180px', background: '#1e293b', border: '1px solid #7c3aed33', borderRadius: '6px', padding: '4px 8px', color: '#e2e8f0', fontSize: '10px', fontFamily: 'inherit' }
+              style: { flex: 1, minWidth: '180px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #7c3aed33', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontFamily: 'inherit' }
             }),
             el('button', {
               onClick: refineLesson, disabled: !aiRefinePrompt.trim(),
@@ -4857,7 +4861,7 @@
             el('button', {
               onClick: function() { upd('showLessonEditor', !showLessonEditor); },
               title: 'Edit the raw lesson JSON manually',
-              style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
+              style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
             }, '\u270F\uFE0F JSON')
           )
         ),
@@ -4866,7 +4870,7 @@
         // Compact status card top-left below the toolbar. Students always see lesson title +
         // NPC progress + blocks placed without opening a menu.
         worldActive && openModals.length === 0 && el('div', {
-          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: '#e2e8f0', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'none' },
+          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'none' },
           role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + (currentLesson.title || 'Lesson') + ', ' + Object.keys(answeredNpcs).length + ' of ' + totalQ + ' NPCs answered, ' + ((engine && engine.blocksPlaced) || 0) + ' blocks placed'
         },
           el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
@@ -5049,13 +5053,13 @@
             openModals.length > 1 && el('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: 'rgba(0,0,0,0.25)', fontWeight: 700 } }, 'close all ' + openModals.length)
           ),
           // Keyboard hint (subtle)
-          el('div', { style: { color: '#94a3b8', fontSize: '9px', fontWeight: 600 } },
+          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', fontWeight: 600 } },
             openModals.length === 1 ? 'Esc also closes this' : 'Esc closes one · Shift+Esc closes all'
           )
         ),
 
         // Help overlay
-        showHelp && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.6, maxWidth: '240px' } },
+        showHelp && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
           el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
           el('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: '2px 8px', marginBottom: '10px' } },
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'WASD'), 'Move around',
@@ -5079,8 +5083,8 @@
             el('span', { style: { color: '#34d399', fontWeight: 600 } }, 'N'), 'Net unfolding (surface area)',
             el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'C'), 'Toggle coord SR announcements',
             el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
-            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
-            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
           ),
           // Mobile touch controls section (shown on touch devices)
           isMobile && el('div', { style: { marginBottom: '8px' } },
@@ -5102,7 +5106,7 @@
             el('div', null, 'Volume = Area \u00d7 Height'),
             el('div', null, 'Area = L \u00d7 W'),
             el('div', { style: { color: '#fbbf24', marginTop: '4px' } }, 'L-Block: V\u2081 + V\u2082 = Total'),
-            el('div', { style: { color: '#c084fc', marginTop: '4px', borderTop: '1px solid #334155', paddingTop: '4px' } }, '\u25E2 Shapes & Fractions'),
+            el('div', { style: { color: '#c084fc', marginTop: '4px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '4px' } }, '\u25E2 Shapes & Fractions'),
             el('div', null, '\u25E2 Half (diagonal) = \u00BD'),
             el('div', null, '\u25AD Half (slab) = \u00BD'),
             el('div', null, '\u25E3 Quarter wedge = \u00BC'),
@@ -5110,7 +5114,7 @@
             el('div', null, '4 quarters = 1 cube \u2713')
           ),
           el('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: '4px', fontSize: '12px' } }, '\uD83C\uDF31 Tips'),
-          el('div', { style: { fontSize: '10px', color: '#94a3b8' } },
+          el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
             '\u2022 Walk up to NPCs and press E to talk', el('br'),
             '\u2022 Point at a structure and press M to measure', el('br'),
             '\u2022 Right-click to place blocks, left-click to break', el('br'),
@@ -5134,7 +5138,7 @@
                 var vocab = MATH_VOCAB[homeLang] || {};
                 return Object.keys(vocab).map(function(eng) {
                   return el('div', { key: eng, style: { display: 'flex', justifyContent: 'space-between' } },
-                    el('span', { style: { color: '#94a3b8' } }, eng),
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, eng),
                     el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, vocab[eng])
                   );
                 });
@@ -5143,17 +5147,17 @@
           )
         ),
         // ── My Lessons Library Panel ──
-        showMyLessons && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#cbd5e1', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
+        showMyLessons && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
             '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
-            el('button', { 'aria-label': 'Close My Lessons', onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close My Lessons', onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
-          getMyLessons().length === 0 && el('div', { style: { color: '#94a3b8', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
+          getMyLessons().length === 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
           getMyLessons().map(function(lesson, li) {
             return el('div', { key: lesson._id || li, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '6px', background: 'rgba(30,41,59,0.5)', marginBottom: '4px', border: '1px solid rgba(100,116,139,0.15)' } },
               el('div', { style: { flex: 1, minWidth: 0 } },
-                el('div', { style: { fontWeight: 700, fontSize: '11px', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, lesson.title || 'Untitled'),
-                el('div', { style: { fontSize: '9px', color: '#94a3b8' } },
+                el('div', { style: { fontWeight: 700, fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, lesson.title || 'Untitled'),
+                el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                   (lesson.npcs || []).length + ' NPCs \u2022 ' + (lesson.structures || []).length + ' structures' + (lesson._savedAt ? ' \u2022 ' + new Date(lesson._savedAt).toLocaleDateString() : ''))
               ),
               el('button', {
@@ -5175,13 +5179,13 @@
         showLessonEditor && lastGeneratedLesson && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\u270F\uFE0F Lesson JSON Editor',
-            el('button', { 'aria-label': 'Close editor', onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close editor', onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
-          el('p', { style: { color: '#94a3b8', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
+          el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
           el('textarea', {
             value: lessonEditorJson,
             onChange: function(ev) { upd('lessonEditorJson', ev.target.value); },
-            style: { width: '100%', height: '250px', background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '8px', color: '#e2e8f0', fontSize: '10px', fontFamily: 'monospace', resize: 'vertical', lineHeight: 1.4 },
+            style: { width: '100%', height: '250px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontFamily: 'monospace', resize: 'vertical', lineHeight: 1.4 },
             spellCheck: false
           }),
           el('div', { style: { display: 'flex', gap: '6px', marginTop: '6px' } },
@@ -5211,7 +5215,7 @@
                   if (addToast) addToast('Cannot format: invalid JSON', 'error');
                 }
               },
-              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '6px 10px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '6px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
             }, '\uD83D\uDCCB Format')
           )
         ),
@@ -5219,19 +5223,19 @@
         creatorMode && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\uD83C\uDFA8 Lesson Creator',
-            el('button', { 'aria-label': 'Close creator panel', onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close creator panel', onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
-          el('p', { style: { color: '#94a3b8', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
+          el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
           // NPC Creator form
           el('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
-            el('input', { type: 'text', value: creatorNpcName, 'aria-label': 'NPC name', onChange: function(ev) { upd('creatorNpcName', ev.target.value); }, placeholder: 'NPC Name (e.g. Professor Volume)', style: { background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' } }),
-            el('textarea', { value: creatorNpcDialogue, 'aria-label': 'NPC dialogue', onChange: function(ev) { upd('creatorNpcDialogue', ev.target.value); }, placeholder: 'What should the NPC say? (e.g. "Look at the structure behind me!")', rows: 2, style: { background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', resize: 'vertical' } }),
-            el('input', { type: 'text', value: creatorNpcQuestion, 'aria-label': 'NPC question (optional)', onChange: function(ev) { upd('creatorNpcQuestion', ev.target.value); }, placeholder: 'Question (optional, e.g. "What is the volume?")', style: { background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' } }),
+            el('input', { type: 'text', value: creatorNpcName, 'aria-label': 'NPC name', onChange: function(ev) { upd('creatorNpcName', ev.target.value); }, placeholder: 'NPC Name (e.g. Professor Volume)', style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+            el('textarea', { value: creatorNpcDialogue, 'aria-label': 'NPC dialogue', onChange: function(ev) { upd('creatorNpcDialogue', ev.target.value); }, placeholder: 'What should the NPC say? (e.g. "Look at the structure behind me!")', rows: 2, style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', resize: 'vertical' } }),
+            el('input', { type: 'text', value: creatorNpcQuestion, 'aria-label': 'NPC question (optional)', onChange: function(ev) { upd('creatorNpcQuestion', ev.target.value); }, placeholder: 'Question (optional, e.g. "What is the volume?")', style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
             creatorNpcQuestion.trim() && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px' } },
-              el('input', { type: 'text', value: creatorNpcChoices, 'aria-label': 'Answer choices, separated by pipe character', onChange: function(ev) { upd('creatorNpcChoices', ev.target.value); }, placeholder: 'Answers separated by | (e.g. 24 units|12 units|36 units)', style: { background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' } }),
+              el('input', { type: 'text', value: creatorNpcChoices, 'aria-label': 'Answer choices, separated by pipe character', onChange: function(ev) { upd('creatorNpcChoices', ev.target.value); }, placeholder: 'Answers separated by | (e.g. 24 units|12 units|36 units)', style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
               el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
-                el('span', { style: { color: '#94a3b8', fontSize: '10px' } }, 'Correct answer #:'),
-                el('input', { type: 'number', min: 1, max: 5, value: creatorNpcCorrect + 1, onChange: function(ev) { upd('creatorNpcCorrect', Math.max(0, parseInt(ev.target.value, 10) - 1)); }, style: { width: '40px', background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '3px 6px', color: '#e2e8f0', fontSize: '11px', textAlign: 'center' } })
+                el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' } }, 'Correct answer #:'),
+                el('input', { type: 'number', min: 1, max: 5, value: creatorNpcCorrect + 1, onChange: function(ev) { upd('creatorNpcCorrect', Math.max(0, parseInt(ev.target.value, 10) - 1)); }, style: { width: '40px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '3px 6px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', textAlign: 'center' } })
               )
             ),
             el('button', {
@@ -5269,14 +5273,14 @@
               disabled: !creatorNpcName.trim() || !creatorNpcDialogue.trim(),
               style: { background: creatorNpcName.trim() && creatorNpcDialogue.trim() ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, marginTop: '4px' }
             }, '\uD83E\uDDD1\u200D\uD83C\uDFEB Place NPC Here'),
-            el('p', { style: { color: '#94a3b8', fontSize: '9px', margin: '4px 0 0' } }, 'The NPC will appear near where you\u2019re standing. Build structures first, then add NPCs that ask questions about them. Save your world with \uD83D\uDCBE to share!')
+            el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', margin: '4px 0 0' } }, 'The NPC will appear near where you\u2019re standing. Build structures first, then add NPCs that ask questions about them. Save your world with \uD83D\uDCBE to share!')
           )
         ),
         // Objectives panel (left side) — glass style with progress bar
         el('div', { style: { position: 'absolute', top: '48px', left: '8px', zIndex: 20, background: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(8px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '12px', padding: '10px 12px', maxWidth: '210px', fontSize: '11px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' } },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
             el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px' } }, '\uD83D\uDCCB Objectives'),
-            totalQ > 0 && el('div', { style: { fontSize: '9px', color: '#94a3b8', fontWeight: 600 } }, score + '/' + totalQ)
+            totalQ > 0 && el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, score + '/' + totalQ)
           ),
           // Progress bar
           totalQ > 0 && el('div', { style: { width: '100%', height: '3px', background: 'rgba(100,116,139,0.2)', borderRadius: '2px', marginBottom: '8px', overflow: 'hidden' } },
@@ -5317,7 +5321,7 @@
               if (eng) eng.loadLesson(currentLesson);
               upd({ score: 0, answeredNpcs: {}, measureResult: null });
             },
-            style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: '#94a3b8', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
+            style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
           }, '\u21BB Reset World')
         ),
         // ── Minimap — top-down view showing player + NPC positions ──
@@ -5418,7 +5422,7 @@
         }),
         // Shape selector (above block toolbar) — matching glass style
         el('div', { style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
-          el('span', { style: { fontSize: '9px', color: '#94a3b8', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
+          el('span', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
           // Rotation badge (only when non-cube shape selected)
           selectedShape > 0 && el('span', {
             style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#475569', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
@@ -5468,9 +5472,9 @@
         ),
         // ── Coordinate & Compass HUD (bottom-left) ──
         engine && engine.camera && el('div', {
-          style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: '#94a3b8', lineHeight: 1.5 }
+          style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 }
         },
-          el('div', { style: { color: '#94a3b8', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginBottom: '1px' } }, 'POSITION'),
+          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginBottom: '1px' } }, 'POSITION'),
           el('div', null,
             el('span', { style: { color: '#ef4444' } }, 'X'),
             ' ' + Math.floor(engine.camera.position.x) + '  ',
@@ -5489,12 +5493,12 @@
             var idx = Math.round(angle / 45) % 8;
             return el('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' } },
               el('span', { style: { color: '#fbbf24', fontWeight: 700, fontSize: '11px' } }, dirs[idx]),
-              el('span', { style: { color: '#475569' } }, Math.round(angle) + '\u00b0')
+              el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)' } }, Math.round(angle) + '\u00b0')
             );
           })(),
           // Target block line — shows the XYZ of the block the player is aiming at.
           engine._targetGrid && el('div', { style: { marginTop: '3px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
-            el('span', { style: { color: '#94a3b8', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
             el('span', { style: { color: '#ef4444' } }, 'X'),
             ' ' + engine._targetGrid.x + '  ',
             el('span', { style: { color: '#22c55e' } }, 'Y'),
@@ -5696,7 +5700,7 @@
         actionFeedback && el('div', {
           style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
             background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px',
-            padding: '6px 16px', fontSize: '12px', color: '#e2e8f0', fontWeight: 600, whiteSpace: 'nowrap',
+            padding: '6px 16px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'nowrap',
             animation: 'fadeIn 0.2s ease-out' }
         }, actionFeedback),
         // ── Block rotation indicator (near shape selector) ──
@@ -5709,9 +5713,9 @@
         measureHistory.length > 0 && el('div', {
           style: { position: 'absolute', bottom: '80px', left: '8px', zIndex: 19,
             background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
-            padding: '6px 8px', fontSize: '9px', color: '#94a3b8', maxWidth: '150px' }
+            padding: '6px 8px', fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '150px' }
         },
-          el('div', { style: { fontWeight: 700, fontSize: '8px', color: '#94a3b8', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
+          el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
               el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
@@ -5723,7 +5727,7 @@
         engine && (engine.blocksPlaced || 0) > 0 && el('div', {
           style: { position: 'absolute', top: '48px', right: '8px', zIndex: 19, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '10px', padding: '8px 10px', fontSize: '10px', maxWidth: '160px' }
         },
-          el('div', { style: { fontWeight: 700, color: '#94a3b8', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.5px' } }, 'BLOCKS PLACED'),
+          el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.5px' } }, 'BLOCKS PLACED'),
           // Real-time total volume counter
           (function() {
             var totalVol = 0;
@@ -5747,10 +5751,10 @@
               }
             }
             var typeKeys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
-            if (typeKeys.length === 0) return el('div', { style: { color: '#475569', fontSize: '9px' } }, 'None yet');
+            if (typeKeys.length === 0) return el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '9px' } }, 'None yet');
             return typeKeys.slice(0, 6).map(function(tk) {
               var bt = BLOCK_TYPES.find(function(b) { return b.id === tk; });
-              return el('div', { key: tk, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 0', color: '#cbd5e1' } },
+              return el('div', { key: tk, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 0', color: 'var(--allo-stem-text, #cbd5e1)' } },
                 el('span', null, (bt ? bt.emoji + ' ' : '') + tk),
                 el('span', { style: { fontWeight: 700, color: '#a78bfa', fontFamily: 'monospace' } }, counts[tk])
               );
@@ -5764,7 +5768,7 @@
         },
           el('div', { style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(8px)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '14px', padding: '14px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
             el('div', { 'aria-hidden': 'true', style: { fontSize: '10px', color: '#a78bfa', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.5px' } }, 'TUTORIAL \u2014 Step ' + (tutorialStep + 1) + ' of 4'),
-            el('div', { role: 'status', style: { fontSize: '14px', color: '#e2e8f0', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
+            el('div', { role: 'status', style: { fontSize: '14px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
               tutorialStep === 0 ? (isMobile ? '\uD83D\uDC46 Swipe right side to look. Drag left side to move.' : '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.') :
               tutorialStep === 1 ? (isMobile ? '\uD83D\uDC64 Walk near a purple character and tap the \uD83D\uDDE3\uFE0F button.' : '\uD83D\uDC64 Walk up to a purple character and press E to talk.') :
               tutorialStep === 2 ? (isMobile ? '\uD83D\uDCCF Point at the blue blocks and tap the \uD83D\uDCCF button.' : '\uD83D\uDCCF Point at the blue blocks and press M to measure.') :
@@ -5780,7 +5784,7 @@
               el('button', {
                 'aria-label': 'Skip tutorial and proceed to lesson',
                 onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
-                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: '#94a3b8', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
+                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
               }, 'Skip all'),
               el('button', {
                 'aria-label': 'Next tutorial step',
@@ -5818,13 +5822,13 @@
         },
           el('div', { style: { maxWidth: '420px', width: '90%', textAlign: 'center' } },
             el('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83E\uDDF1'),
-            el('div', { style: { fontSize: '22px', fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' } }, currentLesson.title || 'Geometry World'),
-            el('div', { style: { fontSize: '13px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '16px' } }, currentLesson.description || ''),
+            el('div', { style: { fontSize: '22px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '6px' } }, currentLesson.title || 'Geometry World'),
+            el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, marginBottom: '16px' } }, currentLesson.description || ''),
             // Objectives preview
             currentLesson.objectives && el('div', { style: { textAlign: 'left', background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' } },
               el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px', marginBottom: '6px' } }, '\uD83C\uDFAF Objectives'),
               currentLesson.objectives.map(function(obj, i) {
-                return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', fontSize: '11px', color: '#cbd5e1' } },
+                return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)' } },
                   el('span', { style: { color: '#7c3aed' } }, (i + 1) + '.'),
                   el('span', null, obj)
                 );
@@ -5835,7 +5839,7 @@
               '\uD83D\uDCDD V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
             ),
             // NPC count
-            el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '16px' } },
+            el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '16px' } },
               (currentLesson.npcs || []).length + ' NPCs \u2022 ' +
               (currentLesson.npcs || []).filter(function(n) { return n.question; }).length + ' questions \u2022 ' +
               (currentLesson.structures || []).length + ' structures'
@@ -5849,7 +5853,7 @@
             // Skip intro for returning students
             el('button', {
               onClick: function() { loadLessonByKey(activeLesson); },
-              style: { display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
+              style: { display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer' }
             }, 'or press Enter to jump in')
           )
         ),
@@ -5860,13 +5864,13 @@
             padding: '24px 28px', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(124,58,237,0.2)' }
         },
           el('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '\uD83E\uDD14'),
-          el('div', { style: { fontSize: '16px', fontWeight: 700, color: '#e2e8f0', marginBottom: '4px' } }, 'Quick Reflection'),
-          el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '12px' } }, 'Take a moment to think about what you learned:'),
+          el('div', { style: { fontSize: '16px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, 'Quick Reflection'),
+          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px' } }, 'Take a moment to think about what you learned:'),
           el('textarea', {
             value: reflectionText,
             onChange: function(ev) { upd('reflectionText', ev.target.value); },
             placeholder: 'What was the most interesting thing you discovered? What strategy helped you solve problems?',
-            style: { width: '100%', height: '70px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', color: '#e2e8f0', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
+            style: { width: '100%', height: '70px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '8px', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
           }),
           el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
             // Primary action — saves if there's text, otherwise behaves like a quick confirm
@@ -5881,7 +5885,7 @@
             // Secondary "later" — dismisses without firing the save event
             el('button', {
               onClick: function() { upd('showReflection', false); },
-              style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px', padding: '8px 16px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+              style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px', padding: '8px 16px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer' }
             }, 'Maybe later')
           )
         ),
@@ -5893,9 +5897,9 @@
         },
           el('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDFC6'),
           el('div', { style: { fontSize: '20px', fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, 'Lesson Complete!'),
-          el('div', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '12px', lineHeight: 1.5 } },
+          el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px', lineHeight: 1.5 } },
             currentLesson.title + ' \u2014 ' + score + '/' + totalQ + ' questions answered'),
-          el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '16px' } },
+          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '16px' } },
             (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed \u2022 ' +
             measureHistory.length + ' measurements taken'),
           // Next Lesson button
@@ -5918,14 +5922,14 @@
                   upd('measureHistory', []);
                 },
                 style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px',
-                  padding: '10px 20px', fontSize: '12px', color: '#94a3b8', cursor: 'pointer', fontWeight: 600 }
+                  padding: '10px 20px', fontSize: '12px', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontWeight: 600 }
               }, '\uD83D\uDD04 Replay'),
               !nextLesson && el('div', { style: { textAlign: 'center', marginTop: '8px' } },
                 el('div', { style: { fontSize: '32px', marginBottom: '4px' } }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
                 el('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, 'All Lessons Complete!'),
-                el('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '8px' } },
+                el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, marginBottom: '8px' } },
                   'You\u2019ve mastered all ' + LESSON_ORDER.length + ' geometry lessons! Here\u2019s your journey:'),
-                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', color: '#cbd5e1' } },
+                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', color: 'var(--allo-stem-text, #cbd5e1)' } },
                   el('div', { style: { background: 'rgba(124,58,237,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#a78bfa' } }, String(Object.keys(earnedBadges).length)),
                     'badges earned'),
@@ -5939,7 +5943,7 @@
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#3b82f6' } }, String(score)),
                     'questions answered')
                 ),
-                el('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' } },
+                el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '8px', fontStyle: 'italic' } },
                   '\u201CEvery block you placed made your brain stronger.\u201D')
               )
             );
@@ -6009,14 +6013,14 @@
               // NPC avatar circle
               el('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, ' + npcHexColor + ', ' + npcHexColor + '88)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#fff', fontWeight: 800, flexShrink: 0, border: '2px solid ' + npcHexColor + '66' } }, data.name.charAt(0)),
               el('div', { style: { flex: 1 } },
-                el('div', { style: { fontSize: '13px', fontWeight: 800, color: '#e2e8f0' } }, data.name),
+                el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { 'aria-label': 'Close NPC dialog', onClick: function() { upd({ showNpcDialog: false }); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+              el('button', { 'aria-label': 'Close NPC dialog', onClick: function() { upd({ showNpcDialog: false }); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },
-            el('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px', minHeight: '20px' } },
+            el('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px', minHeight: '20px' } },
               // Typewriter effect: reveal characters progressively
               npcTypewriterNpc === dialogNpcIdx && npcTypewriterPos < (data.dialogue || '').length
                 ? el('span', null, (data.dialogue || '').slice(0, npcTypewriterPos), el('span', { style: { opacity: 0.4, animation: 'pulse 0.8s infinite' } }, '\u2588'))
@@ -6038,7 +6042,7 @@
               title: 'Click to hear translation spoken aloud',
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
-            homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
             data.question && !isAnswered && (function() {
               // Determine current question (base or follow-up)
               var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
@@ -6154,14 +6158,14 @@
                         announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
                       }
                     },
-                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', color: '#e2e8f0', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
+                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
                   }, choice);
                 })
               );
             })(),
             isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
               el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px', marginBottom: '6px' } }, '\u2705 Great job!'),
-              el('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.5, background: 'rgba(34,197,94,0.08)', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(34,197,94,0.15)' } },
+              el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, background: 'rgba(34,197,94,0.08)', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(34,197,94,0.15)' } },
                 // Bonus fun fact based on dialogue content
                 data.dialogue.indexOf('volume') >= 0 || data.dialogue.indexOf('Volume') >= 0
                   ? '\uD83E\uDDE0 Fun fact: The word "volume" comes from Latin "volumen" meaning a roll of papyrus. Ancient mathematicians measured volume by filling containers with water!'
@@ -6177,8 +6181,8 @@
               )
             ),
             // ── AI Chat with NPC (ask anything) ──
-            callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid #334155', paddingTop: '8px' } },
-              el('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginBottom: '4px' } }, '\uD83D\uDCAC Ask ' + data.name + ' anything:'),
+            callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '8px' } },
+              el('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px' } }, '\uD83D\uDCAC Ask ' + data.name + ' anything:'),
               // Chat history for this NPC
               (npcChatHistory[dialogNpcIdx] || []).length > 0 && el('div', { style: { maxHeight: '100px', overflowY: 'auto', marginBottom: '6px' } },
                 (npcChatHistory[dialogNpcIdx] || []).map(function(msg, mi) {
@@ -6223,7 +6227,7 @@
                   },
                   disabled: npcChatLoading,
                   placeholder: npcChatLoading ? 'Thinking...' : 'Ask a question...',
-                  style: { flex: 1, background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' }
+                  style: { flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
                 }),
                 el('button', {
                   onClick: function() {
@@ -6262,7 +6266,7 @@
         },
           el('div', { style: { fontSize: '32px', marginBottom: '10px' } }, '\uD83C\uDF31'),
           el('div', { style: { fontSize: '14px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px', letterSpacing: '0.5px' } }, 'Growth Mindset Moment'),
-          el('div', { style: { fontSize: '13px', color: '#e2e8f0', lineHeight: 1.6, marginBottom: '16px' } }, growthNudgeMsg),
+          el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: '16px' } }, growthNudgeMsg),
           el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
             el('button', {
               onClick: function() { upd('showGrowthNudge', false); },
@@ -6284,7 +6288,7 @@
                   if (eng && eng.logEvent) eng.logEvent('growth_nudge_coach', { response: response.substring(0, 100) });
                 });
               },
-              style: { background: '#1e293b', color: '#a78bfa', border: '1px solid #7c3aed', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              style: { background: 'var(--allo-stem-panel, #1e293b)', color: '#a78bfa', border: '1px solid #7c3aed', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, 'Help me think \uD83E\uDDE0')
           )
         ),
@@ -6298,11 +6302,11 @@
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
               el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#7c3aed', fontSize: '12px', cursor: 'pointer', fontWeight: 600 } }, '\u21BB Refresh'),
-              el('button', { 'aria-label': 'Close class worlds browser', onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
+              el('button', { 'aria-label': 'Close class worlds browser', onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
           peerWorldsList.length === 0
-            ? el('div', { style: { textAlign: 'center', padding: '24px', color: '#94a3b8' } },
+            ? el('div', { style: { textAlign: 'center', padding: '24px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 el('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '\uD83C\uDF0D'),
                 el('div', { style: { fontSize: '13px' } }, 'No worlds shared yet! Build something in Creator Mode and click Share.')
               )
@@ -6310,7 +6314,7 @@
                 peerWorldsList.map(function(world, wi) {
                   return el('div', {
                     key: wi,
-                    style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '10px', padding: '12px', cursor: 'pointer', transition: 'border-color 0.2s' },
+                    style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', cursor: 'pointer', transition: 'border-color 0.2s' },
                     onClick: function() {
                       var eng = window[engineKey];
                       if (!eng) return;
@@ -6330,10 +6334,10 @@
                   },
                     el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                       el('div', null,
-                        el('div', { style: { fontWeight: 700, color: '#e2e8f0', fontSize: '13px' } }, '\uD83E\uDDF1 ' + world.title),
-                        el('div', { style: { fontSize: '11px', color: '#94a3b8' } }, 'by ' + world.author)
+                        el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px' } }, '\uD83E\uDDF1 ' + world.title),
+                        el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'by ' + world.author)
                       ),
-                      el('div', { style: { fontSize: '10px', color: '#94a3b8' } },
+                      el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                         world.timestamp ? new Date(world.timestamp).toLocaleTimeString() : '',
                         el('div', null, (world.data.blocks ? world.data.blocks.length + ' blocks' : ''))
                       )
@@ -6349,15 +6353,15 @@
         },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
             el('div', { style: { fontWeight: 800, color: '#f87171', fontSize: '14px' } }, '\uD83D\uDCCA Teacher Dashboard'),
-            el('button', { 'aria-label': 'Close teacher dashboard', onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close teacher dashboard', onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
           ),
           // Live session info
-          el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '10px', padding: '6px 8px', background: '#0f172a', borderRadius: '6px' } },
+          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '6px' } },
             'Session: ' + sessionCode + ' \u2022 ' + Object.keys(studentProgressMap).length + ' students connected'
           ),
           // Student cards
           Object.keys(studentProgressMap).length === 0
-            ? el('div', { style: { textAlign: 'center', padding: '20px', color: '#94a3b8' } },
+            ? el('div', { style: { textAlign: 'center', padding: '20px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 el('div', { style: { fontSize: '24px', marginBottom: '6px' } }, '\uD83D\uDC65'),
                 'Waiting for students to join...'
               )
@@ -6370,36 +6374,36 @@
                   var tierLabel = accuracy >= 80 ? 'T1' : accuracy >= 50 ? 'T2' : 'T3';
                   return el('div', {
                     key: sid,
-                    style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '10px', padding: '10px' }
+                    style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '10px' }
                   },
                     el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-                      el('div', { style: { fontWeight: 700, color: '#e2e8f0', fontSize: '12px' } }, sp.studentNickname || sid),
+                      el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' } }, sp.studentNickname || sid),
                       el('div', { style: { background: tierColor, color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 } }, tierLabel + ' ' + Math.round(accuracy) + '%')
                     ),
                     // Stats row
                     el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                      el('span', { style: { fontSize: '10px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px' } },
+                      el('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
                         '\u2B50 ' + (stats.globalPoints || 0) + ' XP'),
-                      stats.focusRatio !== undefined && el('span', { style: { fontSize: '10px', color: stats.focusRatio > 0.7 ? '#4ade80' : '#f59e0b', background: '#0f172a', padding: '2px 6px', borderRadius: '4px' } },
+                      stats.focusRatio !== undefined && el('span', { style: { fontSize: '10px', color: stats.focusRatio > 0.7 ? '#4ade80' : '#f59e0b', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
                         '\uD83C\uDFAF ' + Math.round((stats.focusRatio || 0) * 100) + '% focus'),
-                      el('span', { style: { fontSize: '10px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px' } },
+                      el('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
                         '\uD83D\uDD52 ' + (stats.engagedMinutes || 0) + 'min')
                     ),
                     // Last synced
-                    sp.lastSynced && el('div', { style: { fontSize: '9px', color: '#475569', marginTop: '4px' } },
+                    sp.lastSynced && el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #475569)', marginTop: '4px' } },
                       'Last sync: ' + new Date(sp.lastSynced).toLocaleTimeString())
                   );
                 })
               ),
           // Collab players in geometry world
-          Object.keys(collabPlayers).length > 0 && el('div', { style: { marginTop: '12px', borderTop: '1px solid #334155', paddingTop: '10px' } },
+          Object.keys(collabPlayers).length > 0 && el('div', { style: { marginTop: '12px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '10px' } },
             el('div', { style: { fontWeight: 700, color: '#34d399', fontSize: '11px', marginBottom: '6px' } }, '\uD83E\uDDF1 In Geometry World Right Now'),
             Object.keys(collabPlayers).map(function(key) {
               var p = collabPlayers[key];
-              return el('div', { key: key, style: { fontSize: '11px', color: '#cbd5e1', padding: '2px 0', display: 'flex', alignItems: 'center', gap: '6px' } },
+              return el('div', { key: key, style: { fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', padding: '2px 0', display: 'flex', alignItems: 'center', gap: '6px' } },
                 el('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#34d399' } }),
                 p.name,
-                el('span', { style: { color: '#475569', fontSize: '9px' } },
+                el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '9px' } },
                   p.position ? ' at (' + Math.round(p.position[0]) + ', ' + Math.round(p.position[2]) + ')' : '')
               );
             })
@@ -6421,20 +6425,35 @@
             },
               el('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#34d399' } }),
               el('span', { style: { color: isMe ? '#34d399' : '#cbd5e1', fontWeight: isMe ? 700 : 400 } }, p.name + (isMe ? ' (you)' : '')),
-              p.position && el('span', { style: { color: '#94a3b8', fontSize: '9px' } },
+              p.position && el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } },
                 '(' + Math.round(p.position[0]) + ', ' + Math.round(p.position[2]) + ')')
             );
           })
         ),
         // 3D Canvas container (or fallback if WebGL unavailable)
-        window[engineKey + '_failed']
-          ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1e293b, #0f172a)', borderRadius: '12px', padding: '32px' } },
+        (webglError || window[engineKey + '_failed'])
+          ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b), var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '32px' } },
               el('div', { style: { textAlign: 'center', maxWidth: '400px' } },
                 el('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83C\uDFAE'),
-                el('div', { style: { color: '#f1f5f9', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, 'WebGL Not Available'),
-                el('div', { style: { color: '#94a3b8', fontSize: '12px', lineHeight: '1.6' } },
+                el('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, 'WebGL Not Available'),
+                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', lineHeight: '1.6', marginBottom: '16px' } },
                   'Geometry World requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
-                )
+                ),
+                el('button', {
+                  onClick: function() {
+                    window[engineKey + '_failed'] = false;
+                    setWebglError(false);
+                  },
+                  style: {
+                    padding: '8px 16px',
+                    background: '#7c3aed',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }
+                }, 'Retry 3D Mode')
               )
             )
           : el('div', {

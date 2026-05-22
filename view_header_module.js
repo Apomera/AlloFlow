@@ -588,18 +588,6 @@ function HeaderBar(props) {
       "aria-label": t("toolbar.about_aria")
     },
     /* @__PURE__ */ React.createElement(Info, { size: 20 })
-  ), /* @__PURE__ */ React.createElement(
-    "a",
-    {
-      href: "https://Ko-fi.com/aaronpomeranz207",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      "data-help-key": "header_support",
-      className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
-      title: t("header.support_tooltip"),
-      "aria-label": t("header.support_aria")
-    },
-    /* @__PURE__ */ React.createElement(Heart, { size: 20, className: isProcessing || isExtracting || isGeneratingSource ? "animate-pulse fill-current" : "" })
   ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3 justify-end relative z-10 mt-2" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `flex items-center gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-end sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "scale-90 origin-right sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), !_isCanvasEnv && isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {

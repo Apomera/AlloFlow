@@ -143,7 +143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     { category: 'Sensory / environmental', icon: '🔊', color: '#4ade80',
       examples: 'Loud fluorescent buzz · gym next door · cafeteria smell · new perfume on an adult · uniform/clothing change · temperature extreme · construction noise',
       note: 'For sensory-sensitive learners, the environment itself is a continuous setting event. Reduce input and threshold rises.' },
-    { category: 'Mental health', icon: '💭', color: '#94a3b8',
+    { category: 'Mental health', icon: '💭', color: 'var(--allo-stem-text-soft, #94a3b8)',
       examples: 'Anxiety flare · low mood episode · recent therapy session that opened something · trauma anniversary · sensory overload accumulating across days · burnout from masking',
       note: 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.' }
   ];
@@ -336,7 +336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       pitfall: 'Don\'t use functionally-irrelevant reinforcers. Stickers do not work for an escape-function behavior. Removing the demand IS the reinforcer. Get the function right and the reinforcer designs itself.'
     },
     {
-      part: 6, name: 'Response procedures (when problem behavior still happens)', icon: '🌧️', color: '#94a3b8',
+      part: 6, name: 'Response procedures (when problem behavior still happens)', icon: '🌧️', color: 'var(--allo-stem-text-soft, #94a3b8)',
       what: 'What staff actually do when the problem behavior happens despite the plan. Tied to the Acting-Out Cycle phases: Phase 2-3 → soft de-escalation, redirect to replacement; Phase 4-5 → safety-first, less talking, clear audience. NOT a list of consequences. Staff response language is scripted so all adults respond the same way (consistency is the variable that matters most).',
       sample: 'Phase 2-3 script: "I see this is hard. Your break card is right here." Phase 4: physically move to safe distance, no verbal demands. Phase 5: clear other students from immediate area, signal admin via radio, follow district safety protocol. Phase 7 (recovery): debrief 1-on-1 with school psych, no consequences delivered until full recovery.',
       pitfall: 'Putting consequences in the response-procedures section is the most common BIP-writing error. Consequences are punishment, not response procedure. They go in the school discipline policy, not the BIP. The BIP describes how staff support the cycle, not how staff sanction the student.'
@@ -786,7 +786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         } }, '▶'),
         h('div', { style: { flex: 1, minWidth: 200 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'Walk the cycle — Colvin\'s 7 phases'),
-          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Click a phase, drag the slider, or press Play to auto-advance through escalation and recovery.')
+          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Click a phase, drag the slider, or press Play to auto-advance through escalation and recovery.')
         )
       ),
 
@@ -804,7 +804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               borderRadius: 8,
               border: '1.5px solid ' + (active ? p.color : 'rgba(100,116,139,0.30)'),
               background: active ? p.color + '22' : 'rgba(15,23,42,0.5)',
-              color: active ? p.color : '#94a3b8',
+              color: active ? p.color: 'var(--allo-stem-text-soft, #94a3b8)',
               fontSize: 10, fontWeight: active ? 800 : 600,
               cursor: 'pointer',
               transition: 'all 180ms ease',
@@ -882,7 +882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           'aria-label': 'Reset to Phase 1 Calm',
           style: {
             padding: '8px 12px', borderRadius: 8,
-            background: 'rgba(148,163,184,0.10)', color: '#94a3b8',
+            background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)',
             border: '1px solid rgba(148,163,184,0.30)',
             fontSize: 11, fontWeight: 700, cursor: 'pointer'
           }
@@ -909,16 +909,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             h('div', { style: { fontSize: 17, fontWeight: 900, color: ph.color, lineHeight: 1.1, marginTop: 2 } }, ph.name)
           )
         ),
-        h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 10 } },
-          h('b', { style: { color: '#e2e8f0' } }, 'What you\'ll see: '), ph.signs),
+        h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
+          h('b', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'What you\'ll see: '), ph.signs),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
           h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)' } },
             h('div', { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✓ Do'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, ph.doThis)
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, ph.doThis)
           ),
           h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)' } },
             h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✗ Don\'t'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, ph.dontDo)
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, ph.dontDo)
           )
         ),
         currentPhase === 7 && hasWalked
@@ -991,7 +991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         h('div', { style: { textAlign: 'center', padding: 12 } },
           h('div', { style: { fontSize: 28, marginBottom: 6 } }, '🎯'),
           h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, 'Function-spotter complete'),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Score: ' + score + ' / ' + attempts + ' (' + pct + '%)'),
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'Score: ' + score + ' / ' + attempts + ' (' + pct + '%)'),
           h('div', { style: { fontSize: 12, color: '#5eead4', fontWeight: 700, marginBottom: 12 } }, grade),
           h('button', {
             onClick: reset,
@@ -1020,7 +1020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         } }, '🎯'),
         h('div', { style: { flex: 1, minWidth: 200 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'Function-spotter practice'),
-          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Read the vignette. Pick the function. Get the data signal.')
+          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Read the vignette. Pick the function. Get the data signal.')
         ),
         h('div', { style: {
           padding: '6px 12px', borderRadius: 999,
@@ -1037,8 +1037,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           borderLeft: '3px solid #5eead4'
         }
       },
-        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Scenario'),
-        h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sc.stem)
+        h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Scenario'),
+        h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sc.stem)
       ),
 
       // Function chips
@@ -1094,7 +1094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               color: correct ? '#22c55e' : '#ef4444',
               marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em'
             } }, correct ? '✓ Correct — function: ' + sc.answer : '✗ Actually ' + sc.answer + ' — here\'s the data signal'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, sc.why),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, sc.why),
             h('div', { style: { marginTop: 10, textAlign: 'right' } },
               h('button', {
                 onClick: next,
@@ -1106,7 +1106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               }, idx + 1 >= scenarios.length ? 'See score →' : 'Next scenario →')
             )
           )
-        : h('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Pick a function to see the explanation.')
+        : h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'center', fontStyle: 'italic' } }, 'Pick a function to see the explanation.')
     );
   }
 
@@ -1174,7 +1174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         } }, '🌳'),
         h('div', { style: { flex: 1, minWidth: 200 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd' } }, 'Walk the ethics decision'),
-          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Branching crisis scenarios. Each choice cites Maine Ch. 33 or Colvin Cycle reasoning. There is sometimes more than one correct answer.')
+          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Branching crisis scenarios. Each choice cites Maine Ch. 33 or Colvin Cycle reasoning. There is sometimes more than one correct answer.')
         )
       ),
 
@@ -1189,7 +1189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             style: {
               padding: '8px 12px', borderRadius: 8,
               background: active ? s.color + '22' : 'rgba(15,23,42,0.5)',
-              color: active ? s.color : '#94a3b8',
+              color: active ? s.color: 'var(--allo-stem-text-soft, #94a3b8)',
               border: '1.5px solid ' + (active ? s.color : 'rgba(100,116,139,0.30)'),
               fontSize: 11, fontWeight: active ? 800 : 600,
               cursor: 'pointer'
@@ -1209,14 +1209,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           borderLeft: '3px solid ' + scenario.color
         }
       },
-        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Setup'),
-        h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, scenario.stem)
+        h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Setup'),
+        h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, scenario.stem)
       ),
 
       // Breadcrumb of history (verdicts)
       history.length > 0
         ? h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' } },
-            h('span', { style: { fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 4 } }, 'Your path:'),
+            h('span', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 4 } }, 'Your path:'),
             history.map(function(step, i) {
               var color = step.verdict === 'CORRECT' ? '#22c55e' : step.verdict === 'WRONG' ? '#ef4444' : '#fbbf24';
               return h('span', {
@@ -1248,9 +1248,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               fontSize: 10, fontWeight: 800,
               color: lastChoiceObj.verdictColor, marginBottom: 6, letterSpacing: '0.06em'
             } }, (lastChoiceObj.verdict === 'CORRECT' ? '✓ ' : lastChoiceObj.verdict === 'WRONG' ? '✗ ' : '⚠ ') + lastChoiceObj.verdict),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6, fontStyle: 'italic' } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6, fontStyle: 'italic' } },
               '"' + lastChoiceObj.label + '"'),
-            h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, lastChoiceObj.why),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 6 } }, lastChoiceObj.why),
             h('div', { style: {
               fontSize: 10, color: lastChoiceObj.verdictColor, fontWeight: 700,
               paddingTop: 6, borderTop: '1px dashed ' + lastChoiceObj.verdictColor + '40'
@@ -1269,7 +1269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             }
           },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, '🎓 ' + node.prompt),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 } }, node.summary),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12 } }, node.summary),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
               h('button', {
                 onClick: restart,
@@ -1296,7 +1296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             )
           )
         : h('div', null,
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0', marginBottom: 10 } }, '❓ ' + node.prompt),
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10 } }, '❓ ' + node.prompt),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               node.choices.map(function(ch, i) {
                 return h('button', {
@@ -1306,7 +1306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     textAlign: 'left',
                     padding: '12px 14px', borderRadius: 8,
                     background: 'rgba(15,23,42,0.6)',
-                    color: '#e2e8f0',
+                    color: 'var(--allo-stem-text, #e2e8f0)',
                     border: '1px solid rgba(167,139,250,0.30)',
                     fontSize: 12, fontWeight: 600, lineHeight: 1.5,
                     cursor: 'pointer',
@@ -1408,7 +1408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       function renderHeader() {
         return h('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,184,166,0.20)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
           h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab',
-            style: { background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '←'),
+            style: { background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '←'),
           // Circular accent badge — same vocabulary as the rest of the
           // design system. 56px (large hero size).
           h('div', { 'aria-hidden': 'true',
@@ -1433,7 +1433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 fontFamily: 'ui-monospace, Menlo, monospace'
               } }, '11 sections · 3 interactive')
             ),
-            h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.')
+            h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.')
           )
         );
       }
@@ -1493,7 +1493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       function panelHeader(title, subtitle) {
         return h('div', { style: { textAlign: 'center', marginBottom: 16 } },
           h('div', { style: { color: '#5eead4', fontSize: 16, fontWeight: 900 } }, title),
-          h('div', { style: { color: '#94a3b8', fontSize: 12, marginTop: 4, lineHeight: 1.5, maxWidth: 600, margin: '4px auto 0' } }, subtitle)
+          h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 4, lineHeight: 1.5, maxWidth: 600, margin: '4px auto 0' } }, subtitle)
         );
       }
 
@@ -1511,7 +1511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       }
 
       function sourceFooter(text) {
-        return h('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #14b8a6', color: '#94a3b8', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } }, text);
+        return h('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #14b8a6', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } }, text);
       }
 
       // ── Section: PBIS Three Tiers ──
@@ -1534,23 +1534,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, pt.icon),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: pt.color, lineHeight: 1.2 } }, pt.name),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, pt.percent)
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, pt.percent)
                   )
                 ),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
-                  h('b', { style: { color: '#e2e8f0' } }, 'Who it serves: '), pt.who),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
+                  h('b', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Who it serves: '), pt.who),
                 h('div', null,
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Concrete examples'),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, pt.examples)
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Concrete examples'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, pt.examples)
                 ),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.20)' } },
                     h('div', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📊 Data signal'),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, pt.data)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, pt.data)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)' } },
                     h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⏫ When to escalate'),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, pt.escalate)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, pt.escalate)
                   )
                 )
               );
@@ -1580,19 +1580,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⚠ Problem behavior typically looks like'),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, rb.problemEx)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, rb.problemEx)
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '↪ Replacement behavior'),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, rb.replacement)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, rb.replacement)
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🎓 How to teach it'),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, rb.teaching)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, rb.teaching)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)' } },
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🪤 Common pitfall'),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.pitfall)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, rb.pitfall)
                 )
               );
             })
@@ -1615,8 +1615,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   circularBadge(se.icon, se.color, 32),
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: se.color } }, se.category)
                 ),
-                h('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, se.examples),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 6, borderTop: '1px dashed ' + se.color + '40' } }, '💡 ' + se.note)
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, se.examples),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 6, borderTop: '1px dashed ' + se.color + '40' } }, '💡 ' + se.note)
               );
             })
           ),
@@ -1643,16 +1643,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, ph.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: ph.color, letterSpacing: '0.01em' } }, ph.name)
                 ),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Signs'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, ph.signs),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Signs'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, ph.signs),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.20)' } },
                     h('div', { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '✓ Do this'),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, ph.doThis)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, ph.doThis)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.20)' } },
                     h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '✗ Don\'t do'),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, ph.dontDo)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, ph.dontDo)
                   )
                 )
               );
@@ -1670,7 +1670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h(DecisionTree, { scenarios: DECISION_SCENARIOS, awardXP: awardXP }),
           h('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, '⚠ This is education, not training.'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
               'Reading this section does not authorize anyone to perform restraint or seclusion. State law requires specific certified training (CPI / NCI / Mandt or equivalent) and authorized-staff designation. This panel teaches the framework and ethics so school psychs and IEP-team members can recognize appropriate use, document properly, and revise BIPs in response to incidents.')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -1682,8 +1682,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   circularBadge(rp.icon, rp.color, 36),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: rp.color, lineHeight: 1.2 } }, rp.name)
                 ),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, rp.content),
-                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, rp.content),
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '↪ Counter-line:'),
                   rp.counter)
               );
@@ -1713,11 +1713,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, s.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: s.color, lineHeight: 1.2 } }, s.name),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + s.duration)
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + s.duration)
                   )
                 ),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to do'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, s.what),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to do'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, s.what),
                 h('div', {
                   style: {
                     padding: '8px 10px', borderRadius: 6,
@@ -1727,9 +1727,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   }
                 },
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🔑 Key idea'),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, s.key)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, s.key)
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
                   s.pitfall)
               );
@@ -1759,8 +1759,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, c.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: c.color, lineHeight: 1.2 } }, c.name)
                 ),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to write'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, c.what),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to write'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, c.what),
                 h('div', {
                   style: {
                     padding: '8px 10px', borderRadius: 6,
@@ -1770,9 +1770,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   }
                 },
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📝 Sample entry'),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, c.sample)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, c.sample)
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
                   c.pitfall)
               );
@@ -1803,12 +1803,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, c.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: c.color, lineHeight: 1.2 } }, c.name),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + c.time)
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + c.time)
                   )
                 ),
                 // What
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What it looks like'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, c.what),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What it looks like'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, c.what),
                 // Script — quoted in monospace italic, clearly distinct
                 h('div', {
                   style: {
@@ -1819,10 +1819,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   }
                 },
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🗣 Sample script'),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, c.script)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, c.script)
                 ),
                 // Pitfall
-                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
                   c.pitfall)
               );
@@ -1849,9 +1849,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   circularBadge(eq.icon, eq.color, 36),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: eq.color, lineHeight: 1.2 } }, eq.finding)
                 ),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700, lineHeight: 1.45, marginBottom: 8, padding: '8px 10px', background: eq.color + '12', borderLeft: '3px solid ' + eq.color, borderRadius: 6 } }, eq.stat),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, eq.detail),
-                h('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic', lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
+                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, lineHeight: 1.45, marginBottom: 8, padding: '8px 10px', background: eq.color + '12', borderLeft: '3px solid ' + eq.color, borderRadius: 6 } }, eq.stat),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8 } }, eq.detail),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
                   '📚 ', eq.source)
               );
             })
@@ -1866,7 +1866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               circularBadge('🔍', '#14b8a6', 36),
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'School-psych equity audit — five questions')
             ),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } },
               'Practical questions to bring into your next discipline-data review or PBIS team meeting. The federal numbers describe the pattern. These questions help your building see where your specific patterns sit and what to do about them.'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               EQUITY_AUDIT_QUESTIONS.map(function(eaq, i) {
@@ -1877,9 +1877,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                       style: { width: 24, height: 24, borderRadius: '50%', background: 'rgba(20,184,166,0.18)', border: '1.5px solid #14b8a6',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#5eead4', fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 }
                     }, i + 1),
-                    h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 700, lineHeight: 1.55, flex: 1 } }, eaq.q)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, lineHeight: 1.55, flex: 1 } }, eaq.q)
                   ),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic', paddingLeft: 34 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic', paddingLeft: 34 } },
                     h('span', { style: { color: '#5eead4', fontWeight: 700, marginRight: 4 } }, 'Why:'),
                     eaq.why)
                 );
@@ -1906,7 +1906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   circularBadge(group.icon, group.color, 36),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: group.color, lineHeight: 1.2 } }, group.group)
                 ),
-                h('ul', { style: { margin: 0, paddingLeft: 18, color: '#cbd5e1', fontSize: 11, lineHeight: 1.65 } },
+                h('ul', { style: { margin: 0, paddingLeft: 18, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.65 } },
                   group.bullets.map(function(b, bi) {
                     return h('li', { key: gi + '-' + bi, style: { marginBottom: 6 } }, b);
                   })
@@ -1930,12 +1930,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 circularBadge('🐭', '#fb923c', 44),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fb923c' } }, 'BehaviorLab'),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, 'STEM Lab → Behavioral Science')
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'STEM Lab → Behavioral Science')
                 )
               ),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
                 'The science of operant conditioning — Skinner-box simulation, schedules of reinforcement, shaping, extinction, FBA practice. The mechanics behind what this Toolkit applies in K-12 settings.'),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '9 progressive levels · Schedule Sleuth · Function Sleuth · Glossary · Ethics')
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '9 progressive levels · Schedule Sleuth · Function Sleuth · Glossary · Ethics')
             ),
             // Disability Voices — the people
             h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, borderTop: '1px solid rgba(244,114,182,0.30)', borderRight: '1px solid rgba(244,114,182,0.30)', borderBottom: '1px solid rgba(244,114,182,0.30)', borderLeft: '4px solid #f472b6' } },
@@ -1943,15 +1943,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 circularBadge('🎤', '#f472b6', 44),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#f472b6' } }, 'Disability Voices'),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, 'SEL Hub → Identity & Care')
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'SEL Hub → Identity & Care')
                 )
               ),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
                 'Real autistic and disabled advocates whose work shaped — and critiqued — disability practice. Centered as persons, not behavioral subjects. Read here for the human side of the work.'),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'Ari Ne\'eman · Temple Grandin · Damian Milton · Henny Kupferstein · Kassiane Asasumasu · Mel Baggs · Lydia X. Z. Brown · Patty Berne')
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Ari Ne\'eman · Temple Grandin · Damian Milton · Henny Kupferstein · Kassiane Asasumasu · Mel Baggs · Lydia X. Z. Brown · Patty Berne')
             )
           ),
-          h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', color: '#cbd5e1', fontSize: 11, lineHeight: 1.65 } },
+          h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.65 } },
             h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 6 } }, '🧭 Why three separate spaces'),
             'Putting Skinner-box imagery, applied K-12 practice, and named real autistic adults all in one tool would be exactly the dehumanizing arc the disability community has critiqued: animal-conditioning visuals → "applied" → and the people we apply it to. Splitting them into three connected but distinct spaces is a deliberate ethical choice. The science is the science (BehaviorLab). The K-12 practice is school-psych work (this Toolkit). The voices are the people (Disability Voices in SEL Hub). All three matter. None should crowd the others.'
           )

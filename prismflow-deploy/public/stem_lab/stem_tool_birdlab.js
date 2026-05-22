@@ -2402,9 +2402,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       notes: 'White with light brown spots. Larger than red-shouldered hawk.' },
     { species: 'Cooper\'s Hawk', dimensions: '49 × 38 mm', clutch: '3–5', color: '#e0f2fe', pattern: 'plain',
       notes: 'Pale blue-green. Cooper\'s + sharp-shinned hawks have very similar eggs — habitat helps tell which.' },
-    { species: 'Belted Kingfisher', dimensions: '34 × 26 mm', clutch: '5–8', color: '#ffffff', pattern: 'plain',
+    { species: 'Belted Kingfisher', dimensions: '34 × 26 mm', clutch: '5–8', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white. Cavity nesters don\'t need camouflaged eggs.' },
-    { species: 'Pileated Woodpecker', dimensions: '33 × 25 mm', clutch: '3–5', color: '#ffffff', pattern: 'plain',
+    { species: 'Pileated Woodpecker', dimensions: '33 × 25 mm', clutch: '3–5', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white. All cavity-nester eggs are typically white or pale.' },
     { species: 'Black-capped Chickadee', dimensions: '15 × 12 mm', clutch: '6–8', color: '#fef3c7', pattern: 'speckled',
       notes: 'Cream with reddish spots. Tiny vs nest cavity.' },
@@ -2428,9 +2428,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       notes: 'Pale blue with characteristic dark scribbles. One of nature\'s most distinctive eggs.' },
     { species: 'Common Grackle', dimensions: '29 × 21 mm', clutch: '4–5', color: '#bae6fd', pattern: 'blotched',
       notes: 'Pale blue with dark blotches.' },
-    { species: 'Baltimore Oriole', dimensions: '22 × 16 mm', clutch: '4–5', color: '#cbd5e1', pattern: 'scrawled',
+    { species: 'Baltimore Oriole', dimensions: '22 × 16 mm', clutch: '4–5', color: 'var(--allo-stem-text, #cbd5e1)', pattern: 'scrawled',
       notes: 'Pale gray-blue with dark squiggles. Built into the hanging pouch nest.' },
-    { species: 'Ruby-throated Hummingbird', dimensions: '13 × 9 mm', clutch: '2', color: '#ffffff', pattern: 'plain',
+    { species: 'Ruby-throated Hummingbird', dimensions: '13 × 9 mm', clutch: '2', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white, pea-sized. Smallest Maine bird egg.' },
     { species: 'White-throated Sparrow', dimensions: '20 × 16 mm', clutch: '4–5', color: '#7dd3fc', pattern: 'spotted',
       notes: 'Pale blue with brown spots. Northern conifer breeder.' },
@@ -2438,7 +2438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       notes: 'Pale greenish-white with brown spots. Heavily streaked vs eggs of similar size.' },
     { species: 'Northern Cardinal', dimensions: '25 × 18 mm', clutch: '2–5', color: '#bae6fd', pattern: 'spotted',
       notes: 'Pale gray-blue with brown spots.' },
-    { species: 'Tree Swallow', dimensions: '19 × 13 mm', clutch: '4–7', color: '#ffffff', pattern: 'plain',
+    { species: 'Tree Swallow', dimensions: '19 × 13 mm', clutch: '4–7', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white. Cavity nester or nest box. Bluebird-nest-box program also benefits tree swallows.' },
     { species: 'Eastern Bluebird', dimensions: '21 × 17 mm', clutch: '3–6', color: '#bae6fd', pattern: 'plain',
       notes: 'Pale blue. Cavity nester / nest box. Maine bluebird-trail networks help population recovery.' }
@@ -9026,7 +9026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           : 'Winter — feeder birds, irruptive owls, and resilient year-round residents.';
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
           // ── Hero: layered SVG scene with title overlay ──
-          h('div', { className: 'mb-6 rounded-3xl overflow-hidden shadow-lg relative', style: { background: '#0f172a' } },
+          h('div', { className: 'mb-6 rounded-3xl overflow-hidden shadow-lg relative', style: { background: 'var(--allo-stem-canvas, #0f172a)' } },
             h('svg', {
               viewBox: '0 0 800 240', width: '100%',
               role: 'img', 'aria-label': 'BirdLab hero illustration: sky with flying birds over Maine pine silhouettes',
@@ -11397,7 +11397,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           ),
           // Call-shape descriptor — small badge under the strip
           shapeStyle && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 } },
-            h('span', { style: { fontSize: 9, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Shape'),
+            h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Shape'),
             h('span', {
               style: {
                 display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -11409,7 +11409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('span', { 'aria-hidden': true, style: { fontSize: 11 } }, shapeStyle.icon),
               shapeStyle.text
             ),
-            h('span', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic' } },
+            h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
               ({
                 rising: 'pitch climbs upward',
                 falling: 'pitch drops downward',
@@ -12067,7 +12067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       style: {
                         width: 88, height: 88, fontSize: 28,
                         background: isListenPlaying ? 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' : 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
-                        color: '#ffffff',
+                        color: 'var(--allo-stem-text, #ffffff)',
                         border: isListenPlaying ? '3px solid #be123c' : '3px solid #5b21b6',
                         boxShadow: isListenPlaying
                           ? '0 0 0 6px rgba(244,63,94,0.18), 0 8px 18px rgba(190,18,60,0.35)'
@@ -12353,7 +12353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                             flexShrink: 0,
                             width: 44, height: 44, borderRadius: '50%',
                             background: color.accent,
-                            color: '#ffffff',
+                            color: 'var(--allo-stem-text, #ffffff)',
                             fontSize: 22, fontWeight: 900,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             boxShadow: '0 2px 6px ' + color.accent + '40'
@@ -12631,7 +12631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('span', { 'aria-hidden': true,
                   style: {
                     position: 'absolute', top: '50%', left: 12, transform: 'translateY(-50%)',
-                    fontSize: 16, pointerEvents: 'none', color: '#475569'
+                    fontSize: 16, pointerEvents: 'none', color: 'var(--allo-stem-text-soft, #475569)'
                   }
                 }, '🔎'),
                 h('input', {
@@ -12648,7 +12648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   style: {
                     position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)',
                     background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 14, fontWeight: 700, color: '#64748b',
+                    fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text-soft, #64748b)',
                     padding: '4px 8px', borderRadius: 6
                   },
                   className: 'hover:bg-slate-100'
@@ -13164,7 +13164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         style: {
                           position: 'absolute', top: -10, left: 12,
                           width: isFocused ? 30 : 26, height: isFocused ? 30 : 26, borderRadius: '50%',
-                          background: '#dc2626', color: '#ffffff',
+                          background: '#dc2626', color: 'var(--allo-stem-text, #ffffff)',
                           fontSize: isFocused ? 14 : 12, fontWeight: 900,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           border: '2px solid #ffffff',
@@ -13391,9 +13391,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       return h('div', { key: f.id + '-leg',
                         className: 'flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full',
                         style: {
-                          background: isActive ? f.color : '#f1f5f9',
+                          background: isActive ? f.color: 'var(--allo-stem-text, #f1f5f9)',
                           color: isActive ? '#ffffff' : '#475569',
-                          border: '1.5px solid ' + (isActive ? f.color : '#cbd5e1'),
+                          border: '1.5px solid ' + (isActive ? f.color: 'var(--allo-stem-text, #cbd5e1)'),
                           boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.15)' : 'none'
                         }
                       },
@@ -13548,13 +13548,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   ),
                   // Legend chips
                   h('div', { className: 'flex flex-wrap gap-2 mt-2 text-[11px]' },
-                    h('span', { className: 'inline-flex items-center gap-1', style: { color: '#475569' } },
+                    h('span', { className: 'inline-flex items-center gap-1', style: { color: 'var(--allo-stem-text-soft, #475569)' } },
                       h('span', { 'aria-hidden': true, style: { width: 8, height: 8, background: '#dc2626', borderRadius: '50%', display: 'inline-block' } }),
                       h('span', null, 'Peak migration')),
-                    h('span', { className: 'inline-flex items-center gap-1', style: { color: '#475569' } },
-                      h('span', { 'aria-hidden': true, style: { width: 8, height: 8, background: '#1e293b', borderRadius: '50%', display: 'inline-block' } }),
+                    h('span', { className: 'inline-flex items-center gap-1', style: { color: 'var(--allo-stem-text-soft, #475569)' } },
+                      h('span', { 'aria-hidden': true, style: { width: 8, height: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: '50%', display: 'inline-block' } }),
                       h('span', null, 'Migration intensity curve')),
-                    h('span', { className: 'inline-flex items-center gap-1', style: { color: '#475569' } },
+                    h('span', { className: 'inline-flex items-center gap-1', style: { color: 'var(--allo-stem-text-soft, #475569)' } },
                       h('span', { 'aria-hidden': true, style: { width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '8px solid #dc2626', display: 'inline-block' } }),
                       h('span', null, 'Today'))
                   )
@@ -13572,7 +13572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     isCurrent && h('div', {
                       style: {
                         position: 'absolute', top: -10, right: 12,
-                        background: '#dc2626', color: '#ffffff',
+                        background: '#dc2626', color: 'var(--allo-stem-text, #ffffff)',
                         padding: '3px 10px', borderRadius: 999,
                         fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
                         textTransform: 'uppercase',
@@ -13629,7 +13629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return null;
               }
               function strategyBadge(strategy, distance) {
-                if (/SEDENTARY/i.test(distance)) return { label: 'Sedentary', bg: '#f1f5f9', color: '#475569', border: '#94a3b8' };
+                if (/SEDENTARY/i.test(distance)) return { label: 'Sedentary', bg: '#f1f5f9', color: 'var(--allo-stem-text-soft, #475569)', border: '#94a3b8' };
                 if (/Irruptive/i.test(strategy)) return { label: 'Irruptive', bg: '#ede9fe', color: '#5b21b6', border: '#a78bfa' };
                 if (/Long-distance|neotropical|trans-Atlantic|continent/i.test(strategy)) return { label: 'Long-distance', bg: '#fee2e2', color: '#991b1b', border: '#f87171' };
                 if (/Medium-distance|Medium /i.test(strategy)) return { label: 'Medium-distance', bg: '#fed7aa', color: '#9a3412', border: '#f97316' };
@@ -13881,7 +13881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         background: '#ffffff',
                         padding: 8,
                         borderRadius: 8,
-                        border: '1px solid #cbd5e1',
+                        border: '1px solid var(--allo-stem-border, #cbd5e1)',
                         boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)'
                       }
                     },
@@ -13908,7 +13908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     ),
                     h('div', { className: 'flex flex-wrap items-center gap-3 mt-2 text-xs' },
                       h('div', { className: 'flex items-center gap-1' },
-                        h('span', { 'aria-hidden': true, style: { width: 12, height: 8, background: '#1e293b', borderRadius: 1 } }),
+                        h('span', { 'aria-hidden': true, style: { width: 12, height: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 1 } }),
                         h('span', { className: 'text-slate-700 font-bold' }, '71 still here')
                       ),
                       h('div', { className: 'flex items-center gap-1' },
@@ -14139,7 +14139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           border: '3px solid ' + trend.color,
                           boxShadow: '0 0 0 4px ' + trend.color + '24, 0 4px 10px rgba(0,0,0,0.15)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#ffffff', fontWeight: 900, fontSize: 38, lineHeight: 1
+                          color: 'var(--allo-stem-text, #ffffff)', fontWeight: 900, fontSize: 38, lineHeight: 1
                         }
                       }, trend.arrow),
                       h('div', null,
@@ -14419,7 +14419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                                 style: {
                                   position: 'absolute', top: -8, left: -8,
                                   width: 18, height: 18, borderRadius: '50%',
-                                  background: cat.accent, color: '#ffffff',
+                                  background: cat.accent, color: 'var(--allo-stem-text, #ffffff)',
                                   fontSize: 10, fontWeight: 900,
                                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                                 }
@@ -17031,7 +17031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   style: {
                     width: 56, height: 56, borderRadius: '50%',
                     background: 'linear-gradient(135deg, #0d9488 0%, #7c3aed 100%)',
-                    color: '#ffffff', fontWeight: 900, fontSize: 18,
+                    color: 'var(--allo-stem-text, #ffffff)', fontWeight: 900, fontSize: 18,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
                     border: '3px solid #ffffff',

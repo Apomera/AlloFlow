@@ -1634,7 +1634,7 @@ return React.createElement("div", {
       React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
       React.createElement('div', { style: { flex: 1, minWidth: 220 } },
         React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-        React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+        React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
       )
     );
   })(),
@@ -1796,7 +1796,7 @@ return React.createElement("div", {
 
           return React.createElement("div", { key: ml, style: { position: 'absolute', left: '0px', top: yPos + 'px', display: 'flex', alignItems: 'center', gap: '2px' } },
 
-            React.createElement("span", { style: { fontSize: '8px', color: '#94a3b8', width: '16px', textAlign: 'right', fontFamily: 'monospace' } }, ml),
+            React.createElement("span", { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', width: '16px', textAlign: 'right', fontFamily: 'monospace' } }, ml),
 
             React.createElement("div", { style: { width: '4px', height: '1px', background: '#475569' } })
 

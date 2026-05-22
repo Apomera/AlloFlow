@@ -620,7 +620,7 @@
         /* ═══════════════════════════════════════════════════
            UI RENDER
            ═══════════════════════════════════════════════════ */
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
@@ -650,14 +650,14 @@
                   return h('div', { key: 'f' + i, style: { marginBottom: '8px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
                       h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
-                      h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'y' + (i + 1) + ' =')
+                      h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'y' + (i + 1) + ' =')
                     ),
                     h('input', { type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
                       onChange: function(e) { var nf = funcs.slice(); nf[i] = Object.assign({}, nf[i], { expr: e.target.value }); upd('funcs', nf); },
                       onFocus: function() { upd('focusedInput', i); },
                       'aria-label': 'Function y' + (i + 1) + ' expression',
                       className: 'focus:ring-2 focus:ring-indigo-500',
-                      style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px' } })
+                      style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '12px' } })
                   );
                 })
               ),
@@ -683,7 +683,7 @@
               ),
               // Zoom presets
               h('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
+                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
                     return h('button', { 'aria-label': 'SLIDERS Use a, b, c', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
@@ -698,7 +698,7 @@
                   return h('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
                     h('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
                     h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, 'aria-label': 'Parameter ' + p + ': ' + Number(val.toFixed(1)), onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' } }),
-                    h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#e2e8f0', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
+                    h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
                   );
                 })
               ) : null,
@@ -706,7 +706,7 @@
               d.showDeriv ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
                 h('div', { style: { fontSize: '11px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 TANGENT to y\u2081'),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                  h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x='),
+                  h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'x='),
                   h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, 'aria-label': 'Tangent x position: ' + (d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' } }),
                   h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0')
                 )
@@ -717,11 +717,11 @@
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold' } }, 'Zeros'),
-                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0' } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'None')
+                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0' } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'None')
                   ),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: '11px', color: '#f472b6', fontWeight: 'bold' } }, 'Intersections'),
-                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4' } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'Need 2+ funcs')
+                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4' } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Need 2+ funcs')
                   )
                 )
               ) : null
@@ -729,24 +729,24 @@
 
             // Center — Canvas
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-              h('canvas', { ref: canvasRef, 'aria-label': 'Interactive graphing calculator visualization', tabIndex: 0, style: { width: '100%', flex: 1, background: '#0f172a', cursor: d.traceMode ? 'crosshair' : 'default' },
+              h('canvas', { ref: canvasRef, 'aria-label': 'Interactive graphing calculator visualization', tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
                 onMouseMove: function(e) { if (!d.traceMode) return; var rect = e.currentTarget.getBoundingClientRect(); var px = (e.clientX - rect.left) / rect.width * (e.currentTarget.width / (window.devicePixelRatio || 1)); if (e.currentTarget._toMathX) upd('traceX', e.currentTarget._toMathX(px)); },
                 onMouseLeave: function() { if (d.traceMode) upd('traceX', null); } }),
               showWindow ? h('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: '10px', color: '#818cf8', fontWeight: 'bold' } }, 'WINDOW:'),
                 ['xmin', 'xmax', 'ymin', 'ymax'].map(function(k) {
-                  return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#94a3b8' } }, k + ':', h('input', { type: 'number', value: win[k], onChange: function(e) { var nw = Object.assign({}, win); nw[k] = parseFloat(e.target.value) || 0; upd('window', nw); }, style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '10px' } }));
+                  return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, k + ':', h('input', { type: 'number', value: win[k], onChange: function(e) { var nw = Object.assign({}, win); nw[k] = parseFloat(e.target.value) || 0; upd('window', nw); }, style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '10px' } }));
                 })
               ) : null,
               showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                   h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, '\uD83D\uDCCA TABLE'),
-                  h('label', { style: { fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '11px' } })),
-                  h('label', { style: { fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '11px' } }))
+                  h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } })),
+                  h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } }))
                 ),
                 h('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
                   h('caption', { className: 'sr-only' }, 'graphcalc data table'), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'), h('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081'))),
-                  h('tbody', null, tableRows.map(function(r, ri) { return h('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } }, h('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#94a3b8' } }, r.x), h('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#e2e8f0' } }, r.y)); }))
+                  h('tbody', null, tableRows.map(function(r, ri) { return h('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } }, h('td', { style: { padding: '2px 10px', textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.x), h('td', { style: { padding: '2px 10px', textAlign: 'right', color: 'var(--allo-stem-text, #e2e8f0)' } }, r.y)); }))
                 )
               ) : null
             ),
@@ -764,7 +764,7 @@
                 currentTips.map(function(tip, i) {
                   return h('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
                     h('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
-                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#cbd5e1' } }, tip.text),
+                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #cbd5e1)' } }, tip.text),
                     h('button', { 'aria-label': 'Read aloud', onClick: function() { speakText(tip.text, callTTS); }, style: { marginTop: '4px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' } }, '\uD83D\uDD0A Read aloud')
                   );
                 })
@@ -775,7 +775,7 @@
                   var isActive = d.activeChallenge === ci;
                   return h('div', { key: ci, role: 'button', tabIndex: 0, 'aria-expanded': isActive, 'aria-label': ch.topic + (isActive ? ' (expanded)' : ' (collapsed)'), onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
                     h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
-                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
+                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
                       h('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
                       h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP(5); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
@@ -786,7 +786,7 @@
               // AI
               (d._sideTab || 'coach') === 'ai' ? h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '8px' } },
                 h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '8px' } },
-                  aiMessages.length === 0 ? h('div', { style: { textAlign: 'center', padding: '20px 0' } }, h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '\uD83E\uDD16'), h('p', { style: { fontSize: '11px', color: '#94a3b8' } }, 'Ask about graphing or math!')) : null,
+                  aiMessages.length === 0 ? h('div', { style: { textAlign: 'center', padding: '20px 0' } }, h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '\uD83E\uDD16'), h('p', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Ask about graphing or math!')) : null,
                   aiMessages.map(function(msg, i) {
                     return h('div', { key: i, style: { display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: '6px' } },
                       h('div', { style: { maxWidth: '85%', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', background: msg.role === 'user' ? '#6366f1' : 'rgba(99,102,241,0.1)', color: msg.role === 'user' ? '#fff' : '#cbd5e1' } },
@@ -794,10 +794,10 @@
                         msg.role !== 'user' ? h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(msg.text, callTTS); }, style: { marginLeft: '6px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer' } }, '\uD83D\uDD0A') : null
                       ));
                   }),
-                  aiLoading ? h('div', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' } }, 'Thinking...') : null
+                  aiLoading ? h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Thinking...') : null
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
-                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', fontSize: '11px' } }),
+                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px' } }),
                   h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': 'Send question to AI math tutor', style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
@@ -809,7 +809,7 @@
                   return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.08)', opacity: earned ? 1 : 0.5 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '16px' } }, earned ? b.icon : '\uD83D\uDD12'),
-                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, b.desc)),
+                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, b.desc)),
                       earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
                     ));
                 })

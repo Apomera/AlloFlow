@@ -125,7 +125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    * Returns {color, label} for visualization.
    */
   function pitchZone(hz) {
-    if (hz <= 0) return { color: '#94a3b8', label: 'No pitch', zone: 'none' };
+    if (hz <= 0) return { color: 'var(--allo-stem-text-soft, #94a3b8)', label: 'No pitch', zone: 'none' };
     if (hz < 130) return { color: '#3b82f6', label: 'Low / calm', zone: 'low' };
     if (hz < 220) return { color: '#22c55e', label: 'Conversational', zone: 'mid' };
     if (hz < 320) return { color: '#f97316', label: 'Emphasis', zone: 'high' };

@@ -111,7 +111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
     legendary: { min: 75, label: 'Legendary', emoji: '👑', color: '#eab308' },
     powerful: { min: 50, label: 'Powerful', emoji: '⚡', color: '#8b5cf6' },
     moderate: { min: 25, label: 'Moderate', emoji: '🔵', color: '#3b82f6' },
-    weak: { min: 0, label: 'Weak', emoji: '💫', color: '#94a3b8' },
+    weak: { min: 0, label: 'Weak', emoji: '💫', color: 'var(--allo-stem-text-soft, #94a3b8)' },
   };
 
   var getQualityTier = function(score) {

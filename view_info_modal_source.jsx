@@ -147,35 +147,6 @@ function InfoModal({
                     <RefreshCw size={10} /> {t('about.reset_wizard')}
                   </button>
                 </div>
-                <div className="border-t border-slate-200 pt-2 mt-2">
-                  <a
-                    href="https://Ko-fi.com/aaronpomeranz207"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-slate-600 hover:text-pink-500 font-bold transition-colors flex items-center justify-center gap-2 mx-auto group"
-                  >
-                    {t('about.support_kofi')}
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-700 group-hover:text-pink-500 transition-colors" aria-hidden="true">
-                      <style>
-                        {`
-                        @keyframes rise {
-                            0% { transform: translateY(0); opacity: 0; }
-                            10% { opacity: 0.8; }
-                            50% { opacity: 0.8; }
-                            100% { transform: translateY(-5px); opacity: 0; }
-                        }
-                        .steam-1 { animation: rise 1.5s infinite linear; transform-origin: center; }
-                        .steam-2 { animation: rise 1.5s infinite linear 0.5s; transform-origin: center; }
-                        .steam-3 { animation: rise 1.5s infinite linear 0.25s; transform-origin: center; }
-                        `}
-                      </style>
-                      <path fillRule="evenodd" clipRule="evenodd" d="M3 5H11V10C11 11.6569 9.65685 13 8 13H6C4.34315 13 3 11.6569 3 10V5ZM12 6H13C13.5523 6 14 6.44772 14 7V9C14 9.55228 13.5523 10 13 10H12V6ZM2 4H12V5H13C14.6569 5 16 6.34315 16 8V9C16 10.6569 14.6569 12 13 12H11.8284C11.4117 13.7329 9.86961 15 8 15H6C4.13039 15 2.58827 13.7329 2.17157 12H2V4Z" fill="currentColor"/>
-                      <rect className="steam-1" x="5" y="2" width="1" height="2" fill="currentColor" rx="0.5"/>
-                      <rect className="steam-2" x="7.5" y="3" width="1" height="2" fill="currentColor" rx="0.5"/>
-                      <rect className="steam-3" x="10" y="2" width="1" height="2" fill="currentColor" rx="0.5"/>
-                    </svg>
-                  </a>
-                </div>
               </div>
             </div>
           ) : (

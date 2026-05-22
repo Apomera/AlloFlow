@@ -431,7 +431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     business:     { name: 'Business Management & Administration',   icon: '📊', color: '#0891b2' },
     education:    { name: 'Education & Training',                   icon: '🎓', color: '#7c3aed' },
     finance:      { name: 'Finance',                                icon: '💰', color: '#16a34a' },
-    government:   { name: 'Government & Public Administration',     icon: '🏛',  color: '#475569' },
+    government:   { name: 'Government & Public Administration',     icon: '🏛',  color: 'var(--allo-stem-text-soft, #475569)' },
     health:       { name: 'Health Science',                         icon: '🏥', color: '#dc2626' },
     hospitality:  { name: 'Hospitality & Tourism',                  icon: '🍽',  color: '#f59e0b' },
     humanservices:{ name: 'Human Services',                         icon: '🤝', color: '#db2777' },
@@ -6707,7 +6707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     chronic_illness: {
       name: 'Chronic illness + fatigue (ME/CFS, fibro, EDS, long COVID, autoimmune)',
       icon: '🔋',
-      color: '#475569',
+      color: 'var(--allo-stem-text-soft, #475569)',
       def: 'Spans dozens of conditions with shared features: variable energy, post-exertional malaise, brain fog, pain, flare-remission cycles. Long COVID has dramatically increased prevalence (~7% of U.S. adults reporting). Most under-accommodated disability category in employment law.',
       common_accommodations: [
         'Reduced hours / part-time as accommodation',
@@ -9184,7 +9184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, iss.icon),
                   h('span', { style: { color: biasAnswered ? color : (iss.textColor || iss.color), fontSize: 13, fontWeight: 800 } }, iss.label)
                 ),
-                h('div', { style: { fontSize: 11, fontWeight: 500, color: biasAnswered ? color : '#cbd5e1', lineHeight: 1.45 } }, iss.def)
+                h('div', { style: { fontSize: 11, fontWeight: 500, color: biasAnswered ? color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.45 } }, iss.def)
               );
             })
           ),
@@ -10486,7 +10486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               ),
               h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                 h('div', { style: { fontSize: 30, fontWeight: 900, color: tierColor, lineHeight: 1, letterSpacing: '0.04em' } }, code),
-                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#cbd5e1' } }, topScore + '/100')
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text, #cbd5e1)' } }, topScore + '/100')
               )
             ),
             // Holland hexagon
@@ -10513,7 +10513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('div', { style: { flex: 1, minWidth: 200 } },
               h('div', { style: { fontSize: 28, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
               h('div', { style: { fontSize: 17, fontWeight: 900, color: tierColor, lineHeight: 1.15 } }, tierTitle),
-              h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, tierMsg)
+              h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55 } }, tierMsg)
             )
           ),
           // Six-letter ranking strip
@@ -16634,7 +16634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       });
       // Pay distribution (binned)
       var payBins = [
-        { label: '< $40K', min: 0, max: 40000, count: 0, color: '#94a3b8' },
+        { label: '< $40K', min: 0, max: 40000, count: 0, color: 'var(--allo-stem-text-soft, #94a3b8)' },
         { label: '$40-60K', min: 40000, max: 60000, count: 0, color: '#84cc16' },
         { label: '$60-80K', min: 60000, max: 80000, count: 0, color: '#10b981' },
         { label: '$80-120K', min: 80000, max: 120000, count: 0, color: '#0891b2' },
@@ -17104,7 +17104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             if (/Situational Judgment/i.test(name))   return { fill: '#0ea5e9', border: '#0369a1' };
             if (/Reference/i.test(name))              return { fill: '#f59e0b', border: '#b45309' };
             if (/AI-Scored/i.test(name))              return { fill: '#f43f5e', border: '#be123c' };
-            return { fill: '#cbd5e1', border: '#475569' };
+            return { fill: '#cbd5e1', border: 'var(--allo-stem-border, #475569)' };
           }
           return h('div', { className: 'p-4 rounded-xl bg-slate-900/60 border border-amber-500/30' },
             h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-3' }, '📏 Predictive validity at a glance'),
@@ -17116,7 +17116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 var displayR = (typeof m.r === 'number') ? m.r.toFixed(2) : (r ? '~' + r.toFixed(2) + '*' : '?');
                 return h('div', { key: m.name, className: 'flex items-center gap-2 text-xs' },
                   h('div', {
-                    style: { width: 180, flexShrink: 0, color: '#e2e8f0', fontWeight: 600, paddingRight: 4, textAlign: 'right' }
+                    style: { width: 180, flexShrink: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, paddingRight: 4, textAlign: 'right' }
                   }, m.name),
                   h('div', { className: 'relative flex-1 h-5 rounded border', style: { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(148,163,184,0.25)', minWidth: 100 } },
                     [0.2, 0.4, 0.6].map(function(t, ti) {
@@ -17523,7 +17523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
                 role: 'img',
                 'aria-label': 'Normal distribution with score ' + score + ' marked. 95% confidence interval shaded from ' + ci95.low + ' to ' + ci95.high + '. Percentile rank ' + percentile(score).toFixed(1) + '%.',
-                style: { background: '#0f172a', borderRadius: 8 }
+                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8 }
               },
                 // 95% CI band fill under the curve
                 h('path', { d: ciPath, fill: '#0ea5e9', opacity: 0.55 }),
@@ -17573,7 +17573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('svg', {
                 width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
                 role: 'img', 'aria-label': 'Curve showing how the standard error of measurement grows as reliability drops below 1.0.',
-                style: { background: '#0f172a', borderRadius: 8 }
+                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8 }
               },
                 // Axes
                 h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
@@ -17986,7 +17986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     style: {
                       position: 'absolute', top: -8, left: -8,
                       width: 20, height: 20, borderRadius: '50%',
-                      background: '#0284c7', color: '#ffffff',
+                      background: '#0284c7', color: 'var(--allo-stem-text, #ffffff)',
                       fontSize: 10, fontWeight: 900,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
@@ -18012,7 +18012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 position: 'absolute', top: -10, left: 14,
                 width: 26, height: 26, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-                color: '#ffffff', fontSize: 12, fontWeight: 900,
+                color: 'var(--allo-stem-text, #ffffff)', fontSize: 12, fontWeight: 900,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 border: '2px solid #0f172a',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.4)'
@@ -19748,7 +19748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, vi.icon),
               h('span', { style: { color: rsAns ? color : (vi.textColor || vi.color), fontSize: 13, fontWeight: 800 } }, vi.label)
             ),
-            h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: rsAns ? color : '#cbd5e1' } }, vi.def)
+            h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: rsAns ? color: 'var(--allo-stem-text, #cbd5e1)' } }, vi.def)
           );
         })
       ),

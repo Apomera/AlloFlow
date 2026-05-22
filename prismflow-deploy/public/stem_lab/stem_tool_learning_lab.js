@@ -2510,7 +2510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '📉'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Forgetting curve simulator'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Click anywhere on the chart to add a spaced review. Watch the green curve hold up.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Click anywhere on the chart to add a spaced review. Watch the green curve hold up.')
         )
       ),
 
@@ -2551,7 +2551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('text', { x: W - mx, y: H - 1, fontSize: 2.5, fill: '#94a3b8', textAnchor: 'end' }, 'day ' + totalDays)
         ),
         // Legend
-        hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 10, color: '#cbd5e1', flexWrap: 'wrap' } },
+        hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', flexWrap: 'wrap' } },
           hh('span', null, hh('span', { style: { display: 'inline-block', width: 12, height: 2, background: '#ef4444', marginRight: 4, verticalAlign: 'middle' } }), 'Cram (no reviews)'),
           hh('span', null, hh('span', { style: { display: 'inline-block', width: 12, height: 3, background: '#c084fc', marginRight: 4, verticalAlign: 'middle' } }), 'Spaced (with reviews)'),
           hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#10b981', marginRight: 4, verticalAlign: 'middle' } }), 'Review point')
@@ -2593,7 +2593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           onClick: clearReviews,
           style: {
             padding: '6px 12px', borderRadius: 8,
-            background: 'rgba(148,163,184,0.10)', color: '#94a3b8',
+            background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)',
             border: '1px solid rgba(148,163,184,0.30)',
             fontSize: 10, fontWeight: 700, cursor: 'pointer'
           }
@@ -2606,7 +2606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             padding: 10, borderRadius: 8,
             background: spacedFinal >= 70 ? 'rgba(34,197,94,0.10)' : spacedFinal >= 40 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)',
             border: '1px solid ' + (spacedFinal >= 70 ? 'rgba(34,197,94,0.30)' : spacedFinal >= 40 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'),
-            fontSize: 11, color: '#cbd5e1', lineHeight: 1.6
+            fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6
           } },
             hh('strong', { style: { color: spacedFinal >= 70 ? '#22c55e' : spacedFinal >= 40 ? '#fbbf24' : '#ef4444' } }, '🎓 '),
             spacedFinal >= 70
@@ -2615,7 +2615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 ? 'Modest spacing helped — ' + spacedFinal + '% retention vs ' + cramFinal + '% from cramming alone. To clear 70%, try a review on day 1 (closes the steepest part of the curve), then days 3, 7, 14.'
                 : 'Reviews placed but retention still low. Two diagnoses: (a) reviews stacked too early (no forgetting yet = no consolidation benefit), or (b) too few reviews. The optimal preset works because each review is timed AFTER notable forgetting.'
           )
-        : hh('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Click a preset, or click directly on the chart to add a review point.')
+        : hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'center', fontStyle: 'italic' } }, 'Click a preset, or click directly on the chart to add a review point.')
     );
   }
 
@@ -2673,7 +2673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '⚖️'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Working memory bucket'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Add chunks to working memory. Capacity ~7 (Miller). Over capacity, chunks fall out — that is the limit you cannot read past.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Add chunks to working memory. Capacity ~7 (Miller). Over capacity, chunks fall out — that is the limit you cannot read past.')
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: chunks.length > CAPACITY ? 'rgba(239,68,68,0.20)' : chunks.length === CAPACITY ? 'rgba(251,191,36,0.20)' : 'rgba(16,185,129,0.20)', color: chunks.length > CAPACITY ? '#ef4444' : chunks.length === CAPACITY ? '#fbbf24' : '#10b981', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid currentColor' } }, chunks.length + ' / ' + CAPACITY)
       ),
@@ -2753,7 +2753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           onClick: clearAll,
           style: {
             padding: '6px 14px', borderRadius: 8,
-            background: 'rgba(148,163,184,0.10)', color: '#94a3b8',
+            background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)',
             border: '1px solid rgba(148,163,184,0.30)',
             fontSize: 10, fontWeight: 700, cursor: 'pointer'
           }
@@ -2765,7 +2765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         padding: 10, borderRadius: 8,
         background: hasOver ? 'rgba(239,68,68,0.10)' : chunks.length === CAPACITY ? 'rgba(251,191,36,0.10)' : 'rgba(16,185,129,0.10)',
         border: '1px solid ' + (hasOver ? 'rgba(239,68,68,0.30)' : chunks.length === CAPACITY ? 'rgba(251,191,36,0.30)' : 'rgba(16,185,129,0.30)'),
-        fontSize: 11, color: '#cbd5e1', lineHeight: 1.6
+        fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6
       } },
         hh('strong', { style: { color: hasOver ? '#ef4444' : chunks.length === CAPACITY ? '#fbbf24' : '#10b981' } }, '🎓 '),
         hasOver
@@ -2825,7 +2825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { textAlign: 'center', padding: 16 } },
           hh('div', { style: { fontSize: 32, marginBottom: 8 } }, '🧠'),
           hh('div', { style: { fontSize: 16, fontWeight: 900, color: '#c084fc', marginBottom: 6 } }, 'Myth-spotter complete'),
-          hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Score: ' + score + ' / ' + MYTHS.length + ' (' + pct + '%)'),
+          hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'Score: ' + score + ' / ' + MYTHS.length + ' (' + pct + '%)'),
           hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700, marginBottom: 14 } }, grade),
           hh('button', {
             onClick: function() { setIdx(0); setPick(null); setScore(0); setAwarded(false); },
@@ -2855,7 +2855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧠'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Neuromyth swiper'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Believe it, or doubt it. Then see what the research says.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Believe it, or doubt it. Then see what the research says.')
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(147,51,234,0.12)', color: '#c084fc', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(147,51,234,0.40)' } }, 'Card ' + (idx + 1) + ' / ' + MYTHS.length + ' · ' + score + ' right')
       ),
@@ -2869,14 +2869,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           minHeight: 110, transition: 'all 240ms ease'
         }
       },
-        hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Claim'),
-        hh('div', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', lineHeight: 1.5, marginBottom: picked ? 12 : 0 } }, '"' + card.claim + '"'),
+        hh('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Claim'),
+        hh('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: picked ? 12 : 0 } }, '"' + card.claim + '"'),
         picked ? hh('div', null,
           hh('div', { style: { padding: 8, borderRadius: 6, background: card.truth ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.10)', borderLeft: '3px solid ' + (card.truth ? '#10b981' : '#ef4444'), marginBottom: 8 } },
             hh('span', { style: { fontSize: 10, fontWeight: 800, color: card.truth ? '#10b981' : '#ef4444', marginRight: 6 } }, card.truth ? '✓ TRUE' : '✗ MYTH'),
             hh('span', { style: { fontSize: 10, color: correct ? '#22c55e' : '#ef4444', fontWeight: 700 } }, correct ? '— you got it right' : '— you swiped the wrong way')
           ),
-          hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, card.why)
+          hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, card.why)
         ) : null
       ),
 
@@ -2991,7 +2991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     var phaseInfo = {
-      idle:    { label: 'Ready to begin', color: '#94a3b8' },
+      idle:    { label: 'Ready to begin', color: 'var(--allo-stem-text-soft, #94a3b8)' },
       singleN: { label: 'Phase 1 of 3 · Numbers only', color: '#60a5fa', task: 'Tap ODD or EVEN' },
       singleL: { label: 'Phase 2 of 3 · Letters only', color: '#a78bfa', task: 'Tap VOWEL or CONSONANT' },
       'switch':{ label: 'Phase 3 of 3 · Mixed (the hard one)', color: '#ef4444', task: 'Switch rule each trial' },
@@ -3010,13 +3010,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '⏱️'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Measure your own task-switching cost'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Three short phases (10 trials each, ~30 seconds total). The third phase asks your brain to switch rules constantly — same kind of switching that texting-while-studying forces.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Three short phases (10 trials each, ~30 seconds total). The third phase asks your brain to switch rules constantly — same kind of switching that texting-while-studying forces.')
         )
       ),
 
       // Idle screen
       phase === 'idle' ? hh('div', { style: { textAlign: 'center', padding: '20px 12px' } },
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14, maxWidth: 460, margin: '0 auto 14px' } },
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14, maxWidth: 460, margin: '0 auto 14px' } },
           'You will see numbers and letters one at a time.', hh('br'),
           'Phase 1: Numbers only — tap ODD or EVEN.', hh('br'),
           'Phase 2: Letters only — tap VOWEL or CONSONANT.', hh('br'),
@@ -3032,7 +3032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         // Phase header
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontSize: 11 } },
           hh('span', { style: { color: info.color, fontWeight: 800 } }, info.label),
-          hh('span', { style: { color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Trial ' + (trial + 1) + ' / ' + batch.length)
+          hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Trial ' + (trial + 1) + ' / ' + batch.length)
         ),
         // Progress bar
         hh('div', { style: { height: 4, background: 'rgba(15,23,42,0.6)', borderRadius: 2, marginBottom: 14, overflow: 'hidden' } },
@@ -3040,9 +3040,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         ),
         // Stimulus
         hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: '32px 12px', marginBottom: 12, textAlign: 'center', border: '2px solid ' + info.color } },
-          hh('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, stim.kind === 'num' ? 'NUMBER' : 'LETTER'),
+          hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, stim.kind === 'num' ? 'NUMBER' : 'LETTER'),
           hh('div', { style: { fontSize: 72, fontWeight: 900, color: stim.kind === 'num' ? '#60a5fa' : '#a78bfa', lineHeight: 1, fontFamily: 'ui-monospace, Menlo, monospace' } }, stim.value),
-          hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 8, fontStyle: 'italic' } }, stim.kind === 'num' ? 'Odd or even?' : 'Vowel or consonant?')
+          hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8, fontStyle: 'italic' } }, stim.kind === 'num' ? 'Odd or even?' : 'Vowel or consonant?')
         ),
         // Answer buttons (always 2; labels switch by stim type)
         hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
@@ -3085,7 +3085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               ];
               return bars.map(function(b, i) {
                 return hh('div', { key: 'bar-' + i, style: { marginBottom: 8 } },
-                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginBottom: 4 } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
                     hh('span', { style: { fontWeight: 700, color: b.color } }, b.label),
                     hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, b.time.toFixed(1) + 's · ' + b.errs + ' err')
                   ),
@@ -3098,12 +3098,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           ),
           // Summary card
           hh('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', marginBottom: 12 } },
-            hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               hh('strong', { style: { color: '#fca5a5' } }, '💸 Switching cost: '),
               costMs > 0 ? '+' + costMs + ' ms per trial · +' + costPct + '% slower overall.' : 'You appear to have no measurable cost (rare; usually means trials were too easy or you went very slow). Re-run for cleaner data.',
               costPct >= 30 ? hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: '#ef4444' } }, 'High cost. '), 'This is what your brain pays every time you task-switch — including every glance at a notification while studying. Multiply by 100 trials per study session and the cost is enormous.')
                 : costPct >= 10 ? hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: '#fbbf24' } }, 'Moderate cost. '), 'Even modest switching costs accumulate. Texting-while-studying research shows ~25% throughput loss in real assignments.')
-                : hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: '#94a3b8' } }, 'Low measured cost — '), 'but laboratory effects are typically 25-40% with stronger task differences. Your switching cost on real homework is likely larger than this micro-test reveals.')
+                : hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Low measured cost — '), 'but laboratory effects are typically 25-40% with stronger task differences. Your switching cost on real homework is likely larger than this micro-test reveals.')
             )
           ),
           hh('div', { style: { textAlign: 'center' } },
@@ -3193,7 +3193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { textAlign: 'center', padding: 16 } },
           hh('div', { style: { fontSize: 32, marginBottom: 8 } }, '📊'),
           hh('div', { style: { fontSize: 16, fontWeight: 900, color: '#c084fc', marginBottom: 6 } }, 'Bloom\'s sorter complete'),
-          hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Score: ' + score + ' / ' + ITEMS.length + ' (' + pct + '%)'),
+          hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'Score: ' + score + ' / ' + ITEMS.length + ' (' + pct + '%)'),
           hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700, marginBottom: 14 } }, grade),
           hh('button', { onClick: reset,
             style: { padding: '10px 18px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
@@ -3207,15 +3207,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '📊'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Bloom\'s objective sorter'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Match each learning objective to a Bloom level. Twelve real classroom-ready objectives.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Match each learning objective to a Bloom level. Twelve real classroom-ready objectives.')
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(147,51,234,0.12)', color: '#c084fc', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(147,51,234,0.40)' } }, 'Item ' + (idx + 1) + ' / ' + ITEMS.length + ' · ' + score + ' right')
       ),
 
       // Objective card
       hh('div', { style: { background: 'rgba(2,6,23,0.6)', borderRadius: 10, padding: '14px 16px', marginBottom: 12, borderLeft: '3px solid #c084fc' } },
-        hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Learning objective'),
-        hh('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, '"' + item.obj + '"')
+        hh('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Learning objective'),
+        hh('div', { style: { fontSize: 13, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, '"' + item.obj + '"')
       ),
 
       // 6 level buttons
@@ -3247,13 +3247,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Feedback
       picked ? hh('div', { role: 'status', style: { padding: '12px 14px', borderRadius: 8, background: correct ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (correct ? 'rgba(34,197,94,0.30)' : 'rgba(239,68,68,0.30)'), marginBottom: 8 } },
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: correct ? '#22c55e' : '#ef4444', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' } }, correct ? '✓ Correct' : '✗ Actually ' + (correctLevel ? correctLevel.label : '?')),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, item.why),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, item.why),
         hh('div', { style: { marginTop: 10, textAlign: 'right' } },
           hh('button', { onClick: next,
             style: { padding: '8px 16px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
           }, idx + 1 >= ITEMS.length ? 'See score →' : 'Next objective →')
         )
-      ) : hh('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Pick a Bloom level for this objective.')
+      ) : hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'center', fontStyle: 'italic' } }, 'Pick a Bloom level for this objective.')
     );
   }
 
@@ -3340,7 +3340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🥇'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Rank study strategies — your gut vs. Dunlosky 2013'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Reorder using the ↑↓ buttons (most-effective at top). Lock in to compare with the meta-analysis ranking.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Reorder using the ↑↓ buttons (most-effective at top). Lock in to compare with the meta-analysis ranking.')
         )
       ),
 
@@ -3361,7 +3361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { width: 28, height: 28, borderRadius: '50%', background: '#9333ea', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 } }, '#' + (i + 1)),
             hh('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, s.icon),
             hh('div', { style: { flex: 1, minWidth: 0 } },
-              hh('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0' } }, s.label),
+              hh('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, s.label),
               locked ? hh('div', { style: { fontSize: 10, color: utilityColor(s.utility), fontWeight: 700, marginTop: 2 } },
                 'Dunlosky: ' + s.utility + ' utility · #' + (dunRank + 1) + ' (you placed it #' + (i + 1) + ')'
               ) : null
@@ -3383,7 +3383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // Locked: show details + score
       locked ? hh('div', null,
-        hh('div', { style: { padding: 12, borderRadius: 8, background: totalDist <= 8 ? 'rgba(34,197,94,0.10)' : totalDist <= 16 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (totalDist <= 8 ? 'rgba(34,197,94,0.30)' : totalDist <= 16 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'), marginBottom: 10, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('div', { style: { padding: 12, borderRadius: 8, background: totalDist <= 8 ? 'rgba(34,197,94,0.10)' : totalDist <= 16 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (totalDist <= 8 ? 'rgba(34,197,94,0.30)' : totalDist <= 16 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'), marginBottom: 10, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
           hh('strong', { style: { color: totalDist <= 8 ? '#22c55e' : totalDist <= 16 ? '#fbbf24' : '#ef4444' } },
             perfectMatch ? '🎯 Perfect match — research-aligned intuition. ' : totalDist <= 8 ? '🎯 Very close — good intuition. ' : totalDist <= 16 ? '📖 Some surprises. ' : '🔄 Big gap — most students show this. '
           ),
@@ -3395,8 +3395,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('div', { style: { marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 } },
             DUNLOSKY.map(function(s, i) {
               return hh('div', { key: 'd-' + s.id, style: { padding: 8, borderRadius: 6, background: utilityColor(s.utility) + '08', borderLeft: '2px solid ' + utilityColor(s.utility) } },
-                hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, '#' + (i + 1) + ' ' + s.icon + ' ' + s.label, hh('span', { style: { marginLeft: 8, fontSize: 9, color: utilityColor(s.utility), fontWeight: 800 } }, s.utility)),
-                hh('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.55 } }, s.why)
+                hh('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, '#' + (i + 1) + ' ' + s.icon + ' ' + s.label, hh('span', { style: { marginLeft: 8, fontSize: 9, color: utilityColor(s.utility), fontWeight: 800 } }, s.utility)),
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, s.why)
               );
             })
           )
@@ -3503,20 +3503,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧮'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Measure your own working memory · digit span test'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Watch a sequence of digits, then type them back. Sequence grows by 1 each round you get right. Stops after 2 fails at the same length.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Watch a sequence of digits, then type them back. Sequence grows by 1 each round you get right. Stops after 2 fails at the same length.')
         ),
         bestSpan > 0 ? hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.18)', color: '#10b981', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Best: ' + bestSpan) : null
       ),
 
       // Idle screen
       phase === 'idle' ? hh('div', { style: { textAlign: 'center', padding: '20px 12px' } },
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 14, maxWidth: 420, margin: '0 auto 14px' } },
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, marginBottom: 14, maxWidth: 420, margin: '0 auto 14px' } },
           'Each digit will flash for 0.8 seconds.', hh('br'),
           backward
             ? hh('span', null, 'Then type them back ', hh('strong', { style: { color: '#fbbf24' } }, 'in REVERSE order'), ' — much harder, tests both storage AND manipulation.')
             : 'Then type them back in the same order. Forward span is what most "working memory capacity" research measures.',
         ),
-        hh('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#94a3b8', marginBottom: 14, cursor: 'pointer' } },
+        hh('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14, cursor: 'pointer' } },
           hh('input', { type: 'checkbox', checked: backward, onChange: function(e) { setBackward(e.target.checked); } }),
           'Backward span (harder)'
         ),
@@ -3529,15 +3529,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // Showing phase — flash digit
       phase === 'showing' ? hh('div', null,
-        hh('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 8, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Length ' + seqLen + ' · digit ' + Math.min(flashIdx + 1, seq.length) + ' of ' + seq.length),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginBottom: 8, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Length ' + seqLen + ' · digit ' + Math.min(flashIdx + 1, seq.length) + ' of ' + seq.length),
         hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: '50px 12px', textAlign: 'center', border: '2px solid #9333ea', minHeight: 160 } },
-          flashIdx < seq.length ? hh('div', { style: { fontSize: 96, fontWeight: 900, color: '#c084fc', lineHeight: 1, fontFamily: 'ui-monospace, Menlo, monospace' } }, seq[flashIdx]) : hh('div', { style: { fontSize: 14, color: '#94a3b8', fontStyle: 'italic' } }, 'Get ready to type...')
+          flashIdx < seq.length ? hh('div', { style: { fontSize: 96, fontWeight: 900, color: '#c084fc', lineHeight: 1, fontFamily: 'ui-monospace, Menlo, monospace' } }, seq[flashIdx]) : hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Get ready to type...')
         )
       ) : null,
 
       // Recall phase
       phase === 'recall' ? hh('div', null,
-        hh('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 8 } }, 'Type the ' + seqLen + ' digits ', backward ? 'IN REVERSE ORDER' : 'in the order shown'),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginBottom: 8 } }, 'Type the ' + seqLen + ' digits ', backward ? 'IN REVERSE ORDER' : 'in the order shown'),
         hh('input', {
           type: 'text', autoFocus: true, value: typed, inputMode: 'numeric',
           maxLength: seqLen,
@@ -3576,11 +3576,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         }
         return hh('div', { style: { padding: '6px' } },
           hh('div', { style: { textAlign: 'center', padding: 16 } },
-            hh('div', { style: { fontSize: 14, color: '#94a3b8', marginBottom: 4 } }, 'Your ' + (backward ? 'backward ' : 'forward ') + 'digit span'),
+            hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Your ' + (backward ? 'backward ' : 'forward ') + 'digit span'),
             hh('div', { style: { fontSize: 48, fontWeight: 900, color: verdictColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, span),
             hh('div', { style: { fontSize: 13, color: verdictColor, fontWeight: 700, marginTop: 6 } }, verdict)
           ),
-          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
             hh('strong', { style: { color: '#c084fc' } }, '🎓 What this means: '), interp
           ),
           hh('div', { style: { textAlign: 'center' } },
@@ -3657,7 +3657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var STAGES = [
       { id: 0, label: 'Awake', color: '#fbbf24', y: 0 },
       { id: 4, label: 'REM',   color: '#a855f7', y: 1 },
-      { id: 1, label: 'N1',    color: '#94a3b8', y: 2 },
+      { id: 1, label: 'N1',    color: 'var(--allo-stem-text-soft, #94a3b8)', y: 2 },
       { id: 2, label: 'N2',    color: '#06b6d4', y: 3 },
       { id: 3, label: 'N3 deep', color: '#1d4ed8', y: 4 }
     ];
@@ -3683,7 +3683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '😴'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Sleep cycle visualizer'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Drag the slider to change total sleep hours. Watch which stages get cut first when you sleep less. (REM concentrates in the second half — that\'s why short sleep hits memory hardest.)')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Drag the slider to change total sleep hours. Watch which stages get cut first when you sleep less. (REM concentrates in the second half — that\'s why short sleep hits memory hardest.)')
         )
       ),
 
@@ -3723,7 +3723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // Slider
       hh('div', { style: { padding: '0 4px', marginBottom: 12 } },
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 6 } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
           hh('span', null, 'Total sleep'),
           hh('strong', { style: { color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14 } }, hours + 'h ' + Math.round((hours - Math.floor(hours)) * 60) + 'm')
         ),
@@ -3733,7 +3733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           onChange: function(e) { setHours(parseFloat(e.target.value)); },
           style: { width: '100%', accentColor: '#9333ea' }
         }),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
           hh('span', null, '4h (severe)'), hh('span', null, '7h (low end)'), hh('span', null, '8-9h (recommended)'), hh('span', null, '10h')
         )
       ),
@@ -3749,7 +3749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'st-' + i, style: { padding: 8, borderRadius: 8, background: s.color + '14', border: '1px solid ' + s.color + '40' } },
             hh('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', marginBottom: 2 } }, s.label),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(s.mins) + 'm'),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2 } }, pct + '% of optimal · ', s.why)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, pct + '% of optimal · ', s.why)
           );
         })
       ),
@@ -3759,7 +3759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         padding: 10, borderRadius: 8, marginBottom: 10,
         background: memIdx >= 90 ? 'rgba(34,197,94,0.10)' : memIdx >= 70 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)',
         border: '1px solid ' + (memIdx >= 90 ? 'rgba(34,197,94,0.30)' : memIdx >= 70 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'),
-        fontSize: 11, color: '#cbd5e1', lineHeight: 1.6
+        fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6
       } },
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
           hh('strong', { style: { color: memIdx >= 90 ? '#22c55e' : memIdx >= 70 ? '#fbbf24' : '#ef4444' } }, '🧠 Memory consolidation index'),
@@ -3775,7 +3775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       // Adolescent note
-      hours < 8 ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.55 } },
+      hours < 8 ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
         hh('strong', { style: { color: '#c084fc' } }, '🌙 Adolescent note: '),
         'Teens need 8-10 hours (AAP 2014). The circadian shift in puberty pushes sleep onset later AND school start times pull wake earlier — most US teens are chronically sleep-restricted. Schools that delay start to 8:30+ see measurable academic + mental-health gains.'
       ) : null
@@ -3863,7 +3863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🎯'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'SMART goal builder'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Fill the five fields. Each scores live. The composed goal sentence appears below as you type.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Fill the five fields. Each scores live. The composed goal sentence appears below as you type.')
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: avgScore >= 80 ? 'rgba(34,197,94,0.18)' : avgScore >= 50 ? 'rgba(251,191,36,0.18)' : 'rgba(148,163,184,0.18)', color: avgScore >= 80 ? '#22c55e' : avgScore >= 50 ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid currentColor' } }, avgScore + '/100')
       ),
@@ -3881,7 +3881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
               hh('span', { style: { fontSize: 16 } }, s.icon),
               hh('strong', { style: { fontSize: 12, color: s.color, fontWeight: 800 } }, s.label.toUpperCase()),
-              hh('span', { style: { fontSize: 11, color: '#94a3b8', flex: 1 } }, s.prompt),
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', flex: 1 } }, s.prompt),
               hh('span', { style: {
                 padding: '2px 8px', borderRadius: 999,
                 background: scoreColor + '18', color: scoreColor,
@@ -3896,26 +3896,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               style: {
                 display: 'block', width: '100%',
                 padding: '8px 10px', marginTop: 4,
-                fontSize: 12, color: '#e2e8f0',
+                fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
                 background: 'rgba(15,23,42,0.7)',
                 border: '1px solid ' + (sc > 0 ? scoreColor + '40' : 'rgba(100,116,139,0.30)'),
                 borderRadius: 6, outline: 'none',
                 boxSizing: 'border-box'
               }
             }),
-            hh('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4, fontStyle: 'italic' } }, '💡 ' + s.hint)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4, fontStyle: 'italic' } }, '💡 ' + s.hint)
           );
         })
       ),
 
       // Composed goal preview
       anyEmpty
-        ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.40)', fontSize: 11, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Fill all five fields to compose your SMART goal.')
+        ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.40)', fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'center', fontStyle: 'italic' } }, 'Fill all five fields to compose your SMART goal.')
         : hh('div', { style: {
             padding: '14px 16px', borderRadius: 10, marginBottom: 10,
             background: 'linear-gradient(135deg, rgba(147,51,234,0.12), rgba(15,23,42,0.7))',
             border: '1px solid #9333ea',
-            fontSize: 13, color: '#e2e8f0', lineHeight: 1.7
+            fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7
           } },
             hh('div', { style: { fontSize: 9, color: '#c084fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🎯 Your SMART goal'),
             hh('div', null,
@@ -3933,13 +3933,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(147,51,234,0.18)', color: '#c084fc', border: '1.5px solid rgba(147,51,234,0.50)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
         }, '📋 Load example'),
         hh('button', { onClick: clearAll,
-          style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
         }, '↺ Clear all')
       ),
 
       // Diagnosis card — appears when score reveals weak fields
       avgScore < 80 && !anyEmpty
-        ? hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        ? hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             hh('strong', { style: { color: '#fbbf24' } }, '💡 Most-skipped fields: '),
             (function() {
               var weak = SCHEMA.filter(function(s, i) { return scores[i] < 80; });
@@ -3948,7 +3948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             'In real-world goal-setting research, students consistently skimp on Measurable + Time-bound — leaving the goal vague enough to feel ambitious but vague enough to never check. Tighten those two and the goal becomes runnable.'
           )
         : avgScore >= 80 && !anyEmpty
-          ? hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+          ? hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               hh('strong', { style: { color: '#22c55e' } }, '🎓 Strong SMART goal. '),
               'You can transcribe this directly into a planner or accountability conversation. Goal-setting research (Locke + Latham 1990, ~50 years of meta-analysis) consistently shows specific + difficult goals outperform "do your best" by ~25%. The difference is testable progress, which your Measurable field provides.'
             )
@@ -4006,7 +4006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '📱'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Phone-proximity cognitive cost (Ward et al. 2017)'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Move the phone closer or farther. Watch working-memory + fluid intelligence drop. Effects are illustrative + faithful to Ward 2017 study direction.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Move the phone closer or farther. Watch working-memory + fluid intelligence drop. Effects are illustrative + faithful to Ward 2017 study direction.')
         )
       ),
 
@@ -4062,7 +4062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           onChange: function(e) { setPos(parseInt(e.target.value, 10)); },
           style: { width: '100%', accentColor: '#9333ea', direction: 'rtl' }
         }),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 4 } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4 } },
           hh('span', { style: { color: pos === 0 ? '#10b981' : '#475569' } }, '🏠 Other room'),
           hh('span', { style: { color: pos === 4 ? '#ef4444' : '#475569' } }, '🤳 In hand')
         )
@@ -4073,7 +4073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 8, textAlign: 'center' } }, p.icon + ' ' + p.label),
         // WM bar
         hh('div', { style: { marginBottom: 10 } },
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginBottom: 4 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
             hh('span', null, 'Working memory'),
             hh('strong', { style: { color: p.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, p.wm + '%')
           ),
@@ -4083,7 +4083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         ),
         // FL bar
         hh('div', null,
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginBottom: 4 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
             hh('span', null, 'Fluid intelligence'),
             hh('strong', { style: { color: p.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, p.fl + '%')
           ),
@@ -4094,13 +4094,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       // Position-specific explanation
-      hh('div', { style: { padding: 10, borderRadius: 8, background: p.color + '12', border: '1px solid ' + p.color + '40', borderLeft: '3px solid ' + p.color, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: p.color + '12', border: '1px solid ' + p.color + '40', borderLeft: '3px solid ' + p.color, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 10 } },
         hh('strong', { style: { color: p.color } }, p.icon + ' ' + p.label + ': '),
         p.desc
       ),
 
       // Citation card
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#c084fc' } }, '📚 Source: '),
         'Ward, Duke, Gneezy + Bos (2017). "Brain Drain: The Mere Presence of One\'s Own Smartphone Reduces Available Cognitive Capacity." ', hh('em', null, 'Journal of the Association for Consumer Research'), ', 2(2), 140-154. Three experiments, ~800 participants. Phone in another room produced highest WM + fluid IQ scores; bag/pocket intermediate; on-desk lowest — with the effect strongest for the most phone-dependent users. The phone\'s mere PRESENCE drained capacity even when participants ignored it and had it silenced face-down.'
       )
@@ -4171,20 +4171,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '✍️'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Longhand vs laptop notes — what each captures'),
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'See the actual difference in what fast typing vs slower handwriting can produce. The compression IS the learning (Mueller + Oppenheimer 2014).')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'See the actual difference in what fast typing vs slower handwriting can produce. The compression IS the learning (Mueller + Oppenheimer 2014).')
         )
       ),
 
       // Topic chip + cycle
       hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
         hh('div', { style: { padding: '4px 12px', borderRadius: 999, background: 'rgba(147,51,234,0.12)', color: '#c084fc', fontSize: 11, fontWeight: 700, border: '1px solid rgba(147,51,234,0.40)' } }, 'Lecture topic: ' + ex.topic),
-        hh('div', { style: { fontSize: 10, color: '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Example ' + (idx + 1) + ' / ' + EXAMPLES.length)
+        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Example ' + (idx + 1) + ' / ' + EXAMPLES.length)
       ),
 
       // The "spoken" lecture
       hh('div', { style: { background: 'rgba(2,6,23,0.6)', borderRadius: 10, padding: 12, marginBottom: 12, borderLeft: '3px solid #94a3b8' } },
-        hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🎙 What the lecturer says'),
-        hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + ex.spoken + '"')
+        hh('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🎙 What the lecturer says'),
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + ex.spoken + '"')
       ),
 
       // Side-by-side reveal
@@ -4196,7 +4196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             (reveal === 'laptop' || reveal === 'both') ? hh('span', { style: { fontSize: 9, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcLaptop + ' words') : null
           ),
           (reveal === 'laptop' || reveal === 'both')
-            ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, ex.laptop)
+            ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, ex.laptop)
             : hh('button', { onClick: function() { setReveal(reveal === 'hand' ? 'both' : 'laptop'); },
                 style: { width: '100%', padding: '20px 8px', borderRadius: 8, background: 'rgba(96,165,250,0.06)', color: '#60a5fa', border: '1px dashed rgba(96,165,250,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, '👁 Show what laptop captures')
@@ -4208,7 +4208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             (reveal === 'hand' || reveal === 'both') ? hh('span', { style: { fontSize: 9, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcHand + ' words') : null
           ),
           (reveal === 'hand' || reveal === 'both')
-            ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.7, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' } }, ex.hand)
+            ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' } }, ex.hand)
             : hh('button', { onClick: function() { setReveal(reveal === 'laptop' ? 'both' : 'hand'); },
                 style: { width: '100%', padding: '20px 8px', borderRadius: 8, background: 'rgba(251,191,36,0.06)', color: '#fbbf24', border: '1px dashed rgba(251,191,36,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, '👁 Show what handwriting captures')
@@ -4220,7 +4220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 8, textAlign: 'center' } }, '📊 What each format produced'),
         // Word count comparison
         hh('div', { style: { marginBottom: 10 } },
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4, textAlign: 'center' } }, 'Word count'),
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, textAlign: 'center' } }, 'Word count'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
             hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(96,165,250,0.10)', textAlign: 'center' } },
               hh('div', { style: { fontSize: 9, color: '#60a5fa' } }, '💻 Laptop'),
@@ -4231,14 +4231,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcHand)
             )
           ),
-          hh('div', { style: { fontSize: 9, color: '#94a3b8', textAlign: 'center', marginTop: 4, fontStyle: 'italic' } },
+          hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 4, fontStyle: 'italic' } },
             'Hand captured ' + Math.round((wcHand / wcLaptop) * 100) + '% of the words. Mueller + Oppenheimer found verbatim laptop transcription correlated with WORSE conceptual recall — the compression IS the encoding.')
         ),
         // Depth-of-processing gauge
         hh('div', null,
-          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4, textAlign: 'center' } }, 'Depth-of-processing (Craik + Lockhart 1972 framework — illustrative)'),
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, textAlign: 'center' } }, 'Depth-of-processing (Craik + Lockhart 1972 framework — illustrative)'),
           hh('div', { style: { marginBottom: 6 } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#cbd5e1', marginBottom: 2 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } },
               hh('span', null, '💻 Laptop (verbatim)'), hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, depthLaptop + '%')
             ),
             hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 4, overflow: 'hidden' } },
@@ -4246,7 +4246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             )
           ),
           hh('div', null,
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#cbd5e1', marginBottom: 2 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } },
               hh('span', null, '✍️ Hand (compressed)'), hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, depthHand + '%')
             ),
             hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 4, overflow: 'hidden' } },
@@ -4267,7 +4267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       // Citation card with replication caveat
-      reveal === 'both' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+      reveal === 'both' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#c084fc' } }, '📚 Source: '),
         'Mueller + Oppenheimer (2014). "The Pen is Mightier than the Keyboard: Advantages of Longhand Over Laptop Note Taking." ', hh('em', null, 'Psychological Science'), ', 25(6), 1159-1168. Three studies, ~300 students. Laptop note-takers transcribed verbatim and performed WORSE on conceptual questions than longhand-takers, even when comparable in factual recall. Proposed mechanism: handwriting forces summarization → forces synthesis → encodes meaning, not just words. ',
         hh('br'), hh('br'),
@@ -4329,7 +4329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       good:      { bg: 'rgba(16,185,129,0.15)', color: '#10b981', border: 'rgba(16,185,129,0.50)' },
       bad:       { bg: 'rgba(239,68,68,0.10)',  color: '#fca5a5', border: 'rgba(239,68,68,0.40)' },
       warn:      { bg: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: 'rgba(251,191,36,0.40)' },
-      ghost:     { bg: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: 'rgba(148,163,184,0.30)' }
+      ghost:     { bg: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: 'rgba(148,163,184,0.30)' }
     };
     var s = styles[kind || 'secondary'] || styles.secondary;
     return hh('button', Object.assign({
@@ -4349,7 +4349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
         width: '100%', padding: '10px 12px',
-        fontSize: 12, color: '#e2e8f0',
+        fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
         borderRadius: 6, outline: 'none', boxSizing: 'border-box'
@@ -4362,7 +4362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
         width: '100%', padding: '10px 12px',
-        fontSize: 12, color: '#e2e8f0',
+        fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
         borderRadius: 6, outline: 'none', boxSizing: 'border-box',
@@ -4381,7 +4381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       } }, icon),
       hh('div', { style: { flex: 1, minWidth: 180 } },
         hh('div', { style: { fontSize: 15, fontWeight: 900, color: accent + 'ee', letterSpacing: '-0.01em' } }, title),
-        hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, subtitle)
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, subtitle)
       )
     );
   }
@@ -4395,7 +4395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
     },
       hh('div', { style: { fontSize: 36, marginBottom: 10, opacity: 0.5 } }, icon),
-      hh('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 14, lineHeight: 1.6, maxWidth: 380, margin: '0 auto 14px' } }, text),
+      hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14, lineHeight: 1.6, maxWidth: 380, margin: '0 auto 14px' } }, text),
       ctaLabel ? tkBtn(ctaLabel, ctaOnClick, 'primary', { padding: '10px 22px', fontSize: 12 }) : null
     );
   }
@@ -4520,7 +4520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
         // Progress bar
         hh('div', { style: { marginBottom: 14 } },
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
             hh('span', null, 'Progress'),
             hh('strong', { style: { color: g.progress >= 100 ? '#22c55e' : g.progress >= 50 ? '#fbbf24' : '#a78bfa', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14 } }, (g.progress || 0) + '%')
           ),
@@ -4539,7 +4539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             SCHEMA.map(function(s) {
               return hh('div', { key: 'd-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid ' + s.color } },
                 hh('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, s.icon + ' ' + s.label),
-                hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, g[s.id] || hh('em', { style: { color: '#64748b' } }, 'not filled in'))
+                hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, g[s.id] || hh('em', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'not filled in'))
               );
             })
           )
@@ -4549,7 +4549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         g.status === 'active' ? tkCard('#10b981',
           hh('div', null,
             hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '✅ Log a check-in'),
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
               hh('span', null, 'Progress'),
               hh('strong', { style: { color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14 } }, chkForm.progress + '%')
             ),
@@ -4572,10 +4572,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               g.checkIns.slice().reverse().map(function(c, i) {
                 return hh('div', { key: 'ci-' + i, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa' } },
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
-                    hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.date + ' · ' + relDate(c.date)),
+                    hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.date + ' · ' + relDate(c.date)),
                     hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(147,51,234,0.18)', color: '#c084fc', fontSize: 10, fontWeight: 800 } }, c.progress + '%')
                   ),
-                  c.note ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, '"' + c.note + '"') : null
+                  c.note ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, '"' + c.note + '"') : null
                 );
               })
             )
@@ -4614,7 +4614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   hh('span', { style: { fontSize: 14 } }, s.icon),
                   hh('strong', { style: { fontSize: 11, color: s.color, fontWeight: 800 } }, s.label.toUpperCase()),
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8', flex: 1 } }, s.prompt),
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', flex: 1 } }, s.prompt),
                   hh('span', { style: { padding: '2px 6px', borderRadius: 999, background: scColor + '18', color: scColor, fontSize: 8, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid ' + scColor + '60' } }, sc + '%')
                 ),
                 tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
@@ -4622,7 +4622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             }),
 
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(147,51,234,0.10)', borderRadius: 8, border: '1px solid rgba(147,51,234,0.40)', marginTop: 12 } },
-              hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Goal completeness score'),
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Goal completeness score'),
               hh('strong', { style: { fontSize: 20, color: score >= 80 ? '#22c55e' : score >= 50 ? '#fbbf24' : '#f97316', fontFamily: 'ui-monospace, Menlo, monospace' } }, score + '/100')
             )
           )
@@ -4646,12 +4646,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         [
           { label: 'Active', count: stats.active, color: '#9333ea', icon: '🎯' },
           { label: 'Done', count: stats.done, color: '#22c55e', icon: '✓' },
-          { label: 'Archived', count: stats.archived, color: '#64748b', icon: '📦' }
+          { label: 'Archived', count: stats.archived, color: 'var(--allo-stem-text-soft, #64748b)', icon: '📦' }
         ].map(function(s, i) {
           return hh('div', { key: 'st-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 16, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 20, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.count),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 } }, s.label)
           );
         })
       ),
@@ -4691,8 +4691,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
                   hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 2 } }, g.title),
-                    hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Started ' + relDate(g.createdAt) + ' · ' + ((g.checkIns || []).length) + ' check-ins' + (lastCheckIn ? ' · last ' + relDate(lastCheckIn.date) : ''))
+                    hh('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, g.title),
+                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Started ' + relDate(g.createdAt) + ' · ' + ((g.checkIns || []).length) + ' check-ins' + (lastCheckIn ? ' · last ' + relDate(lastCheckIn.date) : ''))
                   ),
                   isDone
                     ? hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(34,197,94,0.18)', color: '#22c55e', fontSize: 10, fontWeight: 800 } }, '✓ Done')
@@ -4818,7 +4818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'st-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 } }, s.label)
           );
         })
       ),
@@ -4827,11 +4827,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#ef4444',
         hh('div', null,
           phase === 'idle' || phase === 'done' ? hh('div', { style: { textAlign: 'center', padding: 12 } },
-            hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, phase === 'done' ? '✓ Session complete' : 'What are you focusing on?'),
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, phase === 'done' ? '✓ Session complete' : 'What are you focusing on?'),
             tkInput(task, setTask, 'e.g., "Math homework chapter 5"', { marginBottom: 14, textAlign: 'center' }),
             hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
               hh('div', { style: { textAlign: 'center' } },
-                hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'WORK'),
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'WORK'),
                 hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' } },
                   [15, 25, 45, 90].map(function(n) {
                     return hh('button', { key: 'w-' + n,
@@ -4842,7 +4842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 )
               ),
               hh('div', { style: { textAlign: 'center' } },
-                hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'BREAK'),
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'BREAK'),
                 hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' } },
                   [3, 5, 10, 15].map(function(n) {
                     return hh('button', { key: 'b-' + n,
@@ -4871,9 +4871,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 })
               ),
               hh('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
-                hh('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, phase === 'work' ? '🔥 WORK' : '☕ BREAK'),
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, phase === 'work' ? '🔥 WORK' : '☕ BREAK'),
                 hh('div', { style: { fontSize: 40, fontWeight: 900, color: phase === 'work' ? '#ef4444' : '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, displayTime),
-                task ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, padding: '0 16px', textAlign: 'center', maxWidth: 160 } }, task) : null
+                task ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, padding: '0 16px', textAlign: 'center', maxWidth: 160 } }, task) : null
               )
             ),
             hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
@@ -4895,8 +4895,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             todaySessions.slice().reverse().map(function(s) {
               return hh('div', { key: 's-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700 } }, s.task || hh('em', { style: { color: '#64748b' } }, 'No label')),
-                  hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(s.completedAt).toLocaleTimeString())
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, s.task || hh('em', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'No label')),
+                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(s.completedAt).toLocaleTimeString())
                 ),
                 hh('span', { style: { padding: '4px 8px', borderRadius: 999, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.workMin + 'm')
               );
@@ -4962,7 +4962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Quick add card
       tkCard('#60a5fa',
         hh('div', null,
-          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, 'What\'s on your mind right now? (Press Enter to save.)'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'What\'s on your mind right now? (Press Enter to save.)'),
           tkTextarea(text, setText, 'Type anything — a worry, a task, a half-formed idea, a question you forgot to ask...', 3, { marginBottom: 10 }),
           hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
             hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
@@ -4970,7 +4970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 var active = cat === c.id;
                 return hh('button', { key: 'c-' + c.id,
                   onClick: function() { setCat(c.id); },
-                  style: { padding: '6px 10px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color : '#94a3b8', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '6px 10px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
                 }, c.icon + ' ' + c.label);
               })
             ),
@@ -5020,18 +5020,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid ' + c.color, background: it.done ? c.color : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0, marginTop: 2 }
                 }, it.done ? '✓' : ''),
                 hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, textDecoration: it.done ? 'line-through' : 'none' } }, it.text),
-                  hh('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, c.icon + ' ' + c.label + ' · ' + relDate(new Date(it.createdAt).toISOString().slice(0, 10)))
+                  hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, textDecoration: it.done ? 'line-through' : 'none' } }, it.text),
+                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, c.icon + ' ' + c.label + ' · ' + relDate(new Date(it.createdAt).toISOString().slice(0, 10)))
                 ),
                 hh('button', { onClick: function() { remove(it.id); }, 'aria-label': 'Delete',
-                  style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 14, cursor: 'pointer', padding: 4 }
+                  style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 14, cursor: 'pointer', padding: 4 }
                 }, '✕')
               );
             })
           ),
 
       // Lesson card at bottom
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#60a5fa' } }, '🧠 Why this works: '),
         'Working memory is a hard limit (~7 items, Miller 1956; or ~4 in pure WM, Cowan 2001). Items competing for that capacity drain attention even when you\'re trying to focus on something else. Writing them down externalizes them — the brain stops tracking them as "open loops" (Allen GTD). David Allen\'s 2001 productivity research + Sweller\'s cognitive-load theory point at the same fix: get it out of your head and into a trusted system.'
       )
@@ -5108,7 +5108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
             formIf.ifPart && formIf.thenPart ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.30)' } },
               hh('div', { style: { fontSize: 10, color: '#c084fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🔗 Your plan reads:'),
-              hh('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.65 } },
+              hh('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                 hh('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'When '), formIf.ifPart,
                 ', ', hh('span', { style: { color: '#10b981', fontWeight: 700 } }, 'I will '), formIf.thenPart, '.'
               )
@@ -5132,7 +5132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkSectionHeader('🔗', 'If-Then Plans', 'Pre-decide your response to common triggers. Removes the in-the-moment decision cost.', '#a78bfa'),
 
       hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
-        hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, plans.length + ' active plan' + (plans.length !== 1 ? 's' : '')),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, plans.length + ' active plan' + (plans.length !== 1 ? 's' : '')),
         tkBtn('+ New plan', function() { setForm({ ifPart: '', thenPart: '' }); setView('new'); }, 'primary')
       ),
 
@@ -5142,12 +5142,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
             plans.map(function(p) {
               return hh('div', { key: 'p-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.30)', borderLeft: '4px solid #a78bfa' } },
-                hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65, marginBottom: 8 } },
+                hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 8 } },
                   hh('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'When '), p.ifPart,
                   ', ', hh('span', { style: { color: '#10b981', fontWeight: 700 } }, 'I will '), p.thenPart, '.'
                 ),
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
-                  hh('span', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  hh('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                     'used ' + (p.usedCount || 0) + 'x' + (p.lastUsed ? ' · last ' + relDate(p.lastUsed) : '')
                   ),
                   hh('div', { style: { display: 'flex', gap: 4 } },
@@ -5166,7 +5166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           TEMPLATES.map(function(t, i) {
             return hh('button', { key: 't-' + i,
               onClick: function() { fromTemplate(t); },
-              style: { display: 'block', textAlign: 'left', width: '100%', padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(167,139,250,0.30)', color: '#cbd5e1', cursor: 'pointer', transition: 'all 160ms ease' }
+              style: { display: 'block', textAlign: 'left', width: '100%', padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(167,139,250,0.30)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', transition: 'all 160ms ease' }
             },
               hh('div', { style: { fontSize: 11, lineHeight: 1.55 } },
                 hh('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'When '), t.ifPart,
@@ -5178,7 +5178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       // Citation
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#c084fc' } }, '📚 Source: '),
         'Gollwitzer (1999). "Implementation Intentions: Strong Effects of Simple Plans." ', hh('em', null, 'American Psychologist'), ', 54(7), 493-503. Meta-analysis (Gollwitzer + Sheeran 2006, ', hh('em', null, 'Advances in Experimental Social Psychology'), ') across 94 studies found medium-to-large effect sizes (d ≈ 0.65) of if-then plans on goal completion vs simple intentions. Mechanism: pre-deciding offloads the in-the-moment decision cost; the trigger automatically activates the planned response.'
       )
@@ -5259,7 +5259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🪪', 'My Accommodation Card', 'A student-controlled card of YOUR accommodations + a script for asking for them.', '#10b981'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#10b981' } }, '🎓 Why this matters: '),
         'Accommodations only work when YOU know what they are + can ask for them. The self-advocacy skill matters more in college + work than the accommodations themselves. Build the card you can use to learn the script.'
       ),
@@ -5267,7 +5267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Selected count
       hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 12, textAlign: 'center' } },
         hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, selectedCount),
-        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 } }, 'accommodations on my card')
+        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 } }, 'accommodations on my card')
       ),
 
       // Catalog grouped by category
@@ -5283,7 +5283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 style: {
                   display: 'block', textAlign: 'left', padding: '10px 12px', borderRadius: 8,
                   background: on ? cat.color + '20' : 'rgba(15,23,42,0.5)',
-                  color: on ? cat.color : '#cbd5e1',
+                  color: on ? cat.color: 'var(--allo-stem-text, #cbd5e1)',
                   border: '1.5px solid ' + (on ? cat.color : 'rgba(100,116,139,0.30)'),
                   borderLeft: '3px solid ' + cat.color,
                   cursor: 'pointer', transition: 'all 160ms ease'
@@ -5293,7 +5293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('span', null, a.icon), a.label,
                   on ? hh('span', { style: { marginLeft: 'auto', color: cat.color } }, '✓') : null
                 ),
-                hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 4, fontStyle: 'italic', lineHeight: 1.5 } }, a.why)
+                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic', lineHeight: 1.5 } }, a.why)
               );
             })
           )
@@ -5308,11 +5308,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             custom.map(function(c) {
               return hh('div', { key: 'cu-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa', display: 'flex', alignItems: 'flex-start', gap: 8 } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700 } }, c.label),
-                  c.why ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, c.why) : null
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, c.label),
+                  c.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, c.why) : null
                 ),
                 hh('button', { onClick: function() { removeCustom(c.id); },
-                  style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 14, cursor: 'pointer', padding: 4 }
+                  style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 14, cursor: 'pointer', padding: 4 }
                 }, '✕')
               );
             })
@@ -5333,7 +5333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#fbbf24',
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '🗣 Self-advocacy script'),
-          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } },
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } },
             'Practice the script for asking for an accommodation. The pattern: ',
             hh('em', { style: { color: '#fbbf24' } }, '"I\'d like to use my [accommodation] because [reason]."')
           ),
@@ -5342,14 +5342,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('div', { style: { fontSize: 9, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Example scripts for your card'),
                 hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   CATALOG.concat(custom).filter(function(a) { return selected[a.id] || (custom.indexOf(a) >= 0); }).slice(0, 3).map(function(a) {
-                    return hh('div', { key: 's-' + a.id, style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic' } },
+                    return hh('div', { key: 's-' + a.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic' } },
                       '"Hi — I\'d like to use my ', hh('strong', { style: { fontStyle: 'normal', color: '#fbbf24' } }, a.label.toLowerCase()),
                       ' for this ', (a.cat === 'testing' ? 'test' : 'activity'), ', because ', a.why.replace(/^[A-Z]/, function(c) { return c.toLowerCase(); }), '"'
                     );
                   })
                 )
               )
-            : hh('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'Select accommodations above to generate scripts.')
+            : hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'Select accommodations above to generate scripts.')
         )
       )
     );
@@ -5448,13 +5448,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
         hh('div', { style: { padding: 30, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', borderRadius: 14, border: '2px solid #06b6d4', marginBottom: 12, minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
           hh('div', { style: { fontSize: 9, color: '#67e8f9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, textAlign: 'center' } }, showBack ? 'BACK' : 'FRONT'),
-          hh('div', { style: { fontSize: 18, color: '#e2e8f0', textAlign: 'center', lineHeight: 1.5, fontWeight: showBack ? 600 : 700 } }, showBack ? card.back : card.front)
+          hh('div', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.5, fontWeight: showBack ? 600 : 700 } }, showBack ? card.back : card.front)
         ),
 
         !showBack ? hh('div', { style: { textAlign: 'center', marginBottom: 12 } },
           tkBtn('👁 Show answer', function() { setShowBack(true); }, 'primary', { padding: '12px 32px', fontSize: 13 })
         ) : hh('div', null,
-          hh('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 8 } }, 'How well did you know it?'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginBottom: 8 } }, 'How well did you know it?'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 } },
             [
               { label: 'Again', color: '#ef4444', q: 0, info: 'no recall' },
@@ -5488,7 +5488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             tkTextarea(form.front, function(v) { setForm(Object.assign({}, form, { front: v })); }, 'e.g., "What is the function of mitochondria?"', 3, { marginBottom: 10 }),
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Back'),
             tkTextarea(form.back, function(v) { setForm(Object.assign({}, form, { back: v })); }, 'e.g., "Powerhouse of the cell — produces ATP via oxidative phosphorylation"', 3, { marginBottom: 10 }),
-            hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Deck: ', hh('strong', { style: { color: '#67e8f9' } }, deck))
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Deck: ', hh('strong', { style: { color: '#67e8f9' } }, deck))
           )
         ),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
@@ -5518,17 +5518,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var due = !c.nextDue || c.nextDue <= today;
               return hh('div', { key: 'c-' + c.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(6,182,212,0.30)', borderLeft: '3px solid ' + (due ? '#06b6d4' : '#64748b') } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 } },
-                  hh('div', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700, flex: 1 } }, c.front),
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, flex: 1 } }, c.front),
                   hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-start' } },
                     hh('span', { style: { padding: '2px 6px', borderRadius: 999, background: due ? 'rgba(6,182,212,0.18)' : 'rgba(100,116,139,0.18)', color: due ? '#06b6d4' : '#94a3b8', fontSize: 9, fontWeight: 800 } },
                       due ? 'DUE' : 'in ' + (Math.max(0, daysAgo(today) - daysAgo(c.nextDue) || 0)) + 'd'),
                     hh('button', { onClick: function() { if (confirm('Delete this card?')) removeCard(c.id); },
-                      style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12, padding: 2 }
+                      style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12, padding: 2 }
                     }, '✕')
                   )
                 ),
-                hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '→ ' + c.back),
-                hh('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'reviewed ' + (c.reviewCount || 0) + 'x · ease ' + (c.ease || 2.5).toFixed(2))
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '→ ' + c.back),
+                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'reviewed ' + (c.reviewCount || 0) + 'x · ease ' + (c.ease || 2.5).toFixed(2))
               );
             })
           )
@@ -5554,9 +5554,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
               hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🃏 ' + deckName),
-              deckName !== 'Default' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeDeck(deckName); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕') : null
+              deckName !== 'Default' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeDeck(deckName); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕') : null
             ),
-            hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
             hh('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: dDue.length > 0 ? 'rgba(6,182,212,0.20)' : 'rgba(100,116,139,0.10)', color: dDue.length > 0 ? '#06b6d4' : '#64748b', fontSize: 10, fontWeight: 800, textAlign: 'center' } },
               dDue.length > 0 ? '▶ ' + dDue.length + ' due today' : 'no cards due'
             )
@@ -5569,7 +5569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       // Lesson card
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#06b6d4' } }, '🎓 Why flashcards work (when done right): '),
         'Cards force RETRIEVAL practice (Karpicke + Roediger 2006) — pulling info out of memory is what consolidates it. Spaced repetition (Ebbinghaus 1885; modern SM-2 algorithm Wozniak 1990) shows each card just before you would forget it. Cramming 50 cards in one night = practice testing without the spacing benefit. 5 cards per day for 10 days produces 4-5× better long-term retention than 50 cards in one night for the same total effort.'
       )
@@ -5641,14 +5641,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start time'),
                 hh('select', {
                   value: form.hour, onChange: function(e) { setForm(Object.assign({}, form, { hour: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
+                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
                 }, HOURS.map(function(h) { return hh('option', { key: 'h-' + h, value: h }, fmtHour(h)); }))
               ),
               hh('div', null,
                 hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Duration'),
                 hh('select', {
                   value: form.duration, onChange: function(e) { setForm(Object.assign({}, form, { duration: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
+                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
                 }, [25, 45, 60, 90, 120].map(function(m) { return hh('option', { key: 'm-' + m, value: m }, m + ' min'); }))
               )
             ),
@@ -5661,11 +5661,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   style: { padding: '6px 12px', borderRadius: 6, background: form.subject === s ? col + '30' : 'rgba(15,23,42,0.5)', color: form.subject === s ? col : '#94a3b8', border: '1px solid ' + (form.subject === s ? col : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                 }, s);
               }),
-              hh('button', { onClick: addSubject, style: { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#94a3b8', border: '1px dashed rgba(148,163,184,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add subject')
+              hh('button', { onClick: addSubject, style: { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px dashed rgba(148,163,184,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add subject')
             ),
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task or topic (optional)'),
             tkInput(form.task, function(v) { setForm(Object.assign({}, form, { task: v })); }, 'e.g., "Chapter 5 problem set"', { marginBottom: 12 }),
-            hh('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#cbd5e1', cursor: 'pointer' } },
+            hh('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer' } },
               hh('input', { type: 'checkbox', checked: form.recurring, onChange: function(e) { setForm(Object.assign({}, form, { recurring: e.target.checked })); } }),
               'Repeat weekly'
             )
@@ -5690,7 +5690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'ws-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -5704,11 +5704,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { display: 'grid', gridTemplateColumns: '50px repeat(7, minmax(60px, 1fr))', gap: 2, minWidth: 500 } },
           // Header row
           [hh('div', { key: 'tl' }, '')].concat(DAYS.map(function(d) {
-            return hh('div', { key: 'd-' + d, style: { textAlign: 'center', fontSize: 10, fontWeight: 800, color: '#94a3b8', padding: 4 } }, d);
+            return hh('div', { key: 'd-' + d, style: { textAlign: 'center', fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 4 } }, d);
           })),
           // Hour rows
           HOURS.flatMap(function(h) {
-            return [hh('div', { key: 'h-' + h, style: { fontSize: 9, color: '#64748b', textAlign: 'right', padding: '4px 6px', fontFamily: 'ui-monospace, Menlo, monospace' } }, fmtHour(h))]
+            return [hh('div', { key: 'h-' + h, style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'right', padding: '4px 6px', fontFamily: 'ui-monospace, Menlo, monospace' } }, fmtHour(h))]
               .concat(DAYS.map(function(d, di) {
                 var cellBlocks = blocks.filter(function(b) { return b.day === di && b.hour <= h && (b.hour + (b.duration / 60)) > h; });
                 var firstHere = blocks.filter(function(b) { return b.day === di && b.hour === h; })[0];
@@ -5728,7 +5728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                       onClick: function() { if (confirm('Remove this block?')) removeBlock(firstHere.id); }
                     },
                       hh('div', { style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.subject),
-                      cellHeight > 40 && firstHere.task ? hh('div', { style: { fontSize: 8, color: '#cbd5e1', fontWeight: 500, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.task) : null
+                      cellHeight > 40 && firstHere.task ? hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 500, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.task) : null
                     )
                   );
                 }
@@ -5746,7 +5746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           bySubject.filter(function(s) { return s.min > 0; }).map(function(s) {
             var pct = totalWeekMin > 0 ? (s.min / totalWeekMin * 100) : 0;
             return hh('div', { key: 'sb-' + s.subject, style: { marginBottom: 8 } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
                 hh('span', { style: { color: s.color, fontWeight: 700 } }, s.subject),
                 hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(s.min) + 'm · ' + Math.round(pct) + '%')
               ),
@@ -5834,21 +5834,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam date'),
             hh('input', { type: 'date', value: form.date,
               onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); },
-              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 12 }
+              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 12 }
             }),
             hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               hh('div', null,
                 hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '# units / chapters'),
                 hh('input', { type: 'number', min: 1, max: 50, value: form.units,
                   onChange: function(e) { setForm(Object.assign({}, form, { units: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
                 })
               ),
               hh('div', null,
                 hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Minutes/day'),
                 hh('input', { type: 'number', min: 15, max: 240, step: 15, value: form.dailyMin,
                   onChange: function(e) { setForm(Object.assign({}, form, { dailyMin: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
                 })
               )
             )
@@ -5887,11 +5887,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 } },
                 hh('div', null,
                   hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24' } }, exam.name),
-                  hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, exam.date + ' · ' + exam.units + ' units · ' + exam.dailyMin + 'm/day')
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, exam.date + ' · ' + exam.units + ' units · ' + exam.dailyMin + 'm/day')
                 ),
                 hh('div', { style: { textAlign: 'right' } },
                   hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: days <= 3 ? 'rgba(239,68,68,0.20)' : days <= 7 ? 'rgba(251,146,60,0.20)' : 'rgba(251,191,36,0.20)', color: days <= 3 ? '#ef4444' : days <= 7 ? '#fb923c' : '#fbbf24', fontSize: 16, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, days + 'd'),
-                  hh('button', { onClick: function() { removeExam(exam.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer', marginTop: 4 } }, '✕ delete')
+                  hh('button', { onClick: function() { removeExam(exam.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer', marginTop: 4 } }, '✕ delete')
                 )
               ),
               // Plan display
@@ -5905,15 +5905,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                       onClick: function() { markDay(exam.id, day.day); },
                       style: { padding: 8, borderRadius: 6, background: done ? phaseColor + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + phaseColor + '40', textAlign: 'left', cursor: 'pointer', opacity: done ? 0.7 : 1 }
                     },
-                      hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'D-' + day.daysFromExam),
+                      hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'D-' + day.daysFromExam),
                       hh('div', { style: { fontSize: 10, color: phaseColor, fontWeight: 700, marginTop: 2 } }, day.intensity === 'review-all' ? '🔥 Review all' : day.intensity === 'practice-test' ? '🎯 Practice test' : '📖 Learn new'),
-                      hh('div', { style: { fontSize: 9, color: '#cbd5e1', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, day.units + ' unit · ' + Math.round(day.minutes) + 'm'),
+                      hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, day.units + ' unit · ' + Math.round(day.minutes) + 'm'),
                       done ? hh('div', { style: { fontSize: 11, color: phaseColor, marginTop: 4 } }, '✓ Done') : null
                     );
                   })
                 ),
-                plan.length > 14 ? hh('div', { style: { marginTop: 8, fontSize: 10, color: '#94a3b8', textAlign: 'center', fontStyle: 'italic' } }, '+ ' + (plan.length - 14) + ' more days') : null
-              ) : hh('div', { style: { padding: 12, textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', fontSize: 11 } }, '⚠ Exam date is past or today — no plan to generate.')
+                plan.length > 14 ? hh('div', { style: { marginTop: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', fontStyle: 'italic' } }, '+ ' + (plan.length - 14) + ' more days') : null
+              ) : hh('div', { style: { padding: 12, textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', fontSize: 11 } }, '⚠ Exam date is past or today — no plan to generate.')
             );
           })
         )
@@ -5981,7 +5981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Due date (optional)'),
             hh('input', { type: 'date', value: form.dueDate,
               onChange: function(e) { setForm(Object.assign({}, form, { dueDate: e.target.value })); },
-              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
+              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
             }),
             hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '📋 Steps (' + form.steps.length + ' · ~' + totalEst + 'm total)'),
             hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
@@ -5991,15 +5991,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { flex: 1, minWidth: 0 } },
                     tkInput(s.text, function(v) { updateStep(i, { text: v }); }, 'e.g., "Open the lab data spreadsheet"', { marginBottom: 4, fontSize: 11 }),
                     hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                      hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Est:'),
+                      hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Est:'),
                       hh('input', { type: 'number', min: 1, max: 60, value: s.estMin,
                         onChange: function(e) { updateStep(i, { estMin: parseInt(e.target.value, 10) }); },
                         style: { width: 60, padding: '4px 8px', fontSize: 11, color: '#fb923c', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 4 }
                       }),
-                      hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'min')
+                      hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'min')
                     )
                   ),
-                  hh('button', { onClick: function() { removeStep(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer', padding: 4 } }, '✕')
+                  hh('button', { onClick: function() { removeStep(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer', padding: 4 } }, '✕')
                 );
               })
             ),
@@ -6032,13 +6032,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
                   hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#fb923c' } }, t.title),
-                  hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' steps · ' + doneEst + '/' + totalEst + ' min' + (t.dueDate ? ' · due ' + t.dueDate : ''))
+                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' steps · ' + doneEst + '/' + totalEst + ' min' + (t.dueDate ? ' · due ' + t.dueDate : ''))
                 ),
                 hh('div', { style: { display: 'flex', gap: 4 } },
                   hh('button', { onClick: function() { setEditing(t.id); setForm({ title: t.title, dueDate: t.dueDate, steps: t.steps }); setView('add'); },
-                    style: { background: 'transparent', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✏'),
+                    style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✏'),
                   hh('button', { onClick: function() { if (confirm('Delete this task?')) remove(t.id); },
-                    style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                    style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
                 )
               ),
               hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginBottom: 10 } },
@@ -6050,8 +6050,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     hh('button', { onClick: function() { toggleStep(t.id, s.id); },
                       style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #f97316', background: s.done ? '#f97316' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
                     }, s.done ? '✓' : ''),
-                    hh('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1', textDecoration: s.done ? 'line-through' : 'none', opacity: s.done ? 0.6 : 1 } }, (i + 1) + '. ' + s.text),
-                    hh('span', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.estMin + 'm')
+                    hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: s.done ? 'line-through' : 'none', opacity: s.done ? 0.6 : 1 } }, (i + 1) + '. ' + s.text),
+                    hh('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.estMin + 'm')
                   );
                 })
               )
@@ -6139,12 +6139,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               TEMPLATE_HABITS.map(function(h, i) {
                 return hh('button', { key: 'tp-' + i,
                   onClick: function() { addHabit(h); setView('today'); },
-                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: '#cbd5e1', border: '1px dashed rgba(16,185,129,0.30)', cursor: 'pointer', textAlign: 'left' }
+                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px dashed rgba(16,185,129,0.30)', cursor: 'pointer', textAlign: 'left' }
                 },
                   hh('span', { style: { fontSize: 16 } }, h.icon),
                   hh('div', { style: { flex: 1 } },
                     hh('div', { style: { fontSize: 12, fontWeight: 700 } }, h.name),
-                    hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'target: ' + h.target)
+                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'target: ' + h.target)
                   ),
                   hh('span', { style: { color: '#10b981', fontSize: 14 } }, '+')
                 );
@@ -6155,7 +6155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 } },
               hh('span', { style: { fontSize: 18 } }, form.icon),
               hh('input', { type: 'text', value: form.icon, onChange: function(e) { setForm(Object.assign({}, form, { icon: e.target.value })); }, placeholder: '🎯',
-                style: { width: 50, padding: '8px', fontSize: 14, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, textAlign: 'center' }
+                style: { width: 50, padding: '8px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, textAlign: 'center' }
               }),
               tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Habit name', { flex: 1 })
             ),
@@ -6197,12 +6197,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('div', { style: { fontSize: 22 } }, h.icon),
                 hh('div', { style: { flex: 1, minWidth: 0 } },
                   hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#10b981' } }, h.name),
-                  hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'target: ' + h.target)
+                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'target: ' + h.target)
                 ),
                 hh('div', { style: { display: 'flex', gap: 6 } },
                   hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: streak > 0 ? 'rgba(251,191,36,0.20)' : 'rgba(100,116,139,0.10)', color: streak > 0 ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, '🔥 ' + streak),
                   hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWeek + '/7'),
-                  hh('button', { onClick: function() { if (confirm('Remove this habit and all its history?')) removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                  hh('button', { onClick: function() { if (confirm('Remove this habit and all its history?')) removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
                 )
               ),
               // 30-day strip
@@ -6231,7 +6231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         ),
 
       // Lesson card
-      habits.length > 0 ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      habits.length > 0 ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#10b981' } }, '🎓 Habit formation reality: '),
         'Lally et al. (2009) — actual average was 66 DAYS, not the 21-day myth. Range was 18-254 days. The "missed a day" effect: missing one day did NOT prevent habit formation in the data. Self-blame on a miss is the bigger threat than the miss itself. Just resume tomorrow.'
       ) : null
@@ -6322,7 +6322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             if (!val) return null;
             return hh('div', { key: 'd-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
               hh('div', { style: { fontSize: 11, fontWeight: 800, color: p.color, marginBottom: 6 } }, p.icon + ' ' + p.label),
-              hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, val)
+              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, val)
             );
           }).filter(Boolean)
         ),
@@ -6345,7 +6345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkCard('#f472b6',
           hh('div', null,
             hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, 'Overall, how was this week?'),
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
               hh('span', null, 'Rough'),
               hh('strong', { style: { fontSize: 18, color: '#f472b6', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10'),
               hh('span', null, 'Great')
@@ -6362,7 +6362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           PROMPTS.map(function(p) {
             return hh('div', { key: 'p-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
               hh('div', { style: { fontSize: 12, fontWeight: 800, color: p.color, marginBottom: 2 } }, p.icon + ' ' + p.label),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, p.help),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, p.help),
               tkTextarea(form[p.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[p.id] = v; return o; })())); }, '', 3)
             );
           })
@@ -6388,7 +6388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'rs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -6397,11 +6397,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       thisWeekEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
         hh('div', null,
           hh('span', { style: { color: '#22c55e', fontWeight: 800, marginRight: 8 } }, '✓'),
-          hh('span', { style: { color: '#cbd5e1', fontSize: 12 } }, 'You reflected this week. ', hh('em', { style: { color: '#22c55e' } }, 'Nice.'))
+          hh('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 } }, 'You reflected this week. ', hh('em', { style: { color: '#22c55e' } }, 'Nice.'))
         ),
         tkBtn('View', function() { setViewing(thisWeekEntry.id); setView('detail'); }, 'secondary', { padding: '4px 10px', fontSize: 10 })
       ) : hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', marginBottom: 12, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8 } }, 'No reflection yet for ', hh('strong', null, thisWeek), '. 5 prompts. 5 minutes.'),
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'No reflection yet for ', hh('strong', null, thisWeek), '. 5 prompts. 5 minutes.'),
         tkBtn('+ Start this week\'s reflection', function() { setForm({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 }); setEditingId(null); setView('new'); }, 'primary')
       ),
 
@@ -6419,7 +6419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('span', { style: { fontSize: 11, color: '#f472b6', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, e.week + ' · ' + relDate(e.date)),
                 hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(244,114,182,0.18)', color: '#f472b6', fontSize: 10, fontWeight: 800 } }, e.overall + '/10')
               ),
-              preview ? hh('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '"' + preview + (preview.length === 60 ? '…' : '') + '"') : null
+              preview ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '"' + preview + (preview.length === 60 ? '…' : '') + '"') : null
             );
           })
         )
@@ -6564,7 +6564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 PRIOR_LEVELS.map(function(p) {
                   return hh('button', { key: 'p-' + p.id,
                     onClick: function() { setForm(Object.assign({}, form, { prior: p.id })); },
-                    style: { flex: 1, padding: '8px 4px', borderRadius: 6, background: form.prior === p.id ? p.color + '30' : 'rgba(15,23,42,0.5)', color: form.prior === p.id ? p.color : '#94a3b8', border: '1px solid ' + (form.prior === p.id ? p.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
+                    style: { flex: 1, padding: '8px 4px', borderRadius: 6, background: form.prior === p.id ? p.color + '30' : 'rgba(15,23,42,0.5)', color: form.prior === p.id ? p.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (form.prior === p.id ? p.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
                     title: p.label
                   }, p.icon);
                 })
@@ -6603,7 +6603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: s.color + '20', color: s.color, fontSize: 9, fontWeight: 800 } }, s.utility),
                     hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: rankColor + '15', color: rankColor, fontSize: 9, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'fit: ' + s.fit + '/10')
                   ),
-                  hh('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, s.why)
+                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, s.why)
                 )
               );
             })
@@ -6620,11 +6620,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
                 hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700 } }, p.subject),
                 hh('div', { style: { display: 'flex', gap: 4 } },
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, relDate(p.savedAt)),
-                  hh('button', { onClick: function() { deletePlan(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, relDate(p.savedAt)),
+                  hh('button', { onClick: function() { deletePlan(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                 (p.top3 || []).map(function(t, i) { return (i + 1) + '. ' + t.icon + ' ' + t.label; }).join(' · ')
               )
             );
@@ -6693,7 +6693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Today
       todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
         hh('div', { style: { fontSize: 12, fontWeight: 700, color: '#22c55e', marginBottom: 4 } }, '✓ Today\'s check-in saved'),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1' } },
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
           'Intrinsic ', todayEntry.intrinsic, ' · Extraneous ', todayEntry.extraneous, ' · Germane ', todayEntry.germane,
           (todayEntry.triggers || []).length > 0 ? ' · ' + (todayEntry.triggers || []).length + ' triggers' : ''
         )
@@ -6711,7 +6711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('div', null,
                   hh('strong', { style: { fontSize: 11, color: s.color, marginRight: 6 } }, s.label),
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, s.help)
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, s.help)
                 ),
                 hh('strong', { style: { fontSize: 14, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[s.id] + '/10')
               ),
@@ -6723,7 +6723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           }),
 
           hh('div', { style: { padding: 8, borderRadius: 6, background: overloadColor + '12', border: '1px solid ' + overloadColor + '30', textAlign: 'center', marginBottom: 12 } },
-            hh('span', { style: { fontSize: 11, color: '#cbd5e1', marginRight: 6 } }, 'Total load:'),
+            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Total load:'),
             hh('strong', { style: { fontSize: 16, color: overloadColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, totalLoad + '/30'),
             hh('span', { style: { fontSize: 10, color: overloadColor, marginLeft: 6 } },
               totalLoad >= 24 ? 'overload zone' : totalLoad >= 18 ? 'demanding' : 'manageable'
@@ -6751,14 +6751,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // 7-day strip
       hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 days'),
+        hh('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 days'),
         hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-end' } },
           last7.map(function(d) {
             var total = d.entry ? (d.entry.intrinsic + d.entry.extraneous + d.entry.germane) : 0;
             var pct = total > 0 ? (total / 30) * 100 : 0;
             var col = total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : total > 0 ? '#10b981' : 'rgba(100,116,139,0.20)';
             return hh('div', { key: 'd-' + d.date, style: { flex: 1, textAlign: 'center' } },
-              hh('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 4 } }, d.label),
+              hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, d.label),
               hh('div', { style: { height: 60, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
                 hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
               ),
@@ -6776,14 +6776,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             var total = e.intrinsic + e.extraneous + e.germane;
             return hh('div', { key: 'e-' + e.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : '#10b981') } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + relDate(e.date)),
+                hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + relDate(e.date)),
                 hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, e.intrinsic + '/' + e.extraneous + '/' + e.germane),
-                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.intrinsic + '/' + e.extraneous + '/' + e.germane),
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              (e.triggers || []).length > 0 ? hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 4 } }, '⚠ ' + e.triggers.map(function(tid) { return (TRIGGERS.filter(function(t) { return t.id === tid; })[0] || {}).label; }).filter(Boolean).join(' · ')) : null,
-              e.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontStyle: 'italic', marginTop: 4 } }, '"' + e.notes + '"') : null
+              (e.triggers || []).length > 0 ? hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, '⚠ ' + e.triggers.map(function(tid) { return (TRIGGERS.filter(function(t) { return t.id === tid; })[0] || {}).label; }).filter(Boolean).join(' · ')) : null,
+              e.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', marginTop: 4 } }, '"' + e.notes + '"') : null
             );
           })
         )
@@ -6854,7 +6854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('div', null,
                   hh('strong', { style: { fontSize: 12, color: dim.color, marginRight: 8 } }, dim.icon + ' ' + dim.label),
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, dim.help)
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, dim.help)
                 ),
                 hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[dim.id] + '/10')
               ),
@@ -6873,7 +6873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Adaptive suggestions for weakest dimension
       form.activity ? hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + weakest.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + weakest.color + '40', borderLeft: '4px solid ' + weakest.color, marginBottom: 12 } },
         hh('div', { style: { fontSize: 12, fontWeight: 800, color: weakest.color, marginBottom: 8 } }, '🎯 To boost your weakest: ' + weakest.label),
-        hh('ul', { style: { margin: 0, paddingLeft: 18, color: '#cbd5e1', fontSize: 11, lineHeight: 1.7 } },
+        hh('ul', { style: { margin: 0, paddingLeft: 18, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
           BOOST_SUGGESTIONS[weakest.id].map(function(s, i) {
             return hh('li', { key: 's-' + i, style: { marginBottom: 4 } }, s);
           })
@@ -6890,11 +6890,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('strong', { style: { fontSize: 12, color: '#f472b6' } }, a.activity),
                 hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
-                  hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
+                  hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                 '🎯 A:' + a.autonomy + ' · 💪 C:' + a.competence + ' · 🤝 R:' + a.relatedness + ' = ' + tot + '/30'
               )
             );
@@ -6903,7 +6903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ) : null,
 
       // Citation
-      hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#ec4899' } }, '📚 Source: '),
         'Deci + Ryan (2000). "The What and Why of Goal Pursuits." ', hh('em', null, 'Psychological Inquiry'), ', 11(4), 227-268. Self-Determination Theory has the largest accumulated evidence of any motivation framework in education research. Activities high on all three (autonomy + competence + relatedness) sustain motivation; deficits in any one predict disengagement.'
       )
@@ -6958,7 +6958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#06b6d4' } }, '💡 Use this: '),
         'At the start of each year, hand a copy to teachers or your IEP team. The self-advocacy practice matters as much as the document itself. Update it whenever you learn something new about yourself.'
       )
@@ -7039,8 +7039,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var cat = CATEGORIES.filter(function(c) { return c.id === (PROMPTS.filter(function(p) { return p.id === r.promptId; })[0] || {}).cat; })[0] || CATEGORIES[0];
               return hh('div', { key: 'r-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + cat.color } },
                 hh('div', { style: { fontSize: 10, color: cat.color, fontWeight: 700, marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, cat.icon + ' ' + r.date),
-                hh('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, 'Q: ' + r.promptText),
-                hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, 'Q: ' + r.promptText),
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
               );
             })
           )
@@ -7053,7 +7053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('📝', cat.icon + ' ' + cat.label, 'Take your time. No right answer.', cat.color),
         hh('div', { style: { padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + cat.color + '15, rgba(15,23,42,0.7))', border: '2px solid ' + cat.color, marginBottom: 12 } },
           hh('div', { style: { fontSize: 9, color: cat.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Prompt'),
-          hh('div', { style: { fontSize: 15, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, picked.text)
+          hh('div', { style: { fontSize: 15, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, picked.text)
         ),
         tkTextarea(response, setResponse, 'Your response...', 8, { marginBottom: 10 }),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
@@ -7067,7 +7067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkSectionHeader('📓', 'Reflection Prompts', '30+ metacognitive prompts. Browse, pick one that catches your eye, write a response. Saves to your history.', '#a855f7'),
 
       hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, responses.length + ' saved responses'),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, responses.length + ' saved responses'),
         tkBtn('📓 My history', function() { setView('history'); }, 'secondary')
       ),
 
@@ -7079,7 +7079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             catPrompts.map(function(p) {
               return hh('button', { key: 'p-' + p.id,
                 onClick: function() { setPicked(p); setResponse(''); setView('answer'); },
-                style: { display: 'block', textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#cbd5e1', border: '1px solid ' + cat.color + '20', borderLeft: '3px solid ' + cat.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer' }
+                style: { display: 'block', textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid ' + cat.color + '20', borderLeft: '3px solid ' + cat.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer' }
               }, p.text);
             })
           )
@@ -7287,7 +7287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           );
         })() : null,
 
-        hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
           hh('strong', { style: { color: '#a855f7' } }, '🎓 Concept mapping: '),
           'Novak + Gowin 1984. Strong evidence for synthesis-heavy material (Dunlosky 2013 MODERATE utility). The act of choosing which concepts to include + how they connect = active processing. Try mapping every chapter or unit.'
         )
@@ -7316,9 +7316,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               return hh('div', { key: 'm-' + m.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7' } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '🕸 ' + m.title),
-                  hh('button', { onClick: function() { removeMap(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                  hh('button', { onClick: function() { removeMap(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
                 ),
-                hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8 } }, (m.nodes || []).length + ' nodes · ' + (m.edges || []).length + ' edges · ' + relDate(m.createdAt)),
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, (m.nodes || []).length + ' nodes · ' + (m.edges || []).length + ' edges · ' + relDate(m.createdAt)),
                 tkBtn('Open ↗', function() { openMap(m.id); }, 'primary', { width: '100%', textAlign: 'center' })
               );
             })
@@ -7391,18 +7391,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { display: 'grid', gridTemplateColumns: '30% 70%', gap: 10, marginBottom: 12 } },
               hh('div', null,
                 hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🔑 Cue column'),
-                hh('div', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, 'Questions, key terms, prompts'),
+                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, 'Questions, key terms, prompts'),
                 tkTextarea(form.cue, function(v) { setForm(Object.assign({}, form, { cue: v })); }, 'What is photosynthesis?\nKey term: chlorophyll\n...', 12, { fontFamily: 'Georgia, serif', fontSize: 11 })
               ),
               hh('div', null,
                 hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '📝 Main notes'),
-                hh('div', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, 'Your detailed notes'),
+                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, 'Your detailed notes'),
                 tkTextarea(form.main, function(v) { setForm(Object.assign({}, form, { main: v })); }, 'Plants use sunlight + CO2 + H2O to make glucose...', 12, { fontFamily: 'inherit', fontSize: 11 })
               )
             ),
 
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🎓 Summary (2-3 sentences in your own words)'),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, 'The most important part of Cornell. Compress this lecture into 2-3 sentences.'),
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, 'The most important part of Cornell. Compress this lecture into 2-3 sentences.'),
             tkTextarea(form.summary, function(v) { setForm(Object.assign({}, form, { summary: v })); }, 'In your own words...', 3)
           )
         ),
@@ -7434,14 +7434,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 } },
                     hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, n.title),
                     hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                      hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(n.createdAt)),
+                      hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(n.createdAt)),
                       hh('button', { onClick: function() { openNote(n); }, style: { background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 11, cursor: 'pointer' } }, '✏'),
-                      hh('button', { onClick: function() { removeNote(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                      hh('button', { onClick: function() { removeNote(n.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                     )
                   ),
-                  n.summary ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.55, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #60a5fa', marginTop: 4 } },
+                  n.summary ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.55, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #60a5fa', marginTop: 4 } },
                     hh('span', { style: { color: '#60a5fa', fontWeight: 700, marginRight: 4 } }, '🎓'), n.summary
-                  ) : hh('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic', marginTop: 4 } }, 'No summary yet — open to add one.')
+                  ) : hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', marginTop: 4 } }, 'No summary yet — open to add one.')
                 );
               })
             )
@@ -7460,9 +7460,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
               hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#60a5fa' } }, '📚 ' + nbName),
-              nbName !== 'General' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeNotebook(nbName); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕') : null
+              nbName !== 'General' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeNotebook(nbName); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕') : null
             ),
-            hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, count + ' note' + (count !== 1 ? 's' : ''))
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, count + ' note' + (count !== 1 ? 's' : ''))
           );
         }),
         hh('button', { onClick: addNotebook,
@@ -7470,7 +7470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         }, '+ New notebook')
       ),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#3b82f6' } }, '📚 Cornell method: '),
         'Pauk 1989. The cue column + summary = the active-processing magic. Without those, Cornell is just a fancy outline. Try summarizing at the end of every note session — even if you skip the cue column.'
       )
@@ -7552,9 +7552,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))',
         border: '1px solid rgba(16,185,129,0.40)'
       } },
-        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Today\'s done-rate'),
+        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Today\'s done-rate'),
         hh('div', { style: { fontSize: 40, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, score.pct + '%'),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, score.done + ' of ' + score.total + ' planned items')
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } }, score.done + ' of ' + score.total + ' planned items')
       ),
 
       // Scheduled study blocks
@@ -7564,11 +7564,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             todayBlocks.sort(function(a, b) { return a.hour - b.hour; }).map(function(b) {
               return hh('div', { key: 'tb-' + b.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', display: 'flex', justifyContent: 'space-between' } },
-                hh('span', { style: { fontSize: 11, color: '#e2e8f0' } },
+                hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
                   hh('strong', { style: { color: '#60a5fa' } }, (b.hour % 12 || 12) + (b.hour < 12 ? 'a' : 'p') + ' · '),
                   b.subject, b.task ? ' — ' + b.task : ''
                 ),
-                hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, b.duration + 'm')
+                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, b.duration + 'm')
               );
             })
           )
@@ -7599,7 +7599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             goals.slice(0, 5).map(function(g) {
               return hh('div', { key: 'tg-' + g.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #9333ea' } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                  hh('span', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700 } }, g.title),
+                  hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, g.title),
                   hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, (g.progress || 0) + '%')
                 ),
                 hh('div', { style: { height: 4, background: 'rgba(15,23,42,0.6)', borderRadius: 2, marginTop: 4, overflow: 'hidden' } },
@@ -7620,7 +7620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var nextStep = (t.steps || []).filter(function(s) { return !s.done; })[0];
               return hh('div', { key: 'tt-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #f97316' } },
                 hh('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 700, marginBottom: 2 } }, t.title),
-                nextStep ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic' } }, '↳ next: ' + nextStep.text + ' (~' + nextStep.estMin + 'm)') : null
+                nextStep ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, '↳ next: ' + nextStep.text + ' (~' + nextStep.estMin + 'm)') : null
               );
             })
           )
@@ -7635,15 +7635,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             tkInput(newText, setNewText, 'e.g., "Call Mom about appointment"', { flex: 1 }),
             tkBtn('+', function() { addCustom(newText); setNewText(''); }, 'primary', { padding: '8px 14px' })
           ),
-          todayItems.length === 0 ? hh('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic', textAlign: 'center', padding: 8 } }, 'No extra items added yet.')
+          todayItems.length === 0 ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', textAlign: 'center', padding: 8 } }, 'No extra items added yet.')
           : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               todayItems.map(function(it) {
                 return hh('div', { key: 'tc-' + it.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
                   hh('button', { onClick: function() { toggleCustom(it.id); },
                     style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #fbbf24', background: it.done ? '#fbbf24' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
                   }, it.done ? '✓' : ''),
-                  hh('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.5 : 1 } }, it.text),
-                  hh('button', { onClick: function() { removeCustom(it.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.5 : 1 } }, it.text),
+                  hh('button', { onClick: function() { removeCustom(it.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 );
               })
             )
@@ -7674,7 +7674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'overwhelmed', icon: '😵', color: '#a855f7' },
       { id: 'frustrated',  icon: '😤', color: '#f97316' },
       { id: 'lonely',      icon: '🥺', color: '#06b6d4' },
-      { id: 'numb',        icon: '😶', color: '#94a3b8' },
+      { id: 'numb',        icon: '😶', color: 'var(--allo-stem-text-soft, #94a3b8)' },
       { id: 'hopeful',     icon: '🙂', color: '#10b981' },
       { id: 'proud',       icon: '😌', color: '#a855f7' },
       { id: 'happy',       icon: '😄', color: '#fbbf24' }
@@ -7732,7 +7732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             );
           })
         ),
-        hh('div', { style: { textAlign: 'center', padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } },
+        hh('div', { style: { textAlign: 'center', padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.6 } },
           'Notice how you feel now compared to when you started. Even partial completion helps.'
         ),
         hh('div', { style: { textAlign: 'center' } },
@@ -7745,7 +7745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkSectionHeader('💖', 'Emotion Check + Tools', 'Quick check + 3 tools for when feelings are intense.', '#ec4899'),
 
       // Crisis safety footer (always visible)
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
         'Call or text 988 (Suicide + Crisis Lifeline, US). Maine Mobile Crisis: 1-888-568-1112. You can reach a real person 24/7. This app is a self-help tool, not crisis care.'
       ),
@@ -7754,7 +7754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#ec4899',
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 10 } }, '💖 Quick emotion check'),
-          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'What\'s the strongest feeling right now?'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'What\'s the strongest feeling right now?'),
           hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
             EMOTION_LABELS.map(function(e) {
               var on = form.label === e.id;
@@ -7764,7 +7764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               }, e.icon);
             })
           ),
-          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'How intense? ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10')),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'How intense? ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10')),
           hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.intensity,
             onChange: function(e) { setForm(Object.assign({}, form, { intensity: parseInt(e.target.value, 10) })); },
             style: { width: '100%', accentColor: '#ec4899', marginBottom: 10 }
@@ -7787,7 +7787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
             hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color } }, t.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, t.desc)
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, t.desc)
           );
         })
       ),
@@ -7801,9 +7801,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'ck-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + e.color, display: 'flex', alignItems: 'flex-start', gap: 8 } },
               hh('div', { style: { fontSize: 20, lineHeight: 1, flexShrink: 0 } }, e.icon),
               hh('div', { style: { flex: 1, minWidth: 0 } },
-                hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(c.time).toLocaleString() + ' · intensity ' + c.intensity + '/10'),
-                c.what ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 2 } }, c.what) : null,
-                c.need ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, fontStyle: 'italic' } }, 'needed: ' + c.need) : null
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(c.time).toLocaleString() + ' · intensity ' + c.intensity + '/10'),
+                c.what ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 2 } }, c.what) : null,
+                c.need ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontStyle: 'italic' } }, 'needed: ' + c.need) : null
               )
             );
           })
@@ -7925,7 +7925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           dim.strategies.map(function(s, i) {
             return hh('div', { key: 'str-' + i, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color } },
               hh('div', { style: { fontSize: 12, fontWeight: 800, color: dim.color, marginBottom: 4 } }, '→ ' + s.title),
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } }, s.detail)
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, s.detail)
             );
           })
         ),
@@ -7997,10 +7997,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           ratings.slice(0, 10).map(function(r) {
             var avg = (DIMENSIONS.reduce(function(s, d) { return s + (r[d.id] || 0); }, 0) / DIMENSIONS.length).toFixed(1);
             return hh('div', { key: 'rt-' + r.id, style: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
-              hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, r.date + ' · ' + relDate(r.date)),
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, r.date + ' · ' + relDate(r.date)),
               hh('div', null,
                 hh('span', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700, marginRight: 8 } }, 'avg ' + avg + '/10'),
-                hh('button', { onClick: function() { removeRating(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { removeRating(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               )
             );
           })
@@ -8092,7 +8092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               AREAS.map(function(a) {
                 return hh('button', { key: 'ar-' + a.id,
                   onClick: function() { setGoalForm(Object.assign({}, goalForm, { area: a.id })); },
-                  style: { padding: '6px 10px', borderRadius: 6, background: goalForm.area === a.id ? a.color + '30' : 'rgba(15,23,42,0.5)', color: goalForm.area === a.id ? a.color : '#94a3b8', border: '1px solid ' + (goalForm.area === a.id ? a.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '6px 10px', borderRadius: 6, background: goalForm.area === a.id ? a.color + '30' : 'rgba(15,23,42,0.5)', color: goalForm.area === a.id ? a.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (goalForm.area === a.id ? a.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                 }, a.icon + ' ' + a.label);
               })
             ),
@@ -8111,7 +8111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 return hh('div', { key: 'sg-' + sg.id, style: { display: 'flex', gap: 6, alignItems: 'center', padding: 6, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid #06b6d4' } },
                   hh('span', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 20 } }, (i + 1) + '.'),
                   tkInput(sg.text, function(v) { updateSubgoal(i, { text: v }); }, 'sub-goal step', { flex: 1, fontSize: 11 }),
-                  hh('button', { onClick: function() { removeSubgoal(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                  hh('button', { onClick: function() { removeSubgoal(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
                 );
               })
             ),
@@ -8133,7 +8133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Meeting date'),
             hh('input', { type: 'date', value: meetForm.date,
               onChange: function(e) { setMeetForm(Object.assign({}, meetForm, { date: e.target.value })); },
-              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
+              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
             }),
             [
               { id: 'whatChanged', label: '📝 What changed in my IEP at this meeting?' },
@@ -8158,7 +8158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🎓', 'My IEP Tracker', 'YOUR copy of your IEP goals + meeting log. Build self-advocacy by knowing your own plan.', '#06b6d4'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#06b6d4' } }, '🛡 Your IEP. Your control. '),
         'This is YOUR copy of your IEP goals — not the official document. Use it to track YOUR progress, what worked, what didn\'t, and prep for meetings. By high school you should be able to lead parts of your own IEP meeting. This tool helps you build that skill.'
       ),
@@ -8186,10 +8186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('button', { onClick: function() { setEditingGoal(g.id); setGoalForm({ area: g.area, annual: g.annual, subgoals: g.subgoals || [], measurable: g.measurable || '', services: g.services || '' }); setView('newGoal'); },
                     style: { background: 'transparent', border: 'none', color: area.color, fontSize: 11, cursor: 'pointer', padding: 4 } }, '✏'),
                   hh('button', { onClick: function() { removeGoal(g.id); },
-                    style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                    style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 8 } }, g.annual),
+              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 8 } }, g.annual),
               g.subgoals && g.subgoals.length > 0 ? hh('div', { style: { marginBottom: 8 } },
                 hh('div', { style: { fontSize: 10, fontWeight: 700, color: area.color, marginBottom: 4 } }, '✂ Sub-goals (' + doneSubgoals + '/' + totalSubgoals + ')'),
                 hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
@@ -8203,19 +8203,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                         },
                         style: { width: 16, height: 16, borderRadius: 3, border: '1.5px solid ' + area.color, background: sg.done ? area.color : 'transparent', color: '#0f172a', fontSize: 10, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
                       }, sg.done ? '✓' : ''),
-                      hh('span', { style: { fontSize: 11, color: '#cbd5e1', textDecoration: sg.done ? 'line-through' : 'none', opacity: sg.done ? 0.6 : 1 } }, sg.text)
+                      hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: sg.done ? 'line-through' : 'none', opacity: sg.done ? 0.6 : 1 } }, sg.text)
                     );
                   })
                 )
               ) : null,
-              g.measurable ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, '📊 ' + g.measurable) : null,
-              g.services ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '🛠 ' + g.services) : null,
+              g.measurable ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, '📊 ' + g.measurable) : null,
+              g.services ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '🛠 ' + g.services) : null,
               hh('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 4, marginTop: 8 } },
                 tkBtn('🟢 On track', function() { recordProgress(g.id, 'on-track', ''); }, 'good', { padding: '4px 10px', fontSize: 10 }),
                 tkBtn('🟡 Some progress', function() { recordProgress(g.id, 'some-progress', ''); }, 'warn', { padding: '4px 10px', fontSize: 10 }),
                 tkBtn('🔴 Need help', function() { recordProgress(g.id, 'need-help', ''); }, 'bad', { padding: '4px 10px', fontSize: 10 })
               ),
-              lastProgress ? hh('div', { style: { fontSize: 9, color: '#94a3b8', textAlign: 'right', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Last update: ' + lastProgress.status + ' on ' + lastProgress.date) : null
+              lastProgress ? hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'right', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Last update: ' + lastProgress.status + ' on ' + lastProgress.date) : null
             );
           })
         ),
@@ -8227,9 +8227,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           meetings.map(function(m) {
             return hh('div', { key: 'mt-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #06b6d4' } },
               hh('div', { style: { fontSize: 11, color: '#06b6d4', fontWeight: 700, marginBottom: 4 } }, '📅 ' + m.date + ' · ' + relDate(m.date)),
-              m.whatChanged ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Changed: '), m.whatChanged) : null,
-              m.myInput ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'I said: '), m.myInput) : null,
-              m.whatToTry ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Trying next: '), m.whatToTry) : null
+              m.whatChanged ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Changed: '), m.whatChanged) : null,
+              m.myInput ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'I said: '), m.myInput) : null,
+              m.whatToTry ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Trying next: '), m.whatToTry) : null
             );
           })
         )
@@ -8250,7 +8250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ts = R.useState({ name: '' });             var topicForm = ts[0]; var setTopicForm = ts[1];
 
     var MASTERY = [
-      { id: 'new',       label: 'New',       icon: '✨', color: '#94a3b8', val: 0 },
+      { id: 'new',       label: 'New',       icon: '✨', color: 'var(--allo-stem-text-soft, #94a3b8)', val: 0 },
       { id: 'learning',  label: 'Learning',  icon: '📖', color: '#fbbf24', val: 1 },
       { id: 'shaky',     label: 'Shaky',     icon: '🪨', color: '#f97316', val: 2 },
       { id: 'solid',     label: 'Solid',     icon: '✅', color: '#10b981', val: 3 },
@@ -8327,7 +8327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, fontWeight: 900, color: '#fff', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.count)
                 ),
                 hh('div', { style: { fontSize: 9, color: c.mastery.color, fontWeight: 700 } }, c.mastery.icon),
-                hh('div', { style: { fontSize: 8, color: '#94a3b8' } }, c.mastery.label)
+                hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.mastery.label)
               );
             })
           )
@@ -8347,17 +8347,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               return hh('div', { key: 't-' + t.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + m.color + '30', borderLeft: '3px solid ' + m.color } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
                   hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 700 } }, m.icon + ' ' + t.name),
-                    hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, 'Updated ' + relDate(t.updatedAt))
+                    hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, m.icon + ' ' + t.name),
+                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, 'Updated ' + relDate(t.updatedAt))
                   ),
-                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
                 ),
                 hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 } },
                   MASTERY.map(function(level) {
                     var active = t.mastery === level.id;
                     return hh('button', { key: 'lv-' + level.id,
                       onClick: function() { setMastery(t.id, level.id); },
-                      style: { padding: '6px 4px', borderRadius: 4, background: active ? level.color + '30' : 'rgba(15,23,42,0.5)', color: active ? level.color : '#94a3b8', border: '1px solid ' + (active ? level.color : 'rgba(100,116,139,0.30)'), fontSize: 9, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '6px 4px', borderRadius: 4, background: active ? level.color + '30' : 'rgba(15,23,42,0.5)', color: active ? level.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? level.color : 'rgba(100,116,139,0.30)'), fontSize: 9, fontWeight: 700, cursor: 'pointer' }
                     }, level.icon, hh('br'), level.label);
                   })
                 )
@@ -8394,9 +8394,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('strong', { style: { fontSize: 14, color: '#60a5fa' } }, '📚 ' + s.name),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeSubject(s.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeSubject(s.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, topics.length + ' topic' + (topics.length !== 1 ? 's' : '')),
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, topics.length + ' topic' + (topics.length !== 1 ? 's' : '')),
               hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: avgColor + '12', border: '1px solid ' + avgColor + '40', textAlign: 'center' } },
                 hh('div', { style: { fontSize: 9, color: avgColor, textTransform: 'uppercase', fontWeight: 700 } }, 'Avg mastery'),
                 hh('strong', { style: { fontSize: 20, color: avgColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, avg.toFixed(1) + '/4')
@@ -8471,7 +8471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'ss-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -8498,7 +8498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             )
           ),
           hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.40)', textAlign: 'center', marginBottom: 14 } },
-            hh('span', { style: { fontSize: 11, color: '#cbd5e1', marginRight: 6 } }, 'Total:'),
+            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Total:'),
             hh('strong', { style: { fontSize: 20, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, totalHours() + 'h')
           ),
           hh('div', { style: { marginBottom: 12 } },
@@ -8543,7 +8543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
                 ),
                 hh('div', { style: { fontSize: 8, color: col, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, hrs > 0 ? hrs + 'h' : '—'),
-                hh('div', { style: { fontSize: 8, color: '#94a3b8' } }, ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()])
+                hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()])
               ));
             }
             return arr;
@@ -8559,10 +8559,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             var hrs = e.hours || 0;
             var col = hrs >= 8 ? '#10b981' : hrs >= 7 ? '#fbbf24' : '#ef4444';
             return hh('div', { key: 'le-' + e.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
-              hh('span', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.bedtime + ' → ' + e.waketime),
+              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.bedtime + ' → ' + e.waketime),
               hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
                 hh('span', { style: { fontSize: 11, color: col, fontWeight: 700 } }, hrs + 'h · ' + e.quality + '/5'),
-                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               )
             );
           })
@@ -8592,10 +8592,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'excited',     icon: '😄', color: '#fbbf24' },
       { id: 'frustrated',  icon: '😤', color: '#ef4444' },
       { id: 'proud',       icon: '😌', color: '#a855f7' },
-      { id: 'confused',    icon: '😵', color: '#94a3b8' },
+      { id: 'confused',    icon: '😵', color: 'var(--allo-stem-text-soft, #94a3b8)' },
       { id: 'grateful',    icon: '🙏', color: '#10b981' },
       { id: 'overwhelmed', icon: '😰', color: '#f97316' },
-      { id: 'neutral',     icon: '😐', color: '#64748b' }
+      { id: 'neutral',     icon: '😐', color: 'var(--allo-stem-text-soft, #64748b)' }
     ];
 
     function save() {
@@ -8699,7 +8699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'ljs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -8731,7 +8731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('span', { style: { fontSize: 20 } }, m.icon),
                   hh('div', null,
                     e.title ? hh('strong', { style: { fontSize: 13, color: m.color } }, e.title) : null,
-                    hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                       e.subject ? hh('span', { style: { color: '#3b82f6' } }, '📚 ' + e.subject + ' · ') : null,
                       relDate(e.date)
                     )
@@ -8739,10 +8739,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 ),
                 hh('div', { style: { display: 'flex', gap: 4 } },
                   hh('button', { onClick: function() { startEdit(e); }, style: { background: 'transparent', border: 'none', color: m.color, fontSize: 11, cursor: 'pointer' } }, '✏'),
-                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, e.body),
+              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, e.body),
               e.tags ? hh('div', { style: { marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' } },
                 e.tags.split(',').map(function(t, i) {
                   return hh('span', { key: 'tg-' + i, style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(236,72,153,0.15)', color: '#f472b6', fontSize: 9, fontWeight: 700 } }, '#' + t.trim());
@@ -8800,14 +8800,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'gs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
 
       todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', marginBottom: 12 } },
         hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 700, marginBottom: 6 } }, '✓ Today\'s gratitudes:'),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } },
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
           todayEntry.g1 ? hh('div', null, '1. ', todayEntry.g1) : null,
           todayEntry.g2 ? hh('div', null, '2. ', todayEntry.g2) : null,
           todayEntry.g3 ? hh('div', null, '3. ', todayEntry.g3) : null
@@ -8833,11 +8833,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           entries.slice(0, 30).map(function(e) {
             return hh('div', { key: 'ge-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginBottom: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
                 hh('span', null, e.date + ' · ' + relDate(e.date)),
-                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } },
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
                 e.g1 ? hh('div', null, '1. ', e.g1) : null,
                 e.g2 ? hh('div', null, '2. ', e.g2) : null,
                 e.g3 ? hh('div', null, '3. ', e.g3) : null
@@ -8847,7 +8847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#10b981' } }, '🎓 Why this works: '),
         'Emmons + McCullough (2003). Daily gratitude practice for 10 weeks → significant gains in well-being, sleep quality, optimism, and physical health vs. neutral-event journaling control. Effect size larger than most positive-psychology interventions. The skeptic\'s version: even 1 line counts. Even on a hard day.'
       )
@@ -8868,10 +8868,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ft = R.useState('all'); var filter = ft[0]; var setFilter = ft[1];
 
     var STATUSES = [
-      { id: 'want',    label: 'Want to read', icon: '📚', color: '#94a3b8' },
+      { id: 'want',    label: 'Want to read', icon: '📚', color: 'var(--allo-stem-text-soft, #94a3b8)' },
       { id: 'reading', label: 'Reading',      icon: '📖', color: '#fbbf24' },
       { id: 'done',    label: 'Done',         icon: '✓',  color: '#10b981' },
-      { id: 'dnf',     label: 'Didn\'t finish', icon: '✕', color: '#94a3b8' }
+      { id: 'dnf',     label: 'Didn\'t finish', icon: '✕', color: 'var(--allo-stem-text-soft, #94a3b8)' }
     ];
 
     function save() {
@@ -8919,7 +8919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   STATUSES.map(function(s) {
                     return hh('button', { key: 'st-' + s.id,
                       onClick: function() { setForm(Object.assign({}, form, { status: s.id })); },
-                      style: { flex: 1, padding: '6px 4px', borderRadius: 6, background: form.status === s.id ? s.color + '30' : 'rgba(15,23,42,0.5)', color: form.status === s.id ? s.color : '#94a3b8', border: '1px solid ' + (form.status === s.id ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                      style: { flex: 1, padding: '6px 4px', borderRadius: 6, background: form.status === s.id ? s.color + '30' : 'rgba(15,23,42,0.5)', color: form.status === s.id ? s.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (form.status === s.id ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
                     }, s.icon, hh('br'), s.label);
                   })
                 )
@@ -8968,7 +8968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'rs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -8995,14 +8995,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
                   hh('strong', { style: { fontSize: 13, color: s.color } }, s.icon + ' ' + b.title),
-                  b.author ? hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'by ' + b.author) : null
+                  b.author ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'by ' + b.author) : null
                 ),
                 hh('div', { style: { display: 'flex', gap: 4 } },
                   hh('button', { onClick: function() { startEdit(b); }, style: { background: 'transparent', border: 'none', color: s.color, fontSize: 11, cursor: 'pointer' } }, '✏'),
-                  hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: b.notes ? 6 : 0 } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: b.notes ? 6 : 0 } },
                 b.pages > 0 ? b.pages + 'p · ' : '',
                 b.status === 'done' && b.rating > 0 ? (function() {
                   var stars = '';
@@ -9011,7 +9011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 })() : '',
                 relDate(b.createdAt)
               ),
-              b.notes ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6 } }, b.notes) : null
+              b.notes ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6 } }, b.notes) : null
             );
           })
         )
@@ -9072,7 +9072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
         hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(244,114,182,0.20), rgba(15,23,42,0.7))', border: '2px solid #f472b6', marginBottom: 14, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
           hh('div', { style: { fontSize: 10, color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 12 } }, step.name),
-          hh('div', { style: { fontSize: 16, color: '#e2e8f0', textAlign: 'center', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + step.prompt + '"')
+          hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + step.prompt + '"')
         ),
 
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
@@ -9097,7 +9097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('💖', 'Self-Compassion Practice', 'Three guided exercises (Neff 2003). Builds the muscle of treating yourself like a friend.', '#f472b6'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#f472b6' } }, '🎓 Self-compassion vs self-esteem: '),
         'Neff 2003: self-compassion correlates more strongly with well-being + motivation than self-esteem does — without the downsides (vulnerability to setbacks, comparison-trap). The skill is treating yourself the way you\'d treat a friend in the same situation.'
       ),
@@ -9111,7 +9111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, ex.icon),
             hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#f472b6' } }, ex.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, ex.steps.length + ' steps · ' + (count > 0 ? 'practiced ' + count + 'x' : 'new'))
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, ex.steps.length + ' steps · ' + (count > 0 ? 'practiced ' + count + 'x' : 'new'))
           );
         })
       ),
@@ -9122,8 +9122,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           sessions.slice(0, 15).map(function(s) {
             var ex = EXERCISES.filter(function(e) { return e.id === s.exerciseId; })[0] || EXERCISES[0];
             return hh('div', { key: 'se-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #f472b6', display: 'flex', justifyContent: 'space-between' } },
-              hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, ex.icon + ' ' + ex.label),
-              hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date))
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, ex.icon + ' ' + ex.label),
+              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date))
             );
           })
         )
@@ -9188,7 +9188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + color + '20, rgba(15,23,42,0.7))', border: '1px solid ' + color + '40' } },
         hh('div', { style: { fontSize: 22, marginBottom: 4 } }, icon),
         hh('div', { style: { fontSize: 26, fontWeight: 900, color: color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, value),
-        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label)
+        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label)
       );
     }
 
@@ -9215,7 +9215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       doneGoals.length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.7))', border: '2px solid #22c55e', marginBottom: 14, textAlign: 'center' } },
         hh('div', { style: { fontSize: 32, marginBottom: 6 } }, '🏆'),
         hh('div', { style: { fontSize: 24, fontWeight: 900, color: '#22c55e', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneGoals.length),
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4 } }, 'goals completed total. ', hh('strong', { style: { color: '#22c55e' } }, 'You\'ve done this before. You\'ll do it again.'))
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'goals completed total. ', hh('strong', { style: { color: '#22c55e' } }, 'You\'ve done this before. You\'ll do it again.'))
       ) : null,
 
       // Activity grid (last 14 days strip)
@@ -9246,7 +9246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Next actions suggestions
       hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
         hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '✨ What might be useful right now'),
-        hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } },
+        hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
           flashDue > 0 ? hh('li', null, flashDue + ' flashcard' + (flashDue !== 1 ? 's' : '') + ' due today. Quick review session?') : null,
           habitsToday < habits.length ? hh('li', null, 'Habits left to check today: ' + (habits.length - habitsToday)) : null,
           openTaskCount > 3 ? hh('li', null, openTaskCount + ' open tasks — consider closing 1-2 today to maintain momentum.') : null,
@@ -9360,7 +9360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
                   hh('strong', { style: { fontSize: 14, color: '#fbbf24' } }, '🏆 ' + c.title),
-                  c.why ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, 'why: ' + c.why) : null
+                  c.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'why: ' + c.why) : null
                 ),
                 hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + c.days)
               ),
@@ -9389,17 +9389,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 })()
               ),
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 } },
-                hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day ' + (dayNum + 1) + ' of ' + c.days),
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Day ' + (dayNum + 1) + ' of ' + c.days),
                 hh('div', { style: { display: 'flex', gap: 6 } },
                   tkBtn(todayDone ? '✓ Done today (tap to undo)' : '+ Log today', function() { logDay(c.id); }, todayDone ? 'good' : 'primary', { padding: '6px 14px', fontSize: 11 }),
-                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
                 )
               )
             );
           })
         ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#fbbf24' } }, '🎓 BJ Fogg 2019 — Tiny Habits: '),
         'Three things matter: (1) make it tiny enough to do on hard days, (2) attach it to an existing habit ("after I brush my teeth I will..."), (3) celebrate IMMEDIATELY (even just a smile). 30-day challenges work when the daily action is small enough to never skip.'
       )
@@ -9459,8 +9459,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '⏱ Currently timing'),
           hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', marginBottom: 12, textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, color: '#e2e8f0', marginBottom: 6 } }, activePrediction.task),
-            hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'You predicted: ', hh('strong', { style: { color: '#c084fc', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, activePrediction.predictedMin + ' min'))
+            hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, activePrediction.task),
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'You predicted: ', hh('strong', { style: { color: '#c084fc', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, activePrediction.predictedMin + ' min'))
           ),
           endForm.actualMin > 0 && endForm.actualMin !== 30 ? hh('div', null,
             hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'Actual time taken'),
@@ -9482,7 +9482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '⏱ New task — predict how long'),
           tkInput(form.task, function(v) { setForm(Object.assign({}, form, { task: v })); }, 'Task you\'re about to do (e.g., "Write history outline")', { marginBottom: 10 }),
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
             hh('span', null, 'I think this will take...'),
             hh('strong', { style: { color: '#c084fc', fontSize: 16, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.predictedMin + ' min')
           ),
@@ -9496,11 +9496,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       // Calibration stats
       completed.length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(147,51,234,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(147,51,234,0.40)', marginBottom: 12, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Your calibration over ' + completed.length + ' tasks'),
+        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Your calibration over ' + completed.length + ' tasks'),
         hh('div', { style: { fontSize: 32, fontWeight: 900, color: avgRatioPct > 30 ? '#ef4444' : avgRatioPct > 10 ? '#fbbf24' : avgRatioPct < -10 ? '#3b82f6' : '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } },
           avgRatioPct > 0 ? '+' + avgRatioPct + '%' : avgRatioPct + '%'
         ),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } },
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } },
           avgRatioPct > 30 ? '⚠ You under-estimate by a lot. Multiply your gut number by 1.5.'
           : avgRatioPct > 10 ? '🟡 Mild under-estimation. Add a buffer.'
           : avgRatioPct < -10 ? '🔵 Over-estimating. You\'re actually faster than you think.'
@@ -9519,15 +9519,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'pr-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('strong', { style: { fontSize: 12, color: '#cbd5e1' } }, p.task),
-                  hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                  hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, p.task),
+                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
                     'predicted ' + p.predictedMin + 'm · actual ' + p.actualMin + 'm · ',
                     hh('span', { style: { color: col, fontWeight: 800 } }, (diffPct > 0 ? '+' : '') + diffPct + '%')
                   )
                 ),
-                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              p.notes ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginTop: 4 } }, p.notes) : null
+              p.notes ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', marginTop: 4 } }, p.notes) : null
             );
           })
         )
@@ -9551,9 +9551,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'noise',    label: 'Noise',           icon: '🔊', color: '#a855f7' },
       { id: 'thoughts', label: 'My own thoughts', icon: '💭', color: '#06b6d4' },
       { id: 'hungry',   label: 'Hungry / tired',  icon: '😴', color: '#3b82f6' },
-      { id: 'bored',    label: 'Boredom',         icon: '😑', color: '#94a3b8' },
+      { id: 'bored',    label: 'Boredom',         icon: '😑', color: 'var(--allo-stem-text-soft, #94a3b8)' },
       { id: 'overwhelm',label: 'Overwhelm',       icon: '😵', color: '#f97316' },
-      { id: 'other',    label: 'Other',           icon: '❓', color: '#64748b' }
+      { id: 'other',    label: 'Other',           icon: '❓', color: 'var(--allo-stem-text-soft, #64748b)' }
     ];
 
     function log() {
@@ -9585,13 +9585,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = form.source === s.id;
               return hh('button', { key: 'sr-' + s.id,
                 onClick: function() { setForm(Object.assign({}, form, { source: s.id })); },
-                style: { padding: '8px 10px', borderRadius: 6, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color : '#94a3b8', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '8px 10px', borderRadius: 6, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, s.icon + ' ' + s.label);
             })
           ),
           tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Context (what were you trying to do?)', { marginBottom: 8 }),
           hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
-            hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Approximate duration'),
+            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Approximate duration'),
             hh('strong', { style: { color: '#fca5a5', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.durationMin + ' min')
           ),
           hh('input', { type: 'range', min: 1, max: 60, step: 1, value: form.durationMin,
@@ -9612,7 +9612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { fontSize: 14, flexShrink: 0 } }, s.source.icon),
               hh('div', { style: { flex: 1, minWidth: 0 } },
                 hh('strong', { style: { fontSize: 12, color: s.source.color } }, s.source.label),
-                hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.count + ' events · ' + s.totalMin + ' min total')
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.count + ' events · ' + s.totalMin + ' min total')
               )
             );
           })
@@ -9627,16 +9627,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             var s = SOURCES.filter(function(x) { return x.id === e.source; })[0] || SOURCES[0];
             return hh('div', { key: 'el-' + e.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + s.color, display: 'flex', justifyContent: 'space-between' } },
               hh('div', { style: { flex: 1, minWidth: 0 } },
-                hh('div', { style: { fontSize: 11, color: '#cbd5e1' } }, s.icon + ' ' + s.label, e.context ? ' · ' + e.context : ''),
-                hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.durationMin + 'm · ' + new Date(e.time).toLocaleString())
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, s.icon + ' ' + s.label, e.context ? ' · ' + e.context : ''),
+                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.durationMin + 'm · ' + new Date(e.time).toLocaleString())
               ),
-              hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#ef4444' } }, '🎓 Why log distractions: '),
         'Most distraction-coaching fails because it generic ("eliminate phones!"). YOUR pattern is specific. After 2 weeks of logging you\'ll see your real top 1-2 — often surprising. The intervention follows the data, not generic advice.'
       )
@@ -9708,23 +9708,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('input', { type: 'text', value: query, autoFocus: true,
           onChange: function(e) { setQuery(e.target.value); },
           placeholder: 'Search across all your saved content...',
-          style: { width: '100%', padding: '12px 14px', fontSize: 14, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }
+          style: { width: '100%', padding: '12px 14px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }
         })
       ),
 
-      query.length < 2 ? hh('div', { style: { padding: 20, textAlign: 'center', color: '#64748b', fontStyle: 'italic' } }, 'Type 2+ characters to search.')
-      : results.length === 0 ? hh('div', { style: { padding: 20, textAlign: 'center', color: '#64748b', fontStyle: 'italic' } }, 'No matches across your toolkit.')
+      query.length < 2 ? hh('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'Type 2+ characters to search.')
+      : results.length === 0 ? hh('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No matches across your toolkit.')
       : hh('div', null,
-          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, results.length + ' result' + (results.length !== 1 ? 's' : '')),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, results.length + ' result' + (results.length !== 1 ? 's' : '')),
           hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             results.slice(0, 30).map(function(r, i) {
               return hh('div', { key: 'sr-' + i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + r.sourceColor } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   hh('span', { style: { fontSize: 10, color: r.sourceColor, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, r.sourceIcon + ' ' + r.source),
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, r.date)
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.date)
                 ),
-                r.title ? hh('strong', { style: { fontSize: 12, color: '#e2e8f0' } }, r.title) : null,
-                hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, lineHeight: 1.55 } },
+                r.title ? hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.title) : null,
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.55 } },
                   (r.snippet || '').substring(0, 200) + ((r.snippet || '').length > 200 ? '…' : '')
                 )
               );
@@ -9814,14 +9814,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'sec-' + sec.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #fbbf24' } },
               hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
                 tkInput(sec.title, function(v) { updateSection(secI, { title: v }); }, 'Section title', { flex: 1, fontWeight: 800, color: '#fbbf24' }),
-                hh('button', { onClick: function() { removeSection(secI); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 14, cursor: 'pointer', padding: '0 8px' } }, '✕')
+                hh('button', { onClick: function() { removeSection(secI); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 14, cursor: 'pointer', padding: '0 8px' } }, '✕')
               ),
               hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                 (sec.bullets || []).map(function(b, bulI) {
                   return hh('div', { key: 'bul-' + secI + '-' + bulI, style: { display: 'flex', gap: 4, alignItems: 'center' } },
                     hh('span', { style: { color: '#fbbf24', fontWeight: 800, minWidth: 14 } }, '•'),
                     tkInput(b, function(v) { updateBullet(secI, bulI, v); }, 'Bullet point', { flex: 1, fontSize: 11 }),
-                    hh('button', { onClick: function() { removeBullet(secI, bulI); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                    hh('button', { onClick: function() { removeBullet(secI, bulI); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
                   );
                 }),
                 tkBtn('+ Bullet', function() { addBullet(secI); }, 'ghost', { padding: '4px 10px', fontSize: 10 })
@@ -9852,15 +9852,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'sh-' + s.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, '📋 ' + s.title),
-                hh('button', { onClick: function() { removeSheet(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('button', { onClick: function() { removeSheet(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, marginBottom: 8 } }, (s.sections || []).length + ' sections · ' + totalBullets + ' bullets · ' + relDate(s.createdAt)),
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, marginBottom: 8 } }, (s.sections || []).length + ' sections · ' + totalBullets + ' bullets · ' + relDate(s.createdAt)),
               tkBtn('Open ↗', function() { setActiveId(s.id); setView('edit'); }, 'primary', { width: '100%', textAlign: 'center' })
             );
           })
         ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#fbbf24' } }, '🎓 Why cheat-sheet building works: '),
         'The act of deciding what goes ON the cheat sheet forces compression + retrieval. Often you don\'t need to USE the sheet — the building taught you the content. Try it before tests where cheat sheets are allowed (some classes), or as a study tool when they\'re not.'
       )
@@ -9881,7 +9881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var OUTCOMES = [
       { id: 'helpful',    label: 'Helpful', icon: '✓', color: '#10b981' },
       { id: 'partial',    label: 'Partial', icon: '~', color: '#fbbf24' },
-      { id: 'not-useful', label: 'Not useful', icon: '✗', color: '#94a3b8' },
+      { id: 'not-useful', label: 'Not useful', icon: '✗', color: 'var(--allo-stem-text-soft, #94a3b8)' },
       { id: 'hard',       label: 'Hard to ask', icon: '😰', color: '#a855f7' }
     ];
 
@@ -9910,7 +9910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'ats-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -9922,13 +9922,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             tkInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who?'),
             tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What did you ask for?')
           ),
-          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'How did it go?'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'How did it go?'),
           hh('div', { style: { display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' } },
             OUTCOMES.map(function(o) {
               var on = form.outcome === o.id;
               return hh('button', { key: 'oc-' + o.id,
                 onClick: function() { setForm(Object.assign({}, form, { outcome: o.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color : '#94a3b8', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, o.icon + ' ' + o.label);
             })
           ),
@@ -9945,22 +9945,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'as-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + o.color } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('div', { style: { flex: 1 } },
-                  hh('div', { style: { fontSize: 11, color: '#cbd5e1' } },
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     hh('span', { style: { color: o.color, fontWeight: 700, marginRight: 4 } }, o.icon),
                     a.who ? hh('strong', { style: { color: '#10b981' } }, a.who + ': ') : null,
                     a.what
                   ),
-                  hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, relDate(a.date))
+                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, relDate(a.date))
                 ),
-                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              a.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic' } }, a.notes) : null
+              a.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontStyle: 'italic' } }, a.notes) : null
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#10b981' } }, '🎓 Why log this: '),
         'Asking for help is THE most underused academic skill. Especially among neurodivergent students and high-achievers. Logging it normalizes it — converts an internal "I should be able to figure this out" voice into a behavior that has data. Watch the pattern: who do you ask easily? Who do you avoid?'
       )
@@ -10044,7 +10044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           )
         ),
 
-        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + p.color, marginBottom: 14, fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + p.color, marginBottom: 14, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
           p.instructions
         ),
 
@@ -10059,7 +10059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🧘', 'Mindfulness Practice', '6 guided practices from MBSR + RAIN traditions. 3-10 min each. No prior experience needed.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🧘 You\'ve practiced: '), totalMin, ' min total · ', sessions.length, ' session', sessions.length !== 1 ? 's' : ''
       ),
 
@@ -10071,7 +10071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, p.icon),
             hh('div', { style: { fontSize: 13, fontWeight: 800, color: p.color } }, p.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, Math.round(p.duration / 60) + ' min · ' + p.research.split('.')[0])
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, Math.round(p.duration / 60) + ' min · ' + p.research.split('.')[0])
           );
         })
       )
@@ -10120,7 +10120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader(t.icon, t.label, 'Step through these slowly. There\'s no rush.', t.color),
         hh('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '20, rgba(15,23,42,0.7))', border: '2px solid ' + t.color, marginBottom: 14 } },
-          hh('ol', { style: { margin: 0, paddingLeft: 22, fontSize: 14, color: '#e2e8f0', lineHeight: 2.0 } },
+          hh('ol', { style: { margin: 0, paddingLeft: 22, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 2.0 } },
             t.steps.map(function(s, i) {
               return hh('li', { key: 'st-' + i, style: { marginBottom: 8 } }, s);
             })
@@ -10136,7 +10136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🧰', 'Anxiety Toolkit', 'Quick-access tools when anxiety hits. Pick what fits the moment.', '#ef4444'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
         'Call or text 988 (US Suicide + Crisis Lifeline). Maine Mobile Crisis: 1-888-568-1112. These tools are for everyday anxiety; reach out for human help if you\'re unsafe.'
       ),
@@ -10150,7 +10150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
             hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color } }, t.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, t.steps.length + ' steps' + (count > 0 ? ' · used ' + count + 'x' : ''))
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, t.steps.length + ' steps' + (count > 0 ? ' · used ' + count + 'x' : ''))
           );
         })
       ),
@@ -10269,7 +10269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 return hh('div', { key: 'op-' + o.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
                   hh('span', { style: { color: '#c084fc', fontWeight: 800, minWidth: 16, fontFamily: 'ui-monospace, Menlo, monospace' } }, (i + 1) + '.'),
                   tkInput(o.name, function(v) { updateOption(i, { name: v }); }, 'option name', { flex: 1 }),
-                  hh('button', { onClick: function() { removeOption(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeOption(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 );
               })
             ),
@@ -10285,12 +10285,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               d.criteria.map(function(c, i) {
                 return hh('div', { key: 'cr-' + c.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
                   tkInput(c.name, function(v) { updateCriterion(i, { name: v }); }, 'criterion name', { flex: 2 }),
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'weight:'),
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'weight:'),
                   hh('input', { type: 'number', min: 1, max: 10, value: c.weight,
                     onChange: function(e) { updateCriterion(i, { weight: parseInt(e.target.value, 10) }); },
                     style: { width: 50, padding: '6px 8px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
                   }),
-                  hh('button', { onClick: function() { removeCriterion(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeCriterion(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 );
               })
             ),
@@ -10306,7 +10306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
                 hh('thead', null,
                   hh('tr', null,
-                    hh('th', { style: { padding: 6, textAlign: 'left', color: '#94a3b8', fontWeight: 700, fontSize: 10 } }, 'Criterion'),
+                    hh('th', { style: { padding: 6, textAlign: 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, fontSize: 10 } }, 'Criterion'),
                     d.options.filter(function(o) { return o.name; }).map(function(o) {
                       return hh('th', { key: 'th-' + o.id, style: { padding: 6, textAlign: 'center', color: '#c084fc', fontWeight: 800, fontSize: 11 } }, o.name);
                     })
@@ -10315,7 +10315,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('tbody', null,
                   d.criteria.filter(function(c) { return c.name; }).map(function(c) {
                     return hh('tr', { key: 'tr-' + c.id },
-                      hh('td', { style: { padding: 6, fontSize: 11, color: '#cbd5e1', fontWeight: 700 } }, c.name, hh('span', { style: { color: '#94a3b8', marginLeft: 4 } }, '(w' + c.weight + ')')),
+                      hh('td', { style: { padding: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, c.name, hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 4 } }, '(w' + c.weight + ')')),
                       d.options.filter(function(o) { return o.name; }).map(function(o) {
                         return hh('td', { key: 'td-' + o.id, style: { padding: 4, textAlign: 'center' } },
                           hh('input', { type: 'number', min: 0, max: 10, value: getScore(o.id, c.id),
@@ -10339,9 +10339,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 )
               )
             ),
-            winner && totalForOption(winner) > 0 ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+            winner && totalForOption(winner) > 0 ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               hh('strong', { style: { color: '#10b981' } }, '🏆 Highest-scoring: '), winner.name,
-              hh('div', { style: { marginTop: 4, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'Trust your gut too — if this doesn\'t feel right, your criteria or weights may need adjustment.')
+              hh('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Trust your gut too — if this doesn\'t feel right, your criteria or weights may need adjustment.')
             ) : null
           )
         ) : null,
@@ -10374,7 +10374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea', cursor: 'pointer' }
             },
               hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '⚖️ ' + d.title),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, d.options.length + ' options · ' + d.criteria.length + ' criteria · ' + relDate(d.createdAt))
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, d.options.length + ' options · ' + d.criteria.length + ' criteria · ' + relDate(d.createdAt))
             );
           })
         )
@@ -10455,8 +10455,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(59,130,246,0.20), rgba(15,23,42,0.7))', border: '2px solid #3b82f6', marginBottom: 14, textAlign: 'center', minHeight: 160 } },
           hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#60a5fa', marginBottom: 12 } }, w.word),
           quizState.showAns ? hh('div', null,
-            hh('div', { style: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, w.definition),
-            w.sentence ? hh('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, '"' + w.sentence + '"') : null
+            hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8 } }, w.definition),
+            w.sentence ? hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '"' + w.sentence + '"') : null
           ) : null
         ),
         quizState.showAns ? hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
@@ -10497,10 +10497,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               return hh('div', { key: 'w-' + w.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #3b82f6' } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, w.word, hh('span', { style: { marginLeft: 8, fontSize: 11 } }, stars)),
-                  hh('button', { onClick: function() { removeWord(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeWord(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
-                hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, w.definition),
-                w.sentence ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 4 } }, '"' + w.sentence + '"') : null
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, w.definition),
+                w.sentence ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, '"' + w.sentence + '"') : null
               );
             })
           )
@@ -10527,9 +10527,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, '🔤 ' + l.name),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeList(l.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeList(l.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, (l.words || []).length + ' words')
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, (l.words || []).length + ' words')
             );
           })
         )
@@ -10589,12 +10589,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           tkSectionHeader('🚶', 'Walking through ' + p.name, 'Stop ' + (walkIdx + 1) + ' of ' + p.loci.length, '#10b981'),
           hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))', border: '2px solid #10b981', marginBottom: 14 } },
             hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, '📍 Location'),
-            hh('div', { style: { fontSize: 18, color: '#e2e8f0', marginBottom: 14, lineHeight: 1.5 } }, current ? current.location : ''),
+            hh('div', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 14, lineHeight: 1.5 } }, current ? current.location : ''),
             hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, '🎯 Item to remember'),
-            hh('div', { style: { fontSize: 16, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.5, fontStyle: 'italic' } }, current ? current.item : ''),
+            hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.5, fontStyle: 'italic' } }, current ? current.item : ''),
             current && current.vivid ? hh('div', null,
               hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, '🌈 Vivid image'),
-              hh('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 } }, current.vivid)
+              hh('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, current.vivid)
             ) : null
           ),
           hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
@@ -10626,10 +10626,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               return hh('div', { key: 'lc-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                   hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, '📍 ' + (i + 1) + '. ' + l.location),
-                  hh('button', { onClick: function() { removeLoci(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeLoci(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
-                hh('div', { style: { fontSize: 12, color: '#e2e8f0', marginBottom: l.vivid ? 4 : 0 } }, '→ ' + l.item),
-                l.vivid ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '🌈 ' + l.vivid) : null
+                hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: l.vivid ? 4 : 0 } }, '→ ' + l.item),
+                l.vivid ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '🌈 ' + l.vivid) : null
               );
             })
           )
@@ -10655,14 +10655,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '🏛 ' + p.name),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removePalace(p.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('span', { onClick: function(e) { e.stopPropagation(); removePalace(p.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              p.description ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, p.description) : null,
+              p.description ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, p.description) : null,
               hh('div', { style: { fontSize: 11, color: '#c084fc', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, (p.loci || []).length + ' loci')
             );
           })
         ),
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#a855f7' } }, '🎓 The method of loci: '),
         'Ancient Greek + Roman orators used this to memorize hour-long speeches. Modern memory champions still rely on it. Strong research support (Maguire et al. 2003 — World Memory Championship competitors show distinct hippocampal patterns). The vividness + specific-location combo bypasses normal forgetting curves.'
       )
@@ -10735,15 +10735,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, '🎒 ' + c.name),
                 hh('div', { style: { display: 'flex', gap: 4 } },
                   hh('button', { onClick: function() { startEdit(c); }, style: { background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 11, cursor: 'pointer' } }, '✏'),
-                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              c.teacher ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, '👤 ' + c.teacher) : null,
-              c.period || c.room || c.day ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
+              c.teacher ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, '👤 ' + c.teacher) : null,
+              c.period || c.room || c.day ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
                 [c.period && 'P' + c.period, c.room && 'Rm ' + c.room, c.day].filter(Boolean).join(' · ')
               ) : null,
               c.friend ? hh('div', { style: { fontSize: 11, color: '#10b981' } }, '🤝 with ' + c.friend) : null,
-              c.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, c.notes) : null
+              c.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, c.notes) : null
             );
           })
         )
@@ -10784,7 +10784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       random ? hh('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14 } },
         hh('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '✨ Random from your collection'),
-        hh('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + random.text + '"'),
+        hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + random.text + '"'),
         random.source ? hh('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 8, fontFamily: 'Georgia, serif' } }, '— ' + random.source) : null
       ) : null,
 
@@ -10802,7 +10802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap' } },
-        hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, quotes.length + ' quote' + (quotes.length !== 1 ? 's' : '')),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, quotes.length + ' quote' + (quotes.length !== 1 ? 's' : '')),
         tkInput(search, setSearch, '🔎 Search', { width: 200 })
       ),
 
@@ -10811,11 +10811,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           filtered.map(function(q) {
             return hh('div', { key: 'qu-' + q.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
-                hh('div', { style: { flex: 1, fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + q.text + '"'),
-                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('div', { style: { flex: 1, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + q.text + '"'),
+                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
               q.source ? hh('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 6, fontWeight: 700 } }, '— ' + q.source) : null,
-              q.context ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, q.context) : null,
+              q.context ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, q.context) : null,
               q.tag ? hh('span', { style: { display: 'inline-block', marginTop: 6, padding: '2px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontSize: 9, fontWeight: 700 } }, '#' + q.tag) : null
             );
           })
@@ -10867,13 +10867,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         STEPS.map(function(s) {
           return hh('div', { key: 'cs-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
             hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, s.prompt),
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, s.prompt),
             tkTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3)
           );
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#ef4444' } }, '🎓 Why this works: '),
         'Stanley + Brown 2012, JAMA Psychiatry. Safety planning intervention has the strongest evidence for reducing repeat-attempts after a crisis. The act of WRITING this plan when you\'re calm makes it accessible when you\'re not. Share your plan with someone safe — a parent, counselor, friend.'
       )
@@ -10918,7 +10918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🪞', 'My Identity Map', 'A snapshot of who you are right now. For YOU first. Sharable with mentors, counselors, IEP team.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🪞 Identity ≠ a fixed thing. '),
         'Erikson (1968) described adolescence as the identity-exploration stage. The work is articulating who you are NOW, while staying open to who you\'re becoming. There are no wrong answers.'
       ),
@@ -10931,13 +10931,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         DIMENSIONS.map(function(d) {
           return hh('div', { key: 'id-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + d.color } },
             hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: d.color, marginBottom: 4 } }, d.icon + ' ' + d.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, d.prompt),
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, d.prompt),
             tkTextarea(m[d.id], function(v) { update(d.id, v); }, '', 3)
           );
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#a855f7' } }, '💡 Use it: '),
         'Re-read at the start of each school year. Update when something has shifted. Especially powerful when you\'re struggling — identity questions ("who AM I?") get loud in those moments, and having your own answers written down is grounding.'
       )
@@ -11026,7 +11026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             })
           )
         ),
-        completed ? tkBtn('🎯 See suggestions', function() { setView('results'); }, 'primary', { padding: '12px 28px', fontSize: 12 }) : hh('div', { style: { padding: 12, textAlign: 'center', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Answer all 5 questions to see suggestions.')
+        completed ? tkBtn('🎯 See suggestions', function() { setView('results'); }, 'primary', { padding: '12px 28px', fontSize: 12 }) : hh('div', { style: { padding: 12, textAlign: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Answer all 5 questions to see suggestions.')
       ) : hh('div', null,
         tkBtn('← Re-take quiz', function() { setAnswers({}); setView('quiz'); }, 'ghost'),
         hh('div', { style: { marginTop: 12, marginBottom: 8 } },
@@ -11038,8 +11038,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'cr-' + c.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #10b981' } },
               hh('div', { style: { fontSize: 22, marginBottom: 4 } }, c.icon),
               hh('strong', { style: { fontSize: 13, color: '#10b981' } }, c.label),
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 } }, c.desc),
-              hh('div', { style: { marginTop: 6, fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'match: ' + c.score + ' / 5'),
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4 } }, c.desc),
+              hh('div', { style: { marginTop: 6, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'match: ' + c.score + ' / 5'),
               hh('div', { style: { marginTop: 8 } },
                 isSaved
                   ? tkBtn('✓ Saved · remove', function() { unsaveCareer(c.id); }, 'good', { padding: '4px 10px', fontSize: 10 })
@@ -11050,7 +11050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         ),
         (data.saved || []).length > 0 ? hh('div', { style: { marginTop: 14 } },
           hh('strong', { style: { fontSize: 12, color: '#10b981' } }, '💾 Careers to explore further'),
-          hh('div', { style: { marginTop: 6, fontSize: 11, color: '#cbd5e1' } },
+          hh('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
             (data.saved || []).map(function(s) {
               var c = CAREERS.filter(function(x) { return x.id === s.id; })[0];
               return c ? c.icon + ' ' + c.label : null;
@@ -11104,7 +11104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'ms-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -11115,7 +11115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 10 } }, '🌈 Quick check-in'),
           hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
               hh('span', null, 'Mood (1 = low, 10 = high)'),
               hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.mood + '/10')
             ),
@@ -11125,7 +11125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             })
           ),
           hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
               hh('span', null, 'Energy (1 = depleted, 10 = wired)'),
               hh('strong', { style: { color: '#fbbf24', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.energy + '/10')
             ),
@@ -11162,10 +11162,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           logs.slice(0, 20).map(function(l) {
             return hh('div', { key: 'ml-' + l.id, style: { padding: 6, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ec4899', display: 'flex', justifyContent: 'space-between' } },
               hh('div', null,
-                hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · mood ' + l.mood + ' · energy ' + l.energy),
-                l.note ? hh('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 8, fontStyle: 'italic' } }, l.note) : null
+                hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · mood ' + l.mood + ' · energy ' + l.energy),
+                l.note ? hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 8, fontStyle: 'italic' } }, l.note) : null
               ),
-              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
             );
           })
         )
@@ -11209,12 +11209,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('💌', 'Letter from ' + relDate(l.writtenOn), canRead ? 'Read it.' : 'Sealed until ' + l.deliverOn, '#a855f7'),
         canRead ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '2px solid #a855f7', marginBottom: 14, fontFamily: 'Georgia, serif' } },
           l.to ? hh('div', { style: { fontSize: 12, color: '#c084fc', marginBottom: 14, fontStyle: 'italic' } }, 'Dear ' + l.to + ',') : null,
-          hh('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, l.body),
+          hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, l.body),
           l.from ? hh('div', { style: { fontSize: 12, color: '#c084fc', marginTop: 14, fontStyle: 'italic', textAlign: 'right' } }, '— ' + l.from + ', ' + l.writtenOn) : null
         ) : hh('div', { style: { padding: 30, borderRadius: 14, background: 'rgba(168,85,247,0.08)', border: '2px dashed #a855f7', textAlign: 'center', marginBottom: 14 } },
           hh('div', { style: { fontSize: 48, marginBottom: 10 } }, '🔒'),
           hh('div', { style: { fontSize: 13, color: '#a855f7', marginBottom: 8 } }, 'Sealed until ' + l.deliverOn),
-          hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, (function() {
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, (function() {
             var d = new Date(l.deliverOn + 'T12:00:00').getTime() - new Date().getTime();
             var days = Math.ceil(d / 86400000);
             return days + ' days from today';
@@ -11277,7 +11277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 12, color: sealed ? '#fbbf24' : '#a855f7' } }, (sealed ? '🔒 ' : '💌 ') + 'Letter written ' + relDate(l.writtenOn)),
                 sealed ? hh('span', { style: { fontSize: 10, color: '#fbbf24' } }, 'opens ' + l.deliverOn) : hh('span', { style: { fontSize: 10, color: '#a855f7' } }, 'click to read')
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
                 sealed ? 'Sealed until ' + l.deliverOn : (l.body || '').substring(0, 80) + '...'
               )
             );
@@ -11310,7 +11310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🗝', 'Disclosure Wizard', 'Should I tell them? Walk through the decision step by step. You always have the right to decide.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🛡 Disclosure is YOURS to control. '),
         'For accommodations: only the office handling accommodations needs documentation. Teachers/employers may need to know specific NEEDS (extended time, sensory tools) without knowing diagnostic LABELS. There\'s no rule that says you must share.'
       ),
@@ -11361,10 +11361,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'dl-' + l.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('strong', { style: { fontSize: 12, color: '#c084fc' } }, l.context || 'Decision'),
-                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1' } }, l.what),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'risk: ' + l.risk + '/10 · gain: ' + l.gain + '/10 · ' + relDate(l.date))
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, l.what),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'risk: ' + l.risk + '/10 · gain: ' + l.gain + '/10 · ' + relDate(l.date))
             );
           })
         )
@@ -11387,8 +11387,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'nature',     label: 'Nature sounds',      icon: '🌧', color: '#10b981', desc: 'Rain, ocean, forest, fire. Apps: Calm, Noisli, A Soft Murmur. No music, no distraction.' },
       { id: 'ambient',    label: 'Ambient electronic', icon: '🌌', color: '#06b6d4', desc: 'Brian Eno, Tycho, Boards of Canada. Slow, textural, repetitive.' },
       { id: 'baroque',    label: 'Baroque (~60bpm)',   icon: '🎻', color: '#f97316', desc: 'Bach\'s Goldberg Variations, Vivaldi. ~60bpm matches resting heart rate. Research-favored for study.' },
-      { id: 'whitenoise', label: 'White / brown noise', icon: '📻', color: '#94a3b8', desc: 'mynoise.net is free + customizable. Brown noise (deeper than white) helps many ADHD students.' },
-      { id: 'silence',    label: 'Silence',            icon: '🤫', color: '#475569', desc: 'Underrated. Some students focus best with no audio at all. Try it for a week.' }
+      { id: 'whitenoise', label: 'White / brown noise', icon: '📻', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'mynoise.net is free + customizable. Brown noise (deeper than white) helps many ADHD students.' },
+      { id: 'silence',    label: 'Silence',            icon: '🤫', color: 'var(--allo-stem-text-soft, #475569)', desc: 'Underrated. Some students focus best with no audio at all. Try it for a week.' }
     ];
 
     function rate(id, val) {
@@ -11406,12 +11406,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'pl-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + p.color } },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, p.icon),
             hh('strong', { style: { fontSize: 13, color: p.color } }, p.label),
-            hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4, marginBottom: 8 } }, p.desc),
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4, marginBottom: 8 } }, p.desc),
             hh('div', { style: { display: 'flex', gap: 4 } },
               [1, 2, 3, 4, 5].map(function(n) {
                 return hh('button', { key: 'r-' + n,
                   onClick: function() { rate(p.id, n === r ? 0 : n); },
-                  style: { padding: '4px 8px', borderRadius: 4, background: r >= n ? p.color + '30' : 'transparent', color: r >= n ? p.color : '#475569', border: 'none', fontSize: 14, cursor: 'pointer' }
+                  style: { padding: '4px 8px', borderRadius: 4, background: r >= n ? p.color + '30' : 'transparent', color: r >= n ? p.color: 'var(--allo-stem-text-soft, #475569)', border: 'none', fontSize: 14, cursor: 'pointer' }
                 }, '⭐');
               })
             )
@@ -11419,7 +11419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#a855f7' } }, '🎓 Honest research: '),
         'The "Mozart effect" doesn\'t make you smarter (Pashler 2008 review). But matching audio to task does help — silence/instrumental for reading-heavy work; lyrics-free for math; whatever helps initiation for ADHD. Track what actually works for YOU; this is one of the most individual study choices.'
       )
@@ -11476,7 +11476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('🤔', 'Worry processor', 'Process one worry at a time. Then move on.', '#3b82f6'),
         hh('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '2px solid #3b82f6', marginBottom: 14 } },
           hh('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, 'The worry'),
-          hh('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, '"' + w.text + '"')
+          hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 12 } }, '"' + w.text + '"')
         ),
         tkCard('#3b82f6',
           hh('div', null,
@@ -11490,14 +11490,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 var on = t.status === o.id;
                 return hh('button', { key: 'os-' + o.id,
                   onClick: function() { setThinking(Object.assign({}, thinking, (function() { var x = {}; x[w.id] = Object.assign({}, t, { status: o.id }); return x; })())); },
-                  style: { padding: '8px 12px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color : '#94a3b8', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '8px 12px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                 }, o.label);
               })
             ),
             t.status === 'inMyControl' || t.status === 'partlyControl' ? hh('div', null,
               hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'What\'s the smallest next action?'),
               tkTextarea(t.action, function(v) { setThinking(Object.assign({}, thinking, (function() { var x = {}; x[w.id] = Object.assign({}, t, { action: v }); return x; })())); }, 'Specific. Doable. Small.', 2, { marginBottom: 8 })
-            ) : t.status === 'notControl' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } },
+            ) : t.status === 'notControl' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8 } },
               hh('strong', { style: { color: '#ef4444' } }, '✗ Not in your control. '),
               'The worry is real, but you can\'t solve it through worrying about it. Acknowledge: "I notice my brain is asking me to control this. I cannot." Practice tolerating uncertainty. The Serenity Prayer was written for this exact category.'
             ) : null
@@ -11516,7 +11516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('⏰', 'Worry Time', 'Catch worries throughout the day. Process them at a scheduled "worry time." Borkovec 1983.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🎓 Why scheduled worry time works: '),
         'Borkovec 1983 — instead of worrying all day, designate 15 minutes daily for worry. When a worry pops up: write it down, tell yourself "I\'ll think about that at worry time," release it. At worry time: process the list. Most worries lose intensity when contained.'
       ),
@@ -11552,10 +11552,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           openWorries.map(function(w) {
             return hh('div', { key: 'ow-' + w.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7', display: 'flex', justifyContent: 'space-between', gap: 8 } },
-              hh('div', { style: { flex: 1, fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, w.text),
+              hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, w.text),
               hh('div', { style: { display: 'flex', gap: 4 } },
                 tkBtn('Process', function() { setWorking(w.id); }, 'primary', { padding: '4px 10px', fontSize: 10 }),
-                hh('button', { onClick: function() { removeWorry(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { removeWorry(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               )
             );
           })
@@ -11568,7 +11568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
           resolvedWorries.slice(0, 10).map(function(w) {
             return hh('div', { key: 'rw-' + w.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981', opacity: 0.7 } },
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', textDecoration: 'line-through' } }, w.text),
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: 'line-through' } }, w.text),
               w.action ? hh('div', { style: { fontSize: 10, color: '#10b981', marginTop: 4, fontStyle: 'italic' } }, '→ ' + w.action) : null
             );
           })
@@ -11649,11 +11649,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 2, position: 'relative', overflow: 'hidden', marginBottom: 2 } },
                 hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
               ),
-              hh('div', { style: { fontSize: 8, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, h.hour)
+              hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, h.hour)
             );
           })
         ),
-        bestHour && bestHour.avg > 0 ? hh('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1' } },
+        bestHour && bestHour.avg > 0 ? hh('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('strong', { style: { color: '#10b981' } }, '⭐ Your peak hour: '), bestHour.hour + ':00 (avg ' + bestHour.avg.toFixed(1) + '/10). ',
           'Try scheduling hard cognitive work in this window.'
         ) : null
@@ -11665,11 +11665,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           logs.slice(0, 20).map(function(l) {
             var col = l.level >= 7 ? '#10b981' : l.level >= 5 ? '#fbbf24' : '#ef4444';
             return hh('div', { key: 'el-' + l.id, style: { padding: 6, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col, display: 'flex', justifyContent: 'space-between' } },
-              hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } },
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                 l.date + ' @ ' + l.hour + ':00 — ', hh('strong', { style: { color: col } }, l.level + '/10'),
-                l.what ? hh('span', { style: { color: '#94a3b8', marginLeft: 6, fontStyle: 'italic' } }, l.what) : null
+                l.what ? hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6, fontStyle: 'italic' } }, l.what) : null
               ),
-              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
             );
           })
         )
@@ -11735,12 +11735,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'q-' + q.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + (q.answered ? '#10b981' : '#06b6d4') } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('strong', { style: { fontSize: 12, color: q.answered ? '#10b981' : '#67e8f9' } }, (q.answered ? '✓ ' : '❓ ') + q.text),
-                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } },
                 (q.subject ? '📚 ' + q.subject + ' · ' : '') + (q.context ? q.context + ' · ' : '') + relDate(q.createdAt)
               ),
-              q.answered ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+              q.answered ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                 hh('strong', { style: { color: '#10b981' } }, '✓ Answered: '), q.answer
               ) : hh('div', null,
                 (function() {
@@ -11798,25 +11798,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'What did you do? Tiny counts. Bigger counts. All count.', 2, { marginBottom: 10 }),
           hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
             hh('div', null,
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'Size'),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Size'),
               hh('div', { style: { display: 'flex', gap: 4 } },
                 SIZES.map(function(s) {
                   var on = form.size === s.id;
                   return hh('button', { key: 'sz-' + s.id,
                     onClick: function() { setForm(Object.assign({}, form, { size: s.id })); },
-                    style: { padding: '6px 10px', borderRadius: 4, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color : '#94a3b8', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 10px', borderRadius: 4, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
                   }, s.label);
                 })
               )
             ),
             hh('div', null,
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'Category'),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Category'),
               hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                 CATS.map(function(c) {
                   var on = form.category === c.id;
                   return hh('button', { key: 'ct-' + c.id,
                     onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
-                    style: { padding: '6px 10px', borderRadius: 4, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 10px', borderRadius: 4, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
                   }, c.icon + ' ' + c.label);
                 })
               )
@@ -11828,7 +11828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(15,23,42,0.7))', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 12, textAlign: 'center' } },
         hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, successes.length),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'wins logged total · ', hh('strong', { style: { color: '#10b981' } }, 'each one happened.'))
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'wins logged total · ', hh('strong', { style: { color: '#10b981' } }, 'each one happened.'))
       ),
 
       successes.length > 0 ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -11841,9 +11841,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('span', { style: { color: cat.color, marginRight: 6 } }, cat.icon),
                 hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: sz.color + '20', color: sz.color, fontSize: 9, fontWeight: 800 } }, sz.label)
               ),
-              hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date), ' · ', hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date), ' · ', hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
             ),
-            hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, s.text)
+            hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, s.text)
           );
         })
       ) : tkEmptyState('🏆', 'No wins logged yet. Tiny ones count.', null, null)
@@ -11939,7 +11939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
             hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, t.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt.substring(0, 100))
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt.substring(0, 100))
           );
         })
       ),
@@ -11950,7 +11950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           (data.saved || []).slice(0, 10).map(function(d) {
             return hh('div', { key: 'sd-' + d.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #3b82f6' } },
               hh('div', { style: { fontSize: 10, color: '#60a5fa', marginBottom: 4 } }, d.type + ' · ' + relDate(d.date)),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, d.body.substring(0, 200) + '...')
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, d.body.substring(0, 200) + '...')
             );
           })
         )
@@ -12007,7 +12007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               return hh('div', { key: 'ba-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid ' + col } },
                 hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                   hh('span', { style: { fontSize: 14 } }, a.icon),
-                  hh('span', { style: { fontSize: 11, color: '#cbd5e1', flex: 1 } }, a.label),
+                  hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', flex: 1 } }, a.label),
                   hh('strong', { style: { color: col, fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
                 ),
                 hh('input', { type: 'range', min: 1, max: 10, step: 1, value: val,
@@ -12018,7 +12018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             })
           ),
           hh('div', { style: { marginBottom: 10 } },
-            hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Overall body feeling: ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10')),
+            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Overall body feeling: ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10')),
             hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.overall,
               onChange: function(e) { setForm(Object.assign({}, form, { overall: parseInt(e.target.value, 10) })); },
               style: { width: '100%', accentColor: '#ec4899' }
@@ -12035,14 +12035,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           checks.slice(0, 10).map(function(c) {
             var col = c.overall >= 7 ? '#10b981' : c.overall >= 5 ? '#fbbf24' : '#ef4444';
             return hh('div', { key: 'bc-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.date + ' · overall ' + c.overall + '/10'),
-              c.note ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, c.note) : null
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.date + ' · overall ' + c.overall + '/10'),
+              c.note ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, c.note) : null
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#ec4899' } }, '🎓 Why body awareness: '),
         'van der Kolk (The Body Keeps the Score, 2014) — trauma + chronic stress live in the body, often outside conscious awareness. Daily check-ins build interoception (noticing internal body state). Better interoception = better emotional regulation + earlier stress detection. Just notice. Don\'t need to fix.'
       )
@@ -12091,7 +12091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = form.category === c.id;
               return hh('button', { key: 'ac-' + c.id,
                 onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
               }, c.icon + ' ' + c.label);
             })
           ),
@@ -12114,10 +12114,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { fontSize: 24, marginBottom: 4 } }, c.icon),
                   hh('strong', { style: { fontSize: 13, color: c.color, lineHeight: 1.4 } }, a.title)
                 ),
-                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, a.date + ' · ' + c.label),
-              a.reflection ? hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, a.reflection) : null
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, a.date + ' · ' + c.label),
+              a.reflection ? hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, a.reflection) : null
             );
           })
         )
@@ -12189,7 +12189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Daily card
       daily ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14, textAlign: 'center' } },
         hh('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, '✨ Today'),
-        hh('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + daily.text + '"')
+        hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + daily.text + '"')
       ) : null,
 
       // Add custom
@@ -12209,19 +12209,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var fav = favorites.indexOf(a.id) >= 0;
           return hh('div', { key: 'af-' + a.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (fav ? '#fbbf24' : 'rgba(251,191,36,0.40)') } },
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
-              hh('div', { style: { flex: 1, fontSize: 12, color: '#e2e8f0', fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + a.text + '"'),
+              hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + a.text + '"'),
               hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
                 hh('button', { onClick: function() { toggleFav(a.id); },
                   style: { background: 'transparent', border: 'none', color: fav ? '#fbbf24' : '#475569', fontSize: 16, cursor: 'pointer' }
                 }, fav ? '⭐' : '☆'),
-                !a.builtin ? hh('button', { onClick: function() { removeCustom(a.text); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+                !a.builtin ? hh('button', { onClick: function() { removeCustom(a.text); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕') : null
               )
             )
           );
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#fbbf24' } }, '🎓 Self-affirmation theory: '),
         'Steele 1988 + many replications. Briefly affirming an important value (not "I\'m awesome" — more like "I value being a good friend") before a stressful task reduces threat response + improves performance. Especially powerful for students from groups facing stereotype threat (Cohen + Garcia 2014).'
       )
@@ -12273,10 +12273,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { fontSize: 26, marginBottom: 4 } }, m.icon || '🌟'),
                   hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, m.name)
                 ),
-                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
               ),
-              m.who ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, m.who) : null,
-              m.admire ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+              m.who ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, m.who) : null,
+              m.admire ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                 hh('strong', { style: { color: '#fbbf24' } }, '💡 What I admire: '), m.admire
               ) : null
             );
@@ -12351,7 +12351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           assessments.map(function(a) {
             return hh('div', { key: 'sa-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
               hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700 } }, a.date + ' · ' + relDate(a.date)),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'Top: ' + (a.answers.q4 || '?') + ' · ' + (a.answers.q5 || '?') + ' · ' + (a.answers.q8 || '?'))
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Top: ' + (a.answers.q4 || '?') + ' · ' + (a.answers.q5 || '?') + ' · ' + (a.answers.q8 || '?'))
             );
           })
         )
@@ -12407,7 +12407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 return hh('div', { key: 'cm-' + i, style: { display: 'flex', gap: 4 } },
                   hh('span', { style: { color: '#67e8f9', fontWeight: 800, minWidth: 16 } }, (i + 1) + '.'),
                   tkInput(c, function(v) { updateCommit(i, v); }, 'I will...', { flex: 1, fontSize: 11 }),
-                  hh('button', { onClick: function() { removeCommit(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeCommit(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 );
               })
             ),
@@ -12456,17 +12456,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 14, color: '#67e8f9' } }, '📜 ' + c.title),
                 c.signed ? hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 10, fontWeight: 800 } }, '✓ Signed') : null
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8 } }, c.startDate + ' → ' + (c.endDate || 'open')),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, c.startDate + ' → ' + (c.endDate || 'open')),
               c.commitments && c.commitments.filter(function(x) { return x; }).length > 0 ? hh('div', { style: { marginBottom: 8 } },
                 hh('div', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 700, marginBottom: 4 } }, 'I commit to:'),
-                hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } },
+                hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                   c.commitments.filter(function(x) { return x; }).map(function(co, i) {
                     return hh('li', { key: 'co-' + i }, co);
                   })
                 )
               ) : null,
-              c.rewards ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎁 Reward: '), c.rewards) : null,
-              c.accountability ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, hh('strong', { style: { color: '#10b981' } }, '🤝 Accountability: '), c.accountability) : null,
+              c.rewards ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎁 Reward: '), c.rewards) : null,
+              c.accountability ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, hh('strong', { style: { color: '#10b981' } }, '🤝 Accountability: '), c.accountability) : null,
               hh('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6 } },
                 !c.signed ? tkBtn('✓ Sign it', function() { sign(c.id); }, 'good', { padding: '4px 12px', fontSize: 11 }) : null,
                 tkBtn('🗑 Delete', function() { remove(c.id); }, 'bad', { padding: '4px 10px', fontSize: 10 })
@@ -12520,7 +12520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = form.closeness === l.id;
               return hh('button', { key: 'lv-' + l.id,
                 onClick: function() { setForm(Object.assign({}, form, { closeness: l.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? l.color + '30' : 'rgba(15,23,42,0.5)', color: on ? l.color : '#94a3b8', border: '1px solid ' + (on ? l.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? l.color + '30' : 'rgba(15,23,42,0.5)', color: on ? l.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? l.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
               }, l.label.split(' (')[0]);
             })
           ),
@@ -12541,11 +12541,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                     hh('div', null,
                       hh('strong', { style: { fontSize: 12, color: level.color } }, p.name),
-                      p.role ? hh('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, '— ' + p.role) : null
+                      p.role ? hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6 } }, '— ' + p.role) : null
                     ),
-                    hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   ),
-                  p.whyMatter ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic' } }, '"' + p.whyMatter + '"') : null
+                  p.whyMatter ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontStyle: 'italic' } }, '"' + p.whyMatter + '"') : null
                 );
               })
             )
@@ -12655,9 +12655,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             (r.steps || []).map(function(s, i) {
               return hh('div', { key: 'rs-' + s.id, style: { display: 'flex', gap: 8, alignItems: 'center', padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + type.color } },
                 hh('span', { style: { color: type.color, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 20 } }, (i + 1) + '.'),
-                hh('div', { style: { flex: 1, fontSize: 12, color: '#cbd5e1' } }, s.text),
-                hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.mins + 'm'),
-                hh('button', { onClick: function() { removeStep(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, s.text),
+                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.mins + 'm'),
+                hh('button', { onClick: function() { removeStep(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ),
@@ -12681,7 +12681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = newType === t.id;
               return hh('button', { key: 'rt-' + t.id,
                 onClick: function() { setNewType(t.id); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? t.color + '30' : 'rgba(15,23,42,0.5)', color: on ? t.color : '#94a3b8', border: '1px solid ' + (on ? t.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? t.color + '30' : 'rgba(15,23,42,0.5)', color: on ? t.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? t.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, t.icon + ' ' + t.label);
             })
           ),
@@ -12699,9 +12699,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('strong', { style: { fontSize: 13, color: t.color } }, t.icon + ' ' + r.title),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeRoutine(r.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeRoutine(r.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, (r.steps || []).length + ' steps · ' + (r.completions || []).length + ' done')
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, (r.steps || []).length + ' steps · ' + (r.completions || []).length + ' done')
             );
           })
         )
@@ -12722,7 +12722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'q1', label: 'Q1: Urgent + Important', icon: '🔥', color: '#ef4444', advice: 'DO NOW. Crisis mode. Goal: stop living here.' },
       { id: 'q2', label: 'Q2: Important, Not Urgent', icon: '⭐', color: '#10b981', advice: 'INVEST. The "live here" zone. Studying ahead, exercise, deep relationships, growth.' },
       { id: 'q3', label: 'Q3: Urgent, Not Important', icon: '📞', color: '#fbbf24', advice: 'DELEGATE or batch. Most interruptions. Other people\'s urgencies.' },
-      { id: 'q4', label: 'Q4: Not Urgent, Not Important', icon: '📺', color: '#94a3b8', advice: 'AVOID. Mindless scrolling, busywork, time-wasters. Conscious choice only.' }
+      { id: 'q4', label: 'Q4: Not Urgent, Not Important', icon: '📺', color: 'var(--allo-stem-text-soft, #94a3b8)', advice: 'AVOID. Mindless scrolling, busywork, time-wasters. Conscious choice only.' }
     ];
 
     function add() {
@@ -12761,12 +12761,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var qTasks = tasks.filter(function(t) { return t.quadrant === q.id; });
           return hh('div', { key: 'qd-' + q.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + q.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + q.color + '40', minHeight: 200 } },
             hh('div', { style: { fontSize: 13, fontWeight: 800, color: q.color, marginBottom: 4 } }, q.icon + ' ' + q.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8, lineHeight: 1.5 } }, q.advice),
-            qTasks.length === 0 ? hh('div', { style: { fontSize: 11, color: '#475569', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'empty')
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8, lineHeight: 1.5 } }, q.advice),
+            qTasks.length === 0 ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'empty')
             : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                 qTasks.map(function(t) {
                   return hh('div', { key: 't-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '2px solid ' + q.color } },
-                    hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, t.text),
+                    hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, t.text),
                     hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap' } },
                       QUADRANTS.filter(function(qq) { return qq.id !== q.id; }).map(function(other) {
                         return hh('button', { key: 'mv-' + other.id,
@@ -12775,7 +12775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                           style: { padding: '2px 6px', borderRadius: 3, background: other.color + '20', color: other.color, border: '1px solid ' + other.color + '40', fontSize: 9, cursor: 'pointer', fontWeight: 700 }
                         }, '→' + other.id.toUpperCase());
                       }),
-                      hh('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 10, cursor: 'pointer' } }, '✕')
+                      hh('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, cursor: 'pointer' } }, '✕')
                     )
                   );
                 })
@@ -12784,7 +12784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#a855f7' } }, '🎓 The Q2 life: '),
         'Covey 1989. Most people live in Q1 (firefighting). The high-leverage shift is to spend MORE time in Q2 (important, not urgent) — exercise, deep work, relationships, planning. Q2 work BECOMES Q1 when neglected long enough. Investing in Q2 prevents Q1 crises.'
       )
@@ -12871,7 +12871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
             hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, t.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, t.prompt)
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, t.prompt)
           );
         })
       )
@@ -12912,7 +12912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🌧', 'Recovery Kit', 'Post-hard-day reset checklist. You don\'t need to do all 8. Even 2 helps.', '#06b6d4'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#06b6d4' } }, '🌧 If today was hard: '),
         'You\'re not alone. Hard days are part of life — they don\'t mean you\'re broken. Walk through the kit. Even partial credit counts.'
       ),
@@ -12934,7 +12934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { width: 22, height: 22, borderRadius: 4, background: on ? '#06b6d4' : 'rgba(15,23,42,0.7)', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, border: '1px solid #06b6d4', flexShrink: 0 } }, on ? '✓' : ''),
                   hh('div', { style: { flex: 1 } },
                     hh('div', { style: { fontSize: 12, fontWeight: 700, color: on ? '#06b6d4' : '#e2e8f0' } }, s.icon + ' ' + s.label),
-                    hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, s.why)
+                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, s.why)
                   )
                 )
               );
@@ -13013,17 +13013,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                 hh('div', null,
                   hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, '📖 ' + b.title),
-                  hh('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, b.author ? '— ' + b.author : '')
+                  hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6 } }, b.author ? '— ' + b.author : '')
                 ),
-                hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
               ),
               hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'p.'),
+                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'p.'),
                 hh('input', { type: 'number', value: b.currentPage,
                   onChange: function(e) { updatePage(b.id, parseInt(e.target.value, 10) || 0); },
                   style: { width: 70, padding: '6px 8px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
                 }),
-                hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, '/ ' + b.totalPages + ' · ' + Math.round(pct) + '%')
+                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '/ ' + b.totalPages + ' · ' + Math.round(pct) + '%')
               ),
               hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden' } },
                 hh('div', { style: { width: pct + '%', height: '100%', background: '#fbbf24' } })
@@ -13062,7 +13062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
             hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, '☀ Today\'s ingredients'),
             hh('div', null,
-              hh('span', { style: { fontSize: 11, color: '#cbd5e1', marginRight: 6 } }, 'Day rating:'),
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Day rating:'),
               hh('strong', { style: { fontSize: 16, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.rating + '/10')
             )
           ),
@@ -13088,7 +13088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       greatEntries.length > 0 ? hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.40)', marginBottom: 12 } },
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '☀ ' + greatEntries.length + ' great days logged (rating 8+)'),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } }, 'Browse the patterns below — what shows up most often in your great days?')
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } }, 'Browse the patterns below — what shows up most often in your great days?')
       ) : null,
 
       entries.length > 0 ? hh('div', null,
@@ -13099,9 +13099,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'ge-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                 hh('span', { style: { fontSize: 11, color: col, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.rating + '/10'),
-                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                 e.slept ? hh('div', null, '😴 ', e.slept) : null,
                 e.ate ? hh('div', null, '🍽 ', e.ate) : null,
                 e.moved ? hh('div', null, '🏃 ', e.moved) : null,
@@ -13153,7 +13153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🌈', 'Sensory Profile', 'Map YOUR sensory preferences across 8 dimensions. Helps you build environments that work.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🌈 Why this matters: '),
         'Especially for autistic, ADHD, and sensory-sensitive students — your nervous system isn\'t broken, it just has specific preferences. Naming them gives you the language to ask for what works.'
       ),
@@ -13162,7 +13162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         DIMENSIONS.map(function(d) {
           return hh('div', { key: 'sp-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #a855f7' } },
             hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 4 } }, d.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, d.what),
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, d.what),
             tkTextarea(p[d.id], function(v) { update(d.id, v); }, '', 2)
           );
         })
@@ -13180,10 +13180,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             obs.slice(0, 15).map(function(o) {
               return hh('div', { key: 'so-' + o.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid #a855f7', display: 'flex', justifyContent: 'space-between' } },
                 hh('div', null,
-                  hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, o.text),
-                  hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.date)
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, o.text),
+                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.date)
                 ),
-                hh('button', { onClick: function() { removeObs(o.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { removeObs(o.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               );
             })
           ) : null
@@ -13228,7 +13228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🧠', 'Neurodivergence Journal', 'For autistic, ADHD, dyslexic, sensory-processing, anxious, and other ND students. Journal the lived experience.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🧠 Identity-first by default: '),
         '"Autistic student" not "student with autism" (community consensus: Kenny 2016, Bury 2020). Override if YOUR preference is different.'
       ),
@@ -13262,11 +13262,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, t.icon + ' ' + t.label),
                 hh('div', null,
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, e.date),
-                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, e.date),
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, e.text)
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, e.text)
             );
           })
         )
@@ -13380,7 +13380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, s.date),
                 hh('div', null,
                   hh('span', { style: { fontSize: 11, color: '#a855f7', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, 'avg ' + avg.toFixed(1)),
-                  hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
               makeRadar(s.ratings, 160)
@@ -13413,7 +13413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('✉', 'Unsent Letters', 'Write a letter to ANYONE — alive, gone, fictional, future you. Don\'t send. The writing IS the work.', '#ec4899'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#ec4899' } }, '✉ Therapeutic letter-writing: '),
         'Pennebaker 1986 — expressive writing about emotional experiences has measurable health + mood benefits. The letter doesn\'t have to be sent. The processing happens in the writing.'
       ),
@@ -13435,10 +13435,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'ol-' + l.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #ec4899' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                 hh('strong', { style: { fontSize: 12, color: '#f472b6', fontFamily: 'Georgia, serif' } }, 'Dear ' + (l.to || 'whoever'),','),
-                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, l.body),
-              hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date)
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, l.body),
+              hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date)
             );
           })
         )
@@ -13494,10 +13494,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'hl-' + h.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24' } },
               hh('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, h.date),
               h.moments.filter(function(m) { return m; }).map(function(m, i) {
-                return hh('div', { key: 'hm-' + i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, '✦ ' + m);
+                return hh('div', { key: 'hm-' + i, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, '✦ ' + m);
               }),
-              h.lesson ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎓 '), h.lesson) : null,
-              h.tomorrow ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🌅 '), h.tomorrow) : null
+              h.lesson ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎓 '), h.lesson) : null,
+              h.tomorrow ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🌅 '), h.tomorrow) : null
             );
           })
         )
@@ -13563,7 +13563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(15,23,42,0.7))', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 14, textAlign: 'center' } },
         hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneSkills + ' / ' + totalSkills),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'life skills built · ' + Math.round((doneSkills / totalSkills) * 100) + '%')
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'life skills built · ' + Math.round((doneSkills / totalSkills) * 100) + '%')
       ),
 
       Object.keys(SKILLS).map(function(catKey) {
@@ -13579,7 +13579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var done = !!skills[catKey + '|' + it];
               return hh('button', { key: 'sk-' + it,
                 onClick: function() { toggleSkill(catKey, it); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 4, background: done ? cat.color + '20' : 'rgba(15,23,42,0.5)', color: done ? cat.color : '#cbd5e1', border: '1px solid ' + (done ? cat.color : 'rgba(100,116,139,0.30)'), fontSize: 10, cursor: 'pointer', textAlign: 'left' }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 4, background: done ? cat.color + '20' : 'rgba(15,23,42,0.5)', color: done ? cat.color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid ' + (done ? cat.color : 'rgba(100,116,139,0.30)'), fontSize: 10, cursor: 'pointer', textAlign: 'left' }
               },
                 hh('span', { style: { width: 14, height: 14, borderRadius: 3, background: done ? cat.color : 'transparent', border: '1px solid ' + cat.color, color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, flexShrink: 0 } }, done ? '✓' : ''),
                 hh('span', { style: { flex: 1 } }, it)
@@ -13623,7 +13623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('⚖', 'Ethical Dilemma Walker', '6-step framework for working through hard moral situations. Kohlberg-aligned moral development scaffolding.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '⚖ Moral reasoning: '),
         'Kohlberg 1958 showed moral reasoning develops in stages — the highest involves balancing universal principles. Working through dilemmas in writing IS the development. There are rarely clean answers, but THINKING IT THROUGH matters.'
       ),
@@ -13633,7 +13633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           STEPS.map(function(s) {
             return hh('div', { key: 'es-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
               hh('label', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, s.label),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, s.prompt),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, s.prompt),
               tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
             );
           }),
@@ -13648,10 +13648,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'el-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, '⚖ ' + l.date),
-                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              l.situation ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 4 } }, hh('strong', { style: { color: '#a855f7' } }, 'Situation: '), l.situation) : null,
-              l.choice ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, hh('strong', { style: { color: '#10b981' } }, 'Choice: '), l.choice) : null
+              l.situation ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 4 } }, hh('strong', { style: { color: '#a855f7' } }, 'Situation: '), l.situation) : null,
+              l.choice ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, hh('strong', { style: { color: '#10b981' } }, 'Choice: '), l.choice) : null
             );
           })
         )
@@ -13705,7 +13705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🛟', 'Community Resources', 'Universal crisis lines + your personal list. Save what works in your community.', '#ef4444'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#ef4444' } }, '🛟 Built-in crisis resources are listed below. '),
         'Add your own: a school counselor, local therapist, doctor, food bank, advocacy org, study buddy line, etc.'
       ),
@@ -13737,10 +13737,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
                   hh('div', null,
                     hh('strong', { style: { fontSize: 12, color: cat.color } }, r.name),
-                    r.contact ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, r.contact) : null,
-                    r.notes ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
+                    r.contact ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, r.contact) : null,
+                    r.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
                   ),
-                  !r.id.startsWith('b') ? hh('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+                  !r.id.startsWith('b') ? hh('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕') : null
                 )
               );
             })
@@ -13785,7 +13785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           SECTIONS.map(function(s) {
             return hh('div', { key: 'sp-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
               hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 4 } }, s.label),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, s.placeholder),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, s.placeholder),
               tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
             );
           }),
@@ -13800,9 +13800,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'pp-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #3b82f6' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                 hh('strong', { style: { fontSize: 11, color: '#60a5fa' } }, '📋 Week of ' + p.date),
-                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              p.focus ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, hh('strong', { style: { color: '#60a5fa' } }, '🎯 Focus: '), p.focus) : null
+              p.focus ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, hh('strong', { style: { color: '#60a5fa' } }, '🎯 Focus: '), p.focus) : null
             );
           })
         )
@@ -13857,7 +13857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = form.cadence === c.id;
               return hh('button', { key: 'cd-' + c.id,
                 onClick: function() { setForm(Object.assign({}, form, { cadence: c.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
               }, c.label);
             })
           ),
@@ -13876,14 +13876,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                 hh('div', null,
                   hh('strong', { style: { fontSize: 13, color: '#f472b6' } }, '🤝 ' + f.name),
-                  f.relationship ? hh('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, '— ' + f.relationship) : null
+                  f.relationship ? hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6 } }, '— ' + f.relationship) : null
                 ),
                 hh('div', null,
                   hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: color + '20', color: color, fontSize: 11, fontWeight: 800, marginRight: 6 } }, overdue ? '⚠ Overdue' : '✓ On track'),
-                  hh('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } }, 'Cadence: ' + c.label + ' · last contact: ' + relDate(f.lastContact) + (overdue ? ' (' + since + 'd ago)' : '')),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } }, 'Cadence: ' + c.label + ' · last contact: ' + relDate(f.lastContact) + (overdue ? ' (' + since + 'd ago)' : '')),
               tkBtn('📞 Mark contacted today', function() { logContact(f.id); }, 'good', { padding: '4px 12px', fontSize: 10 })
             );
           })
@@ -13935,7 +13935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🧭', 'Values Compass', 'Sort 36 values → top 10 → top 5 → top 3. Forces clarity. ACT-aligned (Hayes 1999).', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🧭 Acceptance + Commitment Therapy: '),
         'Hayes 1999. Values aren\'t goals — they\'re directions. "Honesty" isn\'t completed; you just keep moving in that direction. Knowing your top 3 lets you choose actions that move toward them, especially in hard moments.'
       ),
@@ -13951,7 +13951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ),
 
       view === 'sort' ? hh('div', null,
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Tap to pick your top 10 values. ' + ((data.selected || []).length) + '/10 selected.'),
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'Tap to pick your top 10 values. ' + ((data.selected || []).length) + '/10 selected.'),
         hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
           VALUES.map(function(v) {
             var on = (data.selected || []).indexOf(v) >= 0;
@@ -13962,7 +13962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           })
         )
       ) : view === 'narrow5' ? hh('div', null,
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'From your top 10, pick the 5 that matter most. ' + ((data.top5 || []).length) + '/5 selected.'),
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'From your top 10, pick the 5 that matter most. ' + ((data.top5 || []).length) + '/5 selected.'),
         hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
           (data.selected || []).map(function(v) {
             var on = (data.top5 || []).indexOf(v) >= 0;
@@ -13973,7 +13973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           })
         )
       ) : view === 'narrow3' ? hh('div', null,
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'From your top 5, pick THE 3 that you live by. ' + ((data.top3 || []).length) + '/3 selected.'),
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'From your top 5, pick THE 3 that you live by. ' + ((data.top3 || []).length) + '/3 selected.'),
         hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
           (data.top5 || []).map(function(v) {
             var on = (data.top3 || []).indexOf(v) >= 0;
@@ -13984,7 +13984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           })
         )
       ) : hh('div', null,
-        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'For each of your top 3 — why does this matter? What does living it look like in practice?'),
+        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'For each of your top 3 — why does this matter? What does living it look like in practice?'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
           (data.top3 || []).map(function(v) {
             return hh('div', { key: 'vy-' + v, style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.15)', border: '2px solid #a855f7' } },
@@ -14084,7 +14084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 13, color: h.color } }, h.label),
                 hh('div', null,
                   hh('span', { style: { fontSize: 14, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, marginRight: 8 } }, '🔥 ' + streak + 'd'),
-                  hh('button', { onClick: function() { removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
                 )
               ),
               // 12 weeks × 7 days grid
@@ -14108,7 +14108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   });
                 })()
               ),
-              hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 4, textAlign: 'right', fontFamily: 'ui-monospace, Menlo, monospace' } }, habitLogs.length + ' days total in last 12 weeks')
+              hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, textAlign: 'right', fontFamily: 'ui-monospace, Menlo, monospace' } }, habitLogs.length + ' days total in last 12 weeks')
             );
           })
         )
@@ -14150,7 +14150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'sts-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
             hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
             hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
           );
         })
       ),
@@ -14203,14 +14203,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           logs.slice(0, 14).map(function(l) {
             var col = l.total >= 8 ? '#ef4444' : l.total >= 5 ? '#fbbf24' : '#10b981';
             return hh('div', { key: 'st-' + l.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col, display: 'flex', justifyContent: 'space-between' } },
-              hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · ' + l.total + 'h (' + l.scrolling + 'h scroll, ' + l.productive + 'h productive) · felt ' + l.reflective + '/10'),
-              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · ' + l.total + 'h (' + l.scrolling + 'h scroll, ' + l.productive + 'h productive) · felt ' + l.reflective + '/10'),
+              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#ef4444' } }, '📱 Honest framing: '),
         'Screen time research is messy. The pattern is more important than the number. WHAT you do with screens matters more than HOW LONG. The reflection question ("how did you FEEL about it?") is the most useful data here.'
       )
@@ -14283,7 +14283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('strong', { style: { fontSize: 11, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, date),
                 hh('span', { style: { fontSize: 11, color: dones === 3 ? '#10b981' : dones >= 2 ? '#fbbf24' : '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace' } }, dones + '/3')
               ),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1' } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
                 (day.items || []).filter(function(x) { return x; }).map(function(item, i) {
                   return (day.done && day.done[i]) ? '✓ ' + item : '○ ' + item;
                 }).join(' · ')
@@ -14293,7 +14293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#ef4444' } }, '🎯 Why just 3: '),
         'Too many priorities = no priority. Three is the sweet spot — enough to feel ambitious, few enough to actually finish. If you regularly hit all 3, increase your scope. If you regularly miss them, shrink them.'
       )
@@ -14348,17 +14348,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return hh('div', { key: 'cm-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                 hh('strong', { style: { fontSize: 12, color: '#10b981' } }, '💪 ' + m.what),
-                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, relDate(m.date)),
-              m.what_did_it ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, hh('strong', { style: { color: '#10b981' } }, 'What helped: '), m.what_did_it) : null,
-              m.strength_showed ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 } }, hh('strong', { style: { color: '#10b981' } }, 'Strength: '), m.strength_showed) : null
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, relDate(m.date)),
+              m.what_did_it ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, hh('strong', { style: { color: '#10b981' } }, 'What helped: '), m.what_did_it) : null,
+              m.strength_showed ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4 } }, hh('strong', { style: { color: '#10b981' } }, 'Strength: '), m.strength_showed) : null
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#10b981' } }, '🎓 Why log this: '),
         'Bandura 1977 — self-efficacy is the most powerful predictor of trying hard things. The way you build it is by NOTICING when it shows up + understanding what conditions produced it. Over time the pattern becomes a blueprint.'
       )
@@ -14404,7 +14404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       random ? hh('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,146,60,0.25), rgba(15,23,42,0.7))', border: '2px solid #fb923c', marginBottom: 14, textAlign: 'center' } },
         hh('div', { style: { fontSize: 10, color: '#fb923c', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '🌅 Random hope'),
-        hh('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 4 } }, random.text),
+        hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 4 } }, random.text),
         hh('div', { style: { fontSize: 10, color: '#fb923c' } }, (CATS.filter(function(c) { return c.id === random.category; })[0] || { label: '' }).label)
       ) : null,
 
@@ -14416,7 +14416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = form.category === c.id;
               return hh('button', { key: 'hc-' + c.id,
                 onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
               }, c.icon + ' ' + c.label);
             })
           ),
@@ -14436,10 +14436,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               inCat.map(function(h) {
                 return hh('div', { key: 'hp-' + h.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + cat.color, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
-                  hh('div', { style: { flex: 1, fontSize: 12, color: '#cbd5e1', textDecoration: h.done ? 'line-through' : 'none', opacity: h.done ? 0.6 : 1 } }, (h.done ? '✓ ' : '') + h.text),
+                  hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: h.done ? 'line-through' : 'none', opacity: h.done ? 0.6 : 1 } }, (h.done ? '✓ ' : '') + h.text),
                   hh('div', { style: { display: 'flex', gap: 4 } },
                     tkBtn(h.done ? '↺' : '✓', function() { markDone(h.id); }, h.done ? 'ghost' : 'good', { padding: '4px 10px', fontSize: 10 }),
-                    hh('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    hh('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 );
               })
@@ -14524,7 +14524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('💬', 'Script Library', 'Curated phrases for hard moments. Plus your own. Especially valuable for ND students.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '💬 Why scripts: '),
         'In the moment of an interaction, working memory is loaded. Pre-practiced scripts make the words available — you don\'t have to invent them. Modify mine, use as-is, or write your own.'
       ),
@@ -14534,7 +14534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var active = cat === c.id;
           return hh('button', { key: 'sc-' + c.id,
             onClick: function() { setCat(c.id); },
-            style: { padding: '8px 12px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color : '#94a3b8', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 12px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
           }, c.label);
         })
       ),
@@ -14544,9 +14544,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('div', { key: 'sl-' + item.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + currentCat.color } },
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
               hh('div', { style: { fontSize: 11, color: currentCat.color, fontWeight: 700 } }, '⚡ ' + item.s),
-              !item.builtin ? hh('button', { onClick: function() { removeCustom(item.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+              !item.builtin ? hh('button', { onClick: function() { removeCustom(item.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕') : null
             ),
-            hh('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(2,6,23,0.5)', fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + item.script + '"'),
+            hh('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(2,6,23,0.5)', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + item.script + '"'),
             hh('div', { style: { marginTop: 6, textAlign: 'right' } },
               tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(item.script); } catch(e) {} }, 'secondary', { padding: '3px 10px', fontSize: 10 })
             )
@@ -14648,12 +14648,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               inStatus.map(function(t) {
                 return hh('div', { key: 'tp-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + s.color, display: 'flex', justifyContent: 'space-between', gap: 6 } },
-                  hh('span', { style: { flex: 1, fontSize: 11, color: '#cbd5e1' } }, t.text),
+                  hh('span', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, t.text),
                   hh('select', { value: t.status,
                     onChange: function(e) { setTopicStatus(t.id, e.target.value); },
                     style: { padding: '4px 6px', fontSize: 10, color: '#67e8f9', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 4 }
                   }, STATUSES.map(function(opt) { return hh('option', { key: 'os-' + opt.id, value: opt.id }, opt.icon); })),
-                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 );
               })
             )
@@ -14694,9 +14694,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { fontSize: 24, marginBottom: 4 } }, a.icon),
                   hh('strong', { style: { fontSize: 13, color: '#67e8f9' } }, a.name)
                 ),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeArea(a.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeArea(a.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, topicCount + ' topics · ' + mastered + ' mastered')
+              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, topicCount + ' topics · ' + mastered + ' mastered')
             );
           })
         )
@@ -14781,7 +14781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         // Progress
         hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.20), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', marginBottom: 14 } },
           hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-            hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, c.timespan || 'no timespan'),
+            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, c.timespan || 'no timespan'),
             hh('strong', { style: { fontSize: 16, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(pct) + '%')
           ),
           hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.6)', borderRadius: 5, overflow: 'hidden' } },
@@ -14817,7 +14817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('div', { style: { flex: 1 } },
                     hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 } },
                       hh('span', { style: { fontSize: 10, padding: '2px 6px', borderRadius: 4, background: t.color + '20', color: t.color, fontWeight: 800 } }, t.label),
-                      hh('strong', { style: { fontSize: 12, color: '#e2e8f0', textDecoration: s.done ? 'line-through' : 'none' } }, s.label)
+                      hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', textDecoration: s.done ? 'line-through' : 'none' } }, s.label)
                     ),
                     tkInput(s.resource, function(v) { updateStep(s.id, { resource: v }); }, 'Resource link / book / location (optional)', { marginBottom: 4, fontSize: 10 }),
                     tkInput(s.notes, function(v) { updateStep(s.id, { notes: v }); }, 'Notes (optional)', { fontSize: 10 })
@@ -14830,7 +14830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                       style: { background: 'transparent', border: 'none', color: t.color, fontSize: 11, cursor: 'pointer', padding: 2 }
                     }, '▼'),
                     hh('button', { onClick: function() { removeStep(s.id); },
-                      style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 2 }
+                      style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 2 }
                     }, '✕')
                   )
                 )
@@ -14854,7 +14854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🎓', 'My Curriculum Builder', 'Design YOUR own learning curriculum across any topic. The capstone toolkit tool.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#a855f7' } }, '🎓 Self-directed learning: '),
         'You\'re not limited to what school assigns. The most successful adults are self-directed learners who can design their own learning paths. This tool helps you practice that skill. Pick something you actually want to learn outside of any class — a language, an instrument, a skill, a topic you\'re curious about.'
       ),
@@ -14882,9 +14882,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
             },
               hh('strong', { style: { fontSize: 14, color: '#c084fc' } }, '🎓 ' + c.title),
-              c.why ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 4 } }, c.why) : null,
+              c.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, c.why) : null,
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 8 } },
-                hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, c.timespan + ' · ' + steps.length + ' steps'),
+                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.timespan + ' · ' + steps.length + ' steps'),
                 hh('strong', { style: { fontSize: 12, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(pct) + '%')
               ),
               hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginTop: 6 } },
@@ -14894,7 +14894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           })
         ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#a855f7' } }, '🌟 Why this is the most important tool in this toolkit: '),
         'School teaches you content. School rarely teaches you HOW to teach yourself. The students who do well long-term aren\'t the smartest ones — they\'re the ones who learned to learn on their own. Designing your own curriculum + sticking to it is THAT skill. Start small. One curriculum, 8 steps, 8 weeks. You\'ll be a different person at the end.'
       )
@@ -14925,7 +14925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'family',     label: 'Family change',    icon: '🏠', color: '#ef4444' },
       { id: 'medical',    label: 'Medical event',    icon: '⚕', color: '#06b6d4' },
       { id: 'relationship',label: 'Relationship change', icon: '💔', color: '#f97316' },
-      { id: 'other',      label: 'Other transition', icon: '🔄', color: '#94a3b8' }
+      { id: 'other',      label: 'Other transition', icon: '🔄', color: 'var(--allo-stem-text-soft, #94a3b8)' }
     ];
 
     var SCHLOSSBERG_PHASES = [
@@ -14986,11 +14986,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = t.phase === p.id;
               return hh('button', { key: 'sp-' + p.id,
                 onClick: function() { updateTrans({ phase: p.id }); },
-                style: { flex: 1, padding: '10px 4px', borderRadius: 6, background: on ? kind.color + '30' : 'rgba(15,23,42,0.5)', color: on ? kind.color : '#94a3b8', border: '1.5px solid ' + (on ? kind.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }
+                style: { flex: 1, padding: '10px 4px', borderRadius: 6, background: on ? kind.color + '30' : 'rgba(15,23,42,0.5)', color: on ? kind.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1.5px solid ' + (on ? kind.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }
               },
                 hh('div', { style: { fontSize: 16, marginBottom: 2 } }, p.icon),
                 hh('div', null, p.label),
-                on ? hh('div', { style: { fontSize: 9, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic', fontWeight: 400 } }, p.desc) : null
+                on ? hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontStyle: 'italic', fontWeight: 400 } }, p.desc) : null
               );
             })
           )
@@ -15025,15 +15025,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 );
               })()
             ),
-            checklist.length === 0 ? hh('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'No items yet.')
+            checklist.length === 0 ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'No items yet.')
             : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                 checklist.map(function(c) {
                   return hh('div', { key: 'cl-' + c.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
                     hh('button', { onClick: function() { toggleChecklist(c.id); },
                       style: { width: 20, height: 20, borderRadius: 4, background: c.done ? kind.color : 'transparent', border: '1.5px solid ' + kind.color, color: '#0f172a', fontSize: 12, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
                     }, c.done ? '✓' : ''),
-                    hh('span', { style: { flex: 1, fontSize: 11, color: '#cbd5e1', textDecoration: c.done ? 'line-through' : 'none', opacity: c.done ? 0.6 : 1 } }, c.text),
-                    hh('button', { onClick: function() { removeChecklist(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    hh('span', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: c.done ? 'line-through' : 'none', opacity: c.done ? 0.6 : 1 } }, c.text),
+                    hh('button', { onClick: function() { removeChecklist(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   );
                 })
               )
@@ -15046,7 +15046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           SCHLOSSBERG_PHASES.map(function(p) {
             var current = t.phase === p.id;
             return hh('div', { key: 'pr-' + p.id, style: { marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (current ? kind.color : 'rgba(100,116,139,0.30)') } },
-              hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: current ? kind.color : '#94a3b8', marginBottom: 4 } }, p.icon + ' ' + p.label + (current ? ' (current)' : '')),
+              hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: current ? kind.color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, p.icon + ' ' + p.label + (current ? ' (current)' : '')),
               tkTextarea((t.reflections || {})[p.id], function(v) { updateReflection(p.id, v); }, 'What\'s coming up for you in this phase?', 2)
             );
           })
@@ -15062,7 +15062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🌉', 'Transition Planner', 'Plan major life transitions using Schlossberg\'s 4-phase model. Especially for ND students who struggle with change.', '#fbbf24'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#fbbf24' } }, '🌉 Schlossberg 1981 transition theory: '),
         'Major transitions move through 4 phases — Anticipating, Moving In, Moving Through, Moving Out. Each phase has its own work + its own emotional terrain. Knowing where you are helps you know what to do next.'
       ),
@@ -15076,7 +15076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var on = newT.kind === k.id;
               return hh('button', { key: 'tk-' + k.id,
                 onClick: function() { setNewT(Object.assign({}, newT, { kind: k.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? k.color + '30' : 'rgba(15,23,42,0.5)', color: on ? k.color : '#94a3b8', border: '1px solid ' + (on ? k.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? k.color + '30' : 'rgba(15,23,42,0.5)', color: on ? k.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? k.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
               }, k.icon + ' ' + k.label);
             })
           ),
@@ -15100,9 +15100,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('strong', { style: { fontSize: 13, color: k.color } }, k.icon + ' ' + t.title),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeTrans(t.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeTrans(t.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
-              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, k.label + ' · ' + (t.startDate || 'no date set')),
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, k.label + ' · ' + (t.startDate || 'no date set')),
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 8, padding: '4px 8px', background: 'rgba(2,6,23,0.4)', borderRadius: 6 } },
                 hh('span', { style: { fontSize: 10, color: k.color } }, '📍 ' + (SCHLOSSBERG_PHASES.filter(function(p) { return p.id === t.phase; })[0] || SCHLOSSBERG_PHASES[0]).label),
                 total > 0 ? hh('span', { style: { fontSize: 10, color: k.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' ✓') : null
@@ -15222,7 +15222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         ),
 
         // Generated preview
-        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', border: '1px solid ' + t.color + '60', marginBottom: 12, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } },
+        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', border: '1px solid ' + t.color + '60', marginBottom: 12, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
           hh('div', { style: { fontSize: 9, color: t.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'inherit' } }, '📄 Generated draft (edit before sending)'),
           generate(t)
         ),
@@ -15240,7 +15240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🪪', 'Accommodation Request Builder', '5 formal-letter templates for IEP / 504 / college DSS / teacher / workplace requests.', '#06b6d4'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#06b6d4' } }, '🪪 Why this matters: '),
         'Self-advocacy is the most important transition skill. In high school, your parents + IEP team advocate FOR you. In college + work, YOU do. This tool lets you practice the formal writing while you have a low-stakes context.'
       ),
@@ -15253,7 +15253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           },
             hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
             hh('strong', { style: { fontSize: 13, color: t.color } }, t.label),
-            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt)
+            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt)
           );
         })
       ),
@@ -15267,11 +15267,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                 hh('span', { style: { fontSize: 11, color: tt.color, fontWeight: 700 } }, tt.icon + ' ' + tt.label),
                 hh('div', null,
-                  hh('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, d.date),
-                  hh('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, d.date),
+                  hh('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
               ),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap', maxHeight: 60, overflow: 'hidden' } }, d.body.substring(0, 200) + '...')
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap', maxHeight: 60, overflow: 'hidden' } }, d.body.substring(0, 200) + '...')
             );
           })
         )
@@ -15366,7 +15366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       pickedQ ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(236,72,153,0.20), rgba(15,23,42,0.7))', border: '2px solid #ec4899', marginBottom: 14, textAlign: 'center', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
         hh('div', { style: { fontSize: 10, color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, '🃏 Your card'),
-        hh('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + pickedQ + '"')
+        hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + pickedQ + '"')
       ) : hh('div', { style: { padding: 30, borderRadius: 14, background: 'rgba(236,72,153,0.10)', border: '2px dashed rgba(236,72,153,0.40)', textAlign: 'center', marginBottom: 14 } },
         hh('div', { style: { fontSize: 48, marginBottom: 12 } }, '🃏'),
         tkBtn('Draw a card', pickRandom, 'primary', { padding: '12px 28px', fontSize: 14 })
@@ -15389,11 +15389,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           answers.slice(0, 20).map(function(a) {
             return hh('div', { key: 'ld-' + a.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #ec4899' } },
               hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
-                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
+                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
               ),
               hh('div', { style: { fontSize: 12, color: '#f472b6', fontStyle: 'italic', marginBottom: 6, fontFamily: 'Georgia, serif' } }, '"' + a.question + '"'),
-              hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, a.answer)
+              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, a.answer)
             );
           })
         )
@@ -15451,7 +15451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🗣', 'My Communication Style', '4-dimension self-snapshot. Know yourself + tell people how you communicate best.', '#06b6d4'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
         hh('strong', { style: { color: '#06b6d4' } }, '🗣 Why this matters: '),
         'Most conflicts aren\'t about content — they\'re about communication-style mismatch. Knowing your own style + being able to ARTICULATE it lets you ask for what works. Especially valuable for autistic + ADHD students whose natural style may not match neurotypical defaults.'
       ),
@@ -15470,11 +15470,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 onChange: function(e) { setDim(d.id, parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: '#06b6d4' }
               }),
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', marginTop: 2 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
                 hh('span', null, '←  ', d.left),
                 hh('span', null, d.right, '  →')
               ),
-              hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, lineHeight: 1.5 } },
+              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, lineHeight: 1.5 } },
                 val <= 4 ? d.leftDesc : val >= 7 ? d.rightDesc : 'Mix — adapts based on context.'
               )
             );
@@ -15508,12 +15508,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '📄 My communication card (share/print)'),
         DIMENSIONS.map(function(d) {
           var val = prof[d.id] || 5;
-          return hh('div', { key: 'sm-' + d.id, style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+          return hh('div', { key: 'sm-' + d.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
             hh('strong', { style: { color: '#06b6d4' } }, d.label + ': '),
             val <= 4 ? d.leftDesc : val >= 7 ? d.rightDesc : 'mix'
           );
         }),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8, lineHeight: 1.6 } },
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8, lineHeight: 1.6 } },
           hh('strong', { style: { color: '#06b6d4' } }, 'What helps me: '),
           (prof.asks || []).map(function(i) { return ASK_FOR[i]; }).join(' · ')
         )
@@ -15583,15 +15583,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkSectionHeader('💾', 'Backup + Import', 'Your data lives in YOUR browser. Back it up, transfer to another device, or wipe it cleanly.', '#3b82f6'),
 
       hh('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.40)', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 } }, 'Your toolkit holds'),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: 4 } }, 'Your toolkit holds'),
         hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(dataSize / 1024) + ' KB'),
-        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'of data, stored only in this browser')
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'of data, stored only in this browser')
       ),
 
       tkCard('#3b82f6',
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '💾 Backup'),
-          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, 'Download a .json file with EVERYTHING from your toolkit. Save it somewhere safe (cloud drive, email to yourself, USB).'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } }, 'Download a .json file with EVERYTHING from your toolkit. Save it somewhere safe (cloud drive, email to yourself, USB).'),
           tkBtn('📥 Download my toolkit data', exportAll, 'primary')
         )
       ),
@@ -15599,7 +15599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#10b981',
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '📤 Import (transfer or restore)'),
-          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, 'Paste a previously-exported JSON. ', hh('strong', { style: { color: '#ef4444' } }, 'This will OVERWRITE your current data.'), ' Useful for moving to a new browser or restoring after a wipe.'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } }, 'Paste a previously-exported JSON. ', hh('strong', { style: { color: '#ef4444' } }, 'This will OVERWRITE your current data.'), ' Useful for moving to a new browser or restoring after a wipe.'),
           tkBtn('📤 Paste JSON to import', importJson, 'good')
         )
       ),
@@ -15607,14 +15607,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#ef4444',
         hh('div', null,
           hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#ef4444', marginBottom: 10 } }, '🗑 Wipe (start fresh)'),
-          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, 'Delete ALL your toolkit data from this browser. ', hh('strong', { style: { color: '#ef4444' } }, 'Cannot be undone.'), ' Make sure you\'ve exported first if you want to keep anything.'),
+          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } }, 'Delete ALL your toolkit data from this browser. ', hh('strong', { style: { color: '#ef4444' } }, 'Cannot be undone.'), ' Make sure you\'ve exported first if you want to keep anything.'),
           tkBtn('🗑 Wipe my toolkit', wipeAll, 'bad')
         )
       ),
 
-      msg ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, msg) : null,
+      msg ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, msg) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#3b82f6' } }, '🔒 Privacy: '),
         'Nothing in My Toolkit syncs to a server. Your data is stored only in your browser\'s local storage. If you clear browser data, switch browsers, or use a different device — the data does not follow you unless YOU export it. This is intentional. Your data, your control.'
       )
@@ -15863,8 +15863,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         boxShadow: '0 4px 20px rgba(147,51,234,0.20)'
       } },
         hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🧰 My Toolkit'),
-        hh('div', { style: { fontSize: 22, fontWeight: 900, color: '#e2e8f0', lineHeight: 1.2, marginBottom: 6 } }, dateLong),
-        hh('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 } },
+        hh('div', { style: { fontSize: 22, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.2, marginBottom: 6 } }, dateLong),
+        hh('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Personal evidence-based learning tools. Everything saves to your browser — your data, your control.'
         )
       ),
@@ -15884,7 +15884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           } },
             hh('div', { style: { fontSize: 18, marginBottom: 4 } }, s.icon),
             hh('div', { style: { fontSize: 22, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, s.value),
-            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4 } }, s.label)
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4 } }, s.label)
           );
         })
       ),
@@ -15907,7 +15907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('div', { style: { fontSize: 28, lineHeight: 1 } }, t.icon),
               hh('div', { style: { flex: 1, minWidth: 0 } },
                 hh('div', { style: { fontSize: 14, fontWeight: 800, color: t.color, marginBottom: 2 } }, t.label),
-                hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, t.desc)
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, t.desc)
               )
             ),
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: '1px solid ' + t.color + '30' } },
@@ -15921,7 +15921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Coming-soon teaser for upcoming tools (wave 2 + 3)
       hh('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(147,51,234,0.30)' } },
         hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '✨ More tools coming'),
-        hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: 10, color: '#94a3b8' } },
+        hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           ['🃏 Flashcards', '📅 Study planner', '🎓 Exam prep', '✂ Task breaker', '🕸 Concept map', '✅ Habit tracker', '📔 Weekly reflect', '⚖ Load monitor', '🪄 Strategy wizard', '🌟 Motivation audit'].map(function(t, i) {
             return hh('span', { key: 'cs-' + i, style: { padding: '3px 8px', borderRadius: 999, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } }, t);
           })

@@ -547,30 +547,30 @@ window.StemLab = window.StemLab || {
   function effectSizeLabel(value, type) {
     var v = Math.abs(value);
     if (type === 'd') {
-      if (v < 0.2) return { label: 'negligible', color: '#94a3b8' };
+      if (v < 0.2) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
       if (v < 0.5) return { label: 'small', color: '#fbbf24' };
       if (v < 0.8) return { label: 'medium', color: '#f97316' };
       return { label: 'large', color: '#16a34a' };
     }
     if (type === 'eta' || type === 'r2') {
-      if (v < 0.01) return { label: 'negligible', color: '#94a3b8' };
+      if (v < 0.01) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
       if (v < 0.06) return { label: 'small', color: '#fbbf24' };
       if (v < 0.14) return { label: 'medium', color: '#f97316' };
       return { label: 'large', color: '#16a34a' };
     }
     if (type === 'r') {
-      if (v < 0.1) return { label: 'negligible', color: '#94a3b8' };
+      if (v < 0.1) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
       if (v < 0.3) return { label: 'small', color: '#fbbf24' };
       if (v < 0.5) return { label: 'medium', color: '#f97316' };
       return { label: 'large', color: '#16a34a' };
     }
     if (type === 'phi' || type === 'v') {
-      if (v < 0.1) return { label: 'negligible', color: '#94a3b8' };
+      if (v < 0.1) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
       if (v < 0.3) return { label: 'small', color: '#fbbf24' };
       if (v < 0.5) return { label: 'medium', color: '#f97316' };
       return { label: 'large', color: '#16a34a' };
     }
-    return { label: '?', color: '#94a3b8' };
+    return { label: '?', color: 'var(--allo-stem-text-soft, #94a3b8)' };
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -1464,7 +1464,7 @@ window.StemLab = window.StemLab || {
             showWizard: false
           }});
         });
-        return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } },
+        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } },
           '📊 Initializing Statistics Lab...');
       }
       var d = labToolData.statsLab;
@@ -1746,7 +1746,7 @@ window.StemLab = window.StemLab || {
       return h('div', {
         style: {
           fontFamily: 'system-ui, sans-serif',
-          color: '#e2e8f0',
+          color: 'var(--allo-stem-text, #e2e8f0)',
           padding: 20,
           maxWidth: 1100,
           margin: '0 auto'
@@ -1757,7 +1757,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: { fontSize: 36 } }, '📊'),
           h('div', { style: { flex: 1 } },
             h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, 'Statistics Lab'),
-            h('p', { style: { margin: '4px 0 0', color: '#94a3b8', fontSize: 12 } }, 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.')
+            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.')
           )
         ),
 
@@ -1820,7 +1820,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -1891,14 +1891,14 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { textAlign: 'center', minWidth: 90 } },
           h('div', { style: { fontSize: 26, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
-          h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
+          h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
         ),
         h('div', { style: { flex: 1, minWidth: 200 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 4 } }, '🏅 AP Stats Concept Mastery'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, '🏅 AP Stats Concept Mastery'),
           h('div', { style: { height: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
             h('div', { style: { width: _hPct + '%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)', transition: 'width 0.3s' } })
           ),
-          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } },
+          h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.45 } },
             _hMasteredCount === 0 ? 'Run any test on the Test tab, then take the AP quiz on Results — every question you nail locks in here permanently.'
             : _hMasteredCount === _hTotal ? '🏆 Full AP coverage — all ' + _hTotal + ' quiz questions mastered.'
             : _hPct + '% of the AP quiz bank mastered. ' + (_hTotal - _hMasteredCount) + ' to go.'
@@ -1914,7 +1914,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 14, fontWeight: 800, color: '#a5b4fc', marginBottom: 6 } }, '🚀 Quick start with a sample dataset'),
-        h('p', { style: { margin: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Pick a real-world AP Psych or AP Bio scenario. Each loads pre-cleaned data, suggests the right test, and shows a research question. Or jump to the ',
           h('b', { style: { color: '#fbbf24' } }, 'Wizard'), ' to walk through your own design.'
         )
@@ -1937,8 +1937,8 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 10, fontWeight: 800, color: s.curriculum === 'AP Bio' ? '#86efac' : '#d8b4fe', letterSpacing: '0.06em', textTransform: 'uppercase' } }, s.curriculum),
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fef3c7' } }, s.title),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, s.research_question),
-            h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 4 } }, '→ ' + (WIZARD_TESTS[s.recommendedTest] && WIZARD_TESTS[s.recommendedTest].label) || s.recommendedTest)
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } }, s.research_question),
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, '→ ' + (WIZARD_TESTS[s.recommendedTest] && WIZARD_TESTS[s.recommendedTest].label) || s.recommendedTest)
           );
         })
       )
@@ -1998,7 +1998,7 @@ window.StemLab = window.StemLab || {
         h('div', null,
           optBtn('2 groups', function() { answer('q2', 2); }, 'q2-2'),
           optBtn('3 or more groups', function() { answer('q2', 3); }, 'q2-3'),
-          h('button', { onClick: reset, 'data-sl-focusable': 'true', style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' } }, '← Back')
+          h('button', { onClick: reset, 'data-sl-focusable': 'true', style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer' } }, '← Back')
         )
       );
     }
@@ -2007,7 +2007,7 @@ window.StemLab = window.StemLab || {
         h('div', null,
           optBtn('Same subjects (e.g., before/after)', function() { recommend('ttest_paired'); }, 'qpaired'),
           optBtn('Different subjects (two independent groups)', function() { recommend('ttest_independent'); }, 'qindep'),
-          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
+          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
         )
       );
     }
@@ -2017,7 +2017,7 @@ window.StemLab = window.StemLab || {
           optBtn('Same subjects across all conditions', function() { recommend('anova_repeatedMeasures'); }, 'qrm'),
           optBtn('Different subjects per group (one factor)', function() { recommend('anova_oneWay'); }, 'qanova'),
           optBtn('Two factors crossed (e.g., drug × dose)', function() { recommend('anova_twoWay'); }, 'q2way'),
-          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
+          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
         )
       );
     }
@@ -2028,7 +2028,7 @@ window.StemLab = window.StemLab || {
           optBtn('Predict one variable from another', function() { recommend('linearRegression'); }, 'qreg'),
           optBtn('Predict from multiple predictors', function() { recommend('multipleRegression'); }, 'qmreg'),
           optBtn('Data is ranked or non-normal — use Spearman', function() { recommend('spearman'); }, 'qspear'),
-          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
+          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
         )
       );
     }
@@ -2037,7 +2037,7 @@ window.StemLab = window.StemLab || {
         h('div', null,
           optBtn('Compare counts to expected (one categorical variable)', function() { recommend('chiSquareGoodnessOfFit'); }, 'qgof'),
           optBtn('Two categorical variables — look for association', function() { recommend('chiSquareIndependence'); }, 'qindep'),
-          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
+          h('button', { onClick: reset, style: { marginTop: 12, padding: '6px 12px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer' } }, '← Restart')
         )
       );
     }
@@ -2098,10 +2098,10 @@ window.StemLab = window.StemLab || {
                   : { label: 'strong skew', color: '#fca5a5' };
       return h('div', {
         key: key,
-        style: { background: '#0f172a', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, padding: '8px 10px', fontSize: 11, fontFamily: 'monospace' }
+        style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, padding: '8px 10px', fontSize: 11, fontFamily: 'monospace' }
       },
         h('div', { style: { color: '#fbbf24', fontWeight: 800, marginBottom: 4 } }, label + ' (n = ' + x.length + ')'),
-        h('div', { style: { color: '#cbd5e1', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 } },
+        h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 } },
           h('span', null, 'M = ', h('b', { style: { color: '#fef3c7' } }, isFinite(m) ? m.toFixed(2) : '—')),
           h('span', null, 'SD = ', h('b', { style: { color: '#fef3c7' } }, isFinite(sd) ? sd.toFixed(2) : '—')),
           h('span', null, 'Mdn = ', h('b', { style: { color: '#fef3c7' } }, isFinite(md) ? md.toFixed(2) : '—')),
@@ -2152,7 +2152,7 @@ window.StemLab = window.StemLab || {
               type: 'text', value: t.aLabel,
               onChange: function(e) { upd('twoColData', Object.assign({}, t, { aLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Column A label',
-              style: { width: '100%', padding: '6px 10px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
+              style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
               value: t.a.join('\n'),
@@ -2163,16 +2163,16 @@ window.StemLab = window.StemLab || {
               'data-sl-focusable': 'true', 'aria-label': 'Column A values',
               placeholder: 'one number per line\nor comma-separated',
               rows: 8,
-              style: { width: '100%', padding: 8, background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
+              style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
             }),
-            h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'n = ' + t.a.length)
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'n = ' + t.a.length)
           ),
           h('div', null,
             h('input', {
               type: 'text', value: t.bLabel,
               onChange: function(e) { upd('twoColData', Object.assign({}, t, { bLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Column B label',
-              style: { width: '100%', padding: '6px 10px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
+              style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
               value: t.b.join('\n'),
@@ -2183,13 +2183,13 @@ window.StemLab = window.StemLab || {
               'data-sl-focusable': 'true', 'aria-label': 'Column B values',
               placeholder: 'one number per line\nor comma-separated',
               rows: 8,
-              style: { width: '100%', padding: 8, background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
+              style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
             }),
-            h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'n = ' + t.b.length)
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'n = ' + t.b.length)
           )
         ),
         // Show summary stats for each column
-        (t.a.length > 0 || t.b.length > 0) && h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8, fontFamily: 'monospace', display: 'flex', gap: 16, flexWrap: 'wrap' } },
+        (t.a.length > 0 || t.b.length > 0) && h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8, fontFamily: 'monospace', display: 'flex', gap: 16, flexWrap: 'wrap' } },
           t.a.length > 0 && h('div', null, '📊 ', h('b', null, t.aLabel + ': '), 'M=' + mean(t.a).toFixed(2), ' SD=' + (isFinite(stdDev(t.a)) ? stdDev(t.a).toFixed(2) : '—'), ' min=' + Math.min.apply(null, t.a) + ' max=' + Math.max.apply(null, t.a)),
           t.b.length > 0 && h('div', null, '📊 ', h('b', null, t.bLabel + ': '), 'M=' + mean(t.b).toFixed(2), ' SD=' + (isFinite(stdDev(t.b)) ? stdDev(t.b).toFixed(2) : '—'), ' min=' + Math.min.apply(null, t.b) + ' max=' + Math.max.apply(null, t.b))
         ),
@@ -2207,7 +2207,7 @@ window.StemLab = window.StemLab || {
                 if (parsed) applyCSVAsTwoCol(parsed);
               }, 50);
             },
-            style: { width: '100%', marginTop: 6, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, boxSizing: 'border-box' }
+            style: { width: '100%', marginTop: 6, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, boxSizing: 'border-box' }
           })
         )
       ),
@@ -2231,7 +2231,7 @@ window.StemLab = window.StemLab || {
                   upd('multiColData', { groups: nextGroups });
                 },
                 'data-sl-focusable': 'true', 'aria-label': 'Group ' + (gi + 1) + ' label',
-                style: { width: '100%', padding: '4px 8px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontWeight: 700, fontSize: 11, marginBottom: 4, boxSizing: 'border-box' }
+                style: { width: '100%', padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, fontSize: 11, marginBottom: 4, boxSizing: 'border-box' }
               }),
               h('textarea', {
                 value: g.values.join('\n'),
@@ -2243,9 +2243,9 @@ window.StemLab = window.StemLab || {
                 },
                 'data-sl-focusable': 'true', 'aria-label': 'Group ' + (gi + 1) + ' values',
                 rows: 6,
-                style: { width: '100%', padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' }
+                style: { width: '100%', padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' }
               }),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'n = ' + g.values.length)
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'n = ' + g.values.length)
             );
           })
         ),
@@ -2286,10 +2286,10 @@ window.StemLab = window.StemLab || {
             },
             'data-sl-focusable': 'true', 'aria-label': 'Single column values',
             rows: 5,
-            style: { width: '100%', padding: 8, background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
+            style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
           }),
           h('div', null,
-            h('label', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Hypothesized μ₀'),
+            h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Hypothesized μ₀'),
             h('input', {
               type: 'number',
               value: d.oneColData.mu0,
@@ -2298,9 +2298,9 @@ window.StemLab = window.StemLab || {
                 upd('oneColData', Object.assign({}, d.oneColData, { mu0: isFinite(n) ? n : 0 }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Hypothesized population mean',
-              style: { width: '100%', padding: 8, background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontWeight: 700, marginTop: 4, boxSizing: 'border-box' }
+              style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginTop: 4, boxSizing: 'border-box' }
             }),
-            h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'n = ' + d.oneColData.values.length)
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'n = ' + d.oneColData.values.length)
           )
         )
       ),
@@ -2313,10 +2313,10 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Chi-square goodness-of-fit (observed + expected counts)'),
-        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Enter category labels and counts. Expected counts can be raw numbers OR proportions that sum to 1 (we\'ll auto-scale).'
         ),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 6, fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
           h('div', null, 'Category'),
           h('div', null, 'Observed'),
           h('div', null, 'Expected'),
@@ -2337,7 +2337,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { labels: labels }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Category ' + (i + 1) + ' label',
-              style: { padding: 6, background: '#0f172a', color: '#fef3c7', border: '1px solid #475569', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', value: row.obs,
@@ -2348,7 +2348,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { observed: obs }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Observed count for ' + row.label,
-              style: { padding: 6, background: '#0f172a', color: '#a5b4fc', border: '1px solid #475569', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#a5b4fc', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', step: 'any', value: row.exp,
@@ -2359,7 +2359,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { expected: exp }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Expected count for ' + row.label,
-              style: { padding: 6, background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
@@ -2394,7 +2394,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Chi-square test of independence (contingency table)'),
-        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Two categorical variables crossed. Enter row × column counts. Expected counts get computed automatically.'
         ),
         h('div', { style: { overflowX: 'auto' } },
@@ -2404,7 +2404,7 @@ window.StemLab = window.StemLab || {
           },
             h('thead', null,
               h('tr', null,
-                h('th', { style: { padding: 6, color: '#94a3b8', textAlign: 'left' } }, ''),
+                h('th', { style: { padding: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, ''),
                 d.chiIndepData.cols.map(function(col, ci) {
                   return h('th', { key: ci, style: { padding: 6 } },
                     h('input', {
@@ -2415,7 +2415,7 @@ window.StemLab = window.StemLab || {
                         upd('chiIndepData', Object.assign({}, d.chiIndepData, { cols: cols }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Column ' + (ci + 1) + ' label',
-                      style: { width: 80, padding: 4, background: '#0f172a', color: '#fef3c7', border: '1px solid #475569', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                     })
                   );
                 }),
@@ -2444,7 +2444,7 @@ window.StemLab = window.StemLab || {
                         upd('chiIndepData', Object.assign({}, d.chiIndepData, { rows: rows }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' label',
-                      style: { width: 100, padding: 4, background: '#0f172a', color: '#fef3c7', border: '1px solid #475569', borderRadius: 4, fontSize: 11, fontWeight: 700 }
+                      style: { width: 100, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700 }
                     })
                   ),
                   d.chiIndepData.cols.map(function(_, ci) {
@@ -2459,7 +2459,7 @@ window.StemLab = window.StemLab || {
                           upd('chiIndepData', Object.assign({}, d.chiIndepData, { table: table }));
                         },
                         'data-sl-focusable': 'true', 'aria-label': 'Cell ' + rowLabel + ' × ' + d.chiIndepData.cols[ci],
-                        style: { width: 60, padding: 4, background: '#0f172a', color: '#a5b4fc', border: '1px solid #475569', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                        style: { width: 60, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#a5b4fc', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                       })
                     );
                   }),
@@ -2503,13 +2503,13 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Multiple regression (multiple predictors → one outcome)'),
-        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Each row = one observation. Edit the predictor labels at the top, the outcome label at the right, then enter values. Need at least k+2 observations for k predictors.'
         ),
         // Controls: number of predictors + outcome label
         h('div', { style: { display: 'flex', gap: 10, marginBottom: 10, flexWrap: 'wrap', alignItems: 'flex-end' } },
           h('div', null,
-            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, '# of predictors:'),
+            h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, '# of predictors:'),
             h('input', {
               type: 'number', min: 1, max: 8, step: 1,
               value: (d.multiRegData.xLabels || ['X1']).length,
@@ -2526,16 +2526,16 @@ window.StemLab = window.StemLab || {
                 upd('multiRegData', Object.assign({}, d.multiRegData, { xLabels: labels, x: x }));
               },
               'data-sl-focusable': 'true',
-              style: { width: 70, padding: 6, background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700, boxSizing: 'border-box' }
+              style: { width: 70, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700, boxSizing: 'border-box' }
             })
           ),
           h('div', null,
-            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Outcome label:'),
+            h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Outcome label:'),
             h('input', {
               type: 'text', value: d.multiRegData.yLabel || 'Y',
               onChange: function(e) { upd('multiRegData', Object.assign({}, d.multiRegData, { yLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Outcome variable label',
-              style: { padding: 6, background: '#0f172a', color: '#fef3c7', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('button', {
@@ -2556,9 +2556,9 @@ window.StemLab = window.StemLab || {
             style: { borderCollapse: 'collapse', fontSize: 11 },
             'aria-label': 'Multiple regression data editor'
           },
-            h('thead', { style: { position: 'sticky', top: 0, background: '#0f172a', zIndex: 1 } },
+            h('thead', { style: { position: 'sticky', top: 0, background: 'var(--allo-stem-canvas, #0f172a)', zIndex: 1 } },
               h('tr', null,
-                h('th', { style: { padding: 4, color: '#94a3b8', textAlign: 'left' } }, '#'),
+                h('th', { style: { padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'left' } }, '#'),
                 (d.multiRegData.xLabels || []).map(function(lbl, ki) {
                   return h('th', { key: ki, style: { padding: 4 } },
                     h('input', {
@@ -2569,7 +2569,7 @@ window.StemLab = window.StemLab || {
                         upd('multiRegData', Object.assign({}, d.multiRegData, { xLabels: labels }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Predictor ' + (ki + 1) + ' label',
-                      style: { width: 80, padding: 4, background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                     })
                   );
                 }),
@@ -2582,7 +2582,7 @@ window.StemLab = window.StemLab || {
             h('tbody', null,
               (d.multiRegData.x || []).map(function(row, ri) {
                 return h('tr', { key: ri },
-                  h('td', { style: { padding: 4, color: '#94a3b8', fontSize: 10 } }, ri + 1),
+                  h('td', { style: { padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, ri + 1),
                   row.map(function(v, ki) {
                     return h('td', { key: ki, style: { padding: 2 } },
                       h('input', {
@@ -2594,7 +2594,7 @@ window.StemLab = window.StemLab || {
                           upd('multiRegData', Object.assign({}, d.multiRegData, { x: x }));
                         },
                         'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' ' + d.multiRegData.xLabels[ki],
-                        style: { width: 76, padding: 4, background: '#0f172a', color: '#a5b4fc', border: '1px solid #334155', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
+                        style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#a5b4fc', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
                       })
                     );
                   }),
@@ -2608,7 +2608,7 @@ window.StemLab = window.StemLab || {
                         upd('multiRegData', Object.assign({}, d.multiRegData, { y: y }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' outcome',
-                      style: { width: 76, padding: 4, background: '#0f172a', color: '#fef3c7', border: '1px solid #334155', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
+                      style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
                     })
                   ),
                   h('td', { style: { padding: 2 } },
@@ -2627,7 +2627,7 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6 } },
+        h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6 } },
           'n = ' + (d.multiRegData.x || []).length + ' rows, ' + ((d.multiRegData.xLabels || []).length) + ' predictors. Need at least k+2 = ' + ((d.multiRegData.xLabels || []).length + 2) + '.'
         )
       )
@@ -2683,15 +2683,15 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '⚖️ Choose a hypothesis test'),
-        h('label', { htmlFor: 'sl-test-select', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Test:'),
+        h('label', { htmlFor: 'sl-test-select', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Test:'),
         h('select', {
           id: 'sl-test-select',
           value: sel || '',
           onChange: function(e) { upd('selectedTest', e.target.value || null); },
           'data-sl-focusable': 'true',
           style: {
-            width: '100%', padding: '8px 10px', background: '#0f172a', color: '#e0e7ff',
-            border: '1px solid #475569', borderRadius: 8, fontSize: 13, fontWeight: 700, marginBottom: 10
+            width: '100%', padding: '8px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff',
+            border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 8, fontSize: 13, fontWeight: 700, marginBottom: 10
           }
         },
           h('option', { value: '' }, '— pick a test —'),
@@ -2705,11 +2705,11 @@ window.StemLab = window.StemLab || {
           })
         ),
         sel && WIZARD_TESTS[sel] && h('div', {
-          style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10, fontStyle: 'italic', lineHeight: 1.5 }
+          style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, fontStyle: 'italic', lineHeight: 1.5 }
         },
           h('b', { style: { color: '#fbbf24' } }, 'When to use: '), WIZARD_TESTS[sel].desc
         ),
-        sel && h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
+        sel && h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } },
           h('b', null, 'Data needed: '), dataNeeded
         ),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -2773,7 +2773,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '📊 Visual preview'),
-        _renderChartFor(d, h) || h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Load data in the Data tab to see a chart here.')
+        _renderChartFor(d, h) || h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Load data in the Data tab to see a chart here.')
       )
     );
   }
@@ -2845,20 +2845,20 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
           h('div', { style: { textAlign: 'center', minWidth: 110 } },
             h('div', { style: { fontSize: 38, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
-            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
           ),
           h('div', { style: { flex: 1, minWidth: 240 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
-              h('h3', { style: { margin: 0, fontSize: 17, color: '#e2e8f0', fontWeight: 800 } }, 'AP Stats Concept Mastery')
+              h('h3', { style: { margin: 0, fontSize: 17, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800 } }, 'AP Stats Concept Mastery')
             ),
-            h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
               'Every AP quiz question you answer correctly at least once locks in here permanently. Quiz attempts give you per-attempt scores; this view shows what is locked in across every attempt you have ever taken.'
             ),
             h('div', { style: { height: 8, background: 'rgba(15,23,42,0.5)', borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
               h('div', { style: { width: pctOverall + '%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)', transition: 'width 0.3s' } })
             ),
-            h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontWeight: 700 } },
+            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontWeight: 700 } },
               pctOverall === 100 ? '🏆 Full coverage — every AP question mastered'
               : masteredCount === 0 ? 'Run any test, then take the 5-question quiz on the Results tab'
               : pctOverall + '% complete · ' + (totalQuestions - masteredCount) + ' to go'
@@ -2885,7 +2885,7 @@ window.StemLab = window.StemLab || {
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, cs.concept.label),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', flex: 1 } }, cs.concept.label),
               h('div', { style: { fontSize: 11, fontWeight: 700, color: statusColor } }, statusLabel)
             ),
             h('div', { style: { height: 5, background: 'rgba(15,23,42,0.8)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }, 'aria-hidden': 'true' },
@@ -2907,7 +2907,7 @@ window.StemLab = window.StemLab || {
                   h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#475569', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
                   h('span', { style: { flex: 1, minWidth: 0 } },
                     q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
-                    done && entry.firstCorrectAt && h('span', { style: { color: '#64748b', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
+                    done && entry.firstCorrectAt && h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
                   )
                 );
               })
@@ -2940,7 +2940,7 @@ window.StemLab = window.StemLab || {
       return h('div', {
         style: {
           background: 'rgba(99,102,241,0.05)', border: '1px dashed rgba(99,102,241,0.40)',
-          borderRadius: 10, padding: 24, textAlign: 'center', color: '#94a3b8'
+          borderRadius: 10, padding: 24, textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)'
         }
       },
         h('div', { style: { fontSize: 32, marginBottom: 8 } }, '📈'),
@@ -3097,7 +3097,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { fontSize: 14, fontWeight: 900, color: pSig ? '#86efac' : '#a5b4fc', marginBottom: 6 } },
           pSig ? '✓ Significant result' : (_isNum(r.p) ? 'Not significant' : (r.test || 'Result'))
         ),
-        h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.55 } }, pe),
+        h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, pe),
         esBadge && h('div', { style: { marginTop: 8, display: 'inline-block', padding: '3px 10px', background: esBadge.color, color: '#0b1220', borderRadius: 999, fontSize: 11, fontWeight: 800 } },
           'Effect size: ' + esBadge.label
         )
@@ -3111,7 +3111,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '📊 Your data'),
-        _renderChartFor(d, h) || h('div', { style: { fontSize: 11, color: '#94a3b8' } }, '(no chart available for this test)')
+        _renderChartFor(d, h) || h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '(no chart available for this test)')
       ),
       // Multi-coefficient table (only shown for multiple regression)
       r.test === 'Multiple linear regression' && Array.isArray(r.coefficients) && h('div', {
@@ -3128,7 +3128,7 @@ window.StemLab = window.StemLab || {
             'aria-label': 'Multiple regression coefficients'
           },
             h('thead', null,
-              h('tr', { style: { borderBottom: '1px solid #475569' } },
+              h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
                 h('th', { style: { textAlign: 'left', padding: 6, color: '#fbbf24' } }, 'Term'),
                 h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'b (coef)'),
                 h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'SE'),
@@ -3141,11 +3141,11 @@ window.StemLab = window.StemLab || {
                 var label = ci === 0 ? '(Intercept)' : (((d.multiRegData && d.multiRegData.xLabels) || []).slice()[ci - 1] || ('X' + ci));
                 var pVal = (r.ps && r.ps[ci] != null) ? r.ps[ci] : null;
                 var pSig = _isNum(pVal) && pVal < 0.05;
-                return h('tr', { key: ci, style: { borderBottom: '1px solid #1e293b' } },
-                  h('td', { style: { padding: 6, color: '#e2e8f0', fontWeight: 700 } }, label),
+                return h('tr', { key: ci, style: { borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } },
+                  h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, label),
                   h('td', { style: { padding: 6, textAlign: 'right', color: '#fef3c7', fontWeight: 700 } }, c.toFixed(4)),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: '#cbd5e1' } }, (r.ses && r.ses[ci] != null) ? r.ses[ci].toFixed(4) : '—'),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: '#cbd5e1' } }, (r.ts && r.ts[ci] != null) ? r.ts[ci].toFixed(3) : '—'),
+                  h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)' } }, (r.ses && r.ses[ci] != null) ? r.ses[ci].toFixed(4) : '—'),
+                  h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)' } }, (r.ts && r.ts[ci] != null) ? r.ts[ci].toFixed(3) : '—'),
                   h('td', { style: { padding: 6, textAlign: 'right', color: pSig ? '#86efac' : '#cbd5e1', fontWeight: pSig ? 800 : 400 } },
                     _isNum(pVal) ? (pVal < 0.001 ? '< .001' : pVal.toFixed(4)) : '—'
                   )
@@ -3154,7 +3154,7 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           h('b', null, 'Overall model: '),
           'F(', r.df1, ', ', r.df2, ') = ', _isNum(r.F) ? r.F.toFixed(2) : '?',
           ', p ', r.p < 0.001 ? '< .001' : ('= ' + r.p.toFixed(4)),
@@ -3184,9 +3184,9 @@ window.StemLab = window.StemLab || {
           stats.map(function(s, i) {
             return h('div', {
               key: i,
-              style: { background: '#0f172a', border: '1px solid #334155', borderRadius: 6, padding: '6px 8px' }
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, padding: '6px 8px' }
             },
-              h('div', { style: { color: '#94a3b8', fontSize: 10 } }, s[0]),
+              h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, s[0]),
               h('div', { style: { color: '#fef3c7', fontWeight: 700 } }, s[1])
             );
           })
@@ -3202,13 +3202,13 @@ window.StemLab = window.StemLab || {
           h('div', { style: { fontSize: 11, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, '📖 Definitions of terms in this result'),
           (function() {
             var keys = _glossaryKeysForResult(r);
-            if (!keys.length) return h('div', { style: { fontSize: 11, color: '#94a3b8' } }, '(no glossary entries to show)');
+            if (!keys.length) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '(no glossary entries to show)');
             return keys.map(function(k) {
               var g = GLOSSARY[k];
               return h('div', { key: k, style: { marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(168,85,247,0.20)' } },
                 h('span', { style: { fontFamily: 'monospace', fontWeight: 800, color: '#fbbf24', fontSize: 12 } }, k),
-                h('span', { style: { color: '#cbd5e1', fontSize: 11, marginLeft: 6 } }, '— ' + g.name),
-                h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, marginTop: 3 } }, g.def)
+                h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, marginLeft: 6 } }, '— ' + g.name),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginTop: 3 } }, g.def)
               );
             });
           })()
@@ -3238,7 +3238,7 @@ window.StemLab = window.StemLab || {
             }, '📄 Export full report')
           )
         ),
-        h('div', { style: { fontSize: 13, color: '#e2e8f0', fontFamily: 'serif', fontStyle: 'italic', padding: 10, background: '#0f172a', borderRadius: 6, lineHeight: 1.6 } }, apa)
+        h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'serif', fontStyle: 'italic', padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, lineHeight: 1.6 } }, apa)
       ),
       // Tukey post-hoc (if present)
       r.tukey && r.tukey.length > 0 && h('div', {
@@ -3281,7 +3281,7 @@ window.StemLab = window.StemLab || {
           'aria-expanded': !!d.showMath,
           style: { background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, padding: 0 }
         }, (d.showMath ? '▼' : '▶') + ' 📐 Show me the math'),
-        d.showMath && h('div', { style: { marginTop: 10, fontFamily: 'monospace', fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, background: '#0f172a', padding: 12, borderRadius: 6 } },
+        d.showMath && h('div', { style: { marginTop: 10, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 6 } },
           _mathFormula(r, d)
         )
       ),
@@ -3296,7 +3296,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '📉 Sample-size stability check'),
-        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'What if your study had been smaller? This recomputes your test on 200 random subsamples at each n. Watch how wildly p bounces around when n is small — and how it stabilizes as n grows. ',
           h('b', null, 'A "significant" study at n=10 is much weaker evidence than the same effect at n=50.')
         ),
@@ -3351,7 +3351,7 @@ window.StemLab = window.StemLab || {
             'aria-label': 'Subsample stability table'
           },
             h('thead', null,
-              h('tr', { style: { borderBottom: '1px solid #475569' } },
+              h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
                 h('th', { style: { textAlign: 'left', padding: 6, color: '#fbbf24' } }, 'n'),
                 h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'median p'),
                 h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, '10–90% range'),
@@ -3360,10 +3360,10 @@ window.StemLab = window.StemLab || {
             ),
             h('tbody', null,
               d.subsampleResult.levels.map(function(L, i) {
-                return h('tr', { key: i, style: { borderBottom: '1px solid #1e293b' } },
+                return h('tr', { key: i, style: { borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } },
                   h('td', { style: { padding: 6, color: '#fef3c7', fontWeight: 700 } }, L.n),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: '#e2e8f0' } }, _isNum(L.pMedian) ? L.pMedian.toFixed(4) : '—'),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: '#cbd5e1' } },
+                  h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #e2e8f0)' } }, _isNum(L.pMedian) ? L.pMedian.toFixed(4) : '—'),
+                  h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)' } },
                     (_isNum(L.pLo) ? L.pLo.toFixed(4) : '—') + ' to ' + (_isNum(L.pHi) ? L.pHi.toFixed(4) : '—')
                   ),
                   h('td', { style: { padding: 6, textAlign: 'right', color: L.pSigPct >= 80 ? '#86efac' : (L.pSigPct >= 50 ? '#fbbf24' : '#fca5a5'), fontWeight: 700 } },
@@ -3373,7 +3373,7 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } },
+          h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } },
             'The "% sig" column is your effective ',
             h('b', { style: { color: '#fbbf24' } }, 'replication rate'),
             '. If small-n studies replicate at <50%, the effect is too noisy to detect reliably at that sample size — even when the underlying effect is real.'
@@ -3389,7 +3389,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7', marginBottom: 6 } }, '🎲 Resampling toolkit'),
-        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Two complementary resampling demos: ',
           h('b', null, 'permutation'),
           ' (shuffle labels to simulate the null) shows what a p-value means. ',
@@ -3433,11 +3433,11 @@ window.StemLab = window.StemLab || {
                   h('b', null, 'Bootstrap 95% CI for ' + d.bootResult.statName + ': '),
                   '[', h('b', { style: { color: '#10b981' } }, d.bootResult.ci[0].toFixed(3)),
                   ', ', h('b', { style: { color: '#10b981' } }, d.bootResult.ci[1].toFixed(3)), ']  ',
-                  h('span', { style: { fontStyle: 'italic', color: '#cbd5e1' } },
+                  h('span', { style: { fontStyle: 'italic', color: 'var(--allo-stem-text, #cbd5e1)' } },
                     '(observed = ', d.bootResult.observed.toFixed(3), ')'
                   )
                 ),
-                h('div', { style: { marginTop: 6, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } },
+                h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontStyle: 'italic' } },
                   'Read this as: "If we re-ran this study many times, 95% of the resulting estimates would fall in this range." If 0 is OUTSIDE this CI for a difference (or 0 outside r/slope), your effect is significant at α = .05.'
                 )
               )
@@ -3453,7 +3453,7 @@ window.StemLab = window.StemLab || {
                   d.permResult.statName, ' = ', d.permResult.observed.toFixed(3),
                   '. Empirical p = ', h('b', { style: { color: '#fbbf24' } }, d.permResult.pPerm.toFixed(4)), '.'
                 ),
-                h('div', { style: { marginTop: 6, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } },
+                h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontStyle: 'italic' } },
                   '(Compare to the formula-based p = ', _isNum(r.p) ? (r.p < 0.001 ? '< .001' : r.p.toFixed(4)) : '?', '. They should be very close — both estimate the same thing two different ways.)'
                 )
               )
@@ -3470,7 +3470,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '📝 AP exam quiz mode'),
-        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Take a 5-question multiple-choice quiz on the concepts behind your result. Two questions are tied to the specific test you ran; two probe p-values + type I/II errors; one is random. Answers include rationales.'
         ),
         !d.quizQuestions && h('button', {
@@ -3499,12 +3499,12 @@ window.StemLab = window.StemLab || {
               key: qi,
               style: {
                 marginBottom: 14, padding: 10,
-                background: '#0f172a',
+                background: 'var(--allo-stem-canvas, #0f172a)',
                 border: '1px solid ' + (d.quizSubmitted ? (isCorrect ? 'rgba(22,163,74,0.55)' : 'rgba(220,38,38,0.55)') : '#334155'),
                 borderRadius: 8
               }
             },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Question ' + (qi + 1) + ' of ' + d.quizQuestions.length),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Question ' + (qi + 1) + ' of ' + d.quizQuestions.length),
               h('div', { style: { fontSize: 13, color: '#fef3c7', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
               q.choices.map(function(choice, ci) {
                 var isPicked = pickedIdx === ci;
@@ -3542,7 +3542,7 @@ window.StemLab = window.StemLab || {
                 );
               }),
               d.quizSubmitted && h('div', {
-                style: { marginTop: 8, padding: 8, background: 'rgba(99,102,241,0.10)', borderLeft: '3px solid #6366f1', borderRadius: 4, fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 }
+                style: { marginTop: 8, padding: 8, background: 'rgba(99,102,241,0.10)', borderLeft: '3px solid #6366f1', borderRadius: 4, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 }
               },
                 h('b', { style: { color: '#a5b4fc' } }, '💡 Why: '), q.explain
               )
@@ -3639,17 +3639,17 @@ window.StemLab = window.StemLab || {
                   ),
                   h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                     h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
-                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, d.quizCorrect + ' / ' + d.quizQuestions.length)
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, d.quizCorrect + ' / ' + d.quizQuestions.length)
                   )
                 ),
                 h('div', { style: { flex: 1, minWidth: 200 } },
                   h('div', { style: { fontSize: 26, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
                   h('div', { style: { fontSize: 16, fontWeight: 900, color: tierColor, lineHeight: 1.1 } }, tierTitle),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 } }, tierMsg)
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4 } }, tierMsg)
                 )
               ),
               h('div', { style: { padding: '0 14px 8px' } },
-                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, 'Your answers'),
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Your answers'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                   d.quizQuestions.map(function(q, qi) {
                     var picked = ans[qi];
@@ -3687,10 +3687,10 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '🤖 AI interpretation grader'),
-        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Write a 2-3 sentence interpretation of this result for a peer who isn\'t a stats expert. Then get AI feedback on accuracy + clarity.'
         ),
-        h('label', { htmlFor: 'sl-interpretation', style: { fontSize: 10, color: '#94a3b8', display: 'block', marginBottom: 2 } }, 'Your interpretation:'),
+        h('label', { htmlFor: 'sl-interpretation', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'block', marginBottom: 2 } }, 'Your interpretation:'),
         h('textarea', {
           id: 'sl-interpretation',
           value: d.interpretationDraft || '',
@@ -3698,7 +3698,7 @@ window.StemLab = window.StemLab || {
           'data-sl-focusable': 'true',
           rows: 4,
           placeholder: 'e.g., Visualization-based study led to higher recall than rote rehearsal. The difference was statistically significant and the effect was large, suggesting visualization is meaningfully better, not just a small statistical bump.',
-          style: { width: '100%', padding: 8, background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+          style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
         }),
         h('button', {
           onClick: gradeInterpretation,
@@ -3713,7 +3713,7 @@ window.StemLab = window.StemLab || {
             fontSize: 12, fontWeight: 700
           }
         }, d.aiGradeLoading ? '🤖 Grading…' : '🤖 Grade my interpretation'),
-        d.aiGradeResponse && h('div', { style: { marginTop: 10, padding: 10, background: '#0f172a', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 8 } },
+        d.aiGradeResponse && h('div', { style: { marginTop: 10, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 8 } },
           d.aiGradeResponse.error
             ? h('div', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ ' + d.aiGradeResponse.error)
             : h('div', null,
@@ -3722,13 +3722,13 @@ window.StemLab = window.StemLab || {
                 ),
                 Array.isArray(d.aiGradeResponse.strengths) && d.aiGradeResponse.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 2 } }, '✓ Strengths'),
-                  h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+                  h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                     d.aiGradeResponse.strengths.map(function(s, i) { return h('li', { key: i }, s); })
                   )
                 ),
                 Array.isArray(d.aiGradeResponse.issues) && d.aiGradeResponse.issues.length > 0 && h('div', { style: { marginBottom: 8 } },
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 2 } }, '✗ Issues to address'),
-                  h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+                  h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                     d.aiGradeResponse.issues.map(function(s, i) { return h('li', { key: i }, s); })
                   )
                 ),
@@ -3964,7 +3964,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Type I and Type II error visualization. Cohen\'s d = ' + d_eff + ', n = ' + n + ', alpha = ' + alpha + '. Power = ' + power.toFixed(3),
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     },
       // Axis
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
@@ -4063,16 +4063,16 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '🔋 Power / sample-size calculator'),
-        h('p', { style: { margin: '0 0 12px', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+        h('p', { style: { margin: '0 0 12px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
           'Plan a study before you run it. Plug in your expected effect size + desired power, and the calculator returns the sample size you need.'
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
           h('div', null,
-            h('label', { htmlFor: 'sl-power-test', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Test type:'),
+            h('label', { htmlFor: 'sl-power-test', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Test type:'),
             h('select', {
               id: 'sl-power-test', value: p.test, onChange: function(e) { setP('test', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: '#0f172a', color: '#e0e7ff', border: '1px solid #475569', borderRadius: 6, fontSize: 12 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
             },
               h('option', { value: 'ttest_independent' }, 'Independent t-test'),
               h('option', { value: 'pearson' }, 'Pearson correlation'),
@@ -4081,53 +4081,53 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', null,
-            h('label', { htmlFor: 'sl-power-es', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, es_label + ':'),
+            h('label', { htmlFor: 'sl-power-es', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, es_label + ':'),
             h('input', {
               id: 'sl-power-es', type: 'number', step: 0.05,
               value: p.effectSize,
               onChange: function(e) { setP('effectSize', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('div', null,
-            h('label', { htmlFor: 'sl-power-alpha', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'α (Type I rate):'),
+            h('label', { htmlFor: 'sl-power-alpha', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'α (Type I rate):'),
             h('input', {
               id: 'sl-power-alpha', type: 'number', step: 0.01, min: 0.001, max: 0.20,
               value: p.alpha,
               onChange: function(e) { setP('alpha', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('div', null,
-            h('label', { htmlFor: 'sl-power-power', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Desired power:'),
+            h('label', { htmlFor: 'sl-power-power', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Desired power:'),
             h('input', {
               id: 'sl-power-power', type: 'number', step: 0.05, min: 0.5, max: 0.99,
               value: p.power,
               onChange: function(e) { setP('power', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           p.test === 'anova_oneWay' && h('div', null,
-            h('label', { htmlFor: 'sl-power-k', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Number of groups (k):'),
+            h('label', { htmlFor: 'sl-power-k', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Number of groups (k):'),
             h('input', {
               id: 'sl-power-k', type: 'number', step: 1, min: 2,
               value: p.k || 3,
               onChange: function(e) { setP('k', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           p.test === 'chiSquare' && h('div', null,
-            h('label', { htmlFor: 'sl-power-df', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'df:'),
+            h('label', { htmlFor: 'sl-power-df', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'df:'),
             h('input', {
               id: 'sl-power-df', type: 'number', step: 1, min: 1,
               value: p.df || 1,
               onChange: function(e) { setP('df', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: '#0f172a', color: '#fbbf24', border: '1px solid #475569', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           )
         ),
@@ -4181,7 +4181,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 6 } }, '🎯 Visualize Type I & Type II error'),
-        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Two overlapping bell curves: the gray one is the test stat distribution under ',
           h('b', null, 'H₀'), ' (no effect), the yellow one under ',
           h('b', null, 'H₁'), ' (effect = your Cohen\'s d). The dashed line is the critical value (you reject H₀ to its right). ',
@@ -4191,7 +4191,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
           h('div', null,
-            h('label', { htmlFor: 'sl-viz-d', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } },
+            h('label', { htmlFor: 'sl-viz-d', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
               "Effect size (Cohen's d): ", h('b', { style: { color: '#fbbf24' } }, parseFloat(p.vizD || 0.5).toFixed(2))
             ),
             h('input', {
@@ -4203,7 +4203,7 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', null,
-            h('label', { htmlFor: 'sl-viz-n', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } },
+            h('label', { htmlFor: 'sl-viz-n', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
               'Sample size per group: ', h('b', { style: { color: '#fbbf24' } }, parseInt(p.vizN || 30, 10))
             ),
             h('input', {
@@ -4215,7 +4215,7 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', null,
-            h('label', { htmlFor: 'sl-viz-alpha', style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } },
+            h('label', { htmlFor: 'sl-viz-alpha', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
               'α (Type I rate): ', h('b', { style: { color: '#fbbf24' } }, parseFloat(p.vizAlpha || 0.05).toFixed(3))
             ),
             h('input', {
@@ -4236,7 +4236,7 @@ window.StemLab = window.StemLab || {
           var beta = _normalCdf(crit, ncp, 1);
           var power = 1 - beta;
           return h('div', {
-            style: { marginTop: 8, padding: 10, background: '#0f172a', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 }
+            style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 }
           },
             'With d = ', h('b', { style: { color: '#fbbf24' } }, vd.toFixed(2)),
             ', n = ', h('b', { style: { color: '#fbbf24' } }, vn),
@@ -4295,7 +4295,7 @@ window.StemLab = window.StemLab || {
     var W = opts.width || 320, H = opts.height || 180;
     var pad = { l: 36, r: 12, t: 18, b: 32 };
     var x = _clean(values);
-    if (x.length < 2) return h('div', { style: { fontSize: 11, color: '#94a3b8', padding: 12 } }, '(need ≥2 values to plot histogram)');
+    if (x.length < 2) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 12 } }, '(need ≥2 values to plot histogram)');
     var min = Math.min.apply(null, x), max = Math.max.apply(null, x);
     var nBins = Math.max(5, Math.min(20, Math.ceil(Math.sqrt(x.length))));
     var binW = (max - min) / nBins || 1;
@@ -4313,7 +4313,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Histogram of ' + label + ', n=' + x.length + ', mean=' + m.toFixed(2) + ', median=' + md.toFixed(2),
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     },
       // Grid + axes
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569', strokeWidth: 1 }),
@@ -4353,8 +4353,8 @@ window.StemLab = window.StemLab || {
     var W = opts.width || 280, H = opts.height || 220;
     var pad = { l: 44, r: 12, t: 18, b: 36 };
     var x = _clean(values);
-    if (x.length < 4) return h('div', { style: { fontSize: 11, color: '#94a3b8', padding: 12 } }, '(need ≥4 values for Q-Q plot)');
-    if (!window.jStat) return h('div', { style: { fontSize: 11, color: '#94a3b8', padding: 12 } }, '(loading distribution lib…)');
+    if (x.length < 4) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 12 } }, '(need ≥4 values for Q-Q plot)');
+    if (!window.jStat) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 12 } }, '(loading distribution lib…)');
     var sorted = x.slice().sort(function(a, b) { return a - b; });
     var n = sorted.length;
     var m = mean(x), sd = stdDev(x);
@@ -4404,7 +4404,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Q-Q plot of ' + label + ' against normal distribution. Points near the diagonal indicate approximate normality.',
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     }, children);
   }
 
@@ -4414,7 +4414,7 @@ window.StemLab = window.StemLab || {
     var W = opts.width || 360, H = opts.height || 220;
     var pad = { l: 56, r: 16, t: 18, b: 50 };
     var validGroups = groups.filter(function(g) { return g.values && _clean(g.values).length >= 2; });
-    if (validGroups.length === 0) return h('div', { style: { fontSize: 11, color: '#94a3b8', padding: 12 } }, '(need ≥2 values per group to plot boxplots)');
+    if (validGroups.length === 0) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 12 } }, '(need ≥2 values per group to plot boxplots)');
     var allVals = [];
     validGroups.forEach(function(g) { allVals = allVals.concat(_clean(g.values)); });
     var min = Math.min.apply(null, allVals), max = Math.max.apply(null, allVals);
@@ -4427,7 +4427,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Boxplots comparing ' + validGroups.length + ' groups: ' + validGroups.map(function(g) { return g.label; }).join(', '),
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     },
       // Y axis
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
@@ -4485,7 +4485,7 @@ window.StemLab = window.StemLab || {
     for (var i = 0; i < n; i++) {
       if (_isNum(xVals[i]) && _isNum(yVals[i])) { x.push(xVals[i]); y.push(yVals[i]); }
     }
-    if (x.length < 2) return h('div', { style: { fontSize: 11, color: '#94a3b8', padding: 12 } }, '(need ≥2 paired (x,y) values to plot)');
+    if (x.length < 2) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 12 } }, '(need ≥2 paired (x,y) values to plot)');
     var xMin = Math.min.apply(null, x), xMax = Math.max.apply(null, x);
     var yMin = Math.min.apply(null, y), yMax = Math.max.apply(null, y);
     var px = (xMax - xMin) * 0.05, py = (yMax - yMin) * 0.05;
@@ -4534,7 +4534,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Scatterplot of ' + xLabel + ' vs ' + yLabel + ', n=' + x.length + (hasFit ? ', r=' + lr.r.toFixed(2) : ''),
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     }, children);
   }
 
@@ -4543,7 +4543,7 @@ window.StemLab = window.StemLab || {
     opts = opts || {};
     var W = opts.width || 360, H = opts.height || 200;
     var pad = { l: 36, r: 12, t: 18, b: 50 };
-    if (!observed || !observed.length) return h('div', { style: { fontSize: 11, color: '#94a3b8', padding: 12 } }, '(no observed counts)');
+    if (!observed || !observed.length) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 12 } }, '(no observed counts)');
     var k = observed.length;
     var maxV = Math.max(Math.max.apply(null, observed), Math.max.apply(null, expected || [0]));
     var bandW = (W - pad.l - pad.r) / k;
@@ -4552,7 +4552,7 @@ window.StemLab = window.StemLab || {
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img', 'aria-label': 'Bar chart of observed vs expected counts across ' + k + ' categories',
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     },
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
@@ -4648,7 +4648,7 @@ window.StemLab = window.StemLab || {
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img', 'aria-label': 'Interaction plot of cell means across factor levels',
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     }, children);
   }
 
@@ -5125,7 +5125,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': boot.level * 100 + '% bootstrap CI for ' + boot.statName + ': [' + boot.ci[0].toFixed(3) + ', ' + boot.ci[1].toFixed(3) + ']',
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     },
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
@@ -5290,7 +5290,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Null distribution from ' + perm.nReps + ' permutations. Observed ' + perm.statName + ' = ' + perm.observed.toFixed(3),
-      style: { background: '#0f172a', borderRadius: 6 }
+      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
     },
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
@@ -5399,7 +5399,7 @@ window.StemLab = window.StemLab || {
       items.map(function(it, i) {
         return h('div', { key: i, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
           h('div', { style: { fontWeight: 700, color: '#fef3c7', marginBottom: 2 } }, '✗ ' + it.wrong),
-          h('div', { style: { color: '#cbd5e1' } }, '✓ ' + it.right)
+          h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, '✓ ' + it.right)
         );
       })
     );

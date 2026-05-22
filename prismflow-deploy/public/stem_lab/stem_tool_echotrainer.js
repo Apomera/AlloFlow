@@ -676,7 +676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var diff = DIFFICULTY[1];
       for (var dfi = 0; dfi < DIFFICULTY.length; dfi++) { if (DIFFICULTY[dfi].id === diffId) { diff = DIFFICULTY[dfi]; break; } }
 
-      var has3D = !!(window.THREE) && !!ENV_3D_READY[envType];
+      var has3D = !!(window.THREE) && !!ENV_3D_READY[envType] && !d.webglError;
 
       var audioRef = useRef(null);
       var mapRef = useRef(null);
@@ -988,7 +988,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var SCALE = sd.SCALE;
         var camera = new THREE.PerspectiveCamera(75, 1, 0.1, 120);
         camera.position.set(player.x * SCALE, 1.5, player.y * SCALE);
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        var renderer;
+        try {
+          renderer = new THREE.WebGLRenderer({ antialias: true });
+        } catch (e) {
+          console.error('[EchoTrainer] WebGLRenderer creation failed:', e);
+          setTimeout(function() {
+            upd('webglError', true);
+          }, 0);
+          return;
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         var container = mountRef.current;
         var rw = container.clientWidth || 700; var rh = container.clientHeight || 450;
@@ -1636,7 +1645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: 0, color: isDark ? '#94a3b8' : '#475569' } }, 'In 3D mode, you also perceive HEIGHT differences. A bat flying overhead sounds different from a car at ground level. The 3D scene positions every echo and every moving entity\'s sound in true 3D space around your head.')
             ),
             h('div', { style: { marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
-              [{ name: 'Rock', color: '#94a3b8', desc: 'Bright echo', ref: '85%' }, { name: 'Metal', color: '#94a3b8', desc: 'Sharp ring', ref: '95%' }, { name: 'Wood', color: '#92400e', desc: 'Muffled', ref: '50%' }, { name: 'Glass', color: '#7dd3fc', desc: 'Faint', ref: '30%' }, { name: 'Goal \u2B50', color: '#fbbf24', desc: 'Bright!', ref: '90%' }].map(function(mat) {
+              [{ name: 'Rock', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Bright echo', ref: '85%' }, { name: 'Metal', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Sharp ring', ref: '95%' }, { name: 'Wood', color: '#92400e', desc: 'Muffled', ref: '50%' }, { name: 'Glass', color: '#7dd3fc', desc: 'Faint', ref: '30%' }, { name: 'Goal \u2B50', color: '#fbbf24', desc: 'Bright!', ref: '90%' }].map(function(mat) {
                 return h('div', { key: mat.name, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f8fafc', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), fontSize: '9px' } }, h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: mat.color } }), h('span', { style: { fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, mat.name), h('span', { style: { color: isDark ? '#94a3b8' : '#94a3b8' } }, mat.desc));
               })
             )
@@ -1822,11 +1831,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#6366f1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
           }, 'Dismiss')
         ) : null,
+        d.webglError ? h('div', {
+          style: { padding: '16px', borderRadius: '12px', border: '1px solid #ef4444', background: isDark ? '#450a0a' : '#fef2f2', color: isDark ? '#fca5a5' : '#991b1b', marginBottom: '16px', fontSize: '13px' }
+        },
+          h('h4', { style: { fontWeight: 800, fontSize: '15px', marginBottom: '4px' } }, '⚠️ Echo Navigator 3D Mode Unresolved'),
+          h('p', { style: { marginBottom: '12px', fontSize: '11px', color: isDark ? '#fca5a5' : '#7f1d1d' } }, 'WebGL failed to initialize. Your device or browser may not support 3D hardware acceleration. The tool has automatically fallen back to 2D Audio/Tactile mode, but you can retry 3D Mode below.'),
+          h('button', {
+            onClick: function() { upd('webglError', false); },
+            style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+          }, 'Retry 3D Mode')
+        ) : null,
         has3D ? h('div', { style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
           h('div', { ref: mountRef, role: 'application', 'aria-label': 'Echo navigation 3D viewport. Click to lock mouse, then click to emit sonar. WASD to move, mouse to look, Q/E to strafe. Shift to sprint, C to crouch.', tabIndex: 0, style: { width: '100%', height: '100%', minHeight: '400px', cursor: 'crosshair' } }),
           h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { position: 'absolute', bottom: '10px', right: '10px', width: '200px', height: '200px', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.4)', opacity: 0.9, pointerEvents: 'none', zIndex: 5 } }),
           h('div', { style: { position: 'absolute', bottom: '14px', right: '194px', fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: '4px', zIndex: 10, pointerEvents: 'none' } }, coveragePct + '% mapped'),
-          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 0, padding: '6px 12px', background: 'rgba(0,0,0,0.5)', color: '#94a3b8', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, zIndex: 5, pointerEvents: 'none' } },
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 0, padding: '6px 12px', background: 'rgba(0,0,0,0.5)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, zIndex: 5, pointerEvents: 'none' } },
             'Echo Navigator 3D  |  ' + viewModeLabel + '  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + (d.bumps || 0) + '  |  Goals: ' + goalsFound + '  |  ' + envType + '  |  ' + diff.icon + ' ' + diff.label + '  |  Time: ' + timeStr + '  |  ' + cpm + ' clicks/min' + (waypointMode && WAYPOINT_ROUTES[envType] ? '  |  WP ' + Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length) + '/' + WAYPOINT_ROUTES[envType].points.length : '') + (pointerLockedRef.current ? '' : '  |  Click to lock mouse')
           ),
           h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '20px', zIndex: 5, pointerEvents: 'none' } },

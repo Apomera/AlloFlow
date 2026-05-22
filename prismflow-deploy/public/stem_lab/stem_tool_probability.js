@@ -945,7 +945,7 @@ var d = (labToolData.probability) || {};
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -2170,7 +2170,7 @@ var d = (labToolData.probability) || {};
               var _treeMode = d.treeEventMode || 'coin';
               var _treeModes = [['coin','\uD83E\uDE99 Coin'],['dice','\uD83C\uDFB2 Dice (1-6)'],['sports','\uD83C\uDFC6 Sports'],['custom','\u2699\uFE0F Custom']];
               var _treeOutcomes;
-              if (_treeMode === 'coin') { _treeOutcomes = [{label:'H',prob:0.5,color:'#fbbf24'},{label:'T',prob:0.5,color:'#94a3b8'}]; }
+              if (_treeMode === 'coin') { _treeOutcomes = [{label:'H',prob:0.5,color:'#fbbf24'},{label:'T',prob:0.5,color: 'var(--allo-stem-text-soft, #94a3b8)'}]; }
               else if (_treeMode === 'dice') { _treeOutcomes = [1,2,3,4,5,6].map(function(n,i){ return {label:String(n),prob:1/6,color:['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6'][i]}; }); }
               else if (_treeMode === 'sports') { _treeOutcomes = activeSport.outcomes.map(function(o,i){ return {label:o,prob:activeSport.probs[i],color:activeSport.colors[i]}; }); }
               else { _treeOutcomes = customOutcomes.slice(0, 4).map(function(o){ return {label:o.label,prob:o.prob,color:o.color}; }); }
@@ -2249,7 +2249,7 @@ var d = (labToolData.probability) || {};
                 }
                 // custom + marbleBag — read color from customOutcomes
                 var co = (customOutcomes || []).find(function(o) { return o.label === label; });
-                return co ? co.color : '#94a3b8';
+                return co ? co.color: 'var(--allo-stem-text-soft, #94a3b8)';
               }
               function labelText(label) {
                 if (d.mode === 'coin') return label;
@@ -2384,7 +2384,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("div", { style: { width: (count / maxCount * 100) + '%', backgroundColor: barColors[k] || '#6366f1', height: '100%', borderRadius: '9999px', transition: 'width 0.3s' } }),
 
-                      React.createElement("div", { style: { position: 'absolute', left: Math.min(expPct / (expected[k] > 0 ? expected[k] : 0.01) / Object.keys(expected).length, 100) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: '#1e293b80' }, title: 'Expected: ' + expPct.toFixed(1) + '%' })
+                      React.createElement("div", { style: { position: 'absolute', left: Math.min(expPct / (expected[k] > 0 ? expected[k] : 0.01) / Object.keys(expected).length, 100) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: 'var(--allo-stem-panel, #1e293b)80' }, title: 'Expected: ' + expPct.toFixed(1) + '%' })
 
                     ),
 

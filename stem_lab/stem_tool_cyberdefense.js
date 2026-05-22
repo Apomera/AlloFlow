@@ -368,7 +368,7 @@
 
           // â”€â”€ Detective Rank System â”€â”€
           var detectiveRanks = [
-            { min: 0, rank: 'Rookie Analyst', icon: '\uD83D\uDD30', color: '#94a3b8' },
+            { min: 0, rank: 'Rookie Analyst', icon: '\uD83D\uDD30', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { min: 3, rank: 'Junior Detective', icon: '\uD83D\uDD0D', color: '#22c55e' },
             { min: 6, rank: 'Cyber Detective', icon: '\uD83D\uDD75\uFE0F', color: '#3b82f6' },
             { min: 10, rank: 'Senior Agent', icon: '\u2B50', color: '#f59e0b' },
@@ -652,7 +652,7 @@
 
           // â”€â”€ Password Strength Calculator â”€â”€
           function calcPasswordStrength(pw) {
-            if (!pw) return { score: 0, label: 'Empty', color: '#475569', entropy: 0, crackTime: 'N/A', checks: {} };
+            if (!pw) return { score: 0, label: 'Empty', color: 'var(--allo-stem-text-soft, #475569)', entropy: 0, crackTime: 'N/A', checks: {} };
             var len = pw.length;
             var hasLower = /[a-z]/.test(pw);
             var hasUpper = /[A-Z]/.test(pw);
@@ -1006,7 +1006,7 @@
           }
 
           var warStages = [
-            { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: '#94a3b8' },
+            { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { num: 2, id: 'delivery',    name: 'Weaponization/Delivery', icon: '\uD83D\uDCE8', color: '#f59e0b' },
             { num: 3, id: 'exploit',     name: 'Exploitation',            icon: '\uD83D\uDCA5', color: '#ef4444' },
             { num: 4, id: 'persist',     name: 'Installation/Persistence', icon: '\uD83D\uDD27', color: '#a855f7' },
@@ -1989,7 +1989,7 @@
 
           // ── Compute a retrospective letter grade from a history entry (approximates live grade) ──
           function computeHistoryGrade(h) {
-            if (!h) return { letter: '?', color: '#94a3b8', score: 0 };
+            if (!h) return { letter: '?', color: 'var(--allo-stem-text-soft, #94a3b8)', score: 0 };
             var rounds = (h.chain && h.chain.length) || 6;
             var scale = 6 / Math.max(1, rounds);
             var raw = (h.detections || 0) * 8 * scale
@@ -2477,24 +2477,24 @@
           }, 0);
           var warRoomRank = (function() {
             var det = warRoomDetections;
-            if (warRoomVerdict !== 'won') return { label: 'SOC Trainee', icon: '\uD83D\uDD30', color: '#94a3b8' };
+            if (warRoomVerdict !== 'won') return { label: 'SOC Trainee', icon: '\uD83D\uDD30', color: 'var(--allo-stem-text-soft, #94a3b8)' };
             if (det >= 6) return { label: 'CISO', icon: '\uD83C\uDFC6', color: '#f59e0b' };
             if (det >= 5) return { label: 'Incident Commander', icon: '\u2B50', color: '#a855f7' };
             if (det >= 4) return { label: 'Incident Responder', icon: '\uD83D\uDEE1\uFE0F', color: '#3b82f6' };
             return { label: 'Junior Analyst', icon: '\uD83D\uDD0D', color: '#22c55e' };
           })();
 
-          return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, #0f172a 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+          return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
             // Header
             el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-              el('button', { onClick: function() { ctx.setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
+              el('button', { onClick: function() { ctx.setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
               el('div', { style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
               el('div', null,
                 el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Cyber Defense Lab'),
-                el('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
+                el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
               ),
               el('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 } },
-                el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
+                el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
                 ['easy', 'medium', 'hard'].map(function(dl) {
                   return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null }); },
                     style: { padding: '4px 10px', borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
@@ -2526,7 +2526,7 @@
                     el('span', { style: { fontSize: 22, filter: 'drop-shadow(0 0 6px ' + currentRank.color + ')' } }, currentRank.icon),
                     el('div', null,
                       el('div', { style: { color: currentRank.color, fontSize: 13, fontWeight: 900 } }, currentRank.rank),
-                      el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 600 } }, casesClosed + ' case' + (casesClosed !== 1 ? 's' : '') + ' closed' + (nextRank ? ' \u2022 ' + (nextRank.min - casesClosed) + ' to ' + nextRank.rank : ' \u2022 MAX RANK!'))
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 600 } }, casesClosed + ' case' + (casesClosed !== 1 ? 's' : '') + ' closed' + (nextRank ? ' \u2022 ' + (nextRank.min - casesClosed) + ' to ' + nextRank.rank : ' \u2022 MAX RANK!'))
                     )
                   ),
                   // Stats
@@ -2552,7 +2552,7 @@
 
                 // Case Counter
                 el('div', { style: { marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                  el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 } },
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 } },
                     '\uD83D\uDCC1 Case #' + (casesClosed + 1) + (aiGeneratedEmail ? '' : ' \u2022 Email ' + ((phishIdx % filteredEmails.length) + 1) + '/' + filteredEmails.length),
                     aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 11, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
                   ),
@@ -2571,7 +2571,7 @@
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                       el('div', { style: { width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #475569, #334155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: 'white' } }, activeEmail.fromDisplay[0]),
                       el('div', { style: { flex: 1 } },
-                        el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
+                        el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
                           activeEmail.fromDisplay,
                           // Sender clue button (investigation mode)
                           phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
@@ -2583,10 +2583,10 @@
                               '\uD83D\uDD0D');
                           })
                         ),
-                        el('div', { style: { color: '#94a3b8', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>')
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>')
                       )
                     ),
-                    el('div', { style: { color: '#cbd5e1', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
                       activeEmail.subject,
                       // Subject clue button
                       phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
@@ -2600,7 +2600,7 @@
                     )
                   ),
                   // Email body with clue buttons
-                  el('div', { style: { padding: '16px 18px', color: '#94a3b8', fontSize: 13, lineHeight: 1.6, position: 'relative' } },
+                  el('div', { style: { padding: '16px 18px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, lineHeight: 1.6, position: 'relative' } },
                     el('span', null, activeEmail.body),
                     // Body clue button
                     phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
@@ -2642,7 +2642,7 @@
                       if (!clue) return null;
                       return el('div', { key: 'ev-' + ci, style: { padding: '6px 10px', borderRadius: 8, background: clue.suspicious ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)', border: '1px solid ' + (clue.suspicious ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'), maxWidth: 220, animation: 'animate-in fade-in duration-200' } },
                         el('div', { style: { fontSize: 11, fontWeight: 800, color: clue.suspicious ? '#fb7185' : '#4ade80', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 } }, clue.icon + ' ' + clue.label),
-                        el('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, clue.desc)
+                        el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, clue.desc)
                       );
                     })
                   )
@@ -2660,7 +2660,7 @@
 
                 // Investigation hint (need more clues)
                 !phishAnswer && phishMode === 'investigate' && cluesFound.length < 2 && el('div', { style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(99,102,241,0.3)', textAlign: 'center' } },
-                  el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600 } },
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600 } },
                     '\uD83D\uDD0D Click the magnifying glasses to investigate \u2022 Find at least 2 clues to unlock your verdict')
                 ),
 
@@ -2669,7 +2669,7 @@
                   // Case File Header
                   el('div', { style: { padding: '14px 18px', background: phishAnswer === 'correct' ? 'rgba(34,197,94,0.12)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                     el('div', null,
-                      el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\uD83D\uDCC1 Case File #' + casesClosed),
+                      el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\uD83D\uDCC1 Case File #' + casesClosed),
                       el('div', { style: { fontSize: 16, fontWeight: 900, color: phishAnswer === 'correct' ? '#4ade80' : phishAnswer === 'timeout' ? '#fbbf24' : '#f87171' } },
                         phishAnswer === 'correct' ? '\u2705 Verdict: CORRECT' : phishAnswer === 'timeout' ? '\u23F0 Time Expired' : '\u274C Verdict: INCORRECT')
                     ),
@@ -2678,9 +2678,9 @@
                   ),
                   // Agent Notes
                   el('div', { style: { padding: '14px 18px' } },
-                    el('div', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, '\uD83D\uDD75\uFE0F Agent Notes:'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, '\uD83D\uDD75\uFE0F Agent Notes:'),
                     activeEmail.flags.map(function(flag, fi) {
-                      return el('div', { key: fi, style: { color: '#94a3b8', fontSize: 12, padding: '3px 0', display: 'flex', alignItems: 'flex-start', gap: 6 } },
+                      return el('div', { key: fi, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, padding: '3px 0', display: 'flex', alignItems: 'flex-start', gap: 6 } },
                         el('span', { style: { color: activeEmail.isPhish ? '#f87171' : '#4ade80', fontSize: 10, marginTop: 2 } }, activeEmail.isPhish ? '\u26A0' : '\u2714'),
                         flag);
                     }),
@@ -2688,7 +2688,7 @@
                     phishAnswer === 'correct' && el('div', { style: { marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' } },
                       el('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '\u2B50 XP Earned:'),
                       el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                        el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, '+2 Base'),
+                        el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, '+2 Base'),
                         cluesFound.length >= (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(168,85,247,0.15)', color: '#c084fc', fontSize: 10, fontWeight: 700 } }, '+2 Perfect Investigation'),
                         cluesFound.length >= 2 && cluesFound.length < (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 700 } }, '+1 Evidence Bonus'),
                         phishStreak >= 3 && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: 10, fontWeight: 700 } }, '+1 Streak Bonus'),
@@ -2696,7 +2696,7 @@
                       )
                     ),
                     // Evidence collected
-                    phishMode === 'investigate' && el('div', { style: { marginTop: 8, color: '#94a3b8', fontSize: 11 } },
+                    phishMode === 'investigate' && el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                       '\uD83D\uDCCB Evidence collected: ' + cluesFound.length + '/' + (activeEmail.clues || []).length + ' clues'),
                     // Next case button
                     el('button', { onClick: advanceCase,
@@ -2717,10 +2717,10 @@
                           onChange: function(e) { upd({ pwInput: e.target.value, pwBruteAnim: null, pwBreachResult: null }); },
                           placeholder: 'Type a password to analyze...',
                           'aria-label': 'Password to analyze',
-                          style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                          style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                         el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
                           'aria-label': pwShowPassword ? 'Hide password' : 'Show password',
-                          style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 16, padding: 4 } },
+                          style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16, padding: 4 } },
                           pwShowPassword ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEE1\uFE0F')
                       ),
                       el('button', { onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); upd({ pwInput: gp, pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
@@ -2729,12 +2729,12 @@
                     ),
                     // Generator config
                     el('div', { style: { display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
+                      el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
                       [8, 12, 16, 20, 24].map(function(len) {
                         return el('button', { key: len, onClick: function() { upd('pwGenLength', len); },
                           style: { padding: '3px 8px', borderRadius: 6, border: pwGenLength === len ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)', background: pwGenLength === len ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', color: pwGenLength === len ? '#a5b4fc' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, String(len));
                       }),
-                      el('span', { style: { color: '#475569', margin: '0 4px' } }, '|'),
+                      el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', margin: '0 4px' } }, '|'),
                       ['upper', 'lower', 'digits', 'symbols'].map(function(cat) {
                         var labels = { upper: 'A-Z', lower: 'a-z', digits: '0-9', symbols: '!@#' };
                         var on = pwGenInclude[cat];
@@ -2746,8 +2746,8 @@
                   // Strength display
                   pwInput && el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     el('span', { style: { fontSize: 16, fontWeight: 900, color: pwStrength.color } }, pwStrength.label),
-                    el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 600 } }, pwStrength.entropy + ' bits entropy'),
-                    el('span', { style: { color: '#94a3b8', fontSize: 11 } }, '\u2022 Pool: ' + (pwStrength.checks.poolSize || 0) + ' chars')
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 600 } }, pwStrength.entropy + ' bits entropy'),
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, '\u2022 Pool: ' + (pwStrength.checks.poolSize || 0) + ' chars')
                   ),
                   // Strength bar
                   el('div', { style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
@@ -2755,7 +2755,7 @@
                   ),
                   // Crack time
                   el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10B guesses/sec):'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10B guesses/sec):'),
                     el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime)
                   ),
                   // Checklist
@@ -2786,9 +2786,9 @@
                   // Brute Force Visualization
                   pwBruteAnim && el('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(239,68,68,0.05))', border: '1px solid rgba(244,63,94,0.2)' } },
                     el('div', { style: { color: '#fb7185', fontSize: 13, fontWeight: 900, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 } }, '\u26A1 Brute Force Attack Simulation'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } },
                       pwBruteAnim.entropy + ' bits entropy \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
                     pwBruteAnim.speeds.map(function(spd, si) {
                       var secs = pwBruteAnim.totalGuesses / spd.rate;
                       var timeStr = formatSeconds(secs);
@@ -2796,8 +2796,8 @@
                       var barColor = secs < 60 ? '#ef4444' : secs < 3600 ? '#f97316' : secs < 86400 * 365 ? '#eab308' : '#22c55e';
                       return el('div', { key: si, style: { marginBottom: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.2)' } },
                         el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
-                          el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 700 } }, spd.icon + ' ' + spd.label),
-                          el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
+                          el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 700 } }, spd.icon + ' ' + spd.label),
+                          el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
                         ),
                         el('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                           el('div', { style: { width: barPct + '%', height: '100%', borderRadius: 3, background: barColor, transition: 'width 0.8s ease-out' } })
@@ -2817,7 +2817,7 @@
                       'This password appeared in ' + pwBreachResult.count.toLocaleString() + ' breaches! Do NOT use it.'),
                     !pwBreachResult.breached && el('div', { style: { textAlign: 'center', color: '#6ee7b7', fontSize: 12, marginBottom: 8 } },
                       'Not found in our simulated breach database. Always use unique passwords per site.'),
-                    el('div', { style: { padding: '8px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.2)', color: '#94a3b8', fontSize: 10, lineHeight: 1.6 } },
+                    el('div', { style: { padding: '8px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
                       '\uD83D\uDD12 Real services like "Have I Been Pwned" use k-anonymity to check passwords against billions of breached credentials without seeing your full password.')
                   ),
                   // Challenge
@@ -2836,7 +2836,7 @@
                      'Longer is always stronger \u2014 aim for 16+ characters',
                      'Consider using a password manager to generate and store strong passwords'
                     ].map(function(tip, ti) {
-                      return el('div', { key: ti, style: { color: '#94a3b8', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'flex-start' } },
+                      return el('div', { key: ti, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'flex-start' } },
                         el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
                     })
                   )
@@ -2860,22 +2860,22 @@
                 ),
                 // Caesar shift control
                 cipherMode === 'caesar' && el('div', { style: { marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
-                  el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
                   el('input', { type: 'range', 'aria-label': 'caesar shift', min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
                     style: { width: 180, accentColor: '#6366f1' } }),
                   el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
                 ),
                 // Letter mapping visualization
                 cipherMode !== 'xor' && el('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' } },
-                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Letter Mapping'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Letter Mapping'),
                   el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' } },
                     'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter, li) {
                       var mapped;
                       if (cipherMode === 'caesar') mapped = String.fromCharCode(((li + caesarShift) % 26) + 65);
                       else mapped = String.fromCharCode(90 - li);
                       return el('div', { key: li, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 22 } },
-                        el('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', fontFamily: 'monospace' } }, letter),
-                        el('span', { style: { fontSize: 8, color: '#475569' } }, '\u2193'),
+                        el('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, letter),
+                        el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #475569)' } }, '\u2193'),
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#818cf8', fontFamily: 'monospace' } }, mapped)
                       );
                     })
@@ -2884,21 +2884,21 @@
                 // Input/Output
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
                   el('div', null,
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
                     el('textarea', { value: cipherInput, onChange: function(e) { upd('cipherInput', e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...', 'aria-label': cipherEncode ? 'Plain text to encode' : 'Encoded text to decode',
-                      style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, resize: 'none', boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
+                      style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, resize: 'none', boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
                   ),
                   el('div', null,
-                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
                     el('div', { style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, overflowY: 'auto', boxSizing: 'border-box', wordBreak: 'break-all' } },
-                      cipherOutput || el('span', { style: { color: '#475569', fontStyle: 'italic', fontWeight: 400 } }, 'Output will appear here...'))
+                      cipherOutput || el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', fontWeight: 400 } }, 'Output will appear here...'))
                   )
                 ),
                 // Explanation
                 el('div', { style: { marginBottom: 20, padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
                   el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 6 } },
                     cipherMode === 'caesar' ? '\uD83D\uDD04 How Caesar Cipher Works' : cipherMode === 'atbash' ? '\uD83D\uDD00 How Atbash Cipher Works' : '\u2295 How XOR Cipher Works'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.6 } },
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.6 } },
                     cipherMode === 'caesar' ? 'Each letter is shifted forward in the alphabet by the shift amount. Julius Caesar used a shift of 3 to encrypt military messages. With 26 possible shifts, this is one of the simplest ciphers to break \u2014 but a great introduction to cryptography!' :
                     cipherMode === 'atbash' ? 'The alphabet is simply reversed: A\u2192Z, B\u2192Y, C\u2192X, and so on. Originally used for Hebrew text, Atbash is a "mirror cipher." It\'s its own inverse \u2014 encoding and decoding use the same operation!' :
                     'XOR (exclusive or) compares the binary digits of each character with a key number. If the bits match, the result is 0; if they differ, the result is 1. XOR is used in real-world encryption because it\'s fast, reversible, and forms the basis of modern stream ciphers.')
@@ -2906,7 +2906,7 @@
                 // Challenge Mode
                 el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.2)' } },
                   el('div', { style: { color: '#fbbf24', fontSize: 14, fontWeight: 900, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } }, '\uD83C\uDFC6 Decode Challenge'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + activeChallengeData.hint),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + activeChallengeData.hint),
                   el('div', { style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', fontFamily: 'monospace', fontSize: 14, fontWeight: 700, color: '#fbbf24', letterSpacing: 2, marginBottom: 10 } }, activeChallengeData.encoded),
                   el('input', { value: cipherChallenge, onChange: function(e) {
                     var val = e.target.value.toUpperCase();
@@ -2924,7 +2924,7 @@
                 el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83D\uDCE1 Network Traffic Analyzer'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, 'Inspect packets and flag suspicious traffic')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 2 } }, 'Inspect packets and flag suspicious traffic')
                   ),
                   el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + netScore + ' correct'),
@@ -2960,11 +2960,11 @@
                         netShowAnswer && !pkt.suspicious && el('span', { style: { color: '#22c55e', fontSize: 10 } }, '\u2705'),
                         el('span', { style: { color: pColor, fontSize: 11, fontWeight: 700, fontFamily: 'monospace' } }, pkt.proto)
                       ),
-                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, pkt.src),
-                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, pkt.dst),
-                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, String(pkt.port)),
+                      el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontFamily: 'monospace' } }, pkt.src),
+                      el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontFamily: 'monospace' } }, pkt.dst),
+                      el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontFamily: 'monospace' } }, String(pkt.port)),
                       el('div', null,
-                        el('div', { style: { color: '#cbd5e1', fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, pkt.payload),
+                        el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, pkt.payload),
                         netShowAnswer && el('div', { style: { color: pkt.suspicious ? '#fca5a5' : '#6ee7b7', fontSize: 11, marginTop: 2, fontWeight: 600 } }, pkt.reason)
                       )
                     );
@@ -2972,7 +2972,7 @@
                 ),
                 // Submit / Results
                 netPackets.length > 0 && !netShowAnswer && el('div', { style: { marginTop: 14, textAlign: 'center' } },
-                  el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } }, 'Click packets you think are suspicious, then submit your analysis'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } }, 'Click packets you think are suspicious, then submit your analysis'),
                   el('button', { onClick: function() {
                       var correct = 0;
                       netPackets.forEach(function(pkt) {
@@ -2995,15 +2995,15 @@
                    'Always verify email sender domains \u2014 spoofed emails enable BEC attacks',
                    'FTP sends files unencrypted \u2014 use SFTP or SCP for sensitive data'
                   ].map(function(tip, ti) {
-                    return el('div', { key: ti, style: { color: '#94a3b8', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6 } },
+                    return el('div', { key: ti, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6 } },
                       el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
                   })
                 ),
                 // Empty state
                 netPackets.length === 0 && el('div', { style: { textAlign: 'center', padding: '40px 20px' } },
                   el('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCE1'),
-                  el('div', { style: { color: '#94a3b8', fontSize: 13, fontWeight: 600 } }, 'Click "Start Capture" to intercept network packets'),
-                  el('div', { style: { color: '#475569', fontSize: 11, marginTop: 4 } }, 'Analyze traffic and identify threats like a SOC analyst')
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontWeight: 600 } }, 'Click "Start Capture" to intercept network packets'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, marginTop: 4 } }, 'Analyze traffic and identify threats like a SOC analyst')
                 )
               ),
 
@@ -3012,7 +3012,7 @@
                 el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83C\uDFAD Social Engineering Defense'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, 'Scenario ' + (seQuizIdx + 1) + ' of ' + seScenarios.length)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 2 } }, 'Scenario ' + (seQuizIdx + 1) + ' of ' + seScenarios.length)
                   ),
                   el('div', { style: { display: 'flex', gap: 8 } },
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', color: '#fbbf24', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDD25 Streak: ' + seQuizStreak),
@@ -3024,7 +3024,7 @@
                   '\uD83C\uDFAF Attack Type: ' + (seQuizAnswer ? activeSeScenario.type : '???')),
                 // Scenario
                 el('div', { style: { padding: 20, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 16 } },
-                  el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, lineHeight: 1.7 } }, activeSeScenario.scenario)
+                  el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, lineHeight: 1.7 } }, activeSeScenario.scenario)
                 ),
                 // Options
                 activeSeScenario.options.map(function(opt, oi) {
@@ -3080,8 +3080,8 @@
                       style: { padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.3)', background: threatLoading ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: threatLoading ? 'wait' : 'pointer' } },
                       threatLoading ? '\u23F3 Generating...' : '\uD83D\uDCE1 Get Briefing')
                   ),
-                  threatBriefing ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, threatBriefing)
-                    : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Click "Get Briefing" for an AI-generated cybersecurity threat report')
+                  threatBriefing ? el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, threatBriefing)
+                    : el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, fontStyle: 'italic' } }, 'Click "Get Briefing" for an AI-generated cybersecurity threat report')
                 )
               ),
 
@@ -3110,7 +3110,7 @@
                   if (!q) return el('div', null);
                   var redCard = redTeamCards.filter(function(c) { return c.id === q.redId; })[0];
                   if (!redCard) return null;
-                  var stage = warStages.filter(function(s) { return s.id === redCard.stage; })[0] || { name: redCard.stage, icon: '\u2694\uFE0F', color: '#94a3b8' };
+                  var stage = warStages.filter(function(s) { return s.id === redCard.stage; })[0] || { name: redCard.stage, icon: '\u2694\uFE0F', color: 'var(--allo-stem-text-soft, #94a3b8)' };
                   var mitre = mitreTechniques[redCard.id];
                   var answered = q.answered !== -1;
                   var gotIt = answered && q.answered === q.correctIdx;
@@ -3122,12 +3122,12 @@
                       el('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, '\u2753'),
                       el('div', { style: { flex: 1 } },
                         el('div', { style: { fontSize: 11, color: '#f9a8d4', fontWeight: 800, letterSpacing: 0.5 } }, 'QUICK QUIZ \u2014 ' + warRoomQuizCorrect + ' / ' + warRoomQuizTotal + ' correct (' + pct + '%)' + (warRoomQuizStreak >= 2 ? ' \u2022 \uD83D\uDD25 ' + warRoomQuizStreak + '-streak' : '')),
-                        el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Stage: ' + stage.icon + ' ' + stage.name)
+                        el('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, 'Stage: ' + stage.icon + ' ' + stage.name)
                       ),
                       el('button', {
                         onClick: function() { warTtsStop(); upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
                         'aria-label': 'Close quiz',
-                        style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
+                        style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
                     ),
                     // Red card question
                     el('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
@@ -3145,11 +3145,11 @@
                           style: { marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD0A Read')
                       ),
                       el('div', { style: { fontSize: 14, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, redCard.title),
-                      el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                         (warRoomPlainLanguage && plainRedDescriptions[redCard.id]) || redCard.description)
                     ),
                     // Question prompt
-                    el('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 700, marginBottom: 8 } }, 'Which defense would FULLY stop this attack?'),
+                    el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, marginBottom: 8 } }, 'Which defense would FULLY stop this attack?'),
                     // Answer choices
                     el('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
                       q.choices.map(function(bid, i) {
@@ -3165,7 +3165,7 @@
                         return el('button', { key: i, onClick: function() { submitQuizAnswer(i); }, disabled: answered,
                           'aria-label': (i + 1) + '. ' + card.label + (answered ? (isCorrect ? ' — correct answer' : (isPicked ? ' — your answer (wrong)' : '')) : ''),
                           style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 6, border: '1px solid ' + bd, background: bg, color: color, cursor: answered ? 'default' : 'pointer', textAlign: 'left' } },
-                          el('span', { style: { fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 3, background: 'rgba(148,163,184,0.2)', color: '#94a3b8', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(i + 1)),
+                          el('span', { style: { fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 3, background: 'rgba(148,163,184,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(i + 1)),
                           el('span', { style: { fontSize: 14 } }, card.icon),
                           el('span', { style: { flex: 1, fontSize: 12.5, fontWeight: 700 } }, card.label),
                           answered && isCorrect && el('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\u2705'),
@@ -3185,15 +3185,15 @@
                           el('strong', null, gotIt ? '\u2728 Correct! +1 XP. ' : '\uD83D\uDCA1 Close! '),
                           (correctCard ? correctCard.label : '?') + ' fully mitigates this attack because it directly counters its main technique.'),
                         // Why the wrong pick isn't as good (only on incorrect)
-                        !gotIt && pickedCard && el('div', { style: { marginBottom: 6, color: '#cbd5e1', fontSize: 11.5 } },
+                        !gotIt && pickedCard && el('div', { style: { marginBottom: 6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11.5 } },
                           'Your pick (',
                           el('strong', null, pickedCard.label),
                           ') ',
                           pickedEffect >= 0.5 ? 'partially blunts this but can\'t stop it fully.' : 'doesn\'t match the attack\'s primary technique, so it lets the attack through.'
                         ),
                         // Stage lesson context
-                        lesson && el('div', { style: { paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.15)', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
-                          el('strong', { style: { color: '#cbd5e1', fontStyle: 'normal' } }, stage.name + ' lesson: '),
+                        lesson && el('div', { style: { paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.15)', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+                          el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'normal' } }, stage.name + ' lesson: '),
                           lesson)
                       );
                     })(),
@@ -3207,7 +3207,7 @@
                         answered ? 'Next Question \u2192' : 'Pick an answer above'),
                       el('button', {
                         onClick: function() { upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
-                        style: { padding: '10px 14px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                        style: { padding: '10px 14px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                         'Done')
                     )
                   );
@@ -3220,7 +3220,7 @@
                   var chain = hist.chain;
                   var idx = Math.max(0, Math.min(chain.length - 1, warRoomReplay.stepIdx || 0));
                   var step = chain[idx];
-                  var stage = warStages.filter(function(s) { return s.id === step.stage; })[0] || { name: step.stage, icon: '\u2694\uFE0F', color: '#94a3b8' };
+                  var stage = warStages.filter(function(s) { return s.id === step.stage; })[0] || { name: step.stage, icon: '\u2694\uFE0F', color: 'var(--allo-stem-text-soft, #94a3b8)' };
                   var mitre = step.red && mitreTechniques[step.red.id];
                   var oc = step.outcome === 'mitigated' ? { c: '#22c55e', label: 'MITIGATED' }
                          : step.outcome === 'detected' ? { c: '#3b82f6', label: 'DETECTED' }
@@ -3238,7 +3238,7 @@
                       el('button', {
                         onClick: function() { warTtsStop(); upd('warRoomReplay', null); sfxCyberdClick(); },
                         'aria-label': 'Close replay',
-                        style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
+                        style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
                     ),
                     // Red card
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 8 } },
@@ -3256,7 +3256,7 @@
                           style: { marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD0A Read')
                       ),
                       el('div', { style: { fontSize: 13, fontWeight: 800, color: '#fecaca', marginBottom: 4 } }, (step.red && step.red.title) || ''),
-                      el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5 } }, (step.red && step.red.description) || '')
+                      el('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, (step.red && step.red.description) || '')
                     ),
                     // Plays + outcome
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(148,163,184,0.15)', marginBottom: 8 } },
@@ -3264,7 +3264,7 @@
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#93c5fd', background: 'rgba(59,130,246,0.15)', padding: '2px 7px', borderRadius: 3 } }, 'BLUE TEAM'),
                         el('span', { style: { fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 3, background: oc.c + '22', color: oc.c } }, oc.label)
                       ),
-                      el('div', { style: { fontSize: 11.5, color: '#e2e8f0', marginBottom: 3 } },
+                      el('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } },
                         el('strong', { style: { color: '#86efac' } }, 'Plays: '),
                         (step.bluePlays && step.bluePlays.length > 0
                           ? step.bluePlays.map(function(pid) { var c = blueTeamCards.filter(function(b) { return b.id === pid; })[0]; return c ? (c.icon + ' ' + c.label) : pid; }).join(', ')
@@ -3283,7 +3283,7 @@
                         warRoomReplay.playing ? '\u23F8 Pause' : '\u25B6 Play'),
                       el('button', { onClick: function() { if (idx < chain.length - 1) goStep(idx + 1); }, disabled: idx >= chain.length - 1, 'aria-label': 'Next round',
                         style: { padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: idx >= chain.length - 1 ? 'rgba(30,41,59,0.3)' : 'rgba(30,41,59,0.6)', color: idx >= chain.length - 1 ? '#475569' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: idx >= chain.length - 1 ? 'not-allowed' : 'pointer' } }, 'Next \u23ED'),
-                      el('div', { style: { flex: 1, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right', letterSpacing: 0.5 } }, warRoomReplay.playing ? 'Auto-playing \u2014 2.6s per round' : 'Paused')
+                      el('div', { style: { flex: 1, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right', letterSpacing: 0.5 } }, warRoomReplay.playing ? 'Auto-playing \u2014 2.6s per round' : 'Paused')
                     )
                   );
                 })(),
@@ -3300,7 +3300,7 @@
                   el('button', {
                     onClick: function() { upd('warRoomPlaybookSeen', true); sfxCyberdClick(); },
                     'aria-label': 'Dismiss Playbook tip',
-                    style: { marginLeft: 'auto', padding: '2px 6px', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(148,163,184,0.2)', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer', borderRadius: 3 } },
+                    style: { marginLeft: 'auto', padding: '2px 6px', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(148,163,184,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer', borderRadius: 3 } },
                     '\u2715')
                 ),
 
@@ -3309,12 +3309,12 @@
                   style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(244,63,94,0.08))', border: '2px solid rgba(99,102,241,0.4)', marginBottom: 14 } },
                   el('div', { 'aria-hidden': 'true', style: { fontSize: 44, textAlign: 'center', marginBottom: 8 } }, '\u2694\uFE0F'),
                   el('h3', { id: 'warroom-welcome-title', style: { margin: 0, textAlign: 'center', color: '#c7d2fe', fontSize: 20, fontWeight: 900 } }, 'Welcome to the SOC War Room'),
-                  el('p', { style: { margin: '10px auto 14px', textAlign: 'center', color: '#cbd5e1', fontSize: 13, lineHeight: 1.55, maxWidth: 580 } },
+                  el('p', { style: { margin: '10px auto 14px', textAlign: 'center', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.55, maxWidth: 580 } },
                     'You\'re the on-call ',
                     el('strong', { style: { color: '#93c5fd' } }, 'Security Operations Center (SOC) analyst'),
                     '. A cyber adversary is running a six-stage attack campaign against your network. Each round, they make a move. You read the alerts, spend your defensive budget wisely, and try to detect or stop the attack before assets are lost.'
                   ),
-                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14, fontSize: 12, color: '#cbd5e1' } },
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     [
                       { icon: '\uD83C\uDFAC', title: 'New here?', body: 'Turn on Story Mode below for per-round coaching tips.' },
                       { icon: '\u267F', title: 'Need support?', body: 'Use the UDL options for plain language, larger text, or a dyslexia-friendly font.' },
@@ -3323,8 +3323,8 @@
                     ].map(function(tip, i) {
                       return el('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.2)' } },
                         el('div', { style: { fontSize: 18, marginBottom: 3 } }, tip.icon),
-                        el('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0', marginBottom: 2 } }, tip.title),
-                        el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, tip.body)
+                        el('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, tip.title),
+                        el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, tip.body)
                       );
                     })
                   ),
@@ -3365,7 +3365,7 @@
                 warRoomPlaybookOpen && el('div', { id: 'warroom-playbook-panel', role: 'region', 'aria-label': 'Strategy playbook',
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(236,72,153,0.3)', marginBottom: 14, maxHeight: 520, overflowY: 'auto' } },
                   el('div', { style: { color: '#f9a8d4', fontSize: 12, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\uD83D\uDCD2 STRATEGY PLAYBOOK'),
-                  el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12, lineHeight: 1.5 } }, 'Which defenses work best at each kill-chain stage. These rankings are computed from every red team card in the catalog \u2014 the more cards a defense fully mitigates, the higher it ranks.'),
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, lineHeight: 1.5 } }, 'Which defenses work best at each kill-chain stage. These rankings are computed from every red team card in the catalog \u2014 the more cards a defense fully mitigates, the higher it ranks.'),
                   warStages.map(function(stage) {
                     var defenses = playbookDefensesForStage(stage.id);
                     var combos = playbookCombosForStage(stage.id);
@@ -3376,11 +3376,11 @@
                         el('span', { style: { fontSize: 18 } }, stage.icon),
                         el('span', { style: { fontSize: 13, fontWeight: 900, color: stage.color } }, stage.num + '. ' + stage.name)
                       ),
-                      el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6, fontStyle: 'italic' } }, plainTip || tip),
+                      el('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6, fontStyle: 'italic' } }, plainTip || tip),
                       defenses.length > 0 && el('div', { style: { marginBottom: 6 } },
-                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Strongest defenses here'),
+                        el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Strongest defenses here'),
                         defenses.map(function(d2, i) {
-                          return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: 11.5, color: '#e2e8f0' } },
+                          return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
                             el('span', { style: { fontSize: 14 } }, d2.card.icon),
                             el('span', { style: { fontWeight: 700, flex: 1 } }, d2.card.label),
                             el('span', { style: { fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 3, background: 'rgba(34,197,94,0.15)', color: '#86efac' } }, d2.fullMit + ' full'),
@@ -3389,11 +3389,11 @@
                         })
                       ),
                       combos.length > 0 && el('div', null,
-                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Combos worth setting up'),
+                        el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Combos worth setting up'),
                         combos.map(function(c, i) {
                           return el('div', { key: i, style: { padding: '3px 0', fontSize: 11, color: '#fde68a' } },
                             el('span', { style: { fontWeight: 800 } }, '\u2728 ' + c.label),
-                            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, ' \u2014 ' + c.ids.map(function(bid) { var bc = blueTeamCards.filter(function(b) { return b.id === bid; })[0]; return bc ? bc.label : bid; }).join(' + '))
+                            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, ' \u2014 ' + c.ids.map(function(bid) { var bc = blueTeamCards.filter(function(b) { return b.id === bid; })[0]; return bc ? bc.label : bid; }).join(' + '))
                           );
                         })
                       )
@@ -3404,7 +3404,7 @@
                 warRoomHelpOpen && el('div', { id: 'warroom-help-panel', role: 'region', 'aria-label': 'Keyboard shortcuts and help',
                   style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(245,158,11,0.3)', marginBottom: 14 } },
                   el('div', { style: { color: '#fcd34d', fontSize: 12, fontWeight: 800, marginBottom: 10, letterSpacing: 0.5 } }, '\u2328\uFE0F KEYBOARD SHORTCUTS'),
-                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, fontSize: 12, color: '#cbd5e1' } },
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     [
                       { k: '1 \u2013 9',       t: 'Play the 1st through 9th blue card' },
                       { k: '\u2191 / \u2193', t: 'Navigate the alert list' },
@@ -3425,7 +3425,7 @@
                       );
                     })
                   ),
-                  el('div', { style: { marginTop: 10, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Shortcuts are disabled while typing in text fields or in Observer mode.')
+                  el('div', { style: { marginTop: 10, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Shortcuts are disabled while typing in text fields or in Observer mode.')
                 ),
                 // Personal Stats panel
                 warRoomStatsOpen && el('div', { id: 'warroom-stats-panel', role: 'region', 'aria-label': 'Your personal stats',
@@ -3437,17 +3437,17 @@
                       if (warRoomQuizTotal > 0) {
                         // Show quiz-only stats
                         return el('div', null,
-                          el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginBottom: 10 } }, 'No campaigns yet \u2014 here\'s your Quick Quiz progress:'),
+                          el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 10 } }, 'No campaigns yet \u2014 here\'s your Quick Quiz progress:'),
                           el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.04))', border: '1px solid rgba(236,72,153,0.25)' } },
                             el('div', { style: { color: '#f9a8d4', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\u2753 Quick Quiz performance'),
                             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
                               [
-                                { label: 'Answered', val: String(warRoomQuizTotal), color: '#cbd5e1' },
+                                { label: 'Answered', val: String(warRoomQuizTotal), color: 'var(--allo-stem-text, #cbd5e1)' },
                                 { label: 'Correct', val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
                                 { label: 'Best Streak', val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
                               ].map(function(s, i) {
                                 return el('div', { key: i, style: { padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)' } },
-                                  el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
+                                  el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
                                   el('div', { style: { fontSize: 14, color: s.color, fontWeight: 900, marginTop: 1 } }, s.val)
                                 );
                               })
@@ -3455,7 +3455,7 @@
                           )
                         );
                       }
-                      return el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'Play a campaign or take a Quick Quiz to start tracking stats.');
+                      return el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Play a campaign or take a Quick Quiz to start tracking stats.');
                     }
                     var wins = h.filter(function(r) { return r.verdict === 'won'; }).length;
                     var winPct = Math.round(wins / h.length * 100);
@@ -3491,7 +3491,7 @@
                       // Top stats row
                       el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 14 } },
                         [
-                          { label: 'Campaigns', val: String(h.length), color: '#cbd5e1' },
+                          { label: 'Campaigns', val: String(h.length), color: 'var(--allo-stem-text, #cbd5e1)' },
                           { label: 'Wins', val: wins + ' (' + winPct + '%)', color: '#86efac' },
                           { label: 'Avg Detections', val: avgDet + '/6', color: '#93c5fd' },
                           { label: 'Avg Data Saved', val: avgData + '/100', color: '#fcd34d' },
@@ -3499,7 +3499,7 @@
                           { label: 'Current Streak', val: currentStreak + ' win' + (currentStreak === 1 ? '' : 's'), color: '#f472b6' }
                         ].map(function(s, i) {
                           return el('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'rgba(30,41,59,0.6)' } },
-                            el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
+                            el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                             el('div', { style: { fontSize: 15, color: s.color, fontWeight: 900, marginTop: 2 } }, s.val)
                           );
                         })
@@ -3509,12 +3509,12 @@
                         el('div', { style: { color: '#f9a8d4', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\u2753 Quick Quiz performance'),
                         el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
                           [
-                            { label: 'Answered', val: String(warRoomQuizTotal), color: '#cbd5e1' },
+                            { label: 'Answered', val: String(warRoomQuizTotal), color: 'var(--allo-stem-text, #cbd5e1)' },
                             { label: 'Correct', val: warRoomQuizCorrect + ' (' + Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) + '%)', color: '#86efac' },
                             { label: 'Best Streak', val: String(Math.max(warRoomQuizStreak, d.warRoomQuizBestStreak || 0)), color: '#fcd34d' }
                           ].map(function(s, i) {
                             return el('div', { key: i, style: { padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)' } },
-                              el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
+                              el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, s.label),
                               el('div', { style: { fontSize: 14, color: s.color, fontWeight: 900, marginTop: 1 } }, s.val)
                             );
                           })
@@ -3522,7 +3522,7 @@
                       ),
                       // Data-preserved bar chart (last 10 campaigns)
                       sparkData.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)', marginBottom: 12 } },
-                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Data Preserved \u2014 last ' + sparkData.length + ' campaign' + (sparkData.length === 1 ? '' : 's') + ' (newest \u2192)'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Data Preserved \u2014 last ' + sparkData.length + ' campaign' + (sparkData.length === 1 ? '' : 's') + ' (newest \u2192)'),
                         el('div', { role: 'img', 'aria-label': 'Bar chart showing data preserved across recent campaigns',
                           style: { display: 'flex', alignItems: 'flex-end', gap: 3, height: 70 } },
                           sparkData.map(function(v, i) {
@@ -3536,11 +3536,11 @@
                       // By difficulty + by theme side by side
                       el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
                         el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'By Difficulty'),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'By Difficulty'),
                           ['rookie','analyst','threatHunter'].map(function(did) {
                             var s = byDiff[did]; var pct = s.c > 0 ? Math.round(s.w / s.c * 100) : 0;
                             var labelMap = { rookie: 'Rookie', analyst: 'Analyst', threatHunter: 'Threat Hunter' };
-                            return el('div', { key: did, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: '#cbd5e1' } },
+                            return el('div', { key: did, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: 'var(--allo-stem-text, #cbd5e1)' } },
                               el('span', { style: { minWidth: 80, fontWeight: 700 } }, labelMap[did]),
                               el('span', { style: { flex: 1 } }, s.c + ' played'),
                               el('span', { style: { color: s.w > 0 ? '#86efac' : '#94a3b8', fontWeight: 800 } }, s.w + ' won (' + pct + '%)')
@@ -3548,12 +3548,12 @@
                           })
                         ),
                         el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'By Adversary'),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'By Adversary'),
                           Object.keys(byTheme).sort(function(a, b) { return byTheme[b].c - byTheme[a].c; }).map(function(tid) {
                             var s = byTheme[tid]; var label = (campaignThemes[tid] && campaignThemes[tid].label) || tid;
-                            return el('div', { key: tid, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: '#cbd5e1' } },
+                            return el('div', { key: tid, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: 'var(--allo-stem-text, #cbd5e1)' } },
                               el('span', { style: { flex: 1, fontWeight: 700 } }, label),
-                              el('span', { style: { color: '#94a3b8' } }, s.c + ' played'),
+                              el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.c + ' played'),
                               el('span', { style: { color: s.w > 0 ? '#86efac' : '#94a3b8', fontWeight: 800, minWidth: 50, textAlign: 'right' } }, s.w + ' won')
                             );
                           })
@@ -3580,7 +3580,7 @@
                         var activeDays = cells.filter(function(c) { return c.count > 0; }).length;
                         return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
                           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
-                            el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Activity \u2014 last 28 days'),
+                            el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Activity \u2014 last 28 days'),
                             el('div', { style: { color: '#86efac', fontSize: 10, fontWeight: 700 } }, activeDays + ' active day' + (activeDays === 1 ? '' : 's'))
                           ),
                           el('div', { role: 'img', 'aria-label': 'Activity heatmap over last 28 days. ' + activeDays + ' active days.',
@@ -3596,7 +3596,7 @@
                                 style: { aspectRatio: '1', height: 16, borderRadius: 3, background: bg, border: '1px solid rgba(148,163,184,0.1)' } });
                             })
                           ),
-                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'Older \u2190  \u2192 Today')
+                          el('div', { style: { marginTop: 6, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Older \u2190  \u2192 Today')
                         );
                       })(),
                       // Grade trend strip (last 12 campaigns as letter badges)
@@ -3604,7 +3604,7 @@
                         if (h.length === 0) return null;
                         var last = h.slice(0, 12).reverse(); // oldest → newest left-to-right
                         return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Grade Trend \u2014 ' + last.length + ' most-recent (newest \u2192)'),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Grade Trend \u2014 ' + last.length + ' most-recent (newest \u2192)'),
                           el('div', { role: 'img', 'aria-label': 'Grade trend over last ' + last.length + ' campaigns',
                             style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                             last.map(function(entry, i) {
@@ -3626,7 +3626,7 @@
                         });
                         if (unlockedThemes.length === 0) return null;
                         return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\uD83C\uDFC6 Theme Conquest'),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '\uD83C\uDFC6 Theme Conquest'),
                           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6 } },
                             unlockedThemes.map(function(tid) {
                               var t = campaignThemes[tid];
@@ -3655,21 +3655,21 @@
                         if (entries.length === 0) return null;
                         var maxCount = entries[0].count || 1;
                         return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Your Defensive Loadout \u2014 card usage across campaigns'),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Your Defensive Loadout \u2014 card usage across campaigns'),
                           entries.map(function(e, i) {
                             var pct = Math.round(e.count / maxCount * 100);
                             return el('div', { key: e.id, style: { marginBottom: 4 } },
-                              el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1', marginBottom: 2 } },
+                              el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } },
                                 el('span', { style: { fontSize: 13 } }, e.card.icon),
                                 el('span', { style: { flex: 1, fontWeight: 700 } }, e.card.label),
-                                el('span', { style: { color: '#94a3b8', fontWeight: 800 } }, e.count + ' play' + (e.count === 1 ? '' : 's'))
+                                el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800 } }, e.count + ' play' + (e.count === 1 ? '' : 's'))
                               ),
                               el('div', { 'aria-hidden': 'true', style: { height: 3, borderRadius: 1.5, background: 'rgba(30,41,59,0.8)', overflow: 'hidden' } },
                                 el('div', { style: { height: '100%', width: pct + '%', background: (i === 0 ? '#f59e0b' : '#6366f1'), transition: 'width 0.3s' } })
                               )
                             );
                           }),
-                          entries.length > 0 && el('div', { style: { marginTop: 6, fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic' } },
+                          entries.length > 0 && el('div', { style: { marginTop: 6, fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                             'Top card: ', el('strong', { style: { color: '#fde68a' } }, entries[0].card.label),
                             entries.length >= 2 ? ', then ' + entries[1].card.label : '',
                             '. Try varying your loadout to unlock underused cards.')
@@ -3699,17 +3699,17 @@
                           return { card: card, stats: s, mitPct: mitPct, anyPct: anyPct };
                         }).filter(Boolean).sort(function(a, b) { return b.anyPct - a.anyPct; });
                         return el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.15)' } },
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Card Effectiveness \u2014 how each card performs for you'),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Card Effectiveness \u2014 how each card performs for you'),
                           rows.map(function(r) {
-                            return el('div', { key: r.card.id, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+                            return el('div', { key: r.card.id, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
                               el('span', { style: { fontSize: 13 } }, r.card.icon),
                               el('span', { style: { fontWeight: 700, flex: 1 } }, r.card.label),
-                              el('span', { style: { fontSize: 10, color: '#94a3b8' } }, r.stats.played + ' play' + (r.stats.played === 1 ? '' : 's')),
+                              el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.stats.played + ' play' + (r.stats.played === 1 ? '' : 's')),
                               el('span', { style: { fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 3, background: 'rgba(34,197,94,0.15)', color: '#86efac', minWidth: 70, textAlign: 'center' } }, r.mitPct + '% fully'),
                               el('span', { style: { fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 3, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', minWidth: 70, textAlign: 'center' } }, r.anyPct + '% any')
                             );
                           }),
-                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '"% fully" = rounds where this card led to a full mitigation. "% any" = detected or mitigated.')
+                          el('div', { style: { marginTop: 6, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '"% fully" = rounds where this card led to a full mitigation. "% any" = detected or mitigated.')
                         );
                       })()
                     );
@@ -3846,24 +3846,24 @@
                     var avgDet = total > 0 ? (warRoomCampaignHistory.reduce(function(a,h){return a+(h.detections||0);},0) / total).toFixed(1) : '0';
                     return el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6, marginBottom: 10, fontSize: 11 } },
                       el('div', { style: { padding: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 4 } },
-                        el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Win rate'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Win rate'),
                         el('div', { style: { color: '#86efac', fontSize: 15, fontWeight: 900 } }, total > 0 ? Math.round(wins / total * 100) + '%' : '\u2014'),
-                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, wins + ' / ' + total)
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, wins + ' / ' + total)
                       ),
                       el('div', { style: { padding: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 4 } },
-                        el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Avg detections'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Avg detections'),
                         el('div', { style: { color: '#93c5fd', fontSize: 15, fontWeight: 900 } }, avgDet),
-                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'per campaign')
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'per campaign')
                       ),
                       el('div', { style: { padding: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 4 } },
-                        el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Rookie / Analyst / Hunter'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Rookie / Analyst / Hunter'),
                         el('div', { style: { color: '#fcd34d', fontSize: 14, fontWeight: 900 } }, byDiff.rookie + ' / ' + byDiff.analyst + ' / ' + byDiff.threatHunter)
                       )
                     );
                   })(),
                   // History table
                   el('div', { style: { maxHeight: 280, overflowY: 'auto' } },
-                    el('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#cbd5e1' } },
+                    el('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
                       el('thead', null,
                         el('tr', { style: { borderBottom: '1px solid rgba(148,163,184,0.2)' } },
                           ['When','ID','Theme','Diff','Verdict','Det','Mit','Data','Players','Replay'].map(function(h, i) {
@@ -3921,7 +3921,7 @@
                   // Custom Red Cards editor (teacher-authored scenarios)
                   el('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px dashed rgba(168,85,247,0.3)' } },
                     el('div', { style: { color: '#d8b4fe', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, marginBottom: 6 } }, '\uD83E\uDDEA CUSTOM RED CARDS (' + warRoomCustomCards.length + ' saved)'),
-                    el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginBottom: 8 } },
+                    el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, marginBottom: 8 } },
                       'Paste a JSON array of custom red team cards. Schema per card: ',
                       el('code', { style: { color: '#fde68a', fontFamily: 'monospace' } },
                         '{ id, stage, title, description, indicators[], mitigations{blue_id:0..1}, impact{} }'),
@@ -3934,7 +3934,7 @@
                       value: warRoomCustomCardsDraft,
                       placeholder: '[{"id":"myphish","stage":"delivery","title":"Fake homework portal login","description":"An email links to a fake school portal page.","indicators":["Sender address uses \\"login-portal.net\\""],"mitigations":{"block_ip":1.0,"awareness_blast":0.8},"impact":{"users":2}}]',
                       onChange: function(ev) { upd({ warRoomCustomCardsDraft: ev.target.value, warRoomCustomCardsError: null }); },
-                      style: { width: '100%', minHeight: 140, padding: 8, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.8)', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5, fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' } }),
+                      style: { width: '100%', minHeight: 140, padding: 8, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.8)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.5, fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' } }),
                     warRoomCustomCardsError && el('div', { role: 'alert',
                       style: { marginTop: 6, padding: 8, borderRadius: 5, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 11, whiteSpace: 'pre-wrap', lineHeight: 1.5 } },
                       warRoomCustomCardsError,
@@ -4009,20 +4009,20 @@
                     el('input', { id: 'warroom-glossary-filter', type: 'search', placeholder: 'Filter\u2026', value: warRoomGlossaryFilter,
                       onChange: function(ev) { upd('warRoomGlossaryFilter', (ev.target.value || '').slice(0, 40)); },
                       'aria-label': 'Filter glossary terms',
-                      style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 11, boxSizing: 'border-box' } }),
+                      style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, boxSizing: 'border-box' } }),
                     warRoomGlossaryFilter && el('button', {
                       onClick: function() { upd('warRoomGlossaryFilter', ''); },
                       'aria-label': 'Clear glossary filter',
-                      style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(30,41,59,0.5)', color: '#cbd5e1', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
+                      style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(30,41,59,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
                   ),
                   (function() {
                     var q = (warRoomGlossaryFilter || '').toLowerCase().trim();
                     var filtered = q ? warGlossary.filter(function(g) { return g.term.toLowerCase().indexOf(q) !== -1 || g.defn.toLowerCase().indexOf(q) !== -1; }) : warGlossary;
-                    if (filtered.length === 0) return el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic', padding: '8px 0' } }, 'No terms match "' + warRoomGlossaryFilter + '".');
+                    if (filtered.length === 0) return el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic', padding: '8px 0' } }, 'No terms match "' + warRoomGlossaryFilter + '".');
                     return filtered.map(function(g) {
                       return el('div', { key: g.term, style: { padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' } },
                         el('span', { style: { color: '#fca5a5', fontSize: 12, fontWeight: 800, marginRight: 8 } }, g.term),
-                        el('span', { style: { color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, g.defn)
+                        el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11.5, lineHeight: 1.5 } }, g.defn)
                       );
                     });
                   })()
@@ -4033,11 +4033,11 @@
                   el('div', { style: { textAlign: 'center', marginBottom: 20 } },
                     el('div', { style: { fontSize: 44, marginBottom: 8 } }, '\u2694\uFE0F'),
                     el('h3', { style: { margin: 0, color: '#fca5a5', fontSize: 22, fontWeight: 900, letterSpacing: 0.3 } }, 'SOC War Room'),
-                    el('p', { style: { margin: '6px 0 0', color: '#94a3b8', fontSize: 13 } }, 'Red team. Blue team. Six rounds. One network to defend.')
+                    el('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, 'Red team. Blue team. Six rounds. One network to defend.')
                   ),
                   el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(244,63,94,0.2)', marginBottom: 16 } },
                     el('div', { style: { color: '#fda4af', fontSize: 12, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, 'MISSION BRIEFING'),
-                    el('div', { style: { color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.6 } },
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12.5, lineHeight: 1.6 } },
                       'You are the on-call SOC analyst. An adversary is running a multi-stage intrusion campaign through the ',
                       el('strong', null, 'Cyber Kill Chain'),
                       ': reconnaissance, delivery, exploitation, persistence, command-and-control, and actions on objectives. Each round, the Red Team plays a move; you read the alerts, spend defensive budget wisely, and try to detect or mitigate before assets are lost.'
@@ -4051,7 +4051,7 @@
                       warRoomStoryMode ? 'ON' : 'OFF'),
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomStoryMode ? '#86efac' : '#cbd5e1' } }, '\uD83C\uDFAC Story Mode \u2014 Guided Coaching'),
-                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, 'Each round shows a "Coach" tip explaining what the attacker is doing and which defenses to consider. Recommended for your first few campaigns.')
+                      el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, 'Each round shows a "Coach" tip explaining what the attacker is doing and which defenses to consider. Recommended for your first few campaigns.')
                     )
                   ),
                   // Plain Language + Accessibility toggles (UDL options)
@@ -4085,7 +4085,7 @@
                           el('span', { style: { fontSize: 10, fontWeight: 900, padding: '2px 6px', borderRadius: 3, background: isOn ? '#22c55e' : '#475569', color: 'white', minWidth: 28, textAlign: 'center' } }, isOn ? 'ON' : 'OFF'),
                           el('div', { style: { flex: 1 } },
                             el('div', { style: { fontSize: 11.5, fontWeight: 700 } }, opt.label),
-                            el('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.3 } }, opt.desc)
+                            el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.3 } }, opt.desc)
                           )
                         );
                       })
@@ -4103,13 +4103,13 @@
                         if (ctx.addToast) ctx.addToast('Access options reset to defaults', 'info');
                       },
                       'aria-label': 'Reset UDL and accessibility options to their defaults',
-                      style: { marginTop: 6, padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.25)', background: 'transparent', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                      style: { marginTop: 6, padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.25)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                       '\u21BB Reset to defaults') : null)
                   ),
                   // Live Session broadcast (only shown when Firebase + session code available)
                   warLive.available && el('div', { style: { padding: 10, borderRadius: 8, background: warRoomLiveMode !== 'off' ? 'rgba(239,68,68,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomLiveMode !== 'off' ? 'rgba(239,68,68,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 10 } },
                     el('div', { style: { color: warRoomLiveMode !== 'off' ? '#fca5a5' : '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\uD83D\uDCE1 LIVE SESSION \u2014 session ' + warLive.sessionCode + (warRoomLiveMode === 'hosting' ? ' \u2022 YOU ARE BROADCASTING' : warRoomLiveMode === 'observing' ? ' \u2022 YOU ARE OBSERVING' : '')),
-                    el('div', { style: { fontSize: 10.5, color: '#94a3b8', marginBottom: 8, lineHeight: 1.4 } }, 'Broadcast your live campaign to every student in this session. Observers see the action in real time but can\'t play. Only one broadcaster per session.'),
+                    el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, lineHeight: 1.4 } }, 'Broadcast your live campaign to every student in this session. Observers see the action in real time but can\'t play. Only one broadcaster per session.'),
                     el('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                       warRoomLiveMode === 'off' && el('button', { onClick: warLiveStartHosting,
                         style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.12)', color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
@@ -4118,7 +4118,7 @@
                         style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\uD83D\uDC41\uFE0F Observe This Session'),
                       warRoomLiveMode !== 'off' && el('button', { onClick: warLiveStop,
-                        style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                        style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\u23F9\uFE0F End Live Session')
                     )
                   ),
@@ -4131,7 +4131,7 @@
                         warRoomHotSeatEnabled ? 'ON' : 'OFF'),
                       el('div', { style: { flex: 1 } },
                         el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomHotSeatEnabled ? '#d8b4fe' : '#cbd5e1' } }, '\uD83E\uDD1D Hot Seat \u2014 Classroom Pass-and-Play'),
-                        el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, 'Rotate through 2\u20136 students on one device. Each player takes a round, pass screen hides intel until they\'re ready.')
+                        el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, 'Rotate through 2\u20136 students on one device. Each player takes a round, pass screen hides intel until they\'re ready.')
                       )
                     ),
                     warRoomHotSeatEnabled && el('div', null,
@@ -4147,7 +4147,7 @@
                                 newList[idx] = ev.target.value.slice(0, 20) || ('Player ' + (idx + 1));
                                 upd('warRoomHotSeatPlayers', newList);
                               },
-                              style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 12 } }),
+                              style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 } }),
                             warRoomHotSeatPlayers.length > 2 && el('button', {
                               onClick: function() {
                                 if (warRoomHotSeatPlayers.length <= 2) return; // never drop below 2
@@ -4169,7 +4169,7 @@
                           sfxCyberdClick();
                         },
                         style: { marginTop: 6, padding: '4px 12px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add Player'),
-                      el('div', { style: { marginTop: 8, fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.4 } }, 'Rounds assigned round-robin. With ' + warRoomHotSeatPlayers.length + ' players, each plays ' + (warRoomHotSeatPlayers.length === 6 ? '1 round' : (warRoomHotSeatPlayers.length === 3 ? '2 rounds' : (warRoomHotSeatPlayers.length === 2 ? '3 rounds' : '~' + Math.ceil(6 / warRoomHotSeatPlayers.length) + ' rounds'))) + '.')
+                      el('div', { style: { marginTop: 8, fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', lineHeight: 1.4 } }, 'Rounds assigned round-robin. With ' + warRoomHotSeatPlayers.length + ' players, each plays ' + (warRoomHotSeatPlayers.length === 6 ? '1 round' : (warRoomHotSeatPlayers.length === 3 ? '2 rounds' : (warRoomHotSeatPlayers.length === 2 ? '3 rounds' : '~' + Math.ceil(6 / warRoomHotSeatPlayers.length) + ' rounds'))) + '.')
                     )
                   ),
                   // Cross-mode bonuses earned from other Cyber Defense modes
@@ -4180,7 +4180,7 @@
                         el('span', { style: { fontSize: 15 } }, perk.icon),
                         el('div', { style: { flex: 1 } },
                           el('div', { style: { color: '#d9f99d', fontWeight: 800 } }, perk.label, el('span', { style: { color: '#86efac', fontWeight: 600, marginLeft: 6 } }, perk.perk)),
-                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } }, perk.source)
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic' } }, perk.source)
                         )
                       );
                     })
@@ -4193,10 +4193,10 @@
                         el('span', { style: { fontSize: 11, color: todayCompletion ? '#86efac' : '#fbbf24', fontWeight: 800, letterSpacing: 0.5 } }, todayCompletion ? 'TODAY\'S CHALLENGE \u2022 COMPLETED \u2713' : 'TODAY\'S CHALLENGE'),
                         dailyStreak >= 2 && el('span', { 'aria-label': dailyStreak + ' day streak', 'aria-live': 'polite', style: { padding: '1px 6px', borderRadius: 3, background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.35)', color: '#fca5a5', fontSize: 10, fontWeight: 800 } }, '\uD83D\uDD25 ' + dailyStreak + '-day streak')
                       ),
-                      el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Campaign #' + todaysChallenge.id + ' \u2022 ' + (campaignThemes[todaysChallenge.theme] ? campaignThemes[todaysChallenge.theme].label : todaysChallenge.theme) + ' \u2022 ' + todaysChallenge.difficulty),
+                      el('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, 'Campaign #' + todaysChallenge.id + ' \u2022 ' + (campaignThemes[todaysChallenge.theme] ? campaignThemes[todaysChallenge.theme].label : todaysChallenge.theme) + ' \u2022 ' + todaysChallenge.difficulty),
                       todayCompletion
-                        ? el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'Result: ' + (todayCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + todayCompletion.detections + '/6 detections \u2022 Every student who plays today gets the SAME scenario. Play again to improve your score.')
-                        : el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'A new challenge drops every day (UTC). Every student gets the exact same scenario \u2014 compare scores with classmates!')
+                        ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Result: ' + (todayCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + todayCompletion.detections + '/6 detections \u2022 Every student who plays today gets the SAME scenario. Play again to improve your score.')
+                        : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'A new challenge drops every day (UTC). Every student gets the exact same scenario \u2014 compare scores with classmates!')
                     ),
                     el('button', { onClick: function() { startCampaign(todaysChallenge.difficulty, todaysChallenge.theme, todaysChallenge.id); },
                       'aria-label': 'Start today\'s challenge',
@@ -4208,10 +4208,10 @@
                     el('div', { style: { fontSize: 28 } }, '\uD83D\uDDD3\uFE0F'),
                     el('div', { style: { flex: '1 1 200px' } },
                       el('div', { style: { fontSize: 11, color: weekCompletion ? '#86efac' : '#d8b4fe', fontWeight: 800, letterSpacing: 0.5, marginBottom: 2 } }, weekCompletion ? 'THIS WEEK\'S CHALLENGE \u2022 COMPLETED \u2713' : 'THIS WEEK\'S CHALLENGE'),
-                      el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Campaign #' + thisWeeksChallenge.id + ' \u2022 ' + (campaignThemes[thisWeeksChallenge.theme] ? campaignThemes[thisWeeksChallenge.theme].label : thisWeeksChallenge.theme) + ' \u2022 Threat Hunter'),
+                      el('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, 'Campaign #' + thisWeeksChallenge.id + ' \u2022 ' + (campaignThemes[thisWeeksChallenge.theme] ? campaignThemes[thisWeeksChallenge.theme].label : thisWeeksChallenge.theme) + ' \u2022 Threat Hunter'),
                       weekCompletion
-                        ? el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'Result: ' + (weekCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + weekCompletion.detections + ' detections \u2022 Runs all week \u2014 replay for a better score.')
-                        : el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 3 } }, 'Toughest challenge of the week (Threat Hunter). Same seed every day until Sunday.')
+                        ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Result: ' + (weekCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + weekCompletion.detections + ' detections \u2022 Runs all week \u2014 replay for a better score.')
+                        : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Toughest challenge of the week (Threat Hunter). Same seed every day until Sunday.')
                     ),
                     el('button', { onClick: function() { startCampaign(thisWeeksChallenge.difficulty, thisWeeksChallenge.theme, thisWeeksChallenge.id); },
                       'aria-label': 'Start this week\'s challenge',
@@ -4234,7 +4234,7 @@
                             el('span', { style: { fontSize: 16, filter: isLocked ? 'grayscale(1)' : 'none' } }, isLocked ? '\uD83D\uDD12' : t.icon),
                             el('span', { style: { fontSize: 13, fontWeight: 800 } }, t.label)
                           ),
-                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, isLocked ? (t.unlockHint || 'Locked') : t.desc)
+                          el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, isLocked ? (t.unlockHint || 'Locked') : t.desc)
                         );
                       })
                     )
@@ -4279,7 +4279,7 @@
                           title: tier.help,
                           style: { flex: '1 1 200px', padding: '14px 16px', borderRadius: 10, border: '1px solid ' + tier.color + '55', background: 'linear-gradient(135deg, ' + tier.color + '1a, ' + tier.color + '05)', color: tier.color, cursor: 'pointer', textAlign: 'left' } },
                           el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 4 } }, tier.label),
-                          el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, tier.sub)
+                          el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, tier.sub)
                         );
                       })
                     )
@@ -4306,7 +4306,7 @@
                           el('span', { style: { fontSize: 10, fontWeight: 900, padding: '1px 5px', borderRadius: 3, background: isOn ? '#f43f5e' : '#475569', color: 'white', minWidth: 24, textAlign: 'center' } }, isOn ? 'ON' : 'OFF'),
                           el('div', { style: { flex: 1 } },
                             el('div', { style: { fontSize: 11.5, fontWeight: 700 } }, opt.label),
-                            el('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.3 } }, opt.desc)
+                            el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.3 } }, opt.desc)
                           )
                         );
                       })
@@ -4319,7 +4319,7 @@
                       'aria-label': 'Open quick-quiz flashcard drill',
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(236,72,153,0.4)', background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.06))', color: '#f9a8d4', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\u2753 Quick Quiz'),
-                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', fontWeight: 600, lineHeight: 1.35 } }, 'Rapid-fire drill \u2014 pick the best defense for each attack. Earn +1 XP per correct answer.' + (warRoomQuizTotal > 0 ? ' (' + warRoomQuizCorrect + '/' + warRoomQuizTotal + ' lifetime)' : ''))
+                      el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'Rapid-fire drill \u2014 pick the best defense for each attack. Earn +1 XP per correct answer.' + (warRoomQuizTotal > 0 ? ' (' + warRoomQuizCorrect + '/' + warRoomQuizTotal + ' lifetime)' : ''))
                     ),
                     el('button', {
                       onClick: function() {
@@ -4335,7 +4335,7 @@
                       'aria-label': 'Start a random campaign',
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(59,130,246,0.35)', background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.06))', color: '#93c5fd', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\uD83C\uDFB2 Quick Match'),
-                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', fontWeight: 600, lineHeight: 1.35 } }, 'One-click random theme + difficulty. Great for warmup.')
+                      el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'One-click random theme + difficulty. Great for warmup.')
                     ),
                     el('button', {
                       onClick: function() {
@@ -4346,13 +4346,13 @@
                       'aria-label': 'Start Boss Mode campaign',
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(244,63,94,0.4)', background: 'linear-gradient(135deg, rgba(244,63,94,0.14), rgba(234,179,8,0.06))', color: '#fca5a5', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\uD83D\uDC79 Boss Mode'),
-                      el('div', { style: { fontSize: 10.5, color: '#94a3b8', fontWeight: 600, lineHeight: 1.35 } }, '3 rounds, toughest adversary, 10 budget. Win to unlock the Boss Slayer badge.')
+                      el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, '3 rounds, toughest adversary, 10 budget. Win to unlock the Boss Slayer badge.')
                     )
                   ),
                   // Shared seed input (reproduces a specific campaign for classmates / teachers)
                   el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px dashed rgba(234,179,8,0.3)', marginBottom: 18 } },
                     el('div', { style: { color: '#fcd34d', fontSize: 11, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\uD83D\uDD11 PLAY A SHARED CAMPAIGN (OPTIONAL)'),
-                    el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.4 } }, 'Enter a 4-character Campaign ID your teacher or classmate shared. Same ID + same theme + same difficulty = same exact scenarios.'),
+                    el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, lineHeight: 1.4 } }, 'Enter a 4-character Campaign ID your teacher or classmate shared. Same ID + same theme + same difficulty = same exact scenarios.'),
                     el('div', { style: { display: 'flex', gap: 8 } },
                       el('input', { type: 'text', maxLength: 4, placeholder: 'ABCD',
                         value: d.warRoomSeedInput || '',
@@ -4374,7 +4374,7 @@
                         'Play Seed \u2192')
                     )
                   ),
-                  el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic', textAlign: 'center', marginBottom: 14 } },
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic', textAlign: 'center', marginBottom: 14 } },
                     warRoomCampaignsCompleted > 0 ? ('Campaigns completed: ' + warRoomCampaignsCompleted + (d.warRoomWonAnalyst ? ' \u2022 Analyst victory \uD83C\uDF96\uFE0F' : '') + (d.warRoomPerfectDefense ? ' \u2022 Perfect defense \uD83D\uDEE1\uFE0F' : '')) : 'Your first campaign awaits.'
                   ),
                   // Onboarding checklist (hidden once all 5 milestones are complete)
@@ -4394,7 +4394,7 @@
                     return el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(99,102,241,0.3)', marginBottom: 14 } },
                       el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
                         el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, letterSpacing: 0.5 } }, '\uD83C\uDF93 GETTING STARTED (' + doneCount + '/' + items.length + ')'),
-                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, pct + '% complete')
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, pct + '% complete')
                       ),
                       el('div', { 'aria-hidden': 'true', style: { height: 4, borderRadius: 2, background: 'rgba(30,41,59,0.8)', overflow: 'hidden', marginBottom: 8 } },
                         el('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #6366f1, #22c55e)', transition: 'width 0.3s' } })
@@ -4425,7 +4425,7 @@
                           ),
                           el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#94a3b8', lineHeight: 1.3 } }, a.desc),
                           !earned && prog && el('div', { style: { marginTop: 5 } },
-                            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } },
+                            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, marginBottom: 2 } },
                               el('span', null, prog.label),
                               el('span', null, prog.cur + ' / ' + prog.goal)
                             ),
@@ -4464,18 +4464,18 @@
                     el('div', { 'aria-hidden': 'true', className: warRoomVerdict === 'won' ? 'war-victory' : 'war-shake',
                       style: { fontSize: 44, marginBottom: 4, display: 'inline-block', animation: reducedMotion ? 'none' : (warRoomVerdict === 'won' ? 'warVictory 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28) both' : 'warShake 0.4s ease-in-out') } }, warRoomVerdict === 'won' ? '\uD83C\uDFC6' : '\u26A0\uFE0F'),
                     el('div', { style: { fontSize: 20, fontWeight: 900, color: warRoomVerdict === 'won' ? '#86efac' : '#fca5a5' } }, warRoomVerdict === 'won' ? 'Environment Held' : 'Adversary Advanced'),
-                    el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label),
+                    el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, marginTop: 4 } }, warRoomRank.icon + ' Rank: ' + warRoomRank.label),
                     // Letter grade badge
                     el('div', { 'aria-label': 'Grade: ' + grade.letter + '. Score: ' + score + ' out of 100.',
                       style: { marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 18px', borderRadius: 12, background: grade.color + '1a', border: '2px solid ' + grade.color + '66' } },
                       el('div', { style: { fontSize: 36, fontWeight: 900, color: grade.color, lineHeight: 1, fontFamily: 'Georgia, serif' } }, grade.letter),
                       el('div', { style: { textAlign: 'left' } },
-                        el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Score'),
+                        el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Score'),
                         el('div', { style: { fontSize: 16, color: grade.color, fontWeight: 900 } }, score + ' / 100'),
-                        el('div', { style: { fontSize: 10, color: '#cbd5e1', fontStyle: 'italic' } }, grade.desc)
+                        el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, grade.desc)
                       )
                     ),
-                    warRoomCampaignId && el('div', { style: { marginTop: 8, fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Campaign #' + warRoomCampaignId)
+                    warRoomCampaignId && el('div', { style: { marginTop: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Campaign #' + warRoomCampaignId)
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
                     [
@@ -4487,7 +4487,7 @@
                     ].map(function(stat, i) {
                       return el('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + stat.color + '44', textAlign: 'center' } },
                         el('div', { style: { fontSize: 18, fontWeight: 900, color: stat.color } }, stat.val),
-                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, stat.label)
+                        el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, stat.label)
                       );
                     })
                   ),
@@ -4523,7 +4523,7 @@
                             el('span', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', flex: 1 } }, a.label),
                             isNew && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '1px 5px', borderRadius: 3, background: 'rgba(34,197,94,0.25)', color: '#86efac' } }, 'NEW')
                           ),
-                          el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.4 } }, a.desc)
+                          el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, a.desc)
                         );
                       })
                     )
@@ -4548,7 +4548,7 @@
                               el('span', { style: { fontSize: 13, fontWeight: 800, color: isMvp ? '#fde68a' : '#e2e8f0', flex: 1 } }, r.name),
                               isMvp && el('span', { style: { fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 3, background: 'rgba(245,158,11,0.25)', color: '#fbbf24', letterSpacing: 0.3 } }, 'MVP')
                             ),
-                            el('div', { style: { fontSize: 10.5, color: '#94a3b8', lineHeight: 1.55 } },
+                            el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55 } },
                               r.stats.rounds + ' round' + (r.stats.rounds === 1 ? '' : 's') + ' \u2022 ',
                               el('span', { style: { color: '#86efac', fontWeight: 700 } }, r.stats.mitigations + ' mitigated'), ' \u2022 ',
                               el('span', { style: { color: '#93c5fd', fontWeight: 700 } }, r.stats.detections + ' detected'),
@@ -4571,12 +4571,12 @@
                         el('button', { onClick: function() { var o = {}; o[expandedKey] = !isExpanded; upd(o); sfxCyberdClick(); },
                           'aria-expanded': !!isExpanded, 'aria-controls': 'round-detail-' + i,
                           style: { width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' } },
-                          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
-                          el('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, minWidth: 28 } }, 'R' + (i + 1)),
-                          el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
+                          el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
+                          el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, minWidth: 28 } }, 'R' + (i + 1)),
+                          el('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', flex: 1 } }, r.red.title),
                           el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
                         ),
-                        isExpanded && el('div', { id: 'round-detail-' + i, style: { padding: '4px 0 10px 26px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.6 } },
+                        isExpanded && el('div', { id: 'round-detail-' + i, style: { padding: '4px 0 10px 26px', fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6 } },
                           el('div', { style: { marginBottom: 4 } }, el('strong', { style: { color: '#fca5a5' } }, 'Attack: '), r.red.description),
                           el('div', { style: { marginBottom: 4 } },
                             el('strong', { style: { color: '#86efac' } }, 'Your plays: '),
@@ -4598,7 +4598,7 @@
                   ),
                   // Session reflection notes — auto-saved to the most recent history entry
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(148,163,184,0.2)', marginBottom: 14 } },
-                    el('label', { htmlFor: 'warroom-reflection-input', style: { color: '#cbd5e1', fontSize: 11, fontWeight: 800, marginBottom: 6, display: 'block', letterSpacing: 0.5 } },
+                    el('label', { htmlFor: 'warroom-reflection-input', style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 800, marginBottom: 6, display: 'block', letterSpacing: 0.5 } },
                       '\uD83D\uDCDD REFLECTION \u2014 OPTIONAL (saved with this campaign)'),
                     el('textarea', {
                       id: 'warroom-reflection-input',
@@ -4613,8 +4613,8 @@
                         }
                         upd({ warRoomReflection: text, warRoomCampaignHistory: newHistory });
                       },
-                      style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
-                    el('div', { style: { marginTop: 4, fontSize: 10, color: '#94a3b8', textAlign: 'right' } }, warRoomReflection.length + ' / 1000')
+                      style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
+                    el('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'right' } }, warRoomReflection.length + ' / 1000')
                   ),
                   // After-action report
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
@@ -4624,8 +4624,8 @@
                         style: { padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: warRoomAARLoading ? 'wait' : 'pointer' } },
                         warRoomAARLoading ? '\u23F3 Generating...' : '\uD83E\uDD16 Generate Debrief')
                     ),
-                    warRoomAAR ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, warRoomAAR)
-                      : el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
+                    warRoomAAR ? el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, warRoomAAR)
+                      : el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic' } }, 'Generate an AI debrief or start a new campaign.')
                   ),
                   // Share summary + new campaign buttons
                   el('div', { style: { display: 'flex', gap: 10 } },
@@ -4747,7 +4747,7 @@
                         } catch(e) { if (ctx.addToast) ctx.addToast('Print failed \u2014 ' + (e.message || 'unknown error'), 'info'); }
                       },
                       'aria-label': 'Print campaign report',
-                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDDA8\uFE0F Print Report'),
                     el('button', {
                       onClick: function() {
@@ -4843,15 +4843,15 @@
                 // Hot-seat "pass the device" screen (blocks view until current player taps)
                 warRoomActive && !warRoomVerdict && warRoomHotSeatEnabled && warRoomHotSeatPassScreen && el('div', { style: { padding: '40px 20px', textAlign: 'center', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.04))', border: '2px solid rgba(168,85,247,0.35)' } },
                   el('div', { 'aria-hidden': 'true', style: { fontSize: 60, marginBottom: 12, animation: reducedMotion ? 'none' : 'warVictory 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) both' } }, '\uD83E\uDD1D'),
-                  el('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 } }, 'PASS THE DEVICE'),
+                  el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 } }, 'PASS THE DEVICE'),
                   el('div', { style: { fontSize: 24, fontWeight: 900, color: '#d8b4fe', marginBottom: 8 } }, warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))),
-                  el('div', { style: { fontSize: 14, color: '#cbd5e1', marginBottom: 4 } }, 'Your turn \u2014 Round ' + warRoomRound + ' of 6'),
-                  el('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 20 } }, warRoomCurrentStage.icon + ' ' + warRoomCurrentStage.name),
+                  el('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Your turn \u2014 Round ' + warRoomRound + ' of 6'),
+                  el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 20 } }, warRoomCurrentStage.icon + ' ' + warRoomCurrentStage.name),
                   el('button', { onClick: function() { upd('warRoomHotSeatPassScreen', false); sfxCyberdClick(); if (ctx.announceToSR) ctx.announceToSR(warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] + ' is now playing. Round ' + warRoomRound + '.'); },
                     'aria-label': 'Ready to play, ' + warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx],
                     style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: 'white', fontSize: 15, fontWeight: 800, cursor: 'pointer' } },
                     '\uD83D\uDC4A I\'m Ready'),
-                  el('div', { style: { marginTop: 16, fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic' } }, 'Other players: look away until the active player confirms.')
+                  el('div', { style: { marginTop: 16, fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Other players: look away until the active player confirms.')
                 ),
 
                 // Active campaign (not ended, and past the pass screen)
@@ -4863,9 +4863,9 @@
                     el('span', { className: warLiveIsHosting ? 'war-pulse' : '', style: { fontSize: 14, animation: (warLiveIsHosting && !reducedMotion) ? 'warPulse 1.2s ease-in-out infinite' : 'none' } }, warLiveIsHosting ? '\uD83D\uDD34' : '\uD83D\uDC41\uFE0F'),
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { fontSize: 12, fontWeight: 800, color: warLiveIsHosting ? '#fca5a5' : '#a5b4fc' } }, warLiveIsHosting ? 'BROADCASTING LIVE' : 'OBSERVING LIVE — ' + (warRoomLiveHostName || 'Host')),
-                      el('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Session ' + warLive.sessionCode + (warLiveIsObserving ? ' • Buttons disabled in observer mode.' : ''))
+                      el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Session ' + warLive.sessionCode + (warLiveIsObserving ? ' • Buttons disabled in observer mode.' : ''))
                     ),
-                    el('button', { onClick: warLiveStop, style: { padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(15,23,42,0.5)', color: '#cbd5e1', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'End')
+                    el('button', { onClick: warLiveStop, style: { padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'End')
                   ),
 
                   // Observer suggestion compose (only when observing)
@@ -4878,14 +4878,14 @@
                         'aria-label': 'Your suggestion (max 140 characters)',
                         onChange: function(ev) { upd('warRoomChatDraft', (ev.target.value || '').slice(0, 140)); },
                         onKeyDown: function(ev) { if (ev.key === 'Enter') { ev.preventDefault(); warLiveSendSuggestion(warRoomChatDraft); } },
-                        style: { flex: 1, padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', boxSizing: 'border-box' } }),
+                        style: { flex: 1, padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontFamily: 'inherit', boxSizing: 'border-box' } }),
                       el('button', { onClick: function() { warLiveSendSuggestion(warRoomChatDraft); },
                         disabled: !warRoomChatDraft.trim(),
                         'aria-label': 'Send suggestion',
                         style: { padding: '6px 14px', borderRadius: 5, border: 'none', background: warRoomChatDraft.trim() ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'rgba(100,116,139,0.3)', color: 'white', fontSize: 12, fontWeight: 800, cursor: warRoomChatDraft.trim() ? 'pointer' : 'not-allowed' } },
                         'Send')
                     ),
-                    el('div', { style: { marginTop: 4, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'Only the host sees this. Your name: ' + (ctx.studentNickname || 'Observer'))
+                    el('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Only the host sees this. Your name: ' + (ctx.studentNickname || 'Observer'))
                   ),
 
                   // Host-side suggestions feed (visible when hosting and there are messages)
@@ -4899,15 +4899,15 @@
                           try { warLive.fb.setDoc(ref, { messages: [] }); upd('warRoomChatMessages', []); } catch(e) {}
                         },
                         'aria-label': 'Clear observer suggestions',
-                        style: { padding: '2px 8px', borderRadius: 3, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: '#cbd5e1', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'Clear')
+                        style: { padding: '2px 8px', borderRadius: 3, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'Clear')
                     ),
                     warRoomChatMessages.slice().reverse().map(function(m, i) {
                       var when = m.at ? new Date(m.at) : null;
                       var t = when ? ((when.getHours() < 10 ? '0' : '') + when.getHours() + ':' + (when.getMinutes() < 10 ? '0' : '') + when.getMinutes()) : '';
-                      return el('div', { key: (m.at || 0) + '-' + i, style: { padding: '4px 0', borderBottom: i < warRoomChatMessages.length - 1 ? '1px solid rgba(148,163,184,0.1)' : 'none', fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.4 } },
+                      return el('div', { key: (m.at || 0) + '-' + i, style: { padding: '4px 0', borderBottom: i < warRoomChatMessages.length - 1 ? '1px solid rgba(148,163,184,0.1)' : 'none', fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } },
                         el('span', { style: { color: '#d8b4fe', fontWeight: 700, marginRight: 6 } }, (m.from || 'Observer') + ':'),
                         el('span', null, m.text),
-                        t && el('span', { style: { marginLeft: 6, fontSize: 9, color: '#94a3b8' } }, t)
+                        t && el('span', { style: { marginLeft: 6, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t)
                       );
                     })
                   ),
@@ -4917,7 +4917,7 @@
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
                       el('div', null,
-                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
+                        el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
                           el('span', null, 'Round ' + warRoomRound + ' / ' + warRoomRoundsTotal + ' \u2022 ' + (warRoomIsBossMode ? '\uD83D\uDC79 BOSS ' : '') + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
                           warRoomCampaignId && el('button', {
                             onClick: function() {
@@ -4962,18 +4962,18 @@
                     warRoomDifficulty === 'threatHunter' && el('div', { 'aria-live': 'off',
                       className: warRoomTimeLeft <= 15 && warRoomTimeLeft > 0 ? 'war-pulse' : '',
                       style: { padding: '4px 10px', borderRadius: 6, background: warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.15)', border: '1px solid ' + (warRoomTimeLeft <= 15 ? 'rgba(239,68,68,0.4)' : 'rgba(234,179,8,0.3)'), animation: (warRoomTimeLeft <= 15 && warRoomTimeLeft > 0 && !reducedMotion) ? 'warPulse 1s ease-in-out infinite' : 'none' } },
-                      el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Clock'),
+                      el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Clock'),
                       el('div', { style: { fontSize: 14, color: warRoomTimeLeft <= 15 ? '#fca5a5' : '#fcd34d', fontWeight: 900 } },
                         (Math.floor(warRoomTimeLeft / 60)) + ':' + (warRoomTimeLeft % 60 < 10 ? '0' : '') + (warRoomTimeLeft % 60))
                     ),
                     // Budget
                     el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' } },
-                      el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Budget'),
+                      el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Budget'),
                       el('div', { style: { fontSize: 14, color: '#a5b4fc', fontWeight: 900 } }, warRoomBudget)
                     ),
                     // Assets
                     el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)' } },
-                      el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Assets'),
+                      el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Assets'),
                       el('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800 } },
                         warRoomAssets.users + 'u \u2022 ' + warRoomAssets.servers + 's \u2022 ' + warRoomAssets.data + 'd')
                     ),
@@ -4992,7 +4992,7 @@
                     el('div', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800, letterSpacing: 0.5, marginBottom: 8 } }, '\uD83C\uDF10 YOUR NETWORK'),
                     // Users row
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Users'),
+                      el('div', { style: { width: 70, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Users'),
                       el('div', { style: { display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' } },
                         Array.from({length: 10}, function(_, i) { return i; }).map(function(i) {
                           var compromised = i < warRoomAssetsLost.users;
@@ -5005,7 +5005,7 @@
                     ),
                     // Servers row
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Servers'),
+                      el('div', { style: { width: 70, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Servers'),
                       el('div', { style: { display: 'flex', gap: 6, flex: 1 } },
                         Array.from({length: 5}, function(_, i) { return i; }).map(function(i) {
                           var compromised = i < warRoomAssetsLost.servers;
@@ -5018,7 +5018,7 @@
                     ),
                     // Data bar
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                      el('div', { style: { width: 70, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Data'),
+                      el('div', { style: { width: 70, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Data'),
                       el('div', { style: { flex: 1, height: 12, borderRadius: 6, background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(148,163,184,0.2)', overflow: 'hidden', position: 'relative' } },
                         el('div', { style: { height: '100%', width: Math.max(0, Math.min(100, warRoomAssets.data)) + '%', background: warRoomAssets.data >= 70 ? 'linear-gradient(90deg, #22c55e, #86efac)' : (warRoomAssets.data >= 40 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #ef4444, #fca5a5)'), transition: 'width 0.4s ease' } })
                       ),
@@ -5040,7 +5040,7 @@
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                         el('div', { style: { fontSize: 28 } }, oc.icon),
                         el('div', { style: { flex: 1 } },
-                          el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Round ' + warRoomRound + ' \u2022 Debrief'),
+                          el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Round ' + warRoomRound + ' \u2022 Debrief'),
                           el('div', { style: { fontSize: 17, fontWeight: 900, color: oc.c } }, oc.title)
                         ),
                         el('div', { style: { padding: '4px 10px', borderRadius: 6, background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.35)', fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, '+' + res.xpDelta + ' XP')
@@ -5054,7 +5054,7 @@
                             style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
                             mitreTechniques[warRoomRedAction.id].id + ' \u2022 ' + mitreTechniques[warRoomRedAction.id].name)
                         ),
-                        el('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } },
+                        el('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                           el('strong', { style: { color: '#fecaca' } }, 'Red Team: '), res.redTitle, '. ',
                           res.outcome === 'mitigated' ? 'Your defensive play fully shut this down before impact.' :
                           res.outcome === 'detected' ? 'You partially blunted the attack \u2014 some impact got through.' :
@@ -5079,11 +5079,11 @@
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                           el('span', { style: { fontSize: 14 } }, '\uD83E\uDD16'),
                           el('span', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', letterSpacing: 0.5 } }, 'AI COACH TIP'),
-                          warRoomAICoachLoading && el('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '\u23F3 analyzing\u2026')
+                          warRoomAICoachLoading && el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '\u23F3 analyzing\u2026')
                         ),
                         warRoomAICoachTip
                           ? el('div', { style: { fontSize: 12, color: '#dbeafe', lineHeight: 1.55 } }, warRoomAICoachTip)
-                          : !warRoomAICoachLoading && el('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Analyzing your play\u2026 will appear here in a moment.')
+                          : !warRoomAICoachLoading && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Analyzing your play\u2026 will appear here in a moment.')
                       ),
                       // Combo callout
                       res.activeCombos && res.activeCombos.length > 0 && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.35)', marginBottom: 10 } },
@@ -5098,7 +5098,7 @@
                       // Stage lesson
                       res.stageLesson && el('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.25)', marginBottom: 10 } },
                         el('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCDA STAGE LESSON \u2014 ' + warRoomCurrentStage.name),
-                        el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+                        el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
                           (warRoomPlainLanguage && plainStageLessons[warRoomCurrentStage.id]) || res.stageLesson)
                       ),
                       // Try Again (only on lost rounds, once per round, unless observing or final campaign verdict)
@@ -5108,7 +5108,7 @@
                         style: { width: '100%', marginBottom: 8, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.15)', color: '#fcd34d', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                         '\uD83D\uDD04 Try This Round Again'),
                       res.outcome === 'succeeded' && warRoomRetryUsedThisRound && !warLiveIsObserving && el('div', {
-                        style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(148,163,184,0.1)', color: '#94a3b8', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
+                        style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
                         'Retry used this round \u2014 one try per round.'),
                       // What's Next — preview of the upcoming stage (only if not the last round)
                       warRoomRound < warRoomRoundsTotal && warRoomActiveStages[warRoomRound] && (function() {
@@ -5119,10 +5119,10 @@
                         return el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px dashed rgba(148,163,184,0.25)', marginBottom: 10 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                             el('span', { style: { fontSize: 12 } }, '\u23ED\uFE0F'),
-                            el('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 800, letterSpacing: 0.5 } }, 'UP NEXT'),
+                            el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, letterSpacing: 0.5 } }, 'UP NEXT'),
                             el('span', { style: { fontSize: 12, color: next.color, fontWeight: 800, marginLeft: 4 } }, next.icon + ' Round ' + (warRoomRound + 1) + ' \u2014 ' + next.name)
                           ),
-                          cleanTip && el('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.5 } }, cleanTip)
+                          cleanTip && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5 } }, cleanTip)
                         );
                       })(),
                       // Advance button (observers see it but can't act)
@@ -5159,7 +5159,7 @@
                       el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(220,38,38,0.04))', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' } },
                           el('span', { style: { fontSize: 11, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 8px', borderRadius: 4, letterSpacing: 0.5 } }, 'RED TEAM'),
-                          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, warRoomCurrentStage.name),
+                          el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, warRoomCurrentStage.name),
                           warRoomRedAction && mitreTechniques[warRoomRedAction.id] && el('span', {
                             title: 'MITRE ATT&CK: ' + mitreTechniques[warRoomRedAction.id].name,
                             style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
@@ -5183,19 +5183,19 @@
                             warRoomAICardLoading ? '\u23F3' : '\uD83E\uDD16 Replace')
                         ),
                         el('div', { style: { fontSize: 15, fontWeight: 800, color: '#fecaca', marginBottom: 6 } }, warRoomRedAction && warRoomRedAction.title),
-                        el('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } },
+                        el('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                           warRoomRedAction && ((warRoomPlainLanguage && plainRedDescriptions[warRoomRedAction.id]) || warRoomRedAction.description))
                       ),
                       // Alerts panel
                       el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 10 } },
                         el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83D\uDEA8 ALERT INTEL (' + warRoomAlerts.length + ')'),
-                        warRoomAlerts.length === 0 && el('div', { style: { color: '#94a3b8', fontSize: 12, fontStyle: 'italic' } }, 'No alerts received this round.'),
+                        warRoomAlerts.length === 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontStyle: 'italic' } }, 'No alerts received this round.'),
                         warRoomAlerts.map(function(a, i) {
                           var seen = warRoomAlertsSeen.indexOf(a.id) !== -1;
                           var investigated = seen && warRoomBluePlays.indexOf('investigate') !== -1;
                           var focused = i === warRoomAlertFocusIdx;
                           return el('div', { key: a.id,
-                            style: { padding: '8px 10px', borderRadius: 6, background: seen ? (a.real ? 'rgba(239,68,68,0.08)' : 'rgba(100,116,139,0.08)') : 'rgba(30,41,59,0.6)', border: '1px solid ' + (focused ? '#a5b4fc' : (seen ? (a.real ? 'rgba(239,68,68,0.3)' : 'rgba(100,116,139,0.3)') : 'rgba(148,163,184,0.15)')), outline: focused ? '2px solid rgba(165,180,252,0.4)' : 'none', outlineOffset: 2, marginBottom: 6, fontSize: 12, color: '#cbd5e1' } },
+                            style: { padding: '8px 10px', borderRadius: 6, background: seen ? (a.real ? 'rgba(239,68,68,0.08)' : 'rgba(100,116,139,0.08)') : 'rgba(30,41,59,0.6)', border: '1px solid ' + (focused ? '#a5b4fc' : (seen ? (a.real ? 'rgba(239,68,68,0.3)' : 'rgba(100,116,139,0.3)') : 'rgba(148,163,184,0.15)')), outline: focused ? '2px solid rgba(165,180,252,0.4)' : 'none', outlineOffset: 2, marginBottom: 6, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                             el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                               el('span', null, seen ? (a.real ? '\uD83D\uDD34' : '\u26AA') : '\u2754'),
                               el('span', { style: { flex: 1 } }, seen ? a.text : 'Unreviewed signal #' + (i + 1)),
@@ -5216,9 +5216,9 @@
                       ),
                       // Campaign log
                       el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px solid rgba(148,163,184,0.15)', maxHeight: 140, overflowY: 'auto', marginBottom: 8 } },
-                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.5 } }, 'Campaign Log'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.5 } }, 'Campaign Log'),
                         warRoomLog.map(function(line, i) {
-                          return el('div', { key: i, style: { fontSize: 11, color: '#94a3b8', padding: '2px 0', lineHeight: 1.5 } }, '\u203A ' + line);
+                          return el('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '2px 0', lineHeight: 1.5 } }, '\u203A ' + line);
                         })
                       ),
                       // Scratchpad — jot notes during play; carries into the reflection at end
@@ -5239,7 +5239,7 @@
                               upd('warRoomScratchpad', (ev.target.value || '').slice(0, 2000));
                             },
                             style: { width: '100%', marginTop: 6, minHeight: 70, padding: 8, borderRadius: 6, border: '1px solid rgba(234,179,8,0.25)', background: 'rgba(15,23,42,0.7)', color: '#fde68a', fontSize: 11.5, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
-                          el('div', { style: { marginTop: 3, fontSize: 9, color: '#94a3b8', textAlign: 'right' } }, warRoomScratchpad.length + ' / 2000')
+                          el('div', { style: { marginTop: 3, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'right' } }, warRoomScratchpad.length + ' / 2000')
                         )
                       )
                     ),
@@ -5249,7 +5249,7 @@
                       el('div', { id: 'warroom-main-action', tabIndex: -1, style: { padding: 10, borderRadius: 10, background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.04))', border: '1px solid rgba(59,130,246,0.3)', marginBottom: 10 } },
                         el('h3', { className: 'allo-sr-only' }, 'Blue Team defensive actions'),
                         el('div', { style: { fontSize: 11, fontWeight: 900, color: '#93c5fd', letterSpacing: 0.5, marginBottom: 6 } }, '\uD83D\uDEE1\uFE0F BLUE TEAM \u2014 CHOOSE YOUR MOVES'),
-                        el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, 'Spend budget on defensive actions. The right play can fully mitigate, partial plays reduce damage, wrong plays let the attack through.')
+                        el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Spend budget on defensive actions. The right play can fully mitigate, partial plays reduce damage, wrong plays let the attack through.')
                       ),
                       blueTeamCards.map(function(card, cardIdx) {
                         var played = warRoomBluePlays.indexOf(card.id) !== -1;
@@ -5263,12 +5263,12 @@
                           'aria-label': card.label + ', shortcut ' + (cardIdx + 1) + ', cost ' + effectiveCost + ' budget' + (isFreeAvail ? ' (free first use)' : '') + '. ' + card.description,
                           style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + (played ? 'rgba(34,197,94,0.4)' : (isFreeAvail ? 'rgba(34,197,94,0.4)' : 'rgba(148,163,184,0.2)')), background: played ? 'rgba(34,197,94,0.1)' : (disabled ? 'rgba(30,41,59,0.4)' : 'rgba(30,41,59,0.7)'), color: played ? '#86efac' : (disabled ? '#475569' : '#cbd5e1'), cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left', marginBottom: 6, opacity: disabled && !played ? 0.55 : 1 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
-                            el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 3, background: 'rgba(148,163,184,0.18)', color: '#94a3b8', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(cardIdx + 1)),
+                            el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 3, background: 'rgba(148,163,184,0.18)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(cardIdx + 1)),
                             el('span', { style: { fontSize: 14 } }, card.icon),
                             el('span', { style: { fontSize: 12.5, fontWeight: 800, flex: 1 } }, card.label),
                             isFreeAvail && !played && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.25)', color: '#86efac', letterSpacing: 0.3 } }, 'FREE'),
                             el('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', textDecoration: isFreeAvail && !played ? 'line-through' : 'none' } }, card.cost + ' \u26A1'),
-                            hint && el('span', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic' } }, hint)
+                            hint && el('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, hint)
                           ),
                           el('div', { style: { fontSize: 10.5, color: played ? '#86efac' : '#94a3b8', lineHeight: 1.4 } },
                             (warRoomPlainLanguage && plainBlueDescriptions[card.id]) || card.description)
@@ -5288,7 +5288,7 @@
                       // Undo Last Play (only when at least one play exists and round not resolved)
                       warRoomPlayLog.length > 0 && !warRoomRoundResolved && !warLiveIsObserving && el('button', {
                         onClick: undoLastPlay, 'aria-label': 'Undo the last defense you played',
-                        style: { width: '100%', marginTop: 6, padding: '7px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                        style: { width: '100%', marginTop: 6, padding: '7px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\u21A9\uFE0F Undo Last Play (' + (function() { var last = warRoomPlayLog[warRoomPlayLog.length - 1]; var c = blueTeamCards.filter(function(b){return b.id===last.cardId;})[0]; return c ? c.label : last.cardId; })() + ')'),
                       // Hint button (costs 1 budget, once per round, reveals category of ideal play)
                       el('div', { style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(234,179,8,0.06)', border: '1px dashed rgba(234,179,8,0.3)' } },
@@ -5327,7 +5327,7 @@
                           }
                         },
                         'aria-label': 'Quit this campaign',
-                        style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                        style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                         'Quit Campaign')
                     )
                   )

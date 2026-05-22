@@ -103,7 +103,7 @@
         blocks: function () {
           var b = [];
           // Stone foundation y=0
-          for (var x = 0; x < 5; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'slab', material: 'stone', color: '#94a3b8' });
+          for (var x = 0; x < 5; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'slab', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
           // Wood walls y=1,2
           b = b.concat(perim(5, 4, 1, 'block', 'wood', '#92400e'));
           b = b.concat(perim(5, 4, 2, 'block', 'wood', '#92400e'));
@@ -128,25 +128,25 @@
         blocks: function () {
           var b = [];
           // Marble platform y=0
-          for (var x = 0; x < 7; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'slab', material: 'marble', color: '#f1f5f9' });
+          for (var x = 0; x < 7; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'slab', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
           // Columns at corners + midpoints y=1,2,3
           var colPositions = [[0, 0], [0, 3], [3, 0], [3, 3], [6, 0], [6, 3]];
           colPositions.forEach(function (p) {
-            for (var cy = 1; cy <= 3; cy++) b.push({ x: p[0], y: cy, z: p[1], shape: 'column', material: 'marble', color: '#f1f5f9' });
+            for (var cy = 1; cy <= 3; cy++) b.push({ x: p[0], y: cy, z: p[1], shape: 'column', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
           });
           // Arches between front columns y=3
-          b.push({ x: 1, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 2, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 4, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 5, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 1, y: 3, z: 0, shape: 'arch', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 2, y: 3, z: 0, shape: 'arch', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 4, y: 3, z: 0, shape: 'arch', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 5, y: 3, z: 0, shape: 'arch', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
           // Roof y=4 (triangular with pyramid at peak)
-          for (var rx = 0; rx < 7; rx++) for (var rz = 0; rz < 4; rz++) b.push({ x: rx, y: 4, z: rz, shape: 'slab', material: 'marble', color: '#e2e8f0' });
-          b.push({ x: 2, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 3, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 4, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 2, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 3, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
-          b.push({ x: 4, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          for (var rx = 0; rx < 7; rx++) for (var rz = 0; rz < 4; rz++) b.push({ x: rx, y: 4, z: rz, shape: 'slab', material: 'marble', color: 'var(--allo-stem-text, #e2e8f0)' });
+          b.push({ x: 2, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 3, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 4, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 2, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 3, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
+          b.push({ x: 4, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
           return b;
         }
       },
@@ -155,7 +155,7 @@
         blocks: function () {
           var b = [];
           // Base platform
-          for (var x = 0; x < 4; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'block', material: 'stone', color: '#94a3b8' });
+          for (var x = 0; x < 4; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
           // Walls y=1..6
           for (var wy = 1; wy <= 6; wy++) b = b.concat(perim(4, 4, wy, 'block', 'stone', '#94a3b8'));
           // Door
@@ -167,7 +167,7 @@
           b.push({ x: 2, y: 4, z: 0, shape: 'window', material: 'glass', color: '#38bdf8' });
           // Battlements y=7 (alternating)
           [[0, 0], [0, 2], [2, 0], [2, 3], [3, 1], [3, 3], [1, 3]].forEach(function (p) {
-            b.push({ x: p[0], y: 7, z: p[1], shape: 'block', material: 'stone', color: '#94a3b8' });
+            b.push({ x: p[0], y: 7, z: p[1], shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
           });
           return b;
         }
@@ -177,22 +177,22 @@
         blocks: function () {
           var b = [];
           // Left pillar
-          for (var y = 0; y <= 3; y++) { b.push({ x: 0, y: y, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 0, y: y, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); }
+          for (var y = 0; y <= 3; y++) { b.push({ x: 0, y: y, z: 0, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); b.push({ x: 0, y: y, z: 1, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); }
           // Right pillar
-          for (var ry = 0; ry <= 3; ry++) { b.push({ x: 5, y: ry, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 5, y: ry, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); }
+          for (var ry = 0; ry <= 3; ry++) { b.push({ x: 5, y: ry, z: 0, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); b.push({ x: 5, y: ry, z: 1, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); }
           // Center pillar
-          for (var cy = 0; cy <= 2; cy++) { b.push({ x: 2, y: cy, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 3, y: cy, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 2, y: cy, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 3, y: cy, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); }
+          for (var cy = 0; cy <= 2; cy++) { b.push({ x: 2, y: cy, z: 0, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); b.push({ x: 3, y: cy, z: 0, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); b.push({ x: 2, y: cy, z: 1, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); b.push({ x: 3, y: cy, z: 1, shape: 'block', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' }); }
           // Arches
-          b.push({ x: 1, y: 3, z: 0, shape: 'arch', material: 'stone', color: '#94a3b8' });
-          b.push({ x: 1, y: 3, z: 1, shape: 'arch', material: 'stone', color: '#94a3b8' });
-          b.push({ x: 4, y: 3, z: 0, shape: 'arch', material: 'stone', color: '#94a3b8' });
-          b.push({ x: 4, y: 3, z: 1, shape: 'arch', material: 'stone', color: '#94a3b8' });
+          b.push({ x: 1, y: 3, z: 0, shape: 'arch', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
+          b.push({ x: 1, y: 3, z: 1, shape: 'arch', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
+          b.push({ x: 4, y: 3, z: 0, shape: 'arch', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
+          b.push({ x: 4, y: 3, z: 1, shape: 'arch', material: 'stone', color: 'var(--allo-stem-text-soft, #94a3b8)' });
           // Road surface y=4
-          for (var dx = 0; dx <= 5; dx++) { b.push({ x: dx, y: 4, z: 0, shape: 'slab', material: 'stone', color: '#cbd5e1' }); b.push({ x: dx, y: 4, z: 1, shape: 'slab', material: 'stone', color: '#cbd5e1' }); }
+          for (var dx = 0; dx <= 5; dx++) { b.push({ x: dx, y: 4, z: 0, shape: 'slab', material: 'stone', color: 'var(--allo-stem-text, #cbd5e1)' }); b.push({ x: dx, y: 4, z: 1, shape: 'slab', material: 'stone', color: 'var(--allo-stem-text, #cbd5e1)' }); }
           // Railings
           [0, 2, 4].forEach(function (rx) {
-            b.push({ x: rx, y: 5, z: 0, shape: 'column', material: 'metal', color: '#cbd5e1' });
-            b.push({ x: rx, y: 5, z: 1, shape: 'column', material: 'metal', color: '#cbd5e1' });
+            b.push({ x: rx, y: 5, z: 0, shape: 'column', material: 'metal', color: 'var(--allo-stem-text, #cbd5e1)' });
+            b.push({ x: rx, y: 5, z: 1, shape: 'column', material: 'metal', color: 'var(--allo-stem-text, #cbd5e1)' });
           });
           return b;
         }
@@ -209,7 +209,7 @@
             }
           });
           // Top cap
-          b.push({ x: 2, y: 3, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 2, y: 3, z: 2, shape: 'pyramid', material: 'marble', color: 'var(--allo-stem-text, #f1f5f9)' });
           return b;
         }
       }
@@ -288,12 +288,12 @@
 
     // ── Material definitions with costs ──
     var materials = [
-      { id: 'stone', label: 'Stone', color: '#94a3b8', icon: '\uD83E\uDEA8', weight: 2.3, cost: 5 },
+      { id: 'stone', label: 'Stone', color: 'var(--allo-stem-text-soft, #94a3b8)', icon: '\uD83E\uDEA8', weight: 2.3, cost: 5 },
       { id: 'brick', label: 'Brick', color: '#b45309', icon: '\uD83E\uDDF1', weight: 1.9, cost: 8 },
       { id: 'wood', label: 'Wood', color: '#92400e', icon: '\uD83E\uDEB5', weight: 0.6, cost: 3 },
       { id: 'glass', label: 'Glass', color: '#38bdf8', icon: '\uD83E\uDE9F', weight: 2.5, cost: 12 },
-      { id: 'marble', label: 'Marble', color: '#f1f5f9', icon: '\u26AA', weight: 2.7, cost: 15 },
-      { id: 'metal', label: 'Metal', color: '#cbd5e1', icon: '\u2699\uFE0F', weight: 7.8, cost: 20 }
+      { id: 'marble', label: 'Marble', color: 'var(--allo-stem-text, #f1f5f9)', icon: '\u26AA', weight: 2.7, cost: 15 },
+      { id: 'metal', label: 'Metal', color: 'var(--allo-stem-text, #cbd5e1)', icon: '\u2699\uFE0F', weight: 7.8, cost: 20 }
     ];
 
     // ── Tool modes ──
@@ -1362,10 +1362,10 @@
       var pct = max > 0 ? Math.round((value / max) * 100) : 0;
       return el('div', { style: { marginBottom: 8 } },
         el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
-          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 600 } }, label),
+          el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, label),
           el('span', { style: { fontSize: 10, color: color, fontWeight: 700 } }, value + (suffix || ''))
         ),
-        el('div', { style: { height: 6, background: '#1e293b', borderRadius: 3, overflow: 'hidden' } },
+        el('div', { style: { height: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 3, overflow: 'hidden' } },
           el('div', { style: { height: '100%', width: Math.min(100, pct) + '%', background: color, borderRadius: 3, transition: 'width 0.3s ease' } })
         )
       );
@@ -1409,7 +1409,7 @@
 
     return el('div', {
       key: 'archStudio',
-      style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', borderRadius: 16, overflow: 'hidden', outline: 'none' },
+      style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden', outline: 'none' },
       role: 'region',
       'aria-label': 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.',
       tabIndex: 0,
@@ -1417,11 +1417,11 @@
     },
 
       // ── Header bar ──
-      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,#1e293b,#0f172a)', borderBottom: '1px solid #334155', flexWrap: 'wrap' } },
-        el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: '#e2e8f0', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
+      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderBottom: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
+        el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
         el('span', { style: { fontSize: 18 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
         el('span', { style: { fontWeight: 700, fontSize: 15, color: '#f8fafc' } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
-        el('span', { style: { fontSize: 10, color: '#94a3b8' } }, totalBlocks + ' blocks'),
+        el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, totalBlocks + ' blocks'),
         // Toggle pills
         pillBtn(styleMode === 'bricks' ? '\uD83E\uDDF1 Bricks' : '\uD83C\uDFDB\uFE0F Architect', true, styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', styleMode === 'bricks' ? '#f87171' : '#6366f1', styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }),
         pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }),
@@ -1446,7 +1446,7 @@
         pillBtn('\uD83C\uDF2C\uFE0F Wind', false, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
         el('button', { onClick: applyGravity, disabled: !blocks.length, title: 'Apply gravity (drop floating blocks)', style: { background: blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
         // Screenshot + Sound
-        el('button', { onClick: takeScreenshot, title: 'Screenshot', style: { background: 'rgba(71,85,105,.3)', border: '1px solid #475569', color: '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
+        el('button', { onClick: takeScreenshot, title: 'Screenshot', style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
         el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: 'Sound effects', 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         el('div', { style: { flex: 1 } }),
         // Undo / Redo / Clear
@@ -1466,11 +1466,11 @@
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('div', { style: { width: 185, background: '#1e293b', padding: '10px 10px', overflowY: 'auto', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: 12 } },
+        el('div', { style: { width: 185, background: 'var(--allo-stem-panel, #1e293b)', padding: '10px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 12 } },
 
           // Mode selector
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Mode'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Mode'),
             el('div', { style: { display: 'flex', gap: 4 } },
               modes.map(function (m) {
                 return el('button', { key: m.id, onClick: function () { upd('mode', m.id); }, style: {
@@ -1485,7 +1485,7 @@
 
           // Shape palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
             el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 } },
               shapes.map(function (s) {
                 return el('button', { key: s.id, onClick: function () { upd('activeShape', s.id); }, style: {
@@ -1500,7 +1500,7 @@
 
           // Rotation selector
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD04 Rotation'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD04 Rotation'),
             el('div', { style: { display: 'flex', gap: 3 } },
               rotations.map(function (r) {
                 return el('button', { key: r.deg, onClick: function () { upd('activeRotation', r.deg); }, style: {
@@ -1515,7 +1515,7 @@
 
           // Material palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               materials.map(function (m) {
                 return el('button', { key: m.id, onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); }, style: {
@@ -1526,7 +1526,7 @@
                 } },
                   el('span', { style: { width: 16, height: 16, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
                   m.icon + ' ' + m.label,
-                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8' } }, '\uD83D\uDCB2' + m.cost)
+                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + m.cost)
                 );
               })
             )
@@ -1534,7 +1534,7 @@
 
           // Custom Color Palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3 } },
               ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#94a3b8','#1e293b'].map(function (c) {
                 return el('button', { key: c, onClick: function () { upd('activeColor', c); }, title: c, style: {
@@ -1549,10 +1549,10 @@
 
           // Mirror / Symmetry tools
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83E\uDE9E Mirror & Symmetry'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83E\uDE9E Mirror & Symmetry'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('button', { onClick: mirrorBuildX, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
-              el('button', { onClick: mirrorBuildZ, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
+              el('button', { onClick: mirrorBuildX, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
+              el('button', { onClick: mirrorBuildZ, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
               el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
             )
           ),
@@ -1561,27 +1561,27 @@
           budgetEnabled && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: overBudget ? '#f87171' : '#f59e0b', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCB0 Budget'),
             el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 3 } },
-              el('span', { style: { color: '#94a3b8' } }, 'Spent: \uD83D\uDCB2' + totalCost),
+              el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Spent: \uD83D\uDCB2' + totalCost),
               el('span', { style: { color: overBudget ? '#f87171' : '#4ade80', fontWeight: 700 } }, 'Left: \uD83D\uDCB2' + budgetRemaining)
             ),
-            el('div', { style: { height: 8, background: '#0f172a', borderRadius: 4, overflow: 'hidden', border: '1px solid #334155' } },
+            el('div', { style: { height: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 4, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' } },
               el('div', { style: { height: '100%', width: Math.min(100, budgetPct) + '%', background: overBudget ? 'linear-gradient(90deg,#ef4444,#dc2626)' : budgetPct > 75 ? 'linear-gradient(90deg,#f59e0b,#d97706)' : 'linear-gradient(90deg,#22c55e,#16a34a)', borderRadius: 4, transition: 'width 0.3s ease' } })
             ),
             // Budget slider
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
-              el('span', { style: { fontSize: 11, color: '#94a3b8' } }, '\uD83D\uDCB2' + budget),
+              el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + budget),
               el('input', { type: 'range', 'aria-label': 'budget', min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
             )
           ),
 
           // Layer View
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
               el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
               el('input', { type: 'range', 'aria-label': 'All', min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
             ),
-            viewLayer >= 0 && el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+            viewLayer >= 0 && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
               blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
             )
           ),
@@ -1619,13 +1619,13 @@
           showGallery && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCBE Saved Builds (' + galleryItems.length + ')'),
             galleryItems.length === 0
-              ? el('div', { style: { fontSize: 10, color: '#94a3b8', padding: 6 } }, 'No saved builds yet. Click \uD83D\uDCBE Save!')
+              ? el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 6 } }, 'No saved builds yet. Click \uD83D\uDCBE Save!')
               : el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 200, overflowY: 'auto' } },
                 galleryItems.map(function (item) {
-                  return el('div', { key: item.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '5px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                  return el('div', { key: item.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '5px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
                     el('div', { style: { flex: 1, minWidth: 0 } },
                       el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, item.name),
-                      el('div', { style: { fontSize: 8, color: '#94a3b8' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
+                      el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
                     ),
                     el('button', { onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21E9'),
                     el('button', { onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
@@ -1641,13 +1641,13 @@
               templates.map(function (tpl) {
                 return el('button', { key: tpl.id, onClick: function () { loadTemplate(tpl); }, style: {
                   display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 10, fontWeight: 600,
-                  border: '1px solid #334155', borderRadius: 8, background: 'transparent',
-                  color: '#94a3b8', cursor: 'pointer', textAlign: 'left', width: '100%'
+                  border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, background: 'transparent',
+                  color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textAlign: 'left', width: '100%'
                 } },
                   el('span', { style: { fontSize: 16, flexShrink: 0 } }, tpl.icon),
                   el('div', { style: { flex: 1 } },
                     el('div', { style: { fontWeight: 700, color: '#f8fafc', fontSize: 11 } }, tpl.name),
-                    el('div', { style: { fontSize: 8, color: '#94a3b8' } }, tpl.desc)
+                    el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, tpl.desc)
                   )
                 );
               })
@@ -1658,7 +1658,7 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
-              el('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 20 } }, quakeIntensity + '/10'),
+              el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 20 } }, quakeIntensity + '/10'),
               el('input', { type: 'range', 'aria-label': 'quake intensity', min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
             ),
             el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
@@ -1673,18 +1673,18 @@
 
           // Copy Region (Duplicate)
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Duplicate Build'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Duplicate Build'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('button', { onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: !blocks.length, title: 'Copy to the right', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
-              el('button', { onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: !blocks.length, title: 'Copy forward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
-              el('button', { onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: !blocks.length, title: 'Copy upward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
+              el('button', { onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: !blocks.length, title: 'Copy to the right', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
+              el('button', { onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: !blocks.length, title: 'Copy forward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
+              el('button', { onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: !blocks.length, title: 'Copy upward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
             )
           ),
 
           // Real-World Scale
           totalBlocks > 0 && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCF Real-World Scale'),
-            el('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCF Real-World Scale'),
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
               el('div', null, '\uD83D\uDCCF ' + realW + 'm \u00D7 ' + realD + 'm \u00D7 ' + realH + 'm'),
               el('div', null, '\uD83D\uDCCF ' + realWFt + 'ft wide \u00D7 ' + realHFt + 'ft tall'),
               el('div', null, '\uD83D\uDCE6 Volume: ' + realVolM3.toFixed(1) + ' m\u00B3'),
@@ -1696,24 +1696,24 @@
           // Bill of Materials
           showBOM && totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Bill of Materials'),
-            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               bomMaterialEntries.map(function (e) {
                 return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
                   el('span', null, e.icon),
-                  el('span', { style: { color: '#e2e8f0', fontWeight: 600, flex: 1 } }, e.label),
-                  el('span', { style: { color: '#94a3b8' } }, '\u00D7' + e.count),
+                  el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, flex: 1 } }, e.label),
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u00D7' + e.count),
                   budgetEnabled && el('span', { style: { color: '#fbbf24', fontSize: 8 } }, '\uD83D\uDCB2' + e.cost)
                 );
               })
             ),
-            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               bomShapeEntries.map(function (e) {
                 return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
                   el('span', null, e.icon),
-                  el('span', { style: { color: '#e2e8f0', fontWeight: 600, flex: 1 } }, e.label),
-                  el('span', { style: { color: '#94a3b8' } }, '\u00D7' + e.count)
+                  el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, flex: 1 } }, e.label),
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u00D7' + e.count)
                 );
               })
             )
@@ -1722,33 +1722,33 @@
           // Block Statistics Chart
           showStats && totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCA Block Stats'),
-            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3, fontWeight: 600 } }, 'Material Distribution'),
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3, fontWeight: 600 } }, 'Material Distribution'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               bomMaterialEntries.map(function (e) {
                 var pct = maxMatCount > 0 ? Math.round((e.count / maxMatCount) * 100) : 0;
                 var mat = materials.find(function (m) { return m.id === e.id; });
-                var barColor = mat ? mat.color : '#94a3b8';
+                var barColor = mat ? mat.color: 'var(--allo-stem-text-soft, #94a3b8)';
                 return el('div', { key: e.id },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 1 } },
-                    el('span', { style: { color: '#cbd5e1' } }, e.icon + ' ' + e.label),
-                    el('span', { style: { color: '#94a3b8' } }, e.count)
+                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, e.icon + ' ' + e.label),
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.count)
                   ),
-                  el('div', { style: { height: 6, background: '#0f172a', borderRadius: 3, overflow: 'hidden' } },
+                  el('div', { style: { height: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 3, overflow: 'hidden' } },
                     el('div', { style: { height: '100%', width: pct + '%', background: barColor, borderRadius: 3, transition: 'width 0.3s ease' } })
                   )
                 );
               })
             ),
-            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3, marginTop: 8, fontWeight: 600 } }, 'Shape Distribution'),
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3, marginTop: 8, fontWeight: 600 } }, 'Shape Distribution'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               bomShapeEntries.map(function (e) {
                 var pct = maxShapeCount > 0 ? Math.round((e.count / maxShapeCount) * 100) : 0;
                 return el('div', { key: e.id },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 1 } },
-                    el('span', { style: { color: '#cbd5e1' } }, e.icon + ' ' + e.label),
-                    el('span', { style: { color: '#94a3b8' } }, e.count)
+                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, e.icon + ' ' + e.label),
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.count)
                   ),
-                  el('div', { style: { height: 6, background: '#0f172a', borderRadius: 3, overflow: 'hidden' } },
+                  el('div', { style: { height: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 3, overflow: 'hidden' } },
                     el('div', { style: { height: '100%', width: pct + '%', background: '#60a5fa', borderRadius: 3, transition: 'width 0.3s ease' } })
                   )
                 );
@@ -1761,13 +1761,13 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFDB\uFE0F Architecture Styles'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 280, overflowY: 'auto' } },
               archStyles.map(function (st) {
-                return el('div', { key: st.name, style: { padding: '6px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                return el('div', { key: st.name, style: { padding: '6px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 } },
                     el('span', { style: { fontSize: 14 } }, st.icon),
                     el('span', { style: { fontWeight: 700, fontSize: 11, color: '#f8fafc' } }, st.name),
-                    el('span', { style: { fontSize: 8, color: '#94a3b8', marginLeft: 'auto' } }, st.era)
+                    el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 'auto' } }, st.era)
                   ),
-                  el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4, marginBottom: 3 } }, st.features),
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4, marginBottom: 3 } }, st.features),
                   el('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 600 } }, '\uD83D\uDCA1 ' + st.tips)
                 );
               })
@@ -1780,15 +1780,15 @@
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 220, overflowY: 'auto' } },
               phases.map(function (ph, pi) {
                 var phPct = totalBlocks > 0 ? Math.round((ph.cumulative / totalBlocks) * 100) : 0;
-                return el('div', { key: pi, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                return el('div', { key: pi, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 } },
                     el('span', { style: { fontWeight: 700, fontSize: 10, color: '#f8fafc' } }, (pi + 1) + '. ' + ph.name),
-                    el('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
+                    el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
                   ),
-                  el('div', { style: { height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden', marginBottom: 2 } },
+                  el('div', { style: { height: 4, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 2, overflow: 'hidden', marginBottom: 2 } },
                     el('div', { style: { height: '100%', width: phPct + '%', background: 'linear-gradient(90deg,#2dd4bf,#14b8a6)', borderRadius: 2 } })
                   ),
-                  el('div', { style: { fontSize: 8, color: '#94a3b8' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
+                  el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
                 );
               })
             )
@@ -1804,16 +1804,16 @@
             } }, '\uD83D\uDCCB Copy Share Code'),
             shareCode && el('div', { style: { marginBottom: 4 } },
               el('textarea', { value: shareCode, readOnly: true, onClick: function (e) { e.target.select(); }, style: {
-                width: '100%', height: 50, padding: 6, background: '#0f172a', border: '1px solid #334155', borderRadius: 6,
-                color: '#94a3b8', fontSize: 8, fontFamily: 'monospace', resize: 'none'
+                width: '100%', height: 50, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6,
+                color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 8, fontFamily: 'monospace', resize: 'none'
               }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
             ),
-            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Paste a code below to import:'),
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Paste a code below to import:'),
             el('div', { style: { display: 'flex', gap: 3 } },
               el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
                 'aria-label': 'Paste share code to import a design',
                 onChange: function (e) { upd('importCode', e.target.value); },
-                style: { flex: 1, padding: '5px 8px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
+                style: { flex: 1, padding: '5px 8px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),
               el('button', { onClick: function () { importShareCode(d.importCode); }, style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
@@ -1823,9 +1823,9 @@
           ),
 
           // Keyboard Shortcuts Reference
-          el('div', { style: { marginTop: 4, padding: '6px 8px', background: 'rgba(15,23,42,.5)', borderRadius: 8, border: '1px solid #1e293b' } },
-            el('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
-            el('div', { style: { fontSize: 8, color: '#475569', lineHeight: 1.6 } },
+          el('div', { style: { marginTop: 4, padding: '6px 8px', background: 'rgba(15,23,42,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+            el('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
+            el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.6 } },
               el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y Redo'),
               el('div', null, '1-9 Select shape \u2022 P/E/T Mode'),
               el('div', null, 'S Screenshot \u2022 G Gravity')
@@ -1839,12 +1839,12 @@
               randomPresets.map(function (preset) {
                 return el('button', { key: preset.id, onClick: function () { generateRandom(preset.id); }, style: {
                   display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 8,
-                  background: 'rgba(30,41,59,.5)', border: '1px solid #334155', cursor: 'pointer', width: '100%', textAlign: 'left'
+                  background: 'rgba(30,41,59,.5)', border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer', width: '100%', textAlign: 'left'
                 } },
                   el('span', { style: { fontSize: 14 } }, preset.icon),
                   el('div', null,
-                    el('div', { style: { fontSize: 10, fontWeight: 700, color: '#e2e8f0' } }, preset.name),
-                    el('div', { style: { fontSize: 8, color: '#94a3b8' } }, preset.desc)
+                    el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, preset.name),
+                    el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, preset.desc)
                   )
                 );
               })
@@ -1864,7 +1864,7 @@
             ),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
               el('input', { type: 'color', value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
-              el('span', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' } }, customColor),
+              el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, customColor),
               el('button', { onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
                 marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
                 background: 'linear-gradient(135deg,#ec4899,#f472b6)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
@@ -1887,12 +1887,12 @@
                 } }, 'Z=' + z);
               })
             ),
-            sliceZ >= 0 && el('div', { style: { fontSize: 11, color: '#94a3b8', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
+            sliceZ >= 0 && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
               '\uD83D\uDD2C Slice Z=' + sliceZ + ': ' + sliceBlocks.length + ' block' + (sliceBlocks.length !== 1 ? 's' : ''),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 3 } },
                 sliceBlocks.map(function (b, i) {
                   var sh = shapes.find(function (s) { return s.id === (b.shape || 'block'); });
-                  return el('span', { key: i, style: { fontSize: 8, padding: '1px 4px', background: 'rgba(30,41,59,.8)', borderRadius: 4, color: '#cbd5e1' } },
+                  return el('span', { key: i, style: { fontSize: 8, padding: '1px 4px', background: 'rgba(30,41,59,.8)', borderRadius: 4, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     (sh ? sh.icon : '') + ' (' + b.x + ',' + b.y + ')'
                   );
                 })
@@ -1903,14 +1903,14 @@
           // ── Structural Load Heatmap Legend ──
           showHeatmap && totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD25 Load Heatmap'),
-            el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginBottom: 4 } },
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, marginBottom: 4 } },
               'Shows load (weight supported) per block column. Blocks at the base carry the most load.'
             ),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
               el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #22c55e, #eab308, #ef4444)' } }),
-              el('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', position: 'absolute', fontSize: 7, color: '#94a3b8', pointerEvents: 'none' } })
+              el('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', position: 'absolute', fontSize: 7, color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none' } })
             ),
-            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 8, color: '#94a3b8' } },
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               el('span', null, 'Low'),
               el('span', null, 'Max: ' + maxLoad.toFixed(1))
             ),
@@ -1920,8 +1920,8 @@
                 var pct = maxLoad > 0 ? Math.round((load / maxLoad) * 100) : 0;
                 var heatColor = pct > 66 ? '#ef4444' : pct > 33 ? '#eab308' : '#22c55e';
                 return el('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 8 } },
-                  el('span', { style: { color: '#94a3b8', minWidth: 50, fontFamily: 'monospace' } }, key),
-                  el('div', { style: { flex: 1, height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden' } },
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 50, fontFamily: 'monospace' } }, key),
+                  el('div', { style: { flex: 1, height: 4, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 2, overflow: 'hidden' } },
                     el('div', { style: { height: '100%', width: pct + '%', background: heatColor, borderRadius: 2 } })
                   ),
                   el('span', { style: { color: heatColor, fontWeight: 600, minWidth: 30, textAlign: 'right' } }, load.toFixed(1))
@@ -1934,22 +1934,22 @@
           showReplay && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\u23EA Construction Replay'),
             replayFrames === 0
-              ? el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'No undo history yet. Build something first!')
+              ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No undo history yet. Build something first!')
               : el('div', null,
-                  el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
                   el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
-                    el('button', { onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
-                    el('button', { onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
-                    el('button', { onClick: function () { stepReplay(1); }, disabled: replayStep >= replayFrames, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: replayStep < replayFrames ? '#e2e8f0' : '#475569', cursor: replayStep < replayFrames ? 'pointer' : 'default', fontSize: 10 } }, '\u25B6'),
-                    el('button', { onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
+                    el('button', { onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
+                    el('button', { onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
+                    el('button', { onClick: function () { stepReplay(1); }, disabled: replayStep >= replayFrames, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep < replayFrames ? '#e2e8f0' : '#475569', cursor: replayStep < replayFrames ? 'pointer' : 'default', fontSize: 10 } }, '\u25B6'),
+                    el('button', { onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
                   ),
                   el('div', { style: { marginTop: 4 } },
                     el('input', { type: 'range', 'aria-label': 'replay step', min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
                   ),
-                  el('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 2 } },
+                  el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 2 } },
                     (replayStep >= 0 && replayStep < replayFrames ? replayBlocks.length : totalBlocks) + ' blocks at this step'
                   ),
-                  el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: '#94a3b8', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, '\u2716 Exit Replay')
+                  el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, '\u2716 Exit Replay')
                 )
           ),
 
@@ -1957,7 +1957,7 @@
           showFilter && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD0D Block Filter'),
             el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2 } }, 'Material:'),
+              el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Material:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
                 el('button', { onClick: function () { upd('filterMaterial', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 materials.map(function (m) {
@@ -1966,7 +1966,7 @@
               )
             ),
             el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2 } }, 'Shape:'),
+              el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Shape:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
                 el('button', { onClick: function () { upd('filterShape', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 shapes.map(function (s) {
@@ -2004,12 +2004,12 @@
           // ── Wind Resistance ──
           totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF2C\uFE0F Wind Resistance'),
-            el('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
+            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
               el('div', null, windAnalysis.emoji + ' Rating: ' + windAnalysis.rating + (windAnalysis.score != null ? ' (' + windAnalysis.score + '%)' : '')),
               el('div', null, '\uD83D\uDCD0 Frontal area: ' + windAnalysis.frontalArea + ' u\u00B2'),
               el('div', null, '\uD83D\uDCD0 Side area: ' + windAnalysis.sideArea + ' u\u00B2'),
               el('div', null, '\uD83C\uDF2C\uFE0F Drag coeff: ' + windAnalysis.dragCoeff),
-              el('div', { style: { marginTop: 2, fontSize: 8, color: '#94a3b8' } },
+              el('div', { style: { marginTop: 2, fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 parseFloat(windAnalysis.dragCoeff) > 0.8 ? '\uD83D\uDCA1 Use domes, pyramids, or cylinders to reduce drag!' :
                 parseFloat(windAnalysis.dragCoeff) > 0.5 ? '\uD83D\uDCA1 Good mix of aerodynamic shapes!' :
                 '\u2705 Very aerodynamic design!')
@@ -2035,10 +2035,10 @@
                     border: fb ? 'none' : '1px solid rgba(51,65,85,.3)'
                   } }));
                 }
-                return el('div', { key: floor.y, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                return el('div', { key: floor.y, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
                     el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, 'Y=' + floor.y),
-                    el('span', { style: { fontSize: 8, color: '#94a3b8' } }, floor.count + ' blocks')
+                    el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, floor.count + ' blocks')
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + fW + ', ' + cellPx + 'px)', gap: 1, justifyContent: 'center' } }, cells)
                 );
@@ -2053,7 +2053,7 @@
         el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // Three.js canvas
           !threeReady
-            ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 14 } },
+            ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14 } },
               el('div', { style: { textAlign: 'center' } },
                 el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '\u2699\uFE0F'),
                 'Loading 3D engine...'
@@ -2062,7 +2062,7 @@
             : el('canvas', { id: 'arch-studio-canvas', 'aria-label': 'Interactive architecture studio 3D visualization', tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
 
           // Controls overlay (top-right)
-          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: '#94a3b8', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
+          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
             el('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
@@ -2077,12 +2077,12 @@
           ),
 
           // Analysis overlay (right side)
-          showAnalysis && totalBlocks > 0 && el('div', { style: { position: 'absolute', top: 70, right: 8, width: 210, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid #334155', zIndex: 10 } },
+          showAnalysis && totalBlocks > 0 && el('div', { style: { position: 'absolute', top: 70, right: 8, width: 210, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid var(--allo-stem-border, #334155)', zIndex: 10 } },
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 } }, '\uD83D\uDCD0 Structural Analysis'),
-            el('div', { style: { textAlign: 'center', marginBottom: 10, padding: '8px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid #334155' } },
+            el('div', { style: { textAlign: 'center', marginBottom: 10, padding: '8px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)' } },
               el('div', { style: { fontSize: 24, marginBottom: 2 } }, analysis.stabilityEmoji),
               el('div', { style: { fontSize: 20, fontWeight: 800, color: analysis.stability >= 70 ? '#4ade80' : analysis.stability >= 40 ? '#fbbf24' : '#f87171' } }, analysis.stability + '%'),
-              el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, analysis.stabilityLabel)
+              el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, analysis.stabilityLabel)
             ),
             analysisBar('Load Support', analysis.supportedPct, 100, analysis.supportedPct >= 80 ? '#4ade80' : '#f87171', '%'),
             analysisBar('Symmetry', analysis.symmetry, 100, analysis.symmetry >= 70 ? '#60a5fa' : '#f87171', '%'),
@@ -2094,7 +2094,7 @@
                 { label: 'Floating', value: analysis.unsupported, icon: analysis.unsupported > 0 ? '\u26A0\uFE0F' : '\u2705' }
               ].map(function (r) {
                 return el('div', { key: r.label, style: { background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' } },
-                  el('div', { style: { fontSize: 8, color: '#94a3b8', fontWeight: 600 } }, r.icon + ' ' + r.label),
+                  el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, r.icon + ' ' + r.label),
                   el('div', { style: { fontSize: 11, fontWeight: 700, color: r.label === 'Floating' && analysis.unsupported > 0 ? '#f87171' : '#f8fafc' } }, r.value)
                 );
               })
@@ -2105,23 +2105,23 @@
           ),
 
           // AI Architect overlay (left side, below mode indicator)
-          showAI && el('div', { style: { position: 'absolute', top: 44, left: 8, width: 240, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid #334155', zIndex: 10 } },
+          showAI && el('div', { style: { position: 'absolute', top: 44, left: 8, width: 240, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid var(--allo-stem-border, #334155)', zIndex: 10 } },
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
               el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83E\uDD16 AI Architect'),
               el('button', { onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask Again')
             ),
             aiLoading && !aiAdvice
-              ? el('div', { style: { textAlign: 'center', padding: 12, color: '#94a3b8', fontSize: 11 } },
+              ? el('div', { style: { textAlign: 'center', padding: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                 el('div', { style: { fontSize: 20, animation: 'spin 2s linear infinite', marginBottom: 4 } }, '\uD83E\uDD16'),
                 'Analyzing your structure...'
               )
               : aiAdvice
-                ? el('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5, whiteSpace: 'pre-line' } }, aiAdvice)
-                : el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, 'Click "Ask Again" for personalized architecture tips!')
+                ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, whiteSpace: 'pre-line' } }, aiAdvice)
+                : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Click "Ask Again" for personalized architecture tips!')
           ),
 
           // Bottom stats bar
-          el('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', padding: '6px 12px', background: 'linear-gradient(0deg,#1e293b,#0f172a)', borderTop: '1px solid #334155', flexWrap: 'wrap' } },
+          el('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', padding: '6px 12px', background: 'linear-gradient(0deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderTop: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
             [
               { label: 'Blocks', value: totalBlocks, icon: '\uD83E\uDDF1' },
               { label: 'Size', value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
@@ -2133,7 +2133,7 @@
               { label: 'Challenges', value: completedCount + '/10', icon: '\uD83C\uDFC6' }
             ].filter(Boolean).map(function (stat) {
               return el('div', { key: stat.label, style: { textAlign: 'center' } },
-                el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
+                el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
                 el('div', { style: { fontSize: 14, fontWeight: 700, color: '#f8fafc' } }, stat.value)
               );
             })
@@ -2142,7 +2142,7 @@
       ),
 
       // ── Coach panel ──
-      el('div', { style: { padding: '8px 14px', background: '#1e293b', borderTop: '1px solid #334155', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
+      el('div', { style: { padding: '8px 14px', background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
         coachTip
       )
     );

@@ -1548,7 +1548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, '\uD83C\uDFA8 Particle Color Guide'),
             h('div', { className: 'flex flex-wrap gap-3 text-[11px] ' + textSecondary },
               h('span', null, h('span', { style: { color: '#7dd3fc' } }, '\u25CF'), ' Light blue = slow wind'),
-              h('span', null, h('span', { style: { color: '#ffffff' } }, '\u25CF'), ' White = moderate wind'),
+              h('span', null, h('span', { style: { color: 'var(--allo-stem-text, #ffffff)' } }, '\u25CF'), ' White = moderate wind'),
               h('span', null, h('span', { style: { color: '#fbbf24' } }, '\u25CF'), ' Yellow = fast wind'),
               h('span', null, h('span', { style: { color: '#22c55e', fontSize: '8px' } }, '\u25CF'), ' Green zone = upwash (rising air)'),
               h('span', null, h('span', { style: { color: '#ef4444', fontSize: '8px' } }, '\u25CF'), ' Red zone = downwash (sinking air)')

@@ -672,17 +672,6 @@ function HeaderBar(props) {
                         >
                           <Info size={20} />
                         </button>
-                        <a
-                            href="https://Ko-fi.com/aaronpomeranz207"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            data-help-key="header_support"
-                            className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
-                            title={t('header.support_tooltip')}
-                            aria-label={t('header.support_aria')}
-                        >
-                            <Heart size={20} className={isProcessing || isExtracting || isGeneratingSource ? "animate-pulse fill-current" : ""} />
-                        </a>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 justify-end relative z-10 mt-2">

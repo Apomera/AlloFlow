@@ -8924,6 +8924,1032 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // render loop so it can latch onto the first computed target.
       var horizonYRef = useRef(null);
 
+      var [threeLoaded, setThreeLoaded] = useState(false);
+      var webglCanvasRef = useRef(null);
+      var threeSceneRef = useRef(null);
+      var threeCameraRef = useRef(null);
+      var threeRendererRef = useRef(null);
+      var threeResourcesRef = useRef(null);
+      var terrainCenterRef = useRef(null);
+      var terrainMeshRef = useRef(null);
+      var originRef = useRef(null);
+
+      useEffect(function() {
+        if (window.THREE) {
+          setThreeLoaded(true);
+          return;
+        }
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        script.async = true;
+        script.onload = function() {
+          setThreeLoaded(true);
+        };
+        script.onerror = function(err) {
+          console.error("Failed to load Three.js", err);
+        };
+        document.head.appendChild(script);
+      }, []);
+
+      var geodeticToLocal = function(lat, lon, alt) {
+        if (!originRef.current) {
+          originRef.current = { lat: lat, lon: lon, alt: alt };
+        }
+        var R = 364800.0;
+        var cosLat = Math.cos(originRef.current.lat * Math.PI / 180);
+        var x = (lon - originRef.current.lon) * R * cosLat;
+        var y = alt;
+        var z = -(lat - originRef.current.lat) * R;
+        return { x: x, y: y, z: z };
+      };
+
+      var initThree = function(canvas) {
+        if (!window.THREE) return;
+        try {
+          var THREE = window.THREE;
+          var W = canvas.clientWidth || 800;
+          var H = canvas.clientHeight || 500;
+
+          var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+          renderer.setSize(W, H, false);
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          renderer.shadowMap.enabled = false;
+          threeRendererRef.current = renderer;
+
+          var scene = new THREE.Scene();
+          threeSceneRef.current = scene;
+
+          var camera = new THREE.PerspectiveCamera(60, W / H, 10, 300000);
+          threeCameraRef.current = camera;
+
+          var ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+          scene.add(ambientLight);
+
+          var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+          dirLight.position.set(20000, 40000, 10000);
+          scene.add(dirLight);
+
+          var skyGeo = new THREE.SphereGeometry(250000, 16, 16);
+          skyGeo.scale(-1, 1, 1);
+          var skyMat = new THREE.MeshBasicMaterial({ color: 0x5078a0, side: THREE.BackSide, flatShading: true });
+          var skyMesh = new THREE.Mesh(skyGeo, skyMat);
+          scene.add(skyMesh);
+
+          threeResourcesRef.current = {
+            skyMesh: skyMesh,
+            ambientLight: ambientLight,
+            dirLight: dirLight,
+            aircraft: null,
+            terrainMesh: null,
+            runwayMeshes: {},
+            papiLights: {},
+            landmarkMeshes: {},
+            missionMeshes: {}
+          };
+          
+          terrainCenterRef.current = null;
+          originRef.current = null;
+        } catch(e) {
+          console.error("Error in initThree", e);
+        }
+      };
+
+      var disposeThree = function() {
+        try {
+          if (threeRendererRef.current) {
+            var renderer = threeRendererRef.current;
+            renderer.dispose();
+            threeRendererRef.current = null;
+          }
+          if (threeSceneRef.current) {
+            var scene = threeSceneRef.current;
+            scene.traverse(function(obj) {
+              if (obj.geometry) obj.geometry.dispose();
+              if (obj.material) {
+                if (Array.isArray(obj.material)) {
+                  obj.material.forEach(function(m) { m.dispose(); });
+                } else {
+                  obj.material.dispose();
+                }
+              }
+            });
+            threeSceneRef.current = null;
+          }
+          threeCameraRef.current = null;
+          threeResourcesRef.current = null;
+          terrainMeshRef.current = null;
+          terrainCenterRef.current = null;
+        } catch(e) {
+          console.error("Error in disposeThree", e);
+        }
+      };
+
+      var build3DAircraft = function(type) {
+        var THREE = window.THREE;
+        var group = new THREE.Group();
+        var resources = threeResourcesRef.current;
+        if (!resources) return group;
+
+        group.userData = {
+          props: [],
+          rotors: [],
+          flames: []
+        };
+
+        var whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
+        var grayMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8, flatShading: true });
+        var darkGrayMat = new THREE.MeshLambertMaterial({ color: 0x475569, flatShading: true });
+        var blackMat = new THREE.MeshLambertMaterial({ color: 0x0f172a, flatShading: true });
+        var greenMat = new THREE.MeshLambertMaterial({ color: 0x14532d, flatShading: true });
+        var blueGlass = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.6, flatShading: true });
+        var flameMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.8 });
+
+        if (type === 'cessna172') {
+          var fuseGeo = new THREE.CylinderGeometry(1.6, 0.8, 12, 6);
+          fuseGeo.rotateX(Math.PI / 2);
+          var fuselage = new THREE.Mesh(fuseGeo, whiteMat);
+          group.add(fuselage);
+
+          var wingGeo = new THREE.BoxGeometry(22, 0.3, 3);
+          var wings = new THREE.Mesh(wingGeo, whiteMat);
+          wings.position.set(0, 1.2, 1);
+          group.add(wings);
+
+          var tailGeo = new THREE.BoxGeometry(0.3, 3, 2);
+          var tail = new THREE.Mesh(tailGeo, whiteMat);
+          tail.position.set(0, 1.8, -5);
+          group.add(tail);
+
+          var hStabGeo = new THREE.BoxGeometry(6, 0.2, 1.5);
+          var hStab = new THREE.Mesh(hStabGeo, whiteMat);
+          hStab.position.set(0, 0.5, -5);
+          group.add(hStab);
+
+          var spinGeo = new THREE.ConeGeometry(0.8, 2, 6);
+          spinGeo.rotateX(Math.PI / 2);
+          var spinner = new THREE.Mesh(spinGeo, darkGrayMat);
+          spinner.position.set(0, 0, 6.5);
+          group.add(spinner);
+
+          var propGroup = new THREE.Group();
+          propGroup.position.set(0, 0, 7.5);
+          group.add(propGroup);
+
+          var bladeGeo = new THREE.BoxGeometry(4, 0.3, 0.05);
+          var blade = new THREE.Mesh(bladeGeo, grayMat);
+          propGroup.add(blade);
+          group.userData.props.push({ obj: propGroup, speed: 2.0 });
+
+          var wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 6);
+          wheelGeo.rotateZ(Math.PI / 2);
+          var w1 = new THREE.Mesh(wheelGeo, blackMat);
+          w1.position.set(0, -2, 3);
+          group.add(w1);
+          var w2 = new THREE.Mesh(wheelGeo, blackMat);
+          w2.position.set(-1.5, -2, -1);
+          group.add(w2);
+          var w3 = new THREE.Mesh(wheelGeo, blackMat);
+          w3.position.set(1.5, -2, -1);
+          group.add(w3);
+
+        } else if (type === 'boeing737') {
+          var fuseGeo = new THREE.CylinderGeometry(3.2, 2.0, 36, 8);
+          fuseGeo.rotateX(Math.PI / 2);
+          var fuselage = new THREE.Mesh(fuseGeo, grayMat);
+          group.add(fuselage);
+
+          var wingLGeo = new THREE.BoxGeometry(16, 0.4, 4);
+          wingLGeo.translate(-8, 0, 0);
+          var wingL = new THREE.Mesh(wingLGeo, grayMat);
+          wingL.position.set(-2, -0.5, -2);
+          wingL.rotation.y = -Math.PI / 6;
+          group.add(wingL);
+
+          var wingRGeo = new THREE.BoxGeometry(16, 0.4, 4);
+          wingRGeo.translate(8, 0, 0);
+          var wingR = new THREE.Mesh(wingRGeo, grayMat);
+          wingR.position.set(2, -0.5, -2);
+          wingR.rotation.y = Math.PI / 6;
+          group.add(wingR);
+
+          var engGeo = new THREE.CylinderGeometry(1.2, 1.0, 5, 8);
+          engGeo.rotateX(Math.PI / 2);
+          var engL = new THREE.Mesh(engGeo, darkGrayMat);
+          engL.position.set(-6, -1.8, 1);
+          group.add(engL);
+
+          var engR = new THREE.Mesh(engGeo, darkGrayMat);
+          engR.position.set(6, -1.8, 1);
+          group.add(engR);
+
+          var tailGeo = new THREE.BoxGeometry(0.4, 8, 4);
+          var tail = new THREE.Mesh(tailGeo, grayMat);
+          tail.position.set(0, 5, -15);
+          tail.rotation.x = -Math.PI / 12;
+          group.add(tail);
+
+          var hStabGeo = new THREE.BoxGeometry(12, 0.3, 3);
+          var hStab = new THREE.Mesh(hStabGeo, grayMat);
+          hStab.position.set(0, 1, -16);
+          hStab.rotation.y = Math.PI / 12;
+          group.add(hStab);
+
+        } else if (type === 'glider') {
+          var fuseGeo = new THREE.CylinderGeometry(0.8, 0.3, 14, 6);
+          fuseGeo.rotateX(Math.PI / 2);
+          var fuselage = new THREE.Mesh(fuseGeo, whiteMat);
+          group.add(fuselage);
+
+          var wingGeo = new THREE.BoxGeometry(32, 0.2, 1.2);
+          var wings = new THREE.Mesh(wingGeo, whiteMat);
+          wings.position.set(0, 0.5, 2);
+          group.add(wings);
+
+          var canopyGeo = new THREE.BoxGeometry(1, 0.8, 3);
+          var canopy = new THREE.Mesh(canopyGeo, blueGlass);
+          canopy.position.set(0, 0.6, 3.5);
+          group.add(canopy);
+
+          var tailGeo = new THREE.BoxGeometry(0.2, 2.5, 1.2);
+          var tail = new THREE.Mesh(tailGeo, whiteMat);
+          tail.position.set(0, 1.25, -6);
+          group.add(tail);
+
+          var hStabGeo = new THREE.BoxGeometry(4, 0.15, 1.0);
+          var hStab = new THREE.Mesh(hStabGeo, whiteMat);
+          hStab.position.set(0, 2.5, -6);
+          group.add(hStab);
+
+        } else if (type === 'f16') {
+          var fuseGeo = new THREE.CylinderGeometry(1.6, 1.2, 16, 6);
+          fuseGeo.rotateX(Math.PI / 2);
+          var fuselage = new THREE.Mesh(fuseGeo, darkGrayMat);
+          group.add(fuselage);
+
+          var noseGeo = new THREE.ConeGeometry(1.6, 5, 6);
+          noseGeo.rotateX(Math.PI / 2);
+          var nose = new THREE.Mesh(noseGeo, blackMat);
+          nose.position.set(0, 0, 10.5);
+          group.add(nose);
+
+          var wingGeo = new THREE.BoxGeometry(12, 0.25, 6);
+          var wings = new THREE.Mesh(wingGeo, darkGrayMat);
+          wings.position.set(0, -0.2, -1);
+          group.add(wings);
+
+          var tailGeo = new THREE.BoxGeometry(0.3, 4, 3);
+          var tail = new THREE.Mesh(tailGeo, darkGrayMat);
+          tail.position.set(0, 2.2, -6);
+          group.add(tail);
+
+          var flameGeo = new THREE.ConeGeometry(0.8, 4, 6);
+          flameGeo.rotateX(-Math.PI / 2);
+          flameGeo.translate(0, 0, -2);
+          var flame = new THREE.Mesh(flameGeo, flameMat);
+          flame.position.set(0, 0, -8);
+          group.add(flame);
+          group.userData.flames.push(flame);
+
+        } else if (type === 'sr71') {
+          var fuseGeo = new THREE.BoxGeometry(6, 0.8, 24);
+          var fuselage = new THREE.Mesh(fuseGeo, blackMat);
+          group.add(fuselage);
+
+          var wingGeo = new THREE.BoxGeometry(18, 0.2, 12);
+          var wings = new THREE.Mesh(wingGeo, blackMat);
+          wings.position.set(0, -0.2, -3);
+          group.add(wings);
+
+          var engGeo = new THREE.CylinderGeometry(1.8, 1.5, 16, 6);
+          engGeo.rotateX(Math.PI / 2);
+          
+          var engL = new THREE.Mesh(engGeo, blackMat);
+          engL.position.set(-6, 0, -2);
+          group.add(engL);
+
+          var engR = new THREE.Mesh(engGeo, blackMat);
+          engR.position.set(6, 0, -2);
+          group.add(engR);
+
+          var tailGeo = new THREE.BoxGeometry(0.3, 3, 3);
+          
+          var tailL = new THREE.Mesh(tailGeo, blackMat);
+          tailL.position.set(-6, 1.8, -6);
+          tailL.rotation.z = -Math.PI / 12;
+          group.add(tailL);
+
+          var tailR = new THREE.Mesh(tailGeo, blackMat);
+          tailR.position.set(6, 1.8, -6);
+          tailR.rotation.z = Math.PI / 12;
+          group.add(tailR);
+
+          var flameGeo = new THREE.ConeGeometry(0.8, 5, 6);
+          flameGeo.rotateX(-Math.PI / 2);
+          flameGeo.translate(0, 0, -2.5);
+
+          var flameL = new THREE.Mesh(flameGeo, flameMat);
+          flameL.position.set(-6, 0, -10);
+          group.add(flameL);
+          group.userData.flames.push(flameL);
+
+          var flameR = new THREE.Mesh(flameGeo, flameMat);
+          flameR.position.set(6, 0, -10);
+          group.add(flameR);
+          group.userData.flames.push(flameR);
+
+        } else if (type === 'rescue_heli') {
+          var fuseGeo = new THREE.BoxGeometry(3, 3.2, 14);
+          var fuselage = new THREE.Mesh(fuseGeo, greenMat);
+          group.add(fuselage);
+
+          var canopyGeo = new THREE.BoxGeometry(2.8, 1.8, 2.5);
+          var canopy = new THREE.Mesh(canopyGeo, blueGlass);
+          canopy.position.set(0, 0.7, 5.5);
+          group.add(canopy);
+
+          var boomGeo = new THREE.CylinderGeometry(0.8, 0.4, 10, 6);
+          boomGeo.rotateX(Math.PI / 2);
+          var boom = new THREE.Mesh(boomGeo, greenMat);
+          boom.position.set(0, 0.6, -9);
+          group.add(boom);
+
+          var rotorShaftGeo = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 6);
+          var rotorShaft = new THREE.Mesh(rotorShaftGeo, darkGrayMat);
+          rotorShaft.position.set(0, 2.2, 0);
+          group.add(rotorShaft);
+
+          var mainRotorGroup = new THREE.Group();
+          mainRotorGroup.position.set(0, 2.9, 0);
+          group.add(mainRotorGroup);
+
+          var bladeGeo = new THREE.BoxGeometry(18, 0.1, 0.6);
+          var blade1 = new THREE.Mesh(bladeGeo, darkGrayMat);
+          mainRotorGroup.add(blade1);
+          
+          var blade2 = blade1.clone();
+          blade2.rotation.y = Math.PI / 2;
+          mainRotorGroup.add(blade2);
+          group.userData.props.push({ obj: mainRotorGroup, speed: 2.5, axis: 'y' });
+
+          var tailRotorGroup = new THREE.Group();
+          tailRotorGroup.position.set(0.9, 1.6, -13.5);
+          group.add(tailRotorGroup);
+
+          var tBladeGeo = new THREE.BoxGeometry(0.1, 4, 0.2);
+          var tBlade = new THREE.Mesh(tBladeGeo, darkGrayMat);
+          tailRotorGroup.add(tBlade);
+          group.userData.props.push({ obj: tailRotorGroup, speed: 3.5, axis: 'x' });
+
+          var skidGeo = new THREE.BoxGeometry(0.2, 0.2, 12);
+          var skidL = new THREE.Mesh(skidGeo, darkGrayMat);
+          skidL.position.set(-1.8, -2.0, 0);
+          group.add(skidL);
+
+          var skidR = new THREE.Mesh(skidGeo, darkGrayMat);
+          skidR.position.set(1.8, -2.0, 0);
+          group.add(skidR);
+
+          var strutGeo = new THREE.BoxGeometry(0.2, 1, 0.2);
+          strutGeo.rotateZ(Math.PI / 12);
+          var strutL1 = new THREE.Mesh(strutGeo, darkGrayMat);
+          strutL1.position.set(-1.2, -1.5, 3);
+          group.add(strutL1);
+          var strutL2 = strutL1.clone();
+          strutL2.position.z = -3;
+          group.add(strutL2);
+
+          var strutR1 = new THREE.Mesh(strutGeo, darkGrayMat);
+          strutR1.rotation.z = -Math.PI / 12;
+          strutR1.position.set(1.2, -1.5, 3);
+          group.add(strutR1);
+          var strutR2 = strutR1.clone();
+          strutR2.position.z = -3;
+          group.add(strutR2);
+
+        } else if (type === 'drone') {
+          var fuseGeo = new THREE.BoxGeometry(1.5, 0.6, 2.0);
+          var fuselage = new THREE.Mesh(fuseGeo, blackMat);
+          group.add(fuselage);
+
+          var armGeo = new THREE.BoxGeometry(0.2, 0.2, 2.2);
+          
+          var arm1 = new THREE.Mesh(armGeo, darkGrayMat);
+          arm1.position.set(0.8, 0, 0.8);
+          arm1.rotation.y = Math.PI / 4;
+          group.add(arm1);
+
+          var arm2 = new THREE.Mesh(armGeo, darkGrayMat);
+          arm2.position.set(-0.8, 0, 0.8);
+          arm2.rotation.y = -Math.PI / 4;
+          group.add(arm2);
+
+          var arm3 = new THREE.Mesh(armGeo, darkGrayMat);
+          arm3.position.set(0.8, 0, -0.8);
+          arm3.rotation.y = -Math.PI / 4;
+          group.add(arm3);
+
+          var arm4 = new THREE.Mesh(armGeo, darkGrayMat);
+          arm4.position.set(-0.8, 0, -0.8);
+          arm4.rotation.y = Math.PI / 4;
+          group.add(arm4);
+
+          var rotorPositions = [
+            { x: 1.6, y: 0.3, z: 1.6, dir: 1 },
+            { x: -1.6, y: 0.3, z: 1.6, dir: -1 },
+            { x: 1.6, y: 0.3, z: -1.6, dir: -1 },
+            { x: -1.6, y: 0.3, z: -1.6, dir: 1 }
+          ];
+
+          var pBladeGeo = new THREE.BoxGeometry(1.6, 0.05, 0.12);
+
+          rotorPositions.forEach(function(pos, idx) {
+            var motorGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.4, 6);
+            var motor = new THREE.Mesh(motorGeo, darkGrayMat);
+            motor.position.set(pos.x, 0.1, pos.z);
+            group.add(motor);
+
+            var rGroup = new THREE.Group();
+            rGroup.position.set(pos.x, 0.35, pos.z);
+            group.add(rGroup);
+
+            var blade = new THREE.Mesh(pBladeGeo, grayMat);
+            rGroup.add(blade);
+            group.userData.props.push({ obj: rGroup, speed: 4.5 * pos.dir, axis: 'y' });
+          });
+        }
+
+        return group;
+      };
+
+      var build3DLandmark = function(lm) {
+        var THREE = window.THREE;
+        var group = new THREE.Group();
+        var h = lm.height || 200;
+
+        var grayMat = new THREE.MeshLambertMaterial({ color: 0xa8a8b0, flatShading: true });
+        var sandMat = new THREE.MeshLambertMaterial({ color: 0xdfd3b2, flatShading: true });
+        var greenMat = new THREE.MeshLambertMaterial({ color: 0x2d3a1a, flatShading: true });
+        var whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
+        var brownMat = new THREE.MeshLambertMaterial({ color: 0x5c4033, flatShading: true });
+        var redMat = new THREE.MeshLambertMaterial({ color: 0xba3c2a, flatShading: true });
+
+        var groundElev = isWater(lm.lat, lm.lon) ? 0 : terrainHeight(lm.lat, lm.lon);
+
+        if (lm.type === 'megatower' || lm.type === 'spire') {
+          var tiers = 3;
+          for (var t = 0; t < tiers; t++) {
+            var th = h / tiers;
+            var tr1 = (1.0 - t / tiers) * 30;
+            var tr2 = (1.0 - (t + 1) / tiers) * 30;
+            var tierGeo = new THREE.CylinderGeometry(tr2, tr1, th, 6);
+            var tier = new THREE.Mesh(tierGeo, grayMat);
+            tier.position.y = groundElev + t * th + th / 2;
+            group.add(tier);
+          }
+          var needleGeo = new THREE.CylinderGeometry(0.5, 2, h * 0.2, 4);
+          var needle = new THREE.Mesh(needleGeo, grayMat);
+          needle.position.y = groundElev + h + (h * 0.1);
+          group.add(needle);
+
+        } else if (lm.type === 'tower') {
+          var towerGeo = new THREE.ConeGeometry(40, h, 4);
+          var tower = new THREE.Mesh(towerGeo, brownMat);
+          tower.position.y = groundElev + h / 2;
+          group.add(tower);
+
+        } else if (lm.type === 'pyramids') {
+          var pyramidOffsets = [
+            { x: 0, z: 0, s: 150, h: 100 },
+            { x: 200, z: -100, s: 120, h: 80 },
+            { x: -150, z: 120, s: 80, h: 50 }
+          ];
+          pyramidOffsets.forEach(function(po) {
+            var pyrGeo = new THREE.ConeGeometry(po.s, po.h, 4);
+            pyrGeo.rotateY(Math.PI / 4);
+            var pyr = new THREE.Mesh(pyrGeo, sandMat);
+            pyr.position.set(po.x, groundElev + po.h / 2, po.z);
+            group.add(pyr);
+          });
+
+        } else if (lm.type === 'volcano' || lm.type === 'peak') {
+          var baseR = lm.type === 'volcano' ? 8000 : 6000;
+          var coneH = lm.height || 4000;
+          var coneGeo = new THREE.ConeGeometry(baseR, coneH, 8);
+          var volcano = new THREE.Mesh(coneGeo, brownMat);
+          volcano.position.y = groundElev + coneH / 2;
+          group.add(volcano);
+
+          var capGeo = new THREE.ConeGeometry(baseR * 0.3, coneH * 0.3, 8);
+          var cap = new THREE.Mesh(capGeo, whiteMat);
+          cap.position.y = groundElev + coneH * 0.85;
+          group.add(cap);
+
+        } else if (lm.type === 'bridge') {
+          var towerGeo = new THREE.BoxGeometry(15, h, 10);
+          
+          var t1 = new THREE.Mesh(towerGeo, redMat);
+          t1.position.set(-200, groundElev + h / 2, 0);
+          group.add(t1);
+
+          var t2 = new THREE.Mesh(towerGeo, redMat);
+          t2.position.set(200, groundElev + h / 2, 0);
+          group.add(t2);
+
+          var spanGeo = new THREE.BoxGeometry(450, 2, 2);
+          var span = new THREE.Mesh(spanGeo, redMat);
+          span.position.set(0, groundElev + h * 0.8, 0);
+          group.add(span);
+
+        } else {
+          var pedestalGeo = new THREE.BoxGeometry(40, 20, 40);
+          var pedestal = new THREE.Mesh(pedestalGeo, grayMat);
+          pedestal.position.y = groundElev + 10;
+          group.add(pedestal);
+
+          var mainGeo = new THREE.BoxGeometry(20, h, 20);
+          var mainMesh = new THREE.Mesh(mainGeo, sandMat);
+          mainMesh.position.y = groundElev + 20 + h / 2;
+          group.add(mainMesh);
+        }
+
+        return group;
+      };
+
+      var getRunwayHeading = function(wp) {
+        var seed = 0;
+        for (var i = 0; i < wp.id.length; i++) {
+          seed += wp.id.charCodeAt(i);
+        }
+        return ((seed * 17) % 18) * 10;
+      };
+
+      var updateTerrainMesh = function(playerLat, playerLon) {
+        if (!window.THREE || !threeSceneRef.current) return;
+        var THREE = window.THREE;
+        var scene = threeSceneRef.current;
+
+        if (!terrainMeshRef.current) {
+          var geometry = new THREE.PlaneGeometry(240000, 240000, 60, 60);
+          geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(geometry.attributes.position.count * 3), 3));
+          
+          var material = new THREE.MeshLambertMaterial({
+            vertexColors: true,
+            flatShading: true,
+            side: THREE.DoubleSide
+          });
+          var mesh = new THREE.Mesh(geometry, material);
+          mesh.rotation.x = -Math.PI / 2;
+          scene.add(mesh);
+          terrainMeshRef.current = mesh;
+        }
+
+        var mesh = terrainMeshRef.current;
+        var geometry = mesh.geometry;
+        var positionAttr = geometry.attributes.position;
+        var colorAttr = geometry.attributes.color;
+
+        terrainCenterRef.current = { lat: playerLat, lon: playerLon };
+
+        var meshLocal = geodeticToLocal(playerLat, playerLon, 0);
+        mesh.position.set(meshLocal.x, 0, meshLocal.z);
+
+        var R = 364800.0;
+        var size = 60;
+        for (var j = 0; j <= size; j++) {
+          for (var i = 0; i <= size; i++) {
+            var index = j * (size + 1) + i;
+            var px = positionAttr.getX(index);
+            var py = positionAttr.getY(index);
+
+            var vlat = playerLat + py / R;
+            var vlon = playerLon + px / (R * Math.cos(playerLat * Math.PI / 180));
+
+            var water = isWater(vlat, vlon);
+            var h = water ? 0 : terrainHeight(vlat, vlon);
+
+            positionAttr.setZ(index, h);
+
+            var r = 0.2, g = 0.6, b = 0.3;
+            if (water) {
+              r = 0.05; g = 0.25; b = 0.65;
+            } else if (h < 50) {
+              r = 0.76; g = 0.70; b = 0.50;
+            } else if (h < 1500) {
+              r = 0.22; g = 0.58; b = 0.26;
+            } else if (h < 3800) {
+              r = 0.45; g = 0.35; b = 0.25;
+            } else {
+              r = 0.90; g = 0.90; b = 0.92;
+            }
+
+            colorAttr.setXYZ(index, r, g, b);
+          }
+        }
+
+        positionAttr.needsUpdate = true;
+        colorAttr.needsUpdate = true;
+        geometry.computeVertexNormals();
+      };
+
+      var renderWebGLFlight = function(state, ctrl, W, H, dayNight) {
+        if (!window.THREE) return;
+        var THREE = window.THREE;
+        var canvas = webglCanvasRef.current;
+        if (!canvas) return;
+
+        if (!threeSceneRef.current) {
+          initThree(canvas);
+        }
+
+        var scene = threeSceneRef.current;
+        var camera = threeCameraRef.current;
+        var renderer = threeRendererRef.current;
+        var resources = threeResourcesRef.current;
+
+        if (!scene || !camera || !renderer || !resources) return;
+
+        if (renderer.domElement.width !== W || renderer.domElement.height !== H) {
+          renderer.setSize(W, H, false);
+          camera.aspect = W / H;
+          camera.updateProjectionMatrix();
+        }
+
+        var playerLoc = geodeticToLocal(state.lat, state.lon, state.altitude);
+        
+        var selectedAC = d.aircraft || 'cessna172';
+        if (!resources.aircraft || resources.aircraft.userData.type !== selectedAC) {
+          if (resources.aircraft) scene.remove(resources.aircraft);
+          var newAC = build3DAircraft(selectedAC);
+          newAC.userData.type = selectedAC;
+          scene.add(newAC);
+          resources.aircraft = newAC;
+        }
+
+        var acMesh = resources.aircraft;
+        acMesh.position.set(playerLoc.x, playerLoc.y, playerLoc.z);
+
+        var pitchRad = (state.pitch || 0) * Math.PI / 180;
+        var bankRad = (state.bank || 0) * Math.PI / 180;
+        var headingRad = (state.heading || 0) * Math.PI / 180;
+
+        acMesh.rotation.set(pitchRad, -headingRad, -bankRad, 'YXZ');
+        acMesh.visible = !!d.thirdPerson;
+
+        if (acMesh.userData.props) {
+          var throttle = ctrl.throttle != null ? ctrl.throttle : 0;
+          acMesh.userData.props.forEach(function(prop) {
+            var axis = prop.axis || 'z';
+            prop.obj.rotation[axis] += prop.speed * (0.15 + throttle * 0.85);
+          });
+        }
+
+        if (acMesh.userData.flames) {
+          var throttle = ctrl.throttle != null ? ctrl.throttle : 0;
+          acMesh.userData.flames.forEach(function(flame) {
+            flame.scale.set(1, 1, 0.2 + throttle * 1.5);
+          });
+        }
+
+        if (d.thirdPerson) {
+          var offset = new THREE.Vector3(0, 8, 30);
+          offset.applyEuler(new THREE.Euler(pitchRad * 0.5, -headingRad, 0, 'YXZ'));
+          var targetCamPos = new THREE.Vector3().copy(acMesh.position).add(offset);
+          camera.position.lerp(targetCamPos, 0.2);
+          camera.lookAt(new THREE.Vector3().copy(acMesh.position).add(new THREE.Vector3(0, 2, 0)));
+          camera.up.set(0, 1, 0);
+        } else {
+          var upVec = new THREE.Vector3(0, 1, 0);
+          upVec.applyEuler(new THREE.Euler(pitchRad, -headingRad, -bankRad, 'YXZ'));
+          var lookDir = new THREE.Vector3(0, 0, -100);
+          lookDir.applyEuler(new THREE.Euler(pitchRad, -headingRad, -bankRad, 'YXZ'));
+          camera.position.copy(acMesh.position);
+          var cockpitOffset = new THREE.Vector3(0, 1.2, 1.5);
+          cockpitOffset.applyEuler(new THREE.Euler(pitchRad, -headingRad, -bankRad, 'YXZ'));
+          camera.position.add(cockpitOffset);
+          camera.up.copy(upVec);
+          camera.lookAt(new THREE.Vector3().copy(camera.position).add(lookDir));
+        }
+
+        if (resources.skyMesh) {
+          resources.skyMesh.position.copy(camera.position);
+        }
+        
+        var solarHr = dayNight.solarHour != null ? dayNight.solarHour : 12;
+        var brightness = dayNight.brightness != null ? dayNight.brightness : 1.0;
+        var skyColor = new THREE.Color();
+        if (solarHr > 6 && solarHr < 18) {
+          skyColor.setHSL(0.6, 0.5, 0.3 + 0.3 * brightness);
+        } else if (solarHr <= 4 || solarHr >= 20) {
+          skyColor.setHSL(0.6, 0.8, 0.02);
+        } else {
+          var t = (solarHr >= 4 && solarHr <= 6) ? (solarHr - 4) / 2 : (20 - solarHr) / 2;
+          var dayColor = new THREE.Color().setHSL(0.6, 0.5, 0.6);
+          var nightColor = new THREE.Color().setHSL(0.6, 0.8, 0.02);
+          skyColor.copy(nightColor).lerp(dayColor, t);
+        }
+        if (resources.skyMesh) resources.skyMesh.material.color.copy(skyColor);
+
+        if (resources.ambientLight) {
+          resources.ambientLight.intensity = 0.15 + 0.4 * brightness;
+          resources.ambientLight.color.setHex(solarHr <= 4 || solarHr >= 20 ? 0x1e293b : 0xffffff);
+        }
+
+        if (resources.dirLight) {
+          var sunAngle = (solarHr - 6) / 12 * Math.PI;
+          resources.dirLight.position.set(Math.cos(sunAngle) * 50000 + camera.position.x, Math.sin(sunAngle) * 50000, 10000 + camera.position.z);
+          if (solarHr <= 4 || solarHr >= 20) {
+            resources.dirLight.intensity = 0.05;
+            resources.dirLight.color.setHex(0x38bdf8);
+          } else if ((solarHr >= 5 && solarHr <= 7) || (solarHr >= 17 && solarHr <= 19)) {
+            resources.dirLight.intensity = 0.5;
+            resources.dirLight.color.setHex(0xf97316);
+          } else {
+            resources.dirLight.intensity = 0.8 * brightness;
+            resources.dirLight.color.setHex(0xffffff);
+          }
+        }
+
+        if (!terrainCenterRef.current) {
+          updateTerrainMesh(state.lat, state.lon);
+        } else {
+          var R = 364800.0;
+          var dx = (state.lon - terrainCenterRef.current.lon) * R * Math.cos(terrainCenterRef.current.lat * Math.PI / 180);
+          var dz = -(state.lat - terrainCenterRef.current.lat) * R;
+          var dist = Math.sqrt(dx * dx + dz * dz);
+          if (dist > 8000) {
+            updateTerrainMesh(state.lat, state.lon);
+          }
+        }
+
+        var nearWp = hudRef.current.nearWp;
+        var nearDist = hudRef.current.nearDist;
+        var R = 364800.0;
+        
+        Object.keys(resources.runwayMeshes).forEach(function(code) {
+          var rw = resources.runwayMeshes[code];
+          var dist = acMesh.position.distanceTo(rw.position);
+          if (dist > 10 * 6076) {
+            scene.remove(rw);
+            delete resources.runwayMeshes[code];
+            if (resources.papiLights[code]) {
+              resources.papiLights[code].forEach(function(l) { scene.remove(l); });
+              delete resources.papiLights[code];
+            }
+          }
+        });
+
+        WAYPOINTS.forEach(function(wp) {
+          var distNm = haversineNm(state.lat, state.lon, wp.lat, wp.lon);
+          if (distNm < 10 && !resources.runwayMeshes[wp.code]) {
+            var rwGroup = new THREE.Group();
+            
+            var asphaltGeo = new THREE.BoxGeometry(150, 2, 8000);
+            var asphaltMat = new THREE.MeshLambertMaterial({ color: 0x374151 });
+            var asphalt = new THREE.Mesh(asphaltGeo, asphaltMat);
+            rwGroup.add(asphalt);
+
+            for (var m = 0; m < 20; m++) {
+              var markGeo = new THREE.BoxGeometry(4, 2.2, 200);
+              var markMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+              var mark = new THREE.Mesh(markGeo, markMat);
+              mark.position.set(0, 0.05, -3800 + m * 400);
+              rwGroup.add(mark);
+            }
+
+            for (var side = -1; side <= 1; side += 2) {
+              for (var t = 0; t < 4; t++) {
+                var lineGeo = new THREE.BoxGeometry(15, 2.2, 50);
+                var lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                var line = new THREE.Mesh(lineGeo, lineMat);
+                line.position.set(-60 + t * 40, 0.05, side * 3950);
+                rwGroup.add(line);
+              }
+            }
+
+            var loc = geodeticToLocal(wp.lat, wp.lon, wp.alt + 1);
+            rwGroup.position.set(loc.x, loc.y, loc.z);
+
+            var hdg = getRunwayHeading(wp);
+            rwGroup.rotation.y = -hdg * Math.PI / 180;
+
+            scene.add(rwGroup);
+            resources.runwayMeshes[wp.code] = rwGroup;
+
+            var pLights = [];
+            for (var p = 0; p < 4; p++) {
+              var pGeo = new THREE.SphereGeometry(3, 8, 8);
+              var pMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+              var pLight = new THREE.Mesh(pGeo, pMat);
+              var localOffset = new THREE.Vector3(-120, 4, -3000 + p * 20);
+              localOffset.applyEuler(new THREE.Euler(0, -hdg * Math.PI / 180, 0));
+              pLight.position.copy(rwGroup.position).add(localOffset);
+              scene.add(pLight);
+              pLights.push(pLight);
+            }
+            resources.papiLights[wp.code] = pLights;
+          }
+        });
+
+        WAYPOINTS.forEach(function(wp) {
+          if (resources.papiLights[wp.code]) {
+            var distNm = haversineNm(state.lat, state.lon, wp.lat, wp.lon);
+            var idealGlide = 3;
+            var actualGlide = state.altitude > 0 ? Math.atan2(state.altitude - (wp.alt || 0), distNm * 6076) * 180 / Math.PI : 0;
+            var papiColors = actualGlide > idealGlide + 1 ? [0xffffff, 0xffffff, 0xffffff, 0xffffff]
+              : actualGlide > idealGlide ? [0xef4444, 0xffffff, 0xffffff, 0xffffff]
+              : actualGlide > idealGlide - 1 ? [0xef4444, 0xef4444, 0xffffff, 0xffffff]
+              : [0xef4444, 0xef4444, 0xef4444, 0xffffff];
+            resources.papiLights[wp.code].forEach(function(light, idx) {
+              light.material.color.setHex(papiColors[idx]);
+            });
+          }
+        });
+
+        Object.keys(resources.missionMeshes).forEach(function(key) {
+          var mesh = resources.missionMeshes[key];
+          if (key === 'rescue' && (!d.rescue || !d.rescue.active || d.rescue.recovered)) {
+            scene.remove(mesh);
+            delete resources.missionMeshes[key];
+            if (resources.missionMeshes['hoist']) {
+              scene.remove(resources.missionMeshes['hoist']);
+              delete resources.missionMeshes['hoist'];
+            }
+          }
+          if (key.indexOf('survey_') === 0 && (!d.survey || !d.survey.active)) {
+            scene.remove(mesh);
+            delete resources.missionMeshes[key];
+          }
+        });
+
+        if (d.rescue && d.rescue.active && !d.rescue.recovered) {
+          var rescue = d.rescue;
+          if (!resources.missionMeshes['rescue']) {
+            var rescueGroup = new THREE.Group();
+            
+            var raftGeo = new THREE.CylinderGeometry(15, 15, 4, 8, 1, true);
+            var raftMat = new THREE.MeshLambertMaterial({ color: 0xf97316 });
+            var raft = new THREE.Mesh(raftGeo, raftMat);
+            rescueGroup.add(raft);
+
+            var floorGeo = new THREE.CylinderGeometry(14, 14, 0.5, 8);
+            var floorMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+            var floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.position.y = -1.5;
+            rescueGroup.add(floor);
+
+            var bodyGeo = new THREE.CylinderGeometry(2, 2, 8, 6);
+            var bodyMat = new THREE.MeshLambertMaterial({ color: 0xef4444 });
+            var body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 2;
+            rescueGroup.add(body);
+
+            var headGeo = new THREE.SphereGeometry(1.8, 6, 6);
+            var headMat = new THREE.MeshLambertMaterial({ color: 0xfeb080 });
+            var head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 7;
+            rescueGroup.add(head);
+
+            var loc = geodeticToLocal(rescue.survivorLat, rescue.survivorLon, 2);
+            rescueGroup.position.set(loc.x, loc.y, loc.z);
+            scene.add(rescueGroup);
+            resources.missionMeshes['rescue'] = rescueGroup;
+          }
+
+          var hoistT = rescue.hoistTime || 0;
+          if (hoistT > 0.02) {
+            if (resources.missionMeshes['hoist']) {
+              scene.remove(resources.missionMeshes['hoist']);
+            }
+            
+            var hookWorld = new THREE.Vector3(1.8, -1.5, 0).applyMatrix4(acMesh.matrixWorld);
+            var survivorLoc = geodeticToLocal(rescue.survivorLat, rescue.survivorLon, 2);
+
+            var points = [hookWorld, new THREE.Vector3(survivorLoc.x, survivorLoc.y + 7, survivorLoc.z)];
+            var cableGeo = new THREE.BufferGeometry().setFromPoints(points);
+            var cableMat = new THREE.LineBasicMaterial({ color: 0x94a3b8, linewidth: 2 });
+            var cable = new THREE.Line(cableGeo, cableMat);
+            scene.add(cable);
+            resources.missionMeshes['hoist'] = cable;
+          } else {
+            if (resources.missionMeshes['hoist']) {
+              scene.remove(resources.missionMeshes['hoist']);
+              delete resources.missionMeshes['hoist'];
+            }
+          }
+        }
+
+        if (d.survey && d.survey.active) {
+          var survey = d.survey;
+          var photos = survey.photos || [];
+          var sMode = survey.mode || 'aerial';
+          
+          photos.forEach(function(p, idx) {
+            var key = 'survey_' + idx;
+            if (p.captured) {
+              if (resources.missionMeshes[key]) {
+                scene.remove(resources.missionMeshes[key]);
+                delete resources.missionMeshes[key];
+              }
+              return;
+            }
+
+            if (!resources.missionMeshes[key]) {
+              var sGroup = new THREE.Group();
+              var floatElev = (isWater(p.lat, p.lon) ? 0 : terrainHeight(p.lat, p.lon)) + 40;
+              var loc = geodeticToLocal(p.lat, p.lon, floatElev);
+              sGroup.position.set(loc.x, loc.y, loc.z);
+
+              var ringGeo = new THREE.TorusGeometry(20, 2, 8, 24);
+              ringGeo.rotateX(Math.PI / 2);
+              var ringMat = new THREE.MeshBasicMaterial({
+                color: sMode === 'powerline' ? 0xf97316 : 0x22d3ee,
+                transparent: true,
+                opacity: 0.6
+              });
+              var ring = new THREE.Mesh(ringGeo, ringMat);
+              sGroup.add(ring);
+
+              var coreGeo = new THREE.SphereGeometry(3, 8, 8);
+              var coreMat = new THREE.MeshBasicMaterial({ color: sMode === 'powerline' ? 0xf97316 : 0x22d3ee });
+              var core = new THREE.Mesh(coreGeo, coreMat);
+              sGroup.add(core);
+
+              if (sMode === 'powerline') {
+                var poleGroup = new THREE.Group();
+                poleGroup.position.y = -40;
+
+                var poleGeo = new THREE.CylinderGeometry(1.5, 2.5, 45, 6);
+                var poleMat = new THREE.MeshLambertMaterial({ color: 0x5c4033 });
+                var pole = new THREE.Mesh(poleGeo, poleMat);
+                pole.position.y = 22.5;
+                poleGroup.add(pole);
+
+                var crossGeo = new THREE.BoxGeometry(20, 1.2, 1.2);
+                var crossMat = new THREE.MeshLambertMaterial({ color: 0x5c4033 });
+                var cross = new THREE.Mesh(crossGeo, crossMat);
+                cross.position.y = 42;
+                poleGroup.add(cross);
+
+                var insGeo = new THREE.CylinderGeometry(0.5, 0.5, 1, 4);
+                var insMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+                
+                var ins1 = new THREE.Mesh(insGeo, insMat);
+                ins1.position.set(-8, 43, 0);
+                poleGroup.add(ins1);
+
+                var ins2 = new THREE.Mesh(insGeo, insMat);
+                ins2.position.set(8, 43, 0);
+                poleGroup.add(ins2);
+
+                sGroup.add(poleGroup);
+              }
+
+              scene.add(sGroup);
+              resources.missionMeshes[key] = sGroup;
+            }
+
+            var mesh = resources.missionMeshes[key];
+            if (mesh) {
+              var pulse = 1.0 + 0.1 * Math.sin(timeRef.current * 4 + idx);
+              mesh.scale.set(pulse, pulse, pulse);
+              mesh.rotation.y += 0.02;
+            }
+          });
+        }
+
+        ICONIC_LANDMARKS.forEach(function(lm, idx) {
+          var key = 'landmark_' + idx;
+          var lmLoc = geodeticToLocal(lm.lat, lm.lon, 0);
+          var dist = acMesh.position.distanceTo(new THREE.Vector3(lmLoc.x, acMesh.position.y, lmLoc.z));
+
+          if (dist < 250000) {
+            if (!resources.landmarkMeshes[key]) {
+              var lmGroup = build3DLandmark(lm);
+              lmGroup.position.set(lmLoc.x, 0, lmLoc.z);
+              scene.add(lmGroup);
+              resources.landmarkMeshes[key] = lmGroup;
+            }
+          } else {
+            if (resources.landmarkMeshes[key]) {
+              scene.remove(resources.landmarkMeshes[key]);
+              resources.landmarkMeshes[key].traverse(function(obj) {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                  if (Array.isArray(obj.material)) {
+                    obj.material.forEach(function(m) { m.dispose(); });
+                  } else {
+                    obj.material.dispose();
+                  }
+                }
+              });
+              delete resources.landmarkMeshes[key];
+            }
+          }
+        });
+
+        renderer.render(scene, camera);
+      };
+
       // ── WCAG: Accessible state narration ──
       var skyA11yRef = useRef(null);
       useEffect(function() {
@@ -15468,6 +16494,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       });
 
       var startSprint = function(routeId) {
+        originRef.current = null;
+        terrainCenterRef.current = null;
         var route = SPRINT_ROUTES.find(function(r) { return r.id === routeId; });
         if (!route) return;
         // Resolve place objects
@@ -15992,6 +17020,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       var startFlying = function(startWaypoint) {
+        originRef.current = null;
+        terrainCenterRef.current = null;
         var wp = WAYPOINTS.find(function(w) { return w.id === startWaypoint; }) || WAYPOINTS[0];
         // Plane starts ON THE RUNWAY at the airport's field elevation. Speed=0,
         // throttle=0, parked at the runway threshold. Player must apply throttle and
@@ -16353,8 +17383,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var botB = 220 - altFactor * 20 - goldenProx * 80;
           skyGrad.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
           skyGrad.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
-          gfx.fillStyle = skyGrad;
-          gfx.fillRect(0, 0, W, H);
+          if (threeLoaded) {
+            gfx.clearRect(0, 0, W, H);
+            renderWebGLFlight(state, ctrl, W, H, dayNight);
+          } else {
+            gfx.fillStyle = skyGrad;
+            gfx.fillRect(0, 0, W, H);
+          }
 
           // Horizon & ground
           // Third-person: horizon is higher (camera above/behind), first-person: normal
@@ -16369,78 +17404,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           horizonYRef.current = horizonYRef.current * 0.88 + horizonYTarget * 0.12;
           var horizonY = horizonYRef.current;
 
-          // ── Sunrise / sunset horizon wash ──
-          // Radial orange-to-pink glow centered on the sun's side of the sky,
-          // painted just above the horizon. Strongest inside ±2h of solar
-          // 06:00 and 18:00 (see dawnProx / duskProx above).
-          if (goldenProx > 0.05) {
-            var ghCx = goldenSide === 'east' ? W * 0.18 : W * 0.82;
-            var ghR = W * 0.7;
-            var ghGrad = gfx.createRadialGradient(ghCx, horizonY, 10, ghCx, horizonY, ghR);
-            ghGrad.addColorStop(0, 'rgba(255,175,90,' + (0.55 * goldenProx) + ')');
-            ghGrad.addColorStop(0.35, 'rgba(255,130,110,' + (0.28 * goldenProx) + ')');
-            ghGrad.addColorStop(0.7, 'rgba(180,90,140,' + (0.12 * goldenProx) + ')');
-            ghGrad.addColorStop(1, 'rgba(120,70,130,0)');
-            gfx.fillStyle = ghGrad;
-            gfx.fillRect(0, Math.max(0, horizonY - ghR * 0.6), W, horizonY + ghR * 0.3);
-          }
+          if (!threeLoaded) {
+            // ── Sunrise / sunset horizon wash ──
+            // Radial orange-to-pink glow centered on the sun's side of the sky,
+            // painted just above the horizon. Strongest inside ±2h of solar
+            // 06:00 and 18:00 (see dawnProx / duskProx above).
+            if (goldenProx > 0.05) {
+              var ghCx = goldenSide === 'east' ? W * 0.18 : W * 0.82;
+              var ghR = W * 0.7;
+              var ghGrad = gfx.createRadialGradient(ghCx, horizonY, 10, ghCx, horizonY, ghR);
+              ghGrad.addColorStop(0, 'rgba(255,175,90,' + (0.55 * goldenProx) + ')');
+              ghGrad.addColorStop(0.35, 'rgba(255,130,110,' + (0.28 * goldenProx) + ')');
+              ghGrad.addColorStop(0.7, 'rgba(180,90,140,' + (0.12 * goldenProx) + ')');
+              ghGrad.addColorStop(1, 'rgba(120,70,130,0)');
+              gfx.fillStyle = ghGrad;
+              gfx.fillRect(0, Math.max(0, horizonY - ghR * 0.6), W, horizonY + ghR * 0.3);
+            }
 
-          // Procedural terrain (replaces flat gradient)
-          drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Procedural terrain (replaces flat gradient)
+            drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Low-altitude detail layer: scrolling towns, trees, and roads so
-          // the student sees motion and "ground features" rather than a
-          // featureless wash. Fades out by 6000 ft AGL.
-          drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Low-altitude detail layer: scrolling towns, trees, and roads so
+            // the student sees motion and "ground features" rather than a
+            // featureless wash. Fades out by 6000 ft AGL.
+            drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Other aircraft passing — a few ghost planes drift across the
-          // sky at different altitudes and bearings. Strong "shared airspace"
-          // cue, visible at any altitude.
-          drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Other aircraft passing — a few ghost planes drift across the
+            // sky at different altitudes and bearings. Strong "shared airspace"
+            // cue, visible at any altitude.
+            drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Hot air balloons drifting at low-mid altitude.
-          drawHotAirBalloons(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Hot air balloons drifting at low-mid altitude.
+            drawHotAirBalloons(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Crepuscular sun rays through cloud gaps when sun is mid-sky.
-          drawCrepuscularRays(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Crepuscular sun rays through cloud gaps when sun is mid-sky.
+            drawCrepuscularRays(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Distant thunderstorm cells with anvil + rain shafts.
-          drawDistantStorms(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Distant thunderstorm cells with anvil + rain shafts.
+            drawDistantStorms(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Migrating goose V-formation drifting low across the sky.
-          drawGooseFormation(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Migrating goose V-formation drifting low across the sky.
+            drawGooseFormation(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Helicopter cycling across lower sky with rotor blur.
-          drawHelicopter(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            // Helicopter cycling across lower sky with rotor blur.
+            drawHelicopter(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
-          // Distant hills poking above the horizon — a deterministic silhouette
-          // seeded by lat/lon so each airport gets a consistent skyline instead
-          // of a flat horizon line. Only visible below cruise altitude where
-          // distant terrain reads from the cockpit.
-          if (state.altitude < 12000) {
-            var hillSeed = Math.floor(state.lat * 10) * 47 + Math.floor(state.lon * 10) * 13;
-            var hillHide = Math.min(1, state.altitude / 12000);
-            // Two parallax layers: back (gray-blue) and front (darker).
-            [
-              { alpha: 0.55 * (1 - hillHide), tint: 'rgb(95,115,145)', amp: 22, base: 6, freq: 0.018, offset: 0 },
-              { alpha: 0.75 * (1 - hillHide), tint: 'rgb(60,78,100)',  amp: 14, base: 3, freq: 0.032, offset: 40 }
-            ].forEach(function(layer) {
-              if (layer.alpha < 0.02) return;
-              gfx.fillStyle = layer.tint.replace('rgb(', 'rgba(').replace(')', ',' + layer.alpha + ')');
-              gfx.beginPath();
-              gfx.moveTo(0, horizonY + 2);
-              for (var hx = 0; hx <= W; hx += 6) {
-                // Sum of two sines + seeded noise → lumpy ridge line
-                var n = Math.sin((hx + layer.offset + hillSeed) * layer.freq) * 0.6
-                      + Math.sin((hx + layer.offset * 1.3 + hillSeed * 0.7) * layer.freq * 2.1) * 0.3
-                      + Math.sin(hillSeed * 0.1 + hx * layer.freq * 0.5) * 0.15;
-                var hy = horizonY - layer.base - (n + 1) * 0.5 * layer.amp;
-                gfx.lineTo(hx, hy);
-              }
-              gfx.lineTo(W, horizonY + 2);
-              gfx.closePath();
-              gfx.fill();
-            });
+            // Distant hills poking above the horizon — a deterministic silhouette
+            // seeded by lat/lon so each airport gets a consistent skyline instead
+            // of a flat horizon line. Only visible below cruise altitude where
+            // distant terrain reads from the cockpit.
+            if (state.altitude < 12000) {
+              var hillSeed = Math.floor(state.lat * 10) * 47 + Math.floor(state.lon * 10) * 13;
+              var hillHide = Math.min(1, state.altitude / 12000);
+              // Two parallax layers: back (gray-blue) and front (darker).
+              [
+                { alpha: 0.55 * (1 - hillHide), tint: 'rgb(95,115,145)', amp: 22, base: 6, freq: 0.018, offset: 0 },
+                { alpha: 0.75 * (1 - hillHide), tint: 'rgb(60,78,100)',  amp: 14, base: 3, freq: 0.032, offset: 40 }
+              ].forEach(function(layer) {
+                if (layer.alpha < 0.02) return;
+                gfx.fillStyle = layer.tint.replace('rgb(', 'rgba(').replace(')', ',' + layer.alpha + ')');
+                gfx.beginPath();
+                gfx.moveTo(0, horizonY + 2);
+                for (var hx = 0; hx <= W; hx += 6) {
+                  // Sum of two sines + seeded noise → lumpy ridge line
+                  var n = Math.sin((hx + layer.offset + hillSeed) * layer.freq) * 0.6
+                        + Math.sin((hx + layer.offset * 1.3 + hillSeed * 0.7) * layer.freq * 2.1) * 0.3
+                        + Math.sin(hillSeed * 0.1 + hx * layer.freq * 0.5) * 0.15;
+                  var hy = horizonY - layer.base - (n + 1) * 0.5 * layer.amp;
+                  gfx.lineTo(hx, hy);
+                }
+                gfx.lineTo(W, horizonY + 2);
+                gfx.closePath();
+                gfx.fill();
+              });
+            }
           }
 
           // Horizon line — plus a pitch ladder of climb/dive marks above and
@@ -16505,6 +17542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.beginPath(); gfx.arc(W / 2, horizonY, 2, 0, Math.PI * 2); gfx.fill();
           gfx.restore();
 
+          if (!threeLoaded) {
           // Stars at high altitude
           if (state.altitude > 20000) {
             var starAlpha = Math.min(1, (state.altitude - 20000) / 20000);
@@ -17225,6 +18263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
             }
           }
+          }
 
           // ── HUD Instruments (Glass Cockpit PFD Layout) ──
           var kts = state.speed * 0.5924838; // ft/s to knots
@@ -17618,6 +18657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Mini-map (top-right area)
           drawMiniMapEnhanced(gfx, W - 140, 38, 90, state);
 
+          if (!threeLoaded) {
           // Apply sky lighting (dayNight was computed earlier, before sun rendering)
           gfx._time = timeRef.current;
           applySkyLighting(gfx, W, H, dayNight, altFactor);
@@ -17816,15 +18856,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Geography labels on terrain
           drawGeography(gfx, W, H, horizonY, state, timeRef.current);
+          }
 
           // Geography quiz overlay
           drawGeoQuiz(gfx, W, H);
 
-          // Country borders at altitude
-          drawCountryBorders(gfx, W, H, horizonY, state);
+          if (!threeLoaded) {
+            // Country borders at altitude
+            drawCountryBorders(gfx, W, H, horizonY, state);
 
-          // Jet stream visualization
-          drawJetStream(gfx, W, H, horizonY, state, timeRef.current);
+            // Jet stream visualization
+            drawJetStream(gfx, W, H, horizonY, state, timeRef.current);
+          }
 
           // Navigation Computer (when flight plan active)
           drawNavComputer(gfx, 10, H - 240, state, timeRef.current);
@@ -17838,8 +18881,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Wind indicator (near throttle)
           drawWindIndicator(gfx, W - 60, 90, weatherRef.current.wind, weatherRef.current.windDir, state.heading);
 
-          // World labels (continents/oceans at high altitude)
-          drawWorldLabels(gfx, W, H, horizonY, state);
+          if (!threeLoaded) {
+            // World labels (continents/oceans at high altitude)
+            drawWorldLabels(gfx, W, H, horizonY, state);
+          }
 
           // Weather lesson display
           if (d.weatherLesson && timeRef.current < 10) {
@@ -17909,7 +18954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // ═══ VISUAL EFFECTS LAYER ═══
 
           // WCAG 2.3.1: Skip particle/animation effects if reduced motion preferred
-          if (!skyReducedMotion.current) {
+          if (!threeLoaded && !skyReducedMotion.current) {
           // ── Contrails (at high altitude + speed) ──
           if (state.altitude > 25000 && kts > 200) {
             var trailAlpha = Math.min(0.4, (state.altitude - 25000) / 30000);
@@ -18137,7 +19182,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var igFade = Math.max(0, 1 - igAge / 1.6);
               // Exhaust smoke puff (only drawn in chase cam; first-person the
               // exhaust is behind the cowl and we fake it with engine rumble).
-              if (d.thirdPerson) {
+              if (d.thirdPerson && !threeLoaded) {
                 for (var igp = 0; igp < 5; igp++) {
                   var igAgeP = igAge - igp * 0.08;
                   if (igAgeP < 0) continue;
@@ -18562,6 +19607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           try { if (stallHornRef.current.ctx && stallHornRef.current.ctx.state !== 'closed') stallHornRef.current.ctx.close(); } catch(e) {}
           // Exit fullscreen if active
           try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+          disposeThree();
         };
       }, [view, d.showForces]);
 
@@ -18987,13 +20033,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── FLYING VIEW ──
       if (view === 'flying') {
         return h('div', { id: 'skyschool-flight-container', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '12px', overflow: 'hidden', background: '#000', display: 'flex', flexDirection: 'column' } },
+          threeLoaded && h('canvas', {
+            ref: webglCanvasRef,
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, display: 'block' }
+          }),
           h('canvas', {
             ref: canvasRef,
             role: 'application',
             'aria-label': 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.',
             'aria-roledescription': 'Flight simulator',
             tabIndex: 0,
-            style: { width: '100%', flex: 1, display: 'block', outline: 'none' },
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, display: 'block', outline: 'none', background: threeLoaded ? 'transparent' : '#000' },
             onFocus: function() { skyAnnounce('SkySchool flight display focused. Press I for flight status. Space to pause.'); }
           }),
           // Overlay controls

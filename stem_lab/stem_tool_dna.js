@@ -120,7 +120,7 @@ window.StemLab = window.StemLab || {
     'Glu':{full:'Glutamic acid',abbr:'E',type:'negative',color:'#a855f7'},
     'His':{full:'Histidine',abbr:'H',type:'positive',color:'#ef4444'},
     'Gln':{full:'Glutamine',abbr:'Q',type:'polar',color:'#3b82f6'},
-    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#94a3b8'}
+    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color: 'var(--allo-stem-text-soft, #94a3b8)'}
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
@@ -1049,7 +1049,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -1092,7 +1092,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -1648,7 +1648,7 @@ window.StemLab = window.StemLab || {
                               h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, t.icon),
                               h('span', { style: { color: msAnswered ? color : t.color, fontSize: 12, fontWeight: 800 } }, t.label)
                             ),
-                            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: msAnswered ? color : '#475569' } }, t.def)
+                            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: msAnswered ? color: 'var(--allo-stem-text-soft, #475569)' } }, t.def)
                           );
                         })
                       ),

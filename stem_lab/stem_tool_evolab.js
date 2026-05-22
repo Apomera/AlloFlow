@@ -1681,7 +1681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('span', { className: 'text-slate-700' }, 'Your sim')
                 ),
                 showGrant && h('span', { className: 'flex items-center gap-1' },
-                  h('span', { style: { width: 12, height: 2, backgroundColor: '#1e293b', display: 'inline-block' } }),
+                  h('span', { style: { width: 12, height: 2, backgroundColor: 'var(--allo-stem-panel, #1e293b)', display: 'inline-block' } }),
                   h('span', { className: 'text-slate-700' }, 'Real Grant data')
                 )
               )
@@ -2319,9 +2319,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var renderSidePanel = function() {
           var b = BONES.find(function(x) { return x.id === selected; });
           var mods = MODIFICATIONS[selected] || {};
-          return h('div', { className: 'bg-white rounded-xl shadow border-2 p-4', style: { borderColor: b ? b.color : '#94a3b8' } },
+          return h('div', { className: 'bg-white rounded-xl shadow border-2 p-4', style: { borderColor: b ? b.color: 'var(--allo-stem-text-soft, #94a3b8)' } },
             h('div', { className: 'flex items-center gap-3 mb-3' },
-              h('div', { className: 'w-12 h-12 rounded-lg flex items-center justify-center text-2xl', style: { backgroundColor: b ? b.color + '33' : '#f1f5f9', color: b ? b.color : '#475569' } }, '🦴'),
+              h('div', { className: 'w-12 h-12 rounded-lg flex items-center justify-center text-2xl', style: { backgroundColor: b ? b.color + '33' : '#f1f5f9', color: b ? b.color: 'var(--allo-stem-text-soft, #475569)' } }, '🦴'),
               h('div', null,
                 h('h3', { className: 'text-lg font-black text-slate-800' }, b ? b.label : 'Select a bone'),
                 h('p', { className: 'text-xs text-slate-600' }, 'How this bone is modified across species:')
@@ -5446,7 +5446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             def: 'Trait spreads via mate choice (or male-male competition), even if it costs survival.' },
           { id: 'artificial',          label: 'Artificial selection',   color: '#f59e0b', icon: '🧑‍🌾',
             def: 'Humans deliberately breed for chosen traits. Crops, livestock, dog breeds.' },
-          { id: 'drift',               label: 'Genetic drift',          color: '#94a3b8', icon: '🎲',
+          { id: 'drift',               label: 'Genetic drift',          color: 'var(--allo-stem-text-soft, #94a3b8)', icon: '🎲',
             def: 'Random changes in allele frequency, especially in small populations. Bottleneck and founder effects.' }
         ];
         var V = [
@@ -5585,7 +5585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, m.icon),
                   h('span', { style: { color: sAns ? color : m.color, fontSize: 13, fontWeight: 800 } }, m.label)
                 ),
-                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: sAns ? color : '#475569' } }, m.def)
+                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: sAns ? color: 'var(--allo-stem-text-soft, #475569)' } }, m.def)
               );
             })
           ),
@@ -5773,7 +5773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, t.icon),
                   h('span', { style: { color: hsAns ? color : t.color, fontSize: 15, fontWeight: 800 } }, t.label)
                 ),
-                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.5, color: hsAns ? color : '#475569' } }, t.def)
+                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.5, color: hsAns ? color: 'var(--allo-stem-text-soft, #475569)' } }, t.def)
               );
             })
           ),

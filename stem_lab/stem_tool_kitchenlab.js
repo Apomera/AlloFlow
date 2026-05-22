@@ -1751,14 +1751,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         backgroundRepeat: 'no-repeat, repeat, no-repeat',
         backgroundAttachment: 'fixed, scroll, fixed',
         minHeight: '100vh',
-        color: '#f1f5f9'
+        color: 'var(--allo-stem-text, #f1f5f9)'
       };
 
       // ─── Reusable shells ───
       function panelHeader(title, subtitle) {
         return h('div', { style: { marginBottom: 18 } },
           h('div', { style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, title),
-          subtitle ? h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
+          subtitle ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
       }
 
       function renderHeader() {
@@ -1787,7 +1787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fb923c', background: 'rgba(251,146,60,0.12)',
                     border: '1px solid rgba(251,146,60,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   sectionCount + ' sections')),
-              h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
                 'Cooking life skills + culinary science. Food safety, knife technique, heat methods, Maillard chemistry, recipes, glossary. Built for life skills classrooms + family + consumer science.'))));
       }
 
@@ -1846,11 +1846,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── Danger Zone Visualizer ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🌡️ The Danger Zone (FDA Food Code)'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'Bacteria grow fastest between 40°F and 140°F (4°C–60°C). This is "the danger zone." Food shouldn\'t sit here for more than 2 hours total (1 hour if it\'s over 90°F outside). Drag the slider to see what happens at different temps.'),
             // Temp slider
             h('div', { style: { marginBottom: 14 } },
-              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, 'Food temperature'),
                 h('span', { style: { color: zone.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, curTemp + '°F (' + Math.round((curTemp - 32) * 5 / 9) + '°C)')),
               h('input', { type: 'range', min: 32, max: 220, step: 1, value: curTemp,
@@ -1863,21 +1863,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 borderLeft: '4px solid ' + zone.color,
                 padding: '14px 16px', borderRadius: 10, marginBottom: 12 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.color, marginBottom: 6 } }, zone.label),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, zone.descr)),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, zone.descr)),
             // Growth visualization
             zone.zone === 'danger' ? h('div', { style: { background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', padding: 12, borderRadius: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fca5a5', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'After 2 hours at this temp'),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 } },
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, growthAfter2h + '×'),
-                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.45 } }, 'starting bacterial population')),
-              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.45 } }, 'starting bacterial population')),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                 growthAfter2h >= 64 ? 'At ~optimal-growth temp, a single bacterium can become 64+ by hour 2. If you started with 100, you now have 6,400. If you started with 1,000, you have 64,000.' : 'Below 70°F bacteria grow slower but still doubling. Don\'t leave food on the counter to "cool" — chill it within 2 hours.')) : null
           ),
 
           // ─── USDA Safe Temps ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🔥 USDA Safe Cooking Temperatures'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'These are the minimum internal temperatures. A meat thermometer is the only way to know for sure. Color is unreliable — pink chicken at 165°F is safe; brown chicken at 140°F is not.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 } },
               SAFE_TEMPS.map(function(t, i) {
@@ -1889,8 +1889,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, t.food),
                       h('div', { style: { fontSize: 11, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
                         t.tempF + '°F (' + t.tempC + '°C)'))),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } },
-                    h('b', { style: { color: '#e2e8f0' } }, 'Why: '), t.why),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } },
+                    h('b', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Why: '), t.why),
                   h('div', { style: { fontSize: 10, color: '#fb923c', lineHeight: 1.5, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
                     h('b', null, '⚠️ Pitfall: '), t.pitfall));
               }))),
@@ -1901,7 +1901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── Cross-contamination quick rules ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🚫 Cross-Contamination Rules'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
               'Pathogens move from raw meat → hands → cutting board → ready-to-eat food. The fixes are simple but easy to forget mid-cook.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               [
@@ -1916,13 +1916,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                     h('span', { style: { fontSize: 20 }, 'aria-hidden': 'true' }, r.icon),
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a' } }, r.rule)),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, r.detail));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, r.detail));
               }))),
 
           // ─── Top 9 Allergens ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '⚠️ The Top 9 Allergens (FDA + FASTER Act)'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'These 9 cause ~90% of all severe food allergic reactions in the US. Sesame was added in 2023. By law, packaged food must declare these. The "hidden in" column matters most — that\'s where surprises happen.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               ALLERGENS_9.map(function(a, i) {
@@ -1931,9 +1931,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, a.emoji),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, a.name),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
                         'Prevalence: ' + a.prev))),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, a.notes),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, a.notes),
                   h('div', { style: { fontSize: 10, color: '#fbbf24', lineHeight: 1.5, background: 'rgba(234,179,8,0.08)', padding: '6px 8px', borderRadius: 6 } },
                     h('b', null, '🕵️ Hidden in: '), a.hiddenIn));
               })))
@@ -1947,7 +1947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var pct = Math.min(100, (elapsed / 20) * 100);
         return h('div', { style: cardStyle() },
           h('div', { style: subheaderStyle() }, '🧼 20-Second Handwash (CDC + WHO)'),
-          h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+          h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
             'Soap + 20 seconds + friction = the minimum for hand sanitation in a kitchen. The mechanical action (friction) is what dislodges bacteria — soap loosens them, water rinses them away.'),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
             h('button', { onClick: function() {
@@ -1973,7 +1973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { flex: 1, minWidth: 200 } },
               h('div', { style: { height: 12, background: 'rgba(15,23,42,0.6)', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)' } },
                 h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #16a34a, #22c55e)', transition: started ? 'width 1s linear' : 'none' } })),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
                 Math.round(elapsed) + ' / 20 sec' + (elapsed >= 20 ? ' ✓ complete' : '')))),
           h('ol', { style: { margin: '4px 0 0 0', padding: 0, listStyle: 'none', counterReset: 'hw-steps' } },
             [
@@ -1988,7 +1988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               'Rinse hands thoroughly with running water.',
               'Dry with single-use towel or air dry. Use towel to turn off tap (avoid recontamination).'
             ].map(function(step, i) {
-              return h('li', { key: i, style: { display: 'flex', gap: 10, padding: '6px 0', fontSize: 12, color: '#cbd5e1', borderBottom: i < 9 ? '1px solid rgba(100,116,139,0.15)' : 'none' } },
+              return h('li', { key: i, style: { display: 'flex', gap: 10, padding: '6px 0', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', borderBottom: i < 9 ? '1px solid rgba(100,116,139,0.15)' : 'none' } },
                 h('div', { style: { width: 24, height: 24, borderRadius: '50%', background: 'rgba(251,146,60,0.15)', border: '1px solid rgba(251,146,60,0.4)', color: '#fb923c', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: 'ui-monospace, Menlo, monospace' } }, i + 1),
                 h('div', null, step));
             })));
@@ -2041,13 +2041,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.4)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, b.val));
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, b.val));
               }))),
 
           // ─── Why uniformity matters ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🎯 Why Uniformity Matters'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
               'When pieces are different sizes, they finish cooking at different times. Small pieces burn while large pieces are still raw. Uniform cuts = uniform cook = no kitchen guessing.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               h('div', { style: { background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: 12 } },
@@ -2060,7 +2060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── Knife grip + safety ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '✋ The Claw Grip (Finger Safety)'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
               'Curl your guiding fingers INWARD so your knuckles face the blade, not your fingertips. The flat of the blade slides along your knuckles as a guide. If the knife slips, it slides up your knuckle wall — not into your fingertip.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               [
@@ -2073,7 +2073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               ].map(function(r, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, r.rule),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, r.why));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, r.why));
               })))
         );
       }
@@ -2171,10 +2171,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fde68a' } }, tech.emoji + ' ' + tech.name),
               h('div', { style: { fontSize: 11, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,146,60,0.1)', padding: '3px 8px', borderRadius: 6 } },
                 'Target: ' + tech.panTempF + '°F')),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } }, tech.whatHappens),
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } }, tech.whatHappens),
             // Slider
             h('div', { style: { marginBottom: 14 } },
-              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, 'Your pan temperature'),
                 h('span', { style: { color: heatVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F')),
               h('input', { type: 'range', min: 100, max: 500, step: 5, value: panTemp,
@@ -2183,7 +2183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 style: { width: '100%', accentColor: heatVerdict.color } })),
             h('div', { style: { background: heatVerdict.color + '18', border: '1px solid ' + heatVerdict.color + '55', borderLeft: '4px solid ' + heatVerdict.color, padding: '10px 12px', borderRadius: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: heatVerdict.color, marginBottom: 4 } }, heatVerdict.label),
-              h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, heatVerdict.note))),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, heatVerdict.note))),
 
           // ─── Technique deep dive ───
           h('div', { style: cardStyle() },
@@ -2197,7 +2197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               ].map(function(b, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, b.val));
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, b.val));
               }))),
 
           // ─── Food examples for this technique ───
@@ -2218,9 +2218,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           panelHeader(emoji + ' ' + title, lede),
           h('div', { style: cardStyle() },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 10 } }, '🚧 Coming in the next ship'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
               'This section is being built. Below is what\'s planned. The architecture pieces are in place — content depth is what\'s in flight.'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.8 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.8 } },
               items.map(function(it, i) { return h('li', { key: i }, it); }))));
       }
 
@@ -2236,13 +2236,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── What it is ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🔬 What\'s actually happening'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
               'Maillard is a cascade of chemical reactions between ',
               h('b', { style: { color: '#fde68a' } }, 'amino acids'),
               ' (the building blocks of protein) and ',
               h('b', { style: { color: '#fde68a' } }, 'reducing sugars'),
               ' (glucose, fructose, lactose — sugars that can give up an electron). It needs heat to start (~280°F / 140°C surface temp), and once running it produces:'),
-            h('ul', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.8, margin: '10px 0 0 0', padding: '0 0 0 20px' } },
+            h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.8, margin: '10px 0 0 0', padding: '0 0 0 20px' } },
               h('li', null, h('b', { style: { color: '#fb923c' } }, 'Melanoidins'), ' — the brown pigments. Why crust is brown.'),
               h('li', null, h('b', { style: { color: '#fb923c' } }, '1000+ volatile aroma compounds'), ' — pyrazines (nutty/roasty), furans (sweet/caramel), thiophenes (meaty/sulfury). These don\'t exist in raw food at all.'),
               h('li', null, h('b', { style: { color: '#fb923c' } }, 'Complex flavor'), ' — Maillard is why seared beef tastes like more than the sum of "raw beef + salt." You\'re eating compounds that didn\'t exist 30 seconds earlier.'))),
@@ -2250,12 +2250,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── Temperature explorer ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🌡️ Temperature Explorer'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'Drag the slider to see what\'s happening at different surface temperatures. Note: ',
               h('b', { style: { color: '#fde68a' } }, 'surface temp ≠ internal temp'),
               ' ≠ pan temp. Surface temp can be much higher than internal because the surface is touching the hot pan or air.'),
             h('div', { style: { marginBottom: 16 } },
-              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, 'Food surface temperature'),
                 h('span', { style: { color: zone.textColor === '#fef9c3' || zone.textColor === '#fef3c7' || zone.textColor === '#fbbf24' ? zone.color : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } },
                   surfF + '°F (' + surfC + '°C)')),
@@ -2274,10 +2274,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 'visual color'),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.color, marginBottom: 4 } }, zone.label),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, zone.visual))),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, zone.visual))),
             h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #7dd3fc', padding: '10px 12px', borderRadius: 8 } },
               h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '⚗️ Science'),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, zone.science))),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, zone.science))),
 
           // ─── All 6 zones reference ───
           h('div', { style: cardStyle() },
@@ -2291,14 +2291,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       border: '1px solid rgba(255,255,255,0.15)' } }),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, z.label),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                       prevMax + '–' + z.maxF + '°F (' + Math.round((prevMax - 32) * 5 / 9) + '–' + Math.round((z.maxF - 32) * 5 / 9) + '°C)')));
               }))),
 
           // ─── Caramelization vs Maillard ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🆚 Caramelization vs Maillard'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'Often confused — they\'re different reactions. Caramelization is sugar alone breaking down. Maillard needs amino acids + reducing sugars together. Most "browning" you see is Maillard, even when called "caramelizing."'),
             h('div', { style: { overflowX: 'auto' } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
@@ -2318,7 +2318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── Browning examples ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🍽️ Browning in the wild'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'Same chemistry, different foods. Each carries its own characteristic flavor profile because amino acid + reducing sugar mixes differ.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
               BROWNING_EXAMPLES.map(function(b, i) {
@@ -2330,13 +2330,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, b.food),
                       h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
                         'Surface: ' + b.surfaceF))),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, b.story));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, b.story));
               }))),
 
           // ─── pH effects ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '⚗️ pH effects on Maillard'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+            h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'The acidity of your food dramatically changes how fast Maillard runs. This is one of the most underused kitchen "cheat codes."'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
               PH_EFFECTS.map(function(p, i) {
@@ -2345,7 +2345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   style: { background: 'rgba(15,23,42,0.5)', border: '1px solid ' + color + '40',
                     borderLeft: '3px solid ' + color, padding: '12px 14px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: color, marginBottom: 6 } }, p.ph),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, p.effect),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, p.effect),
                   h('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
                     h('b', null, '💡 Use: '), p.use));
               }))),
@@ -3023,9 +3023,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var maxPossible = 450;
         var pct = total / maxPossible;
         var medal = pct >= 0.89 ? { icon: '🥇', label: 'Gold', color: '#fbbf24', subtitle: 'Master chef tier — extraordinary command of heat, timing, and constraint.' } :
-                    pct >= 0.71 ? { icon: '🥈', label: 'Silver', color: '#cbd5e1', subtitle: 'Real cook. Confident across heat ranges + constraints.' } :
+                    pct >= 0.71 ? { icon: '🥈', label: 'Silver', color: 'var(--allo-stem-text, #cbd5e1)', subtitle: 'Real cook. Confident across heat ranges + constraints.' } :
                     pct >= 0.53 ? { icon: '🥉', label: 'Bronze', color: '#d97706', subtitle: 'Solid home cook. Some constraints still tripping you up.' } :
-                                  { icon: '🍳', label: 'Honorable Mention', color: '#94a3b8', subtitle: 'You made it through. Tournament punishes mistakes — that\'s the point.' };
+                                  { icon: '🍳', label: 'Honorable Mention', color: 'var(--allo-stem-text-soft, #94a3b8)', subtitle: 'You made it through. Tournament punishes mistakes — that\'s the point.' };
         var isNewBest = total === (d.tournamentBestTotal || 0) && total > 0;
         return h('div', null,
           panelHeader('🏆 Tournament Complete',
@@ -3034,9 +3034,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40 }) },
             h('div', { 'aria-hidden': 'true', style: { fontSize: 80, lineHeight: 1, marginBottom: 8 } }, medal.icon),
             h('div', { style: { fontSize: 28, fontWeight: 900, color: medal.color, letterSpacing: '-0.01em' } }, medal.label),
-            h('div', { style: { fontSize: 14, color: '#cbd5e1', marginTop: 8, fontStyle: 'italic', maxWidth: 480, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } }, medal.subtitle),
+            h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8, fontStyle: 'italic', maxWidth: 480, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } }, medal.subtitle),
             h('div', { style: { fontSize: 56, fontWeight: 900, color: medal.color, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 18, lineHeight: 1 } }, total),
-            h('div', { style: { fontSize: 14, color: '#94a3b8', marginTop: 4 } }, 'out of ' + maxPossible + ' (' + Math.round(pct * 100) + '%)'),
+            h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'out of ' + maxPossible + ' (' + Math.round(pct * 100) + '%)'),
             isNewBest ? h('div', { style: { marginTop: 16, padding: '10px 18px', background: 'rgba(251,191,36,0.18)',
                 border: '1px solid rgba(251,191,36,0.5)', borderRadius: 9999, display: 'inline-block',
                 fontSize: 13, fontWeight: 800, color: '#fbbf24' } },
@@ -3058,10 +3058,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   style: { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px',
                     background: 'rgba(15,23,42,0.6)', borderRadius: 10,
                     borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + scoreColor } },
-                  h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', minWidth: 80 } }, 'Round ' + (i + 1)),
+                  h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 80 } }, 'Round ' + (i + 1)),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a' } }, rname),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 3, lineHeight: 1.4 } },
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 3, lineHeight: 1.4 } },
                       'Constraints: ' + constraints.join(' • '))),
                   h('div', { style: { fontSize: 24, fontWeight: 900, color: scoreColor, fontFamily: 'ui-monospace, Menlo, monospace' } },
                     score || 0));
@@ -3098,7 +3098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { 'aria-hidden': 'true', style: { fontSize: 38, lineHeight: 1, flexShrink: 0 } }, '🤔'),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', letterSpacing: '-0.01em', marginBottom: 4 } }, 'What should I cook tonight?'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 10 } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
                   'Tell the AI what you have, how much time, or who you\'re feeding — it picks the right recipe from your unlocked list + explains why.'),
                 h('button', { onClick: function() { openSuggester(); awardXP(2); },
                   style: { padding: '10px 18px', background: '#a78bfa', color: '#1c1410',
@@ -3112,7 +3112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { 'aria-hidden': 'true', style: { fontSize: 44, lineHeight: 1, flexShrink: 0 } }, '🏆'),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, 'Competition Mode'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 12 } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 12 } },
                   'Chopped-style challenge. Random recipe + 2 mystery constraints (time pressure, heat caps, ingredient discipline, restaurant-grade standard, and more). Combine recipe skill + constraint mastery for a score up to 150. Beat your personal best.'),
                 h('button', { onClick: function() { startCompetition(); awardXP(3); },
                   style: { padding: '12px 22px', background: '#fb923c', color: '#1c1410',
@@ -3125,7 +3125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { 'aria-hidden': 'true', style: { fontSize: 32, lineHeight: 1, flexShrink: 0 } }, '🏅'),
               h('div', { style: { flex: 1, minWidth: 200 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, 'Tournament Mode (3 rounds)'),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   'Round 1: 1 constraint, full time. Round 2: 2 constraints, 80% time. Round 3: 3 constraints (Restaurant Standard + Speed Demon forced), 60% time. Compete for cumulative score across 450 points.')),
               h('button', { onClick: function() { startTournament(); awardXP(3); },
                 style: { padding: '10px 18px', background: 'transparent', color: '#fde68a',
@@ -3143,7 +3143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       padding: '6px 12px', borderRadius: 8, fontSize: 12, color: '#fde68a',
                       display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#86efac' } }, e[1]),
-                    h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, ridName));
+                    h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, ridName));
                 }))) : null),
           // ─── Achievements panel ───
           (function() {
@@ -3181,8 +3181,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap' } },
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, completed.length + ' / ' + unlockedCount + ' unlocked'),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'recipes mastered')),
-              h('div', { style: { flex: 1, color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, minWidth: 240 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'recipes mastered')),
+              h('div', { style: { flex: 1, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, minWidth: 240 } },
                 'Tutorial mode is the unhurried run — no time pressure, no constraints. Use it to learn each recipe before taking it into competition. v0.5 adds Competition Mode + personal bests. v0.6 will unlock multi-pot recipes (Pasta + Pan Sauce, Sheet-Pan, Roast Chicken).'))),
 
           // Recipe cards
@@ -3201,14 +3201,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
                       h('span', { style: { fontSize: 9, fontWeight: 700, color: diffColor, background: diffColor + '20', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, r.difficulty),
                       isCompleted ? h('span', { style: { fontSize: 9, fontWeight: 700, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '✓ Mastered') : null,
-                      !isPlayable ? h('span', { style: { fontSize: 9, fontWeight: 700, color: '#94a3b8', background: 'rgba(100,116,139,0.2)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔒 Locked') : null))),
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, r.blurb),
+                      !isPlayable ? h('span', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(100,116,139,0.2)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔒 Locked') : null))),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 12 } }, r.blurb),
                 isPlayable ? h('button', {
                   onClick: function() { startRecipe(r.id); },
                   style: { width: '100%', padding: '10px 14px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                   isCompleted ? '🍳 Cook again' : '▶ Start cooking') :
-                h('div', { style: { padding: '10px 14px', background: 'rgba(100,116,139,0.15)', color: '#94a3b8',
+                h('div', { style: { padding: '10px 14px', background: 'rgba(100,116,139,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)',
                     border: '1px dashed rgba(100,116,139,0.3)', borderRadius: 8, fontSize: 12, textAlign: 'center', fontStyle: 'italic' } },
                   'Unlocks in a future ship'));
             }))
@@ -3271,14 +3271,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               secLeft != null ? h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
                 h('span', { style: { fontSize: 32, fontWeight: 900, color: deadlineWarn ? '#dc2626' : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } },
                   Math.floor(secLeft / 60) + ':' + String(secLeft % 60).padStart(2, '0')),
-                h('span', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'time left')
+                h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'time left')
               ) : null),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               activeConstraints.map(function(c, i) {
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.6)', borderTop: '1px solid rgba(251,146,60,0.3)', borderRight: '1px solid rgba(251,146,60,0.3)', borderBottom: '1px solid rgba(251,146,60,0.3)', borderLeft: '3px solid #fb923c', padding: '8px 10px', borderRadius: 6 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, c.label),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } }, c.description),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.45 } }, c.description),
                   h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
                     '+' + c.bonus + ' bonus / ' + c.penalty + ' penalty'));
               }))
@@ -3292,7 +3292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8, flexWrap: 'wrap' } },
               h('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Step ' + (stepIdx + 1)),
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fde68a', flex: 1, minWidth: 0 } }, step.title)),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, step.instruction),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 12 } }, step.instruction),
             h('div', { style: { background: 'rgba(125,211,252,0.08)', borderLeft: '3px solid #7dd3fc', padding: '8px 12px', borderRadius: 6, fontSize: 11, color: '#bae6fd', lineHeight: 1.55 } },
               h('b', null, '🧠 What\'s happening: '), step.teach)),
 
@@ -3301,13 +3301,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 16 } },
               // Pan temp readout
               h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + tempColor + '55', borderRadius: 10, padding: '12px 14px' } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Pan temperature'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Pan temperature'),
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: tempColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F'),
                 h('div', { style: { fontSize: 11, color: tempColor, marginTop: 2 } }, tempLabel),
-                h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'peak this run: ' + maxTemp + '°F')),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'peak this run: ' + maxTemp + '°F')),
               // Active cook time
               h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 10, padding: '12px 14px' } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Food in pan'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Food in pan'),
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, activeTime + 's'),
                 h('div', { style: { fontSize: 11, color: (d.recipeItemsInPan || []).length > 0 ? '#86efac' : '#64748b', marginTop: 2 } }, (d.recipeItemsInPan || []).length > 0 ? '🟢 Cooking' : '— Empty pan'))),
 
@@ -3316,14 +3316,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               var thermal = getRecipeThermal(rec);
               var isOven = thermal.mode === 'oven';
               return h('div', { style: { marginBottom: 12 } },
-                h('label', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                   h('span', null, thermal.controlLabel),
                   h('span', { style: { color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14, fontWeight: 800 } }, thermal.controlSubLabel(burnerLevel))),
                 h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel,
                   onChange: function(e) { setBurner(parseInt(e.target.value, 10)); },
                   'aria-label': isOven ? 'Oven temperature dial' : 'Burner level',
                   style: { width: '100%', accentColor: tempColor } }),
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   isOven ? [
                     h('span', { key: 'l1' }, 'OFF'), h('span', { key: 'l2' }, '175°'), h('span', { key: 'l3' }, '300°'),
                     h('span', { key: 'l4' }, '425°'), h('span', { key: 'l5' }, '525°')
@@ -3340,7 +3340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '🧺 Ingredients tray'),
             availableItems.length === 0 ?
-              h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'All ingredients are in the pan.') :
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'All ingredients are in the pan.') :
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 availableItems.map(function(ing) {
                   return h('button', { key: ing.id,
@@ -3368,7 +3368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 onClick: function() { nextStep(); klAnnounce('Step complete.'); },
                 style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                '✓ Continue to next step') : h('div', { style: { fontSize: 11, color: '#94a3b8', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
+                '✓ Continue to next step') : h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
                 step.completeWhen === 'panInRange' ? '⏳ Auto-advances when pan reaches target temperature' :
                 step.completeWhen === 'itemAdded' ? '⏳ Auto-advances when ingredient is added' :
                 step.completeWhen === 'heatRemoved' ? '⏳ Auto-advances when burner reaches 0' :
@@ -3407,7 +3407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               maxWidth: 560, width: '100%',
               background: 'linear-gradient(135deg, #1c1410, #2a1d14)',
               border: '2px solid rgba(167,139,250,0.5)', borderRadius: 16,
-              padding: 28, color: '#f1f5f9', boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
+              padding: 28, color: 'var(--allo-stem-text, #f1f5f9)', boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
               maxHeight: '90vh', overflowY: 'auto'
             } },
             // Header
@@ -3415,9 +3415,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, '🤔'),
               h('div', { style: { flex: 1 } },
                 h('div', { style: { fontSize: 18, fontWeight: 900, color: '#e9d5ff', letterSpacing: '-0.01em' } }, 'What should I cook?'),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Powered by AI · picks from your unlocked recipes')),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Powered by AI · picks from your unlocked recipes')),
               h('button', { onClick: closeSuggester, 'aria-label': 'Close suggester',
-                style: { background: 'transparent', color: '#94a3b8', border: 'none', fontSize: 22, fontWeight: 700, cursor: 'pointer', padding: 4 } },
+                style: { background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: 'none', fontSize: 22, fontWeight: 700, cursor: 'pointer', padding: 4 } },
                 '✕')),
             // Body — varies by state
             result && recommendedRec && recommendedCat ? h('div', null,
@@ -3442,16 +3442,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                   '🍳 Cook this'),
                 h('button', { onClick: function() { setKL({ suggesterResult: null, suggesterInput: inputVal }); },
-                  style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
+                  style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                     border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
                   '🔄 Ask again'))
             ) : loading ? h('div', { style: { textAlign: 'center', padding: '36px 16px' } },
               h('div', { style: { fontSize: 48, marginBottom: 16 } }, '🤔'),
-              h('div', { style: { fontSize: 14, color: '#cbd5e1', fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } },
                 'Chef is thinking about what suits your night...')
             ) : h('div', null,
               // Input view
-              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12 } },
                 'Tell the chef about your situation — what you have in the kitchen, how much time, whether you\'re feeding kids, mood, etc. Or leave blank for a free pick.'),
               h('textarea', {
                 value: inputVal,
@@ -3460,7 +3460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 rows: 4,
                 style: { width: '100%', padding: '12px 14px', fontSize: 13, fontFamily: 'inherit',
                   background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.5)',
-                  borderRadius: 8, color: '#f1f5f9', resize: 'vertical', marginBottom: 12, boxSizing: 'border-box' }
+                  borderRadius: 8, color: 'var(--allo-stem-text, #f1f5f9)', resize: 'vertical', marginBottom: 12, boxSizing: 'border-box' }
               }),
               err ? h('div', { style: { fontSize: 12, color: '#fca5a5', marginBottom: 12,
                 padding: '8px 12px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
@@ -3471,7 +3471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                   '🤔 Suggest a recipe'),
                 h('button', { onClick: closeSuggester,
-                  style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
+                  style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                     border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
                   'Cancel')))
           )
@@ -3557,7 +3557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { fontSize: 10, fontWeight: 800, color: phaseColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } },
                 '🫕 Pasta Pot — ' + phase),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.45 } }, progressLabel),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.45 } }, progressLabel),
               // Progress bar
               h('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
                 h('div', { style: { height: '100%', width: progressPct + '%', background: phaseColor, transition: 'width 0.3s' } })),
@@ -3689,10 +3689,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Score hero
           h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 32 }) },
-            h('div', { style: { fontSize: 14, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
+            h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
               compResult ? 'Final competition score' : 'Your score'),
             h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, displayScore),
-            compResult ? h('div', { style: { fontSize: 13, color: '#94a3b8', marginTop: 8, fontFamily: 'ui-monospace, Menlo, monospace' } },
+            compResult ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontFamily: 'ui-monospace, Menlo, monospace' } },
               'base ' + compResult.baseScore + (compResult.bonusTotal > 0 ? ' + ' + compResult.bonusTotal + ' bonus' : '') +
               (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '')) : null,
             h('div', { style: { fontSize: 48, fontWeight: 900, color: gradeColor, marginTop: 4 } }, 'Grade: ' + j.grade),
@@ -3713,8 +3713,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       (c.passed ? '✓ ' : '✗ ') + c.label),
                     h('div', { style: { fontSize: 14, fontWeight: 900, color: c.passed ? '#86efac' : '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } },
                       (c.points > 0 ? '+' : '') + c.points)),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 3, fontStyle: 'italic' } }, c.description),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, c.resultText));
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 3, fontStyle: 'italic' } }, c.description),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, c.resultText));
               }))) : null,
 
           // Detailed notes
@@ -3728,7 +3728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     borderLeft: '4px solid ' + (n.neg ? '#dc2626' : '#22c55e'),
                     padding: '10px 14px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 13, fontWeight: 700, color: n.neg ? '#fca5a5' : '#86efac', marginBottom: 4 } }, n.label),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, n.detail));
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, n.detail));
               }))),
 
           // Lessons recap
@@ -3759,7 +3759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('div', { 'aria-hidden': 'true', style: { fontSize: 26, lineHeight: 1, flexShrink: 0 } }, a.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: tierColor } }, a.name),
-                    h('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.4 } }, a.description)));
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } }, a.description)));
               }))) : null,
 
           // ─── AI Chef's Notes (Gemini-powered critique) ───
@@ -3770,9 +3770,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: subheaderStyle() }, '👨‍🍳 Chef\'s Notes (AI-generated critique)'),
             d.aiCritique ? h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
               '"', d.aiCritique, '"') :
-            d.aiCritiqueLoading ? h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', padding: '8px 0' } },
+            d.aiCritiqueLoading ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', padding: '8px 0' } },
               '🤔 Chef is reviewing your work...') :
-            h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } },
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
               'Critique will appear here.')) : null,
 
           // ─── Tournament standing (if in tournament) ───
@@ -3797,7 +3797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   roundScore != null ? h('div', { style: { fontSize: 18, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } },
                     roundScore) : null);
               })),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', textAlign: 'center' } },
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textAlign: 'center' } },
               'Running total: ', h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#fbbf24', fontSize: 14 } },
                 (d.tournamentScores || []).reduce(function(a, b) { return a + (b || 0); }, 0) + ' / ' + ((tRound + 1) * 150)))) : null,
 
@@ -3875,14 +3875,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   'aria-label': 'Filter glossary terms',
                   style: { width: '100%', padding: '10px 14px',
                     background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.4)',
-                    borderRadius: 8, color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' } })),
+                    borderRadius: 8, color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontFamily: 'inherit' } })),
               (function() {
                 var matches = GLOSSARY.filter(function(g) {
                   if (!filter) return true;
                   return g.term.toLowerCase().includes(filter) || g.defn.toLowerCase().includes(filter);
                 });
                 if (matches.length === 0) {
-                  return h('div', { style: { color: '#94a3b8', fontSize: 12, padding: '16px 0', textAlign: 'center', fontStyle: 'italic' } },
+                  return h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, padding: '16px 0', textAlign: 'center', fontStyle: 'italic' } },
                     'No matches for "' + filter + '". Try a partial word or check spelling.');
                 }
                 return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
@@ -3894,9 +3894,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, g.term),
-                        g.pron ? h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '/' + g.pron + '/') : null,
+                        g.pron ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '/' + g.pron + '/') : null,
                         h('span', { style: { fontSize: 9, fontWeight: 700, color: tagColor, background: tagColor + '15', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, g.tag)),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, g.defn));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, g.defn));
                   }));
               })())) : null,
 
@@ -3904,7 +3904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           sub === 'smoke' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🛢️ Cooking Oil Smoke Points'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'The smoke point is the temp at which an oil starts breaking down into acrolein (bitter, irritating) and free fatty acids. Cooking above smoke point = bitter taste + unhealthful compounds + real fire risk. Ranked highest to lowest.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 SMOKE_POINTS.map(function(o, i) {
@@ -3916,13 +3916,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + heatColor, padding: '12px 14px', borderRadius: 8 } },
                     h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 70 } },
                       h('div', { style: { fontSize: 16, fontWeight: 900, color: heatColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeF + '°F'),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeC + '°C')),
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeC + '°C')),
                     h('div', null,
                       h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, o.oil),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } },
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } },
                         h('b', { style: { color: '#fb923c' } }, 'Use: '), o.use, ' • ',
                         h('b', { style: { color: '#fb923c' } }, 'Flavor: '), o.flavor),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' } }, o.notes)),
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, fontStyle: 'italic' } }, o.notes)),
                     h('div', { style: { fontSize: 9, fontWeight: 800, color: heatColor, background: heatColor + '15', padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' } }, heatLabel));
                 })))) : null,
 
@@ -3930,7 +3930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           sub === 'conversions' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📏 Kitchen Conversions'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'The most useful kitchen conversions, plus the notes that prevent the common "why didn\'t this work" moments. Pro tip for baking: ',
                 h('b', { style: { color: '#fde68a' } }, 'measure by weight when possible'),
                 ' — volume varies up to 20% depending on how you scoop.'),
@@ -3942,14 +3942,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.from),
                       h('span', { 'aria-hidden': 'true', style: { color: '#fb923c', fontSize: 14, fontWeight: 700 } }, '→'),
                       h('div', { style: { fontSize: 12, color: '#7dd3fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.to)),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } }, c.notes));
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontStyle: 'italic' } }, c.notes));
                 })))) : null,
 
           // ─── SUBSTITUTIONS ───
           sub === 'subs' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🔄 Emergency Substitutions'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'When you start cooking + realize you don\'t have an ingredient, these are the swaps that actually work. Each entry includes ',
                 h('b', { style: { color: '#fde68a' } }, 'why'),
                 ' the swap works so you can adapt to similar situations.'),
@@ -3962,7 +3962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     h('div', { style: { fontSize: 12, color: '#dcfce7', lineHeight: 1.55, marginBottom: 6,
                       background: 'rgba(34,197,94,0.08)', padding: '8px 10px', borderRadius: 6 } },
                       h('b', { style: { color: '#86efac' } }, 'Use: '), s.sub),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } },
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } },
                       h('b', null, 'Why: '), s.why));
                 })))) : null,
 
@@ -3970,7 +3970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           sub === 'troubleshoot' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '🩺 "Why did my X fail?" Troubleshooter'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 'The most common cooking failures + their likely causes. Most cooking problems are some combination of these — work through the list, fix the ones that apply, try again.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 TROUBLESHOOTING.map(function(t, i) {
@@ -3981,7 +3981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                         listStyle: 'none', display: 'flex', alignItems: 'center', gap: 8 } },
                       h('span', { 'aria-hidden': 'true', style: { color: '#fb923c' } }, '▶'),
                       t.problem),
-                    h('ul', { style: { margin: '0 0 12px 0', padding: '0 14px 0 36px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                    h('ul', { style: { margin: '0 0 12px 0', padding: '0 14px 0 36px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.7 } },
                       t.causes.map(function(c, ci) { return h('li', { key: ci, style: { marginBottom: 4 } }, c); })));
                 })))) : null,
 
@@ -3989,7 +3989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           sub === 'sources' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, '📜 Sources + Further Reading'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 } },
+              h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   'Kitchen Lab content is anchored in publicly available food-safety guidance + culinary science references. Where temperatures or rules appear, the cited source is the authoritative one for the US:'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
@@ -4007,7 +4007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     return h('div', { key: i,
                       style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, s.name),
-                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
                       s.url !== 'book' ? h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.url) : null);
                   }))))) : null
         );

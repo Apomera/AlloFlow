@@ -1537,7 +1537,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -2001,20 +2001,20 @@ window.StemLab = window.StemLab || {
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', { onClick: closeOutbreakDeepDive,
-                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📊 Epidemiology'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               )
             );
@@ -2068,8 +2068,8 @@ window.StemLab = window.StemLab || {
               });
             }
             function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
-            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '📈 Infection % by demographic across all weeks'),
+            return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Infection % by demographic across all weeks'),
               h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Week-by-week infection trend chart by demographic group' },
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
@@ -2175,11 +2175,11 @@ window.StemLab = window.StemLab || {
                   h('button', { onClick: readOutbreak,
                     style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
                   h('button', { onClick: dismissOutbreakAIRead,
-                    style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                    style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
                 )
               ),
-              h('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, outbreak.aiReadResponse),
-              h('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+              h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, outbreak.aiReadResponse),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
                 'AI public health educator. ',
                 h('strong', null, 'It is not a real Public Health Officer, not a Wabanaki person, and does not speak for any Wabanaki nation, public health agency, or named individual.'),
                 ' For authoritative public health voices, consult Maine CDC, Wabanaki Public Health and Wellness, the US CDC, and your local public health department directly.'
@@ -2389,10 +2389,10 @@ window.StemLab = window.StemLab || {
                   h('span', { style: { fontSize: 36 } }, '🏥'),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Outbreak Response: 26-week PHO campaign'),
-                    h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are the County Public Health Officer.')
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'You are the County Public Health Officer.')
                   )
                 ),
-                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                   'A novel respiratory pathogen is circulating in your county. You have 26 weeks of decisions. Four demographic groups respond differently. Feedback rules tie ',
                   h('strong', null, 'infection, hospital strain, public trust, and vaccine uptake'),
                   ' together. This is pandemic response as decision-making under uncertainty, not as a formula.'
@@ -2402,13 +2402,13 @@ window.StemLab = window.StemLab || {
               // Demographic group preview
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
                 DEMOGRAPHIC_GROUPS.map(function(g) {
-                  return h('div', { key: g.id, style: { background: '#0f172a', borderLeft: '3px solid ' + g.color, borderRadius: 10, padding: 12 } },
+                  return h('div', { key: g.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + g.color, borderRadius: 10, padding: 12 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { style: { fontSize: 22 } }, g.icon),
                       h('strong', { style: { color: g.color } }, g.name)
                     ),
-                    h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, g.role),
-                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, g.desc),
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, g.role),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, g.desc),
                     g.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); },
                       'aria-label': 'Open deep-dive for ' + g.name,
                       style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + g.color + '88', background: g.color + '22', color: g.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
@@ -2418,8 +2418,8 @@ window.StemLab = window.StemLab || {
               ),
 
               // Difficulty
-              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, border: '1px solid #1e293b' } },
-                h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                   Object.keys(RESPONSE_DIFFICULTIES).map(function(dkey) {
                     var df = RESPONSE_DIFFICULTIES[dkey];
@@ -2453,19 +2453,19 @@ window.StemLab = window.StemLab || {
               h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o2.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o2.color + '88', borderLeft: '4px solid ' + o2.color } },
                 h('div', { style: { fontSize: 40, marginBottom: 6 } }, o2.icon),
                 h('h3', { style: { margin: 0, color: o2.color, fontSize: 22 } }, o2.label),
-                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o2.desc)
+                h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o2.desc)
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
-                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Cumulative deaths'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Cumulative deaths'),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#ef4444' } }, Math.round(outbreak.totalDeaths))
                 ),
-                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Average trust'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Average trust'),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } }, outbreak.avgTrust + '/100')
                 ),
-                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hospital overload weeks'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hospital overload weeks'),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: outbreak.hospitalOverloadWeeks === 0 ? '#86efac' : '#fbbf24' } }, outbreak.hospitalOverloadWeeks)
                 )
               ),
@@ -2476,20 +2476,20 @@ window.StemLab = window.StemLab || {
                 outbreak.groups.map(function(g) {
                   var def = getGroupDef(g.id);
                   var art = groupArtifact(g);
-                  return h('div', { key: g.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                  return h('div', { key: g.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
                     h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                       h('span', null, def.icon + ' ' + def.name),
                       def.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); }, 'aria-label': 'Deep-dive',
                         style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
                     ),
-                    h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } },
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                       'Cases: ' + Math.round(g.cumulative.cases || 0) + '%',
                       h('br'),
                       'Vaccinated: ' + Math.round(g.vaccinated) + '%',
                       h('br'),
                       'Trust: ' + Math.round(g.trust) + '/100'
                     ),
-                    h('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a', lineHeight: 1.5 } },
+                    h('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a', lineHeight: 1.5 } },
                       '👥 ' + art.cases.toLocaleString() + ' people sick',
                       h('br'),
                       '⚱️ ' + art.deaths.toLocaleString() + ' lives lost',
@@ -2504,13 +2504,13 @@ window.StemLab = window.StemLab || {
               h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
                 h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if a PHO had done nothing for 26 weeks?'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o2.color } },
+                  h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o2.color } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: o2.color, marginBottom: 4 } }, 'Your campaign'),
-                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, Math.round(actualTotalCases).toLocaleString() + ' sick · ' + Math.round(actualTotalDeaths).toLocaleString() + ' lost · ' + outbreak.hospitalOverloadWeeks + ' overload weeks')
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, Math.round(actualTotalCases).toLocaleString() + ' sick · ' + Math.round(actualTotalDeaths).toLocaleString() + ' lost · ' + outbreak.hospitalOverloadWeeks + ' overload weeks')
                   ),
-                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                  h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
-                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, Math.round(baselineTotalCases).toLocaleString() + ' sick · ' + Math.round(baselineTotalDeaths).toLocaleString() + ' lost · projected continuous overload')
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, Math.round(baselineTotalCases).toLocaleString() + ' sick · ' + Math.round(baselineTotalDeaths).toLocaleString() + ' lost · projected continuous overload')
                   )
                 ),
                 h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
@@ -2523,12 +2523,12 @@ window.StemLab = window.StemLab || {
               ),
 
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                h('button', { onClick: resetOutbreak, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
+                h('button', { onClick: resetOutbreak, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ New campaign'),
                 h('button', { onClick: function() { startOutbreak({ seed: outbreak.seed, difficulty: outbreak.difficulty }); }, style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
               ),
-              h('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
-                h('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
-                h('strong', { style: { color: '#cbd5e1' } }, outbreak.seed)
+              h('div', { style: { padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
+                h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'Campaign seed: '),
+                h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, outbreak.seed)
               )
             );
           }
@@ -2539,18 +2539,18 @@ window.StemLab = window.StemLab || {
             var ev3 = outbreak.lastEvent || {};
             return h('div', { className: 'space-y-3' },
               outbreakDeepDive,
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev3.icon || '🌿'),
                 h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Week ' + outbreak.week + ' event: ' + (ev3.name || 'quiet week')),
-                h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev3.desc || '')
+                h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev3.desc || '')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 } },
-                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hospital load'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hospital load'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: lastSnap2.hospitalLoad > 100 ? '#ef4444' : lastSnap2.hospitalLoad > 80 ? '#f59e0b' : '#86efac' } }, (lastSnap2.hospitalLoad || 0) + '%')
                 ),
-                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Overload weeks total'),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Overload weeks total'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: outbreak.hospitalOverloadWeeks > 0 ? '#f59e0b' : '#86efac' } }, outbreak.hospitalOverloadWeeks)
                 )
               ),
@@ -2561,8 +2561,8 @@ window.StemLab = window.StemLab || {
                 })
               ) : null,
               // Per-group deltas
-              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10 } },
-                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this week'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this week'),
                 (lastSnap2.pre || []).map(function(preG) {
                   var postG = (lastSnap2.post || []).find(function(p) { return p.id === preG.id; }) || preG;
                   var def = getGroupDef(preG.id);
@@ -2576,7 +2576,7 @@ window.StemLab = window.StemLab || {
                     }
                     return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                   }
-                  return h('div', { key: preG.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                  return h('div', { key: preG.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
                     h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
                     delta('Inf', preG.infected, postG.infected, true),
                     delta('Vacc', preG.vaccinated, postG.vaccinated, false),
@@ -2609,19 +2609,19 @@ window.StemLab = window.StemLab || {
             // HUD
             h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
               h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Week'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Week'),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, outbreak.week + ' / ' + outbreak.maxWeeks)
               ),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours left'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours left'),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, outbreak.hoursLeft + ' / ' + outbreak.hoursPerWeek)
               ),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Avg trust'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Avg trust'),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: avgTrust > 60 ? '#86efac' : avgTrust > 40 ? '#fbbf24' : '#ef4444' } }, avgTrust)
               ),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Total infected (sum across groups)'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Total infected (sum across groups)'),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: totalInf > 40 ? '#ef4444' : totalInf > 20 ? '#fbbf24' : '#86efac' } }, Math.round(totalInf))
               ),
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
@@ -2648,12 +2648,12 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
               outbreak.groups.map(function(g) {
                 var def = getGroupDef(g.id);
-                return h('div', { key: g.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                return h('div', { key: g.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                     h('span', { style: { fontSize: 22 } }, def.icon),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                     ),
                     def.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Demographic deep-dive',
                       style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
@@ -2663,8 +2663,8 @@ window.StemLab = window.StemLab || {
                      ['Vacc %', Math.round(g.vaccinated), g.vaccinated > 60 ? '#86efac' : g.vaccinated > 30 ? '#fbbf24' : '#fca5a5'],
                      ['Trust', Math.round(g.trust), g.trust < 40 ? '#ef4444' : g.trust < 60 ? '#fbbf24' : '#86efac']
                     ].map(function(st, si) {
-                      return h('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
-                        h('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                      return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
                         h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1])
                       );
                     })
@@ -2683,7 +2683,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Universal interventions row (not group-specific)
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '🛠 County-wide interventions'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 RESPONSE_INTERVENTIONS.filter(function(t) { return t.id !== 'targetedVacc'; }).map(function(t) {
@@ -2697,12 +2697,12 @@ window.StemLab = window.StemLab || {
             ),
 
             // Action log
-            outbreak.weekActions.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
-              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Week ' + outbreak.week + ' actions'),
+            outbreak.weekActions.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Week ' + outbreak.week + ' actions'),
               outbreak.weekActions.map(function(a, ai) {
                 return h('div', { key: ai }, '· ' + a.intervention + ' → ' + a.target + ' (' + a.hours + 'h)');
               })
-            ) : h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No interventions yet this week. Pick from the county-wide row or use Targeted vaccination on a demographic.')
+            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No interventions yet this week. Pick from the county-wide row or use Targeted vaccination on a demographic.')
           );
         })(),
 

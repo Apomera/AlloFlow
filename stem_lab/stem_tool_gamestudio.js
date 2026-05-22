@@ -79,7 +79,7 @@ window.StemLab = window.StemLab || {
     { id: 'spikes', label: 'Spikes', emoji: '\u26A0\uFE0F', color: '#dc2626' },
     { id: 'heart', label: 'Heart', emoji: '\u2764\uFE0F', color: '#ec4899' },
     { id: 'portal', label: 'Portal', emoji: '\uD83C\uDF00', color: '#7c3aed' },
-    { id: 'platform', label: 'Platform', emoji: '\u2796', color: '#94a3b8' },
+    { id: 'platform', label: 'Platform', emoji: '\u2796', color: 'var(--allo-stem-text-soft, #94a3b8)' },
     { id: 'player', label: 'Player', emoji: '\uD83E\uDDD1', color: '#8b5cf6' },
     { id: 'enemy', label: 'Enemy', emoji: '\uD83D\uDC7E', color: '#f43f5e' },
     { id: 'npc', label: 'NPC', emoji: '\uD83E\uDDD9', color: '#6366f1' },
@@ -916,7 +916,7 @@ window.StemLab = window.StemLab || {
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
-                  gap: '1px', background: '#e2e8f0', border: '1px solid #cbd5e1',
+                  gap: '1px', background: '#e2e8f0', border: '1px solid var(--allo-stem-border, #cbd5e1)',
                   maxWidth: Math.min(gridW * 28, 700) + 'px'
                 }
               },
@@ -1284,7 +1284,7 @@ window.StemLab = window.StemLab || {
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
-                  gap: '1px', background: '#1e293b'
+                  gap: '1px', background: 'var(--allo-stem-panel, #1e293b)'
                 }
               },
                 Array.from({ length: gridW * gridH }, function(_, i) {
