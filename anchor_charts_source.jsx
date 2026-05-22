@@ -186,6 +186,40 @@ const AnchorChartSection = React.memo((props) => {
   // Inline icon-prompt editor (Phase 10) — only shown while editing.
   const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
   const [showIconEditor, setShowIconEditor] = React.useState(false);
+  const [refinePrompt, setRefinePrompt] = React.useState('');
+  const [isRefining, setIsRefining] = React.useState(false);
+
+  const callGeminiImageEdit = props.callGeminiImageEdit || (typeof window !== 'undefined' && window.callGeminiImageEdit) || null;
+  const addToast = props.addToast || (() => {});
+
+  const handleRefineIcon = async () => {
+    if (!callGeminiImageEdit) {
+      addToast('Image refinement is not available.', 'error');
+      return;
+    }
+    const trimmed = (refinePrompt || '').trim();
+    if (!trimmed) return;
+    if (!iconUrl) return;
+    setIsRefining(true);
+    try {
+      const rawB64 = String(iconUrl).split(',')[1];
+      if (!rawB64) throw new Error('Invalid image format');
+      const marker = _markerFor(sectionIndex);
+      const fullRefinePrompt = `${trimmed}. Maintain the hand-drawn classroom-anchor-chart marker sketch style in ${marker.name} ink on a white background. No text or labels.`;
+      const resultB64 = await callGeminiImageEdit(fullRefinePrompt, rawB64);
+      if (resultB64) {
+        onChange({ ...section, iconUrl: resultB64 });
+        setRefinePrompt('');
+        addToast('Image refined successfully!', 'success');
+      }
+    } catch (e) {
+      console.error('[AnchorChart] refinement failed', e);
+      addToast('Failed to refine image.', 'error');
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
   React.useEffect(() => { setIconPromptDraft(iconPrompt); }, [iconPrompt]);
   const commitIconPrompt = () => {
     const trimmed = (iconPromptDraft || '').trim();
@@ -350,24 +384,46 @@ const AnchorChartSection = React.memo((props) => {
                 aria-expanded={showIconEditor}
               >{showIconEditor ? '▼ Hide icon prompt' : '▸ Edit icon prompt'}</button>
               {showIconEditor ? (
-                <div className="mt-2 flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    value={iconPromptDraft}
-                    onChange={(e) => setIconPromptDraft(e.target.value)}
-                    onBlur={commitIconPrompt}
-                    placeholder="Describe the icon (e.g., 'a friendly dragon doodle')"
-                    className="flex-1 bg-white/80 outline-none border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
-                    aria-label="Icon prompt"
-                  />
-                  {onRegenIcon ? (
-                    <button
-                      onClick={() => { commitIconPrompt(); onRegenIcon(sectionIndex); }}
-                      disabled={isRegeneratingIcon}
-                      className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
-                      style={{ color: marker.hex, borderColor: marker.hex, background: 'white' }}
-                    >{isRegeneratingIcon ? '⏳ Generating…' : '✨ Generate icon'}</button>
-                  ) : null}
+                <div className="space-y-2 mt-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={iconPromptDraft}
+                      onChange={(e) => setIconPromptDraft(e.target.value)}
+                      onBlur={commitIconPrompt}
+                      placeholder="Describe the icon (e.g., 'a friendly dragon doodle')"
+                      className="flex-1 bg-white/80 outline-none border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
+                      aria-label="Icon prompt"
+                    />
+                    {onRegenIcon ? (
+                      <button
+                        onClick={() => { commitIconPrompt(); onRegenIcon(sectionIndex); }}
+                        disabled={isRegeneratingIcon}
+                        className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
+                        style={{ color: marker.hex, borderColor: marker.hex, background: 'white' }}
+                      >{isRegeneratingIcon ? '⏳ Generating…' : '✨ Generate icon'}</button>
+                    ) : null}
+                  </div>
+                  {iconUrl && callGeminiImageEdit && (
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-200/50">
+                      <input
+                        type="text"
+                        value={refinePrompt}
+                        onChange={(e) => setRefinePrompt(e.target.value)}
+                        placeholder="Refine icon with AI (e.g., 'make it blue', 'add a gear')"
+                        className="flex-1 bg-white/80 outline-none border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
+                        aria-label="Refine icon prompt"
+                      />
+                      <button
+                        onClick={handleRefineIcon}
+                        disabled={isRefining || !refinePrompt.trim()}
+                        className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
+                        style={{ color: '#0369a1', borderColor: '#38bdf8', background: 'white' }}
+                      >
+                        {isRefining ? '⏳ Refining…' : '🪄 Refine with AI'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : null}
             </div>
@@ -384,7 +440,47 @@ const AnchorChartView = React.memo((props) => {
   const handleNoteUpdate = props.handleNoteUpdate || (() => {});
   const isTeacherMode = !!props.isTeacherMode;
   const callImagen = props.callImagen || null;
+  const callGeminiImageEdit = props.callGeminiImageEdit || (typeof window !== 'undefined' && window.callGeminiImageEdit) || null;
   const t = props.t || ((k, d) => d || k);
+
+  const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
+
+  const handleSuggestRubric = async () => {
+    if (!props.callGemini && !window.callGemini) {
+      addToastProp('AI generation needs an active connection. Please try again.');
+      return;
+    }
+    const callGeminiFn = props.callGemini || window.callGemini;
+    setIsGeneratingRubric(true);
+    try {
+      const sectionInfo = sections.map((s, i) => {
+        const bulletText = (s.bullets || []).filter(b => b.trim()).map(b => `  - ${b}`).join('\n');
+        return `Section ${i + 1}: ${s.label || '(untitled)'}\n${bulletText}`;
+      }).join('\n\n');
+      const prompt = [
+        'You are an expert curriculum designer writing a grading rubric/key concepts guideline for an interactive anchor chart.',
+        '',
+        'CHART TITLE: ' + (title || '(no title)'),
+        '',
+        'CHART SECTIONS AND CONTENT:',
+        sectionInfo,
+        '',
+        'Write a clear, specific, and concise rubric or key concepts list (K-12 level) explaining what students must demonstrate in their own answers for each section. Keep it focused on key academic standards and essential facts. The rubric should guide the AI in grading accuracy and thoughtfulness.',
+        'Provide ONLY the rubric text, no introduction, markdown formatting, or preamble.'
+      ].join('\n');
+      const raw = await callGeminiFn(prompt);
+      if (raw) {
+        setRubricDraft(String(raw).trim());
+        addToastProp('✨ AI rubric suggestion generated!');
+      }
+    } catch (err) {
+      console.warn('[AnchorChart] rubric suggestion failed', err && err.message);
+      addToastProp('Could not generate rubric suggestion. Try again.');
+    } finally {
+      setIsGeneratingRubric(false);
+    }
+  };
+
   // Bridge to Concept Pictionary — when present + session active, surfaces a
   // "Play Pictionary with these terms" button that hands the chart's section
   // labels to the Pictionary host as the round's concept candidates.
@@ -440,12 +536,24 @@ const AnchorChartView = React.memo((props) => {
       triedRef.current[key] = true;
       const marker = _markerFor(idx);
       const prompt = _iconPromptBiased(s.iconPrompt, marker.name);
-      callImagen(prompt, 256, 0.75).then((url) => {
+      callImagen(prompt, 256, 0.75).then(async (url) => {
         if (!url) return;
-        handleNoteUpdate('sections', (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: url } : sec));
+        let finalUrl = url;
+        if (callGeminiImageEdit) {
+          try {
+            const rawB64 = String(url).split(',')[1];
+            if (rawB64) {
+              const stripped = await callGeminiImageEdit('Remove all text, labels, letters, and words from the image. Keep the illustration clean.', rawB64);
+              if (stripped) finalUrl = stripped;
+            }
+          } catch (stripErr) {
+            console.warn('[AnchorChart] auto-strip failed', stripErr);
+          }
+        }
+        handleNoteUpdate('sections', (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
       }).catch(() => { /* swallow — section renders placeholder */ });
     });
-  }, [generatedContent.id, sections.length, callImagen]);
+  }, [generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
 
   const updateSection = (idx, nextSection) => {
     const next = sections.map((s, i) => i === idx ? nextSection : s);
@@ -458,7 +566,18 @@ const AnchorChartView = React.memo((props) => {
       const s = sections[idx] || {};
       const marker = _markerFor(idx);
       const prompt = _iconPromptBiased(s.iconPrompt || s.label, marker.name);
-      const url = await callImagen(prompt, 256, 0.75);
+      let url = await callImagen(prompt, 256, 0.75);
+      if (url && callGeminiImageEdit) {
+        try {
+          const rawB64 = String(url).split(',')[1];
+          if (rawB64) {
+            const stripped = await callGeminiImageEdit('Remove all text, labels, letters, and words from the image. Keep the illustration clean.', rawB64);
+            if (stripped) url = stripped;
+          }
+        } catch (stripErr) {
+          console.warn('[AnchorChart] manual-strip failed', stripErr);
+        }
+      }
       if (url) updateSection(idx, { ...s, iconUrl: url });
     } catch (_) { /* ignore */ }
     finally { setRegenIdx(-1); }
@@ -811,6 +930,8 @@ const AnchorChartView = React.memo((props) => {
                     return arr;
                   })()}
                   onStudentAnswerChange={(bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text)}
+                  callGeminiImageEdit={callGeminiImageEdit}
+                  addToast={addToastProp}
                 />
                 {isEditing ? (
                   <button
@@ -909,15 +1030,24 @@ const AnchorChartView = React.memo((props) => {
             <div className="text-[11px] text-slate-500 italic mt-1">
               Tip: the more specific your rubric, the more accurate the AI's grading.
             </div>
-            <div className="flex items-center justify-end gap-2 mt-4">
+            <div className="flex items-center justify-between mt-4">
               <button
-                onClick={() => setShowInteractiveDialog(false)}
-                className="px-3 py-1.5 text-sm font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-              >Cancel</button>
-              <button
-                onClick={handleArmInteractive}
-                className="px-4 py-1.5 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
-              >🎯 Arm for students</button>
+                onClick={handleSuggestRubric}
+                disabled={isGeneratingRubric}
+                className="px-3 py-1.5 text-xs font-bold rounded-full border border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 disabled:opacity-50"
+              >
+                {isGeneratingRubric ? '⏳ Suggesting…' : '🪄 Suggest Rubric with AI'}
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowInteractiveDialog(false)}
+                  className="px-3 py-1.5 text-sm font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                >Cancel</button>
+                <button
+                  onClick={handleArmInteractive}
+                  className="px-4 py-1.5 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
+                >🎯 Arm for students</button>
+              </div>
             </div>
           </div>
         </div>

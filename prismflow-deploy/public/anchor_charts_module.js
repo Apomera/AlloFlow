@@ -177,6 +177,38 @@ const AnchorChartSection = React.memo((props) => {
   const iconPrompt = section.iconPrompt || "";
   const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
   const [showIconEditor, setShowIconEditor] = React.useState(false);
+  const [refinePrompt, setRefinePrompt] = React.useState("");
+  const [isRefining, setIsRefining] = React.useState(false);
+  const callGeminiImageEdit = props.callGeminiImageEdit || typeof window !== "undefined" && window.callGeminiImageEdit || null;
+  const addToast = props.addToast || (() => {
+  });
+  const handleRefineIcon = async () => {
+    if (!callGeminiImageEdit) {
+      addToast("Image refinement is not available.", "error");
+      return;
+    }
+    const trimmed = (refinePrompt || "").trim();
+    if (!trimmed) return;
+    if (!iconUrl) return;
+    setIsRefining(true);
+    try {
+      const rawB64 = String(iconUrl).split(",")[1];
+      if (!rawB64) throw new Error("Invalid image format");
+      const marker2 = _markerFor(sectionIndex);
+      const fullRefinePrompt = `${trimmed}. Maintain the hand-drawn classroom-anchor-chart marker sketch style in ${marker2.name} ink on a white background. No text or labels.`;
+      const resultB64 = await callGeminiImageEdit(fullRefinePrompt, rawB64);
+      if (resultB64) {
+        onChange({ ...section, iconUrl: resultB64 });
+        setRefinePrompt("");
+        addToast("Image refined successfully!", "success");
+      }
+    } catch (e) {
+      console.error("[AnchorChart] refinement failed", e);
+      addToast("Failed to refine image.", "error");
+    } finally {
+      setIsRefining(false);
+    }
+  };
   React.useEffect(() => {
     setIconPromptDraft(iconPrompt);
   }, [iconPrompt]);
@@ -310,7 +342,7 @@ const AnchorChartSection = React.memo((props) => {
         "aria-expanded": showIconEditor
       },
       showIconEditor ? "\u25BC Hide icon prompt" : "\u25B8 Edit icon prompt"
-    ), showIconEditor ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
+    ), showIconEditor ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -333,7 +365,26 @@ const AnchorChartSection = React.memo((props) => {
         style: { color: marker.hex, borderColor: marker.hex, background: "white" }
       },
       isRegeneratingIcon ? "\u23F3 Generating\u2026" : "\u2728 Generate icon"
-    ) : null) : null) : null))
+    ) : null), iconUrl && callGeminiImageEdit && /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-200/50" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: refinePrompt,
+        onChange: (e) => setRefinePrompt(e.target.value),
+        placeholder: "Refine icon with AI (e.g., 'make it blue', 'add a gear')",
+        className: "flex-1 bg-white/80 outline-none border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]",
+        "aria-label": "Refine icon prompt"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handleRefineIcon,
+        disabled: isRefining || !refinePrompt.trim(),
+        className: "text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap",
+        style: { color: "#0369a1", borderColor: "#38bdf8", background: "white" }
+      },
+      isRefining ? "\u23F3 Refining\u2026" : "\u{1FA84} Refine with AI"
+    ))) : null) : null))
   );
 });
 const AnchorChartView = React.memo((props) => {
@@ -342,7 +393,45 @@ const AnchorChartView = React.memo((props) => {
   });
   const isTeacherMode = !!props.isTeacherMode;
   const callImagen = props.callImagen || null;
+  const callGeminiImageEdit = props.callGeminiImageEdit || typeof window !== "undefined" && window.callGeminiImageEdit || null;
   const t = props.t || ((k, d) => d || k);
+  const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
+  const handleSuggestRubric = async () => {
+    if (!props.callGemini && !window.callGemini) {
+      addToastProp("AI generation needs an active connection. Please try again.");
+      return;
+    }
+    const callGeminiFn = props.callGemini || window.callGemini;
+    setIsGeneratingRubric(true);
+    try {
+      const sectionInfo = sections.map((s, i) => {
+        const bulletText = (s.bullets || []).filter((b) => b.trim()).map((b) => `  - ${b}`).join("\n");
+        return `Section ${i + 1}: ${s.label || "(untitled)"}
+${bulletText}`;
+      }).join("\n\n");
+      const prompt = [
+        "You are an expert curriculum designer writing a grading rubric/key concepts guideline for an interactive anchor chart.",
+        "",
+        "CHART TITLE: " + (title || "(no title)"),
+        "",
+        "CHART SECTIONS AND CONTENT:",
+        sectionInfo,
+        "",
+        "Write a clear, specific, and concise rubric or key concepts list (K-12 level) explaining what students must demonstrate in their own answers for each section. Keep it focused on key academic standards and essential facts. The rubric should guide the AI in grading accuracy and thoughtfulness.",
+        "Provide ONLY the rubric text, no introduction, markdown formatting, or preamble."
+      ].join("\n");
+      const raw = await callGeminiFn(prompt);
+      if (raw) {
+        setRubricDraft(String(raw).trim());
+        addToastProp("\u2728 AI rubric suggestion generated!");
+      }
+    } catch (err) {
+      console.warn("[AnchorChart] rubric suggestion failed", err && err.message);
+      addToastProp("Could not generate rubric suggestion. Try again.");
+    } finally {
+      setIsGeneratingRubric(false);
+    }
+  };
   const activeSessionCode = props.activeSessionCode || null;
   const onPlayPictionary = typeof props.onPlayPictionary === "function" ? props.onPlayPictionary : null;
   if (!generatedContent || generatedContent.type !== "anchor-chart") return null;
@@ -387,13 +476,25 @@ const AnchorChartView = React.memo((props) => {
       triedRef.current[key] = true;
       const marker = _markerFor(idx);
       const prompt = _iconPromptBiased(s.iconPrompt, marker.name);
-      callImagen(prompt, 256, 0.75).then((url) => {
+      callImagen(prompt, 256, 0.75).then(async (url) => {
         if (!url) return;
-        handleNoteUpdate("sections", (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: url } : sec));
+        let finalUrl = url;
+        if (callGeminiImageEdit) {
+          try {
+            const rawB64 = String(url).split(",")[1];
+            if (rawB64) {
+              const stripped = await callGeminiImageEdit("Remove all text, labels, letters, and words from the image. Keep the illustration clean.", rawB64);
+              if (stripped) finalUrl = stripped;
+            }
+          } catch (stripErr) {
+            console.warn("[AnchorChart] auto-strip failed", stripErr);
+          }
+        }
+        handleNoteUpdate("sections", (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
       }).catch(() => {
       });
     });
-  }, [generatedContent.id, sections.length, callImagen]);
+  }, [generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
   const updateSection = (idx, nextSection) => {
     const next = sections.map((s, i) => i === idx ? nextSection : s);
     handleNoteUpdate("sections", next);
@@ -405,7 +506,18 @@ const AnchorChartView = React.memo((props) => {
       const s = sections[idx] || {};
       const marker = _markerFor(idx);
       const prompt = _iconPromptBiased(s.iconPrompt || s.label, marker.name);
-      const url = await callImagen(prompt, 256, 0.75);
+      let url = await callImagen(prompt, 256, 0.75);
+      if (url && callGeminiImageEdit) {
+        try {
+          const rawB64 = String(url).split(",")[1];
+          if (rawB64) {
+            const stripped = await callGeminiImageEdit("Remove all text, labels, letters, and words from the image. Keep the illustration clean.", rawB64);
+            if (stripped) url = stripped;
+          }
+        } catch (stripErr) {
+          console.warn("[AnchorChart] manual-strip failed", stripErr);
+        }
+      }
       if (url) updateSection(idx, { ...s, iconUrl: url });
     } catch (_) {
     } finally {
@@ -752,7 +864,9 @@ const AnchorChartView = React.memo((props) => {
             });
             return arr;
           })(),
-          onStudentAnswerChange: (bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text)
+          onStudentAnswerChange: (bidx, text) => handleStudentAnswerChange(s.id || s.label, bidx, text),
+          callGeminiImageEdit,
+          addToast: addToastProp
         }
       ),
       isEditing ? /* @__PURE__ */ React.createElement(
@@ -803,7 +917,15 @@ const AnchorChartView = React.memo((props) => {
         className: "w-full border-2 border-slate-300 focus:border-fuchsia-500 rounded-lg p-3 text-sm leading-relaxed outline-none",
         "aria-label": "Rubric or key concepts"
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic mt-1" }, "Tip: the more specific your rubric, the more accurate the AI's grading."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mt-4" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic mt-1" }, "Tip: the more specific your rubric, the more accurate the AI's grading."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-4" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handleSuggestRubric,
+        disabled: isGeneratingRubric,
+        className: "px-3 py-1.5 text-xs font-bold rounded-full border border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 disabled:opacity-50"
+      },
+      isGeneratingRubric ? "\u23F3 Suggesting\u2026" : "\u{1FA84} Suggest Rubric with AI"
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setShowInteractiveDialog(false),
@@ -817,7 +939,7 @@ const AnchorChartView = React.memo((props) => {
         className: "px-4 py-1.5 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
       },
       "\u{1F3AF} Arm for students"
-    )))
+    ))))
   ) : null, /* @__PURE__ */ React.createElement(
     AnchorChartCritiqueOverlay,
     {

@@ -23976,7 +23976,7 @@ ${_toolList}
                 })}
                 {activeView === 'anchor-chart' && window.AlloModules && window.AlloModules.AnchorChartView && React.createElement(window.AlloModules.AnchorChartView, {
                     t, generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callImagen,
+                    handleNoteUpdate, callImagen, callGeminiImageEdit,
                     activeSessionCode,
                     onPlayPictionary: handlePlayPictionaryFromAnchorChart,
                     // Phase 10: interactive grading + XP
