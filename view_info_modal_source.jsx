@@ -501,7 +501,7 @@ function getFeatureDetails(title) {
       inputs: ["Raw source text (PDF, URL, doc, or typed topic)"],
       engine: ["Extract reading levels & key concepts", "Perform fact verification checks", "Identify potential readability gaps"],
       outputs: ["Core passage content", "Extracted key terms & vocabulary list", "Source difficulty metrics"],
-      customizations: ["Text vs URL input", "Language translation selection"],
+      customizations: ["Text vs URL input", "Facts verification toggles"],
       proTip: "Run Source Analysis first to auto-configure appropriate vocabulary, timelines, and concept sort games."
     },
     "Leveled Text": {

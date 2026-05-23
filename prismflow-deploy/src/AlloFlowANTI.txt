@@ -15267,6 +15267,34 @@ Return ONLY valid JSON in this format:
     doc.open();
     doc.write(html);
     doc.close();
+
+    // Initialize edit mode in the iframe doc directly here
+    try {
+      doc.designMode = 'on';
+      if (doc.body) doc.body.spellcheck = true;
+      const editStyle = doc.createElement('style');
+      editStyle.textContent = `
+        [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
+        img { cursor: move; transition: outline 0.2s; }
+        img:hover { outline: 2px dashed #6366f1; }
+        ::selection { background: #c7d2fe; }
+      `;
+      doc.head.appendChild(editStyle);
+      doc.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+          if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+          else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
+          else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
+          else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
+          else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+          else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
+          else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+        }
+      });
+    } catch (_editorErr) {
+      warnLog('[Export preview] failed to initialize editor in iframe:', _editorErr);
+    }
+
     // If the user has the A11y inspector toggled on, re-paint it now —
     // doc.write() just wiped every badge/style/legend from the iframe.
     // Without this, the inspector flashes briefly and disappears whenever

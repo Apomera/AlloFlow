@@ -860,11 +860,19 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
     }
   }
   function pointerMove(e) {
+    if (drawingRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const host = e.currentTarget;
     const { x, y } = getXY(e, host);
     if (isErase) {
       setEraseCursor({ x, y });
-      if (drawingRef.current) performErase(x, y);
+      if (drawingRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        performErase(x, y);
+      }
       return;
     }
     if (!drawingRef.current) return;
@@ -884,6 +892,8 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
       if (isErase) setEraseCursor(null);
       return;
     }
+    e.preventDefault();
+    e.stopPropagation();
     drawingRef.current = false;
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
     if (isErase) {
