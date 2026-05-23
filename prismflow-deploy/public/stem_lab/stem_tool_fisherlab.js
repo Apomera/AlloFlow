@@ -7532,7 +7532,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(0x9bc4d8); // hazy sky
-    scene.fog = new THREE.Fog(0xa8c8d8, 80, 480);
+    var fogColor = new THREE.Color(0xa8c8d8);
+    scene.fog = new THREE.Fog(fogColor, 80, 480);
 
     var camera = new THREE.PerspectiveCamera(65, W / H, 0.5, 1200);
     camera.position.set(0, 4, 12);
@@ -7575,35 +7576,158 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       initialZ[iw] = waterPosArr[iw * 3 + 2];
     }
 
-    // ─── Boat (procedural skiff: rectangular hull + cabin + console)
+    // ─── Pine Trees and Shoreline Islands
+    function createPineTree(x, z) {
+      var tree = new THREE.Group();
+      var trunkGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.8, 5);
+      var trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3b32 }); // brown
+      var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.y = 0.4;
+      tree.add(trunk);
+
+      var foliageGeo = new THREE.ConeGeometry(0.5, 1.6, 5);
+      var foliageMat = new THREE.MeshLambertMaterial({ color: 0x14532d }); // deep green
+      var foliage = new THREE.Mesh(foliageGeo, foliageMat);
+      foliage.position.y = 1.4;
+      tree.add(foliage);
+
+      tree.position.set(x, 0.0, z);
+      var s = 0.75 + Math.random() * 0.5;
+      tree.scale.set(s, s, s);
+      scene.add(tree);
+    }
+
+    function createIsland(x, z, radius, height) {
+      var islandGeo = new THREE.CylinderGeometry(radius * 0.85, radius, height, 8);
+      var islandMat = new THREE.MeshLambertMaterial({ color: 0x5e7a4e });
+      var island = new THREE.Mesh(islandGeo, islandMat);
+      island.position.set(x, height / 2 - 0.2, z);
+      scene.add(island);
+
+      // Populate with pine trees
+      var numTrees = Math.floor(5 + Math.random() * 6);
+      for (var i = 0; i < numTrees; i++) {
+        var tx = x + (Math.random() - 0.5) * (radius * 1.1);
+        var tz = z + (Math.random() - 0.5) * (radius * 1.1);
+        createPineTree(tx, tz);
+      }
+    }
+
+    // Coastal Maine Mainland Background
+    for (var i = 0; i < 18; i++) {
+      var tx = -22 + i * 2.6 + (Math.random() - 0.5) * 1.5;
+      var tz = 13.5 + (Math.random() - 0.5) * 2;
+      createPineTree(tx, tz);
+    }
+
+    // Add 3 islands in the bay
+    createIsland(-32, -45, 8, 2);
+    createIsland(35, -75, 10, 2);
+    createIsland(-38, -115, 7, 2);
+
+    // ─── Boat (detailed skiff with gunwales, windshield, console controls, nav lights)
     var boat = new THREE.Group();
+    
+    // Hull
     var hullGeo = new THREE.BoxGeometry(2.0, 0.6, 4.8);
     var hullMat = new THREE.MeshLambertMaterial({ color: 0xf4eedb });
     var hull = new THREE.Mesh(hullGeo, hullMat);
     hull.position.y = 0.3;
     boat.add(hull);
-    var deck = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.05, 4.4), new THREE.MeshLambertMaterial({ color: 0xc8b890 }));
-    deck.position.y = 0.62;
+    
+    // Gunwales (left/right walls)
+    var portWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 4.4), new THREE.MeshLambertMaterial({ color: 0xf4eedb }));
+    portWall.position.set(-0.95, 0.65, 0);
+    boat.add(portWall);
+    var stbdWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 4.4), new THREE.MeshLambertMaterial({ color: 0xf4eedb }));
+    stbdWall.position.set(0.95, 0.65, 0);
+    boat.add(stbdWall);
+
+    // Deck
+    var deck = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.05, 4.4), new THREE.MeshLambertMaterial({ color: 0xc8b890 }));
+    deck.position.y = 0.42;
     boat.add(deck);
+    
+    // Console
     var console_ = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.5), new THREE.MeshLambertMaterial({ color: 0x335066 }));
-    console_.position.set(0, 1.0, 0.3);
+    console_.position.set(0, 0.75, 0.3);
     boat.add(console_);
+    
+    // Windshield (glass plane)
+    var windshieldGeo = new THREE.PlaneGeometry(0.8, 0.35);
+    var windshieldMat = new THREE.MeshLambertMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+    var windshield = new THREE.Mesh(windshieldGeo, windshieldMat);
+    windshield.position.set(0, 1.25, 0.45);
+    boat.add(windshield);
+
+    // Steering wheel
+    var wheelGeo = new THREE.TorusGeometry(0.18, 0.025, 4, 12);
+    var wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+    var wheel = new THREE.Mesh(wheelGeo, wheelMat);
+    wheel.position.set(0, 0.95, 0.15);
+    wheel.rotation.x = -Math.PI / 4;
+    boat.add(wheel);
+
+    // Throttle lever
+    var leverGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.2);
+    var leverMat = new THREE.MeshLambertMaterial({ color: 0xd1d5db });
+    var lever = new THREE.Mesh(leverGeo, leverMat);
+    lever.position.set(0.38, 0.95, 0.2);
+    lever.rotation.x = Math.PI / 6;
+    boat.add(lever);
+
+    // Motor
     var motor = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.5), new THREE.MeshLambertMaterial({ color: 0x222831 }));
-    motor.position.set(0, 0.6, -2.3);
+    motor.position.set(0, 0.65, -2.3);
     boat.add(motor);
-    // Bow point — narrow front
+    
+    // Transom (back seat)
+    var transom = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.2, 0.4), new THREE.MeshLambertMaterial({ color: 0xc8b890 }));
+    transom.position.set(0, 0.5, -1.9);
+    boat.add(transom);
+
+    // Bow point
     var bow = new THREE.Mesh(
-      new THREE.ConeGeometry(0.9, 1.2, 4),
+      new THREE.ConeGeometry(1.0, 1.2, 4),
       new THREE.MeshLambertMaterial({ color: 0xf4eedb })
     );
     bow.rotation.x = -Math.PI / 2;
     bow.rotation.z = Math.PI / 4;
     bow.position.set(0, 0.35, 2.4);
     boat.add(bow);
+
+    // ─── Navigation Lights (COLREGS Compliance)
+    // Red Light (Port side bow)
+    var portLight = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+    portLight.position.set(-0.8, 0.8, 2.0);
+    boat.add(portLight);
+    var portGlow = new THREE.PointLight(0xff0000, 0.0, 4);
+    portGlow.position.set(-0.8, 0.8, 2.0);
+    boat.add(portGlow);
+
+    // Green Light (Starboard side bow)
+    var stbdLight = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+    stbdLight.position.set(0.8, 0.8, 2.0);
+    boat.add(stbdLight);
+    var stbdGlow = new THREE.PointLight(0x00ff00, 0.0, 4);
+    stbdGlow.position.set(0.8, 0.8, 2.0);
+    boat.add(stbdGlow);
+
+    // White Light (Stern pole)
+    var sternPole = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.2), new THREE.MeshLambertMaterial({ color: 0xd1d5db }));
+    sternPole.position.set(-0.7, 1.0, -2.1);
+    boat.add(sternPole);
+    var sternLight = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    sternLight.position.set(-0.7, 1.6, -2.1);
+    boat.add(sternLight);
+    var sternGlow = new THREE.PointLight(0xffffff, 0.0, 8);
+    sternGlow.position.set(-0.7, 1.6, -2.1);
+    boat.add(sternGlow);
+
     boat.position.set(0, 0, 0);
     scene.add(boat);
 
-    // ─── Buoyage — populated based on region. Maine: a small harbor approach + open-water exit.
+    // ─── Buoyage — populated based on region.
     var buoys = [];
     function addBuoy(x, z, type) {
       var g = new THREE.Group();
@@ -7627,18 +7751,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var btm = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16), new THREE.MeshLambertMaterial({ color: 0xe8d048 }));
         topPart.position.y = 1.0; btm.position.y = 0.4;
         g.add(topPart); g.add(btm);
-        // 2 up-cones topmark
         var t1 = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.4, 8), new THREE.MeshLambertMaterial({ color: 0x111111 }));
         t1.position.set(-0.14, 1.6, 0); g.add(t1);
         var t2 = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.4, 8), new THREE.MeshLambertMaterial({ color: 0x111111 }));
         t2.position.set(0.14, 1.6, 0); g.add(t2);
         label = 'north cardinal';
       } else if (type === 'safe-water') {
-        // red+white sphere
         var sph = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 12), new THREE.MeshLambertMaterial({ color: 0xd03830 }));
         sph.position.y = 0.6;
         g.add(sph);
-        // white horizontal band
         var band = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.18, 16), new THREE.MeshLambertMaterial({ color: 0xf6f6f6 }));
         band.position.y = 0.6;
         g.add(band);
@@ -7651,11 +7772,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return g;
     }
 
-    // Channel out of harbor: red nuns on east (boat's right when outbound is south)
-    // Player heads south (negative z) when leaving harbor.
-    // Outbound (returning is reversed): keep red on starboard means red on west when leaving, east when returning.
-    // We'll place red on west (negative x), green on east (positive x) — so when player heads south (outbound), red on starboard (W). Good for "leaving harbor" view.
-    // Actually IALA-B: red right RETURNING. Returning = heading INTO harbor (north). So red on east when returning north => red on west when leaving south. Confirm: when leaving harbor heading south, red is on your starboard (west when heading south). ✓
     addBuoy(-6, -10, 'red-nun');
     addBuoy(6, -10, 'green-can');
     addBuoy(-7, -30, 'red-nun');
@@ -7664,6 +7780,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     addBuoy(9, -55, 'green-can');
     addBuoy(0, -85, 'safe-water');
     addBuoy(-15, -120, 'cardinal-N'); // marker for the ledge area
+
+    // ─── Lobster Traps (apprentice gameplay buoys)
+    function addLobsterBuoy(x, z, id, label, bodyColor, stripeColor) {
+      var g = new THREE.Group();
+      
+      var topGeo = new THREE.ConeGeometry(0.3, 0.8, 8);
+      var btmGeo = new THREE.ConeGeometry(0.3, 0.8, 8);
+      btmGeo.rotateX(Math.PI);
+      
+      var bodyMat = new THREE.MeshLambertMaterial({ color: bodyColor });
+      var stripeMat = new THREE.MeshLambertMaterial({ color: stripeColor });
+      
+      var tCone = new THREE.Mesh(topGeo, bodyMat);
+      tCone.position.y = 0.6;
+      var bCone = new THREE.Mesh(btmGeo, bodyMat);
+      bCone.position.y = 0.2;
+      
+      g.add(tCone);
+      g.add(bCone);
+      
+      var stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.31, 0.2, 8), stripeMat);
+      stripe.position.y = 0.4;
+      g.add(stripe);
+      
+      var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.2), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+      pole.position.y = 1.0;
+      g.add(pole);
+      
+      var flag = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.02), stripeMat);
+      flag.position.set(0.15, 1.5, 0);
+      g.add(flag);
+
+      g.position.set(x, -0.15, z);
+      g.userData = { type: 'lobster-buoy', id: id, label: label, hauled: false };
+      scene.add(g);
+      buoys.push(g);
+      return g;
+    }
+
+    addLobsterBuoy(-15, -25, 'buoy-1', 'Lobster Trap #1', 0xfacc15, 0x1d4ed8); // Yellow/Blue
+    addLobsterBuoy(18, -70, 'buoy-2', 'Lobster Trap #2', 0xdc2626, 0xffffff); // Red/White
+    addLobsterBuoy(-8, -110, 'buoy-3', 'Lobster Trap #3', 0xea580c, 0x16a34a); // Orange/Green
 
     // ─── Halfway Rock waypoint marker (mission destination)
     var rock = new THREE.Group();
@@ -7698,7 +7856,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     );
     land.position.set(0, 2, 15);
     scene.add(land);
-    // simple "lighthouse" landmark for bearings
+
+    // ─── Lighthouse landmark
     var lighthouse = new THREE.Group();
     var lhBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 3, 16), new THREE.MeshLambertMaterial({ color: 0xf5f5f5 }));
     lhBase.position.y = 1.5;
@@ -7707,8 +7866,253 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     lhTop.position.y = 3.5;
     lighthouse.add(lhTop);
     lighthouse.position.set(15, 4, 14);
-    lighthouse.userData = { label: 'Portland Head Light (proxy)' };
+    lighthouse.userData = { label: 'Portland Head Light' };
     scene.add(lighthouse);
+
+    // ─── Rotating lighthouse beam
+    var beamGeo = new THREE.CylinderGeometry(0.1, 8.0, 100, 16, 1, true);
+    beamGeo.translate(0, 50, 0); // pivot at lantern base
+    var beamMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+    var beam = new THREE.Mesh(beamGeo, beamMat);
+    beam.rotation.x = Math.PI / 2;
+    beam.position.set(15, 7.5, 14);
+    beam.visible = false;
+    scene.add(beam);
+
+    // ─── Particle System (Wake / Foam)
+    var particles = [];
+    var maxParticles = 60;
+    var particleGeo = new THREE.BoxGeometry(0.25, 0.1, 0.25);
+    var particleMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+    for (var ip = 0; ip < maxParticles; ip++) {
+      var pMesh = new THREE.Mesh(particleGeo, particleMat.clone());
+      pMesh.visible = false;
+      scene.add(pMesh);
+      particles.push({
+        mesh: pMesh,
+        age: 0,
+        life: 0,
+        vel: new THREE.Vector3(),
+        pos: new THREE.Vector3()
+      });
+    }
+    var nextParticleIdx = 0;
+    function spawnParticle(pos, vel, life) {
+      var p = particles[nextParticleIdx];
+      p.mesh.position.copy(pos);
+      p.mesh.visible = true;
+      p.mesh.material.opacity = 0.6;
+      p.pos.copy(pos);
+      p.vel.copy(vel);
+      p.age = 0;
+      p.life = life;
+      nextParticleIdx = (nextParticleIdx + 1) % maxParticles;
+    }
+
+    // ─── Web Audio API Synthesizer
+    var audioCtx = null;
+    var engineOsc = null;
+    var rumbleOsc = null;
+    var engineGain = null;
+    var filterNode = null;
+    var waveNoise = null;
+    var waveGain = null;
+    var soundEnabled = false;
+    var thunderOsc = null;
+    var thunderGain = null;
+
+    function initAudio() {
+      if (audioCtx) return;
+      try {
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        
+        engineOsc = audioCtx.createOscillator();
+        engineOsc.type = 'sawtooth';
+        engineOsc.frequency.value = 25;
+        
+        rumbleOsc = audioCtx.createOscillator();
+        rumbleOsc.type = 'triangle';
+        rumbleOsc.frequency.value = 12;
+
+        filterNode = audioCtx.createBiquadFilter();
+        filterNode.type = 'lowpass';
+        filterNode.frequency.value = 120;
+
+        engineGain = audioCtx.createGain();
+        engineGain.gain.value = 0.0;
+
+        engineOsc.connect(filterNode);
+        rumbleOsc.connect(filterNode);
+        filterNode.connect(engineGain);
+        engineGain.connect(audioCtx.destination);
+
+        // White noise waves
+        var bufferSize = 2 * audioCtx.sampleRate;
+        var noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        var output = noiseBuffer.getChannelData(0);
+        for (var i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+
+        waveNoise = audioCtx.createBufferSource();
+        waveNoise.buffer = noiseBuffer;
+        waveNoise.loop = true;
+
+        var waveFilter = audioCtx.createBiquadFilter();
+        waveFilter.type = 'bandpass';
+        waveFilter.frequency.value = 250;
+        waveFilter.Q.value = 1.0;
+
+        waveGain = audioCtx.createGain();
+        waveGain.gain.value = 0.0;
+
+        waveNoise.connect(waveFilter);
+        waveFilter.connect(waveGain);
+        waveGain.connect(audioCtx.destination);
+
+        // Thunder oscillator
+        thunderOsc = audioCtx.createOscillator();
+        thunderOsc.type = 'sawtooth';
+        thunderOsc.frequency.value = 10;
+        var thunderFilter = audioCtx.createBiquadFilter();
+        thunderFilter.type = 'lowpass';
+        thunderFilter.frequency.value = 40;
+        thunderGain = audioCtx.createGain();
+        thunderGain.gain.value = 0.0;
+        thunderOsc.connect(thunderFilter);
+        thunderFilter.connect(thunderGain);
+        thunderGain.connect(audioCtx.destination);
+
+        engineOsc.start(0);
+        rumbleOsc.start(0);
+        waveNoise.start(0);
+        thunderOsc.start(0);
+        console.log('[FisherLab] Audio context initialized');
+      } catch (e) {
+        console.error('[FisherLab] Audio init failed:', e);
+      }
+    }
+
+    function updateAudioSynth() {
+      if (!audioCtx || audioCtx.state === 'suspended') return;
+      
+      var absSpeed = Math.abs(boatState.speed);
+      var pitch = 25 + absSpeed * 10.0 + Math.abs(boatState.throttle) * 8.0;
+      if (keys[' ']) pitch += 15.0;
+
+      engineOsc.frequency.setTargetAtTime(pitch, audioCtx.currentTime, 0.1);
+      rumbleOsc.frequency.setTargetAtTime(pitch * 0.5, audioCtx.currentTime, 0.1);
+
+      var cutoff = 110 + absSpeed * 25.0 + Math.abs(boatState.throttle) * 20.0;
+      filterNode.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.15);
+
+      var engineVol = soundEnabled ? (0.04 + Math.abs(boatState.throttle) * 0.08 + absSpeed * 0.03) : 0.0;
+      engineGain.gain.setTargetAtTime(engineVol, audioCtx.currentTime, 0.1);
+
+      var waveVol = soundEnabled ? (0.02 + Math.sin(elapsed * 0.5) * 0.015 + (boatState.weather === 'rainy' ? 0.03 : 0.0)) : 0.0;
+      waveGain.gain.setTargetAtTime(waveVol, audioCtx.currentTime, 0.3);
+
+      // Thunder rumbles
+      if (soundEnabled && boatState.weather === 'rainy' && Math.random() < dt * 0.02) {
+        var now = audioCtx.currentTime;
+        thunderGain.gain.setValueAtTime(0.0, now);
+        thunderGain.gain.linearRampToValueAtTime(0.3 + Math.random() * 0.3, now + 0.3);
+        thunderGain.gain.exponentialRampToValueAtTime(0.001, now + 5.0 + Math.random() * 3.0);
+        statusCb({ type: 'weather', text: '⚡ Distant thunder rumbles across Casco Bay...' });
+      }
+    }
+
+    function toggleSound(on) {
+      soundEnabled = !!on;
+      if (soundEnabled) {
+        if (!audioCtx) initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      }
+    }
+
+    // ─── Weather Rain Particle System
+    var rainLines = [];
+    var maxRain = 120;
+    var rainGeo = new THREE.BufferGeometry();
+    var rainVertices = new Float32Array([0, 0, 0, 0, -1.5, 0]);
+    rainGeo.setAttribute('position', new THREE.BufferAttribute(rainVertices, 3));
+    var rainMat = new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.35 });
+    for (var ir = 0; ir < maxRain; ir++) {
+      var line = new THREE.Line(rainGeo, rainMat);
+      line.visible = false;
+      scene.add(line);
+      rainLines.push({
+        mesh: line,
+        pos: new THREE.Vector3(),
+        speed: 35 + Math.random() * 15
+      });
+    }
+
+    // ─── Lobster Hauling Logic
+    var haulActive = false;
+    var haulTimer = 0;
+    var haulDuration = 2.0;
+    var haulTrapMesh = null;
+
+    var trapGeo = new THREE.BoxGeometry(1.5, 0.8, 1.0);
+    var trapMat = new THREE.MeshLambertMaterial({ color: 0x1e3a8a, wireframe: true });
+    haulTrapMesh = new THREE.Mesh(trapGeo, trapMat);
+    haulTrapMesh.visible = false;
+    scene.add(haulTrapMesh);
+
+    // Procedural 3D Lobster inside trap
+    var lobsterGroup = new THREE.Group();
+    var lobBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 0.6), new THREE.MeshLambertMaterial({ color: 0x451a03 }));
+    lobBody.rotation.x = Math.PI / 2;
+    lobsterGroup.add(lobBody);
+    var clawL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.25), new THREE.MeshLambertMaterial({ color: 0x451a03 }));
+    clawL.position.set(-0.2, 0.05, 0.35);
+    lobsterGroup.add(clawL);
+    var clawR = clawL.clone();
+    clawR.position.x = 0.2;
+    lobsterGroup.add(clawR);
+    var tail = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.06, 0.4), new THREE.MeshLambertMaterial({ color: 0x451a03 }));
+    tail.position.set(0, -0.05, -0.45);
+    lobsterGroup.add(tail);
+    lobsterGroup.position.set(0, -0.2, 0); // bottom of trap
+    haulTrapMesh.add(lobsterGroup);
+
+    function startHauling() {
+      if (haulActive || !boatState.closestTrapId) return;
+      var buoy = buoys.find(function(b) { return b.userData.id === boatState.closestTrapId; });
+      if (!buoy || buoy.userData.hauled) {
+        flAnnounce('This trap has already been hauled.');
+        return;
+      }
+      haulActive = true;
+      haulTimer = 0;
+      
+      // Creaking noise sweep
+      if (audioCtx && audioCtx.state !== 'suspended') {
+        try {
+          var creak = audioCtx.createOscillator();
+          creak.type = 'triangle';
+          var creakGain = audioCtx.createGain();
+          creakGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          creakGain.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 1.8);
+          creak.frequency.setValueAtTime(60, audioCtx.currentTime);
+          creak.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 1.5);
+          creak.connect(creakGain);
+          creakGain.connect(audioCtx.destination);
+          creak.start();
+          creak.stop(audioCtx.currentTime + 2.0);
+        } catch (_) {}
+      }
+      flAnnounce('Hauling lobster trap...');
+      statusCb({ type: 'haul-start', text: 'Hauling trap at ' + buoy.userData.label + '…' });
+    }
 
     // ─── Boat state
     var boatState = {
@@ -7716,34 +8120,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       heading: Math.PI, // facing south (out of harbor)
       speed: 0,
       throttle: 0,
+      roll: 0,
+      pitch: 0,
       passedRedNun: false,
       reachedHalfwayRock: false,
       returnedHome: false,
       fuel: 100,
       fishLanded: 0,
-      keptKeeperCod: false
+      keptKeeperCod: false,
+      lobstersHauled: 0,
+      keeperLobsters: 0,
+      closestTrapId: null,
+      closestTrapHauled: false,
+      timeOfDay: 'day',
+      weather: 'clear',
+      cameraView: 'chase'
     };
     boat.position.copy(boatState.pos);
+
+    // ─── Unified Environment controller function
+    function updateEnvironment(tod, weather) {
+      var bg, fg, fgNear, fgFar, ambColor, ambInt, sunColor, sunInt, waterColor;
+      
+      // Base values from Time of Day
+      if (tod === 'day') {
+        bg = 0x9bc4d8; fg = 0xa8c8d8; fgNear = 80; fgFar = 480;
+        ambColor = 0xeaf2f8; ambInt = 0.65;
+        sunColor = 0xfff2c8; sunInt = 0.9;
+        waterColor = 0x2f6a8c;
+      } else if (tod === 'sunset') {
+        bg = 0xfc8c44; fg = 0xfb923c; fgNear = 50; fgFar = 300;
+        ambColor = 0x7c2d12; ambInt = 0.45;
+        sunColor = 0xfc6a38; sunInt = 0.6;
+        waterColor = 0x244f6b;
+      } else if (tod === 'night') {
+        bg = 0x020617; fg = 0x020617; fgNear = 20; fgFar = 140;
+        ambColor = 0x1e293b; ambInt = 0.15;
+        sunColor = 0xbae6fd; sunInt = 0.2;
+        waterColor = 0x0f222e;
+      }
+
+      // Modifiers from Weather
+      if (weather === 'foggy') {
+        bg = 0x94a3b8; fg = 0x94a3b8; fgNear = 10; fgFar = 55;
+        ambInt = ambInt * 0.7;
+        sunInt = sunInt * 0.25;
+        waterColor = 0x334155;
+      } else if (weather === 'rainy') {
+        bg = 0x334155; fg = 0x334155; fgNear = 35; fgFar = 220;
+        ambColor = 0x1e293b; ambInt = ambInt * 0.6;
+        sunColor = 0x64748b; sunInt = sunInt * 0.3;
+        waterColor = 0x1e293b;
+      }
+
+      scene.background.setHex(bg);
+      scene.fog.color.setHex(fg);
+      scene.fog.near = fgNear;
+      scene.fog.far = fgFar;
+      ambient.color.setHex(ambColor);
+      ambient.intensity = ambInt;
+      sun.color.setHex(sunColor);
+      sun.intensity = sunInt;
+      waterMat.color.setHex(waterColor);
+
+      // Navigation lights & beam active when dark/reduced visibility
+      var dark = (tod === 'sunset' || tod === 'night' || weather === 'foggy' || weather === 'rainy');
+      portGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
+      stbdGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
+      sternGlow.intensity = dark ? (tod === 'night' ? 1.5 : 1.0) : 0.0;
+      beam.visible = dark;
+    }
 
     // ─── Keyboard state
     var keys = {};
     function onKeyDown(e) {
+      if (document.activeElement && (
+        document.activeElement.tagName === 'INPUT' ||
+        document.activeElement.tagName === 'SELECT' ||
+        document.activeElement.tagName === 'TEXTAREA'
+      )) {
+        return;
+      }
       keys[e.key.toLowerCase()] = true;
       if (e.key === ' ') e.preventDefault();
+
+      if (e.key === 'h' || e.key === 'H') {
+        startHauling();
+      }
+      if (e.key === 'v' || e.key === 'V') {
+        var views = ['chase', 'firstperson', 'topdown'];
+        var idx = views.indexOf(boatState.cameraView || 'chase');
+        var nextIdx = (idx + 1) % views.length;
+        var nextView = views[nextIdx];
+        boatState.cameraView = nextView;
+        if (opts.onCameraToggle) opts.onCameraToggle(nextView);
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        var nextSound = !soundEnabled;
+        toggleSound(nextSound);
+        if (opts.onSoundToggle) opts.onSoundToggle(nextSound);
+      }
     }
     function onKeyUp(e) { keys[e.key.toLowerCase()] = false; }
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
-    // ─── Camera follow params
-    var camOffset = new THREE.Vector3(0, 3.5, 9);
     var cameraTarget = new THREE.Vector3();
-
-    // ─── HUD callback (set by caller; receives status snapshots)
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
 
-    // ─── Game tick
     var t0 = performance.now();
     var raf = null;
     var alive = true;
@@ -7757,59 +8242,230 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       lastT = now;
       elapsed += dt;
 
-      // Input
+      // Inputs
       var accel = 0, steer = 0;
       if (keys['w'] || keys['arrowup']) accel = 1;
       if (keys['s'] || keys['arrowdown']) accel = -0.6;
       if (keys['a'] || keys['arrowleft']) steer = 1;
       if (keys['d'] || keys['arrowright']) steer = -1;
-      if (keys[' ']) accel = 1.5; // throttle boost
+      if (keys[' ']) accel = 1.5;
 
-      // Boat physics (simplified)
+      // Boat physics & dynamic pitch/roll feedback
       boatState.throttle += (accel - boatState.throttle) * 0.04;
       boatState.speed += boatState.throttle * 6 * dt;
-      boatState.speed *= 0.985; // drag
+      boatState.speed *= 0.985;
       if (boatState.speed > 8) boatState.speed = 8;
       if (boatState.speed < -3) boatState.speed = -3;
       boatState.heading += steer * dt * 0.9 * Math.min(1, Math.abs(boatState.speed) / 2 + 0.2);
+      
+      var targetRoll = -steer * 0.12 * Math.min(1.0, Math.abs(boatState.speed) / 2.0);
+      boatState.roll += (targetRoll - boatState.roll) * 0.08;
+
+      var targetPitch = boatState.throttle * 0.04 + (keys[' '] ? 0.03 : 0);
+      boatState.pitch += (targetPitch - boatState.pitch) * 0.08;
+
       var dx = Math.sin(boatState.heading) * boatState.speed * dt;
       var dz = Math.cos(boatState.heading) * boatState.speed * dt;
       boatState.pos.x += dx;
-      boatState.pos.z -= dz; // -z is forward in our convention (south)
-      // Fuel burn
+      boatState.pos.z -= dz;
       boatState.fuel -= Math.abs(boatState.throttle) * dt * 0.5;
 
-      // Update boat mesh
       boat.position.x = boatState.pos.x;
       boat.position.z = boatState.pos.z;
+      
       boat.rotation.y = boatState.heading;
-      // Subtle bob
+      boat.rotation.x = boatState.pitch;
+      boat.rotation.z = boatState.roll;
+
+      // Bobbing
       if (!reducedMotion) {
         boat.position.y = Math.sin(elapsed * 1.6) * 0.06;
-        boat.rotation.z = Math.sin(elapsed * 1.2) * 0.04;
+        boat.rotation.z += Math.sin(elapsed * 1.2) * 0.03;
       } else {
         boat.position.y = 0;
-        boat.rotation.z = 0;
       }
 
-      // Mission events: detect first red-nun pass on starboard
+      // Rotate lighthouse beam
+      if (beam.visible) {
+        beam.rotation.y += dt * 0.4;
+      }
+
+      // Wake Particles emission
+      if (Math.abs(boatState.speed) > 0.5 && !reducedMotion) {
+        var spawnRate = Math.min(5, Math.ceil(Math.abs(boatState.speed) * 0.8));
+        if (keys[' ']) spawnRate *= 2;
+        for (var esp = 0; esp < spawnRate; esp++) {
+          var angleOffset = boatState.heading + (Math.random() - 0.5) * 0.2;
+          var dist = 2.4 + Math.random() * 0.4;
+          var px = boat.position.x - Math.sin(angleOffset) * dist;
+          var pz = boat.position.z + Math.cos(angleOffset) * dist;
+          var py = 0.05 + (Math.random() - 0.5) * 0.05;
+
+          var speedFactor = boatState.speed * 0.4;
+          var vx = -Math.sin(boatState.heading) * speedFactor + (Math.random() - 0.5) * 0.5;
+          var vz = Math.cos(boatState.heading) * speedFactor + (Math.random() - 0.5) * 0.5;
+          var vy = Math.random() * 0.3;
+
+          spawnParticle(
+            new THREE.Vector3(px, py, pz),
+            new THREE.Vector3(vx, vy, vz),
+            0.8 + Math.random() * 0.6
+          );
+        }
+      }
+
+      // Bow Spray Particles (Centrifugal splash)
+      if (Math.abs(boatState.speed) > 4.0 && !reducedMotion) {
+        var emitStarboard = steer > 0.1 || Math.random() < 0.15;
+        var emitPort = steer < -0.1 || Math.random() < 0.15;
+        
+        var forwardX = Math.sin(boatState.heading);
+        var forwardZ = -Math.cos(boatState.heading);
+        var rightX = Math.cos(boatState.heading);
+        var rightZ = Math.sin(boatState.heading);
+
+        if (emitPort) {
+          var px = boat.position.x - rightX * 0.8 + forwardX * 1.8;
+          var pz = boat.position.z + rightZ * 0.8 - forwardZ * 1.8;
+          var vx = -rightX * (1.5 + Math.random() * 1.5) + forwardX * (boatState.speed * 0.3);
+          var vz = rightZ * (1.5 + Math.random() * 1.5) - forwardZ * (boatState.speed * 0.3);
+          spawnParticle(new THREE.Vector3(px, 0.1, pz), new THREE.Vector3(vx, 1.0 + Math.random() * 1.2, vz), 0.4 + Math.random() * 0.3);
+        }
+        if (emitStarboard) {
+          var px = boat.position.x + rightX * 0.8 + forwardX * 1.8;
+          var pz = boat.position.z - rightZ * 0.8 - forwardZ * 1.8;
+          var vx = rightX * (1.5 + Math.random() * 1.5) + forwardX * (boatState.speed * 0.3);
+          var vz = -rightZ * (1.5 + Math.random() * 1.5) - forwardZ * (boatState.speed * 0.3);
+          spawnParticle(new THREE.Vector3(px, 0.1, pz), new THREE.Vector3(vx, 1.0 + Math.random() * 1.2, vz), 0.4 + Math.random() * 0.3);
+        }
+      }
+
+      // Update Particles
+      if (!reducedMotion) {
+        for (var ip = 0; ip < maxParticles; ip++) {
+          var p = particles[ip];
+          if (!p.mesh.visible) continue;
+          p.age += dt;
+          if (p.age >= p.life) {
+            p.mesh.visible = false;
+          } else {
+            p.pos.addScaledVector(p.vel, dt);
+            p.vel.y -= 2.0 * dt;
+            p.pos.y = Math.max(0.02, p.pos.y);
+            p.mesh.position.copy(p.pos);
+            var ratio = p.age / p.life;
+            p.mesh.material.opacity = 0.6 * (1.0 - ratio);
+            var sc = 1.0 + ratio * 2.0;
+            p.mesh.scale.set(sc, sc, sc);
+          }
+        }
+      }
+
+      // Update falling rain lines
+      if (boatState.weather === 'rainy' && !reducedMotion) {
+        for (var ir = 0; ir < maxRain; ir++) {
+          var r = rainLines[ir];
+          if (!r.mesh.visible) {
+            r.pos.set(
+              boat.position.x + (Math.random() - 0.5) * 80,
+              20 + Math.random() * 10,
+              boat.position.z + (Math.random() - 0.5) * 80
+            );
+            r.mesh.visible = true;
+          }
+          r.pos.y -= r.speed * dt;
+          r.mesh.position.copy(r.pos);
+          if (r.pos.y < 0) {
+            r.mesh.visible = false;
+          }
+        }
+      } else {
+        for (var ir = 0; ir < maxRain; ir++) {
+          rainLines[ir].mesh.visible = false;
+        }
+      }
+
+      // Proximity detection for lobster buoys
+      var closestTrap = null;
+      var closestDist = Infinity;
+      for (var ib = 0; ib < buoys.length; ib++) {
+        var bb = buoys[ib];
+        if (bb.userData.type !== 'lobster-buoy') continue;
+        var d = boat.position.distanceTo(bb.position);
+        if (d < closestDist) {
+          closestDist = d;
+          closestTrap = bb;
+        }
+      }
+      var activeTrapId = null;
+      if (closestDist < 6.0) {
+        activeTrapId = closestTrap.userData.id;
+      }
+      boatState.closestTrapId = activeTrapId;
+      boatState.closestTrapHauled = activeTrapId ? closestTrap.userData.hauled : false;
+
+      // Handle active lobster hauling
+      if (haulActive) {
+        haulTimer += dt;
+        haulTrapMesh.visible = true;
+        var rightVec = new THREE.Vector3(Math.cos(boatState.heading), 0, -Math.sin(boatState.heading));
+        var haulPos = boat.position.clone().addScaledVector(rightVec, 1.4);
+        var ratio = Math.min(1.0, haulTimer / haulDuration);
+        haulPos.y = -6.0 + ratio * 6.45;
+        haulTrapMesh.position.copy(haulPos);
+        haulTrapMesh.rotation.y = boatState.heading;
+
+        if (haulTimer >= haulDuration) {
+          haulActive = false;
+          haulTrapMesh.visible = false;
+          
+          var buoy = buoys.find(function(b) { return b.userData.id === boatState.closestTrapId; });
+          if (buoy) buoy.userData.hauled = true;
+
+          // Generate catch
+          var length = 3.0 + Math.random() * 2.8; // 3.0" to 5.8"
+          var isFemale = Math.random() < 0.5;
+          var isVNotched = isFemale && (Math.random() < 0.25);
+          var lengthStr = length.toFixed(2);
+          var keeper = false;
+
+          if (length < 3.25) {
+            keeper = false;
+          } else if (length > 5.0) {
+            keeper = false;
+          } else if (isVNotched) {
+            keeper = false;
+          } else {
+            keeper = true;
+          }
+
+          statusCb({
+            type: 'lobster-haul',
+            length: length,
+            isFemale: isFemale,
+            isVNotched: isVNotched,
+            isKeeper: keeper,
+            buoyLabel: buoy.userData.label,
+            text: 'Hauled ' + buoy.userData.label + ' — inspection required!'
+          });
+        }
+      }
+
+      // Check red nun pass
       if (!boatState.passedRedNun) {
         for (var ib = 0; ib < buoys.length; ib++) {
           var bb = buoys[ib];
           if (bb.userData.type !== 'red-nun') continue;
           var d = boat.position.distanceTo(bb.position);
           if (d < 4) {
-            // relative position: is buoy to player's starboard (right)?
             var toBuoy = new THREE.Vector3().subVectors(bb.position, boat.position);
-            // rotate by -heading; in our convention starboard is local +x
             var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
             if (localX > 0.5) {
               boatState.passedRedNun = true;
-              flAnnounce('Correctly passed red nun on starboard. Red right returning — wait, outbound. Either way, you kept the channel.');
+              flAnnounce('Passed red nun on starboard.');
               statusCb({ type: 'milestone', text: 'Passed first red nun on starboard ✓' });
             } else if (localX < -0.5) {
-              // Player passed on wrong side
-              flAnnounce('You passed the red nun on the wrong side. In IALA-B, keep red on your starboard when returning.');
+              flAnnounce('Passed red nun on the wrong side (port).');
               statusCb({ type: 'violation', text: 'Buoyage violation: passed red nun on port side' });
             }
           }
@@ -7821,7 +8477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var dRock = boat.position.distanceTo(rock.position);
         if (dRock < 6) {
           boatState.reachedHalfwayRock = true;
-          flAnnounce('Reached Halfway Rock. Drop a jig — let\'s see if there\'s a keeper cod down there.');
+          flAnnounce('Reached Halfway Rock. Drop a jig (press F).');
           statusCb({ type: 'milestone', text: 'Reached Halfway Rock — press F to fish' });
         }
       }
@@ -7836,15 +8492,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
 
-      // Fishing — at Halfway Rock, F key triggers a fish
+      // Fishing key trigger
       if (boatState.reachedHalfwayRock && keys['f']) {
-        keys['f'] = false; // single-fire
-        // Simulate a fish: random species, random length
+        keys['f'] = false;
         var roll = Math.random();
         var sp, len;
         if (roll < 0.35) {
           sp = MAINE_SPECIES[0]; // cod
-          len = 16 + Math.floor(Math.random() * 18); // 16-33
+          len = 16 + Math.floor(Math.random() * 18);
         } else if (roll < 0.65) {
           sp = MAINE_SPECIES[1]; // haddock
           len = 14 + Math.floor(Math.random() * 14);
@@ -7859,32 +8514,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           species: sp,
           length: len,
           isKeeper: isKeeper,
-          text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — must release (under min size ' + sp.minSize + '")')
+          text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — release (min ' + sp.minSize + '")')
         });
         if (sp.id === 'cod' && isKeeper) boatState.keptKeeperCod = true;
       }
 
-      // Wave displacement
+      // Wave animation
       if (!reducedMotion) {
         for (var iv = 0; iv < waterPosArr.length / 3; iv++) {
           var px = waterPosArr[iv * 3];
-          var pz = waterPosArr[iv * 3 + 1]; // plane lies in xy before rotation
+          var pz = waterPosArr[iv * 3 + 1];
           waterPosArr[iv * 3 + 2] = initialZ[iv] + Math.sin(px * 0.08 + elapsed * 1.1) * 0.15 + Math.cos(pz * 0.12 + elapsed * 0.9) * 0.12;
         }
         waterPositions.needsUpdate = true;
       }
 
-      // Camera follow
-      var desiredCam = new THREE.Vector3(
-        boat.position.x - Math.sin(boatState.heading) * 9,
-        4,
-        boat.position.z + Math.cos(boatState.heading) * 9
-      );
-      camera.position.lerp(desiredCam, reducedMotion ? 0.25 : 0.08);
-      cameraTarget.set(boat.position.x, 1.5, boat.position.z);
-      camera.lookAt(cameraTarget);
+      // Update Audio Synth modulation
+      updateAudioSynth();
 
-      // HUD
+      // Camera views update
+      var cameraView = boatState.cameraView || 'chase';
+      if (cameraView === 'chase') {
+        var desiredCam = new THREE.Vector3(
+          boat.position.x - Math.sin(boatState.heading) * 9,
+          4,
+          boat.position.z + Math.cos(boatState.heading) * 9
+        );
+        camera.position.lerp(desiredCam, reducedMotion ? 0.25 : 0.08);
+        cameraTarget.set(boat.position.x, 1.5, boat.position.z);
+        camera.lookAt(cameraTarget);
+      } else if (cameraView === 'firstperson') {
+        var forwardX = Math.sin(boatState.heading);
+        var forwardZ = -Math.cos(boatState.heading);
+        var camPos = boat.position.clone();
+        camPos.x += forwardX * 0.4;
+        camPos.z -= forwardZ * 0.4;
+        camPos.y = 1.35;
+        camera.position.copy(camPos);
+        cameraTarget.set(camPos.x + forwardX * 20.0, 1.35, camPos.z - forwardZ * 20.0);
+        camera.lookAt(cameraTarget);
+      } else if (cameraView === 'topdown') {
+        var desiredCam = new THREE.Vector3(boat.position.x, 26, boat.position.z);
+        camera.position.lerp(desiredCam, 0.1);
+        cameraTarget.set(boat.position.x, 0, boat.position.z);
+        camera.lookAt(cameraTarget);
+      }
+
       hudCb({
         speed: boatState.speed,
         heading: boatState.heading,
@@ -7894,9 +8569,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         reachedHalfwayRock: boatState.reachedHalfwayRock,
         returnedHome: boatState.returnedHome,
         keptKeeperCod: boatState.keptKeeperCod,
+        lobstersHauled: boatState.lobstersHauled,
+        keeperLobsters: boatState.keeperLobsters,
+        closestTrapId: boatState.closestTrapId,
+        closestTrapHauled: boatState.closestTrapHauled,
         elapsed: elapsed,
         distToRock: boat.position.distanceTo(rock.position),
-        distToDock: boat.position.distanceTo(dock.position)
+        distToDock: boat.position.distanceTo(dock.position),
+        cameraView: cameraView,
+        timeOfDay: boatState.timeOfDay,
+        weather: boatState.weather
       });
 
       renderer.render(scene, camera);
@@ -7904,7 +8586,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     raf = requestAnimationFrame(tick);
 
-    // Resize handler
     function onResize() {
       var nw = canvas.clientWidth || 720;
       var nh = canvas.clientHeight || 420;
@@ -7922,10 +8603,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('resize', onResize);
         try { renderer.dispose(); } catch (_) {}
+        if (audioCtx) {
+          try { audioCtx.close(); } catch (_) {}
+        }
       },
-      getBoatState: function() { return boatState; }
+      getBoatState: function() { return boatState; },
+      setTimeOfDay: function(tod) {
+        boatState.timeOfDay = tod;
+        updateEnvironment(tod, boatState.weather);
+      },
+      setCameraView: function(view) {
+        boatState.cameraView = view;
+      },
+      toggleSound: function(on) {
+        toggleSound(on);
+      },
+      haulTrap: function() {
+        startHauling();
+      },
+      setWeather: function(w) {
+        boatState.weather = w;
+        updateEnvironment(boatState.timeOfDay, w);
+      },
+      addKeeperLobster: function(isKeeper) {
+        boatState.lobstersHauled += 1;
+        if (isKeeper) {
+          boatState.keeperLobsters += 1;
+        }
+      }
     };
   }
+
+
 
   // ───────────────────────────────────────────────────────────
   // RENDER
@@ -7965,6 +8674,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var canvasRef = useRef(null);
     var harborRef = useRef(null);
 
+    var soundHook = useState(false);
+    var soundOn = soundHook[0], setSoundOn = soundHook[1];
+    var todHook = useState('day');
+    var timeOfDay = todHook[0], setTimeOfDayState = todHook[1];
+    var camHook = useState('chase');
+    var cameraView = camHook[0], setCameraViewState = camHook[1];
+    var weatherHook = useState('clear');
+    var weather = weatherHook[0], setWeatherState = weatherHook[1];
+    var activeLobsterHook = useState(null);
+    var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
+    var caliperHook = useState(3.5);
+    var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
+
+    useEffect(function() {
+      if (harborRef.current && harborRef.current.toggleSound) {
+        harborRef.current.toggleSound(soundOn);
+      }
+    }, [soundOn]);
+
+    useEffect(function() {
+      if (harborRef.current && harborRef.current.setTimeOfDay) {
+        harborRef.current.setTimeOfDay(timeOfDay);
+      }
+    }, [timeOfDay]);
+
+    useEffect(function() {
+      if (harborRef.current && harborRef.current.setCameraView) {
+        harborRef.current.setCameraView(cameraView);
+      }
+    }, [cameraView]);
+
+    useEffect(function() {
+      if (harborRef.current && harborRef.current.setWeather) {
+        harborRef.current.setWeather(weather);
+      }
+    }, [weather]);
+
     // persist region changes
     useEffect(function() {
       var s = loadState();
@@ -7986,34 +8732,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         ss.speciesCaught[ev.species.id] = (ss.speciesCaught[ev.species.id] || 0) + 1;
         saveState(ss);
       }
+      if (ev.type === 'lobster' && ev.isKeeper) {
+        var newLog = lifeLog.concat([{ species: 'lobster', length: ev.length, ts: Date.now() }]);
+        setLifeLog(newLog);
+        var ss = loadState();
+        ss.lifeLog = newLog;
+        ss.speciesCaught = ss.speciesCaught || {};
+        ss.speciesCaught['lobster'] = (ss.speciesCaught['lobster'] || 0) + 1;
+        saveState(ss);
+      }
+      if (ev.type === 'lobster-haul') {
+        setActiveLobster(ev);
+        setCaliperVal(3.5);
+      }
     }
 
     function startSim() {
-      function actuallyStart() {
-        var c = canvasRef.current;
-        if (!c) return;
-        if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
-        try {
-          harborRef.current = initHarborSim(c, {
-            onHudUpdate: setHud,
-            onStatus: pushStatus
-          });
-          if (!harborRef.current) {
-            throw new Error('WebGLRenderer could not be initialized.');
-          }
-          setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
-          flAnnounce('FisherLab 3D sim launched. Use WASD or arrow keys to steer, Space for throttle boost, F to fish at Halfway Rock.');
-        } catch (err) {
-          console.error('[FisherLab] Error starting 3D simulation:', err);
-          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-          flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
-        }
-      }
       if (window.THREE) {
-        actuallyStart();
+        setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
       } else {
         setSim(function(s) { return Object.assign({}, s, { loading: true }); });
-        ensureThreeJS(actuallyStart, function() {
+        ensureThreeJS(function() {
+          setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
+        }, function() {
           setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
           flAnnounce('3D engine could not load. Use Chart Mode (2D fallback) instead.');
         });
@@ -8025,6 +8766,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       harborRef.current = null;
       setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     }
+
+    useEffect(function() {
+      if (sim.active && canvasRef.current && !harborRef.current) {
+        try {
+          harborRef.current = initHarborSim(canvasRef.current, {
+            onHudUpdate: setHud,
+            onStatus: pushStatus,
+            onSoundToggle: setSoundOn,
+            onCameraToggle: setCameraViewState
+          });
+          if (!harborRef.current) {
+            throw new Error('WebGLRenderer could not be initialized.');
+          }
+          harborRef.current.toggleSound(soundOn);
+          harborRef.current.setTimeOfDay(timeOfDay);
+          harborRef.current.setCameraView(cameraView);
+          harborRef.current.setWeather(weather);
+          flAnnounce('FisherLab 3D sim launched. Use WASD/arrows to steer, Space for boost, F to fish, H to haul trap, V to cycle camera, M to toggle sound.');
+        } catch (err) {
+          console.error('[FisherLab] Error starting 3D simulation:', err);
+          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+          flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
+        }
+      }
+    }, [sim.active]);
 
     useEffect(function() {
       return function() { if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose(); };
@@ -8144,18 +8910,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       { id: 'quiz', label: '✅ Quiz' }
     ];
 
+    var CATEGORIES = [
+      { id: 'core', label: '⚓ Core Sim & Charts', name: 'Core Sim', icon: '⚓', tabs: ['home', 'sim', 'chart', 'nightnav', 'spots', 'voyages', 'chartsymbols', 'chartguide'] },
+      { id: 'safety', label: '🛟 Seamanship & Safety', name: 'Safety & Seamanship', icon: '🛟', tabs: ['buoyage', 'colregs', 'vhf', 'knots', 'knotsteps', 'survival', 'safety', 'boatskills', 'boatregs', 'emergency', 'safetyman', 'safetychk', 'seamanship', 'maintenance', 'engmaint', 'law'] },
+      { id: 'biology', label: '🐟 Biology & Ecology', name: 'Biology & Ecology', icon: '🐟', tabs: ['species', 'extspecies', 'idkey', 'habitats', 'inverts', 'seabirds', 'mammals', 'invasives', 'deepdives', 'rightwhale', 'watercolumn', 'ecosystem', 'coddeep', 'striperdeep', 'alewifedeep', 'tunadeep'] },
+      { id: 'fisheries', label: '🦞 Fisheries & Gear', name: 'Fisheries & Gear', icon: '🦞', tabs: ['gear', 'gearmaster', 'bait', 'boats', 'zones', 'regs', 'regsdeep', 'lobsterconserve', 'license', 'conservation', 'mpas', 'mgmtmile', 'ethics', 'techguides'] },
+      { id: 'science', label: '🌡️ Weather & Science', name: 'Weather & Science', icon: '🌡️', tabs: ['climate', 'climatedeep', 'weather', 'weathertips', 'navmath', 'navprob', 'textbook', 'tides'] },
+      { id: 'culture', label: '🌲 Culture & History', name: 'Culture & History', icon: '🌲', tabs: ['wabanaki', 'wabfigures', 'history', 'vessels', 'ports', 'harbors', 'regional', 'culinary', 'voices', 'notablepeople', 'books', 'women', 'families', 'lighthouses', 'waterfrontdeep'] },
+      { id: 'careers', label: '🧰 Student & Careers', name: 'Student & Careers', icon: '🧰', tabs: ['lessonplans', 'activities', 'studyguide', 'training', 'mentorship', 'careers', 'studcareer', 'workforce', 'success', 'community', 'fishfacts', 'fishessays', 'termessays', 'globalcontext', 'indgroups', 'regframework', 'playbooks', 'yearplan', 'future'] },
+      { id: 'study', label: '🎓 Study Tools & Quiz', name: 'Study & Quiz', icon: '🎓', tabs: ['quiz', 'achievements', 'glossary', 'extglossary', 'bibliography', 'bibext', 'refnumbers', 'events', 'studentfaq', 'faqpub'] }
+    ];
+
     function tabBar() {
-      return h('div', { role: 'tablist', 'aria-label': 'FisherLab sections',
-        style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-        TABS.map(function(t) {
-          var selected = tab === t.id;
-          return h('button', { key: t.id, role: 'tab', 'aria-selected': selected,
-            className: 'fl-btn',
-            onClick: function() { setTab(t.id); flAnnounce(t.label + ' tab open'); },
-            style: { padding: '8px 12px', background: selected ? '#0ea5e9' : 'rgba(15,23,42,0.7)',
-              color: selected ? '#04141f' : '#cbd5e1', border: '1px solid ' + (selected ? '#38bdf8' : 'rgba(100,116,139,0.4)'),
-              borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, t.label);
-        }));
+      var activeCatObj = CATEGORIES.find(function(c) { return c.tabs.indexOf(tab) !== -1; }) || CATEGORIES[0];
+      var activeCat = activeCatObj.id;
+
+      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+        // Category grid
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
+          CATEGORIES.map(function(cat) {
+            var isSelected = activeCat === cat.id;
+            return h('button', {
+              key: cat.id,
+              onClick: function() {
+                setTab(cat.tabs[0]);
+                flAnnounce(cat.label + ' category open');
+              },
+              style: {
+                padding: '10px 8px',
+                background: isSelected ? 'linear-gradient(135deg, #0ea5e9, #0284c7)' : 'linear-gradient(135deg, #0f172a, #1e293b)',
+                color: isSelected ? '#ffffff' : '#94a3b8',
+                border: '1px solid ' + (isSelected ? '#38bdf8' : 'rgba(100,116,139,0.3)'),
+                borderRadius: 8,
+                fontSize: 11,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                transition: 'all 0.2s',
+                boxShadow: isSelected ? '0 0 10px rgba(14,165,233,0.25)' : 'none'
+              }
+            },
+              h('span', { style: { fontSize: 14 } }, cat.icon),
+              h('span', null, cat.name)
+            );
+          })
+        ),
+        // Secondary sub-tab row (only for sub-tabs in active category)
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' } },
+          activeCatObj.tabs.map(function(tId) {
+            var tObj = TABS.find(function(tabEntry) { return tabEntry.id === tId; });
+            if (!tObj) return null;
+            var selected = tab === tId;
+            return h('button', {
+              key: tId,
+              role: 'tab',
+              'aria-selected': selected,
+              className: 'fl-btn',
+              onClick: function() { setTab(tId); flAnnounce(tObj.label + ' tab open'); },
+              style: {
+                padding: '6px 10px',
+                background: selected ? '#0ea5e9' : 'rgba(15,23,42,0.5)',
+                color: selected ? '#04141f' : '#cbd5e1',
+                border: '1px solid ' + (selected ? '#38bdf8' : 'rgba(100,116,139,0.2)'),
+                borderRadius: 6,
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer'
+              }
+            }, tObj.label);
+          })
+        )
+      );
     }
 
     // ─── Region toggle
@@ -8246,31 +9074,337 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               '▶ Cast off — start Mission 1')) : null,
           sim.active ? h('div', { style: { position: 'relative' } },
-            h('canvas', { ref: canvasRef, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: '#9bc4d8' },
+            // Sound, View and Weather Controls bar
+            h('div', { style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
+              h('button', {
+                className: 'fl-btn',
+                onClick: function() { setSoundOn(!soundOn); },
+                style: { padding: '6px 12px', background: soundOn ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: soundOn ? '#04141f' : '#cbd5e1', border: '1px solid ' + (soundOn ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, soundOn ? '🔊 Sound: ON (M)' : '🔇 Sound: OFF (M)'),
+              h('div', { style: { display: 'flex', gap: 4 } },
+                ['chase', 'firstperson', 'topdown'].map(function(view) {
+                  var isSel = cameraView === view;
+                  var labels = { chase: '📹 Chase', firstperson: '👁️ First-Person', topdown: '🛰️ Top-Down' };
+                  return h('button', {
+                    key: view,
+                    onClick: function() { setCameraViewState(view); },
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, labels[view]);
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 4 } },
+                ['day', 'sunset', 'night'].map(function(tod) {
+                  var isSel = timeOfDay === tod;
+                  var labels = { day: '☀️ Day', sunset: '🌅 Sunset', night: '🌙 Night' };
+                  return h('button', {
+                    key: tod,
+                    onClick: function() { setTimeOfDayState(tod); },
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, labels[tod]);
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 4 } },
+                ['clear', 'foggy', 'rainy'].map(function(w) {
+                  var isSel = weather === w;
+                  var labels = { clear: '☀️ Clear', foggy: '🌫️ Foggy', rainy: '🌧️ Rainy' };
+                  return h('button', {
+                    key: w,
+                    onClick: function() { setWeatherState(w); },
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, labels[w]);
+                })
+              ),
+              hud.closestTrapId && !hud.closestTrapHauled ? h('button', {
+                className: 'fl-btn',
+                onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
+                style: { marginLeft: 'auto', padding: '6px 12px', background: '#fbbf24', color: '#04141f', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+              }, '🦞 Haul Trap (H)') : null
+            ),
+            h('canvas', { ref: canvasRef, style: { width: '100%', height: 460, display: 'block', borderRadius: '0 0 8px 8px', background: '#9bc4d8' },
               'aria-label': '3D harbor scene. Use WASD or arrow keys to steer the boat. Press F at Halfway Rock to fish.' }),
-            // HUD overlay
-            h('div', { style: { position: 'absolute', top: 10, left: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-              h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
-              h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
-              h('div', null, 'Fuel: ', h('b', { style: { color: (hud.fuel || 100) < 30 ? '#fb923c' : '#86efac' } }, Math.max(0, hud.fuel || 0).toFixed(0) + '%')),
-              h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0))),
+            
+            // HUD Instruments and Compass Dial overlay
+            h('div', { style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
+              h('div', { style: { textAlign: 'center', marginBottom: 8, fontSize: 10, color: '#38bdf8', fontWeight: 'bold' } }, 'INSTRUMENTS'),
+              // Rotating Compass
+              h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8, position: 'relative' } },
+                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', style: { transform: 'rotate(' + (-(hud.heading || 0) * 180 / Math.PI) + 'deg)', transition: 'transform 0.1s ease-out' } },
+                  h('circle', { cx: 50, cy: 50, r: 45, fill: '#0b1329', stroke: '#38bdf8', strokeWidth: 2 }),
+                  h('text', { x: 50, y: 22, textAnchor: 'middle', fontSize: 16, fill: '#ef4444', fontWeight: 'bold' }, 'N'),
+                  h('text', { x: 78, y: 55, textAnchor: 'middle', fontSize: 14, fill: '#cbd5e1' }, 'E'),
+                  h('text', { x: 50, y: 88, textAnchor: 'middle', fontSize: 14, fill: '#cbd5e1' }, 'S'),
+                  h('text', { x: 22, y: 55, textAnchor: 'middle', fontSize: 14, fill: '#cbd5e1' }, 'W'),
+                  h('circle', { cx: 50, cy: 50, r: 3, fill: '#38bdf8' }),
+                  h('line', { x1: 50, y1: 10, x2: 50, y2: 90, stroke: 'rgba(56,189,248,0.2)', strokeWidth: 1 }),
+                  h('line', { x1: 10, y1: 50, x2: 90, y2: 50, stroke: 'rgba(56,189,248,0.2)', strokeWidth: 1 })
+                ),
+                // Heading index pointer
+                h('div', { style: { position: 'absolute', top: -3, left: 'calc(50% - 5px)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '6px solid #ef4444', zIndex: 11 } })
+              ),
+              h('div', { style: { borderTop: '1px solid rgba(56,189,248,0.2)', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
+                h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
+                h('div', null, 'Fuel: ', h('b', { style: { color: (hud.fuel || 100) < 30 ? '#fb923c' : '#86efac' } }, Math.max(0, hud.fuel || 0).toFixed(0) + '%')),
+                h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0)),
+                h('div', null, 'Lobster Keepers: ', h('b', { style: { color: '#fbbf24' } }, hud.keeperLobsters || 0)),
+                h('div', null, 'Traps Hauled: ', h('b', { style: { color: '#bae6fd' } }, hud.lobstersHauled || 0))
+              ),
+              // Throttle level indicator bar
+              h('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 35 } }, 'Throttle:'),
+                h('div', { style: { flex: 1, height: 6, background: '#1e293b', borderRadius: 3, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.2)' } },
+                  h('div', { style: { height: '100%', width: Math.min(100, Math.max(0, (hud.speed || 0) / 8 * 100)) + '%', background: '#38bdf8' } })
+                )
+              )
+            ),
+
             // Mission progress
-            h('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220 } },
+            h('div', { style: { position: 'absolute', top: 58, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
               h('div', { style: { fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, 'Mission 1'),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Passed red nun' : '• Pass red nun on starboard'),
               h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reached Halfway Rock' : '• Reach Halfway Rock'),
               h('div', { style: { fontSize: 10 } }, hud.keptKeeperCod ? '✓ Landed keeper cod' : '• Land a cod ≥22"'),
+              h('div', { style: { fontSize: 10 } }, (hud.keeperLobsters || 0) >= 1 ? '✓ Caught keeper lobster' : '• Haul lobster trap & keep a legal lobster (3-1/4" to 5")'),
               h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Returned home' : '• Return to dock')),
+            
             // Status log
-            h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8 } },
+            h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
               (status || []).slice(-4).map(function(ev, ei) {
-                var color = ev.type === 'fish' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#bae6fd'));
+                var color = ev.type === 'fish' || ev.type === 'lobster' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#bae6fd'));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
+            
             // Stop button
             h('button', { onClick: stopSim, className: 'fl-btn',
-              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
-              '✕ Exit sim')) : null
+              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', zIndex: 15 } },
+              '✕ Exit sim'),
+              
+            // Interactive Lobster Carapace Caliper Inspection Screen Overlay
+            activeLobster ? h('div', {
+              style: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(9,17,28,0.96)',
+                zIndex: 100,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '2px dashed #0ea5e9',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
+              }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56,189,248,0.3)', paddingBottom: '10px', marginBottom: '14px' } },
+                h('span', { style: { fontSize: '15px', fontWeight: '800', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' } }, '🦞 DMR LOBSTER INSPECTION GAUGE STATION'),
+                h('span', { style: { fontSize: '11px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', padding: '2px 8px', borderRadius: '4px' } }, 'PAUSED')
+              ),
+              h('div', { style: { display: 'flex', flex: 1, gap: '16px', minHeight: 0 } },
+                // Left Panel: Interactive Caliper Gauge board (SVG)
+                h('div', { style: { flex: '1.4', background: '#070f1e', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', overflow: 'hidden' } },
+                  h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '8px', fontWeight: 'bold' } }, 'MEASURE BOARD (DIAGRAM NOT TO SCALE)'),
+                  
+                  // SVG Schematic
+                  h('svg', {
+                    width: '100%',
+                    height: '100%',
+                    viewBox: '0 0 540 280',
+                    style: { flex: 1, background: '#111827', borderRadius: '6px' }
+                  },
+                    // Ruler background markings
+                    h('rect', { x: 40, y: 220, width: 460, height: 40, fill: '#1f2937', stroke: '#374151' }),
+                    [0, 1, 2, 3, 4, 5, 6].map(function(val) {
+                      var tickX = 60 + val * 70;
+                      return h('g', { key: val },
+                        h('line', { x1: tickX, y1: 220, x2: tickX, y2: 235, stroke: '#9ca3af', strokeWidth: 2 }),
+                        h('text', { x: tickX, y: 252, textAnchor: 'middle', fontSize: '11', fill: '#9ca3af', fontFamily: 'monospace' }, val + '"'),
+                        val < 6 ? [0.25, 0.5, 0.75].map(function(sub) {
+                          var subX = tickX + sub * 70;
+                          return h('line', { key: sub, x1: subX, y1: 220, x2: subX, y2: 228, stroke: '#4b5563', strokeWidth: 1 });
+                        }) : null
+                      );
+                    }),
+                    
+                    // Highlight the Legal Keeper Zone (3.25" to 5.0" = x: 287.5 to x: 410)
+                    h('rect', { x: 60 + 3.25 * 70, y: 220, width: (5.0 - 3.25) * 70, height: 12, fill: 'rgba(16,185,129,0.25)' }),
+                    h('text', { x: 60 + 4.125 * 70, y: 230, textAnchor: 'middle', fontSize: '9', fill: '#34d399', fontWeight: 'bold' }, 'KEEPER ZONE'),
+
+                    // Draw stylized Lobster
+                    h('g', { transform: 'translate(60, 40)' },
+                      // Lobster Antennas
+                      h('path', { d: 'M 20 80 Q -30 60 -50 90 M 20 100 Q -30 120 -50 90', fill: 'none', stroke: '#b91c1c', strokeWidth: 2 }),
+                      // Lobster Claws (front)
+                      h('path', { d: 'M 40 40 C 0 20 -20 50 10 70 Z', fill: '#991b1b', stroke: '#7f1d1d' }),
+                      h('path', { d: 'M 40 140 C 0 160 -20 130 10 110 Z', fill: '#991b1b', stroke: '#7f1d1d' }),
+                      h('line', { x1: 40, y1: 70, x2: 20, y2: 55, stroke: '#991b1b', strokeWidth: 5 }),
+                      h('line', { x1: 40, y1: 110, x2: 20, y2: 125, stroke: '#991b1b', strokeWidth: 5 }),
+
+                      // Eye socket marker (reference point for 0.00" on carapace)
+                      h('circle', { cx: 0, cy: 90, r: 4, fill: '#00ffff' }),
+                      h('text', { x: 0, y: 78, textAnchor: 'middle', fontSize: '9', fill: '#00ffff', fontWeight: 'bold' }, 'Eye Socket (0")'),
+                      h('line', { x1: 0, y1: 86, x2: 0, y2: 180, stroke: '#00ffff', strokeDasharray: '3,3', strokeWidth: 1 }),
+
+                      // Lobster Carapace
+                      h('rect', {
+                        x: 0,
+                        y: 70,
+                        width: activeLobster.length * 70,
+                        height: 40,
+                        rx: 8,
+                        fill: '#7f1d1d',
+                        stroke: '#991b1b',
+                        strokeWidth: 2
+                      }),
+                      h('text', { x: (activeLobster.length * 70) / 2, y: 94, textAnchor: 'middle', fontSize: '11', fill: '#fca5a5', fontWeight: 'bold' }, 'Carapace'),
+                      
+                      // Rear edge of carapace marker
+                      h('line', { x1: activeLobster.length * 70, y1: 70, x2: activeLobster.length * 70, y2: 180, stroke: '#f87171', strokeDasharray: '3,3', strokeWidth: 1.5 }),
+                      
+                      // Lobster Tail
+                      h('rect', {
+                        x: activeLobster.length * 70,
+                        y: 75,
+                        width: 100,
+                        height: 30,
+                        rx: 4,
+                        fill: '#991b1b',
+                        stroke: '#7f1d1d'
+                      }),
+                      // Tail flipper
+                      h('path', {
+                        d: 'M ' + (activeLobster.length * 70 + 100) + ' 70 L ' + (activeLobster.length * 70 + 130) + ' 60 L ' + (activeLobster.length * 70 + 140) + ' 90 L ' + (activeLobster.length * 70 + 130) + ' 120 L ' + (activeLobster.length * 70 + 100) + ' 110 Z',
+                        fill: '#7f1d1d',
+                        stroke: '#991b1b'
+                      }),
+                      // Egg graphics if female
+                      activeLobster.isFemale ? h('circle', { cx: activeLobster.length * 70 + 40, cy: 90, r: 8, fill: '#fbbf24', opacity: 0.85 }) : null,
+                      activeLobster.isFemale ? h('text', { x: activeLobster.length * 70 + 40, y: 93, textAnchor: 'middle', fontSize: '8', fill: '#000', fontWeight: 'bold' }, '♀') : null,
+                      // V-Notch indicator in the tail flipper
+                      activeLobster.isVNotched ? h('path', {
+                        d: 'M ' + (activeLobster.length * 70 + 135) + ' 90 L ' + (activeLobster.length * 70 + 120) + ' 90 L ' + (activeLobster.length * 70 + 135) + ' 98 Z',
+                        fill: '#111827',
+                        stroke: '#991b1b',
+                        strokeWidth: 1
+                      }) : null,
+                      activeLobster.isVNotched ? h('text', { x: activeLobster.length * 70 + 105, y: 118, fontSize: '9', fill: '#f87171', fontWeight: 'bold' }, '⚠ V-Notch') : null
+                    ),
+
+                    // Caliper overlays
+                    h('rect', { x: 57, y: 20, width: 6, height: 200, fill: '#9ca3af', opacity: 0.9 }),
+                    h('rect', { x: 57, y: 20, width: 40, height: 12, fill: '#9ca3af' }),
+                    h('g', { transform: 'translate(' + (60 + caliperVal * 70) + ', 0)' },
+                      h('rect', { x: -3, y: 20, width: 6, height: 200, fill: '#f59e0b', opacity: 0.95 }),
+                      h('rect', { x: -40, y: 20, width: 43, height: 12, fill: '#f59e0b' }),
+                      h('text', { x: -20, y: 10, textAnchor: 'middle', fontSize: '9', fill: '#fbbf24', fontWeight: 'bold' }, 'Caliper')
+                    ),
+                    h('rect', { x: 170, y: 5, width: 200, height: 26, rx: 4, fill: 'rgba(15,23,42,0.85)', stroke: '#38bdf8' }),
+                    h('text', { x: 270, y: 22, textAnchor: 'middle', fontSize: '12', fill: '#38bdf8', fontFamily: 'monospace', fontWeight: 'bold' }, 'Caliper Width: ' + caliperVal.toFixed(2) + '"')
+                  ),
+                  
+                  // Slider input to adjust caliperVal
+                  h('div', { style: { padding: '8px 10px', background: 'rgba(15,23,42,0.6)', borderRadius: '6px', marginTop: '10px' } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#94a3b8', marginBottom: '4px' } },
+                      h('span', null, 'Caliper Jaw Width Adjustment:'),
+                      h('span', { style: { color: '#f59e0b', fontWeight: 'bold' } }, caliperVal.toFixed(2) + ' in')
+                    ),
+                    h('input', {
+                      type: 'range',
+                      min: 2.50,
+                      max: 6.00,
+                      step: 0.05,
+                      value: caliperVal,
+                      onChange: function(e) { setCaliperVal(parseFloat(e.target.value)); },
+                      style: { width: '100%', cursor: 'ew-resize', accentColor: '#f59e0b' }
+                    })
+                  )
+                ),
+
+                // Right Panel
+                h('div', { style: { flex: '1', display: 'flex', flexDirection: 'column', gap: '12px' } },
+                  h('div', { style: { background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(56,189,248,0.1)' } },
+                    h('div', { style: { fontWeight: 'bold', fontSize: '11px', color: '#38bdf8', marginBottom: '8px' } }, 'SPECIMEN REPORT'),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' } },
+                      h('div', null, 'Gender: ', h('b', { style: { color: activeLobster.isFemale ? '#f472b6' : '#60a5fa' } }, activeLobster.isFemale ? 'Female ♀' : 'Male ♂')),
+                      h('div', null, 'V-Notch: ', h('b', { style: { color: activeLobster.isVNotched ? '#ef4444' : '#10b981' } }, activeLobster.isVNotched ? 'Present (Protected)' : 'None')),
+                      h('div', null, 'Source: ', h('b', { style: { color: '#cbd5e1' } }, activeLobster.buoyLabel)),
+                      h('div', null, 'Est. Weight: ', h('b', { style: { color: '#cbd5e1' } }, (Math.pow(activeLobster.length, 3) * 0.005).toFixed(2) + ' lbs'))
+                    )
+                  ),
+
+                  h('div', { style: { background: 'rgba(30,41,59,0.4)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ef4444', fontSize: '10.5px', color: '#cbd5e1', lineHeight: '1.4' } },
+                    h('div', { style: { fontWeight: 'bold', color: '#f87171', marginBottom: '4px', fontSize: '11px' } }, 'MAINE DIVISION OF MARINE RESOURCES (DMR) LAWS:'),
+                    h('div', null, '1. ', h('strong', null, 'Min Carapace Length: '), '3-1/4 inches (3.25"). Throw back if smaller.'),
+                    h('div', null, '2. ', h('strong', null, 'Max Carapace Length: '), '5 inches (5.0"). Throw back if larger (preserves breeders).'),
+                    h('div', null, '3. ', h('strong', null, 'V-Notch Female rule: '), 'Any female with a V-notch on the right-middle tail flipper must be released. It designates a known fertile breeder.'),
+                    h('div', { style: { color: '#e2e8f0', marginTop: '6px', fontWeight: 'bold' } }, 'Violation penalty: $250 - $750 fine.')
+                  ),
+
+                  h('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' } },
+                    h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
+                    h('button', {
+                      className: 'fl-btn',
+                      onClick: function() {
+                        var decisionCorrect = activeLobster.isKeeper;
+                        var msg = '';
+                        var violationText = '';
+
+                        if (decisionCorrect) {
+                          msg = '✓ Legal Keeper kept! Length: ' + activeLobster.length.toFixed(2) + '" ' + (activeLobster.isFemale ? 'Female' : 'Male') + '.';
+                          flAnnounce(msg);
+                          pushStatus({ type: 'lobster', length: activeLobster.length, isKeeper: true, text: msg });
+                        } else {
+                          var fine = 250;
+                          var reason = 'Undersized lobster (< 3.25")';
+                          if (activeLobster.length > 5.0) {
+                            fine = 500;
+                            reason = 'Oversized lobster (> 5.0")';
+                          } else if (activeLobster.isVNotched) {
+                            fine = 750;
+                            reason = 'V-notched female breeder lobster';
+                          }
+                          violationText = 'CITATION: Possession of ' + reason + ' (' + activeLobster.length.toFixed(2) + '"). Fine: $' + fine + '.';
+                          flAnnounce(violationText);
+                          pushStatus({ type: 'violation', text: violationText });
+                        }
+
+                        if (harborRef.current && harborRef.current.resumeSim) {
+                          harborRef.current.resumeSim('keep', decisionCorrect);
+                        }
+                        setActiveLobster(null);
+                      },
+                      style: { padding: '10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
+                    }, '📥 KEEP IN LIVEWELL (LEGAL CATCH)'),
+
+                    h('button', {
+                      className: 'fl-btn',
+                      onClick: function() {
+                        var decisionCorrect = !activeLobster.isKeeper;
+                        var msg = '';
+
+                        if (decisionCorrect) {
+                          msg = '✓ Released illegal lobster overboard (' + activeLobster.length.toFixed(2) + '"' + (activeLobster.isVNotched ? ' V-notched' : '') + '). Compliance check passed.';
+                          flAnnounce(msg);
+                          pushStatus({ type: 'complete', text: msg });
+                        } else {
+                          msg = '⚠ Released a legal keeper lobster (' + activeLobster.length.toFixed(2) + '"). Lost catch market value.';
+                          flAnnounce(msg);
+                          pushStatus({ type: 'complete', text: msg });
+                        }
+                        
+                        if (harborRef.current && harborRef.current.resumeSim) {
+                          harborRef.current.resumeSim('release', false);
+                        }
+                        setActiveLobster(null);
+                      },
+                      style: { padding: '10px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
+                    }, '🌊 RELEASE OVERBOARD (RETURN TO SEA)')
+                  )
+                )
+              )
+            ) : null
+          ) : null
         ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Controls (keyboard parity required for WCAG)'),
@@ -8281,7 +9415,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'A / ←', d: 'Turn left (port)', c: '#bae6fd' },
               { k: 'D / →', d: 'Turn right (starboard)', c: '#bae6fd' },
               { k: 'Space', d: 'Throttle boost', c: '#fbbf24' },
-              { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' }
+              { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' },
+              { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
+              { k: 'V', d: 'Cycle camera view', c: '#38bdf8' },
+              { k: 'M', d: 'Toggle sound mute', c: '#86efac' }
             ].map(function(c, i) {
               return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),

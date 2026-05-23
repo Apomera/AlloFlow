@@ -352,25 +352,40 @@
         'Browser: ' + p.browserDevice + '\n\n' +
         'Context:\n' + p.stepsRepro + '\n\n' +
         'Log:\n' + p.whatHappened;
+      
+      function copyFallback(txt) {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = txt;
+          ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (ok) {
+            $('aer-copy').textContent = 'Copied ✓';
+          } else {
+            $('aer-copy').textContent = 'Copy failed';
+          }
+        } catch (_) {
+          $('aer-copy').textContent = 'Copy failed';
+        }
+        setTimeout(function () { if ($('aer-copy')) $('aer-copy').textContent = 'Copy log'; }, 1500);
+      }
+
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(function () {
             $('aer-copy').textContent = 'Copied ✓';
             setTimeout(function () { if ($('aer-copy')) $('aer-copy').textContent = 'Copy log'; }, 1500);
+          }).catch(function () {
+            copyFallback(text);
           });
         } else {
-          // Fallback: temporary textarea
-          var ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select(); document.execCommand('copy');
-          document.body.removeChild(ta);
-          $('aer-copy').textContent = 'Copied ✓';
-          setTimeout(function () { if ($('aer-copy')) $('aer-copy').textContent = 'Copy log'; }, 1500);
+          copyFallback(text);
         }
       } catch (_) {
-        $('aer-copy').textContent = 'Copy failed';
+        copyFallback(text);
       }
     };
     if ($('aer-send')) $('aer-send').onclick = function () {
@@ -391,7 +406,9 @@
         var win = window.open(url, '_blank', 'noopener,noreferrer');
         if (!win) {
           // Pop-up blocked — copy URL to clipboard and tell user
-          try { navigator.clipboard && navigator.clipboard.writeText(url); } catch (_) {}
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).catch(function () {});
+          }
           if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
         }
       } catch (e) {
