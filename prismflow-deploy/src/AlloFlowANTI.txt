@@ -4070,7 +4070,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '348c1927';
+    var pluginCdnVersion = '88b7b8c7';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4637,8 +4637,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         return new Promise(r => { s.onload = () => r(true); s.onerror = () => r(false); document.head.appendChild(s); });
       };
 
-      if (_isCanvasEnv) {
-        console.log('[Canvas TTS] Lazy mode — Kokoro and Piper download on demand');
+      const isLazy = _isCanvasEnv || (typeof window !== 'undefined' && (window.location.search.includes('disableTtsLoader=true') || window._disableTtsLoader));
+      if (isLazy) {
+        console.log('[TTS] Lazy mode enabled — Kokoro and Piper download on demand');
         setKokoroLoadState(null); // No loading overlay
       } else {
         console.log('[Firebase TTS] Auto-loading Kokoro (cached for future sessions)...');
@@ -4647,7 +4648,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
   }, []);
   const [kokoroLoadState, setKokoroLoadState] = useState(
-    !_isCanvasEnv ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
+    (!_isCanvasEnv && !(typeof window !== 'undefined' && (window.location.search.includes('disableTtsLoader=true') || window._disableTtsLoader)))
+      ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
   );
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const setShowKokoroOfferModal = React.useCallback((v) => { if (v && window.__alloLazyKokoroOfferModal) { try { window.__alloLazyKokoroOfferModal(); } catch(_) {} } _setShowKokoroOfferModalRaw(v); }, []);
