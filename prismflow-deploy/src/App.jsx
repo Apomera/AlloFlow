@@ -4399,6 +4399,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // tiles progressively as plugins finish loading.
     (function() {
       var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
+      var pluginCdnVersion = '2945b450';
       var stemToolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -4563,7 +4564,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             };
             manifest.forEach(function(mod) {
               var s = document.createElement('script');
-              s.src = pluginCdnBase + mod;
+              s.src = pluginCdnBase + mod + '?v=' + pluginCdnVersion;
               s.async = true;
               s.crossOrigin = 'anonymous';
               s.onload = function() {

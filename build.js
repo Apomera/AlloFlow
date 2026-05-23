@@ -1345,6 +1345,7 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
 //   var pluginCdnBase = 'https://alloflow-cdn.pages.dev/'
 //   var pluginCdnBase = './'   (dev mode)
 const PLUGIN_CDN_RE = /var\s+pluginCdnBase\s*=\s*'[^']*'/;
+const PLUGIN_VERSION_RE = /var\s+pluginCdnVersion\s*=\s*'[^']*'/;
 let pluginReplaced = false;
 
 if (mode === 'dev') {
@@ -1362,6 +1363,12 @@ if (mode === 'dev') {
         return `var pluginCdnBase = '${newBase}'`;
     });
 }
+
+content = content.replace(PLUGIN_VERSION_RE, () => {
+    const version = mode === 'dev' ? String(Date.now()) : gitHash;
+    console.log(`  ✏️  pluginCdnVersion: → ${version}`);
+    return `var pluginCdnVersion = '${version}'`;
+});
 
 if (pluginReplaced) {
     replacementCount++;
