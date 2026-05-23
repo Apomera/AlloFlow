@@ -5532,6 +5532,29 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isEditingLessonPlan, setIsEditingLessonPlan] = useState(false);
   const [outlineTranslationMode, setOutlineTranslationMode] = useState('bilingual');
   const [stickers, setStickers] = useState([]);
+
+  // Scoped annotations per resource ID to prevent global clutter while preserving user notes.
+  const stickersMapRef = React.useRef({});
+  const prevResourceIdRef = React.useRef(null);
+
+  // Sync the map with current stickers for the active resource ID
+  React.useEffect(() => {
+      const currentId = generatedContent?.id || 'default';
+      // Only save if the stickers state corresponds to the active resource
+      if (prevResourceIdRef.current === currentId) {
+          stickersMapRef.current[currentId] = stickers;
+      }
+  }, [stickers, generatedContent?.id]);
+
+  // Load stickers from the map when the active resource changes
+  React.useEffect(() => {
+      const currentId = generatedContent?.id || 'default';
+      if (prevResourceIdRef.current !== currentId) {
+          const saved = stickersMapRef.current[currentId] || [];
+          setStickers(saved);
+          prevResourceIdRef.current = currentId;
+      }
+  }, [generatedContent?.id]);
   const [isStickerMode, setIsStickerMode] = useState(false);
   const [stickerType, setStickerType] = useState('star');
   // Phase 3a annotation suite extension: a single string-mode supersedes the
