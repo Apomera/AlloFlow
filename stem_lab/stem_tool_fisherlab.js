@@ -8748,12 +8748,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     function startSim() {
-      function actuallyStart() {
-        var c = canvasRef.current;
-        if (!c) return;
-        if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
+      if (window.THREE) {
+        setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
+      } else {
+        setSim(function(s) { return Object.assign({}, s, { loading: true }); });
+        ensureThreeJS(function() {
+          setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
+        }, function() {
+          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+          flAnnounce('3D engine could not load. Use Chart Mode (2D fallback) instead.');
+        });
+      }
+    }
+
+    function stopSim() {
+      if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
+      harborRef.current = null;
+      setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
+    }
+
+    useEffect(function() {
+      if (sim.active && canvasRef.current && !harborRef.current) {
         try {
-          harborRef.current = initHarborSim(c, {
+          harborRef.current = initHarborSim(canvasRef.current, {
             onHudUpdate: setHud,
             onStatus: pushStatus,
             onSoundToggle: setSoundOn,
@@ -8766,8 +8783,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           harborRef.current.setTimeOfDay(timeOfDay);
           harborRef.current.setCameraView(cameraView);
           harborRef.current.setWeather(weather);
-
-          setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
           flAnnounce('FisherLab 3D sim launched. Use WASD/arrows to steer, Space for boost, F to fish, H to haul trap, V to cycle camera, M to toggle sound.');
         } catch (err) {
           console.error('[FisherLab] Error starting 3D simulation:', err);
@@ -8775,22 +8790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
         }
       }
-      if (window.THREE) {
-        actuallyStart();
-      } else {
-        setSim(function(s) { return Object.assign({}, s, { loading: true }); });
-        ensureThreeJS(actuallyStart, function() {
-          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-          flAnnounce('3D engine could not load. Use Chart Mode (2D fallback) instead.');
-        });
-      }
-    }
-
-    function stopSim() {
-      if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
-      harborRef.current = null;
-      setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
-    }
+    }, [sim.active]);
 
     useEffect(function() {
       return function() { if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose(); };
