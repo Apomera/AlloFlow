@@ -33,6 +33,9 @@ function InfoModal({
   const RefreshCw = window.RefreshCw || noop;
   const Sparkles = window.Sparkles || noop;
   const Users = window.Users || noop;
+  const Play = window.Play || noop;
+  const Video = window.Video || window.Film || noop;
+  const ArrowLeft = window.ArrowLeft || noop;
   const Search = window.Search || noop;
   const Globe = window.Globe || noop;
   const Layout = window.Layout || noop;
@@ -56,6 +59,28 @@ function InfoModal({
   const Ear = window.Ear || noop;
   const FileQuestion = window.FileQuestion || noop;
   const MessageCircleQuestion = window.MessageCircleQuestion || noop;
+  const [activeVideo, setActiveVideo] = React.useState("teacher");
+  const [selectedFeature, setSelectedFeature] = React.useState(null);
+  React.useEffect(() => {
+    setSelectedFeature(null);
+  }, [infoModalTab]);
+  const colorMap = {
+    indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
+    teal: "bg-teal-50 border-teal-200 text-teal-700",
+    purple: "bg-purple-50 border-purple-200 text-purple-700",
+    orange: "bg-orange-50 border-orange-200 text-orange-700",
+    pink: "bg-pink-50 border-pink-200 text-pink-700",
+    blue: "bg-blue-50 border-blue-200 text-blue-700",
+    green: "bg-green-50 border-green-200 text-green-700",
+    rose: "bg-rose-50 border-rose-200 text-rose-700",
+    cyan: "bg-cyan-50 border-cyan-200 text-cyan-700",
+    emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
+    fuchsia: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700",
+    yellow: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    amber: "bg-amber-50 border-amber-200 text-amber-700",
+    violet: "bg-violet-50 border-violet-200 text-violet-700",
+    slate: "bg-slate-50 border-slate-200 text-slate-700"
+  };
   return /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") e.currentTarget.click();
   }, className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowInfoModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20 }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowInfoModalToFalse, className: "p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 shrink-0" }, /* @__PURE__ */ React.createElement(
@@ -72,7 +97,30 @@ function InfoModal({
       className: `flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "features" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
     },
     t("about.tab_features")
-  )), /* @__PURE__ */ React.createElement("div", { className: "p-6 overflow-y-auto custom-scrollbar" }, infoModalTab === "about" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-4 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-2" }, t("about.approach_header")), /* @__PURE__ */ React.createElement("ul", { className: "text-sm space-y-2 ml-2 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700 w-16 shrink-0" }, t("about.allo_acronym_label")), /* @__PURE__ */ React.createElement("span", null, t("about.allo_acronym_def"))), /* @__PURE__ */ React.createElement("li", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700 w-16 shrink-0" }, t("about.flow_acronym_label")), /* @__PURE__ */ React.createElement("span", null, t("about.flow_acronym_def"))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1" }, t("about.what_is_udl")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, t("about.udl_definition")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1" }, t("about.how_help_header")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed mb-2" }, t("about.how_help_desc")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 text-sm" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-1 rounded text-green-700 mt-0.5" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 })), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, t("about.rep_title")), " ", t("about.rep_desc"))), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-100 p-1 rounded text-teal-700 mt-0.5" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 12 })), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, t("about.action_title")), " ", t("about.action_desc"))), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-100 p-1 rounded text-yellow-700 mt-0.5" }, /* @__PURE__ */ React.createElement(Heart, { size: 12 })), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, t("about.engage_title")), " ", t("about.engage_desc"))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded border border-slate-400 text-xs text-slate-600 italic text-center space-y-2" }, /* @__PURE__ */ React.createElement("p", null, t("about.ai_guide_tip")), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-2" }, /* @__PURE__ */ React.createElement("a", { href: "https://udlguidelines.cast.org/", target: "_blank", rel: "noopener noreferrer", className: "text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 transition-colors" }, t("about.cast_link_text"), " ", /* @__PURE__ */ React.createElement(ArrowRight, { size: 10 }))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-2 mt-2" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "p-6 overflow-y-auto custom-scrollbar" }, infoModalTab === "about" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-4 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-2" }, t("about.approach_header")), /* @__PURE__ */ React.createElement("ul", { className: "text-sm space-y-2 ml-2 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700 w-16 shrink-0" }, t("about.allo_acronym_label")), /* @__PURE__ */ React.createElement("span", null, t("about.allo_acronym_def"))), /* @__PURE__ */ React.createElement("li", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700 w-16 shrink-0" }, t("about.flow_acronym_label")), /* @__PURE__ */ React.createElement("span", null, t("about.flow_acronym_def"))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 rounded-xl p-4 border border-slate-700 text-white mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Video, { size: 16, className: "text-indigo-400 shrink-0" }), " Video Walkthroughs"), /* @__PURE__ */ React.createElement("div", { className: "flex bg-slate-800 rounded-lg p-0.5 text-xs self-stretch sm:self-auto" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setActiveVideo("teacher"),
+      className: `flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors ${activeVideo === "teacher" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`
+    },
+    "Teacher Guide"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setActiveVideo("family"),
+      className: `flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors ${activeVideo === "family" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`
+    },
+    "Family Guide"
+  ))), /* @__PURE__ */ React.createElement("div", { className: "aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800 relative" }, /* @__PURE__ */ React.createElement(
+    "video",
+    {
+      key: activeVideo,
+      src: activeVideo === "teacher" ? "/alloflow_intro_teacher.mp4" : "/alloflow_intro_family.mp4",
+      controls: true,
+      className: "w-full h-full object-contain",
+      preload: "metadata"
+    }
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 mt-2 leading-relaxed" }, activeVideo === "teacher" ? "Learn how educators can use AlloFlow's automated differentiation engine, custom rubrics, and multimodal lesson packs to personalize instruction." : "Discover how families learn together using interactive Choose-Your-Own-Adventure roleplays, vocabulary pictionary, and gamified challenges.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1" }, t("about.what_is_udl")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, t("about.udl_definition")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1" }, t("about.how_help_header")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed mb-2" }, t("about.how_help_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 flex flex-col justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg text-emerald-700 shrink-0" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 18 })), /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm" }, t("about.rep_title") || "Representation:")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, t("about.rep_desc") || "Presenting information in different ways."), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-[11px] text-slate-700 pl-1 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Leveled Texts:"), " Adjust reading level K-12")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Translation:"), " Side-by-side (10+ languages)")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Immersive Reader:"), " Font focus & dyslexia mode")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Audio Narration:"), " High-quality text-to-speech")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-emerald-100/50 text-[10px] text-emerald-800 font-medium" }, "Allows all students to access key ideas.")), /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/50 p-4 rounded-xl border border-teal-100 flex flex-col justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-100 p-1.5 rounded-lg text-teal-700 shrink-0" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 18 })), /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm" }, t("about.action_title") || "Action & Expression:")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, t("about.action_desc") || "Providing options for students to demonstrate what they know."), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-[11px] text-slate-700 pl-1 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Interactive Games:"), " Sorting, matching, puzzles")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Writing Scaffolds:"), " Sentence frames & starters")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Rubric Builder:"), " Co-created dynamic criteria")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Oral Fluency:"), " Audio record with WCPM checks")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-teal-100/50 text-[10px] text-teal-800 font-medium" }, "Offers flexible choices to show understanding.")), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50/50 p-4 rounded-xl border border-amber-100 flex flex-col justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg text-amber-700 shrink-0" }, /* @__PURE__ */ React.createElement(Heart, { size: 18 })), /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm" }, t("about.engage_title") || "Engagement:")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, t("about.engage_desc") || "Tapping into interests to challenge and motivate."), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-[11px] text-slate-700 pl-1 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Adventure Mode:"), " DM roleplay simulations")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Interviews:"), " Chat with historical figures")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Interest-weaving:"), " Embed student interests")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Socratic Tutor:"), " Scaffolding chatbot guides")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-amber-100/50 text-[10px] text-amber-800 font-medium" }, "Builds sustained motivation and learning drive.")))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded border border-slate-400 text-xs text-slate-600 italic text-center space-y-2" }, /* @__PURE__ */ React.createElement("p", null, t("about.ai_guide_tip")), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-2" }, /* @__PURE__ */ React.createElement("a", { href: "https://udlguidelines.cast.org/", target: "_blank", rel: "noopener noreferrer", className: "text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 transition-colors" }, t("about.cast_link_text"), " ", /* @__PURE__ */ React.createElement(ArrowRight, { size: 10 }))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-2 mt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.refresh"),
@@ -86,29 +134,50 @@ function InfoModal({
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }),
     " ",
     t("about.reset_wizard")
-  )))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-8" }, ["creation", "activities", "assessment", "platform"].map((catKey) => {
+  )))) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setSelectedFeature(null),
+      className: "flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded p-1 cursor-pointer"
+    },
+    /* @__PURE__ */ React.createElement(ArrowLeft, { size: 16 }),
+    " Back to Feature Guide"
+  ), /* @__PURE__ */ React.createElement("div", { className: `p-4 rounded-xl border ${colorMap[selectedFeature.color || "slate"] || "bg-slate-50 border-slate-200 text-slate-700"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "p-2 bg-white/80 rounded-lg shadow-sm text-slate-800 flex items-center justify-center" }, React.createElement({
+    "Search": Search,
+    "BookOpen": BookOpen,
+    "Globe": Globe,
+    "CheckSquare": CheckSquare,
+    "Layout": Layout,
+    "ImageIcon": ImageIcon,
+    "Quote": Quote,
+    "Lightbulb": Lightbulb,
+    "MapIcon": MapIcon,
+    "ShieldCheck": ShieldCheck,
+    "ListOrdered": ListOrdered,
+    "Filter": Filter,
+    "Calculator": Calculator,
+    "ClipboardList": ClipboardList,
+    "Terminal": Terminal,
+    "History": History,
+    "Wifi": Wifi,
+    "Cloud": Cloud,
+    "Mic": Mic,
+    "Download": Download,
+    "Clock": Clock,
+    "Gamepad2": Gamepad2,
+    "Ear": Ear,
+    "FileQuestion": FileQuestion,
+    "MessageCircleQuestion": MessageCircleQuestion,
+    "Users": Users
+  }[selectedFeature.icon] || Sparkles, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase tracking-wider opacity-75 block" }, selectedFeature.categoryName), /* @__PURE__ */ React.createElement("h4", { className: "font-extrabold text-xl leading-none mt-1" }, selectedFeature.title))), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed opacity-95 mt-2" }, selectedFeature.desc)), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "text-indigo-500" }), " Tool Integration Flowchart"), (() => {
+    const fDetails = getFeatureDetails(selectedFeature.title);
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch justify-between gap-2 md:gap-4 relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-sky-50 border border-sky-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-sky-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4E5} Inputs & Context"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-sky-900 list-disc pl-4" }, fDetails.inputs.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none" }, "\u2794"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u2699\uFE0F AlloFlow AI Engine"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-indigo-900 list-disc pl-4" }, fDetails.engine.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none" }, "\u2794"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-emerald-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4E4} Outputs & Resources"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-emerald-900 list-disc pl-4" }, fDetails.outputs.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 p-4 rounded-xl" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-xs uppercase tracking-wider mb-2.5 flex items-center gap-1.5" }, "\u{1F527} Customization Options"), /* @__PURE__ */ React.createElement("ul", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 list-none pl-1" }, fDetails.customizations.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0 mt-1.5" }), /* @__PURE__ */ React.createElement("span", null, item))))), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 flex gap-2.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl leading-none select-none" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { className: "text-xs uppercase tracking-wider font-extrabold block mb-0.5" }, "Pro Tip"), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, fDetails.proTip))));
+  })())) : /* @__PURE__ */ React.createElement("div", { className: "space-y-8" }, ["creation", "activities", "assessment", "platform"].map((catKey) => {
     const featuresList = t("about.features_list", { returnObjects: true });
     const allItems = featuresList?.items || [];
     const categoryItems = allItems.filter((i) => i.category === catKey);
     const categoryTitle = featuresList?.categories?.[catKey] || catKey;
     if (categoryItems.length === 0) return null;
-    const colorMap = {
-      indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
-      teal: "bg-teal-50 border-teal-200 text-teal-700",
-      purple: "bg-purple-50 border-purple-200 text-purple-700",
-      orange: "bg-orange-50 border-orange-200 text-orange-700",
-      pink: "bg-pink-50 border-pink-200 text-pink-700",
-      blue: "bg-blue-50 border-blue-200 text-blue-700",
-      green: "bg-green-50 border-green-200 text-green-700",
-      rose: "bg-rose-50 border-rose-200 text-rose-700",
-      cyan: "bg-cyan-50 border-cyan-200 text-cyan-700",
-      emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
-      fuchsia: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700",
-      yellow: "bg-yellow-50 border-yellow-200 text-yellow-800",
-      amber: "bg-amber-50 border-amber-200 text-amber-700",
-      violet: "bg-violet-50 border-violet-200 text-violet-700",
-      slate: "bg-slate-50 border-slate-200 text-slate-700"
-    };
     return /* @__PURE__ */ React.createElement("div", { key: catKey }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-slate-600 uppercase tracking-widest text-xs mb-3 border-b border-slate-200 pb-1" }, categoryTitle), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" }, categoryItems.map((feature, idx) => {
       const IconComponent = {
         "Search": Search,
@@ -139,9 +208,205 @@ function InfoModal({
         "Users": Users
       }[feature.icon] || Sparkles;
       const colorClass = colorMap[feature.color || "slate"];
-      return /* @__PURE__ */ React.createElement("div", { key: idx, className: `p-3 rounded-lg border hover:shadow-md transition-all ${colorClass}` }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold flex items-center gap-2 mb-1 text-sm" }, /* @__PURE__ */ React.createElement(IconComponent, { size: 16 }), " ", feature.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-90 leading-snug" }, feature.desc));
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: idx,
+          role: "button",
+          tabIndex: 0,
+          onClick: () => setSelectedFeature({ ...feature, categoryName: categoryTitle }),
+          onKeyDown: (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedFeature({ ...feature, categoryName: categoryTitle });
+            }
+          },
+          className: `p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${colorClass}`
+        },
+        /* @__PURE__ */ React.createElement("h5", { className: "font-bold flex items-center gap-2 mb-1 text-sm" }, /* @__PURE__ */ React.createElement(IconComponent, { size: 16 }), " ", feature.title),
+        /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-90 leading-snug" }, feature.desc)
+      );
     })));
   }), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-3 rounded border border-indigo-100 text-xs text-indigo-800 mt-2" }, /* @__PURE__ */ React.createElement("strong", null, t("tips.pro_tip_label")), " Use the ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, /* @__PURE__ */ React.createElement(Users, { size: 12, className: "inline" }), " ", t("profiles.title")), " feature to save settings (Grade, Language, Interests) for different groups.")))));
+}
+function getFeatureDetails(title) {
+  const details = {
+    "Analyze Source": {
+      inputs: ["Raw source text (PDF, URL, doc, or typed topic)"],
+      engine: ["Extract reading levels & key concepts", "Perform fact verification checks", "Identify potential readability gaps"],
+      outputs: ["Core passage content", "Extracted key terms & vocabulary list", "Source difficulty metrics"],
+      customizations: ["Text vs URL input", "Language translation selection"],
+      proTip: "Run Source Analysis first to auto-configure appropriate vocabulary, timelines, and concept sort games."
+    },
+    "Leveled Text": {
+      inputs: ["Passage text / Topic", "Target Grade Level (K-12 / College)", "Optional student interest", "Target language selection"],
+      engine: ["Lexile-aligned content simplification", "Socio-cultural interest weaving", "Side-by-side translation alignment"],
+      outputs: ["Simplified reading passage", "Multilingual side-by-side view", "Interest-themed analogies"],
+      customizations: ["Select Grade Level (K-12)", "Weave custom interest (e.g. sports, gaming)", "Target language"],
+      proTip: "Use interest weaving to make highly abstract topics (like physics) relate directly to student hobbies."
+    },
+    "Lesson Plan": {
+      inputs: ["Leveled passage", "Target standard (CCSS, NGSS, etc.)", "Time constraints"],
+      engine: ["Curriculum alignment mapping", "Step-by-step procedure formulation", "Universal Design for Learning strategy mapping"],
+      outputs: ["Complete lesson plan structure", "UDL teacher guidance prompts", "Assessment alignment blueprints"],
+      customizations: ["Edit procedures", "Select specific standards", "Adjust duration"],
+      proTip: "Generate a Lesson Plan after creating your quizzes and activities to automatically include them in the procedural steps."
+    },
+    "Visual Organizer": {
+      inputs: ["Passage text", "Type of organizer (Venn diagram, outline, flow chart)"],
+      engine: ["Hierarchical content analysis", "Key relationship extraction", "Formatting for interactive rendering"],
+      outputs: ["Interactive diagram (Venn or Flow chart)", "Structured lesson outline", "Visual comparison table"],
+      customizations: ["Toggle organizer types", "Edit nodes or details inline"],
+      proTip: "Use the outline view as a quick visual scaffold for students who struggle with long-form reading passages."
+    },
+    "Brainstorm": {
+      inputs: ["Passage text / Topic", "Differentiation prompts"],
+      engine: ["Idea generation engine", "Real-world connection mapping", "Hands-on project ideation"],
+      outputs: ["Activity lists", "Project ideas", "Cross-curricular links"],
+      customizations: ["Focus area (Creative, Hands-on, Writing)", "Difficulty tuning"],
+      proTip: "Select the project ideas to immediately generate a custom rubric in the Writing Scaffolds section."
+    },
+    "FAQ Generator": {
+      inputs: ["Passage text"],
+      engine: ["Identify typical student misconceptions", "Draft question & answer sets", "Formulate student-friendly explanations"],
+      outputs: ["Misconception Q&A list", "Pre-reading prep questions"],
+      customizations: ["Adjust complexity of Q&As", "Export to study guides"],
+      proTip: "Display the FAQ list on the board at the beginning of class to clear up common student questions before they arise."
+    },
+    "Interview Mode": {
+      inputs: ["Historical character / Persona name", "Student free-response or preset questions"],
+      engine: ["Retrieve historical database facts", "Apply persona dialogue formatting", "Process interactive student chat messages"],
+      outputs: ["Factually-grounded AI chatbot response", "Custom persona avatar image", "Hidden facts unlocks checklist"],
+      customizations: ["Select from preset characters (e.g. Galileo, Ada Lovelace)", "Free-response chat toggle"],
+      proTip: "Encourage students to ask questions outside the presets by enabling Free Response in Project Settings."
+    },
+    "Adventure Mode": {
+      inputs: ["Passage text / Topic", "Student choices", "Consistent character parameters"],
+      engine: ["Generate choose-your-own-pathway RPG scenes", "Apply Nano-Banana image consistency", "Validate student choices against DOK criteria"],
+      outputs: ["Text story scenes", "Interactive choices", "AI-generated scene illustration"],
+      customizations: ["Art style select (Pixel, Storybook, Cinematic)", "Free response text entries", "XP unlock criteria"],
+      proTip: "Enable 'Consistent Characters' to keep character models identical throughout the entire multi-scene adventure!"
+    },
+    "Game Arcade": {
+      inputs: ["Glossary terms & definitions"],
+      engine: ["Grid generation scripts", "Shuffle & match matrices", "Vocabulary puzzles builder"],
+      outputs: ["Crosswords", "Word searches", "Memory match grids", "Interactive bingo card"],
+      customizations: ["Toggle print layout vs interactive layout", "Choose grid sizing"],
+      proTip: "Print out the PDF version of crosswords or word searches for students who need off-screen activities."
+    },
+    "Sequence Builder": {
+      inputs: ["Chronological source data", "Step-by-step processes"],
+      engine: ["Order extraction & sorting check", "Generate interactive timeline blocks", "Drag-and-drop validation code"],
+      outputs: ["Interactive drag-and-drop timeline", "Chronological order checklist"],
+      customizations: ["Add custom timeline events", "Reorder events prior to export"],
+      proTip: "Use this for history timelines or step-by-step science experiments to scaffold procedural memory."
+    },
+    "Concept Sort": {
+      inputs: ["Terms / Concepts", "Category buckets"],
+      engine: ["Generate sorting matrices", "Drag-and-drop bucket validators", "Real-time accuracy tracker"],
+      outputs: ["Interactive sorting board", "Categorized concept folders"],
+      customizations: ["Create custom category buckets", "Add custom sorting terms"],
+      proTip: "Set up concept sort games with categories like 'Metals' vs 'Non-metals' to help students differentiate similar ideas."
+    },
+    "Socratic Tutor": {
+      inputs: ["Student homework question / text", "Voice or text query"],
+      engine: ["Analyze question criteria", "Generate scaffolding hints without answers", "Implement interactive dialogue"],
+      outputs: ["Helpful leading prompts", "Audio speech narration"],
+      customizations: ["Enable/Disable voice input", "Configure speech response rate"],
+      proTip: "Perfect for students who work independently. The Socratic Tutor guides them to find the answer themselves."
+    },
+    "Exit Ticket": {
+      inputs: ["Passage text", "Grade level"],
+      engine: ["Formulate multiple choice questions", "Draft correct & incorrect answer rationale", "Live poll socket sync"],
+      outputs: ["Assessment quiz with answer key", "Detailed explanations", "Real-time class results dashboard"],
+      customizations: ["Choose question counts", "Enable Live Session mode"],
+      proTip: "Launch the quiz as a 'Live Session' to display real-time class voting graphs on your projector screen!"
+    },
+    "Writing Scaffolds": {
+      inputs: ["Writing prompt", "Rubric criteria"],
+      engine: ["Generate sentence frames", "Build step-by-step paragraph builders", "Verify student drafts against rubric checks"],
+      outputs: ["Sentence starters", "Paragraph drafting boards", "AI rubric suggestions with student revision"],
+      customizations: ["Toggle sentence frames complexity", "Revise AI rubric criteria before finalizing"],
+      proTip: "Let students ask the AI to suggest a custom rubric draft, which they can edit and refine before starting to write."
+    },
+    "Visual Support": {
+      inputs: ["Concept text", "Refinement prompt (e.g. 'draw a cell membrane')"],
+      engine: ["Imagen generation API", "Nano Banana canvas overlay editor", "Text removal / element crop tools"],
+      outputs: ["AI-generated diagram", "Annotated learning illustrations"],
+      customizations: ["Image-to-image refinement prompt", "Adjust canvas text overlays"],
+      proTip: "Type prompts into the refinement box to add detail or customize diagrams to exactly match your lesson plans."
+    },
+    "Math & STEM": {
+      inputs: ["Math formula / Problem", "Coordinates"],
+      engine: ["Step-by-step formula solver", "Function coordinate calculator", "STEM sandbox script generators"],
+      outputs: ["Step-by-step solution manual", "Dynamic interactive graph", "STEM coding sandboxes"],
+      customizations: ["Enter custom equations", "Adjust coordinates limits"],
+      proTip: "Open the STEM code sandboxes to let students interact directly with simulated physics, bee hives, and anatomy models."
+    },
+    "Standard Audit": {
+      inputs: ["Lesson pack content", "Target standards database"],
+      engine: ["Rigor and alignment analysis", "Identify standard gaps", "Formulate standard-aligned extensions"],
+      outputs: ["Alignment report card", "Rigor scoring checklist", "Standard adaptation advice"],
+      customizations: ["Select CCSS or state-specific standards", "Export alignment logs"],
+      proTip: "Run standard audits before exporting your final lesson pack to ensure your resources fully cover grade-level criteria."
+    },
+    "Oral Fluency": {
+      inputs: ["Passage text", "Student audio recording"],
+      engine: ["Speech-to-text alignment validation", "Calculate WCPM (Words Correct Per Minute)", "Evaluate hesitation and dialectal pattern accuracy"],
+      outputs: ["Running Record score sheets", "Color-coded reading transcript", "Benchmark season results"],
+      customizations: ["Set time limits", "Choose grade benchmarks (Fall/Winter/Spring)"],
+      proTip: "The oral fluency check automatically filters out accent hesitations to ensure score fairness."
+    },
+    "Teacher Dashboard": {
+      inputs: ["Student submission grades", "Class activity logs"],
+      engine: ["Aggregate scores & progress curves", "Format gradebook logs", "Export database sync"],
+      outputs: ["Teacher analytics control panel", "Printable gradebook grids", "CSV database export"],
+      customizations: ["Filter by student group", "Reset student levels or progress"],
+      proTip: "Export the grades sheet directly to CSV to easily import class results into your district's LMS."
+    },
+    "Live Sessions": {
+      inputs: ["Synchronized class code", "Live teacher actions"],
+      engine: ["Real-time socket communication", "Democracy Mode vote aggregates", "Exit ticket progress tracker"],
+      outputs: ["Teacher broadcast panel", "Synchronized student screens", "Democracy graphs"],
+      customizations: ["Toggle Democracy Mode", "Control slide pace (Teacher vs Student paced)"],
+      proTip: "Use Democracy Mode during choose-your-own-adventure stories to let the class vote on the next move."
+    },
+    "Student Profiles": {
+      inputs: ["Group config parameters (Grade, interests, language)"],
+      engine: ["Save and map differentiation values", "Auto-fill generator fields"],
+      outputs: ["Saved student profile roster"],
+      customizations: ["Create custom profiles", "Import/Export profiles JSON"],
+      proTip: "Create profiles for different groups (like 'ESL Group A') to instantly auto-fill translation languages and reading levels."
+    },
+    "Accessibility": {
+      inputs: ["Text content", "Student UI preferences"],
+      engine: ["Apply visual filters (contrast, spacing)", "Speech synthesis voice engines", "Dictation text capture"],
+      outputs: ["Dyslexia-font display", "Line focus magnifier", "Read-aloud voice playback"],
+      customizations: ["Adjust voice pitch & speed", "Toggle overlay magnifiers", "Select dyslexia-friendly typography"],
+      proTip: "Tell students about the Accessibility panel (ear icon) so they can personalize font sizes and read-aloud options."
+    },
+    "Export Suite": {
+      inputs: ["Lesson pack resources"],
+      engine: ["IMS Common Cartridge packaging", "QTI quiz formatting", "PowerPoint slide builder"],
+      outputs: ["PowerPoint file (.pptx)", "LMS import package (.zip)", "Canvas QTI quizzes"],
+      customizations: ["Export individual resources vs full packages", "Edit PowerPoint theme colors"],
+      proTip: "Export as Canvas QTI to immediately import generated exit tickets into your Canvas or Schoology course quizzes."
+    },
+    "Gemini Bridge": {
+      inputs: ["Lesson pack content"],
+      engine: ["Build canvas prompt bundles", "Format structural parameters", "Generate workspace links"],
+      outputs: ["Gemini Canvas workspace prompts", "Custom interactive app builders"],
+      customizations: ["Choose custom workspace styles", "Edit output prompts"],
+      proTip: "Use Gemini Bridge to create a completely custom, self-grading interactive app based on your lesson packs."
+    }
+  };
+  return details[title] || {
+    inputs: ["Lesson content / Prompt"],
+    engine: ["Process content using AlloFlow's differentiation logic"],
+    outputs: ["Personalized lesson resources"],
+    customizations: ["Adjust parameters prior to generation"],
+    proTip: "Explore this tool inside the main panel to unlock custom features."
+  };
 }
 
   window.AlloModules = window.AlloModules || {};
